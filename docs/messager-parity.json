@@ -1,0 +1,949 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-07",
+  "scope": "Messager static parity inventory; not service completion or deployed-state evidence",
+  "source_commit": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "license": "AGPL-3.0 (repository LICENSE.txt; selected files have no differing license headers)",
+  "implemented": [
+    {
+      "behavior": "Pure room-sequence recovery normalization and predicate",
+      "files": [
+        "ports/messager/recovery.go"
+      ],
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatService.cs#L2094",
+      "verification": "6 synthetic tests, 100% statement coverage, race and vet passed on Go1.26.4",
+      "integration_status": "not integrated with HTTP, storage or authentication"
+    }
+  ],
+  "http_routes": [
+    {
+      "method": "GET",
+      "route": "/api/chat/summary",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L230",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/unread",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L255",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/read-all",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L269",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatReadAll"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/{roomId:guid}/subscriptions",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L284",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/accounts/me/subscriptions",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L299",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/accounts/me/status",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L310",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/messages/search",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L429",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/{roomId:guid}/messages",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L546",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/{roomId:guid}/messages/{messageId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L585",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId:guid}/messages",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L610",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "\"chat.messages.create\""
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId:guid}/messages/voice",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L856",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "\"chat.messages.create\""
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId:guid}/messages/placeholder",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L943",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "\"chat.messages.create\""
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId:guid}/messages/redirect",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L967",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "\"chat.messages.create\""
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/{roomId:guid}/voice/{voiceId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1067",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "PATCH",
+      "route": "/api/chat/{roomId:guid}/messages/{messageId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1087",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatMessagesUpdate"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/chat/{roomId:guid}/messages/{messageId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1299",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatMessagesDelete"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId:guid}/messages/{messageId:guid}/reactions",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1365",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatMessagesReact"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/chat/{roomId:guid}/messages/{messageId:guid}/reactions/{symbol}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1416",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatMessagesReact"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/{roomId:guid}/messages/{messageId:guid}/reactions",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1447",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/{roomId:guid}/messages/{messageId:guid}/thread",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1500",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId:guid}/sync",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1650",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/sync",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1675",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatSync"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId}/autocomplete",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1728",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId}/devices/me/joined",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1810",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId:guid}/pins",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1868",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatPinsManage"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/chat/{roomId:guid}/pins/{pinId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1897",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatPinsManage"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/{roomId:guid}/pins",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1926",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/{roomId:guid}/bots/commands",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs#L1941",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/{id:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L111",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/public/{scope}/{chatSlug}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L132",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L144",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/rooms/sync",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L167",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatSync"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/direct",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L365",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatCreate"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId:guid}/confirm",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L473",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId:guid}/block",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L520",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/chat/{roomId:guid}/block",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L575",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/direct/{accountId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L631",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L701",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "\"chat.create\""
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "PATCH",
+      "route": "/api/chat/{id:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L796",
+      "authorize_attribute": false,
+      "permission_attributes": [
+        "PermissionKeys.ChatUpdate"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{id:guid}/e2ee/enable",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1002",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{id:guid}/mls/enable",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1015",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/chat/{id:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1087",
+      "authorize_attribute": false,
+      "permission_attributes": [
+        "PermissionKeys.ChatDelete"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/{roomId:guid}/members/me",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1155",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "PATCH",
+      "route": "/api/chat/{roomId:guid}/members/me/profile",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1178",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatMembersManage"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/chat/{roomId:guid}/members/me/profile",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1202",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/{roomId:guid}/members/online",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1223",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/{roomId:guid}/members",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1299",
+      "authorize_attribute": false,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/invites/{roomId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1413",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatInvitesManage"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/invites",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1583",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/invites/{roomId:guid}/accept",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1608",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/invites/{roomId:guid}/decline",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1654",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "PATCH",
+      "route": "/api/chat/{roomId:guid}/members/me/notify",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1680",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId:guid}/members/{memberId:guid}/timeout",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1718",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatMembersTimeout"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/chat/{roomId:guid}/members/{memberId:guid}/timeout",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1794",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/chat/{roomId:guid}/members/{memberId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1862",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatMembersKick"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/{roomId:guid}/members/me",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1939",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/chat/{roomId:guid}/members/me",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L1995",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/groups",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L2093",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/groups",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L2104",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatGroupsManage"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "PATCH",
+      "route": "/api/chat/groups/{groupId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L2116",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/chat/groups/{groupId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L2128",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "PATCH",
+      "route": "/api/chat/rooms/{roomId:guid}/group",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L2140",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/chat/rooms/{roomId:guid}/messages/{messageId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L2160",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatMessagesDelete"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/rooms/{roomId:guid}/members/{accountId:guid}/timeout",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs#L2232",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/realms/{slug}/chat",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/RealmChatController.cs#L16",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/realtime/{roomId:guid}/participants",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/RealtimeCallController.cs#L40",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/realtime/{roomId:guid}/kick/{targetAccountId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/RealtimeCallController.cs#L62",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatCallKick"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/realtime/{roomId:guid}/mute/{targetAccountId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/RealtimeCallController.cs#L161",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatCallMute"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/realtime/{roomId:guid}/unmute/{targetAccountId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/RealtimeCallController.cs#L169",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatCallMute"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/realtime/{roomId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/RealtimeCallController.cs#L177",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "GET",
+      "route": "/api/chat/realtime/{roomId:guid}/join",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/RealtimeCallController.cs#L194",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/realtime/{roomId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/RealtimeCallController.cs#L271",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "POST",
+      "route": "/api/chat/realtime/{roomId:guid}/invite/{targetAccountId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/RealtimeCallController.cs#L292",
+      "authorize_attribute": true,
+      "permission_attributes": [
+        "PermissionKeys.ChatCallInvite"
+      ],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/chat/realtime/{roomId:guid}",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/RealtimeCallController.cs#L388",
+      "authorize_attribute": true,
+      "permission_attributes": [],
+      "status": "not_implemented",
+      "note": "Attribute inventory only; inline checks and shared middleware also govern access."
+    }
+  ],
+  "storage": {
+    "provider": "PostgreSQL / EF Core / Npgsql / NodaTime",
+    "models": [
+      {
+        "type": "SnChatRoom",
+        "set": "ChatRooms",
+        "status": "not_implemented"
+      },
+      {
+        "type": "SnChatMember",
+        "set": "ChatMembers",
+        "status": "not_implemented"
+      },
+      {
+        "type": "SnChatGroup",
+        "set": "ChatGroups",
+        "status": "not_implemented"
+      },
+      {
+        "type": "SnChatMessage",
+        "set": "ChatMessages",
+        "status": "not_implemented"
+      },
+      {
+        "type": "SnRealtimeCall",
+        "set": "ChatRealtimeCall",
+        "status": "not_implemented"
+      },
+      {
+        "type": "SnChatReaction",
+        "set": "ChatReactions",
+        "status": "not_implemented"
+      },
+      {
+        "type": "SnChatVoiceClip",
+        "set": "ChatVoiceClips",
+        "status": "not_implemented"
+      },
+      {
+        "type": "SnChatMessagePin",
+        "set": "ChatMessagePins",
+        "status": "not_implemented"
+      },
+      {
+        "type": "SnChatRoomCounter",
+        "set": "ChatRoomCounters",
+        "status": "not_implemented"
+      }
+    ],
+    "important_contracts": [
+      "Unique room+room_sequence index",
+      "Atomic room sequence block allocation during SaveChangesAsync",
+      "Active placeholder partial unique index",
+      "Soft deletion and model global filters depend on uninspected Shared base",
+      "Reaction and thread hydration occurs after sync selection"
+    ]
+  },
+  "websocket": {
+    "received_literals": [
+      "messages.send",
+      "messages.read",
+      "messages.typing",
+      "messages.subscribe",
+      "messages.unsubscribe",
+      "messages.test"
+    ],
+    "symbolic_packets": [
+      "ChatPresenceActivitiesUpdated",
+      "ChatPresenceUpdated",
+      "MessageDelete",
+      "MessageDelivered",
+      "MessageNew",
+      "MessageReactionAdded",
+      "MessageReactionRemoved",
+      "MessageRead",
+      "MessageUpdate",
+      "PlaceholderExpired",
+      "PlaceholderFinalize",
+      "PlaceholderUpdate"
+    ],
+    "note": "Symbolic values must be resolved from licensed Shared definitions before mapping wire literals; no guessed names.",
+    "transport": "External Ring RemoteWebSocketService; incoming event bus WebSocketPacketEvent.SubjectPrefix + messager",
+    "implemented": false
+  },
+  "grpc": {
+    "declared_service": "MessagerRewindServiceGrpc : DyRewindServiceBase",
+    "method": "GetRewindEvent(DyRequestRewindEvent) -> DyRewindEvent",
+    "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Rewind/MessagerRewindServiceGrpc.cs",
+    "registration_status": "Not established: inspected middleware maps controllers and gRPC reflection, not this class explicitly",
+    "implemented": false
+  },
+  "event_bus": {
+    "incoming": [
+      "AccountDeletedEvent.Type",
+      "WebSocketPacketEvent.SubjectPrefix + messager",
+      "websocket_connected",
+      "websocket_disconnected",
+      "AccountPresenceActivitiesUpdatedEvent.Type",
+      "bot.chat.config.updated"
+    ],
+    "durability": "Packet events are non-JetStream, parallelism 8; other explicitly configured listeners use JetStream and MaxRetries 3",
+    "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Startup/ServiceCollectionExtensions.cs",
+    "implemented": false
+  },
+  "jobs": [
+    {
+      "name": "AppDatabaseRecycling",
+      "cron": "0 0 0 * * ?",
+      "implemented": false
+    },
+    {
+      "name": "ChatVoiceCleanup",
+      "cron": "VoiceMessages.CleanupCron",
+      "implemented": false
+    },
+    {
+      "name": "PlaceholderExpiration",
+      "cron": "0 * * * * ?",
+      "implemented": false
+    }
+  ],
+  "auth_dependencies": [
+    "RemotePermissionMiddleware and remote identity verification from Shared",
+    "Inline room lookup and current-user requirement",
+    "Active joined/not-left membership for private or encrypted rooms",
+    "Realm role / direct room membership / group ownership for pins",
+    "WebSocket handlers receive trusted account/device context and check membership; event-bus trust boundary not ported"
+  ],
+  "room_sync": {
+    "method": "POST",
+    "route": "/api/chat/{roomId:guid}/sync",
+    "auth_order": [
+      "CurrentUser required: 401",
+      "Room existence: 404",
+      "If encrypted or not public, active membership required: 403"
+    ],
+    "request_fields": [
+      "last_sync_timestamp: int64 milliseconds",
+      "last_sync_message_id: nullable guid (ignored by this endpoint)",
+      "missing_sequences: optional int64[]",
+      "missing_sequence_ranges: optional {start_sequence,end_sequence}[]"
+    ],
+    "selection": [
+      "room match",
+      "ThreadId null",
+      "sequence union when usable normalized selectors remain, otherwise CreatedAt strictly later than timestamp"
+    ],
+    "order": [
+      "RoomSequence ASC",
+      "CreatedAt ASC"
+    ],
+    "limit": 1000,
+    "response_fields": [
+      "messages",
+      "current_timestamp",
+      "total_count"
+    ],
+    "header": "X-Total = total_count",
+    "cursor": "created_at of last ordered result, or server current instant when empty",
+    "missing": [
+      "Full SnChatMessage schema",
+      "Base global filters and deletion visibility",
+      "Sender/account hydration",
+      "Reaction/thread hydration",
+      "Timestamp serialization parity",
+      "Auth provider",
+      "Database adapter",
+      "Error envelope from Shared.ApiError"
+    ],
+    "contract_spec": "ports/messager/ROOM-SYNC-CONTRACT.md",
+    "client_evidence": {
+      "repository": "Solsynth/Solian",
+      "commit": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "license": "AGPL-3.0",
+      "manifest": "ports/messager/contract-evidence/manifest.json",
+      "complete_dto_established": false
+    },
+    "hydration_observed": [
+      "LoadMemberAccounts for senders",
+      "Per-caller reactions_made",
+      "Escape unencrypted Markdown headings outside fenced blocks",
+      "thread_replies_count from nondeleted thread rows",
+      "is_thread_root derived from actual thread replies"
+    ],
+    "mutation_contract_observed": {
+      "edit": "Original text row updated plus separate messages.update row targeting meta.message_id; do not reuse original client_message_id",
+      "delete": "Original text/voice row soft-deleted plus separate messages.delete row targeting meta.message_id; request deletion id only",
+      "tombstone_query_visibility": "Unknown Shared database global filters; do not guess"
+    },
+    "codec_unknowns": [
+      "Full nested DTO shape and required fields",
+      "Per-property omission versus null",
+      "Exact NodaTime fraction/offset spelling",
+      "Framework omitted/null/overflow request validation",
+      "ApiError encoding",
+      "Full GUID normalization",
+      "Int64 precision behavior in web client above 2^53"
+    ]
+  },
+  "next_port_proposal": {
+    "name": "Read-only room sync service adapter",
+    "prerequisites": [
+      "Obtain licensed Shared model/base/filter and ApiError contracts without accessing denied source pages",
+      "Define verified auth provider and trusted active-membership reader",
+      "Create storage adapter preserving snapshot, visibility and hydration",
+      "Golden fixtures for edits/deletions, thread exclusion, 1000-limit and timestamp boundaries"
+    ],
+    "readiness": "blocked on full source contracts; do not create successful stubs"
+  }
+}

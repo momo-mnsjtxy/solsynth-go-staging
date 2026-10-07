@@ -1,0 +1,374 @@
+{
+  "audit_date": "2026-10-07",
+  "scope": "Bounded repository-level license check for selected GitHub backend repositories",
+  "legal_interpretation": "Evidence inventory only, not legal advice; public accessibility alone is not reuse permission",
+  "method": "Read repository metadata and root directory entries; no license file candidates existed to read",
+  "repositories": [
+    {
+      "repository": "Solsynth/ElecPostal",
+      "url": "https://github.com/Solsynth/ElecPostal",
+      "default_branch": "master",
+      "head_commit": "1fad9d225821386e604552e093c18095985d945f",
+      "github_license_metadata": null,
+      "root_license_candidates": [],
+      "root_entries": [
+        {
+          "name": ".DS_Store",
+          "type": "file",
+          "git_blob_or_tree": "c90f3f40a73bd71f632f2778d81fb253b3a52438"
+        },
+        {
+          "name": ".github",
+          "type": "dir",
+          "git_blob_or_tree": "54148bd4170b53054bcd03da2afaa93a32b691ad"
+        },
+        {
+          "name": "Dockerfile",
+          "type": "file",
+          "git_blob_or_tree": "a1740acf394ec85489fd3aeda0eae284d5216919"
+        },
+        {
+          "name": "Makefile",
+          "type": "file",
+          "git_blob_or_tree": "f0d9b08467d360b71ea3a5d350c6fc2ef9ae8e4d"
+        },
+        {
+          "name": "README.md",
+          "type": "file",
+          "git_blob_or_tree": "1655cf7f450c89bc7a8bcafd7db35eac76cb170f"
+        },
+        {
+          "name": "cmd",
+          "type": "dir",
+          "git_blob_or_tree": "e1dc5d419842df907abef58d1b13118f789fd4eb"
+        },
+        {
+          "name": "config.example.toml",
+          "type": "file",
+          "git_blob_or_tree": "e2c226c0f6d9ab6f1fee5bbd46be020e44b9aa6f"
+        },
+        {
+          "name": "docker-compose.yml",
+          "type": "file",
+          "git_blob_or_tree": "c104da6c6651c76b5a6cc22fa9756aeae788b6a4"
+        },
+        {
+          "name": "docs",
+          "type": "dir",
+          "git_blob_or_tree": "f1b7cc6ff86032e6f39d61778852dd07e0e17cf8"
+        },
+        {
+          "name": "go.mod",
+          "type": "file",
+          "git_blob_or_tree": "35067a013db33bcd1c9e9a43819932796c326638"
+        },
+        {
+          "name": "go.sum",
+          "type": "file",
+          "git_blob_or_tree": "d8ac5448f8655dd8632e00bbd8dc16da141ad6e0"
+        },
+        {
+          "name": "internal",
+          "type": "dir",
+          "git_blob_or_tree": "55f36a2be3642d7fda7c054c152a66a20fcaf9d6"
+        }
+      ],
+      "assessment": "No conventional root license file and no GitHub-detected repository license; reuse permission not established",
+      "scope": "Repository metadata and root directory names only; not a recursive license or per-file header audit",
+      "reuse_status": "Do not copy or translate implementation absent separate applicable permission",
+      "prior_implementation_exposure_this_worker": "Read notifications.go, smtp/queue.go and go.mod for mapping before explicit license restriction; no implementation copied or translated. Do not claim clean-room.",
+      "unknowns": [
+        "Nested license files or per-file SPDX/headers not audited",
+        "Separate grants, README terms or externally applicable permissions not established",
+        "Third-party or vendored code licensing not audited"
+      ],
+      "source_urls": [
+        "https://api.github.com/repos/Solsynth/ElecPostal",
+        "https://api.github.com/repos/Solsynth/ElecPostal/contents",
+        "https://api.github.com/repos/Solsynth/ElecPostal/git/ref/heads/master"
+      ]
+    },
+    {
+      "repository": "Solsynth/PersonalityCore",
+      "url": "https://github.com/Solsynth/PersonalityCore",
+      "default_branch": "master",
+      "head_commit": "847c75a3939a04fba0294848c9e72023bb9e69d1",
+      "github_license_metadata": null,
+      "root_license_candidates": [],
+      "root_entries": [
+        {
+          "name": ".github",
+          "type": "dir",
+          "git_blob_or_tree": "d4215ceb5bd131101d9821fd008446e12fb0671c"
+        },
+        {
+          "name": ".gitignore",
+          "type": "file",
+          "git_blob_or_tree": "bed30c6bb1b798d02d5ad0065fb2111c14ef01b1"
+        },
+        {
+          "name": "AGENTS.md",
+          "type": "file",
+          "git_blob_or_tree": "ddf8c414b106f8315b29affc9bf21f7a960e86ed"
+        },
+        {
+          "name": "Dockerfile",
+          "type": "file",
+          "git_blob_or_tree": "74446cd2bf1eb49bc05cbfbf34a3ac8482317176"
+        },
+        {
+          "name": "Makefile",
+          "type": "file",
+          "git_blob_or_tree": "d5cc5fc8c565335b16445a639b3ae1313b3817df"
+        },
+        {
+          "name": "README.md",
+          "type": "file",
+          "git_blob_or_tree": "6b9767dca011c3b2e6aadee8dfa636ae278f35dc"
+        },
+        {
+          "name": "cmd",
+          "type": "dir",
+          "git_blob_or_tree": "106ee7ee877edbaf6484031e4b9faec67e59b730"
+        },
+        {
+          "name": "config.example.toml",
+          "type": "file",
+          "git_blob_or_tree": "af8b6ad50a91509a3011032b61ad1d855da4d21f"
+        },
+        {
+          "name": "docs",
+          "type": "dir",
+          "git_blob_or_tree": "c6c6bb93cda7bc3e0687033ba042ed5f201edcf0"
+        },
+        {
+          "name": "go.mod",
+          "type": "file",
+          "git_blob_or_tree": "0743583d08ee5e3867aed190d789bfb2646cafa3"
+        },
+        {
+          "name": "go.sum",
+          "type": "file",
+          "git_blob_or_tree": "0ecfae5cb9c2d93879950e9665161df4671e51a8"
+        },
+        {
+          "name": "internal",
+          "type": "dir",
+          "git_blob_or_tree": "aa2a4353a6c0d68a79bae959a815d0b670911fb6"
+        }
+      ],
+      "assessment": "No conventional root license file and no GitHub-detected repository license; reuse permission not established",
+      "scope": "Repository metadata and root directory names only; not a recursive license or per-file header audit",
+      "reuse_status": "Do not copy or translate implementation absent separate applicable permission",
+      "prior_implementation_exposure_this_worker": "No implementation read by this audit worker",
+      "unknowns": [
+        "Nested license files or per-file SPDX/headers not audited",
+        "Separate grants, README terms or externally applicable permissions not established",
+        "Third-party or vendored code licensing not audited"
+      ],
+      "source_urls": [
+        "https://api.github.com/repos/Solsynth/PersonalityCore",
+        "https://api.github.com/repos/Solsynth/PersonalityCore/contents",
+        "https://api.github.com/repos/Solsynth/PersonalityCore/git/ref/heads/master"
+      ]
+    },
+    {
+      "repository": "Solsynth/DistributionCenter",
+      "url": "https://github.com/Solsynth/DistributionCenter",
+      "default_branch": "master",
+      "head_commit": "26372a3dd2a2623cfc74f0713d909c93511abb14",
+      "github_license_metadata": null,
+      "root_license_candidates": [],
+      "root_entries": [
+        {
+          "name": ".dockerignore",
+          "type": "file",
+          "git_blob_or_tree": "00bd2c2c410e68afc67e6342f4530dde073a6ccf"
+        },
+        {
+          "name": ".github",
+          "type": "dir",
+          "git_blob_or_tree": "7d8a5fbad07df88a3bafb68dfb67703c6d8de3ac"
+        },
+        {
+          "name": ".gitignore",
+          "type": "file",
+          "git_blob_or_tree": "68b998095816c6580462c2e4400f468d388d85c9"
+        },
+        {
+          "name": "Dockerfile",
+          "type": "file",
+          "git_blob_or_tree": "39e54a8ce4d783cb31556fd088d6d73fb6c19c68"
+        },
+        {
+          "name": "Makefile",
+          "type": "file",
+          "git_blob_or_tree": "9eec4ab04462c20a088de25605617aed70706a1e"
+        },
+        {
+          "name": "README.md",
+          "type": "file",
+          "git_blob_or_tree": "f59fb55f4b91c3634bc8984a980dc13eaeeda398"
+        },
+        {
+          "name": "cmd",
+          "type": "dir",
+          "git_blob_or_tree": "a7927d3e577bfe0c5746f381eb58df54727ab466"
+        },
+        {
+          "name": "config.example.toml",
+          "type": "file",
+          "git_blob_or_tree": "b178776f677617933a09dc23a86372e01d679857"
+        },
+        {
+          "name": "docs",
+          "type": "dir",
+          "git_blob_or_tree": "4904801ada8235e9c071865f37c5c1f08e0f8d7c"
+        },
+        {
+          "name": "go.mod",
+          "type": "file",
+          "git_blob_or_tree": "ef457e93daade5001690f8868ad741ec12e6cd08"
+        },
+        {
+          "name": "go.sum",
+          "type": "file",
+          "git_blob_or_tree": "fff0419e30d5181c203d501f2380aabcdb285dac"
+        },
+        {
+          "name": "internal",
+          "type": "dir",
+          "git_blob_or_tree": "a9d6fd7c5dc0725a5fbb42524cfd0e976158f661"
+        }
+      ],
+      "assessment": "No conventional root license file and no GitHub-detected repository license; reuse permission not established",
+      "scope": "Repository metadata and root directory names only; not a recursive license or per-file header audit",
+      "reuse_status": "Do not copy or translate implementation absent separate applicable permission",
+      "prior_implementation_exposure_this_worker": "No implementation read by this audit worker",
+      "unknowns": [
+        "Nested license files or per-file SPDX/headers not audited",
+        "Separate grants, README terms or externally applicable permissions not established",
+        "Third-party or vendored code licensing not audited"
+      ],
+      "source_urls": [
+        "https://api.github.com/repos/Solsynth/DistributionCenter",
+        "https://api.github.com/repos/Solsynth/DistributionCenter/contents",
+        "https://api.github.com/repos/Solsynth/DistributionCenter/git/ref/heads/master"
+      ]
+    },
+    {
+      "repository": "Solsynth/MaidCafe",
+      "url": "https://github.com/Solsynth/MaidCafe",
+      "default_branch": "master",
+      "head_commit": "b62b41c0d5e6bddcbd55bb8ae9aab788633f2d36",
+      "github_license_metadata": null,
+      "root_license_candidates": [],
+      "root_entries": [
+        {
+          "name": ".dockerignore",
+          "type": "file",
+          "git_blob_or_tree": "67a9e9564ba2d2766e14483ceab25ce01cfe321f"
+        },
+        {
+          "name": ".github",
+          "type": "dir",
+          "git_blob_or_tree": "3aebf157ab1c92b3a4c6425ba27bf573741bbe5f"
+        },
+        {
+          "name": "Dockerfile",
+          "type": "file",
+          "git_blob_or_tree": "71244f539001ebf6f9c64d6d711d86e8cae7731d"
+        },
+        {
+          "name": "Makefile",
+          "type": "file",
+          "git_blob_or_tree": "9e0603753524eb8e5202fc17d958a36284b98522"
+        },
+        {
+          "name": "README.md",
+          "type": "file",
+          "git_blob_or_tree": "9c707092043eeb042671fdcd305c8343b210fbd7"
+        },
+        {
+          "name": "cmd",
+          "type": "dir",
+          "git_blob_or_tree": "4a20c2f4164a11718baa50fd92f1a7fb1a818e2d"
+        },
+        {
+          "name": "config.cloud.example.toml",
+          "type": "file",
+          "git_blob_or_tree": "24c8f80551b3e4fc6e6ebdebd7ccf6322a236d6a"
+        },
+        {
+          "name": "config.daemon.example.toml",
+          "type": "file",
+          "git_blob_or_tree": "2b9c20e85bb0d965c0c942a5cc3a4a04c763b19e"
+        },
+        {
+          "name": "config.priv.example.toml",
+          "type": "file",
+          "git_blob_or_tree": "92d8ab2586652608d3c250aec3f849fcf45462cb"
+        },
+        {
+          "name": "deploy",
+          "type": "dir",
+          "git_blob_or_tree": "b8769ae15365582c8a4666b1e378eafdb5177657"
+        },
+        {
+          "name": "docker-compose.example.yml",
+          "type": "file",
+          "git_blob_or_tree": "ec91504243f2d9abc775a5f13a4ee42321c2fda2"
+        },
+        {
+          "name": "docs",
+          "type": "dir",
+          "git_blob_or_tree": "8d6c7dadcf7b40c3cf1a077d5b7b3c8c7b36bfa2"
+        },
+        {
+          "name": "go.mod",
+          "type": "file",
+          "git_blob_or_tree": "74e771a2234385bda3e4f3cf218fe7bb991e3cc9"
+        },
+        {
+          "name": "go.sum",
+          "type": "file",
+          "git_blob_or_tree": "8294cb77dec27663fb7c38f8e53fd72e90c8f8f5"
+        },
+        {
+          "name": "internal",
+          "type": "dir",
+          "git_blob_or_tree": "375f3fc1bb191be27f521d7f80f94f95517d3642"
+        }
+      ],
+      "assessment": "No conventional root license file and no GitHub-detected repository license; reuse permission not established",
+      "scope": "Repository metadata and root directory names only; not a recursive license or per-file header audit",
+      "reuse_status": "Do not copy or translate implementation absent separate applicable permission",
+      "prior_implementation_exposure_this_worker": "No implementation read by this audit worker",
+      "unknowns": [
+        "Nested license files or per-file SPDX/headers not audited",
+        "Separate grants, README terms or externally applicable permissions not established",
+        "Third-party or vendored code licensing not audited"
+      ],
+      "source_urls": [
+        "https://api.github.com/repos/Solsynth/MaidCafe",
+        "https://api.github.com/repos/Solsynth/MaidCafe/contents",
+        "https://api.github.com/repos/Solsynth/MaidCafe/git/ref/heads/master"
+      ]
+    }
+  ],
+  "exceptions": [
+    {
+      "repository": "Solsynth/Capital",
+      "status": "Not inspected; no need for interface evidence arose"
+    },
+    {
+      "repository": "Solsynth/Stargate",
+      "status": "Not fetched; excluded by instruction"
+    },
+    {
+      "repository": "SoSYS repositories",
+      "status": "No pages or repository content fetched"
+    }
+  ],
+  "broader_project_note": "Other workers may have prior source exposure; records above describe this worker only. Preserve source-informed versus clean-room distinctions."
+}

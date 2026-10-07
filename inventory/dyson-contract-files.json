@@ -1,0 +1,1754 @@
+{
+  "baseline": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "truncated": false,
+  "source": "https://api.github.com/repos/Solsynth/DysonNetwork/git/trees/4ee2d0cebb9da8284a92483fee6dce795bf6947c?recursive=1",
+  "scope": "Recursive root tree; Shared submodule contents not expanded. Filename classification is not endpoint enumeration.",
+  "groups": {
+    "controllers": [
+      {
+        "path": "DysonNetwork.Develop/Identity/AppProductController.cs",
+        "sha": "a1c2e16cef2cfa4e9c5cd593e66d7f56f7583521"
+      },
+      {
+        "path": "DysonNetwork.Develop/Identity/BoardPublicController.cs",
+        "sha": "80a9dce9ce4b1f10cd20d658bdf919862c2adb0b"
+      },
+      {
+        "path": "DysonNetwork.Develop/Identity/BotAccountController.cs",
+        "sha": "a6095069043325ca9e2226f5c8d878dab54b3e71"
+      },
+      {
+        "path": "DysonNetwork.Develop/Identity/BotAccountPublicController.cs",
+        "sha": "51ec572f1e42bb5cf988c21624bcf6c3c67fed6a"
+      },
+      {
+        "path": "DysonNetwork.Develop/Identity/CustomAppController.cs",
+        "sha": "6d8c005d5c90a93c394df012382a98fd49799d1d"
+      },
+      {
+        "path": "DysonNetwork.Develop/Identity/CustomAppPublicController.cs",
+        "sha": "c917743c516e6237c6965ec25b487e978ca5dcd5"
+      },
+      {
+        "path": "DysonNetwork.Develop/Identity/DevelopQuotaController.cs",
+        "sha": "b95feeaa845c087971a51282738fbe1774399980"
+      },
+      {
+        "path": "DysonNetwork.Develop/Identity/DeveloperController.cs",
+        "sha": "6e43f3a40fb0488c601bc4fedadb260459a1352c"
+      },
+      {
+        "path": "DysonNetwork.Develop/MiniApp/MiniAppController.cs",
+        "sha": "2f60539dba4ded617efd90f0b4417b926f6ddfa4"
+      },
+      {
+        "path": "DysonNetwork.Develop/MiniApp/MiniAppPublicController.cs",
+        "sha": "269da397f764d828ce50e95d31a5eacb9003584c"
+      },
+      {
+        "path": "DysonNetwork.Develop/Project/DevProjectController.cs",
+        "sha": "6b1bc7048817ed6237560ecd053efd562e51264c"
+      },
+      {
+        "path": "DysonNetwork.Messager/Chat/ChatController.cs",
+        "sha": "29e748e8c585ed766c9e20dddfc2eae65509f9a2"
+      },
+      {
+        "path": "DysonNetwork.Messager/Chat/ChatRoomController.cs",
+        "sha": "373efa01d468a76ba5085bf5c2b59bede71bd7ec"
+      },
+      {
+        "path": "DysonNetwork.Messager/Chat/RealmChatController.cs",
+        "sha": "b89f39a81abe2fbe09fa2c7b768eedce62b23307"
+      },
+      {
+        "path": "DysonNetwork.Messager/Chat/RealtimeCallController.cs",
+        "sha": "6115c8788b3faea80d18d7a1f4168e93ec062232"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/AccountAdminController.cs",
+        "sha": "ce1c3465960fcb9f92dff30b648df0d3af96419d"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/AccountController.cs",
+        "sha": "693d62314815feb900644b972b93b16f366ea16f"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/AccountCurrentController.cs",
+        "sha": "543ccc2f9b06ea81da6561622b6eafccd2c826de"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/AccountEventController.cs",
+        "sha": "54133c31c974e78120b9aa9b503f9bdfd29862f5"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/AccountPublicController.cs",
+        "sha": "6c3f3712356f5543ba0be6846637d2b62c649c5a"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/AccountStatsAdminController.cs",
+        "sha": "7db7e71996c1a90c88d3c0a9da7d3f2215f01323"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/FortuneSayingController.cs",
+        "sha": "d6c781f30374ca3baae39da819b609faa7d91a11"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/FriendsController.cs",
+        "sha": "ea1b00027cce94342ac274164c01c71055b1a3a8"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/NotableDaysController.cs",
+        "sha": "13fcf84a879f9e7c6f7a60d733cfa63c8059e89e"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/PassKitController.cs",
+        "sha": "91417afd6bc5d0b42b7d4b6b86c50d7806c36893"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/PresenceActivityController.cs",
+        "sha": "2f502003c925e32c7e59e19d44cd592be099755b"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/PresenceArtworkController.cs",
+        "sha": "362669dba7e1ecc0b10e125947ffdef846c3d701"
+      },
+      {
+        "path": "DysonNetwork.Passport/Affiliation/AffiliationSpellController.cs",
+        "sha": "1bef81235162ce0ba592c3033ea431098f0122d8"
+      },
+      {
+        "path": "DysonNetwork.Passport/DomainTrust/DomainTrustController.cs",
+        "sha": "5e96194d31f4225be566e6a6d3b622a2b58f875a"
+      },
+      {
+        "path": "DysonNetwork.Passport/Examination/TestAdminController.cs",
+        "sha": "bcd87bf5056863bd4d1700ee301b8959c93fca50"
+      },
+      {
+        "path": "DysonNetwork.Passport/Examination/TestController.cs",
+        "sha": "4d98f0c8cc6b8994498d366da8ace9d298f2c179"
+      },
+      {
+        "path": "DysonNetwork.Passport/Examination/TestQuestionAdminController.cs",
+        "sha": "ee24882f1e1bf62fbf2c651dd539c886382d8645"
+      },
+      {
+        "path": "DysonNetwork.Passport/Examination/TestQuestionGroupAdminController.cs",
+        "sha": "add4eba04f333378b499919921351a6aab7333b3"
+      },
+      {
+        "path": "DysonNetwork.Passport/Examination/TestTrialAdminController.cs",
+        "sha": "270eb266f18118f568f96e8ab94807d99e8672a5"
+      },
+      {
+        "path": "DysonNetwork.Passport/Examination/TestTrialController.cs",
+        "sha": "78f10333fe85dfdd1894da85003173381e35e2a4"
+      },
+      {
+        "path": "DysonNetwork.Passport/IpCheckController.cs",
+        "sha": "f70b161ecb51097cd5aa334515bb9bb9e7e80188"
+      },
+      {
+        "path": "DysonNetwork.Passport/Meet/LocationPinController.cs",
+        "sha": "a3827a8182fc65ab1411a838b3587d233b41d086"
+      },
+      {
+        "path": "DysonNetwork.Passport/Meet/MeetController.cs",
+        "sha": "f77d6f394b82f968011d3750d3a63d054f86c114"
+      },
+      {
+        "path": "DysonNetwork.Passport/NameChangeCard/NameChangeCardController.cs",
+        "sha": "bc535968ac619e0f6dbd16d9edf8e4ea1185419e"
+      },
+      {
+        "path": "DysonNetwork.Passport/Nearby/NearbyController.cs",
+        "sha": "f29c3fab5bcfde05e83c4b9f009d132de9344b44"
+      },
+      {
+        "path": "DysonNetwork.Passport/Nfc/NfcAdminController.cs",
+        "sha": "4a26a030cc9b460b4f072b1af0b7cb1ed1b9c6ea"
+      },
+      {
+        "path": "DysonNetwork.Passport/Nfc/NfcController.cs",
+        "sha": "2a3d0b6d68c883ad149aa0c5993ac97efff87618"
+      },
+      {
+        "path": "DysonNetwork.Passport/Progression/BadgesDiscoveryController.cs",
+        "sha": "93b25670b93c75927e8f50e5c59d5e8026962779"
+      },
+      {
+        "path": "DysonNetwork.Passport/Progression/ProgressionAdminController.cs",
+        "sha": "f23caf795d2789003ba14102568dc396af7565fa"
+      },
+      {
+        "path": "DysonNetwork.Passport/Progression/ProgressionController.cs",
+        "sha": "b1053abd2a250c3163a3e3f69754aab682b5ad6a"
+      },
+      {
+        "path": "DysonNetwork.Passport/Realm/RealmAdminController.cs",
+        "sha": "1033f1b89726bc822e83227f3ec98e3d61d72725"
+      },
+      {
+        "path": "DysonNetwork.Passport/Realm/RealmController.cs",
+        "sha": "70ba45891ecb476e5d41c54beca1bfbd40777f10"
+      },
+      {
+        "path": "DysonNetwork.Passport/Realm/RealmPublicController.cs",
+        "sha": "e9262ce79e8b1191f4de47b1062c520673053982"
+      },
+      {
+        "path": "DysonNetwork.Passport/Rewind/AccountRewindController.cs",
+        "sha": "afd567c5c532dafd0471928bdc9086ec0c9ede01"
+      },
+      {
+        "path": "DysonNetwork.Passport/Ticket/TicketController.cs",
+        "sha": "a01879f5d3f73b24905c6acc3165f94e33098a4e"
+      },
+      {
+        "path": "DysonNetwork.Passport/Ticket/TicketOnCallAdminController.cs",
+        "sha": "8a244d4480ebe2c800ce567ad7631026d3743cab"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Account/AccountSettingsController.cs",
+        "sha": "a61c5e30d44f2eb379b82cc6107bfbedb6a825d5"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubController.cs",
+        "sha": "79c9de7e85216a99689311f036da27e4c92d9a6d"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubFollowController.cs",
+        "sha": "2e136824e2de392de94b490ac96b6020993c57b1"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubRealmController.cs",
+        "sha": "6cc345d3e0361f93541c65a85a698662531336ee"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/FediverseActorController.cs",
+        "sha": "67af5f12a2ee25542835643d79e9336c8256bb30"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/FediverseKeyAdminController.cs",
+        "sha": "3d9d340f6a64e721a1f3765481b9bcb4ba43fc15"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/FediverseKeyController.cs",
+        "sha": "75c976538badda49b55747b29b2e4e306f8b193d"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/FediverseModerationController.cs",
+        "sha": "75fbdad603bec715eecbf7c99919cf36416afac4"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/NodeInfoController.cs",
+        "sha": "68cad116049a5424092b66c5e4311a4eebb946c9"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/QuoteAuthorizationController.cs",
+        "sha": "99e10787cba64895cfa336f46278dd1a911cbcd8"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/ServerActorController.cs",
+        "sha": "416b42f1d04929ce486f113aa7242b1b931c9d30"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/WebFingerController.cs",
+        "sha": "fe9093a431ccfc20f5dc9a63e68ab12340b7a46b"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Autocompletion/AutocompletionController.cs",
+        "sha": "a3757d8d3fe536b956ee6dcdae68dd7a709bef24"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Automod/AutomodController.cs",
+        "sha": "f47f3ad40560c4b4be713151d88083c3532533fc"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Live/LiveStreamController.cs",
+        "sha": "55691c4e30718f980b24ff92956c130d9a6da2b2"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/AdsController.cs",
+        "sha": "489251204fcd795e4beb6ec91d844b9481bc6ff3"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+        "sha": "f45bf60dc973dd1f37a575cba789db1119a41eb7"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostAdminController.cs",
+        "sha": "d664113d6adc6095aed877fa0658a1c6a259eb03"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostCategoryAdminController.cs",
+        "sha": "3d95541881da097b3f47c384202e7ca8f3941746"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostCategoryController.cs",
+        "sha": "b3dc42848792b1f4ffc9a6113be56c25c7ab510e"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostCategorySubController.cs",
+        "sha": "ad5afa5e04f8a1ae47b41b3acf1084187cc3ccb6"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostCollectionAdminController.cs",
+        "sha": "77715dbd384344915a7e3f3f7589497af4ae5ccf"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostCollectionController.cs",
+        "sha": "a6c11a5b40849986ea250546c7eb6d1e98849b86"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostController.cs",
+        "sha": "057065a923d53bd8d6b015127bcc307a0b3edae2"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostStatsAdminController.cs",
+        "sha": "18b418db3b1ab3e37a4d7ef488f914549488c439"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostTagController.cs",
+        "sha": "9231eaa2275d4855584c737ba01a75fba6b3e6c9"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostWatchController.cs",
+        "sha": "49d865ead26cf66123b24bcd4765bbe06507132e"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Publisher/PublisherAdminController.cs",
+        "sha": "850f993fe2bab27eff9f5a397125841892eb7796"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Publisher/PublisherController.cs",
+        "sha": "0095ae0f7cbc5702659301ab48c0129b411450ba"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Publisher/PublisherPublicController.cs",
+        "sha": "fe731e3e6925475efa214135b519f7c6819f19dc"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Publisher/PublisherSubscriptionController.cs",
+        "sha": "9a993973bb0556dde47d939aeccf2cad6f82aec5"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Reader/WebReaderController.cs",
+        "sha": "1bc029048a0aff222778b7bf249a75cb96c0e6fd"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Sticker/StickerController.cs",
+        "sha": "9f29bfa505deb81d6e0bcf1247f53608cdcbc914"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Survey/SurveyController.cs",
+        "sha": "856e6696b21738dc5e9997bea450ed144f30ece8"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Timeline/TimelineController.cs",
+        "sha": "0469ca27061f60af4447355193f6a369dd7972b0"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Timeline/TimelineDiscoveryController.cs",
+        "sha": "7e08c3f212fea489e44927a2d3f8999a51117aed"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Translation/TranslationController.cs",
+        "sha": "a2c783e2d36cec39e75573f5c596188d6f7e4d73"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/MerchantController.cs",
+        "sha": "b73ef4254b4b20a75811ea3b9e4b46a6b041fa93"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/OrderController.cs",
+        "sha": "5364a452799ed87f3891bac5462824a183322710"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/PaymentAdminController.cs",
+        "sha": "d0cc6d8e08a2bcd1dc69ce26d5bc196326961322"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/SubscriptionAdminController.cs",
+        "sha": "40b5a7738e308eea5702bfeea648f1ec2378bba9"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/SubscriptionController.cs",
+        "sha": "cf34663c8e7d84c8e27475d12abcc2d09c407479"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/SubscriptionGiftController.cs",
+        "sha": "a033744c7dee3995e045791d43c9cfc7da642f43"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/WalletController.cs",
+        "sha": "10650f1a12912532d70f6ea422a69557a508a224"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/WalletProductAdminController.cs",
+        "sha": "854f3390e7346e3c359286ebb265c6fca0e0afb8"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/WalletProductController.cs",
+        "sha": "4f99c6318440ef8245b1b7210d3fce03cf299804"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/WalletStatsAdminController.cs",
+        "sha": "535993e7931c19ebf5dbaca03a33cf57602bc023"
+      }
+    ],
+    "databases": [
+      {
+        "path": "DysonNetwork.Develop/AppDatabase.cs",
+        "sha": "5270c76ee976169d82347f77c38d827b922967b7"
+      },
+      {
+        "path": "DysonNetwork.Messager/AppDatabase.cs",
+        "sha": "b7246f208ff15c3f24ec261960b7298a5f46a5b4"
+      },
+      {
+        "path": "DysonNetwork.Passport/AppDatabase.cs",
+        "sha": "8f6490605000f29d0059a58622b193b9a2f56a4f"
+      },
+      {
+        "path": "DysonNetwork.Sphere/AppDatabase.cs",
+        "sha": "ed1f491d6ead8ee4eb80962cd875f2a67a5e70eb"
+      },
+      {
+        "path": "DysonNetwork.Wallet/AppDatabase.cs",
+        "sha": "68c8671d52442c1f3c6f0c0a3f4dcc230a28499a"
+      }
+    ],
+    "projects": [
+      {
+        "path": "DysonNetwork.Develop/DysonNetwork.Develop.csproj",
+        "sha": "a15f229e15de3e5d082699c205f81cc3a461b115"
+      },
+      {
+        "path": "DysonNetwork.Messager/DysonNetwork.Messager.csproj",
+        "sha": "e8e72b3efb0db3e7b358558e1f055e457bf5db99"
+      },
+      {
+        "path": "DysonNetwork.Passport/DysonNetwork.Passport.csproj",
+        "sha": "84938f7a3b5d5834a492a9b61cdb5e4b38527f31"
+      },
+      {
+        "path": "DysonNetwork.Shared.Tests/DysonNetwork.Shared.Tests.csproj",
+        "sha": "3e38e9aab37c8c24665ca973c6cd3760c4563d9f"
+      },
+      {
+        "path": "DysonNetwork.Sphere/DysonNetwork.Sphere.csproj",
+        "sha": "8a663e65e1ff798f2a678566093369d6bd4daceb"
+      },
+      {
+        "path": "DysonNetwork.Wallet/DysonNetwork.Wallet.csproj",
+        "sha": "5051a302b4084a9b73a011adb4bf50400542d3b7"
+      }
+    ],
+    "rpc": [
+      {
+        "path": "DysonNetwork.Develop/Identity/CustomAppServiceGrpc.cs",
+        "sha": "d2c65b32d74209fb3987ee6bf6c31233b9aec5f4"
+      },
+      {
+        "path": "DysonNetwork.Messager/Rewind/MessagerRewindServiceGrpc.cs",
+        "sha": "f9b66568b5b1cfa48fd666d14759f73131d2992e"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/AccountServiceGrpc.cs",
+        "sha": "30ad07f7ba2a9bb6d5bcfdcfe6bc1a1a7f8e3700"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/PresenceServiceGrpc.cs",
+        "sha": "f345b98923abaf041fc8fe469993216669dd6c87"
+      },
+      {
+        "path": "DysonNetwork.Passport/Credit/SocialCreditServiceGrpc.cs",
+        "sha": "506579ac7d45b713303c6c6c2c3bd381118d1cfa"
+      },
+      {
+        "path": "DysonNetwork.Passport/DomainTrust/DomainTrustServiceGrpc.cs",
+        "sha": "dba507aab3f17586452ec8f2d4ae3fb5e330aebf"
+      },
+      {
+        "path": "DysonNetwork.Passport/Leveling/ExperienceServiceGrpc.cs",
+        "sha": "389269fc4c162ae7620d9b4ebf0571b0d5cdd00b"
+      },
+      {
+        "path": "DysonNetwork.Passport/Nfc/NfcServiceGrpc.cs",
+        "sha": "1ac822d2b4bba938312f98ccd423e8fb9d107e5c"
+      },
+      {
+        "path": "DysonNetwork.Passport/Realm/RealmServiceGrpc.cs",
+        "sha": "f79788559fdedcc6f635695f8f03f68e2c32044e"
+      },
+      {
+        "path": "DysonNetwork.Shared.Tests/Capabilities/CapabilityGrpcServiceTests.cs",
+        "sha": "24ca21c807a381c209903a0d5de382663bb8d45b"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Autocompletion/AutocompletionServiceGrpc.cs",
+        "sha": "336f543d3a57b644c3677d26a1679dd954bbc579"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostServiceGrpc.cs",
+        "sha": "dd263b9b60f4269987b4dba95257d9720062c599"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Publisher/PublisherRatingServiceGrpc.cs",
+        "sha": "968b65cac43efc7e4792909b7f4f31aadcf2c346"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Publisher/PublisherServiceGrpc.cs",
+        "sha": "a94e884ce85f774aa0fd6bfed5e2271a755f5ddb"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Reader/WebReaderGrpcService.cs",
+        "sha": "be869dbacf7be5b7d35073c3aa9f17f159984941"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Rewind/SphereRewindServiceGrpc.cs",
+        "sha": "3108d07227c9b0f1f20f25b1cddc9daacc4033b8"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Sticker/StickerServiceGrpc.cs",
+        "sha": "faddb548ca8442b75ddf9152d3cf81ddd2b6ba38"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Survey/SurveyServiceGrpc.cs",
+        "sha": "aa50160cadb1a946cb9e50faa2a35073c3a7ca9d"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/MerchantServiceGrpc.cs",
+        "sha": "4b96c0ac576d689998af902a7bd192dc36dfddf2"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/PaymentServiceGrpc.cs",
+        "sha": "0140c62a622889135bbcc12fd7eae2f9e05d19b6"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/SubscriptionCatalogServiceGrpc.cs",
+        "sha": "a8526453ed69b7f666ed2c3bc8f78954ba268c99"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/SubscriptionServiceGrpc.cs",
+        "sha": "2a2537d1c8b388bd38549fc28511ddc31eed82d6"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/WalletServiceGrpc.cs",
+        "sha": "76d3177048d7cd9547715211aa253ebd511d9c1b"
+      }
+    ],
+    "configuration": [
+      {
+        "path": "DysonNetwork.Develop/Dockerfile",
+        "sha": "46be1ca1e69703221ba4b4f8613e8099943b1c1a"
+      },
+      {
+        "path": "DysonNetwork.Develop/Startup/ServiceCollectionExtensions.cs",
+        "sha": "a29ce241971eebbcd0265203af475bfe3e580474"
+      },
+      {
+        "path": "DysonNetwork.Develop/appsettings.json",
+        "sha": "7a09143d6fabc3f028bad09fe9d19e89a802e191"
+      },
+      {
+        "path": "DysonNetwork.Messager/Dockerfile",
+        "sha": "76c7c4b2baab6cc9a831a65bc002760d1821fb05"
+      },
+      {
+        "path": "DysonNetwork.Messager/Startup/ServiceCollectionExtensions.cs",
+        "sha": "0458fed23dec249f8bfc6e8e3baf4d486c5979b9"
+      },
+      {
+        "path": "DysonNetwork.Messager/appsettings.json",
+        "sha": "2001a9931e04d9ec28222742cdbb9a80fa7f3a38"
+      },
+      {
+        "path": "DysonNetwork.Passport/Dockerfile",
+        "sha": "e828261d92bef033ffa3160ef95915e7f71c7ae5"
+      },
+      {
+        "path": "DysonNetwork.Passport/Startup/ServiceCollectionExtensions.cs",
+        "sha": "47d5a3175a5326b3919507513d6789ec41bc7ca8"
+      },
+      {
+        "path": "DysonNetwork.Passport/appsettings.json",
+        "sha": "b8ba9808962934ff8fafdda45f938f3c2aacfde8"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Dockerfile",
+        "sha": "78c0b2b5cc7e58986267cefc88527a49d6aa8ba1"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Startup/ServiceCollectionExtensions.cs",
+        "sha": "a852e85f92e7510e069a6631c072b710c385e7f5"
+      },
+      {
+        "path": "DysonNetwork.Sphere/appsettings.json",
+        "sha": "39ef3550dd783bd5ef0ed339f6f4282b2eea6907"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Dockerfile",
+        "sha": "03ee1cc002271223425ceaa48d1a01982deb28d8"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Startup/ServiceCollectionExtensions.cs",
+        "sha": "4b3bb52da9a66807c585621ef3a33e2216dae3eb"
+      },
+      {
+        "path": "DysonNetwork.Wallet/appsettings.json",
+        "sha": "fb373f06dba0e44a4732397766f5c2485e9ddbf6"
+      }
+    ],
+    "jobs": [
+      {
+        "path": "DysonNetwork.Messager/Chat/PlaceholderExpirationJob.cs",
+        "sha": "fb1cfe8d8cc6b56c4236b75d93eeb1de61d228fc"
+      },
+      {
+        "path": "DysonNetwork.Messager/Chat/Voice/ChatVoiceCleanupJob.cs",
+        "sha": "42482a40dc13a83154f094716f833e1486029177"
+      },
+      {
+        "path": "DysonNetwork.Messager/Startup/ScheduledJobsConfiguration.cs",
+        "sha": "ae17400b8908d419bbd3bf4f0c36acdc4f1ed442"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/NightOwlReminderJob.cs",
+        "sha": "538fb4c82d4c1497cf0c4dff52e9086d94c0a196"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/PresenceArtworkCleanupJob.cs",
+        "sha": "1cf2bd0ccc4e148999823845dcfe6969622ac895"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/Presences/PresenceUpdateJob.cs",
+        "sha": "8403cb459c286996664cb2808c4fb1fa05a3c941"
+      },
+      {
+        "path": "DysonNetwork.Passport/Account/RelationshipExpiryJob.cs",
+        "sha": "55b63316294b81528b41872acd2d2dd5fc8fe13b"
+      },
+      {
+        "path": "DysonNetwork.Passport/Credit/SocialCreditValidationJob.cs",
+        "sha": "333214d5535a14b0720230144226e86728976765"
+      },
+      {
+        "path": "DysonNetwork.Passport/Startup/ScheduledJobsConfiguration.cs",
+        "sha": "f2aee269ca2c827bff78436924806f53616d6e5e"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/Services/DeliveryRetryJob.cs",
+        "sha": "0d234ff24a967ac36bb992471ea4877424525fce"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/Services/FediverseActorCleanupJob.cs",
+        "sha": "252ceefef15270f7e8158775d1de6509c9333fc4"
+      },
+      {
+        "path": "DysonNetwork.Sphere/ActivityPub/Services/OutboxBackfillJob.cs",
+        "sha": "2507e8820cdb5d5b0fdab5ea92e883458eeecef9"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Live/LiveStreamIngressCleanupJob.cs",
+        "sha": "84ae2db2bf45df90845a34bfa591941795456401"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostIndexBackfillJob.cs",
+        "sha": "7a7ed80b7736d0835ba6e36790ca6ceab81f77db"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Post/PostSponsorAuctionJob.cs",
+        "sha": "a1dcdeb5af5fda8425d3c7dd2864bdef0439e111"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Publisher/PublisherFollowRequestCleanupJob.cs",
+        "sha": "07353ce3b4e0a8c4dc81321794802e12843c2d63"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Publisher/PublisherSettlementJob.cs",
+        "sha": "52f57a7e1be2901a5e8d3b256926ffd1b33ec6d5"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Startup/ScheduledJobsConfiguration.cs",
+        "sha": "c26765e1adaab49d1503b6972300d5143bc0d22f"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/AppSettlementJob.cs",
+        "sha": "ac59a4ad6945d7f9a8e656e671623a53f9fc221d"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/FundExpirationJob.cs",
+        "sha": "1583df485cce965815bad280a6dfb69308109622"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/FundRaisingDeadlineJob.cs",
+        "sha": "4f057e02f78b4fe83a203daa2205011df23389b3"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/GiftCleanupJob.cs",
+        "sha": "4e53247aeb1f175b32eaa4a96c5ff3466add9c3f"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/SubscriptionRenewalJob.cs",
+        "sha": "a1057fd3d9a830c210a74922739409868501e2e3"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Payment/TransactionExpirationJob.cs",
+        "sha": "1f26b4b9a54062a778656a9aae3436432c5a51f3"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Startup/ScheduledJobsConfiguration.cs",
+        "sha": "0f6c9c89ae959908bac7e868fc0e08bcd643cd60"
+      }
+    ],
+    "migrations": [
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260401000000_InitialMigration.Designer.cs",
+        "sha": "4e93c8cc142ab8e83bb4a3729f84bfc6e27fc520"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260401000000_InitialMigration.cs",
+        "sha": "7cc393571afaac27106d5cf7eba84ff42b10f0b8"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260504110000_AddCustomAppPaymentWallet.cs",
+        "sha": "00ca98135b8f0dff00809df04cb948e5c01ebd51"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260607154050_AddBotChatConfig.Designer.cs",
+        "sha": "e11d135e086e8fa6dd339bc22eaad49732e91f20"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260607154050_AddBotChatConfig.cs",
+        "sha": "01f1caf271bb97515ec260b2f8b6110c50e93c8d"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260609171254_AddAutoApproveGroupChat.Designer.cs",
+        "sha": "6d88ca600b6bef3ffc60f8f06c649094627317af"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260609171254_AddAutoApproveGroupChat.cs",
+        "sha": "b9aef1c6c05e5e3657d6c1955de6ebd1046bb78d"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260612172618_RemoveBotWebhooks.Designer.cs",
+        "sha": "3a7c3a831afcc3fcf20b4e72d16e2838feb9ad9c"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260612172618_RemoveBotWebhooks.cs",
+        "sha": "6d29b643614c9a681c85ed67a92f70862399137a"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260628094703_AddAppProducts.Designer.cs",
+        "sha": "a85bf7406da3fb755607f1d78ed8b2354de27d25"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260628094703_AddAppProducts.cs",
+        "sha": "b775ebe1f33df0bd73e63cc04c99fba7775dd92b"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260628165339_AddProductRecurrence.Designer.cs",
+        "sha": "d4442c0899e3c6eec75c1724e7a8e2cf88cbb653"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260628165339_AddProductRecurrence.cs",
+        "sha": "aab52914c64f989e2eadf3a491d9456dce3b7372"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260705070703_AddAppProductState.Designer.cs",
+        "sha": "6306e2222328bc4b3385076eaf462a97789d4287"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260705070703_AddAppProductState.cs",
+        "sha": "536a8baced1e3dfdfe5c086487b64745f1150573"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260708150840_AddBoardWidgetManifest.Designer.cs",
+        "sha": "dd8674a8977054d852bfa6ab446590c137696436"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260708150840_AddBoardWidgetManifest.cs",
+        "sha": "88480244337a1bb4a551e047217be08b7a7815f5"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260708152941_SupportMultipleBoardWidgets.Designer.cs",
+        "sha": "b0dd50457bd4656f489826695287537881bb7aab"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260708152941_SupportMultipleBoardWidgets.cs",
+        "sha": "d922e62f110b16710e8c9212b0f42cdcac22d05a"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260709075614_AddBoardWidgetTable.Designer.cs",
+        "sha": "66856ae4b43bbedffa0dfe3af8bceb3d9209bffb"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260709075614_AddBoardWidgetTable.cs",
+        "sha": "edd73eca8e77476ef21fbaa76c17d736b3d7dff0"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260709180820_AddBoardWidgetDisplayMetadata.Designer.cs",
+        "sha": "102b520470572f477c38bfe6e1d44b283420bf33"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260709180820_AddBoardWidgetDisplayMetadata.cs",
+        "sha": "972ac034bddb628bb5cbeb78e757a5c10d3ce836"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260710065018_NormalizeMiniAppMetadata.Designer.cs",
+        "sha": "d54d6647355a050b864740d0350a4e746fde4e69"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260710065018_NormalizeMiniAppMetadata.cs",
+        "sha": "348448f21590a49f5216902afef1c38d0a115409"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260802134610_MakeMiniAppManifestOptional.Designer.cs",
+        "sha": "3fa423d296172546f9c186208f967ed0e1d23e6c"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260802134610_MakeMiniAppManifestOptional.cs",
+        "sha": "16d4592a8b335f5097a571de0761d5e8cca412e7"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260803175021_AddMiniAppDownloadCount.Designer.cs",
+        "sha": "3e08f9278e8571cd0a7f4e58e9c2f0dde4f7f8ca"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/20260803175021_AddMiniAppDownloadCount.cs",
+        "sha": "9ae8cb6e71a3eb4e490e8b2514056d81aa308854"
+      },
+      {
+        "path": "DysonNetwork.Develop/Migrations/AppDatabaseModelSnapshot.cs",
+        "sha": "f1ab43376be868f2b59d9b21423c327bf12ac73a"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260401000000_InitialMigration.Designer.cs",
+        "sha": "9d42b8a88576372184ed3904974f09aa49b46a42"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260401000000_InitialMigration.cs",
+        "sha": "a366aec2170de56839563a12b6819e8459d74747"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260529180802_AddChatMessagePins.Designer.cs",
+        "sha": "59de10942fe903d20011dc81e273dfc0f1d15651"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260529180802_AddChatMessagePins.cs",
+        "sha": "042dfc7e7efde65e94f5b00bb4dead1e433e5137"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260530183306_AddChatGroups.Designer.cs",
+        "sha": "742bcd5ab555e11946e0da19f96d9fbb578ab070"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260530183306_AddChatGroups.cs",
+        "sha": "aef5a248c296b7732de23f08d62be72310a626a8"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260607132921_AddChatMemberUsername.Designer.cs",
+        "sha": "9d9a640b0af72e83657a9bda8bba40561d07db52"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260607132921_AddChatMemberUsername.cs",
+        "sha": "0baec2c753167cf1465cb5e3740fbb46cb3394a0"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260607141647_AddPlaceholderUniqueIndex.Designer.cs",
+        "sha": "f668985d182fe1a3449aa847c0c288c1af06b2ff"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260607141647_AddPlaceholderUniqueIndex.cs",
+        "sha": "53e6d243e5048ad82fda3ad43c5d82b12384a3c8"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260701040552_AddChatRoomSequence.Designer.cs",
+        "sha": "c1250410bbd867266afee34c8bd6967566bb4057"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260701040552_AddChatRoomSequence.cs",
+        "sha": "37795f85f4ccd18e13985b279fa84f4c963ad048"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260719123233_AddChatMessageSearchIndex.Designer.cs",
+        "sha": "43feafd4813dfc4e8e25af9cc8ae8cb9c7ec5814"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260719123233_AddChatMessageSearchIndex.cs",
+        "sha": "028e7cc49db3fcadd9c5bb9830059ef9d8b26574"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260731000000_RemoveChatMessageNonce.Designer.cs",
+        "sha": "f8dabf9d03dcb1ac42e5e4ef2765234e3a1ce249"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260731000000_RemoveChatMessageNonce.cs",
+        "sha": "0a3b1ddbe1e7002802dd3649a4c9f0ef0ebfbe5f"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260801000000_RefactorChatEncryptionMeta.Designer.cs",
+        "sha": "08af724edea47fa958588add999ad70757b010f3"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260801000000_RefactorChatEncryptionMeta.cs",
+        "sha": "bc5af561c139bb130300863f3cf73ad6de1a75ee"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260814000000_AddChatMemberConfirmedAt.Designer.cs",
+        "sha": "e91280f12d6213734a0d0c912e6a9d488934466f"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260814000000_AddChatMemberConfirmedAt.cs",
+        "sha": "33f6215a1caa59be59e0b9fe9e6aa4450c8969af"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260816000000_AddChatRoomSlug.Designer.cs",
+        "sha": "2c150a7c7850b429bacdd0c0fefb4bea140fa5bf"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260816000000_AddChatRoomSlug.cs",
+        "sha": "389edd4583d1a40a655df03c83ab8885eecdd863"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260826000000_AddChatRoomReadReceiptsSetting.Designer.cs",
+        "sha": "daf64fe9900d91a4a77bae29cb2b119761eed666"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260826000000_AddChatRoomReadReceiptsSetting.cs",
+        "sha": "5c94c70f073a456add627d96a76cd98dcd318b7a"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260826164754_AddThreadIdToChatMessages.Designer.cs",
+        "sha": "536a3ad93f1651e12770f866d449838016486a9b"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/20260826164754_AddThreadIdToChatMessages.cs",
+        "sha": "6d0ca68c9bb329a509d3d353225753f386435626"
+      },
+      {
+        "path": "DysonNetwork.Messager/Migrations/AppDatabaseModelSnapshot.cs",
+        "sha": "170bc4adff3fbaf97b1b720b26fe99f0d75aff16"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260401000000_InitialMigration.Designer.cs",
+        "sha": "939d709e9bca4787399aba3fe22c7b7b49ba8eff"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260401000000_InitialMigration.cs",
+        "sha": "cfe35bd549207c18fcb074c54b22befafaeab907"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260404040856_UpdateNfcTag.Designer.cs",
+        "sha": "a4943dc9a4c6cf58f7ad222b99369a1eb1eec334"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260404040856_UpdateNfcTag.cs",
+        "sha": "f422f16643e540b8db908e3896ed8a2fc15bc804"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260404115001_AddLocationPin.Designer.cs",
+        "sha": "2fe6265bb6152dfb7feae71b2461eee0f7998aa3"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260404115001_AddLocationPin.cs",
+        "sha": "349a1945c33b518c375783e9c3692ded350d67d8"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260411055401_AddDeletedAtToUniqueIndexes.Designer.cs",
+        "sha": "bc23697b394d7aeb08d22127f4193e8352364c65"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260411055401_AddDeletedAtToUniqueIndexes.cs",
+        "sha": "9673de4dfcac3491c10caaaf47ad94f15addd20a"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260411104938_LocationPinUpdate.Designer.cs",
+        "sha": "9caf3a758164b4f213005532b7b10746a9acd3a5"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260411104938_LocationPinUpdate.cs",
+        "sha": "fe3138667750af9b34b3f1f17c2a68c16d3683e2"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260421142944_AddUserCalendarEvents.Designer.cs",
+        "sha": "edb463799cef02db053a89bf1cfc98dc57770c5f"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260421142944_AddUserCalendarEvents.cs",
+        "sha": "5455854f11d7552da0888bc7b65d72382a4fc374"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260503095425_AddDomainBlock.Designer.cs",
+        "sha": "aded005696dc1afad4b68c28ebeed0217673a3ce"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260503095425_AddDomainBlock.cs",
+        "sha": "ccde17d8e6c0c3dd9cb73d1b4a05bc83ec6d3311"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260504191805_AddCheckInFortuneReport.Designer.cs",
+        "sha": "d741bf304ceeac150491ee979766b5d68c5f934c"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260504191805_AddCheckInFortuneReport.cs",
+        "sha": "fdd2880adf1feee67630131e71f10c4aed3ff0df"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260505083329_AddDomainTrustLevel.Designer.cs",
+        "sha": "4e291411b0093e77756341211b0daccdd6911660"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260505083329_AddDomainTrustLevel.cs",
+        "sha": "6cf752098668e3ec19e61900c26b348897deeb04"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260505085810_AddDomainValidationMetrics.Designer.cs",
+        "sha": "cd13462ddff93b660e84e18f42ccfe872d5593e5"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260505085810_AddDomainValidationMetrics.cs",
+        "sha": "5b550d319328ef7f9354f75a9049ab0cb0fc3ba6"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260505131421_AddAppleWalletPasses.Designer.cs",
+        "sha": "606a7e3d16ea18b737dc584e64d27c1baf326284"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260505131421_AddAppleWalletPasses.cs",
+        "sha": "8ef89595d63cc253d4f91e839a0fb6c8efb202be"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260520165536_AddTicketResources.Designer.cs",
+        "sha": "76ae3122218ceb7608279558c267784cdd173f1a"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260520165536_AddTicketResources.cs",
+        "sha": "05e5576ef71afcf71de33e69a2e47407b2fad359"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260524092442_AddPresenceArtworks.Designer.cs",
+        "sha": "7833fa2165f00cc53398a308200bbcdf93393a63"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260524092442_AddPresenceArtworks.cs",
+        "sha": "741f91b121626ef4eca453ff03c83808c23b39a0"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260527153502_AddDegradeToStatusToRelationship.Designer.cs",
+        "sha": "b48ef670653de5cca2165f41e29862132dea4455"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260527153502_AddDegradeToStatusToRelationship.cs",
+        "sha": "dd1fcfe44157d286c480bb108fc585f90f5a931f"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260527161339_AddAliasToRelationship.Designer.cs",
+        "sha": "b2a6cd4439d8e4df69672b449cab7dad9c7460a3"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260527161339_AddAliasToRelationship.cs",
+        "sha": "f2c078b69fe378c16ff735a8635e741d5e74c88d"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260529142853_AddPresenceQueryableFields.Designer.cs",
+        "sha": "477cf8ba4919cafd39936770d497bf1de2c8377c"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260529142853_AddPresenceQueryableFields.cs",
+        "sha": "2818bf9a8668d774957097389c3aa5de62337fbe"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260601171159_EnrichCalendarEvent.Designer.cs",
+        "sha": "79c657db92e7006813e91b2f94a4efbc4e75f5ca"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260601171159_EnrichCalendarEvent.cs",
+        "sha": "5c8277e26f788bf1e6d2a5586e6b615408a38e69"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260601175347_AddNotableDaysTable.Designer.cs",
+        "sha": "dfc8aec65640449830b24f4828fb52ae177b5504"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260601175347_AddNotableDaysTable.cs",
+        "sha": "a052f76a487a9b92e39b2dda4b0712de16c54d0e"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260602162932_AddCalendarEventIcons.Designer.cs",
+        "sha": "1f51c23bf9c08f2ec33160f82205f2e5712454c8"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260602162932_AddCalendarEventIcons.cs",
+        "sha": "c65f98c8601290f82f316b0aae995460ed118842"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260603164558_AddCalendarEventSubscriptions.Designer.cs",
+        "sha": "ac2e28a4c4d9788cb4901c83a8aa4d3f7c6dfd45"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260603164558_AddCalendarEventSubscriptions.cs",
+        "sha": "9d7c8f7aa75a5c0f8e502294805780a850bcec46"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260607173526_AddRealmPermissionTables.Designer.cs",
+        "sha": "b94f5a0e4ba6a4ab440dfd334862359819832d74"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260607173526_AddRealmPermissionTables.cs",
+        "sha": "790813acc750d65b607bfcaf57a73435fba9a262"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260630152713_AddCalendarEventTags.Designer.cs",
+        "sha": "e8a8b6515f5830edf2f9ec6791a0d22b26cccd2e"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260630152713_AddCalendarEventTags.cs",
+        "sha": "18757e4ecababa431d47f4f5c6ffdd768af56873"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260708150813_AddAccountBoardItems.Designer.cs",
+        "sha": "8846bc0b8c78a02e511d87239711f4d257ecad44"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260708150813_AddAccountBoardItems.cs",
+        "sha": "868c254b6782637ecb2bea05b04c862ac1531c9d"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260708152943_AddCustomAppWidgetKeyToAccountBoardItems.Designer.cs",
+        "sha": "94b87a3e9104de2fffe7c3c366c853fc8713f005"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260708152943_AddCustomAppWidgetKeyToAccountBoardItems.cs",
+        "sha": "fc5b7e196ec6e7dd1ac8b2d8c287331b3396a730"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260712155434_AddAccountProfileLastSeenAtIndex.Designer.cs",
+        "sha": "1461c5d83f9b52a4c7c9bdf32151d5aee9307a6d"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260712155434_AddAccountProfileLastSeenAtIndex.cs",
+        "sha": "7721cc01951872d7c65f970fe3005f86e16e9858"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260720081541_EnsureUniqueAccountProfiles.Designer.cs",
+        "sha": "db218fd52b11bf80661997da41b64959e11ff5e2"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260720081541_EnsureUniqueAccountProfiles.cs",
+        "sha": "ac51199e28faa3ecf91a43452a2a0c604b469511"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730044035_AddAccountTests.Designer.cs",
+        "sha": "0369443aa1a2f47c367d598a325f7e3f08ffdcb8"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730044035_AddAccountTests.cs",
+        "sha": "0dd37db8758d1846ee8380ceb7c3a49becf72417"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730044811_AddTestPermissionGroupGrant.Designer.cs",
+        "sha": "78ea71f15f85cebebff5ac5f3474cf1b79d84b31"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730044811_AddTestPermissionGroupGrant.cs",
+        "sha": "499b3054549d4d5e490a1a1089996c352ef0667a"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730045153_AddTestAttemptPeriod.Designer.cs",
+        "sha": "42e7b461a810b73e47c61ff49f70f221381eb046"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730045153_AddTestAttemptPeriod.cs",
+        "sha": "30a9f8164ed1d8024a02f79d14a1035a26f10ddb"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730045955_AddAffiliationSpellPurchases.Designer.cs",
+        "sha": "f360d46646e065e60046b5240ee9a442a1bb1cfe"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730045955_AddAffiliationSpellPurchases.cs",
+        "sha": "a0edcb089a1e8fb43d54745694d159ef43472d19"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730051043_AddTestListing.Designer.cs",
+        "sha": "a53195a8e1971ae44e8cb2c4345de90dce9af589"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730051043_AddTestListing.cs",
+        "sha": "cce184c2170f9e5ca0e9ac159f6119f1294aa8a3"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730055549_AddTestQuestionBank.Designer.cs",
+        "sha": "1d44493d73142d3de609efc346f6d63377b732e6"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730055549_AddTestQuestionBank.cs",
+        "sha": "f3670759461cec02dad840b14d746ba96e6d287e"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730055648_AddTestQuestionShuffle.Designer.cs",
+        "sha": "8a3f3cad9cbba54f95976ae90080608cf6940532"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730055648_AddTestQuestionShuffle.cs",
+        "sha": "cc8f3cc38eb0214645da79fca00657f56ad605ba"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730061337_AddTestRandomQuestionCount.Designer.cs",
+        "sha": "5efb4ae432640c88e158fc7c85647698e178258a"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730061337_AddTestRandomQuestionCount.cs",
+        "sha": "0ca41b8e0afe03a9ebaba8ec10cbe7ff4662b9e3"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730080510_AddTestSimpleQuestionPercentage.Designer.cs",
+        "sha": "2f7d498fb4764e48d9079419dd9addc565972934"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730080510_AddTestSimpleQuestionPercentage.cs",
+        "sha": "0fa48c157cb9076906859cc25c3b08059af6b1ea"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730084133_AddTestTrialAttempts.Designer.cs",
+        "sha": "5ac463b0b54f947ce73e4adc22aa5083419d827f"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730084133_AddTestTrialAttempts.cs",
+        "sha": "1f00a5f88cedf83381588a0b6aa15eca9f242a2a"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730090007_AddShareableTestTrials.Designer.cs",
+        "sha": "db1da14b5ac0e2163913aea63ce066dec7e29321"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730090007_AddShareableTestTrials.cs",
+        "sha": "846614ddf870693eaa54b90c000f12a1446b0e54"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730142431_AddTestQuestionCategory.Designer.cs",
+        "sha": "9d125a7b34d2de4d6cb5637c40fdf2a2e795c8d0"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730142431_AddTestQuestionCategory.cs",
+        "sha": "9055720f36eb6da14725348e34f71a053b17317a"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730154556_AddTestExperienceReward.Designer.cs",
+        "sha": "58c4ff8ec1398a43bdfa872bd09246b4f0e5e7ba"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730154556_AddTestExperienceReward.cs",
+        "sha": "c432fa9a52a04e397cd598c88e4e121d93ee2c3c"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730171748_AddTestCategorySelection.Designer.cs",
+        "sha": "bc99351d76505d501de03fc3a1c6a8603d4c2cfb"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260730171748_AddTestCategorySelection.cs",
+        "sha": "3243ac9479b3d2c01b6158b582db97f255a10386"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260803051824_AddTicketOnCallAdmins.Designer.cs",
+        "sha": "00aba6d23f1b3c4c7aaf89e58cdbf430eb81f55d"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260803051824_AddTicketOnCallAdmins.cs",
+        "sha": "869dd848126430f4cdf2858bc135bd966a32dc3c"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260806090322_RemoveAccountProfiles.Designer.cs",
+        "sha": "5537a8f0941c4380c0358338c785e859737167f4"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260806090322_RemoveAccountProfiles.cs",
+        "sha": "a4da4e2bda5ad1d1d5610d8a02d7c0b067e5aa4e"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260815153121_AddNameChangeCardPurchase.Designer.cs",
+        "sha": "77e7b5a33f74ab57f9232e3081299bdf4cdc83ce"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260815153121_AddNameChangeCardPurchase.cs",
+        "sha": "1886499208b44730e173f1d6ac3cd97ac741cde1"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260826120459_AddPresenceSessionsAndCatalog.Designer.cs",
+        "sha": "a6a4760782321678b650f278d0bfacbb1acb56fd"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260826120459_AddPresenceSessionsAndCatalog.cs",
+        "sha": "827eb824252b329145d328c38496750c0a80ff36"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260826124908_ChangePresenceTypeToString.Designer.cs",
+        "sha": "a08ce7a813c07d1ab67a134518706d46ce25b213"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260826124908_ChangePresenceTypeToString.cs",
+        "sha": "63cff4b9e884b79cbd122de9730bc438741ff8bc"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260826130528_ReplaceCategoryWithTags.Designer.cs",
+        "sha": "c79f24f2bda6c7c5c707cf6d10877f04978293c6"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260826130528_ReplaceCategoryWithTags.cs",
+        "sha": "111f5dec04fd385daa1a724aa10327b7450ab033"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260826132623_NormalizePresenceTags.Designer.cs",
+        "sha": "fcfe8ecf24ee443281d6ed4dc5373548b301d8a3"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/20260826132623_NormalizePresenceTags.cs",
+        "sha": "a04c2aac33e574dce2d11d28a5a70e2e376e9a32"
+      },
+      {
+        "path": "DysonNetwork.Passport/Migrations/AppDatabaseModelSnapshot.cs",
+        "sha": "71fed6429fdab9f1557c73316852cbeac3be36a8"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260401000000_InitialMigration.Designer.cs",
+        "sha": "c467c56348bb7440a9366ddbcde6beef434fb75f"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260401000000_InitialMigration.cs",
+        "sha": "37b2d549489bab08d9bea4a02b348b08ad50da17"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260404112413_AddLocationPin.Designer.cs",
+        "sha": "edb885b0967c165e52502a89b303cc93b2b59ab3"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260404112413_AddLocationPin.cs",
+        "sha": "66c912187b51f6a1b0f37a9ac85c172e0e0764a7"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260404120000_AddFediverseCommunityFields.Designer.cs",
+        "sha": "b43681a8c997d0ee24edf2409c324f40fde6bab9"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260404120000_AddFediverseCommunityFields.cs",
+        "sha": "2d554f816d329a28c458c83b568decbc89398b8d"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260404160920_UpdateFediverseSupport.Designer.cs",
+        "sha": "d3c6fa7705aa1a6de058e87a59b7457c139058c4"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260404160920_UpdateFediverseSupport.cs",
+        "sha": "2271f7fa4cc2c1cb7ee8e1b4e2fb5de492f85fe1"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260404165540_AddPublisherSubscriberManagement.Designer.cs",
+        "sha": "e9298b1c362f1c202a86cd52781a772837f54034"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260404165540_AddPublisherSubscriberManagement.cs",
+        "sha": "b07c77cebaa35a156f12e7c50809eaa719a73c4c"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260407154536_AddPublishingSettings.Designer.cs",
+        "sha": "6e22d669e7267bdd32f83baf8fe0ff4193a9839f"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260407154536_AddPublishingSettings.cs",
+        "sha": "29e8b965a3f7927441c9fd848cdf31230dc08c55"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260408145043_RemoveFollowedBackAt.Designer.cs",
+        "sha": "74e5b5b7b3607f061549b9c11f2c6d89fa3893c4"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260408145043_RemoveFollowedBackAt.cs",
+        "sha": "89aefbd735af10758e44d29ef852f649b41b947a"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260410105452_AddFediverseKeys.Designer.cs",
+        "sha": "4eb2752065a8bff96a8f26837b8b33ffc74503a6"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260410105452_AddFediverseKeys.cs",
+        "sha": "5de67bf9a752a7c8f01f1c4111b84eb208217036"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260410150312_AddKeyAlgorithm.Designer.cs",
+        "sha": "3c89163d95186a5be2cc371bc4ed6254776df650"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260410150312_AddKeyAlgorithm.cs",
+        "sha": "738f0c22080d67ebcb0b5db93d3eab0a81c307df"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260410171411_AddOutboxFetchedAt.Designer.cs",
+        "sha": "57863fd6eda72ab4cf05de02a9e797e8284d3457"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260410171411_AddOutboxFetchedAt.cs",
+        "sha": "d38b110341704f29b941e0f2c7d7905e29e92726"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260411055352_AddDeletedAtToUniqueIndexes.Designer.cs",
+        "sha": "c75aa4277cd8d088c749baf5a391ed9319b12bcd"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260411055352_AddDeletedAtToUniqueIndexes.cs",
+        "sha": "6248ac40042d04960420c80ccee205f9ea1618cf"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260415164143_CleanUnusedPublisherKey.Designer.cs",
+        "sha": "262685a582fe748f36a6ed794f4d69d3cc88cee5"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260415164143_CleanUnusedPublisherKey.cs",
+        "sha": "dcdc8d72655fd7b6db88501451da486caa2c0c65"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260501174204_AddPublisherRating.Designer.cs",
+        "sha": "ac0a4d376f866562b2efecd9357640ccd66aa952"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260501174204_AddPublisherRating.cs",
+        "sha": "97357a5ea68ae95bb471a04733db0aa7900aaea4"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260502174636_RemoveRatingExpiry.Designer.cs",
+        "sha": "cabfef299ad9f349240b3666b47bccda8cc613c5"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260502174636_RemoveRatingExpiry.cs",
+        "sha": "832b1acc1e6ee653cf31b8afefce5d62bbd50b82"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260509190907_AddManualPostCollections.Designer.cs",
+        "sha": "6a9e2f7fb5862f2bfddad8b4de5554ff69a8c7f5"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260509190907_AddManualPostCollections.cs",
+        "sha": "49c9042232946c9fbaa777310623b264ebda0b6a"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260510061854_AddPostCollectionBackgroundIcon.Designer.cs",
+        "sha": "664190cd041d53b7a1a1ef2d22d679bfd0be678a"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260510061854_AddPostCollectionBackgroundIcon.cs",
+        "sha": "c9e2ab0b97699acaf7a53b8b684bfb4ba0029d67"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260510073440_AddPostBookmarks.Designer.cs",
+        "sha": "ce9a954e869e57b5d12a6ef463e0878d20963183"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260510073440_AddPostBookmarks.cs",
+        "sha": "4fef96fb9ec8cca77485b0e9dc87c0378167855b"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260510082059_AddStickerRenderingSettings.Designer.cs",
+        "sha": "eeec69d9de18bcdcdaf0332b493ffdda4f3f2242"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260510082059_AddStickerRenderingSettings.cs",
+        "sha": "3c12c68658e0a24e2cf68fec2fbc8bd8774177e3"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260510111701_AddStickerName.Designer.cs",
+        "sha": "53ad61f80d3a2a413ef899da6c581801018d3ee0"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260510111701_AddStickerName.cs",
+        "sha": "3c841e2229474208ac6fd1bb73a53cde1ecd5ad1"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260510125050_AddStickerOrder.Designer.cs",
+        "sha": "66064fcb9bdf60b5d1bbc623529a79a096b0d43c"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260510125050_AddStickerOrder.cs",
+        "sha": "6bd247613ed65d25058358b5ad92da472c924bb9"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260511120000_AddPostIndices.cs",
+        "sha": "ea189d3c2c4265fb4d34ed79c81208841303b6af"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260511155026_AddPostEmbeddingIndex.Designer.cs",
+        "sha": "cab99bc20acb1ca614238bab5eacb64ddfddba0b"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260511155026_AddPostEmbeddingIndex.cs",
+        "sha": "e9bf5e5403ea5ab59c6355c4eb116951abff36b0"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260521152026_AddPostTrigramSearch.Designer.cs",
+        "sha": "7c00aada9d14589a34bd423002324912f963acdd"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260521152026_AddPostTrigramSearch.cs",
+        "sha": "6323bd259754ba8f7c4543d51223e0b513127aa2"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260521152610_AddPublisherTrigramSearch.cs",
+        "sha": "c896bb02b0dc3d8d7d13f99ea926981efd5c8326"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260521161833_AddPostCollectionSubscription.Designer.cs",
+        "sha": "b98b6abec9e965b4df8e7b1d0ca8e0f4f5b03d97"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260521161833_AddPostCollectionSubscription.cs",
+        "sha": "b005adf88a1444c3386e8465ed170f68b5d7a6e5"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260521162749_AddPostSubscriptions.Designer.cs",
+        "sha": "8873296dbad7c34523d63534e8596a5989a45366"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260521162749_AddPostSubscriptions.cs",
+        "sha": "76097103bf4b8d50ffda16dc94eb74b3bd4e024f"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260528000000_AddStickerPackPopularity.cs",
+        "sha": "65e6b0eac0b46aed80b65cee5055775d3b7f33b3"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260607173618_AddRealmPostModerationLog.Designer.cs",
+        "sha": "f9bf99803c27c959a8f67946dbefd887101ea792"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260607173618_AddRealmPostModerationLog.cs",
+        "sha": "33d9cacfa183e9526372c2a3fcce8ea644204b17"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260607183008_RealmImprovement.Designer.cs",
+        "sha": "6b07c3960345c7dc8e54350340c9197f75eae60b"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260607183008_RealmImprovement.cs",
+        "sha": "f997a50110c9fc417fabac3f0d4e16fd2d2d2626"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260622114252_AddBlogPostType.Designer.cs",
+        "sha": "f4d3dc8e215b2738e2df06c5a90b734a7685c026"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260622114252_AddBlogPostType.cs",
+        "sha": "88db0e16e8ee54e65d7e02d063a10d6728ea28e5"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260626141335_AddPostAwardPayout.Designer.cs",
+        "sha": "359f8b2c7ac4d945bdc42a037dfde58986ee25c0"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260626141335_AddPostAwardPayout.cs",
+        "sha": "f845a7a058368efe17433c91d4cac0275ea01d6b"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260626220000_AddPostSponsor.cs",
+        "sha": "60dd06ad63d1e225621a83e3c14fbf99ed8ccc52"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260627115823_RenamePollToSurvey.Designer.cs",
+        "sha": "597128ff11a0a41dd3002d2c39e7030d1eda6d11"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260627115823_RenamePollToSurvey.cs",
+        "sha": "3c42bdfd81026e90f15e046f778a9eb89e2903ee"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260627122542_AddSurveySubscriptions.Designer.cs",
+        "sha": "d996f750c07601d2fa236778986c5eb49fba22db"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260627122542_AddSurveySubscriptions.cs",
+        "sha": "980c3c4483c6172f8d78042cc79632d5480238f7"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260629123628_AddSurveyHideResults.Designer.cs",
+        "sha": "e4a30d4d500a3d5c59ea4b111476c41feb46c605"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260629123628_AddSurveyHideResults.cs",
+        "sha": "51fb408b3b6d18a2dbf6c2709a61c37447dbde1c"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260704113825_AddPostAggregatedStats.Designer.cs",
+        "sha": "cf371e4f2e943374e13353bec5e4bd425ed1298e"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260704113825_AddPostAggregatedStats.cs",
+        "sha": "f3cf43392b574042fb3cec81e6877ef0f91391c4"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260719160756_AddPublisherSubscriptionReadIndex.Designer.cs",
+        "sha": "3656a40429fe7bf1b3c6581903a4b5c70fda9348"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260719160756_AddPublisherSubscriptionReadIndex.cs",
+        "sha": "d9b4d672d093629054e995f9d44151881c242936"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260912055356_AddPostChaining.Designer.cs",
+        "sha": "036f9a7da0f14c02a08995cab24f50b891bf3c14"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260912055356_AddPostChaining.cs",
+        "sha": "706c881dc7b8644611fd928b6315f5fbf5eea7c6"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260927043440_ReplacePostSubscriptionsWithWatchPreferences.Designer.cs",
+        "sha": "dea421480bc81362460f28168f04a327d019fc7d"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20260927043440_ReplacePostSubscriptionsWithWatchPreferences.cs",
+        "sha": "25ca8f82c8dbcaefedc302291e2133c903328ad6"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20261001094753_MergeFediverseActorIntoPublisher.Designer.cs",
+        "sha": "4c0c3e858fb9118bd7486e98d8ab07b49bfc9b96"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20261001094753_MergeFediverseActorIntoPublisher.cs",
+        "sha": "9bb3fc55dd9f43400584b576764898bdb165723b"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20261001114130_UnifyPublisherRelationships.Designer.cs",
+        "sha": "26c286207934105d3ecf3b3d598606928d790621"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20261001114130_UnifyPublisherRelationships.cs",
+        "sha": "2efee69ddd8456bd7d50fb3e8d78329aeac9e117"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20261005074050_DropPublisherAvatarHeaderUrls.Designer.cs",
+        "sha": "2bb39ad82fce33ed8b5889610cdd3ceb678bb564"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/20261005074050_DropPublisherAvatarHeaderUrls.cs",
+        "sha": "92742ad77803756bf7551137c7b359b2dfc269ab"
+      },
+      {
+        "path": "DysonNetwork.Sphere/Migrations/AppDatabaseModelSnapshot.cs",
+        "sha": "97288c526bb8dd7c120fd9157d56069663487b4b"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260401000000_InitialMigration.Designer.cs",
+        "sha": "75696a0742447c75bb94332349418190cb8f7c4d"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260401000000_InitialMigration.cs",
+        "sha": "8e8b35129699f8e4c8cf5e372fece8ac08bc9e63"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260411055416_AddDeletedAtToUniqueIndexes.Designer.cs",
+        "sha": "3f0e50482f5d92cecae752af04bf7a00e7f22674"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260411055416_AddDeletedAtToUniqueIndexes.cs",
+        "sha": "ce40e8741ad84f818fe4217e6a4fe51da725ed93"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260504084724_AddMultiWallet.Designer.cs",
+        "sha": "6cc893eed6219176cc4c3dd9f33007e019ab8962"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260504084724_AddMultiWallet.cs",
+        "sha": "cb5ccf35b7bad79e8377e7a89b16cf27d8b09012"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260504130000_AddMultiWalletSupport.cs",
+        "sha": "43021dc95cefa697bd18aa741eb93ad3922f18c8"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260607145913_EnrichWalletTranasction.Designer.cs",
+        "sha": "749cb4f39a1f97dd008dd65577450f70e9b0a992"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260607145913_EnrichWalletTranasction.cs",
+        "sha": "76e9b6b5f60bb3cb828c98c5b22d47c383141a29"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260616114038_AddTransferRequest.Designer.cs",
+        "sha": "bdb201d6f38ae3eef607e1cc8a5115ba5a0284d7"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260616114038_AddTransferRequest.cs",
+        "sha": "b0ebd0f57f9ab89414435c5ee1151a5e5cc25fba"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260616122441_RemoveLottery.Designer.cs",
+        "sha": "f48b6a5ca59d78cdeaa27258636bca56c9cef343"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260616122441_RemoveLottery.cs",
+        "sha": "b1adb8ad4dc73f05d918442d00e748c66ae5f60f"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260628094703_AddWalletOrderItems.Designer.cs",
+        "sha": "d2e34b8c8e1dc02ed5c5ade2c1ef4bb30211eaf4"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260628094703_AddWalletOrderItems.cs",
+        "sha": "dc012b152b98f5a27a01842017926e04830563ff"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260628165324_AddAppIdentifierToSubscriptionDef.Designer.cs",
+        "sha": "f57b209f9b364b4ea3fd3f9647b2bbfb89a216f8"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260628165324_AddAppIdentifierToSubscriptionDef.cs",
+        "sha": "32374431ba08fb74d0cc1a275c0008f7aeb849fe"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260704050913_AddMerchantSettlement.Designer.cs",
+        "sha": "672e03503ea55aae73bcfa75c07fad20266aab12"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260704050913_AddMerchantSettlement.cs",
+        "sha": "7b41734162f9184884fda85db03c6f77d230be85"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260704080808_MakePaymentTransactionIdNullable.Designer.cs",
+        "sha": "d289691bf9c8a9c485d8c397cf5c8e79f4517869"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260704080808_MakePaymentTransactionIdNullable.cs",
+        "sha": "04053c5cf1000f27590c8a05aabaa0dfe378adc1"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260704084206_SimplifyMerchantToPublisher.Designer.cs",
+        "sha": "a1556a6eb3c4f0bbc10bd7b20a3a7d86a8aabca8"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260704084206_SimplifyMerchantToPublisher.cs",
+        "sha": "c90932989d35dfa35a9a4b3b21f07d4f3ceedbcb"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260817060327_AddInboundOrders.Designer.cs",
+        "sha": "9c2f27e54809376986d6d2a106bb07ce9660c666"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260817060327_AddInboundOrders.cs",
+        "sha": "dce8c5860a402a474edc078b53e8905f0483dfc2"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260818000000_AddProviderOrderNotification.cs",
+        "sha": "57512b5dc8a11aeb16b72dc3f68e4e8dad89344a"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/20260818010000_AddPayerWalletToOrders.cs",
+        "sha": "1d5f34c90d7365b8bde6c20f30d2b8ad53b15e09"
+      },
+      {
+        "path": "DysonNetwork.Wallet/Migrations/AppDatabaseModelSnapshot.cs",
+        "sha": "25949c377668cf9747b57b0eafb76a1adce54e94"
+      }
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "file": "LICENSE.txt",
+    "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/LICENSE.txt",
+    "blob": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+    "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+  },
+  {
+    "file": "lib__data__message.dart",
+    "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/data/message.dart",
+    "blob": "c907f587241ce1981e2da1c5998997914542a72a",
+    "sha256": "28b63fe37b859e09525cf9de489f39bd4f26fe128dad655dabd497ae2d955119"
+  },
+  {
+    "file": "lib__chat__data__message_repository.dart",
+    "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/data/message_repository.dart",
+    "blob": "09e1c05eb2bdae706fc77a8a57d193a4fab26b4c",
+    "sha256": "26388fb74930343ff38d58958866413856ef3fe8164294021329eaeb0e9d3c81"
+  },
+  {
+    "file": "lib__chat__realtime__message_handler.dart",
+    "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/realtime/message_handler.dart",
+    "blob": "2138d835b1a13b920a9878a4cadf7b4ac48f7103",
+    "sha256": "7cb906dd11414186348cafb5e99fba75d7d1e3972674f44a359152f8e0a99263"
+  },
+  {
+    "file": "lib__chat__messages_notifier.dart",
+    "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/messages_notifier.dart",
+    "blob": "6daba14ab2cdad6fa45b76018b209fe18f39d8ba",
+    "sha256": "5240bc641d6f31984b960b88c053037799068371e34127882fed6a55ee3859c5"
+  },
+  {
+    "file": "lib__chat__e2ee_message_service.dart",
+    "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/e2ee_message_service.dart",
+    "blob": "e1b41340a7b74f8ef0fc2034994be01f7e4973bf",
+    "sha256": "764787db80c6e0d22f8156c2c987f52ef4c484e8e51e0f6a7b089028d4130d36"
+  }
+]

@@ -1,0 +1,119 @@
+{
+  "scope": "Checkpoint: local PostWatch HTTP/persistence slice plus PostgreSQL adapter (compiled, database integration blocked), three policy ports, and partial Passport board service; backend functional parity not established",
+  "baseline": "Solsynth/DysonNetwork@4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "license_policy": "Reuse or translation requires a verified applicable license. Missing-license repositories are interface-research-only; no clean-room claim is made after implementation inspection.",
+  "counts": {
+    "domain_ports": 3,
+    "production_services_completed": 0,
+    "cross_platform_gates_pending": 9,
+    "full_endpoint_count": null,
+    "local_http_operations": 2,
+    "controller_files_enumerated": 98,
+    "partial_board_services": 1
+  },
+  "ports": [
+    {
+      "path": "ports/passport/username",
+      "source": "DysonNetwork.Passport/Account/AccountUsernameService.cs",
+      "license": "AGPL-3.0",
+      "license_file": "ports/passport/username/LICENSE.txt",
+      "scope": "Sanitization, availability adapter, generated username candidates; no account API or uniqueness transaction"
+    },
+    {
+      "path": "ports/sphere",
+      "source": "DysonNetwork.Sphere/Timeline/TimelineService.cs",
+      "license": "AGPL-3.0",
+      "license_file": "ports/sphere/upstream/LICENSE.txt",
+      "scope": "Pre-resolved ranking and decay; no database visibility selection, moderation adapter or feed endpoint"
+    },
+    {
+      "path": "ports/messager",
+      "source": "DysonNetwork.Messager/Chat/ChatService.cs",
+      "license": "AGPL-3.0",
+      "license_file": "ports/messager/source/LICENSE.txt",
+      "scope": "Recovery sequence/range normalization and membership; no sync transport, hydration or database query"
+    }
+  ],
+  "gates": [
+    {
+      "id": "endpoints",
+      "status": "pending",
+      "acceptance": "Enumerate every backend route and error contract at a pinned baseline; compare legacy and replacement responses using synthetic fixtures, including aliases and pagination"
+    },
+    {
+      "id": "schema",
+      "status": "pending",
+      "acceptance": "Pin migrations and prove synthetic copy, keys, indexes, null/default values, IDs, rollback and reconciliation in disposable databases"
+    },
+    {
+      "id": "auth",
+      "status": "pending",
+      "acceptance": "Verify OIDC, session refresh, claims, permissions, revocation, E2EE state and anonymous/dependency-unavailable behavior"
+    },
+    {
+      "id": "events",
+      "status": "pending",
+      "acceptance": "Pin Spec/NeTo/Go SDK contracts; verify gRPC presence and enums, cache formats, NATS subjects/envelopes, ordering and ack/retry semantics"
+    },
+    {
+      "id": "storage",
+      "status": "pending",
+      "acceptance": "Verify synthetic files, object references, quotas, media workers, derived artifacts, visibility and ACL parity"
+    },
+    {
+      "id": "jobs",
+      "status": "pending",
+      "acceptance": "Inventory timers, schedules, dispatch queues and restart behavior; compare delivery and cleanup semantics without contacting third parties"
+    },
+    {
+      "id": "domain",
+      "status": "pending",
+      "acceptance": "Inventory all remaining service behavior including content, messaging, wallet, developer APIs, federation and external integrations; three utility ports are not this coverage"
+    },
+    {
+      "id": "deployment",
+      "status": "pending",
+      "acceptance": "Build complete services/containers; verify configuration, service discovery, health/readiness, ports, TLS, key mounts, native libraries, metrics and bounded rollback"
+    },
+    {
+      "id": "license",
+      "status": "pending",
+      "acceptance": "Audit each remaining repository at its pinned revision; do not copy or translate missing-license source; derive only from authorized documented interfaces or licensed client interactions"
+    }
+  ],
+  "measurement_note": "Counts describe this matrix only, not the total backend surface. Unknown endpoints and capabilities are intentionally not counted as covered. Local test results are recorded separately.",
+  "local_http_slice": {
+    "operations": [
+      "GET /api/posts/watch",
+      "PUT /api/posts/watch"
+    ],
+    "persistence": "Atomic local JSON file, single server process",
+    "auth": "Default deny; explicit synthetic fixture adapter only",
+    "remaining": [
+      "Production identity/permission adapters",
+      "PostgreSQL schema/migration/rollback",
+      "Multi-process transaction semantics",
+      "Exact upstream error serialization",
+      "Existing-client integration"
+    ],
+    "postgres_adapter": "Implemented against licensed table fixture with transaction-scoped account locking; actual PG tests blocked by Unix-socket EPERM"
+  },
+  "evidence_inventories": [
+    "inventory/dyson-contract-files.json",
+    "inventory/dyson-service-registrations.json"
+  ],
+  "blockers": {
+    "access_or_contract_unknown": [
+      "Gitea organization API denied; do not retry via alternate identity",
+      "Previously cancelled repository/clone reads remain cancelled",
+      "Shared submodule and missing-license repository contracts require separate authorized license/interface evidence",
+      "Actual disposable PostgreSQL validation blocked by AF_UNIX socket creation EPERM, including reviewed retry and bounded /tmp diagnosis; six real integration tests remain unrun"
+    ],
+    "independent_remaining_work": [
+      "98 licensed controller files need per-operation mapping",
+      "Licensed schema/job/RPC inventory needs detailed dependency and behavior mapping",
+      "Remaining C# services and workflows are not implemented",
+      "Production adapters and migration acceptance remain pending"
+    ]
+  }
+}

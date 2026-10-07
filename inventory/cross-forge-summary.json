@@ -1,0 +1,59 @@
+{
+  "github_public_repositories": 26,
+  "sosys_visible_repositories": 19,
+  "github_pages": [
+    26,
+    0
+  ],
+  "sosys_pages": [
+    15,
+    4
+  ],
+  "same_name_candidates": [
+    "Blade",
+    "DysonNetwork",
+    "ElecPostal",
+    "FloatLand",
+    "Sokai",
+    "SolWatt",
+    "Solian",
+    "Stargate"
+  ],
+  "renamed_candidates": [
+    {
+      "github": "DysonFS",
+      "sosys": "FileSystem",
+      "evidence": "Go module path src.solsynth.dev/sosys/filesystem; full revision equivalence not verified"
+    },
+    {
+      "github": "MetoerPush",
+      "sosys": "Metoer",
+      "evidence": "worker README/module mapping; full revision equivalence not verified"
+    },
+    {
+      "github": "PersonalityCore",
+      "sosys": "Persona",
+      "evidence": "description alignment only; not verified"
+    }
+  ],
+  "sosys_without_same_named_github": [
+    "FileSystem",
+    "Go",
+    "Metoer",
+    "MinecraftPlugin",
+    "NeTo",
+    "Persona",
+    "PhysicalPassportWriter",
+    "Socommon",
+    "Solwatch",
+    "Spec",
+    "WattEngine"
+  ],
+  "warnings": [
+    "Counts are public repository listings, not unique products or full feature counts",
+    "No private organization coverage asserted",
+    "GitHub metadata mirror_url=null does not establish absence of a manual mirror",
+    "License metadata is advisory; actual license text and per-file exceptions must be audited before reuse",
+    "WattEngine GitHub metadata returned 404; SoSYS source access remained cancelled and was not retried"
+  ]
+}

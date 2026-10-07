@@ -1,0 +1,2936 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/Solsynth/DysonNetwork",
+  "commit": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "license": "AGPL-3.0",
+  "scope": "DysonNetwork.Sphere",
+  "completeness": "Initial ranking core and post-watch preferences service/HTTP slice. All other Sphere endpoints, PostgreSQL persistence, events and jobs remain unported.",
+  "inventory_method": "Pinned recursive tree plus all 37 Controller.cs files and explicit startup/database sources. Endpoint counts are static Http* attributes, not runtime route discovery; composite attributes and conventions require integration verification.",
+  "implemented": [
+    {
+      "component": "timeline ranking core",
+      "files": [
+        "ranking.go"
+      ],
+      "source": "DysonNetwork.Sphere/Timeline/TimelineService.cs",
+      "methods": [
+        "CalculateBaseRank",
+        "RankPosts (resolved signal inputs)",
+        "FilterLowRankPersonalizedCandidates",
+        "DiversifyRankedPosts",
+        "SortLatestPosts",
+        "GetDecayedInterestScore"
+      ],
+      "verification": "Go golden tests, 97.2% statement coverage, race and vet pass; C# differential execution not run"
+    },
+    {
+      "component": "post watch preferences service and HTTP handler",
+      "files": [
+        "watch.go",
+        "watch_http.go"
+      ],
+      "sources": [
+        "Post/PostWatchService.cs",
+        "Models/PostWatch.cs",
+        "Post/PostWatchController.cs"
+      ],
+      "verification": "Go source-derived unit/HTTP/concurrency tests; not C# runtime differential parity",
+      "integration": "Explicit auth and repository interfaces. Local durable JSON and PostgreSQL preference adapters exist; production authentication and full Sphere database integration remain missing."
+    },
+    {
+      "component": "PostgreSQL post-watch preferences adapter",
+      "files": [
+        "../../internal/watchpg/repository.go"
+      ],
+      "status": "implemented; unit/race/vet passed; real PostgreSQL verification BLOCKED and zero DB tests executed",
+      "source": "DysonNetwork.Sphere/Migrations/20260927043440_ReplacePostSubscriptionsWithWatchPreferences.cs",
+      "contract": "Transactional nullable-field patches across cooperating replicas; fail-closed duplicate live rows, canonical UUIDs, retained soft-deletes; no startup DDL or migration",
+      "limits": [
+        "Mixed legacy C# writers do not participate in advisory protocol",
+        "Shared audit hook timestamp equivalence not claimed",
+        "No production authorization adapter"
+      ],
+      "verification_blocker": "Disposable PG16 initdb succeeded; postgres socket creation EPERM, including one reviewed escalation retry. Six integration cases prepared but not executed. See docs/postgres-integration-result.json."
+    }
+  ],
+  "controllers": [
+    {
+      "path": "DysonNetwork.Sphere/Account/AccountSettingsController.cs",
+      "read_ok": true,
+      "class_route": "api/account/publishing",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "PATCH",
+          "template": ""
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubController.cs",
+      "read_ok": true,
+      "class_route": "activitypub/actors/{username}",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "POST",
+          "template": "inbox"
+        },
+        {
+          "method": "GET",
+          "template": "/activitypub/objects/{id:guid}"
+        },
+        {
+          "method": "GET",
+          "template": "outbox"
+        },
+        {
+          "method": "GET",
+          "template": "followers"
+        },
+        {
+          "method": "GET",
+          "template": "following"
+        },
+        {
+          "method": "GET",
+          "template": "featured"
+        }
+      ],
+      "authorization_attributes": [],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubFollowController.cs",
+      "read_ok": true,
+      "class_route": "/api/activitypub",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "following"
+        },
+        {
+          "method": "GET",
+          "template": "followers"
+        },
+        {
+          "method": "GET",
+          "template": "search"
+        },
+        {
+          "method": "GET",
+          "template": "relationships"
+        },
+        {
+          "method": "GET",
+          "template": "check/{username}"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AllowAnonymous]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubRealmController.cs",
+      "read_ok": true,
+      "class_route": "activitypub/realms",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "{slug}"
+        },
+        {
+          "method": "GET",
+          "template": "{slug}/followers"
+        },
+        {
+          "method": "POST",
+          "template": "{slug}/inbox"
+        },
+        {
+          "method": "GET",
+          "template": "{slug}/outbox"
+        }
+      ],
+      "authorization_attributes": [
+        "[AllowAnonymous]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/FediverseActorController.cs",
+      "read_ok": true,
+      "class_route": "/api/fediverse/actors",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "{username}@{instance}"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "GET",
+          "template": "search"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/posts"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/followers"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/following"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/relationship"
+        },
+        {
+          "method": "GET",
+          "template": "availability"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/follow"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/unfollow"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AllowAnonymous]",
+        "[AskPermission(PermissionKeys.PostsBoost)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/FediverseKeyAdminController.cs",
+      "read_ok": true,
+      "class_route": "api/admin/fediverse/keys",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "audit"
+        },
+        {
+          "method": "POST",
+          "template": "backfill"
+        },
+        {
+          "method": "POST",
+          "template": "cleanup"
+        },
+        {
+          "method": "GET",
+          "template": "stats"
+        },
+        {
+          "method": "GET",
+          "template": "actor/{actorId:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "actor/{actorId:guid}/ensure"
+        },
+        {
+          "method": "POST",
+          "template": "actor/{actorId:guid}/regenerate"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize(Roles = \"Admin\")]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/FediverseKeyController.cs",
+      "read_ok": true,
+      "class_route": "activitypub/actors/{username}",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "main-key"
+        },
+        {
+          "method": "GET",
+          "template": "publickey"
+        }
+      ],
+      "authorization_attributes": [
+        "[AllowAnonymous]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/FediverseModerationController.cs",
+      "read_ok": true,
+      "class_route": "/api/fediverse/moderation",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "rules"
+        },
+        {
+          "method": "GET",
+          "template": "rules/{id:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "rules"
+        },
+        {
+          "method": "PUT",
+          "template": "rules/{id:guid}"
+        },
+        {
+          "method": "DELETE",
+          "template": "rules/{id:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "rules/{id:guid}/toggle"
+        },
+        {
+          "method": "POST",
+          "template": "check-domain"
+        },
+        {
+          "method": "POST",
+          "template": "check-actor"
+        },
+        {
+          "method": "POST",
+          "template": "check-actor-rule"
+        },
+        {
+          "method": "GET",
+          "template": "actors"
+        },
+        {
+          "method": "POST",
+          "template": "actors/suspend"
+        },
+        {
+          "method": "DELETE",
+          "template": "actors/suspend/{id:guid}"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.FediverseModerationRulesManage)]",
+        "[AskPermission(PermissionKeys.FediverseModerationCheck)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/NodeInfoController.cs",
+      "read_ok": true,
+      "class_route": ".well-known",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "nodeinfo"
+        },
+        {
+          "method": "GET",
+          "template": "nodeinfo/2.0"
+        },
+        {
+          "method": "GET",
+          "template": "nodeinfo/2.1"
+        }
+      ],
+      "authorization_attributes": [],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/QuoteAuthorizationController.cs",
+      "read_ok": true,
+      "class_route": "/quote-authorizations",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "POST",
+          "template": ""
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}"
+        }
+      ],
+      "authorization_attributes": [
+        "[AllowAnonymous]",
+        "[Authorize]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ServerActorController.cs",
+      "read_ok": true,
+      "class_route": "/activitypub",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "actor"
+        },
+        {
+          "method": "GET",
+          "template": "actor/outbox"
+        },
+        {
+          "method": "GET",
+          "template": "actor/followers"
+        },
+        {
+          "method": "GET",
+          "template": "actor/following"
+        },
+        {
+          "method": "GET",
+          "template": "actor/main-key"
+        }
+      ],
+      "authorization_attributes": [
+        "[AllowAnonymous]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/WebFingerController.cs",
+      "read_ok": true,
+      "class_route": ".well-known",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "host-meta"
+        },
+        {
+          "method": "GET",
+          "template": "webfinger"
+        }
+      ],
+      "authorization_attributes": [],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Autocompletion/AutocompletionController.cs",
+      "read_ok": true,
+      "class_route": "/api/autocomplete",
+      "http_attributes": [
+        {
+          "method": "POST",
+          "template": ""
+        }
+      ],
+      "authorization_attributes": [],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Automod/AutomodController.cs",
+      "read_ok": true,
+      "class_route": "/api/automod",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "rules"
+        },
+        {
+          "method": "GET",
+          "template": "rules/{id:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "rules"
+        },
+        {
+          "method": "PUT",
+          "template": "rules/{id:guid}"
+        },
+        {
+          "method": "DELETE",
+          "template": "rules/{id:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "rules/bulk"
+        },
+        {
+          "method": "POST",
+          "template": "rules/{id:guid}/test"
+        }
+      ],
+      "authorization_attributes": [
+        "[AskPermission(PermissionKeys.AutomodRulesManage)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Live/LiveStreamController.cs",
+      "read_ok": true,
+      "class_route": "api/livestreams",
+      "http_attributes": [
+        {
+          "method": "POST",
+          "template": ""
+        },
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "GET",
+          "template": "publisher/{publisherId:guid}"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/token"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/start"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/egress"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/egress/stop"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/hls"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/hls/stop"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/end"
+        },
+        {
+          "method": "PATCH",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/details"
+        },
+        {
+          "method": "PATCH",
+          "template": "{id:guid}/thumbnail"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/chat"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/chat"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}/chat/{messageId:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/chat/{messageId:guid}/timeout"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/awards"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/awards/active"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/awards/leaderboard"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/awards"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.LiveStreamsStart)]",
+        "[AskPermission(PermissionKeys.LiveStreamsEgress)]",
+        "[AskPermission(PermissionKeys.LiveStreamsHls)]",
+        "[AskPermission(PermissionKeys.LiveStreamsEnd)]",
+        "[AskPermission(PermissionKeys.LiveStreamsUpdate)]",
+        "[AskPermission(PermissionKeys.LiveStreamsDelete)]",
+        "[AskPermission(PermissionKeys.LiveStreamsThumbnail)]",
+        "[AskPermission(PermissionKeys.LiveStreamsPin)]",
+        "[AskPermission(PermissionKeys.LiveStreamsChatModerate)]",
+        "[AskPermission(PermissionKeys.LiveStreamsAwards)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/AdsController.cs",
+      "read_ok": true,
+      "class_route": "/api/ads",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "{name}"
+        }
+      ],
+      "authorization_attributes": [],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "read_ok": true,
+      "class_route": "/api/posts",
+      "http_attributes": [
+        {
+          "method": "POST",
+          "template": "blog/check-permission"
+        },
+        {
+          "method": "POST",
+          "template": ""
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/reactions"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/bookmark"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}/bookmark"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/bookmark"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/awards"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/awards/pending"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/awards"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/sponsor"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/pin"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}/pin"
+        },
+        {
+          "method": "PATCH",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "batch/delete"
+        },
+        {
+          "method": "POST",
+          "template": "batch/visibility"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/publish"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/boost"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}/boost"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/boosts"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/realm/moderate"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(\"posts.create\")]",
+        "[AskPermission(\"posts.react\")]",
+        "[AskPermission(PermissionKeys.PostsBookmark)]",
+        "[AskPermission(PermissionKeys.PostsAward)]",
+        "[AskPermission(PermissionKeys.PostsSponsor)]",
+        "[AskPermission(PermissionKeys.PostsPin)]",
+        "[AskPermission(PermissionKeys.PostsBatchDelete)]",
+        "[AskPermission(\"posts.boost\")]",
+        "[AskPermission(PermissionKeys.PostsBoost)]",
+        "[AskPermission(\"posts.moderate\")]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostAdminController.cs",
+      "read_ok": true,
+      "class_route": "/api/admin/posts",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/lock"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/lock"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}/lock"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/visibility"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/shadowban"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}/shadowban"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/realm/remove"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/lock/batch"
+        },
+        {
+          "method": "DELETE",
+          "template": "lock/batch"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PostsModerate)]",
+        "[AskPermission(PermissionKeys.PostsLock)]",
+        "[AskPermission(PermissionKeys.PostsDelete)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostCategoryAdminController.cs",
+      "read_ok": true,
+      "class_route": "/api/admin/categories",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "GET",
+          "template": "{slug}"
+        },
+        {
+          "method": "POST",
+          "template": ""
+        },
+        {
+          "method": "PATCH",
+          "template": "{slug}"
+        },
+        {
+          "method": "DELETE",
+          "template": "{slug}"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PostsModerate)]",
+        "[AskPermission(PermissionKeys.PostCategoriesManage)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostCategoryController.cs",
+      "read_ok": true,
+      "class_route": "/api/posts",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "categories"
+        },
+        {
+          "method": "GET",
+          "template": "tags"
+        },
+        {
+          "method": "GET",
+          "template": "categories/{slug}"
+        },
+        {
+          "method": "POST",
+          "template": "categories/{slug}/subscribe"
+        },
+        {
+          "method": "POST",
+          "template": "categories/{slug}/unsubscribe"
+        },
+        {
+          "method": "GET",
+          "template": "categories/{slug}/subscription"
+        },
+        {
+          "method": "POST",
+          "template": "tags/{slug}/subscribe"
+        },
+        {
+          "method": "POST",
+          "template": "tags/{slug}/unsubscribe"
+        },
+        {
+          "method": "GET",
+          "template": "tags/{slug}/subscription"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PostCategoriesSubscribe)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostCategorySubController.cs",
+      "read_ok": true,
+      "class_route": null,
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "subscriptions"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostCollectionAdminController.cs",
+      "read_ok": true,
+      "class_route": "/api/admin/collections",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "PATCH",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PostsModerate)]",
+        "[AskPermission(PermissionKeys.PostCollectionsUpdate)]",
+        "[AskPermission(PermissionKeys.PostCollectionsDelete)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostCollectionController.cs",
+      "read_ok": true,
+      "class_route": "/api/publishers/{publisherName}/collections",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "/api/collections"
+        },
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "POST",
+          "template": ""
+        },
+        {
+          "method": "GET",
+          "template": "{slug}"
+        },
+        {
+          "method": "POST",
+          "template": "{slug}/subscribe"
+        },
+        {
+          "method": "POST",
+          "template": "{slug}/unsubscribe"
+        },
+        {
+          "method": "GET",
+          "template": "{slug}/subscription"
+        },
+        {
+          "method": "PATCH",
+          "template": "{slug}"
+        },
+        {
+          "method": "DELETE",
+          "template": "{slug}"
+        },
+        {
+          "method": "GET",
+          "template": "{slug}/posts"
+        },
+        {
+          "method": "POST",
+          "template": "{slug}/posts"
+        },
+        {
+          "method": "POST",
+          "template": "{slug}/posts/batch"
+        },
+        {
+          "method": "POST",
+          "template": "{slug}/posts/batch/remove"
+        },
+        {
+          "method": "DELETE",
+          "template": "{slug}/posts/{postId:guid}"
+        },
+        {
+          "method": "PUT",
+          "template": "{slug}/posts/reorder"
+        },
+        {
+          "method": "GET",
+          "template": "{slug}/posts/{postId:guid}/prev"
+        },
+        {
+          "method": "GET",
+          "template": "{slug}/posts/{postId:guid}/next"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PostCollectionsPostsManage)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "read_ok": true,
+      "class_route": "/api/posts",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "featured"
+        },
+        {
+          "method": "GET",
+          "template": "sponsor/current"
+        },
+        {
+          "method": "GET",
+          "template": "sponsor/leaderboard"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/sponsor"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/sponsor/history"
+        },
+        {
+          "method": "GET",
+          "template": "drafts"
+        },
+        {
+          "method": "GET",
+          "template": "bookmarks"
+        },
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "GET",
+          "template": "{publisherName}/{slug}"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/prev"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/next"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/reactions"
+        },
+        {
+          "method": "GET",
+          "template": "reactions/users/{name}"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/replies/featured"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/replies/pinned"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/replies"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/replies/threaded"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/thread"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/chain"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/forwards"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PostsView)]",
+        "[AskPermission(PermissionKeys.PostsBookmark)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostStatsAdminController.cs",
+      "read_ok": true,
+      "class_route": "/api/admin/stats",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": ""
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PostsModerate)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostTagController.cs",
+      "read_ok": true,
+      "class_route": "/api/posts/tags",
+      "http_attributes": [
+        {
+          "method": "POST",
+          "template": ""
+        },
+        {
+          "method": "GET",
+          "template": "{slug}"
+        },
+        {
+          "method": "PATCH",
+          "template": "{slug}"
+        },
+        {
+          "method": "POST",
+          "template": "{slug}/claim"
+        },
+        {
+          "method": "POST",
+          "template": "{slug}/release"
+        },
+        {
+          "method": "PATCH",
+          "template": "{slug}/protect"
+        },
+        {
+          "method": "GET",
+          "template": "quota"
+        },
+        {
+          "method": "GET",
+          "template": "{slug}/quota"
+        },
+        {
+          "method": "GET",
+          "template": "/api/admin/posts/tags"
+        },
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "GET",
+          "template": "/api/admin/posts/tags/{slug}"
+        },
+        {
+          "method": "GET",
+          "template": "{slug}"
+        },
+        {
+          "method": "POST",
+          "template": "/api/admin/posts/tags"
+        },
+        {
+          "method": "POST",
+          "template": ""
+        },
+        {
+          "method": "POST",
+          "template": "/api/admin/posts/tags/{slug}/assign"
+        },
+        {
+          "method": "POST",
+          "template": "{slug}/assign"
+        },
+        {
+          "method": "DELETE",
+          "template": "/api/admin/posts/tags/{slug}/assign"
+        },
+        {
+          "method": "DELETE",
+          "template": "{slug}/assign"
+        },
+        {
+          "method": "PATCH",
+          "template": "/api/admin/posts/tags/{slug}/protect"
+        },
+        {
+          "method": "PATCH",
+          "template": "{slug}/protect"
+        },
+        {
+          "method": "PATCH",
+          "template": "/api/admin/posts/tags/{slug}/event"
+        },
+        {
+          "method": "PATCH",
+          "template": "{slug}/event"
+        },
+        {
+          "method": "PATCH",
+          "template": "/api/admin/posts/tags/{slug}"
+        },
+        {
+          "method": "PATCH",
+          "template": "{slug}"
+        },
+        {
+          "method": "DELETE",
+          "template": "/api/admin/posts/tags/{slug}"
+        },
+        {
+          "method": "DELETE",
+          "template": "{slug}"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PostsTagsClaim)]",
+        "[AskPermission(PermissionKeys.PostsModerate)]",
+        "[AskPermission(PermissionKeys.PostsTagsCreate)]",
+        "[AskPermission(PermissionKeys.PostsTagsAssign)]",
+        "[AskPermission(PermissionKeys.PostsTagsProtect)]",
+        "[AskPermission(PermissionKeys.PostsTagsEvent)]",
+        "[AskPermission(PermissionKeys.PostsTagsUpdate)]",
+        "[AskPermission(PermissionKeys.PostsTagsDelete)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostWatchController.cs",
+      "read_ok": true,
+      "class_route": "/api/posts/watch",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "PUT",
+          "template": ""
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PostSubscriptionsManage)]"
+      ],
+      "status": "ported_http_contract_with_explicit_transport_differences; production_auth_missing"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherAdminController.cs",
+      "read_ok": true,
+      "class_route": "/api/admin/publishers",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "GET",
+          "template": "{name}"
+        },
+        {
+          "method": "PATCH",
+          "template": "{name}"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/shadowban"
+        },
+        {
+          "method": "DELETE",
+          "template": "{name}/shadowban"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/verification"
+        },
+        {
+          "method": "DELETE",
+          "template": "{name}/verification"
+        },
+        {
+          "method": "DELETE",
+          "template": "{name}"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PublishersModerate)]",
+        "[AskPermission(PermissionKeys.PublishersUpdate)]",
+        "[AskPermission(PermissionKeys.PublishersDelete)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherController.cs",
+      "read_ok": true,
+      "class_route": "/api/publishers",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "quota"
+        },
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "GET",
+          "template": "invites"
+        },
+        {
+          "method": "POST",
+          "template": "invites/{name}"
+        },
+        {
+          "method": "POST",
+          "template": "invites/{name}/accept"
+        },
+        {
+          "method": "POST",
+          "template": "invites/{name}/decline"
+        },
+        {
+          "method": "DELETE",
+          "template": "{name}/members/{memberId:guid}"
+        },
+        {
+          "method": "DELETE",
+          "template": "{name}/members/me"
+        },
+        {
+          "method": "PATCH",
+          "template": "{name}/members/{memberId:guid}/role"
+        },
+        {
+          "method": "POST",
+          "template": "individual"
+        },
+        {
+          "method": "POST",
+          "template": "organization/{realmSlug}"
+        },
+        {
+          "method": "PATCH",
+          "template": "{name}"
+        },
+        {
+          "method": "DELETE",
+          "template": "{name}"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/members"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/members/me"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/features"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/rewards"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/rating/history"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/features"
+        },
+        {
+          "method": "DELETE",
+          "template": "{name}/features"
+        },
+        {
+          "method": "POST",
+          "template": "rewards/settle"
+        },
+        {
+          "method": "POST",
+          "template": "awards/settle"
+        },
+        {
+          "method": "POST",
+          "template": "rewards/resettle"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/fediverse"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/fediverse"
+        },
+        {
+          "method": "PATCH",
+          "template": "{name}/fediverse"
+        },
+        {
+          "method": "DELETE",
+          "template": "{name}/fediverse"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/domains"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/domains"
+        },
+        {
+          "method": "DELETE",
+          "template": "{name}/domains/{domainId:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/domains/{domainId:guid}/recheck"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/ads"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PublishersInvitesManage)]",
+        "[AskPermission(PermissionKeys.PublishersMembersManage)]",
+        "[AskPermission(\"publishers.create\")]",
+        "[AskPermission(PermissionKeys.PublishersUpdate)]",
+        "[AskPermission(PermissionKeys.PublishersDelete)]",
+        "[AskPermission(PermissionKeys.PublishersFeaturesManage)]",
+        "[AskPermission(PermissionKeys.PublishersRewardsSettle)]",
+        "[AskPermission(PermissionKeys.PublishersFediverseManage)]",
+        "[AskPermission(PermissionKeys.PublishersDomainsManage)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherPublicController.cs",
+      "read_ok": true,
+      "class_route": "/api/publishers",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "search"
+        },
+        {
+          "method": "GET",
+          "template": "{name}"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/heatmap"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/stats"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/content-stats"
+        },
+        {
+          "method": "GET",
+          "template": "of/{accountId:guid}"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/rating"
+        },
+        {
+          "method": "GET",
+          "template": "leaderboard"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/rating/overview"
+        }
+      ],
+      "authorization_attributes": [],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherSubscriptionController.cs",
+      "read_ok": true,
+      "class_route": "/api/publishers",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "{name}/subscription"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/subscription/read-status"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/subscribe"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/unsubscribe"
+        },
+        {
+          "method": "GET",
+          "template": "subscriptions"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/subscribers"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/subscribers/{accountId:guid}"
+        },
+        {
+          "method": "DELETE",
+          "template": "{name}/subscribers/{accountId:guid}"
+        },
+        {
+          "method": "PATCH",
+          "template": "{name}/subscription/me/notify"
+        },
+        {
+          "method": "PUT",
+          "template": "{name}/subscription/read-status"
+        },
+        {
+          "method": "PUT",
+          "template": "subscriptions/read-status"
+        },
+        {
+          "method": "GET",
+          "template": "subscriptions/live"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/subscription/requests"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/subscription/requests/{requestId}/approve"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/subscription/requests/{requestId}/reject"
+        },
+        {
+          "method": "GET",
+          "template": "blocked"
+        },
+        {
+          "method": "GET",
+          "template": "muted"
+        },
+        {
+          "method": "GET",
+          "template": "{name}/relationship"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/block"
+        },
+        {
+          "method": "DELETE",
+          "template": "{name}/block"
+        },
+        {
+          "method": "POST",
+          "template": "{name}/mute"
+        },
+        {
+          "method": "DELETE",
+          "template": "{name}/mute"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PublishersSubscriptionsManage)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Reader/WebReaderController.cs",
+      "read_ok": true,
+      "class_route": "/api/scrap",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "link"
+        },
+        {
+          "method": "DELETE",
+          "template": "link/cache"
+        },
+        {
+          "method": "DELETE",
+          "template": "cache/all"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(\"cache.scrap\")]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Sticker/StickerController.cs",
+      "read_ok": true,
+      "class_route": "/api/stickers",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": ""
+        },
+        {
+          "method": "GET",
+          "template": "me"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "GET",
+          "template": "by-prefix/{prefix}"
+        },
+        {
+          "method": "POST",
+          "template": ""
+        },
+        {
+          "method": "PATCH",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "GET",
+          "template": "{packId:guid}/content"
+        },
+        {
+          "method": "GET",
+          "template": "lookup/{identifier}"
+        },
+        {
+          "method": "GET",
+          "template": "lookup/{identifier}/open"
+        },
+        {
+          "method": "POST",
+          "template": "lookup/batch"
+        },
+        {
+          "method": "GET",
+          "template": "search"
+        },
+        {
+          "method": "GET",
+          "template": "{packId:guid}/content/{id:guid}"
+        },
+        {
+          "method": "PATCH",
+          "template": "{packId:guid}/content/{id:guid}"
+        },
+        {
+          "method": "PATCH",
+          "template": "{packId:guid}/content/batch/rendering-settings"
+        },
+        {
+          "method": "DELETE",
+          "template": "{packId:guid}/content/{id:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "{packId:guid}/content"
+        },
+        {
+          "method": "GET",
+          "template": "{packId:guid}/own"
+        },
+        {
+          "method": "POST",
+          "template": "{packId:guid}/own"
+        },
+        {
+          "method": "DELETE",
+          "template": "{packId:guid}/own"
+        },
+        {
+          "method": "PATCH",
+          "template": "me/order"
+        },
+        {
+          "method": "PATCH",
+          "template": "{packId:guid}/content/order"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(\"stickers.packs.create\")]",
+        "[AskPermission(PermissionKeys.StickersPacksUpdate)]",
+        "[AskPermission(\"stickers.create\")]",
+        "[AskPermission(PermissionKeys.StickersPacksOwn)]",
+        "[AskPermission(PermissionKeys.StickersPacksOrder)]",
+        "[AskPermission(PermissionKeys.StickersContentUpdate)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Survey/SurveyController.cs",
+      "read_ok": true,
+      "class_route": "/api/surveys",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/answer"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}/answer"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/feedback"
+        },
+        {
+          "method": "GET",
+          "template": "me"
+        },
+        {
+          "method": "POST",
+          "template": ""
+        },
+        {
+          "method": "PATCH",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/publish"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/archive"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/clone"
+        },
+        {
+          "method": "DELETE",
+          "template": "{id:guid}"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/subscribe"
+        },
+        {
+          "method": "POST",
+          "template": "{id:guid}/unsubscribe"
+        },
+        {
+          "method": "GET",
+          "template": "{id:guid}/subscription"
+        }
+      ],
+      "authorization_attributes": [
+        "[AskPermission(PermissionKeys.SurveysAnswer)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.SurveysPublish)]",
+        "[AskPermission(PermissionKeys.SurveysArchive)]",
+        "[AskPermission(PermissionKeys.SurveysClone)]",
+        "[AskPermission(PermissionKeys.SurveysSubscribe)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Timeline/TimelineController.cs",
+      "read_ok": true,
+      "class_route": "/api/timeline",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": ""
+        }
+      ],
+      "authorization_attributes": [],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Timeline/TimelineDiscoveryController.cs",
+      "read_ok": true,
+      "class_route": "/api/timeline/discovery",
+      "http_attributes": [
+        {
+          "method": "GET",
+          "template": "profile"
+        },
+        {
+          "method": "POST",
+          "template": "uninterested"
+        },
+        {
+          "method": "DELETE",
+          "template": "uninterested"
+        },
+        {
+          "method": "POST",
+          "template": "feedback"
+        },
+        {
+          "method": "PUT",
+          "template": "weights"
+        },
+        {
+          "method": "POST",
+          "template": "reset"
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TimelinesFeedback)]",
+        "[AskPermission(PermissionKeys.TimelinesWeightsManage)]",
+        "[AskPermission(PermissionKeys.TimelinesReset)]"
+      ],
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Translation/TranslationController.cs",
+      "read_ok": true,
+      "class_route": "/api/translate",
+      "http_attributes": [
+        {
+          "method": "POST",
+          "template": ""
+        }
+      ],
+      "authorization_attributes": [
+        "[Authorize]"
+      ],
+      "status": "not_ported"
+    }
+  ],
+  "source_file_coverage": [
+    {
+      "path": "DysonNetwork.Sphere/Account/AccountSettingsController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ActivityHandlerService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubDeliveryService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubDeliveryWorker.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubDiscoveryService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubFollowController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubRealmController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/FediverseActorController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/FediverseKeyAdminController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/FediverseKeyController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/FediverseModerationController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Models/PostResponse.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/NodeInfoController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/QuoteAuthorizationController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ServerActorController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ServerActorResponse.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/ServerSigningKeyService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/ActivityPubAttachmentConverter.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/ActivityPubKeyService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/ActivityPubQueueService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/ActivityPubSignatureService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/ActivityRenderer.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/AuthorizedFetchMiddleware.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/DeliveryRetryJob.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/DeliverySchedulerService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/FederationMetricsService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/FediverseActorCleanupJob.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/FediverseCachingService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/FediverseModerationService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/HttpSignature.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/IActorDiscoveryService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/IKeyService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/IServerSigningKeyService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/ISignatureService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/InboxMiddleware.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/KeyMigrationService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/OutboxBackfillJob.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/Services/OutboxBackfillService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/ActivityPub/WebFingerController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/AppDatabase.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Autocompletion/AutocompletionController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Autocompletion/AutocompletionService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Autocompletion/AutocompletionServiceGrpc.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Automod/AutomodController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Automod/AutomodService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Live/LiveKitLivestreamService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Live/LiveStreamController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Live/LiveStreamEmbed.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Live/LiveStreamIngressCleanupJob.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Live/LiveStreamService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/ActivityHeatmap.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/ActivityPubDelivery.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/AutomodRule.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/DiscoveryProfile.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/FediverseKey.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/FediverseModerationRule.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/LiveStream.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/LiveStreamAward.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/LiveStreamAwardAttitude.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/LiveStreamChatMessage.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/PostIndex.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/PostInterestProfile.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/PostWatch.cs",
+      "status": "ported_contract; source persistence and framework behavior not fully reproduced"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Models/PublisherVerifiedDomain.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/AdsController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostAdminController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostCategoryAdminController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostCategoryController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostCategorySubController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostCollectionAdminController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostCollectionController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostCollectionService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostIndexBackfillJob.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostInterestFlushHandler.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostInterestSignal.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostServiceGrpc.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostSponsorAuctionJob.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostStatsAdminController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostTagController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostTagService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostViewFlushHandler.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostViewInfo.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostWatchController.cs",
+      "status": "ported_contract; source persistence and framework behavior not fully reproduced"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostWatchService.cs",
+      "status": "ported_contract; source persistence and framework behavior not fully reproduced"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/SponsorService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Program.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/DomainVerificationService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherAdminController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherFollowRequestCleanupJob.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherLeaderboardService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherPublicController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherQuotaService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherRatingService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherRatingServiceGrpc.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherServiceGrpc.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherSettlementJob.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherSnapshot.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherSubscriptionController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherSubscriptionService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Reader/ScrapedArticle.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Reader/WebReaderController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Reader/WebReaderException.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Reader/WebReaderGrpcService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Reader/WebReaderService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Rewind/SphereRewindServiceGrpc.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Startup/ApplicationConfiguration.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Startup/AutomodConfiguration.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Startup/FediverseModerationConfiguration.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Startup/PaymentOrderAwardEvent.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Startup/PaymentOrderSponsorEvent.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Startup/ScheduledJobsConfiguration.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Startup/ServiceCollectionExtensions.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Sticker/StickerController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Sticker/StickerPopularityFlushHandler.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Sticker/StickerService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Sticker/StickerServiceGrpc.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Survey/SurveyController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Survey/SurveyEmbed.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Survey/SurveyService.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Survey/SurveyServiceGrpc.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Timeline/FriendPresenceEvent.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Timeline/FriendStatusEvent.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Timeline/TimelineController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Timeline/TimelineDiscovery.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Timeline/TimelineDiscoveryController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Timeline/TimelineService.cs",
+      "status": "partial"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Translation/ITranslationProvider.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Translation/TencentTranslation.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Translation/TranslationController.cs",
+      "status": "not_ported"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Wallet/FundEmbed.cs",
+      "status": "not_ported"
+    }
+  ],
+  "grpc_services": [
+    {
+      "name": "PostServiceGrpc",
+      "status": "not_ported"
+    },
+    {
+      "name": "SurveyServiceGrpc",
+      "status": "not_ported"
+    },
+    {
+      "name": "PublisherServiceGrpc",
+      "status": "not_ported"
+    },
+    {
+      "name": "PublisherRatingServiceGrpc",
+      "status": "not_ported"
+    },
+    {
+      "name": "StickerServiceGrpc",
+      "status": "not_ported"
+    },
+    {
+      "name": "SphereRewindServiceGrpc",
+      "status": "not_ported"
+    },
+    {
+      "name": "AutocompletionServiceGrpc",
+      "status": "not_ported"
+    },
+    {
+      "name": "WebReaderGrpcService",
+      "status": "not_ported"
+    }
+  ],
+  "registered_services": [
+    {
+      "registration": "FlushBufferService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "PostViewFlushHandler",
+      "status": "not_ported"
+    },
+    {
+      "registration": "PostInterestFlushHandler",
+      "status": "not_ported"
+    },
+    {
+      "registration": "StickerPopularityFlushHandler",
+      "status": "not_ported"
+    },
+    {
+      "registration": "GeoService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "PublisherService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "PublisherQuotaService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "PublisherSubscriptionService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "PublisherRatingService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "PublisherLeaderboardService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "DomainVerificationService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "TimelineService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "AutomodService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "PostService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "PostWatchService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "SponsorService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "WebReaderService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "PostCollectionService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "PostTagService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "SurveyService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "StickerService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "AutocompletionService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "ActivityPubKeyService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "IKeyService, ActivityPubKeyService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "IServerSigningKeyService, ServerSigningKeyService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "ISignatureService, ActivityPubSignatureService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "ActivityHandlerService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "ActivityPubDeliveryService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "IActorDiscoveryService, ActivityPubDiscoveryService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "ActivityRenderer",
+      "status": "not_ported"
+    },
+    {
+      "registration": "FediverseCachingService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "FediverseModerationService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "ActivityPubQueueService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "DeliveryBatchService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "DeliveryMetricsService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "DeliveryDeadLetterService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "KeyMigrationService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "IFederationMetricsService, FederationMetricsService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "OutboxBackfillService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "LiveStreamService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "LiveKitLivestreamService",
+      "status": "not_ported"
+    },
+    {
+      "registration": "ITranslationProvider, TencentTranslation",
+      "status": "not_ported"
+    }
+  ],
+  "database_sets": [
+    {
+      "model": "SnPublisher",
+      "set": "Publishers",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPublisherMember",
+      "set": "PublisherMembers",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPublisherSubscription",
+      "set": "PublisherSubscriptions",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPublisherFeature",
+      "set": "PublisherFeatures",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPublisherRatingRecord",
+      "set": "PublisherRatingRecords",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPost",
+      "set": "Posts",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostIndex",
+      "set": "PostIndices",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostBookmark",
+      "set": "PostBookmarks",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostWatchPreference",
+      "set": "PostWatchPreferences",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostReaction",
+      "set": "PostReactions",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostAward",
+      "set": "PostAwards",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostTag",
+      "set": "PostTags",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostCategory",
+      "set": "PostCategories",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostCollection",
+      "set": "PostCollections",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostCollectionItem",
+      "set": "PostCollectionItems",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostFeaturedRecord",
+      "set": "PostFeaturedRecords",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostSponsorBid",
+      "set": "PostSponsorBids",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostSponsorPlacement",
+      "set": "PostSponsorPlacements",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostAggregatedStats",
+      "set": "PostAggregatedStats",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostCategorySubscription",
+      "set": "PostCategorySubscriptions",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPostInterestProfile",
+      "set": "PostInterestProfiles",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnDiscoveryPreference",
+      "set": "DiscoveryPreferences",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPublishingSettings",
+      "set": "PublishingSettings",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnPublisherVerifiedDomain",
+      "set": "PublisherVerifiedDomains",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnAutomodRule",
+      "set": "AutomodRules",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnSurvey",
+      "set": "Surveys",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnSurveyQuestion",
+      "set": "SurveyQuestions",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnSurveyAnswer",
+      "set": "SurveyAnswers",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnSurveySubscription",
+      "set": "SurveySubscriptions",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnSticker",
+      "set": "Stickers",
+      "status": "not_ported"
+    },
+    {
+      "model": "StickerPack",
+      "set": "StickerPacks",
+      "status": "not_ported"
+    },
+    {
+      "model": "StickerPackOwnership",
+      "set": "StickerPackOwnerships",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnRealmPostModerationLog",
+      "set": "RealmPostModerationLogs",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnFediverseInstance",
+      "set": "FediverseInstances",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnFediverseModerationRule",
+      "set": "FediverseModerationRules",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnFediverseKey",
+      "set": "FediverseKeys",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnActivityPubDelivery",
+      "set": "ActivityPubDeliveries",
+      "status": "not_ported"
+    },
+    {
+      "model": "DeliveryDeadLetter",
+      "set": "DeliveryDeadLetters",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnBoost",
+      "set": "Boosts",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnQuoteAuthorization",
+      "set": "QuoteAuthorizations",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnLiveStream",
+      "set": "LiveStreams",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnLiveStreamChatMessage",
+      "set": "LiveStreamChatMessages",
+      "status": "not_ported"
+    },
+    {
+      "model": "SnLiveStreamAward",
+      "set": "LiveStreamAwards",
+      "status": "not_ported"
+    }
+  ],
+  "jobs": [
+    {
+      "name": "PostIndexBackfillJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "AppDatabaseRecyclingJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "PostViewFlushJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "PostInterestFlushJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "StickerPopularityFlushJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "PublisherSettlementJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "DeliveryRetryJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "DeliveryCleanupJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "DeliveryHealthCheckJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "FediverseActorCleanupJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "LiveStreamIngressCleanupJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "PublisherFollowRequestCleanupJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "OutboxBackfillJob",
+      "status": "not_ported"
+    },
+    {
+      "name": "PostSponsorAuctionJob",
+      "status": "not_ported"
+    }
+  ],
+  "events": [
+    {
+      "name": "PaymentOrderEvent",
+      "products": [
+        "posts.award",
+        "livestreams.award",
+        "ads.sponsor"
+      ],
+      "delivery": "JetStream, max retries 3",
+      "status": "not_ported"
+    },
+    {
+      "name": "AccountDeletedEvent",
+      "delivery": "JetStream, max retries 3; transaction soft-deletes sole-owned publishers/posts",
+      "status": "not_ported"
+    },
+    {
+      "name": "FileMetadataUpdatedEvent",
+      "delivery": "Reference listener max retries 5; update attachment snapshots then broadcast affected posts",
+      "status": "not_ported"
+    }
+  ],
+  "dependency_contracts": [
+    {
+      "kind": "auth",
+      "source": "Startup/ApplicationConfiguration.cs; controllers; Program.cs",
+      "contract": "Dyson auth supplies CurrentUser; authentication, authorization and RemotePermissionMiddleware precede controller dispatch. Preserve per-action AskPermission, member-role and current-user checks. No authorization implementation in port."
+    },
+    {
+      "kind": "visibility",
+      "source": "Timeline/TimelineService.cs; Post/PostController.cs; Post/PostCollectionService.cs",
+      "contract": "FilterWithVisibility requires current user, friend IDs, owned publishers, listing mode, gatekept publisher IDs, active accepted nonblocking subscriber IDs and close-friend publisher IDs. Timeline also resolves blocked/muted accounts/publishers, public/user realms, federation visibility and boosts before ranking.",
+      "blocker": "FilterWithVisibility and shared model implementations live in separate DysonNetwork.Shared git submodule at 83c36cb92d667d3800f152665660c17886f71f7c; license must be independently checked before source reuse."
+    },
+    {
+      "kind": "moderation",
+      "source": "Timeline/TimelineService.cs; Startup/ApplicationConfiguration.cs",
+      "contract": "Non-latest ranking uses AutomodService penalty/hide and post/publisher shadowban-for-listing maps. Latest returns early after direct post/publisher shadowban filtering. Federation has separate inbox validation/rate-limit/parsing and moderation services."
+    },
+    {
+      "kind": "storage",
+      "source": "AppDatabase.cs; Startup/ServiceCollectionExtensions.cs; Program.cs",
+      "contract": "Npgsql PostgreSQL, vector/pg_trgm extensions, snake_case identifiers, NodaTime timestamps, soft-delete/recycling, indexed relations, transaction boundaries and file reference snapshots. Drive service and file metadata events integrate media; no storage rewrite included."
+    },
+    {
+      "kind": "transport",
+      "source": "Startup/ServiceCollectionExtensions.cs; Startup/ApplicationConfiguration.cs",
+      "contract": "JSON snake_case and named floating point literals; NodaTime conversion, pagination validation, en-US/zh-Hans localization; gRPC send/receive max 100MiB; WebSockets, 8 gRPC service registrations and reflection."
+    }
+  ],
+  "next_proposal": {
+    "component": "Post watch preferences and watcher resolution service",
+    "source_files": [
+      "DysonNetwork.Sphere/Post/PostWatchService.cs",
+      "DysonNetwork.Sphere/Models/PostWatch.cs",
+      "DysonNetwork.Sphere/Post/PostWatchController.cs"
+    ],
+    "scope": "Explicit repository interface for bookmark/reactor/replier sources, preference read/upsert and chain membership; port preference defaults, patch semantics, source union and event filtering with fake-repository contract tests. Auth remains controller boundary, no notifications sent.",
+    "status": "implemented locally with explicit adapters; production integration pending"
+  }
+}

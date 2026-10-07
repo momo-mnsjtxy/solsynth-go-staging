@@ -1,0 +1,2752 @@
+{
+  "schemaVersion": 1,
+  "repository": "https://github.com/Solsynth/DysonNetwork",
+  "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "license": "AGPL-3.0",
+  "inventoryOnly": true,
+  "status": "Source-derived inventory, not verified production routes and not implemented parity",
+  "limitations": [
+    "Controller attributes extracted from 36 current-source controllers; runtime middleware, inherited authorization, DTO serialization, and gateway routes still require contract validation.",
+    "Dependencies/models in DysonNetwork.Shared are a separately sourced git submodule; verify its own license before importing implementation.",
+    "Not every service/job/model body has been reviewed; every unported route, job and data contract remains a migration blocker."
+  ],
+  "alreadyGo": {
+    "repository": "https://github.com/Solsynth/Stargate",
+    "revision": "01dfcdd7e633ca7abc82306684ae4b8dd37dd2f0",
+    "domains": [
+      "Padlock auth/accounts/OIDC/admin/E2EE/MLS",
+      "Passport accounts/profiles/relationships/followers/following"
+    ],
+    "evidence": "https://github.com/Solsynth/Stargate/blob/01dfcdd7e633ca7abc82306684ae4b8dd37dd2f0/README.md",
+    "boundary": "Passport board storage remains C#; profile enrichment crosses gRPC."
+  },
+  "remainingDomains": [
+    "Account board/badges/status/calendar/check-in/friends/presence",
+    "Apple PassKit and pass registration",
+    "Affiliation and name-change-card purchases",
+    "Social credit and experience records",
+    "Examinations/trials/questions/activation",
+    "Domain trust and metrics",
+    "Meet/location pins/Nearby",
+    "NFC lifecycle and RPC",
+    "Progression achievements/quests/reward grants",
+    "Realm membership/labels/boosts/permissions/moderation",
+    "Rewind",
+    "Tickets/on-call",
+    "IP/Geo lookup"
+  ],
+  "controllers": [
+    {
+      "path": "DysonNetwork.Passport/Account/AccountAdminController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountAdminController.cs",
+      "routePrefixes": [
+        "/api/admin/accounts"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "metrics/activity",
+          "sourceLine": 115
+        },
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 139
+        },
+        {
+          "method": "GET",
+          "suffix": "{identifier}",
+          "sourceLine": 193
+        },
+        {
+          "method": "GET",
+          "suffix": "{identifier}/contacts",
+          "sourceLine": 235
+        },
+        {
+          "method": "POST",
+          "suffix": "{identifier}/notifications/night-owl",
+          "sourceLine": 255
+        },
+        {
+          "method": "GET",
+          "suffix": "{identifier}/factors",
+          "sourceLine": 294
+        },
+        {
+          "method": "POST",
+          "suffix": "{identifier}/verification",
+          "sourceLine": 311
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{identifier}/verification",
+          "sourceLine": 338
+        },
+        {
+          "method": "GET",
+          "suffix": "{identifier}/badges",
+          "sourceLine": 354
+        },
+        {
+          "method": "POST",
+          "suffix": "{identifier}/badges",
+          "sourceLine": 370
+        },
+        {
+          "method": "POST",
+          "suffix": "{identifier}/badges/{badgeId:guid}/activate",
+          "sourceLine": 394
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{identifier}/badges/{badgeId:guid}",
+          "sourceLine": 406
+        },
+        {
+          "method": "GET",
+          "suffix": "{identifier}/board",
+          "sourceLine": 452
+        },
+        {
+          "method": "PUT",
+          "suffix": "{identifier}/board",
+          "sourceLine": 463
+        },
+        {
+          "method": "POST",
+          "suffix": "{identifier}/board/items/{itemId:guid}/payload",
+          "sourceLine": 485
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{identifier}/board/items/{itemId:guid}",
+          "sourceLine": 513
+        },
+        {
+          "method": "POST",
+          "suffix": "{name}/credits",
+          "sourceLine": 532
+        },
+        {
+          "method": "POST",
+          "suffix": "presences/steam/scan",
+          "sourceLine": 540
+        },
+        {
+          "method": "POST",
+          "suffix": "presences/steam/scan/{identifier}",
+          "sourceLine": 549
+        },
+        {
+          "method": "POST",
+          "suffix": "presences/steam/scan-by-steam-id/{steamId}",
+          "sourceLine": 565
+        },
+        {
+          "method": "POST",
+          "suffix": "presences/steam/scan/stages/{stage}",
+          "sourceLine": 575
+        }
+      ],
+      "requestAndResponseTypes": [
+        "AccountAdminController",
+        "AccountAuthFactorSummary",
+        "AdminAccountSummaryResponse",
+        "AdminAccountDetailResponse",
+        "AdminAccountActivityMetricsResponse",
+        "UpdateAccountVerificationRequest",
+        "AdminBadgeRequest",
+        "TestNightOwlReminderRequest",
+        "AdminBoardItemRequest",
+        "AdminPushBoardPayloadRequest"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[Range(0, 2)] public int Hour { get; set; }",
+        "[AskPermission(PermissionKeys.AccountsView)]",
+        "[AskPermission(PermissionKeys.AccountsView)]",
+        "[AskPermission(PermissionKeys.AccountsView)]",
+        "[AskPermission(PermissionKeys.AccountsView)]",
+        "[AskPermission(PermissionKeys.AccountsManage)]",
+        "[AskPermission(PermissionKeys.AccountsView)]",
+        "[AskPermission(PermissionKeys.AccountsManage)]",
+        "[AskPermission(PermissionKeys.AccountsManage)]",
+        "[AskPermission(PermissionKeys.AccountsView)]",
+        "[AskPermission(PermissionKeys.ProgressionBadgesManage)]",
+        "[AskPermission(PermissionKeys.ProgressionBadgesManage)]",
+        "[AskPermission(PermissionKeys.ProgressionBadgesManage)]",
+        "[MaxLength(256)] public string? WidgetKey { get; set; }",
+        "[MaxLength(256)] public string? CustomAppWidgetKey { get; set; }",
+        "[AskPermission(PermissionKeys.AccountsView)]",
+        "[AskPermission(PermissionKeys.AccountsBoardManage)]",
+        "[AskPermission(PermissionKeys.AccountsBoardManage)]",
+        "[AskPermission(PermissionKeys.AccountsBoardManage)]",
+        "[AskPermission(PermissionKeys.CreditsValidatePerform)]",
+        "[AskPermission(PermissionKeys.AccountsStatusesUpdate)]",
+        "[AskPermission(PermissionKeys.AccountsStatusesUpdate)]",
+        "[AskPermission(PermissionKeys.AccountsStatusesUpdate)]",
+        "[AskPermission(PermissionKeys.AccountsStatusesUpdate)]"
+      ],
+      "remoteDependencies": [
+        "DyProfileService.DyProfileServiceClient",
+        "DyAccountService.DyAccountServiceClient",
+        "DyRingService.DyRingServiceClient"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/AccountController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountController.cs",
+      "routePrefixes": [
+        "/api/accounts"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "suffix": "recovery/password",
+          "sourceLine": 33
+        },
+        {
+          "method": "GET",
+          "suffix": "{name}/statuses",
+          "sourceLine": 120
+        },
+        {
+          "method": "GET",
+          "suffix": "{name}/calendar",
+          "sourceLine": 144
+        },
+        {
+          "method": "GET",
+          "suffix": "{name}/calendar/merged",
+          "sourceLine": 236
+        },
+        {
+          "method": "GET",
+          "suffix": "{name}/calendar/countdown",
+          "sourceLine": 308
+        },
+        {
+          "method": "GET",
+          "suffix": "{name}/timeline",
+          "sourceLine": 368
+        },
+        {
+          "method": "GET",
+          "suffix": "{name}/calendar/events",
+          "sourceLine": 393
+        },
+        {
+          "method": "GET",
+          "suffix": "{name}/calendar/events/{id:guid}",
+          "sourceLine": 438
+        },
+        {
+          "method": "GET",
+          "suffix": "unknown/calendar/events/{id:guid}",
+          "sourceLine": 476
+        }
+      ],
+      "requestAndResponseTypes": [
+        "AccountController",
+        "RecoveryPasswordRequest",
+        "StatusRequest"
+      ],
+      "contractAttributes": [
+        "[Required]",
+        "[Required]",
+        "[MaxLength(1024)]",
+        "[MaxLength(128)]",
+        "[MaxLength(4096)]",
+        "[MaxLength(32)]",
+        "[MaxLength(32)]"
+      ],
+      "remoteDependencies": [
+        "DyAuthService.DyAuthServiceClient"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/AccountCurrentController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountCurrentController.cs",
+      "routePrefixes": [
+        "/api/accounts/me"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "activation/progress",
+          "sourceLine": 38
+        },
+        {
+          "method": "GET",
+          "suffix": "passbook/member",
+          "sourceLine": 46
+        },
+        {
+          "method": "GET",
+          "suffix": "board",
+          "sourceLine": 85
+        },
+        {
+          "method": "PUT",
+          "suffix": "board",
+          "sourceLine": 93
+        },
+        {
+          "method": "GET",
+          "suffix": "actions",
+          "sourceLine": 111
+        },
+        {
+          "method": "GET",
+          "suffix": "badges",
+          "sourceLine": 170
+        },
+        {
+          "method": "POST",
+          "suffix": "badges/{id:guid}/active",
+          "sourceLine": 183
+        },
+        {
+          "method": "GET",
+          "suffix": "leveling",
+          "sourceLine": 201
+        },
+        {
+          "method": "GET",
+          "suffix": "credits",
+          "sourceLine": 225
+        },
+        {
+          "method": "GET",
+          "suffix": "credits/history",
+          "sourceLine": 234
+        },
+        {
+          "method": "GET",
+          "suffix": "connections",
+          "sourceLine": 257
+        }
+      ],
+      "requestAndResponseTypes": [
+        "AccountCurrentController",
+        "BoardItemRequest"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TestsTake)]",
+        "[MaxLength(256)] public string? WidgetKey { get; set; }",
+        "[MaxLength(256)] public string? CustomAppWidgetKey { get; set; }",
+        "[AskPermission(PermissionKeys.AccountsProfileBoardManage)]",
+        "[AskPermission(PermissionKeys.AccountsProfileBoardManage)]",
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.ProgressionBadgesManage)]",
+        "[Authorize]",
+        "[AskPermission(\"account.connections\")]"
+      ],
+      "remoteDependencies": [
+        "RemoteAccountConnectionService",
+        "RemoteActionLogService"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/AccountEventController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountEventController.cs",
+      "routePrefixes": [
+        "/api/accounts/me"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "statuses",
+          "sourceLine": 36
+        },
+        {
+          "method": "PATCH",
+          "suffix": "statuses",
+          "sourceLine": 44
+        },
+        {
+          "method": "POST",
+          "suffix": "statuses",
+          "sourceLine": 94
+        },
+        {
+          "method": "DELETE",
+          "suffix": "statuses",
+          "sourceLine": 179
+        },
+        {
+          "method": "GET",
+          "suffix": "check-in",
+          "sourceLine": 202
+        },
+        {
+          "method": "POST",
+          "suffix": "check-in",
+          "sourceLine": 227
+        },
+        {
+          "method": "GET",
+          "suffix": "calendar",
+          "sourceLine": 312
+        },
+        {
+          "method": "GET",
+          "suffix": "calendar/merged",
+          "sourceLine": 372
+        },
+        {
+          "method": "GET",
+          "suffix": "calendar/tags",
+          "sourceLine": 415
+        },
+        {
+          "method": "GET",
+          "suffix": "calendar/events",
+          "sourceLine": 423
+        },
+        {
+          "method": "POST",
+          "suffix": "calendar/events",
+          "sourceLine": 450
+        },
+        {
+          "method": "GET",
+          "suffix": "calendar/events/{id:guid}",
+          "sourceLine": 492
+        },
+        {
+          "method": "PUT",
+          "suffix": "calendar/events/{id:guid}",
+          "sourceLine": 507
+        },
+        {
+          "method": "DELETE",
+          "suffix": "calendar/events/{id:guid}",
+          "sourceLine": 556
+        },
+        {
+          "method": "GET",
+          "suffix": "calendar/notable-days/{occurrenceKey}",
+          "sourceLine": 571
+        },
+        {
+          "method": "GET",
+          "suffix": "calendar/search",
+          "sourceLine": 585
+        },
+        {
+          "method": "GET",
+          "suffix": "calendar/countdown",
+          "sourceLine": 630
+        },
+        {
+          "method": "GET",
+          "suffix": "calendar/subscriptions",
+          "sourceLine": 671
+        },
+        {
+          "method": "POST",
+          "suffix": "calendar/subscriptions/{accountId:guid}",
+          "sourceLine": 681
+        },
+        {
+          "method": "DELETE",
+          "suffix": "calendar/subscriptions/{accountId:guid}",
+          "sourceLine": 703
+        },
+        {
+          "method": "GET",
+          "suffix": "calendar/subscriptions/subscribers",
+          "sourceLine": 718
+        }
+      ],
+      "requestAndResponseTypes": [
+        "AccountEventController"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[AskPermission(\"accounts.statuses.update\")]",
+        "[AskPermission(\"accounts.statuses.create\")]"
+      ],
+      "remoteDependencies": [
+        "DyFileService.DyFileServiceClient",
+        "RemoteSubscriptionService",
+        "DyAuthService.DyAuthServiceClient"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/AccountPublicController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountPublicController.cs",
+      "routePrefixes": [
+        "/api/accounts"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "{name}/badges",
+          "sourceLine": 23
+        },
+        {
+          "method": "GET",
+          "suffix": "{name}/board",
+          "sourceLine": 35
+        },
+        {
+          "method": "GET",
+          "suffix": "{name}/credits",
+          "sourceLine": 47
+        }
+      ],
+      "requestAndResponseTypes": [
+        "AccountPublicController"
+      ],
+      "contractAttributes": [],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/AccountStatsAdminController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountStatsAdminController.cs",
+      "routePrefixes": [
+        "/api/admin/stats"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 30
+        }
+      ],
+      "requestAndResponseTypes": [
+        "AccountStatsAdminController",
+        "AccountStatsResponse"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.AccountsView)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/FortuneSayingController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/FortuneSayingController.cs",
+      "routePrefixes": [
+        "/api/fortune"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 123
+        },
+        {
+          "method": "GET",
+          "suffix": "random",
+          "sourceLine": 129
+        }
+      ],
+      "requestAndResponseTypes": [
+        "FortuneSaying",
+        "FortuneSayingController"
+      ],
+      "contractAttributes": [],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/FriendsController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/FriendsController.cs",
+      "routePrefixes": [
+        "/api/friends"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "overview",
+          "sourceLine": 29
+        }
+      ],
+      "requestAndResponseTypes": [
+        "FriendsController",
+        "FriendOverviewItem"
+      ],
+      "contractAttributes": [
+        "[Authorize]"
+      ],
+      "remoteDependencies": [
+        "DyAccountService.DyAccountServiceClient"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/NotableDaysController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/NotableDaysController.cs",
+      "routePrefixes": [
+        "/api/notable-days"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 64
+        },
+        {
+          "method": "GET",
+          "suffix": "{id:guid}",
+          "sourceLine": 113
+        },
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 127
+        },
+        {
+          "method": "PUT",
+          "suffix": "{id:guid}",
+          "sourceLine": 160
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{id:guid}",
+          "sourceLine": 192
+        }
+      ],
+      "requestAndResponseTypes": [
+        "NotableDaysController",
+        "NotableDayRequest"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[Required, MaxLength(256)]",
+        "[MaxLength(4096)]",
+        "[MaxLength(256)]",
+        "[MaxLength(256)]",
+        "[Required]",
+        "[Required]",
+        "[MaxLength(8)]",
+        "[MaxLength(16)]",
+        "[AllowAnonymous]",
+        "[AllowAnonymous]",
+        "[AskPermission(PermissionKeys.NotableDaysCreate)]",
+        "[AskPermission(PermissionKeys.NotableDaysUpdate)]",
+        "[AskPermission(PermissionKeys.NotableDaysDelete)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/PassKitController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/PassKitController.cs",
+      "routePrefixes": [
+        "/api/passkit/v1"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 31
+        },
+        {
+          "method": "POST",
+          "suffix": "devices/{deviceLibraryIdentifier}/registrations/{passTypeIdentifier}/{serialNumber}",
+          "sourceLine": 51
+        },
+        {
+          "method": "DELETE",
+          "suffix": "devices/{deviceLibraryIdentifier}/registrations/{passTypeIdentifier}/{serialNumber}",
+          "sourceLine": 77
+        },
+        {
+          "method": "GET",
+          "suffix": "devices/{deviceLibraryIdentifier}/registrations/{passTypeIdentifier}",
+          "sourceLine": 95
+        },
+        {
+          "method": "GET",
+          "suffix": "passes/{passTypeIdentifier}/{serialNumber}",
+          "sourceLine": 126
+        },
+        {
+          "method": "POST",
+          "suffix": "log",
+          "sourceLine": 142
+        }
+      ],
+      "requestAndResponseTypes": [
+        "PassKitController",
+        "PassRegistrationRequest",
+        "PassSerialNumbersResponse",
+        "PassLogRequest"
+      ],
+      "contractAttributes": [
+        "[AllowAnonymous]",
+        "[AskPermission(PermissionKeys.PresencesManage)]",
+        "[AskPermission(PermissionKeys.PresencesManage)]",
+        "[AskPermission(PermissionKeys.PresencesManage)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/PresenceActivityController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/PresenceActivityController.cs",
+      "routePrefixes": [
+        "/api/activities"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 41
+        },
+        {
+          "method": "GET",
+          "suffix": "{identifier}",
+          "sourceLine": 104
+        },
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 127
+        },
+        {
+          "method": "POST",
+          "suffix": "sessions/start",
+          "sourceLine": 216
+        },
+        {
+          "method": "POST",
+          "suffix": "sessions/end",
+          "sourceLine": 282
+        },
+        {
+          "method": "GET",
+          "suffix": "catalog",
+          "sourceLine": 309
+        },
+        {
+          "method": "GET",
+          "suffix": "stats",
+          "sourceLine": 342
+        },
+        {
+          "method": "GET",
+          "suffix": "tags/stats",
+          "sourceLine": 369
+        },
+        {
+          "method": "PUT",
+          "suffix": "{id:guid}",
+          "sourceLine": 397
+        },
+        {
+          "method": "DELETE",
+          "suffix": "",
+          "sourceLine": 469
+        }
+      ],
+      "requestAndResponseTypes": [
+        "PresenceActivityController",
+        "StartSessionRequest",
+        "EndSessionRequest",
+        "SetActivityRequest"
+      ],
+      "contractAttributes": [
+        "[AskPermission(PermissionKeys.PresencesActivityManage)]",
+        "[AskPermission(PermissionKeys.PresencesActivityManage)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/PresenceArtworkController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/PresenceArtworkController.cs",
+      "routePrefixes": [
+        "/api/presence/artworks"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 21
+        },
+        {
+          "method": "GET",
+          "suffix": "{hash}",
+          "sourceLine": 47
+        }
+      ],
+      "requestAndResponseTypes": [
+        "UploadArtworkRequest",
+        "PresenceArtworkController",
+        "PresenceArtworkResponse"
+      ],
+      "contractAttributes": [
+        "[Required] public IFormFile File { get; set; } = null!;",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.PresencesArtworkManage)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Affiliation/AffiliationSpellController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Affiliation/AffiliationSpellController.cs",
+      "routePrefixes": [
+        "/api/affiliations"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "suffix": "registration-invites/consume",
+          "sourceLine": 42
+        },
+        {
+          "method": "POST",
+          "suffix": "purchase",
+          "sourceLine": 57
+        },
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 73
+        },
+        {
+          "method": "POST",
+          "suffix": "{spell}/results",
+          "sourceLine": 91
+        },
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 114
+        },
+        {
+          "method": "GET",
+          "suffix": "{id:guid}",
+          "sourceLine": 149
+        },
+        {
+          "method": "GET",
+          "suffix": "{id:guid}/results",
+          "sourceLine": 164
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{id:guid}",
+          "sourceLine": 196
+        }
+      ],
+      "requestAndResponseTypes": [
+        "AffiliationSpellController",
+        "CreateAffiliationSpellRequest",
+        "CreateAffiliationResultRequest",
+        "PurchaseAffiliationSpellResponse",
+        "ConsumeRegistrationInviteRequest"
+      ],
+      "contractAttributes": [
+        "[MaxLength(1024)] public string? Spell { get; set; }",
+        "[Range(1, int.MaxValue)] public int? MaxUsages { get; set; }",
+        "[MaxLength(8192)] public string ResourceIdentifier { get; set; } = null!;",
+        "[Required, MaxLength(1024)] public string Spell { get; set; } = null!;",
+        "[Authorize]",
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.AffiliationsManage)]",
+        "[Authorize]",
+        "[Authorize]",
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.AffiliationsManage)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/DomainTrust/DomainTrustController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/DomainTrust/DomainTrustController.cs",
+      "routePrefixes": [
+        "/api/domain-blocks"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 31
+        },
+        {
+          "method": "GET",
+          "suffix": "{id:guid}",
+          "sourceLine": 45
+        },
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 73
+        },
+        {
+          "method": "PATCH",
+          "suffix": "{id:guid}",
+          "sourceLine": 112
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{id:guid}",
+          "sourceLine": 132
+        },
+        {
+          "method": "POST",
+          "suffix": "validate",
+          "sourceLine": 149
+        },
+        {
+          "method": "GET",
+          "suffix": "check",
+          "sourceLine": 157
+        },
+        {
+          "method": "GET",
+          "suffix": "metrics",
+          "sourceLine": 170
+        },
+        {
+          "method": "GET",
+          "suffix": "metrics/{domain}",
+          "sourceLine": 191
+        }
+      ],
+      "requestAndResponseTypes": [
+        "DomainTrustController",
+        "DomainValidationMetricResponse",
+        "CreateBlockRuleRequest",
+        "UpdateBlockRuleRequest",
+        "ValidateUrlRequest"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[Authorize]",
+        "[Required, MaxLength(512)]",
+        "[MaxLength(16)]",
+        "[MaxLength(256)]",
+        "[Authorize]",
+        "[MaxLength(512)]",
+        "[MaxLength(16)]",
+        "[MaxLength(256)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.DomainTrustUpdate)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.DomainTrustDelete)]",
+        "[Required]",
+        "[Authorize]",
+        "[Authorize]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Examination/TestAdminController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestAdminController.cs",
+      "routePrefixes": [
+        "/api/admin/tests"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 17
+        },
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 21
+        },
+        {
+          "method": "PUT",
+          "suffix": "{key}",
+          "sourceLine": 37
+        },
+        {
+          "method": "POST",
+          "suffix": "{key}/publish",
+          "sourceLine": 54
+        },
+        {
+          "method": "POST",
+          "suffix": "{key}/archive",
+          "sourceLine": 65
+        },
+        {
+          "method": "GET",
+          "suffix": "{key}/trial",
+          "sourceLine": 77
+        },
+        {
+          "method": "POST",
+          "suffix": "{key}/trial/attempts",
+          "sourceLine": 85
+        },
+        {
+          "method": "POST",
+          "suffix": "{key}/trials",
+          "sourceLine": 96
+        },
+        {
+          "method": "POST",
+          "suffix": "{key}/trial/grade",
+          "sourceLine": 114
+        },
+        {
+          "method": "GET",
+          "suffix": "{key}/attempts",
+          "sourceLine": 138
+        },
+        {
+          "method": "POST",
+          "suffix": "answers/{answerId:guid}/review",
+          "sourceLine": 149
+        }
+      ],
+      "requestAndResponseTypes": [
+        "TestAdminController",
+        "TestUpsertRequest",
+        "TestQuestionGroupAssignmentUpsertRequest",
+        "ReviewTestAnswerRequest",
+        "TestTrialResult",
+        "TestTrialAnswerResult"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsReview)]",
+        "[AskPermission(PermissionKeys.TestsReview)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Examination/TestController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestController.cs",
+      "routePrefixes": [
+        "/api/tests"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 17
+        },
+        {
+          "method": "GET",
+          "suffix": "activation",
+          "sourceLine": 25
+        },
+        {
+          "method": "POST",
+          "suffix": "activation/recheck",
+          "sourceLine": 33
+        },
+        {
+          "method": "GET",
+          "suffix": "{key}",
+          "sourceLine": 42
+        },
+        {
+          "method": "POST",
+          "suffix": "{key}/attempts",
+          "sourceLine": 50
+        },
+        {
+          "method": "POST",
+          "suffix": "attempts/{attemptId:guid}/submit",
+          "sourceLine": 61
+        },
+        {
+          "method": "GET",
+          "suffix": "attempts/{attemptId:guid}",
+          "sourceLine": 72
+        }
+      ],
+      "requestAndResponseTypes": [
+        "TestController",
+        "StartTestAttemptRequest",
+        "SubmitTestAttemptRequest",
+        "ParticipantTest",
+        "ParticipantQuestion",
+        "ParticipantChoice",
+        "ParticipantAttempt",
+        "ParticipantAnswer"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[AllowAnonymous]",
+        "[AskPermission(PermissionKeys.TestsTake)]",
+        "[AskPermission(PermissionKeys.TestsTake)]",
+        "[AskPermission(PermissionKeys.TestsTake)]",
+        "[AskPermission(PermissionKeys.TestsTake)]",
+        "[AskPermission(PermissionKeys.TestsTake)]",
+        "[AskPermission(PermissionKeys.TestsTake)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Examination/TestQuestionAdminController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestQuestionAdminController.cs",
+      "routePrefixes": [
+        "/api/admin/test-questions"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 18
+        },
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 28
+        },
+        {
+          "method": "POST",
+          "suffix": "import",
+          "sourceLine": 42
+        },
+        {
+          "method": "GET",
+          "suffix": "export",
+          "sourceLine": 62
+        },
+        {
+          "method": "DELETE",
+          "suffix": "prune",
+          "sourceLine": 82
+        },
+        {
+          "method": "PUT",
+          "suffix": "{id:guid}",
+          "sourceLine": 93
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{id:guid}",
+          "sourceLine": 109
+        }
+      ],
+      "requestAndResponseTypes": [
+        "TestQuestionAdminController",
+        "TestQuestionPage",
+        "TestQuestionImportResult",
+        "TestQuestionPruneResult",
+        "TestQuestionResponse",
+        "TestChoiceResponse",
+        "TestQuestionUpsertRequest",
+        "TestChoiceUpsertRequest",
+        "TestQuestionImportRequest"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Examination/TestQuestionGroupAdminController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestQuestionGroupAdminController.cs",
+      "routePrefixes": [
+        "/api/admin/test-question-groups"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 17
+        },
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 22
+        },
+        {
+          "method": "PUT",
+          "suffix": "{key}",
+          "sourceLine": 35
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{key}",
+          "sourceLine": 48
+        }
+      ],
+      "requestAndResponseTypes": [
+        "TestQuestionGroupAdminController",
+        "TestQuestionGroupUpsertRequest",
+        "TestQuestionGroupResponse"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Examination/TestTrialAdminController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestTrialAdminController.cs",
+      "routePrefixes": [
+        "/api/admin/test-trials"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 17
+        },
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 22
+        },
+        {
+          "method": "PUT",
+          "suffix": "{key}",
+          "sourceLine": 37
+        }
+      ],
+      "requestAndResponseTypes": [
+        "TestTrialAdminController",
+        "TestTrialUpsertRequest",
+        "TestTrialResponse"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]",
+        "[AskPermission(PermissionKeys.TestsManage)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Examination/TestTrialController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestTrialController.cs",
+      "routePrefixes": [
+        "/api/tests/trials"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "{key}",
+          "sourceLine": 17
+        },
+        {
+          "method": "POST",
+          "suffix": "{key}/attempts",
+          "sourceLine": 25
+        }
+      ],
+      "requestAndResponseTypes": [
+        "TestTrialController"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TestsTake)]",
+        "[AskPermission(PermissionKeys.TestsTake)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/IpCheckController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/IpCheckController.cs",
+      "routePrefixes": [
+        "/api/ip-check"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "geo",
+          "sourceLine": 46
+        },
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 63
+        }
+      ],
+      "requestAndResponseTypes": [
+        "IpCheckController",
+        "GeoIpResponse",
+        "IpCheckResponse"
+      ],
+      "contractAttributes": [
+        "[AskPermission(PermissionKeys.AdminIpCheck)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Meet/LocationPinController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Meet/LocationPinController.cs",
+      "routePrefixes": [
+        "/api/pins"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 48
+        },
+        {
+          "method": "PUT",
+          "suffix": "{id:guid}/location",
+          "sourceLine": 92
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{id:guid}",
+          "sourceLine": 139
+        },
+        {
+          "method": "GET",
+          "suffix": "nearby",
+          "sourceLine": 159
+        },
+        {
+          "method": "GET",
+          "suffix": "{id:guid}",
+          "sourceLine": 200
+        },
+        {
+          "method": "POST",
+          "suffix": "{id:guid}/disconnect",
+          "sourceLine": 236
+        },
+        {
+          "method": "GET",
+          "suffix": "{id:guid}/stream",
+          "sourceLine": 259
+        },
+        {
+          "method": "GET",
+          "suffix": "me",
+          "sourceLine": 313
+        }
+      ],
+      "requestAndResponseTypes": [
+        "LocationPinController",
+        "CreatePinRequest",
+        "UpdateLocationRequest",
+        "DisconnectRequest"
+      ],
+      "contractAttributes": [
+        "[MaxLength(256)] public string? LocationName { get; set; }",
+        "[MaxLength(1024)] public string? LocationAddress { get; set; }",
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.LocationPinsUpdate)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.LocationPinsDelete)]",
+        "[Authorize]",
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.LocationPinsDelete)]",
+        "[Authorize]",
+        "[Authorize]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Meet/MeetController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Meet/MeetController.cs",
+      "routePrefixes": [
+        "/api/meets"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 39
+        },
+        {
+          "method": "GET",
+          "suffix": "nearby",
+          "sourceLine": 88
+        },
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 144
+        },
+        {
+          "method": "GET",
+          "suffix": "{id:guid}",
+          "sourceLine": 160
+        },
+        {
+          "method": "POST",
+          "suffix": "{id:guid}/complete",
+          "sourceLine": 190
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{id:guid}",
+          "sourceLine": 222
+        },
+        {
+          "method": "PATCH",
+          "suffix": "{id:guid}/visibility",
+          "sourceLine": 249
+        },
+        {
+          "method": "POST",
+          "suffix": "{id:guid}/join",
+          "sourceLine": 289
+        },
+        {
+          "method": "POST",
+          "suffix": "{id:guid}/pin",
+          "sourceLine": 386
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{id:guid}/pin",
+          "sourceLine": 439
+        },
+        {
+          "method": "GET",
+          "suffix": "{id:guid}/pins",
+          "sourceLine": 464
+        }
+      ],
+      "requestAndResponseTypes": [
+        "MeetController",
+        "CreateMeetRequest",
+        "UpdateVisibilityRequest",
+        "CreateOrUpdatePinRequest"
+      ],
+      "contractAttributes": [
+        "[MaxLength(8192)] public string? Notes { get; set; }",
+        "[MaxLength(512)] public string? ImageId { get; set; }",
+        "[MaxLength(256)] public string? LocationName { get; set; }",
+        "[MaxLength(1024)] public string? LocationAddress { get; set; }",
+        "[Range(60, 86400)] public int? ExpiresInSeconds { get; set; }",
+        "[Authorize]",
+        "[Authorize]",
+        "[Authorize]",
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.MeetComplete)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.MeetDelete)]",
+        "[Required] public LocationVisibility Visibility { get; set; }",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.MeetVisibilityUpdate)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.MeetJoin)]",
+        "[MaxLength(256)] public string? LocationName { get; set; }",
+        "[MaxLength(1024)] public string? LocationAddress { get; set; }",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.MeetPinManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.MeetPinManage)]",
+        "[Authorize]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/NameChangeCard/NameChangeCardController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/NameChangeCard/NameChangeCardController.cs",
+      "routePrefixes": [
+        "/api/accounts/me/name-change-card"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "suffix": "order",
+          "sourceLine": 31
+        },
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 47
+        },
+        {
+          "method": "POST",
+          "suffix": "use",
+          "sourceLine": 55
+        }
+      ],
+      "requestAndResponseTypes": [
+        "NameChangeCardController",
+        "PurchaseNameChangeCardResponse",
+        "UseNameChangeCardRequest"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[Required] public string Target { get; set; } = null!;",
+        "[Required] public string NewName { get; set; } = null!;"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Nearby/NearbyController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Nearby/NearbyController.cs",
+      "routePrefixes": [
+        "/api/nearby"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "suffix": "presence-tokens",
+          "sourceLine": 85
+        },
+        {
+          "method": "POST",
+          "suffix": "resolve",
+          "sourceLine": 119
+        }
+      ],
+      "requestAndResponseTypes": [
+        "NearbyController",
+        "PresenceTokensRequest",
+        "PresenceTokenDto",
+        "PresenceTokensResponse",
+        "ResolveObservationRequest",
+        "ResolveRequest",
+        "ResolvePeerResponse",
+        "ResolveResponse"
+      ],
+      "contractAttributes": [
+        "[Required]",
+        "[MaxLength(256)]",
+        "[Range(1, NearbyService.MaxPrefetchSlots)]",
+        "[Required]",
+        "[Required]",
+        "[MinLength(1)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.NearbyPresenceManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.NearbyResolve)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Nfc/NfcAdminController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Nfc/NfcAdminController.cs",
+      "routePrefixes": [
+        "/api/admin/nfc"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "suffix": "tags",
+          "sourceLine": 49
+        },
+        {
+          "method": "GET",
+          "suffix": "tags",
+          "sourceLine": 147
+        }
+      ],
+      "requestAndResponseTypes": [
+        "NfcAdminController",
+        "CreateEncryptedTagRequest",
+        "EncryptedTagDto"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[Required]",
+        "[MaxLength(64)]",
+        "[Required]",
+        "[AskPermission(PermissionKeys.NfcAdminManage)]",
+        "[AskPermission(PermissionKeys.NfcAdminManage)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Nfc/NfcController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Nfc/NfcController.cs",
+      "routePrefixes": [
+        "/api/nfc"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 127
+        },
+        {
+          "method": "GET",
+          "suffix": "lookup",
+          "sourceLine": 381
+        },
+        {
+          "method": "GET",
+          "suffix": "tags/{id:guid}",
+          "sourceLine": 408
+        },
+        {
+          "method": "GET",
+          "suffix": "tags",
+          "sourceLine": 429
+        },
+        {
+          "method": "POST",
+          "suffix": "tags",
+          "sourceLine": 458
+        },
+        {
+          "method": "POST",
+          "suffix": "tags/claim",
+          "sourceLine": 498
+        },
+        {
+          "method": "PATCH",
+          "suffix": "tags/{tagId:guid}",
+          "sourceLine": 556
+        },
+        {
+          "method": "POST",
+          "suffix": "tags/{tagId:guid}/lock",
+          "sourceLine": 593
+        },
+        {
+          "method": "DELETE",
+          "suffix": "tags/{tagId:guid}",
+          "sourceLine": 624
+        }
+      ],
+      "requestAndResponseTypes": [
+        "NfcController",
+        "NfcResolveResponse",
+        "NfcTagResponse",
+        "RegisterTagRequest",
+        "UpdateTagRequest",
+        "ClaimTagRequest"
+      ],
+      "contractAttributes": [
+        "[Required]",
+        "[MaxLength(64)]",
+        "[MaxLength(64)]",
+        "[MaxLength(64)]",
+        "[MaxLength(64)]",
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.NfcAdminManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.NfcTagsClaim)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.NfcTagsUpdate)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.NfcTagsLock)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.NfcTagsDelete)]"
+      ],
+      "remoteDependencies": [
+        "RemoteSubscriptionService"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Progression/BadgesDiscoveryController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Progression/BadgesDiscoveryController.cs",
+      "routePrefixes": [
+        ".well-known"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "badges",
+          "sourceLine": 18
+        },
+        {
+          "method": "GET",
+          "suffix": "badges/icons/{iconName}",
+          "sourceLine": 36
+        }
+      ],
+      "requestAndResponseTypes": [
+        "BadgesOptions",
+        "BadgesDiscoveryController"
+      ],
+      "contractAttributes": [],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Progression/ProgressionAdminController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Progression/ProgressionAdminController.cs",
+      "routePrefixes": [
+        "/api/admin/progression"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "achievements",
+          "sourceLine": 24
+        },
+        {
+          "method": "POST",
+          "suffix": "achievements",
+          "sourceLine": 31
+        },
+        {
+          "method": "PUT",
+          "suffix": "achievements/{identifier}",
+          "sourceLine": 43
+        },
+        {
+          "method": "POST",
+          "suffix": "achievements/{identifier}/enable",
+          "sourceLine": 55
+        },
+        {
+          "method": "GET",
+          "suffix": "quests",
+          "sourceLine": 67
+        },
+        {
+          "method": "POST",
+          "suffix": "quests",
+          "sourceLine": 74
+        },
+        {
+          "method": "PUT",
+          "suffix": "quests/{identifier}",
+          "sourceLine": 86
+        },
+        {
+          "method": "POST",
+          "suffix": "quests/{identifier}/enable",
+          "sourceLine": 98
+        },
+        {
+          "method": "POST",
+          "suffix": "sync",
+          "sourceLine": 110
+        },
+        {
+          "method": "POST",
+          "suffix": "test-ws-packet",
+          "sourceLine": 119
+        }
+      ],
+      "requestAndResponseTypes": [
+        "ProgressionAdminController"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.ProgressionAchievementsManage)]",
+        "[AskPermission(PermissionKeys.ProgressionAchievementsManage)]",
+        "[AskPermission(PermissionKeys.ProgressionAchievementsManage)]",
+        "[AskPermission(PermissionKeys.ProgressionQuestsManage)]",
+        "[AskPermission(PermissionKeys.ProgressionQuestsManage)]",
+        "[AskPermission(PermissionKeys.ProgressionQuestsManage)]",
+        "[AskPermission(PermissionKeys.ProgressionSync)]"
+      ],
+      "remoteDependencies": [
+        "DyPermissionService.DyPermissionServiceClient"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Progression/ProgressionController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Progression/ProgressionController.cs",
+      "routePrefixes": [
+        "/api/accounts/me/progression"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "achievements",
+          "sourceLine": 16
+        },
+        {
+          "method": "GET",
+          "suffix": "achievements/stats",
+          "sourceLine": 28
+        },
+        {
+          "method": "GET",
+          "suffix": "quests",
+          "sourceLine": 37
+        },
+        {
+          "method": "GET",
+          "suffix": "grants",
+          "sourceLine": 46
+        }
+      ],
+      "requestAndResponseTypes": [
+        "ProgressionController"
+      ],
+      "contractAttributes": [
+        "[Authorize]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Realm/RealmAdminController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmAdminController.cs",
+      "routePrefixes": [
+        "/api/admin/realms"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 60
+        },
+        {
+          "method": "GET",
+          "suffix": "{slug}",
+          "sourceLine": 110
+        },
+        {
+          "method": "PATCH",
+          "suffix": "{slug}",
+          "sourceLine": 146
+        },
+        {
+          "method": "POST",
+          "suffix": "{slug}/verification",
+          "sourceLine": 209
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{slug}/verification",
+          "sourceLine": 244
+        },
+        {
+          "method": "GET",
+          "suffix": "{slug}/members",
+          "sourceLine": 269
+        },
+        {
+          "method": "PATCH",
+          "suffix": "{slug}/members/{memberId:guid}/role",
+          "sourceLine": 316
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{slug}/members/{memberId:guid}",
+          "sourceLine": 356
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{slug}",
+          "sourceLine": 390
+        }
+      ],
+      "requestAndResponseTypes": [
+        "RealmAdminController",
+        "AdminUpdateRealmRequest",
+        "SetRealmVerificationRequest",
+        "UpdateMemberRoleRequest",
+        "AdminRealmDetail"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[MaxLength(1024)] public string? Slug { get; set; }",
+        "[MaxLength(1024)] public string? Name { get; set; }",
+        "[MaxLength(4096)] public string? Description { get; set; }",
+        "[MaxLength(1024)] public string? Title { get; set; }",
+        "[MaxLength(8192)] public string? Description { get; set; }",
+        "[MaxLength(1024)] public string? VerifiedBy { get; set; }",
+        "[AskPermission(PermissionKeys.RealmsModerate)]",
+        "[AskPermission(PermissionKeys.RealmsModerate)]",
+        "[AskPermission(PermissionKeys.RealmsUpdate)]",
+        "[AskPermission(PermissionKeys.RealmsModerate)]",
+        "[AskPermission(PermissionKeys.RealmsModerate)]",
+        "[AskPermission(PermissionKeys.RealmsModerate)]",
+        "[AskPermission(PermissionKeys.RealmsMembersManage)]",
+        "[AskPermission(PermissionKeys.RealmsMembersManage)]",
+        "[AskPermission(PermissionKeys.RealmsDelete)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Realm/RealmController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmController.cs",
+      "routePrefixes": [
+        "/api/realms"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "quota",
+          "sourceLine": 42
+        },
+        {
+          "method": "GET",
+          "suffix": "{slug}",
+          "sourceLine": 55
+        },
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 64
+        },
+        {
+          "method": "GET",
+          "suffix": "invites",
+          "sourceLine": 81
+        },
+        {
+          "method": "POST",
+          "suffix": "invites/{slug}",
+          "sourceLine": 136
+        },
+        {
+          "method": "POST",
+          "suffix": "invites/{slug}/accept",
+          "sourceLine": 221
+        },
+        {
+          "method": "POST",
+          "suffix": "invites/{slug}/decline",
+          "sourceLine": 253
+        },
+        {
+          "method": "GET",
+          "suffix": "{slug}/members",
+          "sourceLine": 286
+        },
+        {
+          "method": "GET",
+          "suffix": "{slug}/members/me",
+          "sourceLine": 379
+        },
+        {
+          "method": "PATCH",
+          "suffix": "{slug}/members/me/profile",
+          "sourceLine": 396
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{slug}/members/me/profile",
+          "sourceLine": 418
+        },
+        {
+          "method": "GET",
+          "suffix": "{slug}/labels",
+          "sourceLine": 438
+        },
+        {
+          "method": "POST",
+          "suffix": "{slug}/labels",
+          "sourceLine": 459
+        },
+        {
+          "method": "PATCH",
+          "suffix": "{slug}/labels/{labelId:guid}",
+          "sourceLine": 491
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{slug}/labels/{labelId:guid}",
+          "sourceLine": 516
+        },
+        {
+          "method": "PATCH",
+          "suffix": "{slug}/members/{memberId:guid}/label",
+          "sourceLine": 540
+        },
+        {
+          "method": "POST",
+          "suffix": "{slug}/boosts",
+          "sourceLine": 571
+        },
+        {
+          "method": "GET",
+          "suffix": "{slug}/boosts",
+          "sourceLine": 619
+        },
+        {
+          "method": "GET",
+          "suffix": "{slug}/boosts/leaderboard",
+          "sourceLine": 640
+        },
+        {
+          "method": "GET",
+          "suffix": "{slug}/members/{memberId:guid}/experience",
+          "sourceLine": 687
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{slug}/members/me",
+          "sourceLine": 709
+        },
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 755
+        },
+        {
+          "method": "PATCH",
+          "suffix": "{slug}",
+          "sourceLine": 826
+        },
+        {
+          "method": "POST",
+          "suffix": "{slug}/members/me",
+          "sourceLine": 900
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{slug}/members/{memberId:guid}",
+          "sourceLine": 969
+        },
+        {
+          "method": "PATCH",
+          "suffix": "{slug}/members/{memberId:guid}/role",
+          "sourceLine": 1006
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{slug}",
+          "sourceLine": 1047
+        },
+        {
+          "method": "GET",
+          "suffix": "{slug}/permissions/roles",
+          "sourceLine": 1129
+        },
+        {
+          "method": "POST",
+          "suffix": "{slug}/permissions/roles",
+          "sourceLine": 1145
+        },
+        {
+          "method": "GET",
+          "suffix": "{slug}/permissions/users/{accountId:guid}",
+          "sourceLine": 1185
+        },
+        {
+          "method": "POST",
+          "suffix": "{slug}/permissions/users",
+          "sourceLine": 1201
+        },
+        {
+          "method": "GET",
+          "suffix": "{slug}/posts/moderation-logs",
+          "sourceLine": 1241
+        }
+      ],
+      "requestAndResponseTypes": [
+        "RealmController",
+        "RealmMemberRequest",
+        "RealmMemberProfileRequest",
+        "RealmLabelRequest",
+        "RealmBoostRequest",
+        "RealmBoostResponse",
+        "RealmLabelAssignmentRequest",
+        "RealmRequest",
+        "RealmRolePermissionRequest",
+        "RealmUserPermissionRequest",
+        "ModeratePostRequest"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[Authorize]",
+        "[Authorize]",
+        "[Required] public Guid RelatedUserId { get; set; }",
+        "[Required] public int Role { get; set; }",
+        "[MaxLength(1024)] public string? Nick { get; set; }",
+        "[MaxLength(4096)] public string? Bio { get; set; }",
+        "[Required, MaxLength(1024)] public string Name { get; set; } = string.Empty;",
+        "[MaxLength(4096)] public string? Description { get; set; }",
+        "[MaxLength(64)] public string? Color { get; set; }",
+        "[MaxLength(256)] public string? Icon { get; set; }",
+        "[Range(1, 1000000)] public int Shares { get; set; }",
+        "[MaxLength(128)] public string? Currency { get; set; }",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsInvitesManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsInvitesManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsInvitesManage)]",
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsMembersManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsMembersManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsLabelsManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsLabelsManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsLabelsManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsMembersManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsBoostsManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsMembersManage)]",
+        "[MaxLength(1024)] public string? Slug { get; set; }",
+        "[MaxLength(1024)] public string? Name { get; set; }",
+        "[MaxLength(4096)] public string? Description { get; set; }",
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsUpdate)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsMembersManage)]",
+        "[AskPermission(PermissionKeys.RealmsMembersManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsMembersManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsMembersManage)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsDelete)]",
+        "[Required] public int RoleLevel { get; set; }",
+        "[Required] public bool CanChat { get; set; }",
+        "[Required] public bool CanPost { get; set; }",
+        "[Required] public bool CanComment { get; set; }",
+        "[Required] public bool CanUploadMedia { get; set; }",
+        "[Required] public bool CanModeratePosts { get; set; }",
+        "[Required] public bool CanModerateChat { get; set; }",
+        "[Required] public bool CanManageMembers { get; set; }",
+        "[Required] public bool CanManageRealm { get; set; }",
+        "[Required] public Guid AccountId { get; set; }",
+        "[MaxLength(4096)] public string? Reason { get; set; }",
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsPermissionsManage)]",
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RealmsPermissionsManage)]",
+        "[Authorize]"
+      ],
+      "remoteDependencies": [
+        "DyFileService.DyFileServiceClient",
+        "DyAccountService.DyAccountServiceClient",
+        "RemotePaymentService"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Realm/RealmPublicController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmPublicController.cs",
+      "routePrefixes": [
+        "api/realms/public"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 13
+        }
+      ],
+      "requestAndResponseTypes": [
+        "RealmPublicController"
+      ],
+      "contractAttributes": [],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Rewind/AccountRewindController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Rewind/AccountRewindController.cs",
+      "routePrefixes": [
+        "/api/rewind"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "{code}",
+          "sourceLine": 16
+        },
+        {
+          "method": "GET",
+          "suffix": "me",
+          "sourceLine": 24
+        },
+        {
+          "method": "POST",
+          "suffix": "me/{year:int}/public",
+          "sourceLine": 33
+        },
+        {
+          "method": "POST",
+          "suffix": "me/{year:int}/private",
+          "sourceLine": 50
+        }
+      ],
+      "requestAndResponseTypes": [
+        "AccountRewindController"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RewindCreate)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.RewindCreate)]"
+      ],
+      "remoteDependencies": []
+    },
+    {
+      "path": "DysonNetwork.Passport/Ticket/TicketController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Ticket/TicketController.cs",
+      "routePrefixes": [
+        "/api/tickets"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 346
+        },
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 393
+        },
+        {
+          "method": "GET",
+          "suffix": "me",
+          "sourceLine": 440
+        },
+        {
+          "method": "GET",
+          "suffix": "{id}",
+          "sourceLine": 469
+        },
+        {
+          "method": "PUT",
+          "suffix": "{id}",
+          "sourceLine": 501
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{id}",
+          "sourceLine": 560
+        },
+        {
+          "method": "POST",
+          "suffix": "{id:guid}/messages",
+          "sourceLine": 609
+        },
+        {
+          "method": "POST",
+          "suffix": "{id:guid}/status",
+          "sourceLine": 682
+        },
+        {
+          "method": "POST",
+          "suffix": "{id:guid}/assign",
+          "sourceLine": 811
+        },
+        {
+          "method": "GET",
+          "suffix": "count",
+          "sourceLine": 879
+        }
+      ],
+      "requestAndResponseTypes": [
+        "TicketController",
+        "CreateTicketRequest",
+        "UpdateTicketRequest",
+        "AddMessageRequest",
+        "AssignRequest",
+        "UpdateStatusRequest"
+      ],
+      "contractAttributes": [
+        "[Required]",
+        "[MinLength(3)]",
+        "[MaxLength(256)]",
+        "[MaxLength(16384)]",
+        "[Required]",
+        "[MinLength(3)]",
+        "[MaxLength(256)]",
+        "[Required]",
+        "[MaxLength(16384)]",
+        "[Required]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TicketsCreate)]",
+        "[Authorize]",
+        "[Authorize]",
+        "[Authorize]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TicketsUpdate)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TicketsDelete)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TicketsMessagesCreate)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TicketsStatusUpdate)]",
+        "[Authorize]",
+        "[AskPermission(PermissionKeys.TicketsAssign)]",
+        "[Authorize]"
+      ],
+      "remoteDependencies": [
+        "DyPermissionService.DyPermissionServiceClient",
+        "RemoteRingService",
+        "RemoteAccountContactService"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Ticket/TicketOnCallAdminController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Ticket/TicketOnCallAdminController.cs",
+      "routePrefixes": [
+        "/api/admin/tickets/on-call"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "suffix": "",
+          "sourceLine": 22
+        },
+        {
+          "method": "POST",
+          "suffix": "",
+          "sourceLine": 30
+        },
+        {
+          "method": "DELETE",
+          "suffix": "{accountId:guid}",
+          "sourceLine": 54
+        }
+      ],
+      "requestAndResponseTypes": [
+        "TicketOnCallAdminController",
+        "AddOnCallAdminRequest"
+      ],
+      "contractAttributes": [
+        "[Authorize]",
+        "[Required] public Guid AccountId { get; set; }",
+        "[AskPermission(PermissionKeys.TicketsOnCallManage)]",
+        "[AskPermission(PermissionKeys.TicketsOnCallManage)]",
+        "[AskPermission(PermissionKeys.TicketsOnCallManage)]"
+      ],
+      "remoteDependencies": []
+    }
+  ],
+  "entitySets": [
+    {
+      "model": "SnPermissionNode",
+      "set": "PermissionNodes"
+    },
+    {
+      "model": "SnPermissionGroup",
+      "set": "PermissionGroups"
+    },
+    {
+      "model": "SnPermissionGroupMember",
+      "set": "PermissionGroupMembers"
+    },
+    {
+      "model": "SnMagicSpell",
+      "set": "MagicSpells"
+    },
+    {
+      "model": "SnAccountBoardItem",
+      "set": "AccountBoardItems"
+    },
+    {
+      "model": "SnApplePass",
+      "set": "ApplePasses"
+    },
+    {
+      "model": "SnApplePassRegistration",
+      "set": "ApplePassRegistrations"
+    },
+    {
+      "model": "SnAccountRelationship",
+      "set": "AccountRelationships"
+    },
+    {
+      "model": "SnAccountStatus",
+      "set": "AccountStatuses"
+    },
+    {
+      "model": "SnCheckInResult",
+      "set": "AccountCheckInResults"
+    },
+    {
+      "model": "SnPresenceActivity",
+      "set": "PresenceActivities"
+    },
+    {
+      "model": "SnPresenceCatalogItem",
+      "set": "PresenceCatalogItems"
+    },
+    {
+      "model": "SnPresenceActivityTag",
+      "set": "PresenceActivityTags"
+    },
+    {
+      "model": "SnPresenceCatalogTag",
+      "set": "PresenceCatalogTags"
+    },
+    {
+      "model": "SnPresenceArtwork",
+      "set": "PresenceArtworks"
+    },
+    {
+      "model": "SnUserCalendarEvent",
+      "set": "UserCalendarEvents"
+    },
+    {
+      "model": "SnCalendarEventSubscription",
+      "set": "CalendarEventSubscriptions"
+    },
+    {
+      "model": "SnNotableDay",
+      "set": "NotableDays"
+    },
+    {
+      "model": "SnAccountBadge",
+      "set": "Badges"
+    },
+    {
+      "model": "SnRealm",
+      "set": "Realms"
+    },
+    {
+      "model": "SnRealmMember",
+      "set": "RealmMembers"
+    },
+    {
+      "model": "SnRealmLabel",
+      "set": "RealmLabels"
+    },
+    {
+      "model": "SnRealmBoostContribution",
+      "set": "RealmBoostContributions"
+    },
+    {
+      "model": "SnRealmExperienceRecord",
+      "set": "RealmExperienceRecords"
+    },
+    {
+      "model": "SnRealmRolePermission",
+      "set": "RealmRolePermissions"
+    },
+    {
+      "model": "SnRealmUserPermission",
+      "set": "RealmUserPermissions"
+    },
+    {
+      "model": "SnRealmPostModerationLog",
+      "set": "RealmPostModerationLogs"
+    },
+    {
+      "model": "SnSocialCreditRecord",
+      "set": "SocialCreditRecords"
+    },
+    {
+      "model": "SnExperienceRecord",
+      "set": "ExperienceRecords"
+    },
+    {
+      "model": "SnAchievementDefinition",
+      "set": "AchievementDefinitions"
+    },
+    {
+      "model": "SnQuestDefinition",
+      "set": "QuestDefinitions"
+    },
+    {
+      "model": "SnAccountAchievement",
+      "set": "AccountAchievements"
+    },
+    {
+      "model": "SnAccountQuestProgress",
+      "set": "AccountQuestProgresses"
+    },
+    {
+      "model": "SnProgressRewardGrant",
+      "set": "ProgressRewardGrants"
+    },
+    {
+      "model": "SnProgressEventReceipt",
+      "set": "ProgressEventReceipts"
+    },
+    {
+      "model": "SnAffiliationSpell",
+      "set": "AffiliationSpells"
+    },
+    {
+      "model": "SnAffiliationResult",
+      "set": "AffiliationResults"
+    },
+    {
+      "model": "SnAffiliationSpellPurchase",
+      "set": "AffiliationSpellPurchases"
+    },
+    {
+      "model": "SnNameChangeCardPurchase",
+      "set": "NameChangeCardPurchases"
+    },
+    {
+      "model": "SnRewindPoint",
+      "set": "RewindPoints"
+    },
+    {
+      "model": "SnTicket",
+      "set": "Tickets"
+    },
+    {
+      "model": "SnTicketMessage",
+      "set": "TicketMessages"
+    },
+    {
+      "model": "SnTicketOnCallAdmin",
+      "set": "TicketOnCallAdmins"
+    },
+    {
+      "model": "SnMeet",
+      "set": "Meets"
+    },
+    {
+      "model": "SnMeetParticipant",
+      "set": "MeetParticipants"
+    },
+    {
+      "model": "SnNearbyDevice",
+      "set": "NearbyDevices"
+    },
+    {
+      "model": "SnNearbyPresenceToken",
+      "set": "NearbyPresenceTokens"
+    },
+    {
+      "model": "SnLocationPin",
+      "set": "LocationPins"
+    },
+    {
+      "model": "SnNfcTag",
+      "set": "NfcTags"
+    },
+    {
+      "model": "SnDomainBlock",
+      "set": "DomainBlocks"
+    },
+    {
+      "model": "SnDomainValidationMetric",
+      "set": "DomainValidationMetrics"
+    },
+    {
+      "model": "SnTest",
+      "set": "Tests"
+    },
+    {
+      "model": "SnTestTrial",
+      "set": "TestTrials"
+    },
+    {
+      "model": "SnTestQuestionGroup",
+      "set": "TestQuestionGroups"
+    },
+    {
+      "model": "SnTestQuestionGroupAssignment",
+      "set": "TestQuestionGroupAssignments"
+    },
+    {
+      "model": "SnTestQuestion",
+      "set": "TestQuestions"
+    },
+    {
+      "model": "SnTestChoice",
+      "set": "TestChoices"
+    },
+    {
+      "model": "SnTestAttempt",
+      "set": "TestAttempts"
+    },
+    {
+      "model": "SnTestAnswer",
+      "set": "TestAnswers"
+    }
+  ],
+  "grpc": [
+    {
+      "path": "DysonNetwork.Passport/Account/AccountServiceGrpc.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountServiceGrpc.cs",
+      "methods": [
+        "GetAccount",
+        "GetBotAccount",
+        "GetAccountBatch",
+        "GetBotAccountBatch",
+        "GetAccountStatus",
+        "GetAccountStatusBatch",
+        "LookupAccountBatch",
+        "SearchAccount",
+        "ListAccounts",
+        "ListFriends",
+        "ListBlocked",
+        "ListMuted",
+        "ListCloseFriends",
+        "GetProfile",
+        "UpdateProfile",
+        "UpdateBoardItemPayload",
+        "ListBadges",
+        "GetRelationship",
+        "HasRelationship",
+        "GrantBadge",
+        "GetBadge",
+        "UpdateBadge",
+        "GetNotableDays",
+        "GetUserCalendarEvents",
+        "GetCountdownEvents"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/PresenceServiceGrpc.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/PresenceServiceGrpc.cs",
+      "methods": [
+        "ListFriendsActivities"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Credit/SocialCreditServiceGrpc.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Credit/SocialCreditServiceGrpc.cs",
+      "methods": [
+        "AddRecord",
+        "GetSocialCredit"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Leveling/ExperienceServiceGrpc.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Leveling/ExperienceServiceGrpc.cs",
+      "methods": [
+        "AddRecord"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/DomainTrust/DomainTrustServiceGrpc.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/DomainTrust/DomainTrustServiceGrpc.cs",
+      "methods": [
+        "ValidateUrl",
+        "IsDomainBlocked"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Passport/Realm/RealmServiceGrpc.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmServiceGrpc.cs",
+      "methods": [
+        "GetRealm",
+        "GetRealmBatch",
+        "GetUserRealms",
+        "GetPublicRealms",
+        "SearchRealms",
+        "SendInviteNotify",
+        "IsMemberWithRole",
+        "LoadMemberAccount",
+        "LoadMemberAccounts",
+        "HasPermission"
+      ]
+    }
+  ],
+  "jobs": {
+    "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Startup/ScheduledJobsConfiguration.cs",
+    "schedules": [
+      {
+        "name": "AppDatabaseRecycling",
+        "cron": "0 0 0 * * ?"
+      },
+      {
+        "name": "NightOwlReminder",
+        "cron": "0 0 * * * ?"
+      },
+      {
+        "name": "DomainValidationMetricFlush",
+        "intervalMinutes": 1
+      },
+      {
+        "name": "SocialCreditValidation",
+        "intervalMinutes": 60
+      },
+      {
+        "name": "RealmTenureLeveling",
+        "cron": "0 0 1 * * ?"
+      },
+      {
+        "name": "ActivePresenceUpdate",
+        "intervalMinutes": 1
+      },
+      {
+        "name": "MaybePresenceUpdate",
+        "intervalMinutes": 5
+      },
+      {
+        "name": "ColdPresenceUpdate",
+        "intervalMinutes": 10
+      },
+      {
+        "name": "PresenceArtworkCleanup",
+        "cronConstant": "PresenceArtworkService.DefaultCleanupCron"
+      },
+      {
+        "name": "RelationshipExpiry",
+        "intervalMinutes": 5
+      }
+    ],
+    "hosted": [
+      "MeetLifecycleHostedService (registered; class source location not yet resolved)",
+      "LocationPinLifecycleHostedService: 30-second flush, 1-minute offline check"
+    ]
+  },
+  "events": {
+    "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Startup/ServiceCollectionExtensions.cs",
+    "types": [
+      "AccountCreatedEvent",
+      "PaymentOrderEvent",
+      "RealmActivityEvent",
+      "ActionLogTriggeredEvent",
+      "LocationPinUpdatedEvent",
+      "WebSocketConnectedEvent",
+      "WebSocketDisconnectedEvent",
+      "WebSocketPacketEvent"
+    ],
+    "streams": [
+      "payment_events",
+      "realm_activity_events",
+      "action_log_events",
+      "locationpin_events",
+      "websocket_connections"
+    ],
+    "note": "Exact subjects, payload schemas, consumer names, retry/deduplication and ordering must stay contract-compatible."
+  },
+  "nextCohesivePort": {
+    "domain": "Account board service",
+    "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountBoardService.cs",
+    "scope": [
+      "Get/hydrate ordered board",
+      "Transactional replace preserving custom-app payloads",
+      "App-owned payload update",
+      "Admin payload update",
+      "Widget validation and singleton handling",
+      "Account cache invalidation"
+    ],
+    "dependencies": [
+      "PostgreSQL account_board_items schema/EF mapping",
+      "SnAccountBoardItem and enum; verify Shared license",
+      "BoardPayloadContract; verify Shared license",
+      "Develop DyCustomAppService.GetBoardWidget/ValidateBoardWidgetPayload protobuf contracts",
+      "ICacheService.RemoveGroup and AccountService.AccountCachePrefix",
+      "Current/admin HTTP routes and DyProfileService UpdateBoardItemPayload bridge"
+    ],
+    "mustPreserve": [
+      "Duplicate order rejection",
+      "Existing custom payload matching by item ID then case-insensitive widget key",
+      "Custom payload cannot be overwritten by layout request",
+      "Database transaction atomicity and cache invalidation only after commit",
+      "Custom widget enabled/singleton checks and canonical key",
+      "Prebuilt custom fields cleared",
+      "Sorted returned order"
+    ],
+    "testGate": "Synthetic repository/RPC/cache contract tests first, then isolated PostgreSQL transaction tests and pinned C# differential fixtures; no production operations",
+    "implementationStatus": "Proposed; not implemented"
+  },
+  "controllerCount": 36,
+  "endpointAttributeCount": 255,
+  "sharedDependency": {
+    "path": "DysonNetwork.Shared",
+    "gitlink": "83c36cb92d667d3800f152665660c17886f71f7c",
+    "url": "https://src.solsynth.dev/SoSYS/NeTo.git",
+    "licenseVerified": false,
+    "githubMetadataResult": "Solsynth/NeTo 404 and organization search empty",
+    "sourceOfMapping": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/.gitmodules"
+  }
+}

@@ -1,0 +1,45 @@
+name: PostgreSQL contract validation
+
+on:
+  workflow_dispatch:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # official v4 resolved 2026-10-07
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # official v5 resolved 2026-10-07
+        with:
+          go-version: '1.26.4'
+          cache: false
+      - name: Download and verify declared modules
+        run: |
+          go mod download
+          go mod verify
+      - name: Ordinary build, vet and race checks
+        env:
+          GO_BIN: go
+        run: bash scripts/verify.sh
+      - name: Require actual PostgreSQL 16 cases and restart persistence
+        env:
+          GO_BIN: go
+          PG_BIN: /usr/lib/postgresql/16/bin
+          PG_TEST_ROOT: ${{ runner.temp }}/solsynth-pg
+        run: |
+          test -x "$PG_BIN/initdb"
+          "$PG_BIN/postgres" --version | grep -E '^postgres \(PostgreSQL\) 16\.'
+          bash scripts/integration-postgres.sh
+      - name: Record scope
+        if: success()
+        run: |
+          echo 'Local build/vet/race checks passed. Six actual PostgreSQL cases and the post-restart persistence assertion passed without skips.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Synthetic disposable private-socket database only. This does not validate production authentication, migration rollout, C# differential behavior, or whole-platform parity.' >> "$GITHUB_STEP_SUMMARY"

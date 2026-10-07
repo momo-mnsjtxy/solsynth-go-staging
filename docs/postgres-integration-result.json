@@ -1,0 +1,35 @@
+{
+  "status": "blocked_before_database_tests",
+  "postgres_version": "16.13",
+  "scope": "Fresh disposable synthetic clusters only, private Unix socket, no TCP listener, no existing database",
+  "attempts": [
+    {
+      "directory": "/workspace/shared/solsynth-go-integration/run.sWWXWlTu",
+      "initdb": "passed",
+      "start": "failed",
+      "mode": "default sandbox"
+    },
+    {
+      "directory": "/workspace/shared/solsynth-go-integration/run.PONFhYtS",
+      "initdb": "passed",
+      "start": "failed",
+      "mode": "require_escalated retry"
+    }
+  ],
+  "error": "PostgreSQL could not create Unix-domain socket: Operation not permitted; database system shut down",
+  "actual_database_tests_executed": 0,
+  "production_or_existing_databases_contacted": 0,
+  "servers_left_running": 0,
+  "prepared_test_cases": [
+    "Original licensed table shape, enum/UUID persistence and account isolation",
+    "Distinct-field patch concurrency across independent services and SQL pools",
+    "Soft-delete filtering and duplicate-live-row refusal",
+    "Atomic rollback on actual SQL check-constraint error and cancellation",
+    "Persistence after PostgreSQL shutdown/restart",
+    "Stable row IDs, creation timestamp and monotonic update timestamp"
+  ],
+  "ordinary_suite_behavior": "Integration test cases skip when PG_TEST_DSN is absent; package success does not mean database integration passed",
+  "next_step": "Run scripts/integration-postgres.sh in an authorized execution environment supporting private Unix-domain sockets; do not substitute public/TCP listeners to bypass the restriction",
+  "limitations": "No migration/rollback rehearsal against an existing schema deployment, cross-language oracle, crash durability claim, or production readiness claim",
+  "bounded_capability_diagnosis": "Temporary /tmp directory created normally, but Python socket(AF_UNIX, SOCK_STREAM) raised EPERM before bind; not specific to shared-path bind"
+}

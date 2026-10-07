@@ -1,0 +1,2929 @@
+import "dart:async";
+import "dart:convert";
+import 'dart:developer' as developer;
+import "package:dio/dio.dart";
+import "package:easy_localization/easy_localization.dart";
+import 'package:flutter/widgets.dart';
+import "package:flutter_cache_manager/flutter_cache_manager.dart";
+import "package:hooks_riverpod/hooks_riverpod.dart";
+import "package:island/chat/pods/chat_room.dart";
+import "package:island/chat/pods/chat_room_state.dart";
+import "package:island/chat/data/message_cache.dart";
+import "package:island/chat/data/message_repository.dart";
+import "package:island/chat/models/chat_view_state.dart";
+import "package:island/chat/realtime/message_handler.dart";
+import "package:island/chat/send/message_sender.dart";
+import "package:island/chat/sync/message_sync_service.dart";
+import "package:island/data/database.dart";
+import "package:island/data/message.dart";
+import "package:island/core/config.dart";
+import "package:island/core/database.dart";
+import "package:island/core/network.dart";
+import "package:island/core/services/event_bus.dart";
+import "package:island/core/services/ios_share_suggestions.dart";
+import "package:island/core/lifecycle.dart";
+import 'package:island/core/websocket.dart';
+import "package:island/chat/e2ee_message_service.dart";
+import "package:island/e2ee/e2ee.dart";
+import "package:island/accounts/account_pod.dart";
+import "package:island/accounts/screens/profile.dart";
+import "package:logging/logging.dart";
+import "package:island/shared/widgets/alert.dart";
+import "package:island_plugin_foundation/island_plugin_foundation.dart";
+import "package:riverpod_annotation/riverpod_annotation.dart";
+import "package:uuid/uuid.dart";
+import 'package:solar_network_sdk/solar_network_sdk.dart';
+
+part 'messages_notifier.g.dart';
+
+enum E2eeRecoveryState { idle, reconnecting, failed }
+
+final referencedChatMessageCacheProvider =
+    NotifierProvider.family<
+      ReferencedChatMessageCache,
+      Map<String, AsyncValue<LocalChatMessage?>>,
+      String
+    >(ReferencedChatMessageCache.new);
+
+class ReferencedChatMessageCache
+    extends Notifier<Map<String, AsyncValue<LocalChatMessage?>>> {
+  final String arg;
+
+  /// Message ids currently being fetched. Guards against duplicate network
+  /// requests without relying on a synchronous `AsyncLoading` entry — storing
+  /// one would mutate state during widget build (see MessageQuoteWidget).
+  final Set<String> _pendingFetches = {};
+
+  ReferencedChatMessageCache(this.arg);
+
+  @override
+  Map<String, AsyncValue<LocalChatMessage?>> build() => const {};
+
+  Future<void> resolve(String messageId) async {
+    if (state.containsKey(messageId) || _pendingFetches.contains(messageId)) {
+      return;
+    }
+
+    _pendingFetches.add(messageId);
+    try {
+      final message = await ref
+          .read(messagesProvider(arg).notifier)
+          .fetchMessageById(messageId);
+      _store(messageId, AsyncData(message));
+    } catch (error, stackTrace) {
+      _store(messageId, AsyncError(error, stackTrace));
+    } finally {
+      _pendingFetches.remove(messageId);
+    }
+  }
+
+  void put(LocalChatMessage? message, {required String messageId}) {
+    _store(messageId, AsyncData(message));
+  }
+
+  void _store(String messageId, AsyncValue<LocalChatMessage?> value) {
+    final next = Map<String, AsyncValue<LocalChatMessage?>>.of(state)
+      ..remove(messageId);
+    while (next.length >= PaginationConfig.maxCacheSize) {
+      next.remove(next.keys.first);
+    }
+    next[messageId] = value;
+    state = next;
+  }
+}
+
+const _kChatSenderDiagnosticLogPrefix = '[ChatSenderDiagnostic]';
+
+@riverpod
+class MessagesNotifier extends _$MessagesNotifier {
+  late Dio _apiClient;
+  late AppDatabase _database;
+  late SnChatMember _identity;
+
+  /// Keep-alive global sync notifier, captured at build time. Room-scoped
+  /// providers like this one can be disposed mid-operation (user leaves the
+  /// room while a load is in flight); the captured instance stays valid so the
+  /// matching [ChatSyncingNotifier.end] always runs and the global sync
+  /// indicator can't stick in the "syncing" state.
+  ChatSyncingNotifier? _globalSyncNotifier;
+  int _roomEncryptionMode = 0;
+  String? _mlsGroupId;
+
+  final Map<String, LocalChatMessage> _pendingMessages = {};
+  final Map<String, SnChatMember> _membersById = {};
+  final Map<String, SnChatMessagePin> _pinnedMessages = {};
+  String? _searchQuery;
+  bool? _withLinks;
+  bool? _withAttachments;
+
+  static const int _pageSize = 20;
+  static const int _backgroundPrefetchTarget = 60;
+  static const int _backgroundPrefetchMaxBatches = 3;
+
+  bool _hasMore = true;
+  bool _isSyncing = false;
+  bool _isJumping = false;
+  bool _isUpdatingState = false;
+  List<LocalChatMessage> _messages = [];
+
+  /// True while a coalesced state emission is scheduled for the end of this
+  /// microtask. Realtime mutations mutate [_messages] in place and mark the
+  /// list dirty; exactly one normalize/sort/filter pass runs per frame instead
+  /// of one per incoming message. Without this, a burst of N ws messages does
+  /// O(N²) full-list copies and drops frames, so messages render late.
+  bool _emitScheduled = false;
+  bool _isLoadingInitial = false;
+  bool _isLoadingMore = false;
+  bool _allRemoteMessagesFetched = false;
+  Future<void>? _olderMessagesPrefetchOperation;
+  bool _olderMessagesPrefetchScheduled = false;
+  int? _latestObservedRoomSequence;
+  final Set<int> _queuedMissingRoomSequences = <int>{};
+  final Set<int> _inFlightMissingRoomSequences = <int>{};
+  Future<void>? _missingSequenceSyncOperation;
+  Timer? _missingSequenceRetryTimer;
+
+  /// Track the last offset fetched from API to prevent overlapping fetches
+  /// This is separate from DB offset since we fetch in larger batches (_fetchBatchSize)
+  /// than we display (_pageSize)
+  int _lastApiFetchOffset = 0;
+
+  final Set<String> _prefetchedVoiceUrls = <String>{};
+
+  /// Sender accounts that were repaired from a bare/missing sender after a
+  /// member-account loss. Guards against re-running the repair for ids that
+  /// already resolved; a genuinely deleted account (unrecoverable) stays
+  /// absent from this set only if the room-member list keeps omitting it.
+  final Set<String> _repairedAccountIds = <String>{};
+  bool _senderRepairInFlight = false;
+
+  late Future<SnAccount?> Function(String) _fetchAccount;
+
+  E2eeRecoveryState _e2eeRecoveryState = E2eeRecoveryState.idle;
+
+  /// Request deduplication futures
+  Future<void>? _syncOperation;
+  Future<void>? _loadInitialOperation;
+  bool _isInitializing = false;
+  Timer? _weakInternetPollTimer;
+  Timer? _placeholderExpiryTimer;
+
+  static const Duration _weakInternetPollInterval = Duration(seconds: 30);
+  static const Duration _placeholderExpiryCheckInterval = Duration(minutes: 1);
+
+  Future<void> _runDeduped({
+    required Future<void>? operation,
+    required void Function(Future<void>?) setOperation,
+    required Future<void> Function() task,
+    required String logLabel,
+  }) async {
+    if (operation != null) {
+      Logger.root.info('$logLabel already in progress, joining existing task');
+      return operation;
+    }
+
+    final created = task();
+    setOperation(created);
+    try {
+      await created;
+    } finally {
+      setOperation(null);
+    }
+  }
+
+  Future<void> _waitForOlderMessagesPrefetch() async {
+    while (_olderMessagesPrefetchScheduled) {
+      await Future<void>.delayed(Duration.zero);
+    }
+    final operation = _olderMessagesPrefetchOperation;
+    if (operation != null) await operation;
+  }
+
+  Future<T> _keepAliveWhileSending<T>(Future<T> Function() task) async {
+    final keepAliveLink = ref.keepAlive();
+    try {
+      return await task();
+    } finally {
+      keepAliveLink.close();
+    }
+  }
+
+  late final MessageCache _messageCache;
+  late final PendingMessageCache _pendingCache;
+  late final MessageRepository _repository;
+  late final MessageSyncService _syncService;
+  late final MessageSender _sender;
+  late final RealtimeMessageHandler _realtime;
+
+  MessageFilter get _activeFilter => MessageFilter(
+    searchQuery: _searchQuery,
+    withLinks: _withLinks,
+    withAttachments: _withAttachments,
+  );
+
+  E2eeRecoveryState get e2eeRecoveryState => _e2eeRecoveryState;
+
+  bool get isLoadingMore => _isLoadingMore;
+
+  bool get _isE2eeRoom => _roomEncryptionMode == 3;
+
+  String? get _fileEncryptKey =>
+      _isE2eeRoom ? deriveE2eeFileEncryptKey(roomId) : null;
+
+  int? _extractRoomSequence(dynamic raw) {
+    if (raw is int) return raw;
+    return int.tryParse(raw?.toString() ?? '');
+  }
+
+  int? _roomSequenceOf(LocalChatMessage message) =>
+      _extractRoomSequence(message.data['room_sequence']);
+
+  LocalChatMessage _applyRoomSequence(
+    LocalChatMessage message,
+    int? roomSequence,
+  ) {
+    if (roomSequence == null || _roomSequenceOf(message) == roomSequence) {
+      return message;
+    }
+
+    final updatedData = Map<String, dynamic>.from(message.data);
+    updatedData['room_sequence'] = roomSequence;
+
+    final updated = LocalChatMessage(
+      id: message.id,
+      roomId: message.roomId,
+      senderId: message.senderId,
+      sender: message.sender,
+      data: updatedData,
+      createdAt: message.createdAt,
+      clientMessageId: message.clientMessageId,
+      nonce: message.nonce,
+      status: message.status,
+      content: message.content,
+      isDeleted: message.isDeleted,
+      updatedAt: message.updatedAt,
+      deletedAt: message.deletedAt,
+      type: message.type,
+      meta: message.meta,
+      membersMentioned: message.membersMentioned,
+      editedAt: message.editedAt,
+      attachments: message.attachments,
+      reactions: message.reactions,
+      repliedMessageId: message.repliedMessageId,
+      forwardedMessageId: message.forwardedMessageId,
+      localAttachments: message.localAttachments,
+    );
+
+    unawaited(_repository.saveMessage(updated));
+    return updated;
+  }
+
+  void _refreshLatestObservedRoomSequence(Iterable<LocalChatMessage> messages) {
+    for (final message in messages) {
+      final roomSequence = _roomSequenceOf(message);
+      if (roomSequence == null) continue;
+      if (_latestObservedRoomSequence == null ||
+          roomSequence > _latestObservedRoomSequence!) {
+        _latestObservedRoomSequence = roomSequence;
+      }
+    }
+  }
+
+  void _observeRoomSequence(int? roomSequence, DateTime messageCreatedAt) {
+    if (roomSequence == null) return;
+
+    _queuedMissingRoomSequences.remove(roomSequence);
+    _inFlightMissingRoomSequences.remove(roomSequence);
+
+    final latestObserved = _latestObservedRoomSequence;
+    if (latestObserved == null) {
+      _latestObservedRoomSequence = roomSequence;
+      return;
+    }
+
+    if (roomSequence <= latestObserved) return;
+
+    if (roomSequence > latestObserved + 1) {
+      for (
+        var missing = latestObserved + 1;
+        missing < roomSequence;
+        missing++
+      ) {
+        if (_queuedMissingRoomSequences.contains(missing) ||
+            _inFlightMissingRoomSequences.contains(missing)) {
+          continue;
+        }
+        _queuedMissingRoomSequences.add(missing);
+      }
+      if (_queuedMissingRoomSequences.isNotEmpty) {
+        unawaited(_syncMissingRoomSequences(messageCreatedAt));
+      }
+    }
+
+    _latestObservedRoomSequence = roomSequence;
+  }
+
+  int _currentSyncTimestampMs(DateTime fallbackTimestamp) {
+    var latestTimestamp = fallbackTimestamp.millisecondsSinceEpoch;
+    for (final message in _currentMessages) {
+      final timestamp = message.createdAt.millisecondsSinceEpoch;
+      if (timestamp > latestTimestamp) {
+        latestTimestamp = timestamp;
+      }
+    }
+    return latestTimestamp;
+  }
+
+  Future<void> _syncMissingRoomSequences(DateTime fallbackTimestamp) async {
+    if (_missingSequenceSyncOperation != null) {
+      await _missingSequenceSyncOperation;
+      return;
+    }
+
+    final operation = _syncMissingRoomSequencesImpl(fallbackTimestamp);
+    _missingSequenceSyncOperation = operation;
+    try {
+      await operation;
+    } finally {
+      _missingSequenceSyncOperation = null;
+    }
+  }
+
+  Future<void> _syncMissingRoomSequencesImpl(DateTime fallbackTimestamp) async {
+    while (_queuedMissingRoomSequences.isNotEmpty) {
+      final batch = _queuedMissingRoomSequences.toList()..sort();
+      _queuedMissingRoomSequences.clear();
+      _inFlightMissingRoomSequences.addAll(batch);
+
+      final singles = <int>[];
+      final ranges = <Map<String, int>>[];
+      var index = 0;
+      while (index < batch.length) {
+        final start = batch[index];
+        var end = start;
+        while (index + 1 < batch.length && batch[index + 1] == end + 1) {
+          index++;
+          end = batch[index];
+        }
+        if (start == end) {
+          singles.add(start);
+        } else {
+          ranges.add({'start_sequence': start, 'end_sequence': end});
+        }
+        index++;
+      }
+
+      var failed = false;
+      try {
+        final response = await _apiClient.post(
+          '/messager/chat/$roomId/sync',
+          data: {
+            'last_sync_timestamp': _currentSyncTimestampMs(fallbackTimestamp),
+            if (singles.isNotEmpty) 'missing_sequences': singles,
+            if (ranges.isNotEmpty) 'missing_sequence_ranges': ranges,
+          },
+        );
+        await _applySyncedMissingSequenceMessages(
+          response.data as Map<String, dynamic>,
+        );
+      } catch (err, stackTrace) {
+        failed = true;
+        Logger.root.info(
+          'Failed to recover missing room sequences for room $roomId',
+          err,
+          stackTrace,
+        );
+      } finally {
+        _inFlightMissingRoomSequences.removeAll(batch);
+        if (failed) {
+          // Do not silently drop a gap when a request is interrupted. Leave it
+          // queued for the next reconnect/poll/realtime recovery attempt.
+          _queuedMissingRoomSequences.addAll(batch);
+        }
+      }
+
+      // Avoid a tight retry loop while the network is unavailable, while still
+      // retrying an interrupted recovery when no later realtime event arrives.
+      if (failed) {
+        _scheduleMissingSequenceRetry();
+        return;
+      }
+    }
+  }
+
+  void _scheduleMissingSequenceRetry() {
+    if (_missingSequenceRetryTimer?.isActive == true) return;
+
+    _missingSequenceRetryTimer = Timer(const Duration(seconds: 3), () {
+      _missingSequenceRetryTimer = null;
+      if (!ref.mounted || _queuedMissingRoomSequences.isEmpty) return;
+      unawaited(_syncMissingRoomSequences(DateTime.now()));
+    });
+  }
+
+  Future<void> _applySyncedMissingSequenceMessages(
+    Map<String, dynamic> payload,
+  ) async {
+    final rawMessages = (payload['messages'] as List?) ?? const [];
+    if (rawMessages.isEmpty) return;
+
+    final remoteMessages = <SnChatMessage>[];
+    final roomSequencesById = <String, int>{};
+    for (final rawMessage in rawMessages.whereType<Map>()) {
+      final json = Map<String, dynamic>.from(rawMessage);
+      final remoteMessage = _tryParseChatMessage(
+        json,
+        context: 'room sync recovery',
+      );
+      if (remoteMessage == null) continue;
+      final roomSequence = _extractRoomSequence(
+        json['room_sequence'] ?? json['roomSequence'],
+      );
+      if (roomSequence != null) {
+        roomSequencesById[remoteMessage.id] = roomSequence;
+      }
+      remoteMessages.add(remoteMessage);
+    }
+    if (remoteMessages.isEmpty) return;
+
+    final processed = await _syncService.processRemoteMessages(remoteMessages);
+    final processedById = {
+      for (final message in processed) message.id: message,
+    };
+
+    for (final remoteMessage in remoteMessages) {
+      final localMessage = processedById[remoteMessage.id];
+      if (localMessage == null) continue;
+      final roomSequence = roomSequencesById[remoteMessage.id];
+      final messageWithSequence = _applyRoomSequence(
+        localMessage,
+        roomSequence,
+      );
+      _observeRoomSequence(roomSequence, remoteMessage.createdAt);
+      _upsertReceivedMessageInState(messageWithSequence);
+      await _processMessageSideEffects(remoteMessage);
+    }
+  }
+
+  Options? _mlsWriteOptions() {
+    return null;
+  }
+
+  E2eeMessageService get _e2eeService => E2eeMessageService(
+    ref: ref,
+    mlsGroupId: _mlsGroupId,
+    isE2eeRoom: _isE2eeRoom,
+  );
+
+  bool _isSystemEventType(String type) {
+    if (type.startsWith('system.')) return true;
+    switch (type) {
+      case 'messages.update':
+      case 'messages.sync.file':
+      case 'messages.sync.finalize':
+      case 'messages.sync.links':
+      case 'messages.delete':
+      case 'messages.reaction.added':
+      case 'messages.reaction.removed':
+      case 'messages.pinned':
+      case 'messages.unpinned':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  bool _isImportantEventType(String type) {
+    if (type == 'call.start' || type == 'call.ended') return true;
+    if (type == 'messages.update' ||
+        type == 'messages.sync.file' ||
+        type == 'messages.sync.finalize' ||
+        type == 'messages.sync.links' ||
+        type == 'messages.delete') {
+      return true;
+    }
+    if (type == 'system.e2ee.enabled') {
+      return true;
+    }
+    if (type == 'messages.pinned' || type == 'messages.unpinned') {
+      return true;
+    }
+    return type == 'system.call.member.joined' ||
+        type == 'system.call.member.left';
+  }
+
+  bool _shouldIncludeInActiveList(LocalChatMessage message, String mode) {
+    if (message.type == 'messages.sync.file' ||
+        message.type == 'messages.sync.finalize' ||
+        message.type == 'messages.sync.links') {
+      return false;
+    }
+    // In-thread replies live in the thread panel, never in the main timeline.
+    if (message.threadId != null) return false;
+    if (mode == kChatEventMessageModeVerbose) return true;
+    if (mode == kChatEventMessageModeNone) {
+      return !_isSystemEventType(message.type);
+    }
+    if (_isSystemEventType(message.type)) {
+      return _isImportantEventType(message.type);
+    }
+    return true;
+  }
+
+  List<LocalChatMessage> _filterActiveMessages(
+    List<LocalChatMessage> messages,
+  ) {
+    final mode = ref.read(appSettingsProvider).chatEventMessageMode;
+    if (mode == kChatEventMessageModeVerbose) return messages;
+    return messages
+        .where((message) => _shouldIncludeInActiveList(message, mode))
+        .toList();
+  }
+
+  String? _resolveVoiceMediaUrlFromMeta(Map<String, dynamic> meta) {
+    final rawUrl = meta['voice_url']?.toString();
+    if (rawUrl == null || rawUrl.isEmpty) return null;
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+      return rawUrl;
+    }
+    final serverUrl = ref.read(serverUrlProvider);
+    return '$serverUrl$rawUrl';
+  }
+
+  Future<void> _prefetchVoiceUrl(String? mediaUrl) async {
+    if (mediaUrl == null || mediaUrl.isEmpty) return;
+    if (!_prefetchedVoiceUrls.add(mediaUrl)) return;
+
+    final token = ref.read(tokenProvider);
+    final headers = token == null
+        ? null
+        : <String, String>{'Authorization': 'Bearer ${token.token}'};
+
+    final cache = DefaultCacheManager();
+    try {
+      final cached = await cache.getFileFromCache(mediaUrl);
+      if (cached != null) return;
+      unawaited(cache.downloadFile(mediaUrl, authHeaders: headers));
+    } catch (err, stackTrace) {
+      _prefetchedVoiceUrls.remove(mediaUrl);
+      Logger.root.info(
+        'Failed to prefetch voice media $mediaUrl',
+        err,
+        stackTrace,
+      );
+    }
+  }
+
+  Future<void> _prefetchVoiceForRemoteMessage(SnChatMessage message) async {
+    if (message.type != 'voice') return;
+    await _prefetchVoiceUrl(_resolveVoiceMediaUrlFromMeta(message.meta));
+  }
+
+  Map<String, dynamic> _sanitizeChatMessageJson(Map<String, dynamic> input) =>
+      E2eeMessageService.sanitizeChatMessageJson(input);
+
+  Map<dynamic, dynamic>? _asMap(dynamic value) {
+    return value is Map ? value : null;
+  }
+
+  List<String> _mapKeys(dynamic value) {
+    final map = _asMap(value);
+    if (map == null) return const [];
+    final keys = map.keys.map((key) => key.toString()).toList();
+    keys.sort();
+    return keys;
+  }
+
+  String? _stringValue(dynamic value) => value?.toString();
+  Map<String, dynamic> _accountProfileDiagnostic(SnAccount account) {
+    final profile = account.profile;
+    return {
+      'account_id': account.id,
+      'profile_id': profile.id,
+      'profile_id_empty': profile.id.trim().isEmpty,
+      'profile_has_first_name': profile.firstName.trim().isNotEmpty,
+      'profile_has_last_name': profile.lastName.trim().isNotEmpty,
+      'profile_has_bio': profile.bio.trim().isNotEmpty,
+      'profile_has_picture': profile.picture != null,
+      // Only an id-less (server-fabricated) shell is bare; empty content
+      // fields are legitimate for a real account with no profile data.
+      'profile_is_bare': profile.id.trim().isEmpty,
+    };
+  }
+
+  void _logSenderFailure(
+    String message, {
+    required Object error,
+    required StackTrace stackTrace,
+  }) {
+    // Keep the stack trace in both the structured logger and the VM timeline
+    // so the exact generated-model/caller path is visible in device logs.
+    final recordMessage = '$_kChatSenderDiagnosticLogPrefix $message';
+    Logger.root.warning(recordMessage, error, stackTrace);
+    developer.log(
+      recordMessage,
+      name: 'MessagesNotifier.chatSender',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
+
+  void _logInvalidMessageSender(
+    Map<String, dynamic> message, {
+    String? context,
+    required Object error,
+    required StackTrace stackTrace,
+  }) {
+    final sender = _asMap(message['sender']);
+    final account = _asMap(sender?['account']);
+    final profile = account?['profile'];
+
+    final diagnostic = <String, dynamic>{
+      'context': context,
+      'message_id': _stringValue(message['id']),
+      'room_id': _stringValue(message['chat_room_id'] ?? message['room_id']),
+      'message_type': _stringValue(message['type']),
+      'sender': {
+        'type': sender?.runtimeType.toString() ?? 'null',
+        'keys': _mapKeys(sender),
+        'id': _stringValue(sender?['id']),
+        'account_id': _stringValue(sender?['account_id']),
+      },
+      'account': {
+        'type': account?.runtimeType.toString() ?? 'null',
+        'keys': _mapKeys(account),
+        'id': _stringValue(account?['id']),
+        'profile_present': account?.containsKey('profile') ?? false,
+        'profile_type': profile?.runtimeType.toString() ?? 'null',
+        'profile_keys': _mapKeys(profile),
+      },
+    };
+
+    _logSenderFailure(
+      'Skipping invalid chat message; sender/account diagnostic: '
+      '${jsonEncode(diagnostic)}',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
+
+  SnChatMessage? _tryParseChatMessage(dynamic data, {String? context}) {
+    if (data is! Map<String, dynamic>) return null;
+    try {
+      return SnChatMessage.fromJson(_sanitizeChatMessageJson(data));
+    } catch (error, stackTrace) {
+      _logInvalidMessageSender(
+        data,
+        context: context,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
+
+  /// Decrypts an E2EE message, applying decrypted content to the message.
+  /// Returns null if:
+  /// - Decryption is skipped for own message (no plaintext available)
+  /// - Decryption fundamentally fails
+  /// - E2EE recovery has already failed (no retries within same session)
+  /// Skips decryption for messages sent by current device (identified by device ID in header)
+  /// since MLS forward secrecy prevents self-decryption - plaintext is preserved from pending.
+  @override
+  FutureOr<List<LocalChatMessage>> build(String roomId) async {
+    _apiClient = ref.read(apiClientProvider);
+    _database = ref.read(databaseProvider);
+    _globalSyncNotifier = ref.read(chatSyncingProvider.notifier);
+    _messageCache = MessageCache(maxSize: PaginationConfig.maxCacheSize);
+    _pendingCache = PendingMessageCache();
+    _repository = MessageRepository(ref, roomId, _messageCache);
+    _syncService = MessageSyncService(
+      ref,
+      roomId,
+      _repository,
+      _messageCache,
+      _pendingCache,
+      e2eeService: _e2eeService,
+    );
+    _sender = MessageSender(
+      ref,
+      roomId,
+      _repository,
+      _pendingCache,
+      e2eeService: _e2eeService,
+      fileEncryptKey: _fileEncryptKey,
+    );
+    _realtime = RealtimeMessageHandler(
+      ref,
+      roomId,
+      _repository,
+      _syncService,
+      _pendingCache,
+      _messageCache,
+      e2eeService: _e2eeService,
+      onNewMessage: (message, roomSequence) {
+        final messageWithSequence = _applyRoomSequence(message, roomSequence);
+        ref
+            .read(referencedChatMessageCacheProvider(roomId).notifier)
+            .put(messageWithSequence, messageId: messageWithSequence.id);
+        _observeRoomSequence(roomSequence, message.createdAt);
+        _upsertReceivedMessageInState(messageWithSequence);
+      },
+      onMessageUpdate: (message, roomSequence) {
+        final messageWithSequence = _applyRoomSequence(message, roomSequence);
+        ref
+            .read(referencedChatMessageCacheProvider(roomId).notifier)
+            .put(messageWithSequence, messageId: messageWithSequence.id);
+        _observeRoomSequence(roomSequence, message.createdAt);
+        if (messageWithSequence.status == MessageStatus.sent &&
+            messageWithSequence.type != 'placeholder') {
+          _pendingMessages.remove(messageWithSequence.id);
+          _pendingCache.remove(messageWithSequence.id);
+          ref
+              .read(chatRoomStateProvider(roomId).notifier)
+              .updateAttachmentProgress(messageWithSequence.id, null);
+        }
+        // In-thread replies live in the thread panel; the main timeline never
+        // renders them and timeline pagination counts top-level rows only.
+        if (messageWithSequence.threadId != null) return;
+        final list = _messages;
+        final index = list.indexWhere((m) => m.id == messageWithSequence.id);
+        if (index >= 0) {
+          list[index] = messageWithSequence;
+        } else {
+          list.add(messageWithSequence);
+        }
+        _scheduleEmit();
+      },
+      onMessageDelete: (message, roomSequence) {
+        final messageWithSequence = _applyRoomSequence(message, roomSequence);
+        ref
+            .read(referencedChatMessageCacheProvider(roomId).notifier)
+            .put(messageWithSequence, messageId: messageWithSequence.id);
+        _observeRoomSequence(roomSequence, message.createdAt);
+        if (messageWithSequence.type == 'placeholder') {
+          _pendingMessages.remove(messageWithSequence.id);
+          _pendingCache.remove(messageWithSequence.id);
+          unawaited(_repository.deleteMessage(messageWithSequence.id));
+          final list = _messages;
+          list.removeWhere((item) => item.id == messageWithSequence.id);
+          _scheduleEmit();
+          return;
+        }
+        // In-thread replies live in the thread panel; the main timeline never
+        // renders them and timeline pagination counts top-level rows only.
+        if (messageWithSequence.threadId != null) return;
+        final list = _messages;
+        final index = list.indexWhere((m) => m.id == messageWithSequence.id);
+        if (index >= 0) {
+          list[index] = messageWithSequence;
+        } else {
+          list.add(messageWithSequence);
+        }
+        _scheduleEmit();
+      },
+      onIncomingMessageSender: _upsertIncomingMessageSender,
+      onReconnectionNeeded: () {
+        unawaited(loadInitial(forceRemoteRefresh: false));
+        _scheduleSenderRepair();
+      },
+    );
+    StreamSubscription<MlsExternalJoinStartedEvent>? e2eeStartSub;
+    StreamSubscription<MlsExternalJoinCompletedEvent>? e2eeCompleteSub;
+    StreamSubscription<MlsRecoveryFailedEvent>? e2eeFailedSub;
+    StreamSubscription<ChatTypingEvent>? typingProgressSub;
+    var disposed = false;
+
+    ref.onDispose(() {
+      disposed = true;
+      _weakInternetPollTimer?.cancel();
+      _weakInternetPollTimer = null;
+      _placeholderExpiryTimer?.cancel();
+      _placeholderExpiryTimer = null;
+      _missingSequenceRetryTimer?.cancel();
+      _missingSequenceRetryTimer = null;
+      _realtime.stopListening();
+      e2eeStartSub?.cancel();
+      e2eeCompleteSub?.cancel();
+      e2eeFailedSub?.cancel();
+      typingProgressSub?.cancel();
+      _messageCache.clear();
+      _messageCache.clearPendingFetches();
+      _pendingCache.clear();
+    });
+
+    final room = await ref.read(chatRoomProvider(roomId).future);
+    final identity = await ref.read(chatRoomIdentityProvider(roomId).future);
+
+    if (disposed || !ref.mounted) {
+      return const <LocalChatMessage>[];
+    }
+
+    // Initialize fetch account method for corrupted data recovery
+    _fetchAccount = (String accountId) async {
+      try {
+        return await ref.read(accountProvider(accountId).future);
+      } catch (_) {
+        return null;
+      }
+    };
+
+    if (room == null) {
+      throw Exception('Room not found');
+    }
+    _roomEncryptionMode = room.encryptionMode;
+    _mlsGroupId = room.mlsGroupId;
+    await _hydrateMemberDirectory(room);
+
+    if (disposed || !ref.mounted) {
+      return const <LocalChatMessage>[];
+    }
+
+    // Defer heavy MLS operations to post-frame callback to not block initial build
+    Future.microtask(() async {
+      if (disposed || !ref.mounted) return;
+
+      // MLS setup is intentionally deferred until an MLS-enabled room is
+      // opened. Initializing OpenMLS costs over a second on some devices.
+      if (_isE2eeRoom) {
+        final mlsClient = ref.read(mlsClientProvider);
+        await mlsClient.initialize();
+        if (disposed || !ref.mounted) return;
+
+        if (identity != null) {
+          await mlsClient.setCurrentAccountId(identity.accountId);
+          if (disposed || !ref.mounted) return;
+          // Fetch pending E2EE envelopes (Welcome, Commit, Proposal).
+          await mlsClient.fetchAndProcessPendingEnvelopes();
+        }
+
+        if (disposed || !ref.mounted) return;
+        if (room.mlsGroupId == null) {
+          Logger.root.info(
+            'Room $roomId has encryption mode 3 but no mlsGroupId - skipping MLS bootstrap',
+          );
+        } else {
+          try {
+            if (disposed || !ref.mounted) return;
+            // Check current epoch for logging purposes
+            final currentEpoch = await mlsClient.getCurrentEpoch(
+              room.mlsGroupId!,
+            );
+            if (disposed || !ref.mounted) return;
+            Logger.root.fine(
+              'Current MLS epoch for room $roomId (group: ${room.mlsGroupId}): $currentEpoch',
+            );
+
+            // Note: epoch=0 is NORMAL for newly created MLS groups.
+            // Epoch only increases after a commit (adding/removing members).
+            // We should NOT force re-bootstrap based on epoch alone.
+            // Instead, let bootstrapGroup decide if a group needs to be created.
+            await mlsClient.bootstrapGroup(
+              room.mlsGroupId!,
+              roomId: roomId,
+              force: false,
+            );
+          } catch (e) {
+            Logger.root.severe(
+              'Failed to bootstrap MLS group for room $roomId: $e',
+            );
+          }
+        }
+      }
+    });
+
+    // Allow building even if identity is null for public rooms
+    if (identity != null) {
+      _identity = identity;
+      _upsertMember(identity);
+    }
+
+    Logger.root.info('MessagesNotifier built for room $roomId');
+
+    _syncWeakInternetPolling(ref.read(weakInternetModeProvider));
+    ref.listen<bool>(weakInternetModeProvider, (previous, next) {
+      if (previous == next) return;
+      _syncWeakInternetPolling(next);
+    });
+
+    _realtime.startListening();
+    _placeholderExpiryTimer = Timer.periodic(
+      _placeholderExpiryCheckInterval,
+      (_) => unawaited(_cleanupExpiredPlaceholders()),
+    );
+
+    e2eeStartSub = eventBus.on<MlsExternalJoinStartedEvent>().listen((event) {
+      if (event.mlsGroupId != _mlsGroupId) return;
+      _e2eeRecoveryState = E2eeRecoveryState.reconnecting;
+    });
+
+    e2eeCompleteSub = eventBus.on<MlsExternalJoinCompletedEvent>().listen((
+      event,
+    ) {
+      if (event.mlsGroupId != _mlsGroupId) return;
+      if (event.success) {
+        _e2eeRecoveryState = E2eeRecoveryState.idle;
+      }
+    });
+
+    e2eeFailedSub = eventBus.on<MlsRecoveryFailedEvent>().listen((event) async {
+      if (event.mlsGroupId != _mlsGroupId) return;
+      _e2eeRecoveryState = E2eeRecoveryState.failed;
+
+      final chatRoomId = roomId;
+      await _database.deleteMessagesForRoom(chatRoomId);
+      Logger.root.info(
+        'Cleared message history for room $chatRoomId after failed epoch recovery',
+      );
+
+      final now = DateTime.now();
+      final systemMessage = LocalChatMessage(
+        id: const Uuid().v4(),
+        roomId: chatRoomId,
+        senderId: 'system',
+        sender: null,
+        data: {
+          'id': const Uuid().v4(),
+          'chat_room_id': chatRoomId,
+          'sender_id': 'system',
+          'type': 'system.e2ee.history_unavailable',
+          'content':
+              'Message history is no longer available due to an encryption key change',
+          'created_at': now.toIso8601String(),
+          'updated_at': now.toIso8601String(),
+          'deleted_at': null,
+          'client_message_id': null,
+          'nonce': null,
+          'meta': <String, dynamic>{},
+          'members_mentioned': <String>[],
+          'attachments': <Map<String, dynamic>>[],
+          'reactions': <Map<String, dynamic>>[],
+          'sender': <String, dynamic>{
+            'id': 'system',
+            'chat_room_id': chatRoomId,
+            'account_id': 'system',
+            'created_at': now.toIso8601String(),
+            'updated_at': now.toIso8601String(),
+            'deleted_at': null,
+            'nick': null,
+            'notify': 0,
+            'joined_at': now.toIso8601String(),
+            'break_until': null,
+            'timeout_until': null,
+            'last_read_at': null,
+            'status': null,
+            'realm_nick': null,
+            'realm_bio': null,
+            'realm_experience': null,
+            'realm_level': null,
+            'realm_leveling_progress': null,
+            'realm_label': null,
+          },
+          'replied_message_id': null,
+          'forwarded_message_id': null,
+        },
+        createdAt: now,
+        clientMessageId: null,
+        status: MessageStatus.sent,
+        type: 'system.e2ee.history_unavailable',
+        meta: {},
+        membersMentioned: [],
+        attachments: [],
+        reactions: [],
+      );
+      await _database.saveMessageWithSender(systemMessage);
+      Logger.root.info(
+        'Inserted system message for history unavailable in room $chatRoomId',
+      );
+    });
+
+    // Listen for upload progress via typing indicator events.
+    // When another user is uploading, their progress arrives as a typing
+    // event with type='uploading'. We update the sender's active placeholder
+    // so its LinearProgressIndicator reflects real-time progress without
+    // round-tripping through the server's DB.
+    typingProgressSub = eventBus.on<ChatTypingEvent>().listen((event) {
+      if (event.roomId != roomId) return;
+      if (event.activityType != 'uploading') return;
+      if (event.sender.id == _identity.id) return;
+      final progress = event.progress;
+      if (progress == null) return;
+      updatePlaceholderProgressBySender(event.sender.id, progress);
+    });
+
+    ref.listen<String>(
+      appSettingsProvider.select((settings) => settings.chatEventMessageMode),
+      (previous, next) {
+        if (previous == next) return;
+        if (_isJumping || _isLoadingInitial || !ref.mounted) return;
+        _emitMessages(_currentMessages);
+      },
+    );
+
+    ref.listen<AsyncValue<SnChatMember?>>(chatRoomIdentityProvider(roomId), (
+      previous,
+      next,
+    ) {
+      next.whenData((member) {
+        if (_upsertMember(member) && ref.mounted) {
+          _emitMessages(_currentMessages);
+        }
+      });
+    });
+
+    final initial = _dedupeMessages(
+      _sortMessages(
+        _normalizeMessageMembers(
+          await _loadInitialMessages(forceRemoteRefresh: false),
+        ),
+      ),
+    );
+    _messages = initial;
+    _refreshLatestObservedRoomSequence(initial);
+    _scheduleOlderMessagesPrefetch();
+    unawaited(_cleanupExpiredPlaceholders());
+    _scheduleSenderRepair();
+    return _filterActiveMessages(initial);
+  }
+
+  bool _upsertMember(SnChatMember? member, {bool force = false}) {
+    if (member == null) return false;
+    final existing = _membersById[member.id] ?? _membersById[member.accountId];
+    // A bare member (empty account) is degraded data from a server fallback or
+    // a pruned cache: it must never replace a member whose account is intact.
+    // The sender repair uses force to install the authoritative member.
+    if (!force &&
+        existing != null &&
+        _isBareSender(member) &&
+        !_isBareSender(existing)) {
+      return false;
+    }
+    if (!force &&
+        existing != null &&
+        !member.updatedAt.isAfter(existing.updatedAt) &&
+        existing == member) {
+      return false;
+    }
+    if (!force &&
+        existing != null &&
+        existing.updatedAt.isAfter(member.updatedAt)) {
+      return false;
+    }
+    _membersById[member.id] = member;
+    _membersById[member.accountId] = member;
+    return true;
+  }
+
+  /// Stores sender data separately from messages so account/profile updates
+  /// received with a new message survive a timeline or app reload.
+  Future<void> _upsertIncomingMessageSender(SnChatMember sender) async {
+    if (!_upsertMember(sender)) return;
+
+    try {
+      await _database.saveAccount(
+        sender.account,
+        source: 'realtime chat message sender',
+      );
+      await _database.saveMember(sender);
+    } catch (error, stackTrace) {
+      // A bare/empty sender profile (server-side fallback) is refused by the
+      // cache guard; that must not fail the message pipeline. The in-memory
+      // member is already upserted above, so the UI still renders this session.
+      final accountDiagnostic = <String, dynamic>{
+        'member_id': sender.id,
+        ..._accountProfileDiagnostic(sender.account),
+      };
+      _logSenderFailure(
+        'Failed to persist sender ${sender.accountId} for room $roomId; '
+        'account/profile diagnostic: ${jsonEncode(accountDiagnostic)}',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return;
+    }
+
+    // Existing messages refer to the canonical member directory. Emit them
+    // again so a repaired account/profile is reflected immediately. Goes
+    // through the coalescer so a burst of new senders does not each trigger a
+    // full-list rebuild.
+    if (ref.mounted) {
+      _scheduleEmit();
+    }
+  }
+
+  /// True when the member carries a server-fabricated profile shell (random
+  /// id, only account_id set) or an empty account name. Such members are what
+  /// a "lost chat member account" looks like: the room/member row survived
+  /// but the account graph did not, and the UI would render a raw ID.
+  bool _isBareSender(SnChatMember member) {
+    final account = member.account;
+    return account.id.trim().isEmpty ||
+        (account.name.trim().isEmpty &&
+            account.nick.trim().isEmpty &&
+            account.profile.picture == null);
+  }
+
+  List<LocalChatMessage> get _currentMessages => _messages;
+
+  /// True while the room is revealing a jump target. Timeline mutations that
+  /// page or rewrite the list from a transient scroll position are suppressed
+  /// for the duration.
+  bool get _isJumpPending =>
+      ref.read(chatRoomStateProvider(roomId)).pendingJumpMessageId != null;
+
+  /// Scans the active timeline for messages whose sender member/account is
+  /// missing or bare and asynchronously repairs the member directory from the
+  /// room member list, falling back to per-account and per-message refetches.
+  ///
+  /// A member-account loss is a local-data problem: the server still holds the
+  /// room member and account. The message payload itself only carries a sender
+  /// id, and the local cache refused to persist a bare account, so the repair
+  /// re-fetches the authoritative member/account and re-emits the timeline.
+  void _scheduleSenderRepair() {
+    if (!ref.mounted || _senderRepairInFlight) return;
+    if (_isJumping || _isLoadingInitial || _isLoadingMore) return;
+    if (_searchQuery != null && _searchQuery!.isNotEmpty) return;
+
+    final missing = <String>[];
+    final bare = <String>[];
+    for (final message in _currentMessages) {
+      final sender = message.sender;
+      if (sender == null) {
+        if (message.senderId.isEmpty) continue;
+        missing.add(message.senderId);
+        continue;
+      }
+      if (sender.accountId == 'system') continue;
+      if (_isBareSender(sender)) bare.add(sender.id);
+    }
+    if (missing.isEmpty && bare.isEmpty) return;
+    if (missing.length + bare.length > _senderRepairMaxMessages) return;
+
+    _senderRepairInFlight = true;
+    unawaited(
+      _repairSenders(
+        memberIds: {...bare, ...missing}.toList(),
+      ).whenComplete(() => _senderRepairInFlight = false),
+    );
+  }
+
+  static const int _senderRepairMaxMessages = 100;
+
+  Future<void> _repairSenders({required List<String> memberIds}) async {
+    final resolvedByMemberId = <String, SnChatMember>{};
+
+    try {
+      // 1. Authoritative per-member endpoint: every active room member comes
+      // back with its account hydrated, and leavers are excluded.
+      var offset = 0;
+      const pageSize = 50;
+      final wanted = memberIds.toSet();
+      while (wanted.isNotEmpty) {
+        final response = await _apiClient.get(
+          '/messager/chat/$roomId/members',
+          queryParameters: {'offset': offset, 'take': pageSize},
+        );
+        final rawMembers = (response.data as List?) ?? const [];
+        for (final raw in rawMembers.whereType<Map>()) {
+          final member = _tryParseChatMemberJson(raw);
+          if (member == null) continue;
+          if (wanted.remove(member.id)) {
+            resolvedByMemberId[member.id] = member;
+          }
+        }
+        final totalRaw = response.headers['x-total']?.firstOrNull;
+        final total = int.tryParse(totalRaw ?? '') ?? rawMembers.length;
+        offset += rawMembers.length;
+        if (rawMembers.isEmpty || offset >= total) break;
+      }
+    } catch (err, stackTrace) {
+      Logger.root.info(
+        'Failed to fetch room members for sender repair in room $roomId',
+        err,
+        stackTrace,
+      );
+    }
+
+    // 2. Fall back to the per-account endpoint for ids the member list did not
+    // cover (leavers, or members filtered from the page). The member id and
+    // account id differ, so resolve the account id from the in-memory
+    // directory or the local message row.
+    final unresolved = memberIds
+        .where((memberId) => !resolvedByMemberId.containsKey(memberId))
+        .toList();
+    if (unresolved.isNotEmpty) {
+      final sdk = ref.read(solarNetworkClientProvider);
+      final accountIds = <String, String>{}; // memberId -> accountId
+      final memberForMessage =
+          <String, LocalChatMessage>{}; // memberId -> sample
+      for (final memberId in unresolved) {
+        final existing = _membersById[memberId];
+        if (existing != null) {
+          accountIds[memberId] = existing.accountId;
+          continue;
+        }
+        final sample = _currentMessages
+            .where((m) => m.senderId == memberId)
+            .firstOrNull;
+        if (sample == null) continue;
+        memberForMessage[memberId] = sample;
+        final local = await _repository.getLocalMessage(sample.id);
+        if (local?.sender != null) {
+          accountIds[memberId] = local!.sender!.accountId;
+        }
+      }
+      final distinctAccountIds = accountIds.values.toSet();
+      for (final accountId in distinctAccountIds) {
+        if (_repairedAccountIds.contains(accountId)) continue;
+        try {
+          final account = await sdk.accounts.getAccountById(accountId);
+          await _database.saveAccount(account, source: 'chat sender repair');
+          final member = _membersById.entries
+              .where((entry) => entry.value.accountId == accountId)
+              .firstOrNull
+              ?.value;
+          if (member != null) {
+            final repaired = member.copyWith(account: account);
+            _upsertMember(repaired, force: true);
+            await _database.saveMember(repaired);
+            _repairedAccountIds.add(accountId);
+            _emitMessages(_currentMessages);
+          } else {
+            // No local member row to attach the account to (deleted member or
+            // cache evicted): rebuild the member from the message's own
+            // accountId, and let step 3's re-emit pick it up.
+            final fallbackMember = SnChatMember(
+              id: accountId,
+              chatRoomId: roomId,
+              chatRoom: null,
+              accountId: accountId,
+              createdAt: DateTime.fromMillisecondsSinceEpoch(0),
+              updatedAt: DateTime.fromMillisecondsSinceEpoch(0),
+              deletedAt: null,
+              account: account,
+              nick: null,
+              notify: 0,
+              joinedAt: null,
+              breakUntil: null,
+              timeoutUntil: null,
+              chatGroupId: null,
+              chatGroup: null,
+              lastReadAt: null,
+              status: null,
+              realmNick: null,
+              realmBio: null,
+              realmExperience: null,
+              realmLevel: null,
+              realmLevelingProgress: null,
+              realmLabel: null,
+            );
+            _upsertMember(fallbackMember, force: true);
+            await _database.saveMember(fallbackMember);
+            _repairedAccountIds.add(accountId);
+            _emitMessages(_currentMessages);
+          }
+        } catch (err, stackTrace) {
+          Logger.root.info(
+            'Failed to repair sender account $accountId for room $roomId',
+            err,
+            stackTrace,
+          );
+        }
+      }
+
+      // Members with no resolvable account id locally (sender row missing
+      // entirely): refetch one of their messages; the server hydrates the
+      // sender member on that response.
+      for (final entry in memberForMessage.entries) {
+        if (accountIds.containsKey(entry.key)) continue;
+        if (_repairedAccountIds.contains(entry.key)) continue;
+        try {
+          final remote = await _repository.fetchRemoteMessage(entry.value.id);
+          final sender = remote?.sender;
+          if (sender == null || sender.accountId == 'system') continue;
+          if (_isBareSender(sender)) continue;
+          if (!_upsertMember(sender, force: true)) continue;
+          await _database.saveAccount(
+            sender.account,
+            source: 'chat sender repair',
+          );
+          await _database.saveMember(sender);
+          _repairedAccountIds.add(entry.key);
+          _emitMessages(_currentMessages);
+        } catch (err, stackTrace) {
+          Logger.root.info(
+            'Failed to repair sender member ${entry.key} for room $roomId',
+            err,
+            stackTrace,
+          );
+        }
+      }
+    }
+
+    // 3. Apply the room-member results and re-emit so the normalized member
+    // directory refreshes every message.
+    var changed = false;
+    for (final member in resolvedByMemberId.values) {
+      final existing = _membersById[member.id];
+      if (existing != null && !_isBareSender(existing)) {
+        if (!_upsertMember(member)) continue;
+        changed = true;
+      } else {
+        _upsertMember(member, force: true);
+        changed = true;
+      }
+      try {
+        await _database.saveAccount(
+          member.account,
+          source: 'chat sender repair',
+        );
+        await _database.saveMember(member);
+      } catch (err, stackTrace) {
+        Logger.root.info(
+          'Failed to persist repaired sender ${member.id} for room $roomId',
+          err,
+          stackTrace,
+        );
+      }
+    }
+    if (changed && ref.mounted) {
+      _emitMessages(_currentMessages);
+    }
+  }
+
+  SnChatMember? _tryParseChatMemberJson(dynamic data) {
+    if (data is! Map<String, dynamic>) return null;
+    try {
+      return SnChatMember.fromJson(data);
+    } catch (err, stackTrace) {
+      _logSenderFailure(
+        'Skipping invalid chat member during sender repair; '
+        'diagnostic: ${jsonEncode({'member_id': data['id'], 'account_id': data['account_id'], 'account_keys': _mapKeys(data['account'])})}',
+        error: err,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
+
+  /// Restores the room's member directory before messages are normalized.
+  ///
+  /// Message payloads do not always include their sender.  In that case the
+  /// local message cache only contains a sender ID, so this directory is what
+  /// lets [_normalizeMessageMember] recover the account name and avatar
+  /// instead of falling back to displaying that ID.
+  Future<void> _hydrateMemberDirectory(SnChatRoom room) async {
+    for (final member in room.members ?? const <SnChatMember>[]) {
+      _upsertMember(member);
+    }
+
+    final cachedMembers = await _database.getMembersByRoomId(roomId);
+    for (final member in cachedMembers) {
+      _upsertMember(member);
+    }
+  }
+
+  LocalChatMessage _copyWithSender(
+    LocalChatMessage message,
+    SnChatMember? sender,
+  ) {
+    final data = Map<String, dynamic>.from(message.data)..remove('sender');
+    return LocalChatMessage(
+      id: message.id,
+      roomId: message.roomId,
+      senderId: message.senderId,
+      sender: sender,
+      data: data,
+      createdAt: message.createdAt,
+      clientMessageId: message.clientMessageId,
+      nonce: message.nonce,
+      status: message.status,
+      content: message.content,
+      isDeleted: message.isDeleted,
+      updatedAt: message.updatedAt,
+      deletedAt: message.deletedAt,
+      type: message.type,
+      meta: message.meta,
+      membersMentioned: message.membersMentioned,
+      editedAt: message.editedAt,
+      attachments: message.attachments,
+      reactions: message.reactions,
+      repliedMessageId: message.repliedMessageId,
+      forwardedMessageId: message.forwardedMessageId,
+      localAttachments: message.localAttachments,
+    );
+  }
+
+  LocalChatMessage _normalizeMessageMember(LocalChatMessage message) {
+    final incoming = message.sender;
+    if (incoming != null) {
+      final existing = _membersById[incoming.id];
+      final canonical =
+          existing == null || incoming.updatedAt.isAfter(existing.updatedAt)
+          ? incoming
+          : existing;
+      _membersById[incoming.id] = canonical;
+      _membersById[incoming.accountId] = canonical;
+      if (!identical(message.sender, canonical) ||
+          message.data.containsKey('sender')) {
+        return _copyWithSender(message, canonical);
+      }
+      return message;
+    }
+
+    final cached = _membersById[message.senderId];
+    if (cached != null || message.data.containsKey('sender')) {
+      return _copyWithSender(message, cached);
+    }
+    return message;
+  }
+
+  List<LocalChatMessage> _normalizeMessageMembers(
+    Iterable<LocalChatMessage> messages,
+  ) {
+    final list = messages.toList();
+    for (final message in list) {
+      _upsertMember(message.sender);
+    }
+    return list.map(_normalizeMessageMember).toList();
+  }
+
+  List<LocalChatMessage> _sortMessages(List<LocalChatMessage> messages) {
+    messages.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return messages;
+  }
+
+  Future<void> _updateStateSafely(List<LocalChatMessage> messages) async {
+    if (_isUpdatingState) {
+      Logger.root.info('State update already in progress, skipping');
+      return;
+    }
+    _isUpdatingState = true;
+    try {
+      // Ensure messages are properly sorted and deduplicated
+      final sortedMessages = _sortMessages(_normalizeMessageMembers(messages));
+      final uniqueMessages = <LocalChatMessage>[];
+      final seenIds = <String>{};
+      for (final message in sortedMessages) {
+        if (seenIds.add(message.id)) {
+          uniqueMessages.add(message);
+        }
+      }
+      _messages = uniqueMessages;
+      _refreshLatestObservedRoomSequence(uniqueMessages);
+      if (ref.mounted) {
+        state = AsyncValue.data(_filterActiveMessages(uniqueMessages));
+      }
+    } finally {
+      _isUpdatingState = false;
+    }
+  }
+
+  void _setGlobalSyncing(bool value) {
+    final notifier = _globalSyncNotifier;
+    if (notifier == null) return;
+    Future.microtask(() {
+      if (value) {
+        notifier.begin();
+      } else {
+        notifier.end();
+      }
+    });
+  }
+
+  List<LocalChatMessage> _dedupeMessages(List<LocalChatMessage> messages) {
+    final result = <LocalChatMessage>[];
+    final indexById = <String, int>{};
+    final indexByClientId = <String, int>{};
+
+    for (final message in messages) {
+      final clientMessageId = message.clientMessageId;
+      final existingById = indexById[message.id];
+      final existingByClientId = clientMessageId == null
+          ? null
+          : indexByClientId[clientMessageId];
+      final existingIndex = existingById ?? existingByClientId;
+
+      if (existingIndex == null) {
+        indexById[message.id] = result.length;
+        if (clientMessageId != null) {
+          indexByClientId[clientMessageId] = result.length;
+        }
+        result.add(message);
+        continue;
+      }
+
+      final existing = result[existingIndex];
+
+      // A pending/failed row may be upgraded in place by its
+      // server-confirmed counterpart (matched by id or client_message_id).
+      if (existing.status != MessageStatus.sent &&
+          message.status == MessageStatus.sent) {
+        result[existingIndex] = message;
+        indexById[message.id] = existingIndex;
+        if (clientMessageId != null) {
+          indexByClientId[clientMessageId] = existingIndex;
+        }
+        continue;
+      }
+
+      // Same id: a true duplicate - keep the row already in the list.
+      if (existingById != null) continue;
+
+      // The collision comes from client_message_id. Distinct server rows can
+      // legitimately share it: a `messages.update` event row carries the
+      // client_message_id of the message it edits. When both rows are
+      // confirmed they are separate timeline entries - keep both instead of
+      // silently dropping one. A non-confirmed row that cannot upgrade the
+      // existing confirmed row is a stale duplicate - drop it.
+      if (message.status == MessageStatus.sent) {
+        indexById[message.id] = result.length;
+        result.add(message);
+      }
+    }
+
+    return result;
+  }
+
+  /// Coalesces realtime mutations into one state write at the end of the
+  /// current microtask. Callers must have already mutated [_messages] in
+  /// place; [_emitMessages] then normalizes, sorts, dedupes and filters the
+  /// whole list exactly once.
+  void _scheduleEmit() {
+    if (_emitScheduled || !ref.mounted) return;
+    _emitScheduled = true;
+    Future.microtask(() {
+      _emitScheduled = false;
+      if (!ref.mounted) return;
+      _emitMessages(_currentMessages);
+    });
+  }
+
+  void _emitMessages(List<LocalChatMessage> messages) {
+    if (!ref.mounted) return;
+    final normalized = _dedupeMessages(
+      _sortMessages(_normalizeMessageMembers(messages)),
+    );
+    _messages = normalized;
+    _refreshLatestObservedRoomSequence(normalized);
+    state = AsyncValue.data(_filterActiveMessages(normalized));
+  }
+
+  void _replaceMessage(String messageId, LocalChatMessage replacement) {
+    var replaced = false;
+    final updated = _currentMessages.map((message) {
+      final matchesPendingId = message.id == messageId;
+      final matchesReplacementId = message.id == replacement.id;
+      final matchesClientMessageId =
+          replacement.clientMessageId != null &&
+          message.clientMessageId == replacement.clientMessageId;
+      if (!matchesPendingId &&
+          !matchesReplacementId &&
+          !matchesClientMessageId) {
+        return message;
+      }
+      replaced = true;
+      return replacement;
+    }).toList();
+
+    if (replaced) {
+      _emitMessages(updated);
+      return;
+    }
+
+    if (_currentMessages.any((message) => message.id == replacement.id)) {
+      return;
+    }
+
+    _emitMessages([replacement, ...updated]);
+  }
+
+  /// Updates the placeholder_progress meta on a pending placeholder message
+  /// in the local timeline. Used by the sender to show upload progress without
+  /// round-tripping through the server.
+  void updatePendingMessageProgress(String messageId, double progress) {
+    final pending = _pendingMessages[messageId];
+    if (pending == null) return;
+    if (pending.type != 'placeholder') return;
+
+    final updated = pending.copyWith(
+      meta: Map<String, dynamic>.from(pending.meta)
+        ..['placeholder_progress'] = progress,
+    );
+    _replaceMessage(messageId, updated);
+  }
+
+  /// Finds the active placeholder for a given sender and updates its progress.
+  /// Used by receivers when upload progress arrives via the typing indicator.
+  void updatePlaceholderProgressBySender(String senderId, double progress) {
+    final placeholder = _currentMessages.cast<LocalChatMessage?>().firstWhere(
+      (m) =>
+          m != null &&
+          m.type == 'placeholder' &&
+          m.senderId == senderId &&
+          m.meta['placeholder_kind'] == 'uploading',
+      orElse: () => null,
+    );
+    if (placeholder == null) return;
+
+    final updated = placeholder.copyWith(
+      meta: Map<String, dynamic>.from(placeholder.meta)
+        ..['placeholder_progress'] = progress,
+    );
+    _replaceMessage(placeholder.id, updated);
+  }
+
+  int? _placeholderExpiresAtMs(LocalChatMessage message) {
+    if (message.type != 'placeholder') return null;
+    final raw = message.meta['placeholder_expires_at'];
+    if (raw is int) return raw;
+    return int.tryParse(raw?.toString() ?? '');
+  }
+
+  /// Removes locally persisted placeholders after their server-issued TTL
+  /// elapses without a finalize event.
+  Future<void> _cleanupExpiredPlaceholders() async {
+    if (!ref.mounted) return;
+
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final expiredIds = _currentMessages
+        .where((message) {
+          final expiresAtMs = _placeholderExpiresAtMs(message);
+          return expiresAtMs != null && expiresAtMs <= nowMs;
+        })
+        .map((message) => message.id)
+        .toSet();
+    if (expiredIds.isEmpty) return;
+
+    for (final messageId in expiredIds) {
+      _pendingMessages.remove(messageId);
+      _pendingCache.remove(messageId);
+      await _repository.deleteMessage(messageId);
+    }
+
+    if (!ref.mounted) return;
+    Logger.root.info(
+      'Removed ${expiredIds.length} expired placeholders from room $roomId',
+    );
+    _emitMessages(
+      _currentMessages
+          .where((message) => !expiredIds.contains(message.id))
+          .toList(),
+    );
+  }
+
+  Future<List<LocalChatMessage>> _getCachedMessages({
+    int offset = 0,
+    int take = 20,
+    String? searchQuery,
+    bool? withLinks,
+    bool? withAttachments,
+  }) async {
+    Logger.root.info('Getting cached messages from offset $offset, take $take');
+    final List<LocalChatMessage> dbMessages;
+
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      dbMessages = await _database.searchMessages(
+        roomId,
+        searchQuery,
+        withAttachments: withAttachments,
+        fetchAccount: _fetchAccount,
+      );
+    } else {
+      dbMessages = await _database.getMessagesForRoom(
+        roomId,
+        offset: offset,
+        limit: take,
+      );
+    }
+
+    List<LocalChatMessage> filteredMessages = dbMessages;
+
+    if (withLinks == true) {
+      filteredMessages = filteredMessages
+          .where((msg) => _hasLink(msg))
+          .toList();
+    }
+
+    if (withAttachments == true) {
+      filteredMessages = filteredMessages
+          .where((msg) => msg.toRemoteMessage().attachments.isNotEmpty)
+          .toList();
+    }
+
+    // Defer voice prefetching - only prefetch for visible messages
+    // Voice prefetching is now handled lazily when messages become visible
+    final dbLocalMessages = filteredMessages;
+
+    // Always ensure unique messages to prevent duplicate keys
+    final uniqueMessages = <LocalChatMessage>[];
+    final seenIds = <String>{};
+    for (final message in dbLocalMessages) {
+      if (seenIds.add(message.id)) {
+        uniqueMessages.add(message);
+      }
+    }
+
+    if (offset == 0) {
+      final pendingForRoom = _pendingMessages.values
+          .where((msg) => msg.roomId == roomId)
+          .toList();
+
+      final allMessages = [...pendingForRoom, ...uniqueMessages];
+      _sortMessages(allMessages); // Use the helper function
+
+      final finalUniqueMessages = <LocalChatMessage>[];
+      final finalSeenIds = <String>{};
+      for (final message in allMessages) {
+        if (finalSeenIds.add(message.id)) {
+          finalUniqueMessages.add(message);
+        }
+      }
+      return _filterActiveMessages(
+        _normalizeMessageMembers(finalUniqueMessages),
+      );
+    }
+
+    return _filterActiveMessages(_normalizeMessageMembers(uniqueMessages));
+  }
+
+  /// Consolidated initialization that handles pagination reset, sync, and initial load
+  /// with debouncing to prevent redundant calls
+  Future<void> initialize({bool forceRemoteRefresh = false}) async {
+    if (_isInitializing) {
+      Logger.root.info('Initialization already in progress, skipping.');
+      return;
+    }
+    await _waitForOlderMessagesPrefetch();
+    _isInitializing = true;
+    Logger.root.info('Starting consolidated initialization');
+    try {
+      resetPaginationState();
+      await syncMessages();
+      await loadInitial(forceRemoteRefresh: forceRemoteRefresh);
+    } finally {
+      _isInitializing = false;
+      Logger.root.info('Consolidated initialization complete');
+    }
+  }
+
+  Future<void> syncMessages() async {
+    if (_isSyncing) {
+      Logger.root.info('Sync already in progress, skipping.');
+      return;
+    }
+
+    await _runDeduped(
+      operation: _syncOperation,
+      setOperation: (op) => _syncOperation = op,
+      task: _syncMessagesImpl,
+      logLabel: 'Sync operation',
+    );
+  }
+
+  Future<void> _syncMessagesImpl() async {
+    _isSyncing = true;
+    _allRemoteMessagesFetched = false;
+
+    Logger.root.info('Starting message sync via global sync');
+
+    try {
+      // Use the global sync notifier to sync all messages
+      await ref.read(chatGlobalSyncProvider.notifier).syncAllMessages();
+    } catch (err, stackTrace) {
+      Logger.root.info('Error syncing messages', err, stackTrace);
+      showErrorAlert(err);
+    } finally {
+      Logger.root.info('Finished message sync');
+      _isSyncing = false;
+    }
+  }
+
+  Future<List<LocalChatMessage>> listMessages({
+    int offset = 0,
+    int take = 20,
+    bool synced = false,
+  }) async {
+    final currentCount = _currentMessages.length;
+    return _syncService.loadMore(
+      currentCount: offset > 0 ? offset : currentCount,
+      take: take,
+      filter: _activeFilter,
+    );
+  }
+
+  Future<List<LocalChatMessage>> _loadInitialMessages({
+    bool forceRemoteRefresh = true,
+  }) async {
+    _setGlobalSyncing(true);
+    try {
+      final initial = await _syncService.loadInitial(
+        forceRemote: forceRemoteRefresh,
+        filter: _activeFilter,
+      );
+      _allRemoteMessagesFetched = _syncService.allRemoteFetched;
+      _lastApiFetchOffset = _syncService.lastApiOffset;
+      _hasMore = !_allRemoteMessagesFetched;
+      return initial;
+    } finally {
+      _setGlobalSyncing(false);
+    }
+  }
+
+  void _scheduleOlderMessagesPrefetch() {
+    if (_olderMessagesPrefetchScheduled ||
+        _olderMessagesPrefetchOperation != null ||
+        _allRemoteMessagesFetched ||
+        !ref.mounted) {
+      return;
+    }
+
+    _olderMessagesPrefetchScheduled = true;
+    Future<void>.microtask(() {
+      _olderMessagesPrefetchScheduled = false;
+      if (!ref.mounted ||
+          _allRemoteMessagesFetched ||
+          _olderMessagesPrefetchOperation != null) {
+        return;
+      }
+
+      final operation = _prefetchOlderMessages();
+      _olderMessagesPrefetchOperation = operation;
+      unawaited(
+        operation.whenComplete(() {
+          if (identical(_olderMessagesPrefetchOperation, operation)) {
+            _olderMessagesPrefetchOperation = null;
+          }
+        }),
+      );
+    });
+  }
+
+  Future<void> _prefetchOlderMessages() async {
+    _setGlobalSyncing(true);
+    try {
+      var batches = 0;
+      while (ref.mounted &&
+          !_allRemoteMessagesFetched &&
+          _currentMessages.length < _backgroundPrefetchTarget &&
+          batches < _backgroundPrefetchMaxBatches) {
+        final beforeCount = _currentMessages.length;
+        final remaining = _backgroundPrefetchTarget - beforeCount;
+        final take = remaining
+            .clamp(PaginationConfig.pageSize, PaginationConfig.batchSize)
+            .toInt();
+        final more = await _syncService.loadMore(
+          currentCount: beforeCount,
+          take: take,
+          filter: _activeFilter,
+          fetchLimit: take,
+        );
+
+        if (more.isEmpty || !ref.mounted) break;
+
+        _emitMessages([..._currentMessages, ...more]);
+        if (_currentMessages.length <= beforeCount) break;
+
+        _allRemoteMessagesFetched = _syncService.allRemoteFetched;
+        _lastApiFetchOffset = _syncService.lastApiOffset;
+        _hasMore = !_allRemoteMessagesFetched;
+        batches += 1;
+
+        // Let the just-added batch render before fetching older history.
+        await Future<void>.delayed(Duration.zero);
+      }
+
+      _allRemoteMessagesFetched = _syncService.allRemoteFetched;
+      _lastApiFetchOffset = _syncService.lastApiOffset;
+      _hasMore = !_allRemoteMessagesFetched;
+    } catch (err, stackTrace) {
+      Logger.root.info(
+        'Background older-message prefetch failed',
+        err,
+        stackTrace,
+      );
+    } finally {
+      _setGlobalSyncing(false);
+    }
+  }
+
+  Future<void> loadInitial({bool forceRemoteRefresh = true}) async {
+    if (_isLoadingInitial) {
+      Logger.root.info('Initial load already in progress, skipping.');
+      return;
+    }
+
+    await _runDeduped(
+      operation: _loadInitialOperation,
+      setOperation: (op) => _loadInitialOperation = op,
+      task: () => _loadInitialImpl(forceRemoteRefresh: forceRemoteRefresh),
+      logLabel: 'LoadInitial operation',
+    );
+  }
+
+  Future<void> _loadInitialImpl({bool forceRemoteRefresh = true}) async {
+    await _waitForOlderMessagesPrefetch();
+    Logger.root.info('Loading initial messages');
+    _isLoadingInitial = true;
+
+    final trace = developer.TimelineTask(filterKey: 'chat');
+    trace.start(
+      'chat.loadInitial',
+      arguments: {'roomId': roomId, 'forceRemoteRefresh': forceRemoteRefresh},
+    );
+    try {
+      final previous = _currentMessages;
+      final messages = await _loadInitialMessages(
+        forceRemoteRefresh: forceRemoteRefresh,
+      );
+
+      if (ref.mounted) {
+        if (messages.isEmpty && previous.isNotEmpty && !forceRemoteRefresh) {
+          Logger.root.info(
+            'Initial reload returned empty; preserving existing in-memory messages',
+          );
+          _emitMessages(previous);
+          Future.delayed(const Duration(milliseconds: 600), () {
+            if (ref.mounted) {
+              unawaited(loadInitial(forceRemoteRefresh: true));
+            }
+          });
+        } else {
+          // A refresh only tops the timeline up with the newest page.
+          // Replacing the list here dropped every older message the user had
+          // loaded, including a jump window, which left the viewport at the
+          // newest messages.
+          _emitMessages([...previous, ...messages]);
+        }
+      }
+      _scheduleOlderMessagesPrefetch();
+    } finally {
+      _isLoadingInitial = false;
+      trace.finish(arguments: {'messageCount': _currentMessages.length});
+    }
+    // The repair guard skips while _isLoadingInitial is set, so it must run
+    // after the flag clears.
+    _scheduleSenderRepair();
+  }
+
+  void resetPaginationState() {
+    _hasMore = true;
+    _allRemoteMessagesFetched = false;
+    _lastApiFetchOffset = 0;
+  }
+
+  Future<void> loadMore({int? offset}) async {
+    await _waitForOlderMessagesPrefetch();
+    if (!_hasMore ||
+        state is AsyncLoading ||
+        _isLoadingMore ||
+        _isJumpPending) {
+      Logger.root.info(
+        'Skipping loadMore (hasMore=$_hasMore, isAsyncLoading=${state is AsyncLoading}, isLoadingMore=$_isLoadingMore, isJumpPending=$_isJumpPending)',
+      );
+      return;
+    }
+    _isLoadingMore = true;
+    // Use the current displayed message count as offset for UI pagination
+    // This is different from _lastApiFetchOffset which tracks API fetch progress
+    final displayOffset = offset ?? _currentMessages.length;
+    final trace = developer.TimelineTask(filterKey: 'chat');
+    trace.start(
+      'chat.loadMore',
+      arguments: {'roomId': roomId, 'offset': displayOffset},
+    );
+    Logger.root.info(
+      'Loading more messages (displayOffset=$displayOffset, take=$_pageSize, lastApiOffset=$_lastApiFetchOffset)',
+    );
+
+    _setGlobalSyncing(true);
+
+    try {
+      final newMessages = await listMessages(
+        offset: displayOffset,
+        take: _pageSize,
+      );
+
+      _allRemoteMessagesFetched = _syncService.allRemoteFetched;
+      _lastApiFetchOffset = _syncService.lastApiOffset;
+      _hasMore = !_allRemoteMessagesFetched;
+
+      if (ref.mounted) {
+        _emitMessages([..._currentMessages, ...newMessages]);
+      }
+      Logger.root.info(
+        'loadMore complete (fetched=${newMessages.length}, hasMore=$_hasMore, allRemoteFetched=$_allRemoteMessagesFetched)',
+      );
+    } catch (err, stackTrace) {
+      Logger.root.info('Error loading more messages', err, stackTrace);
+      showErrorAlert(err);
+    } finally {
+      _isLoadingMore = false;
+      // Always reset global syncing state, regardless of disposal
+      _setGlobalSyncing(false);
+      trace.finish(arguments: {'messageCount': _currentMessages.length});
+    }
+  }
+
+  Future<void> loadMoreBeforeOldest() async {
+    final oldestMessage = _currentMessages.lastOrNull;
+    if (oldestMessage == null) return loadMore();
+
+    final offset =
+        await _repository.countMessagesNewerThan(oldestMessage.createdAt) + 1;
+    return loadMore(offset: offset);
+  }
+
+  void _syncWeakInternetPolling(bool enabled) {
+    _weakInternetPollTimer?.cancel();
+    _weakInternetPollTimer = null;
+
+    if (!enabled || !ref.mounted) return;
+
+    Logger.root.info('Weak internet mode active for room $roomId');
+    Future.microtask(() => _pollForWeakInternetUpdates());
+    _weakInternetPollTimer = Timer.periodic(_weakInternetPollInterval, (_) {
+      unawaited(_pollForWeakInternetUpdates());
+    });
+  }
+
+  Future<void> _pollForWeakInternetUpdates() async {
+    if (!ref.mounted || _isLoadingInitial || _isSyncing || _isJumping) return;
+
+    final lifecycle = ref.read(appLifecycleStateProvider).value;
+    if (lifecycle != null && lifecycle != AppLifecycleState.resumed) return;
+
+    final hasConnectivity = hasNetworkConnectivityValue(
+      ref.read(connectivityStatusProvider),
+    );
+    if (!hasConnectivity) return;
+
+    final weakInternetMode = ref.read(weakInternetModeProvider);
+    if (!weakInternetMode) return;
+
+    Logger.root.info('Polling messages for room $roomId due to weak internet');
+    try {
+      await loadInitial(forceRemoteRefresh: true);
+    } catch (err, stackTrace) {
+      Logger.root.info(
+        'Weak internet polling failed for room $roomId',
+        err,
+        stackTrace,
+      );
+    }
+  }
+
+  void _upsertReceivedMessageInState(LocalChatMessage localMessage) {
+    final sender = localMessage.sender;
+    if (sender != null) {
+      // This also covers messages recovered through room-sequence sync, which
+      // bypass the real-time handler's intake callback.
+      unawaited(_upsertIncomingMessageSender(sender));
+    }
+
+    final isMessageUpdate =
+        localMessage.type == 'messages.update' ||
+        localMessage.type == 'messages.sync.file' ||
+        localMessage.type == 'messages.sync.finalize' ||
+        localMessage.type == 'messages.sync.links';
+    final chatMode = ref.read(appSettingsProvider).chatEventMessageMode;
+    final shouldShowMessage = _shouldIncludeInActiveList(
+      localMessage,
+      chatMode,
+    );
+    final shouldShowEditTrail =
+        chatMode != kChatEventMessageModeNone && isMessageUpdate;
+
+    if (!ref.mounted) return;
+
+    // Mutate the timeline in place and coalesce the state write. Building a
+    // fresh list and emitting per message made a burst of N realtime arrivals
+    // O(N²) full-list copies, dropping frames so the newest message only
+    // appeared when the next one forced a catch-up frame.
+    final list = _messages;
+    final existingIndex = list.indexWhere(
+      (m) =>
+          m.id == localMessage.id ||
+          // A client_message_id match only identifies the local placeholder
+          // awaiting finalization. Confirmed rows (a `messages.update` event
+          // and the message it edits) share the sender's client_message_id
+          // while being distinct timeline entries, so they must not match
+          // each other.
+          (localMessage.clientMessageId != null &&
+              m.clientMessageId == localMessage.clientMessageId &&
+              m.status != MessageStatus.sent),
+    );
+
+    // System events (like messages.update) should never replace or remove
+    // existing messages in the list. They reference target messages via
+    // meta['message_id'], not by sharing the same ID. The actual content
+    // update is handled by receiveMessageUpdate(). Here we only add the
+    // event to the timeline if it should be shown.
+    if (_isSystemEventType(localMessage.type)) {
+      if ((shouldShowMessage || shouldShowEditTrail) && existingIndex < 0) {
+        list.add(localMessage);
+        _scheduleEmit();
+      }
+      return;
+    }
+
+    if (existingIndex >= 0) {
+      if (shouldShowMessage || shouldShowEditTrail) {
+        list[existingIndex] = localMessage;
+      } else {
+        list.removeAt(existingIndex);
+      }
+      _scheduleEmit();
+    } else if (shouldShowMessage || shouldShowEditTrail) {
+      list.add(localMessage);
+      _scheduleEmit();
+    }
+  }
+
+  Future<void> _processMessageSideEffects(SnChatMessage remoteMessage) async {
+    switch (remoteMessage.type) {
+      case "messages.delete":
+        await receiveMessageDeletion(
+          remoteMessage.meta['message_id'] ?? remoteMessage.id,
+        );
+      case "messages.update":
+      case "messages.sync.file":
+      case "messages.sync.finalize":
+      case "messages.sync.links":
+        await receiveMessageUpdate(remoteMessage);
+      case "messages.reaction.added":
+        await receiveReactionAdded(remoteMessage);
+      case "messages.reaction.removed":
+        await receiveReactionRemoved(remoteMessage);
+      case "messages.pinned":
+        _handleMessagePinned(remoteMessage);
+      case "messages.unpinned":
+        _handleMessageUnpinned(remoteMessage);
+    }
+  }
+
+  // ── Public send methods ────────────────────────────────────────────
+
+  Future<void> sendMessage(
+    String content,
+    List<UniversalFile> attachments, {
+    List<Map<String, dynamic>>? embeds,
+    SnChatMessage? editingTo,
+    SnChatMessage? forwardingTo,
+    SnChatMessage? replyingTo,
+    SnChatMessage? threadingTo,
+    Function(String, Map<int, double?>)? onProgress,
+  }) async {
+    await _keepAliveWhileSending(() async {
+      if (content.trim().isEmpty &&
+          attachments.isEmpty &&
+          (embeds == null || embeds.isEmpty)) {
+        return;
+      }
+
+      // Run plugin hooks before sending
+      final hookResult = PluginHooks().runBeforeMessageSend(content);
+      if (hookResult.cancelled) {
+        showSnackBar('Message blocked by plugin: ${hookResult.cancelledBy}');
+        return;
+      }
+      final effectiveContent = hookResult.data ?? content;
+
+      String? pendingMessageId;
+      final result = await _sender.sendTextMessage(
+        content: effectiveContent,
+        attachments: attachments,
+        sender: _identity,
+        editingTo: editingTo,
+        replyingTo: replyingTo,
+        forwardingTo: forwardingTo,
+        threadingTo: threadingTo,
+        embeds: embeds,
+        onPending: editingTo == null
+            ? (pending) {
+                pendingMessageId = pending.id;
+                _pendingMessages[pending.id] = pending;
+                _emitMessages([pending, ..._currentMessages]);
+              }
+            : null,
+        onProgress: onProgress,
+      );
+
+      if (!result.success || result.message == null) {
+        if (pendingMessageId != null) {
+          ref
+              .read(chatRoomStateProvider(roomId).notifier)
+              .updateAttachmentProgress(pendingMessageId!, null);
+          final pending = _pendingMessages[pendingMessageId!];
+          if (pending != null) {
+            pending.status = MessageStatus.failed;
+            _replaceMessage(pending.id, pending);
+          }
+
+          // A room-wide messages.sync.finalize can arrive before (or instead
+          // of) the device-specific acknowledgement awaited by MessageSender.
+          // In that case the message has already been finalized by the
+          // server; do not turn it back into a failed placeholder.
+          final finalized = _currentMessages.any(
+            (message) =>
+                message.id == pendingMessageId &&
+                message.status == MessageStatus.sent &&
+                message.type != 'placeholder',
+          );
+          if (finalized) return;
+        }
+        showErrorAlert(result.error ?? 'Failed to send message');
+        return;
+      }
+
+      final sentMessage = result.message!;
+      final room = await ref.read(chatRoomProvider(roomId).future);
+      final currentAccount = await ref.read(userInfoProvider.future);
+      if (room != null) {
+        unawaited(
+          IosShareSuggestionsService.instance.donateChatRoom(
+            room,
+            currentUserId: currentAccount?.id,
+            currentAccountName: currentAccount?.name,
+            currentAccountNick: currentAccount?.nick,
+            currentUser: currentAccount,
+            serverUrl: ref.read(serverUrlProvider),
+          ),
+        );
+      }
+      if (pendingMessageId != null) {
+        _pendingMessages.remove(pendingMessageId);
+      }
+
+      if (editingTo != null) {
+        var replaced = false;
+        final updated = _currentMessages.map((message) {
+          if (message.id != sentMessage.id) return message;
+          replaced = true;
+          return sentMessage;
+        }).toList();
+
+        if (!replaced) {
+          updated.add(sentMessage);
+        }
+
+        final eventMessage = result.eventMessage;
+        if (eventMessage != null &&
+            _shouldIncludeInActiveList(
+              eventMessage,
+              ref.read(appSettingsProvider).chatEventMessageMode,
+            ) &&
+            !updated.any((message) => message.id == eventMessage.id)) {
+          updated.add(eventMessage);
+        }
+
+        _emitMessages(updated);
+        return;
+      }
+
+      if (pendingMessageId != null) {
+        ref
+            .read(chatRoomStateProvider(roomId).notifier)
+            .updateAttachmentProgress(pendingMessageId!, null);
+        _replaceMessage(pendingMessageId!, sentMessage);
+      } else {
+        _emitMessages([sentMessage, ..._currentMessages]);
+      }
+    });
+  }
+
+  Future<void> sendVoiceMessage(
+    String filePath, {
+    int? durationMs,
+    SnChatMessage? forwardingTo,
+    SnChatMessage? replyingTo,
+  }) async {
+    await _keepAliveWhileSending(() async {
+      final result = await _sender.sendVoiceMessage(
+        filePath: filePath,
+        sender: _identity,
+        durationMs: durationMs,
+        forwardingTo: forwardingTo,
+        replyingTo: replyingTo,
+      );
+
+      if (!result.success || result.message == null) {
+        showErrorAlert(result.error ?? 'Failed to send voice message');
+        return;
+      }
+
+      _emitMessages([result.message!, ..._currentMessages]);
+    });
+  }
+
+  Future<void> retryMessage(String pendingMessageId) async {
+    await _keepAliveWhileSending(() async {
+      final result = await _sender.retryMessage(
+        pendingMessageId,
+        sender: _identity,
+      );
+
+      if (!result.success || result.message == null) {
+        showErrorAlert(result.error ?? 'Failed to retry message');
+        return;
+      }
+
+      final updated = _currentMessages.map((m) {
+        if (m.id == pendingMessageId) return result.message!;
+        return m;
+      }).toList();
+      _emitMessages(updated);
+    });
+  }
+
+  Future<void> receiveMessage(
+    SnChatMessage remoteMessage, {
+    bool applySideEffects = true,
+  }) async {
+    await _realtime.processNewMessage(remoteMessage);
+    if (applySideEffects) await _processMessageSideEffects(remoteMessage);
+  }
+
+  Future<void> receiveMessageUpdate(SnChatMessage remoteMessage) async {
+    await _realtime.processMessageUpdate(remoteMessage);
+  }
+
+  Future<void> receiveMessageDeletion(String messageId) async {
+    await _realtime.processMessageDeletion(messageId);
+  }
+
+  Future<void> receiveMessageDeleteEvent(SnChatMessage remoteMessage) async {
+    await _realtime.processMessageDeleteEvent(remoteMessage);
+  }
+
+  Future<void> deleteMessage(String messageId) async {
+    Logger.root.info('Deleting message $messageId');
+
+    // Fetch message to check its status before attempting server delete
+    final message = await fetchMessageById(messageId);
+    if (message == null) {
+      Logger.root.info('Message $messageId not found for deletion');
+      return;
+    }
+
+    // Skip server delete for failed messages (never successfully sent)
+    if (message.status == MessageStatus.failed) {
+      Logger.root.info('Skipping server delete for failed message $messageId');
+      // For failed messages, remove them completely from the active list
+      _pendingMessages.remove(messageId);
+      await _repository.deleteMessage(messageId);
+
+      final currentMessages = _currentMessages;
+      final newMessages = currentMessages
+          .where((m) => m.id != messageId)
+          .toList();
+      _emitMessages(newMessages);
+      return;
+    }
+
+    try {
+      final response = await _apiClient.delete(
+        '/messager/chat/$roomId/messages/$messageId',
+        options: _mlsWriteOptions(),
+      );
+      final deleteEvent = _tryParseChatMessage(
+        response.data,
+        context: 'delete response',
+      );
+      if (deleteEvent != null) {
+        await receiveMessageDeleteEvent(deleteEvent);
+      } else {
+        await receiveMessageDeletion(messageId);
+      }
+    } catch (err, stackTrace) {
+      Logger.root.info('Error deleting message $messageId', err, stackTrace);
+      showErrorAlert(err);
+    }
+  }
+
+  Future<void> reactToMessage(
+    String messageId, {
+    required String symbol,
+    required int attitude,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        '/messager/chat/$roomId/messages/$messageId/reactions',
+        data: {'symbol': symbol, 'attitude': attitude},
+      );
+      await _applyLocalReactionResult(
+        messageId,
+        symbol: symbol,
+        reacted: response.statusCode != 204,
+      );
+    } catch (err, stackTrace) {
+      Logger.root.info(
+        'Failed to react to message $messageId',
+        err,
+        stackTrace,
+      );
+      showErrorAlert(err);
+    }
+  }
+
+  // ── Pin methods ─────────────────────────────────────────────────
+
+  void _handleMessagePinned(SnChatMessage remoteMessage) {
+    final pinId = remoteMessage.meta['pin_id']?.toString();
+    final targetMessageId = remoteMessage.meta['message_id']?.toString();
+    if (targetMessageId == null) return;
+
+    _pinnedMessages[targetMessageId] = SnChatMessagePin(
+      id: pinId ?? '',
+      messageId: targetMessageId,
+      chatRoomId: roomId,
+      pinnedByMemberId:
+          remoteMessage.meta['pinned_by_member_id']?.toString() ?? '',
+      expiresAt: remoteMessage.meta['expires_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              remoteMessage.meta['expires_at'] is int
+                  ? remoteMessage.meta['expires_at']
+                  : int.tryParse(remoteMessage.meta['expires_at'].toString()) ??
+                        0,
+            )
+          : null,
+      createdAt: remoteMessage.createdAt,
+      updatedAt: remoteMessage.updatedAt,
+    );
+  }
+
+  void _handleMessageUnpinned(SnChatMessage remoteMessage) {
+    final targetMessageId = remoteMessage.meta['message_id']?.toString();
+    if (targetMessageId != null) {
+      _pinnedMessages.remove(targetMessageId);
+    }
+  }
+
+  Future<void> pinMessage(String messageId, {DateTime? expiresAt}) async {
+    try {
+      await _apiClient.post(
+        '/messager/chat/$roomId/pins',
+        data: {
+          'message_id': messageId,
+          if (expiresAt != null) 'expires_at': expiresAt.millisecondsSinceEpoch,
+        },
+      );
+    } catch (err, stackTrace) {
+      Logger.root.info('Failed to pin message $messageId', err, stackTrace);
+      showErrorAlert(err);
+    }
+  }
+
+  Future<void> unpinMessage(String messageId) async {
+    final pin = _pinnedMessages[messageId];
+    if (pin == null) {
+      Logger.root.info('No pin found for message $messageId');
+      return;
+    }
+    try {
+      await _apiClient.delete('/messager/chat/$roomId/pins/${pin.id}');
+      _pinnedMessages.remove(messageId);
+    } catch (err, stackTrace) {
+      Logger.root.info('Failed to unpin message $messageId', err, stackTrace);
+      showErrorAlert(err);
+    }
+  }
+
+  Future<List<SnChatMessagePin>> fetchPinnedMessages({
+    bool includeExpired = false,
+  }) async {
+    try {
+      final response = await _apiClient.get(
+        '/messager/chat/$roomId/pins',
+        queryParameters: {'include_expired': includeExpired},
+      );
+      final pins = (response.data as List)
+          .map((e) => SnChatMessagePin.fromJson(e as Map<String, dynamic>))
+          .toList();
+      for (final pin in pins) {
+        _pinnedMessages[pin.messageId] = pin;
+      }
+      return pins;
+    } catch (err, stackTrace) {
+      Logger.root.info('Failed to fetch pinned messages', err, stackTrace);
+      return [];
+    }
+  }
+
+  bool isMessagePinned(String messageId) =>
+      _pinnedMessages.containsKey(messageId);
+
+  List<SnChatMessagePin> get pinnedMessagesList => _pinnedMessages.values
+      .where(
+        (pin) =>
+            pin.expiresAt == null || pin.expiresAt!.isAfter(DateTime.now()),
+      )
+      .toList();
+
+  Map<String, int> _extractLocalReactionCounts(LocalChatMessage message) {
+    final raw = message.data['reactions_count'];
+    if (raw is! Map) return {};
+    return Map<String, int>.fromEntries(
+      raw.entries
+          .map((entry) {
+            final value = entry.value;
+            final count = value is int
+                ? value
+                : int.tryParse(value.toString()) ?? 0;
+            return MapEntry(entry.key.toString(), count);
+          })
+          .where((entry) => entry.value > 0),
+    );
+  }
+
+  Map<String, bool> _extractLocalReactionMade(LocalChatMessage message) {
+    final raw = message.data['reactions_made'];
+    if (raw is! Map) return {};
+    return raw.map((key, value) => MapEntry(key.toString(), value == true));
+  }
+
+  LocalChatMessage _copyWithLocalReactionState(
+    LocalChatMessage message, {
+    required Map<String, int> reactionsCount,
+    required Map<String, bool> reactionsMade,
+  }) {
+    final updatedData = Map<String, dynamic>.from(message.data);
+    updatedData['reactions_count'] = reactionsCount;
+    updatedData['reactions_made'] = reactionsMade;
+
+    return LocalChatMessage(
+      id: message.id,
+      roomId: message.roomId,
+      senderId: message.senderId,
+      sender: message.sender,
+      data: updatedData,
+      createdAt: message.createdAt,
+      clientMessageId: message.clientMessageId,
+      nonce: message.nonce,
+      status: message.status,
+      content: message.content,
+      isDeleted: message.isDeleted,
+      updatedAt: message.updatedAt,
+      deletedAt: message.deletedAt,
+      type: message.type,
+      meta: message.meta,
+      membersMentioned: message.membersMentioned,
+      editedAt: message.editedAt,
+      attachments: message.attachments,
+      reactions: message.reactions,
+      repliedMessageId: message.repliedMessageId,
+      forwardedMessageId: message.forwardedMessageId,
+      localAttachments: message.localAttachments,
+    );
+  }
+
+  Future<void> _applyLocalReactionResult(
+    String messageId, {
+    required String symbol,
+    required bool reacted,
+  }) async {
+    final currentInState = _currentMessages
+        .cast<LocalChatMessage?>()
+        .firstWhere((message) => message?.id == messageId, orElse: () => null);
+    final current =
+        currentInState ?? await _repository.getLocalMessage(messageId);
+    if (current == null) return;
+
+    final reactionsCount = _extractLocalReactionCounts(current);
+    final reactionsMade = _extractLocalReactionMade(current);
+    final hadReaction = reactionsMade[symbol] == true;
+
+    // The websocket reaction event can arrive before the POST completes. Apply
+    // the server outcome idempotently so that response handling does not undo
+    // an already-applied realtime snapshot.
+    if (reacted == hadReaction) return;
+
+    if (reacted) {
+      reactionsCount[symbol] = (reactionsCount[symbol] ?? 0) + 1;
+      reactionsMade[symbol] = true;
+    } else {
+      final nextCount = (reactionsCount[symbol] ?? 0) - 1;
+      if (nextCount > 0) {
+        reactionsCount[symbol] = nextCount;
+      } else {
+        reactionsCount.remove(symbol);
+      }
+      reactionsMade.remove(symbol);
+    }
+
+    final updated = _copyWithLocalReactionState(
+      current,
+      reactionsCount: reactionsCount,
+      reactionsMade: reactionsMade,
+    );
+
+    await _repository.saveMessage(updated);
+
+    final updatedList = [..._currentMessages];
+    final index = updatedList.indexWhere((message) => message.id == messageId);
+    if (index >= 0) {
+      updatedList[index] = updated;
+      _emitMessages(updatedList);
+    }
+  }
+
+  Future<void> receiveReactionAdded(SnChatMessage remoteMessage) async {
+    await _realtime.processReactionAdded(remoteMessage);
+  }
+
+  Future<void> receiveReactionRemoved(SnChatMessage remoteMessage) async {
+    await _realtime.processReactionRemoved(remoteMessage);
+  }
+
+  /// Get search results without updating shared state
+  /// Supports pagination with offset and take parameters
+  Future<List<LocalChatMessage>> getSearchResults(
+    String query, {
+    bool? withLinks,
+    bool? withAttachments,
+    int offset = 0,
+    int take = 50, // Reduced default from 1000/50 to consistent 50
+  }) async {
+    final trimmedQuery = query.trim();
+    final hasFilters = [withLinks, withAttachments].any((e) => e == true);
+
+    if (trimmedQuery.isEmpty && !hasFilters) {
+      return [];
+    }
+
+    Logger.root.info(
+      'Getting search results for query: $trimmedQuery, filters: links=$withLinks, attachments=$withAttachments, offset=$offset, take=$take',
+    );
+
+    try {
+      // Use consistent pagination instead of fetching large batches
+      // Database search is efficient, no need for excessive batch sizes
+      final messages = await _getCachedMessages(
+        offset: offset,
+        take: take,
+        searchQuery: trimmedQuery.isNotEmpty ? trimmedQuery : null,
+        withLinks: withLinks,
+        withAttachments: withAttachments,
+      );
+      return messages;
+    } catch (e, stackTrace) {
+      Logger.root.info('Error getting search results', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<void> searchMessages(
+    String query, {
+    bool? withLinks,
+    bool? withAttachments,
+    int offset = 0,
+    int take = 50, // Consistent pagination
+  }) async {
+    _searchQuery = query.trim();
+    _withLinks = withLinks;
+    _withAttachments = withAttachments;
+
+    if (_searchQuery!.isEmpty) {
+      state = AsyncValue.data([]);
+      return;
+    }
+
+    Logger.root.info('Searching messages with query: $_searchQuery');
+    state = const AsyncValue.loading();
+
+    try {
+      final messages = await _getCachedMessages(
+        offset: offset,
+        take: take,
+        searchQuery: _searchQuery,
+        withLinks: _withLinks,
+        withAttachments: _withAttachments,
+      );
+      _emitMessages(messages);
+    } catch (e, stackTrace) {
+      Logger.root.info('Error searching messages', e, stackTrace);
+      state = AsyncValue.error(e, stackTrace);
+    }
+  }
+
+  void clearSearch() {
+    _searchQuery = null;
+    _withLinks = null;
+    _withAttachments = null;
+    _allRemoteMessagesFetched = false;
+    loadInitial();
+  }
+
+  Future<LocalChatMessage?> fetchMessageById(String messageId) async {
+    final cached = _messageCache.get(messageId);
+    if (cached != null) return cached;
+
+    if (_messageCache.hasPendingFetch(messageId)) {
+      return _messageCache.getPendingFetch(messageId)!;
+    }
+
+    final fetchFuture = _fetchMessageByIdInternal(messageId);
+    _messageCache.registerPendingFetch(messageId, fetchFuture);
+    return fetchFuture;
+  }
+
+  Future<LocalChatMessage?> _fetchMessageByIdInternal(String messageId) async {
+    Logger.root.info('Fetching message by id $messageId from DB/API');
+    try {
+      final localMessage = await _repository.getLocalMessage(messageId);
+      if (localMessage != null) return localMessage;
+
+      final remoteMessage = await _repository.fetchRemoteMessage(messageId);
+      if (remoteMessage == null) return null;
+      final message = LocalChatMessage.fromRemoteMessage(
+        remoteMessage,
+        MessageStatus.sent,
+      );
+
+      await _repository.saveMessage(message);
+
+      // Defer voice prefetching
+      if (remoteMessage.type == 'voice') {
+        _prefetchVoiceForRemoteMessage(remoteMessage);
+      }
+      return message;
+    } catch (e) {
+      if (e is DioException) return null;
+      rethrow;
+    }
+  }
+
+  /// Loads the window around [messageId] into the room's timeline.
+  ///
+  /// Returns whether the message is present in the in-memory timeline
+  /// afterwards. The list widget resolves the render index, so this never
+  /// reports a position.
+  Future<bool> jumpToMessage(String messageId) async {
+    Logger.root.info('Starting jump to message $messageId');
+    if (_isJumping) {
+      Logger.root.info('Jump already in progress, skipping');
+      // A jump for this room is already loading; not a "not found".
+      return true;
+    }
+    _isJumping = true;
+
+    // Clear flashing messages when starting a new jump
+    if (!!ref.mounted) {
+      ref.read(flashingMessagesProvider.notifier).clear();
+    }
+
+    try {
+      final jump = await _syncService.loadAroundMessage(
+        messageId,
+        chunkSize: 100,
+      );
+      if (!jump.found || jump.targetMessage == null) {
+        Logger.root.info('Message $messageId not found');
+        showSnackBar('messageNotFound'.tr());
+        return false;
+      }
+
+      final loadedMessages = jump.messages;
+
+      // Check if loaded messages are already in current state
+      final currentMessages = _currentMessages;
+      final currentIds = currentMessages.map((m) => m.id).toSet();
+      final newMessages = loadedMessages
+          .where((m) => !currentIds.contains(m.id))
+          .toList();
+      Logger.root.info(
+        'Loaded ${loadedMessages.length} messages, ${newMessages.length} are new',
+      );
+
+      if (newMessages.isNotEmpty) {
+        // Merge with current messages more safely
+        final allMessages = [...currentMessages, ...newMessages];
+        final uniqueMessages = <LocalChatMessage>[];
+        final seenIds = <String>{};
+        for (final message in allMessages) {
+          if (seenIds.add(message.id)) {
+            uniqueMessages.add(message);
+          }
+        }
+        await _updateStateSafely(uniqueMessages);
+        Logger.root.info(
+          'Updated state with ${uniqueMessages.length} total messages',
+        );
+      }
+
+      if (_currentMessages.any((message) => message.id == messageId)) {
+        return true;
+      }
+
+      final directMessage = await fetchMessageById(messageId);
+      if (directMessage != null && ref.mounted) {
+        await _updateStateSafely([..._currentMessages, directMessage]);
+      }
+      return _currentMessages.any((message) => message.id == messageId);
+    } finally {
+      _isJumping = false;
+    }
+  }
+
+  /// Loads one batch from a deliberately unloaded range in a sparse message
+  /// timeline. A null result means the two loaded sections now meet.
+  Future<MessageLoadGap?> loadMessagesBetween(MessageLoadGap gap) async {
+    // The gap marker auto-loads from the room screen's initState and inserts
+    // rows in the middle of the list; that would fight the reveal.
+    if (_isJumpPending) return gap;
+    final newerMessage = await _repository.getLocalMessage(gap.newerMessageId);
+    final olderMessage = await _repository.getLocalMessage(gap.olderMessageId);
+    if (newerMessage == null || olderMessage == null) return gap;
+
+    final offset =
+        await _repository.countMessagesNewerThan(newerMessage.createdAt) + 1;
+    final page = await _syncService.loadMore(
+      currentCount: offset,
+      take: 100,
+      filter: const MessageFilter(),
+    );
+    if (page.isEmpty) return gap;
+
+    final currentIds = _currentMessages.map((message) => message.id).toSet();
+    final newMessages = page
+        .where((message) => currentIds.add(message.id))
+        .toList();
+    if (newMessages.isNotEmpty) {
+      await _updateStateSafely([..._currentMessages, ...newMessages]);
+    }
+
+    if (page.any((message) => message.id == gap.olderMessageId)) {
+      return null;
+    }
+
+    final bridgeMessages = page
+        .where(
+          (message) =>
+              message.id != gap.newerMessageId &&
+              message.createdAt.isBefore(newerMessage.createdAt) &&
+              message.createdAt.isAfter(olderMessage.createdAt),
+        )
+        .toList();
+    if (bridgeMessages.isEmpty) return gap;
+
+    return MessageLoadGap(
+      newerMessageId: bridgeMessages.last.id,
+      olderMessageId: gap.olderMessageId,
+      isAutoManaged: gap.isAutoManaged,
+    );
+  }
+
+  Future<bool> hasMessagesBetween(
+    String newerMessageId,
+    String olderMessageId,
+  ) async {
+    final newerMessage = await _repository.getLocalMessage(newerMessageId);
+    final olderMessage = await _repository.getLocalMessage(olderMessageId);
+    if (newerMessage == null || olderMessage == null) return false;
+
+    final newerCount = await _repository.countMessagesNewerThan(
+      newerMessage.createdAt,
+    );
+    final olderCount = await _repository.countMessagesNewerThan(
+      olderMessage.createdAt,
+    );
+    return olderCount - newerCount > 1;
+  }
+
+  /// Retains the newest and oldest visible sections while replacing the
+  /// distant middle with a reloadable gap. This keeps long history browsing
+  /// from retaining every previously visited message in memory.
+  Future<MessageLoadGap?> compactForOlderScroll({
+    int retainedMessagesPerSection = 100,
+  }) async {
+    // Compaction drops everything between the two retained sections, which
+    // can include the window a jump just loaded.
+    if (_isJumpPending) return null;
+    final messages = _currentMessages;
+    final olderSectionStart = messages.length - retainedMessagesPerSection;
+    if (messages.length <= retainedMessagesPerSection * 2 + 1 ||
+        olderSectionStart <= retainedMessagesPerSection) {
+      return null;
+    }
+
+    final newerBoundary = messages[retainedMessagesPerSection - 1];
+    final olderBoundary = messages[olderSectionStart];
+    await _updateStateSafely([
+      ...messages.take(retainedMessagesPerSection),
+      ...messages.skip(olderSectionStart),
+    ]);
+
+    return MessageLoadGap(
+      newerMessageId: newerBoundary.id,
+      olderMessageId: olderBoundary.id,
+      isAutoManaged: true,
+    );
+  }
+
+  bool _hasLink(LocalChatMessage message) {
+    final content = message.toRemoteMessage().content;
+    if (content == null) return false;
+    final urlRegex = RegExp(r'https?://[^\s/$.?#].[^\s]*');
+    return urlRegex.hasMatch(content);
+  }
+}

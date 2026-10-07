@@ -18,6 +18,12 @@ No denied SoSYS repository content or unlicensed implementation was retrieved.
 Both repositories carry GNU AGPL v3 license files. NeTo is a separate submodule
 whose license remains unknown and its implementation has not been used.
 
+Scope correction, 2026-10-07: the user excluded the unlicensed protocol repository,
+including its definitions, schemas, descriptors and generated bindings. Earlier
+suggestions to obtain protocol exports are rescinded. No such definitions were
+imported into this board service; continue only from independently derived
+licensed-client/call-site contracts or separately licensed public documentation.
+
 - [DysonNetwork license](https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/LICENSE.txt)
 - [Solian license](https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/LICENSE.txt)
 - [Solian board models, enum, JSON writer/parser and calls](https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/widgets/account/board.dart)
@@ -136,10 +142,12 @@ Bad identifier/key formats map to InvalidArgument. Missing board item maps to
 NotFound; invalid kind/ownership/payload maps to FailedPrecondition. Widget lookup
 NotFound/FailedPrecondition becomes board-validation error; other errors propagate.
 
-Generated descriptors or original public .proto definitions are still needed for
-protobuf field numbers, fully-qualified package/service paths, field presence,
-exact enum mappings, and complete DyAccountBoardItem conversion. C# property
-names do not determine protobuf wire compatibility. No guessed descriptors.
+Protobuf field numbers, fully-qualified package/service paths, field presence,
+exact RPC enum mappings, and complete DyAccountBoardItem conversion are unresolved.
+C# property names do not determine protobuf wire compatibility. Do not obtain
+descriptors, original definitions or generated bindings from the excluded
+unlicensed protocol repository. Only eligible independently derived licensed
+contracts could support a future adapter; otherwise it remains absent.
 
 ## Proposed local ports, without NeTo code
 
@@ -159,18 +167,21 @@ names do not determine protobuf wire compatibility. No guessed descriptors.
 
 These can be implemented and tested offline with synthetic fakes today. Persisted
 transactional replacement can follow after current schema/audit behavior is
-verified. A deployable adapter still requires authoritative protobuf descriptors,
-permission mappings, payload normalization specification and full response/error
+verified. A deployable adapter still requires eligible independent interface
+documentation, permission mappings, payload normalization specification and full response/error
 fixtures. Existing external validators/RPCs may remain behind adapters during a
 staged migration, but no successful integration should be claimed until tested.
 
 ## Inputs that would remove the remaining gaps
 
-1. Lawfully available board protobuf descriptors or .proto files for the three RPCs
+1. Independently derived licensed-client evidence or separately licensed public
+   interface documentation sufficient for the required operations; no exports
+   from the excluded unlicensed protocol repository
 2. Documented universal payload schema/normalization examples and rejection cases
 3. Exact permission keys and middleware contract (including RPC caller identity)
 4. Sanitized response fixtures for public/self/admin board reads and errors
 5. Current schema/audit/soft-delete contract plus synthetic database fixtures
 
-These can be supplied as interface documentation or appropriately licensed tests;
-NeTo implementation access is not inherently required.
+These can be supplied as independently established licensed documentation or
+appropriately licensed tests. Access to or exports from the unlicensed protocol
+repository are not an approved alternative.

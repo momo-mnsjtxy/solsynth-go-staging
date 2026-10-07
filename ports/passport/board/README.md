@@ -5,6 +5,12 @@ Modified 2026-10-07. Source-derived from licensed Solsynth/DysonNetwork
 ffd0838e5f04cb40bea311a39118ebeedad210c1. GNU AGPL v3 applies; see LICENSE.txt.
 This is not clean-room work and does not import NeTo implementation.
 
+Scope correction, 2026-10-07: the unlicensed protocol repository's definitions,
+schemas, descriptors and generated bindings are also excluded, including exports.
+This package contains none of them. Its local JSON projection and historical
+database fixture derive from the licensed sources below. No protocol export is
+requested to complete its missing adapters.
+
 ## Implemented
 
 - Ordered detached list

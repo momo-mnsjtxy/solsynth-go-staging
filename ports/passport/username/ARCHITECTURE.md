@@ -59,8 +59,12 @@ operations have a small persistence boundary. Preserve sorted reads, replacement
 transactions, app-owned payload retention, enabled/singleton widget validation,
 canonical widget keys and cache invalidation after successful commit.
 
-It is currently blocked from implementation by unavailable licensed shared
-definitions:
+Historical planning note: this candidate subsequently became the bounded
+transport-independent ports/passport/board package. Complete transport parity
+remains blocked by missing eligible interface evidence. The unlicensed protocol
+repository's definitions, schemas, descriptors and generated bindings are
+excluded; do not request them or user exports. Earlier assumptions about obtaining
+shared definitions are superseded:
 
 - The pinned DysonNetwork gitlink for DysonNetwork.Shared is
   83c36cb92d667d3800f152665660c17886f71f7c
@@ -70,9 +74,10 @@ definitions:
   repository-name search returned no NeTo result
 - The Shared submodule's own license has not been verified. The parent
   repository license must not be assumed to license a separate submodule
-- SnAccountBoardItem, its enum, BoardPayloadContract, protobuf schemas, cache
-  contracts and serialization rules must be obtained from a lawful source
-  before translating shared implementations
+- The licensed Solian client and DysonNetwork-owned call sites/migrations now
+  support the local item projection and tested service boundary. Unresolved
+  payload/auth/transport semantics require independently derived licensed
+  contracts or separately licensed public documentation, not Shared exports
 
 No SoSYS content was fetched to work around the existing access cancellation.
 The board service has been read in licensed DysonNetwork; any eventual port is

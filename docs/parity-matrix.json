@@ -1,7 +1,7 @@
 {
   "scope": "Checkpoint: local PostWatch HTTP/persistence slice plus PostgreSQL adapter (compiled, database integration blocked), three policy ports, and partial Passport board service; backend functional parity not established",
   "baseline": "Solsynth/DysonNetwork@4ee2d0cebb9da8284a92483fee6dce795bf6947c",
-  "license_policy": "Reuse or translation requires a verified applicable license. Missing-license repositories are interface-research-only; no clean-room claim is made after implementation inspection.",
+  "license_policy": "Reuse requires verified applicable permission. The excluded unlicensed protocol repository, its schemas, descriptor exports and generated bindings must not be used even as interface-only evidence. Independently derived eligible licensed client/server evidence is separate; no strict clean-room claim follows source inspection.",
   "counts": {
     "domain_ports": 3,
     "production_services_completed": 0,
@@ -53,7 +53,7 @@
     {
       "id": "events",
       "status": "pending",
-      "acceptance": "Pin Spec/NeTo/Go SDK contracts; verify gRPC presence and enums, cache formats, NATS subjects/envelopes, ordering and ack/retry semantics"
+      "acceptance": "Establish gRPC/HTTP interactions only from eligible licensed callers or permitted public documentation, excluding the unlicensed protocol repository and generated definitions. Verify cache/event formats, ordering and acknowledgement/retry semantics; unknown contracts remain blocked."
     },
     {
       "id": "storage",

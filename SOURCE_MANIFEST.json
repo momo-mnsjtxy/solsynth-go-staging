@@ -1,6 +1,6 @@
 {
-  "checkpoint": "gated-watcher-candidate-2026-10-07",
-  "scope": "Preference PG tests previously passed; watcher candidate disabled by default, pending new actual CI",
+  "checkpoint": "excluded-protocol-doc-correction-2026-10-07",
+  "scope": "Documentation-only correction; prohibited protocol definitions absent; runtime unchanged from tested watcher checkpoint",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
@@ -19,13 +19,13 @@
     },
     {
       "path": "NOTICE.md",
-      "bytes": 1349,
-      "sha256": "f85161060375d87279a0be3aa6cc1c0f6f64eaf3852e4817a3bb3381fb1aa7bc"
+      "bytes": 1816,
+      "sha256": "73c3982294d415e927de488e83f1c88ef609f0bace0ea7158ffe1c6a94391022"
     },
     {
       "path": "README.md",
-      "bytes": 8673,
-      "sha256": "6b00ba593acad133385a043cb82bb43a0887ebc824ae06d3d879e978a71b6648"
+      "bytes": 9265,
+      "sha256": "6a6d4eacd2c6dbbe982864491dfb42434917145d777cefc6a6603280b7fb5d70"
     },
     {
       "path": "cmd/solsynth-go/main.go",
@@ -59,8 +59,8 @@
     },
     {
       "path": "docs/compatibility-inventory.md",
-      "bytes": 7398,
-      "sha256": "8139278d66dfe32063d78aebeb6e7b84fb5b22d58a1923ac9722476f3dd2fbd8"
+      "bytes": 7630,
+      "sha256": "0b8391650e405d4f20bb2433ff79ef2cc0fdac38e9258bdbe7bd5d2c931f2262"
     },
     {
       "path": "docs/live-smoke-result.json",
@@ -74,8 +74,8 @@
     },
     {
       "path": "docs/parity-matrix.json",
-      "bytes": 5714,
-      "sha256": "c063519ecacfe51eb40d0d0f5f42fbed9ed300e72bcdf4e35276e94fcc3a2287"
+      "bytes": 6008,
+      "sha256": "d242b9d9badd186fb510711920765ad2ab8d3c21cf1e4b2f28e40d04e1626df8"
     },
     {
       "path": "docs/postgres-integration-result.json",
@@ -114,13 +114,18 @@
     },
     {
       "path": "internal/auth/CONTRACT.md",
-      "bytes": 9483,
-      "sha256": "f98f78371a9b9c4f1623e7196e51a5631e417f2e2069114b7c509bef3f3484a7"
+      "bytes": 10142,
+      "sha256": "8baad601e136fdab7c7ccffe3a29a2d9ce88a58a984b470531c631b27a962e0f"
     },
     {
       "path": "internal/auth/HTTP_RECONSTRUCTION.md",
-      "bytes": 6977,
-      "sha256": "1146583bea64d36b2d37a736a8f1776bf348949bf3c34b3b47ae7c0f608b3890"
+      "bytes": 7154,
+      "sha256": "a3684861c6a314986045e2b8118e0e90ff7c290ec1f7e61aa5d489ffb6469828"
+    },
+    {
+      "path": "internal/auth/LICENSE_SCOPE_AUDIT.md",
+      "bytes": 2948,
+      "sha256": "87ba1cefe57a14621b111ba4e469115208790fe301b7599a6563d0d2f1008c17"
     },
     {
       "path": "internal/watchpg/README.md",
@@ -224,13 +229,13 @@
     },
     {
       "path": "ports/messager/ROOM-SYNC-CONTRACT.md",
-      "bytes": 9747,
-      "sha256": "95717b3a2b5102e5218fde1eb6e7b7cd757e741bc7fd84279598547d20b235e7"
+      "bytes": 10082,
+      "sha256": "2d4cd13dc2f348b6448fc870f55b573398c61dd63e738314a4a76e9d2319263c"
     },
     {
       "path": "ports/messager/SERVICE-MAP.md",
-      "bytes": 3473,
-      "sha256": "169784926ce38c3956ab2e4cb57308fcf0dfc2cbca066bd5e45dbd13afbc9285"
+      "bytes": 3697,
+      "sha256": "7fcfcc80f6600438c91d172e7cce2ea190d05337f398a47088de1840cfdd7953"
     },
     {
       "path": "ports/messager/contract-evidence/LICENSE.txt",
@@ -384,8 +389,8 @@
     },
     {
       "path": "ports/passport/board/README.md",
-      "bytes": 4637,
-      "sha256": "29195728ed0f3b88d2b8d854b6887994091c17922e361081679233ff25b64329"
+      "bytes": 5000,
+      "sha256": "186f9b775d0decdd2d98819be63b4d65fefe53cdee5f924454df9660f5687d22"
     },
     {
       "path": "ports/passport/board/board.go",
@@ -404,13 +409,13 @@
     },
     {
       "path": "ports/passport/username/ARCHITECTURE.md",
-      "bytes": 5705,
-      "sha256": "0860e2014b2b903c0ae4b129813314eba9ee866595b3cede7065ff7c54af0772"
+      "bytes": 6148,
+      "sha256": "f1284cb8ba4e56634d1abbd7f5ba59adeabe8c6919d8e561f6f2f737ea9c65d1"
     },
     {
       "path": "ports/passport/username/BOARD_INTERFACE_SPEC.md",
-      "bytes": 12415,
-      "sha256": "a60f6f1b4b9eadd83259e5310bfb6d026e185b217dba829fcd0911cf8457ab97"
+      "bytes": 13165,
+      "sha256": "a0a471b26889659fe330c893839a75d9b42d8e2c5fc26e6daf9b8f2bf726fd28"
     },
     {
       "path": "ports/passport/username/LICENSE.txt",
@@ -424,8 +429,8 @@
     },
     {
       "path": "ports/passport/username/parity.json",
-      "bytes": 79653,
-      "sha256": "b81fe248e5f52684869864b0f62050ea78247dd1fb6170a34aa1c39f5416798a"
+      "bytes": 80453,
+      "sha256": "a279063ed0d4194548ddb1ab4e3ebca6cb63835f6b388ab306ec6402538e8292"
     },
     {
       "path": "ports/passport/username/source/AccountUsernameService.cs",

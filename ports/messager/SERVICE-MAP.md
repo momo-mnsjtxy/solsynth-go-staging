@@ -35,8 +35,11 @@ is already Go, with mail notifications, Ring/realtime clients and SMTP
 background delivery. No LICENSE file was found in that inspected tree and
 GitHub license metadata was null. It must not be treated as licensed merely
 because it is public. Implementation was read for mapping, but none was reused
-or translated. Any future implementation needs an appropriate licensed or
-interface-only source and must not be mislabeled clean-room after that reading.
+or translated. Any future implementation needs independently available evidence
+with an applicable license or explicit reuse permission. Unlicensed protocol
+repository definitions, schemas and generated bindings are excluded, including
+as interface-only evidence. Prior implementation exposure remains recorded;
+future work must not be mislabeled clean-room after that reading.
 
 Its public go.mod identifies gRPC/protobuf, NATS, Redis, Gin/GORM and
 src.solsynth.dev/sosys/go dependencies; these are integration inventory,

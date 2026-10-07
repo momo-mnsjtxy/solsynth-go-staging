@@ -2720,12 +2720,12 @@
       "Account cache invalidation"
     ],
     "dependencies": [
-      "PostgreSQL account_board_items schema/EF mapping",
-      "SnAccountBoardItem and enum; verify Shared license",
-      "BoardPayloadContract; verify Shared license",
-      "Develop DyCustomAppService.GetBoardWidget/ValidateBoardWidgetPayload protobuf contracts",
-      "ICacheService.RemoveGroup and AccountService.AccountCachePrefix",
-      "Current/admin HTTP routes and DyProfileService UpdateBoardItemPayload bridge"
+      "Current PostgreSQL account_board_items mapping from licensed parent migrations; historical fixture available",
+      "Local item projection and enum from licensed Solian client; no Shared definitions imported",
+      "Universal payload normalization remains an explicit missing authority adapter",
+      "Widget operation transport must be reconstructed only from eligible independent licensed evidence; excluded protocol exports prohibited",
+      "Cache invalidation contract observed at licensed parent call sites",
+      "HTTP permission mapping and RPC transport remain unimplemented"
     ],
     "mustPreserve": [
       "Duplicate order rejection",
@@ -2737,7 +2737,7 @@
       "Sorted returned order"
     ],
     "testGate": "Synthetic repository/RPC/cache contract tests first, then isolated PostgreSQL transaction tests and pinned C# differential fixtures; no production operations",
-    "implementationStatus": "Proposed; not implemented"
+    "implementationStatus": "Bounded transport-independent package implemented in ports/passport/board; full service/transport parity not established"
   },
   "controllerCount": 36,
   "endpointAttributeCount": 255,
@@ -2747,6 +2747,14 @@
     "url": "https://src.solsynth.dev/SoSYS/NeTo.git",
     "licenseVerified": false,
     "githubMetadataResult": "Solsynth/NeTo 404 and organization search empty",
-    "sourceOfMapping": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/.gitmodules"
+    "sourceOfMapping": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/.gitmodules",
+    "usePermitted": false,
+    "restriction": "User excludes protocol definitions and exports; metadata retained only for provenance"
+  },
+  "licenseScopeCorrection": {
+    "date": "2026-10-07",
+    "excluded": "Unlicensed protocol repository definitions, schemas, descriptors and generated bindings, including user exports",
+    "allowed": "Independently derived licensed-client/call-site contracts and separately licensed public documentation",
+    "supersedes": "Prior suggestion to obtain shared protocol definitions or exports"
   }
 }

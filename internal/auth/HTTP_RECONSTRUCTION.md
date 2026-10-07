@@ -5,6 +5,12 @@ the existing local contract inventory. No network retrieval, live authentication
 request, denied-source workaround or auth implementation was performed in this
 pass.
 
+Scope correction, 2026-10-07: the earlier protocol-export request is rescinded.
+The user excluded the unlicensed protocol repository in its entirety, including
+definitions, schemas, descriptors and generated bindings. User-provided exports
+do not make that source eligible. Only independently derived licensed-client
+contracts or separately licensed public documentation may be used.
+
 ## Result
 
 No already-observed HTTP authority endpoint supplies both verified account
@@ -72,11 +78,12 @@ audience, key discovery, cookies/API keys, permission/error and revocation rules
 
 ## Smallest additional document request
 
-Provide either option A or option B, plus the shared rules. Interface documents
-and synthetic fixtures suffice; implementation source and production credentials
-are unnecessary.
+Provide independently derived licensed-client contract evidence or separately
+licensed public interface documentation, plus the shared rules. Do not export or
+request definitions, descriptor sets, generated bindings or schemas from the
+excluded unlicensed protocol repository. Production credentials are unnecessary.
 
-### A. HTTP authority contract, if supported
+### Documented HTTP authority contract, if supported
 
 1. Exact method/path for validating a native access token and obtaining its
    current account/session identity; accepted header/cookie scheme and minimal
@@ -88,25 +95,17 @@ are unnecessary.
 One documented endpoint can cover both if that is the actual supported contract.
 Do not invent a new endpoint solely to fit this checklist.
 
-### B. Existing gRPC authority contract
+### Independent licensed evidence, if HTTP documentation is unavailable
 
-Provide only the original .proto declarations or a FileDescriptorSet (including
-imports) for:
+Use separately licensed client call sites or public documentation that independently
+establish the actual authority operation, credential metadata, returned account/
+session identity, permission-decision input, exact permission wire value and
+failure behavior. The helper name AuthenticateRequest does not establish a
+network RPC method or wire encoding. If eligible sources do not provide enough
+information, leave the adapter absent; do not fill the gap by copying or exporting
+the unlicensed protocol repository.
 
-- The RPC actually invoked by the shared token authenticator. Its helper name
-  AuthenticateRequest does not establish the RPC's service/method name
-- Its credential/request-metadata message and authentication response message,
-  including the referenced account/session identity and status/expiry enums
-- The RPC actually invoked by the permission middleware, with request identity/
-  session/token-scope binding, permission field, response decision and enums
-- The exact value of PermissionKeys.PostSubscriptionsManage
-
-Descriptors must include package and fully-qualified service/method names,
-field numbers/types, oneof/optional presence and referenced types. Redacted
-synthetic request/response/error examples should identify semantic field meaning;
-descriptors alone do not explain revocation or authorization policy.
-
-### Shared rules needed for either option
+### Additional behavioral rules
 
 - Does each authority call reject revoked/expired sessions, disabled/deleted
   accounts and superseded session/account versions? Identify expected outcomes
@@ -122,11 +121,12 @@ requires caching, its validity/version/invalidation rules must also be supplied.
 
 ## Short question for the user
 
-能提供认证/权限接口的文档或 .proto 吗？只需要“校验访问令牌并返回当前账号/会话”和“检查 PostSubscriptionsManage”的请求、响应、错误定义，以及这个权限的准确字符串值；如果已有 HTTP 接口，给对应方法、路径和 JSON 示例也可以。还需要确认撤销/过期会话和令牌权限范围如何影响结果。不需要真实令牌、密码或生产数据。
+有没有另外获得许可的接口文档或客户端调用示例，能说明“校验访问令牌并返回当前账号/会话”和“检查 PostSubscriptionsManage”的方法、路径、请求响应、错误及权限字符串？我们不会使用或请你导出那个无许可证仓库的协议定义，也不需要真实令牌、密码或生产数据。没有合适资料时，真实认证接入会继续保持关闭。
 
 ## Implementation decision
 
 Keep the existing production authority adapter absent and fail closed. The
 successful PostgreSQL tests establish persistence behavior, not identity or
-authorization parity. Resume the adapter once one of the two actual authority
-contracts is available; no additional full-repository access is necessary.
+authorization parity. Resume only when eligible independent licensed contracts
+establish the necessary behavior; additional protocol-repository access or exports
+are not an approved route.

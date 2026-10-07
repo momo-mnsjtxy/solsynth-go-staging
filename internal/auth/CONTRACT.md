@@ -4,6 +4,13 @@ Status: research only. No authentication implementation, credentials, RPC wire
 guesses, live-account probes or deployment changes accompany this document.
 Production parity is not established.
 
+Scope correction, 2026-10-07: the user identified the protocol repository as
+unlicensed and excluded its definitions. Earlier suggestions to request exported
+.proto files or descriptor sets are rescinded. Do not obtain, copy or use that
+repository's schemas, descriptors or generated bindings, including user exports.
+Continue only with independently derived licensed-client call-site contracts or
+separately licensed public interface documentation. Missing authority stays closed.
+
 ## Verified licensed call-site requirements
 
 ### Trusted identity and permission boundary
@@ -138,8 +145,9 @@ need a documented, authenticated channel and explicit deployment approval.
 
 ## Minimal input needed to proceed
 
-- A lawfully usable auth/permission protobuf descriptor or documented HTTP
-  interface with synthetic request/response/error examples
+- Independently derived licensed-client contracts or separately licensed public
+  HTTP/interface documentation with synthetic request/response/error examples;
+  no definitions exported from the excluded unlicensed protocol repository
 - Exact PostSubscriptionsManage wire key and permission semantics
 - Token type/validation and revocation requirements relevant to PostWatch
 - Verified deployment trust configuration, supplied without private credentials
@@ -151,6 +159,7 @@ and must not be described as real Stargate integration.
 ## License and access boundaries
 
 The inspected DysonNetwork, Solian and Blade repository license files identify
-GNU AGPL v3. No separate Shared/NeTo/SoSYS implementation has been imported.
+GNU AGPL v3. No separate Shared/NeTo/SoSYS implementation, protocol definitions,
+descriptor sets or generated bindings have been imported in this scope.
 No cancelled Stargate clone was retried, no further Stargate content was fetched,
 and no denied SoSYS repository page was retrieved.

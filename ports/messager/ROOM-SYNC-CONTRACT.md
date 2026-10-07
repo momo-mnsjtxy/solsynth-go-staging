@@ -154,7 +154,12 @@ A future adapter can split verified components without fake success:
    codec and error adapter once those contracts are available
 
 Before claiming HTTP compatibility, obtain the shared model/serializer and
-base filters through an allowed licensed source or an owner-supplied schema;
+base filters through an allowed source with an applicable license or explicit
+reuse permission. An owner-supplied schema also requires that permission.
+Unlicensed protocol repository definitions, schemas and generated bindings
+must not be used, even as interface-only evidence. Preserve the historical
+source observations above without treating them as permission to inspect or
+reuse excluded dependencies. Then
 verify middleware, error envelopes, GUID/time validation and hydration; run
 golden cases including edits/deletions, empty results and >1000 records. Until
 then, only an explicitly labeled local subset can be built. No additional

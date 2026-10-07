@@ -1,6 +1,8 @@
 # Messager parity status
 
-The only implemented behavior is sequence recovery selection. The structured
+Implemented bounded policies include sequence recovery selection, message
+heading formatting, unread aggregation, placeholder state transitions and
+notification body construction. See the per-module provenance documents. The structured
 inventory at `docs/messager-parity.json` catalogs 74 HTTP action declarations,
 9 database sets, 12 symbolic packet constants, inbound event listeners and
 3 scheduled jobs. All HTTP, transport, persistence and job entries remain

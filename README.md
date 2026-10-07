@@ -82,3 +82,14 @@ The unlicensed Solsynth protocol-definition repository is excluded from this wor
 `internal/boardpg` adds real SQL persistence for the existing transport-independent board service, grounded in licensed DysonNetwork-owned migrations and its pinned current EF snapshot. Account-scoped transactions now include the read used to preserve app-owned payloads, validation and replacement/save; cache invalidation occurs after commit. JSON decoding preserves large numbers, and failed replacements must roll back instead of discarding retained tombstones or changing the source indexes.
 
 Normal `boardpg.New(db)` construction is disabled. The isolated compatibility-test constructor explicitly selects a candidate active-row/audit policy because the excluded shared hooks remain unverified. No board HTTP endpoint, command wiring, authentication, permission adapter or permissive payload validator is added. Cooperating Go writers share the lock protocol; mixed legacy/Go writers are unsupported. The actual-PG workflow requires the five board cases alongside the previous ten cases and checks both preference and board state after a server restart.
+
+## Additional bounded policies
+
+Five further executable policies now cover message heading formatting, unread
+aggregation, placeholder state transitions, notification body construction and
+publisher/realm discovery selection. They use the retained licensed snapshots and
+explicit pre-resolved inputs; they add no HTTP routes or production adapters.
+Their tests exercise real computations, including time, Unicode, state-transition
+and selection-order boundaries. `scripts/verify.sh` now also verifies 30 retained
+source/license snapshots against their original manifests. See
+`docs/policy-followup.md` and the per-module provenance files.

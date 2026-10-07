@@ -58,6 +58,19 @@ No complete production service parity, production authentication, PostgreSQL mig
 
 The PostgreSQL adapter is implemented against the pinned licensed migration, and the development host can select it. It uses explicit per-account transaction locking and applies nullable patches inside the transaction, preserving unspecified fields across cooperating Go instances. It performs no startup schema changes. The original schema fixture and six actual-database test cases are included.
 
-Database verification is **blocked, not passed**: initdb succeeded, but PostgreSQL could not create its private Unix socket. One supported escalation attempt failed the same way; an ordinary `/tmp` diagnostic then showed AF_UNIX socket creation itself raises EPERM before bind. No TCP fallback, OS/security change or production database was attempted. The actual PostgreSQL cases were skipped by the ordinary unit suite and must run in an environment that supports the required private sockets.
+Historical local limitation (superseded by successful private CI at commit
+`0735ebb3f1553d3658d944705c6d32eecf2dd541`, run `37632714563`, with
+fifteen required PostgreSQL cases and two restart assertions): initdb succeeded, but PostgreSQL could not create its private Unix socket. One supported escalation attempt failed the same way; an ordinary `/tmp` diagnostic then showed AF_UNIX socket creation itself raises EPERM before bind. No TCP fallback, OS/security change or production database was attempted. The actual PostgreSQL cases were skipped by the ordinary unit suite and must run in an environment that supports the required private sockets.
 
-Production authentication also remains unimplemented. The lawful contracts establish a shared authoritative authenticator, but its exact RPC descriptors and PostSubscriptionsManage permission value are unavailable. The command continues to deny authentication by default. See `internal/auth/CONTRACT.md` for the smallest missing contract inputs and `docs/postwatch-review.md` for remaining transport/schema differences.
+Production authentication also remains unimplemented. The lawful contracts establish a shared authoritative authenticator, but its current identity, authoritative permission evaluation, Redis failure/version/epoch,
+credential precedence and error semantics remain unverified. The delegated recovery
+report confirms the permission key `post.subscriptions.manage`; that string alone
+does not establish an authorization decision. The command continues to deny authentication by default. See `internal/auth/CONTRACT.md` for the smallest missing contract inputs and `docs/postwatch-review.md` for remaining transport/schema differences.
+
+## Bounded policy continuation
+
+Five further source-backed modules implement message formatting, unread aggregation,
+placeholder state transitions, notification body construction and publisher/realm
+discovery selection. These are executable functions over explicit projections, not
+new HTTP routes or completed production services. See each module’s provenance and
+`docs/policy-followup.md` for validation and remaining dependencies.

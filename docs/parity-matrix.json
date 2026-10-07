@@ -1,5 +1,5 @@
 {
-  "scope": "Checkpoint: local PostWatch HTTP/persistence slice plus PostgreSQL adapter (compiled, database integration blocked), three policy ports, and partial Passport board service; backend functional parity not established",
+  "scope": "Checkpoint: development PostWatch slice, tested PostgreSQL preference adapter, disabled watcher/board compatibility candidates, and bounded domain policies; no production service parity",
   "baseline": "Solsynth/DysonNetwork@4ee2d0cebb9da8284a92483fee6dce795bf6947c",
   "license_policy": "Reuse requires verified applicable permission. The excluded unlicensed protocol repository, its schemas, descriptor exports and generated bindings must not be used even as interface-only evidence. Independently derived eligible licensed client/server evidence is separate; no strict clean-room claim follows source inspection.",
   "counts": {
@@ -9,7 +9,8 @@
     "full_endpoint_count": null,
     "local_http_operations": 2,
     "controller_files_enumerated": 98,
-    "partial_board_services": 1
+    "partial_board_services": 1,
+    "additional_policy_modules": 5
   },
   "ports": [
     {
@@ -96,7 +97,7 @@
       "Exact upstream error serialization",
       "Existing-client integration"
     ],
-    "postgres_adapter": "Implemented against licensed table fixture with transaction-scoped account locking; actual PG tests blocked by Unix-socket EPERM"
+    "postgres_adapter": "Fifteen actual PostgreSQL cases plus preference/board restart assertions passed at 0735ebb3f1553d3658d944705c6d32eecf2dd541 (run 37632714563); production auth and full rollout remain pending."
   },
   "evidence_inventories": [
     "inventory/dyson-contract-files.json",
@@ -106,8 +107,7 @@
     "access_or_contract_unknown": [
       "Gitea organization API denied; do not retry via alternate identity",
       "Previously cancelled repository/clone reads remain cancelled",
-      "Shared submodule and missing-license repository contracts require separate authorized license/interface evidence",
-      "Actual disposable PostgreSQL validation blocked by AF_UNIX socket creation EPERM, including reviewed retry and bounded /tmp diagnosis; six real integration tests remain unrun"
+      "Shared submodule and missing-license repository contracts require separate authorized license/interface evidence"
     ],
     "independent_remaining_work": [
       "98 licensed controller files need per-operation mapping",
@@ -115,5 +115,17 @@
       "Remaining C# services and workflows are not implemented",
       "Production adapters and migration acceptance remain pending"
     ]
+  },
+  "policy_followup": {
+    "source": "Retained pinned AGPL snapshots only",
+    "modules": [
+      "ports/messager/formatting.go",
+      "ports/messager/unread.go",
+      "ports/messager/placeholder.go",
+      "ports/messager/notification_text.go",
+      "ports/sphere/discovery.go"
+    ],
+    "status": "Executable bounded domain policies, not endpoints; see module provenance for unresolved dependencies",
+    "additional_completed_http_operations": 0
   }
 }

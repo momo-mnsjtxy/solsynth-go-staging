@@ -1,5 +1,13 @@
 # PostWatch authentication adapter: proposal and unresolved contract
 
+Current correction (delegated recovery report, 2026-10-07): the permission key is
+`post.subscriptions.manage`. Historical statements below that the spelling is
+unresolved are superseded; its source proof is in the recovery work, which this
+checkout has not yet recovered. Current-version identity checks, authoritative
+permission evaluation, Redis missing/failure/version/epoch behavior, credential
+precedence and exact errors remain unresolved. Do not enable access from the key
+alone. No production authentication is implemented.
+
 Status: research only. No authentication implementation, credentials, RPC wire
 guesses, live-account probes or deployment changes accompany this document.
 Production parity is not established.

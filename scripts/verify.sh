@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
+python3 scripts/check-source-evidence.py
 GO_BIN="${GO_BIN:-go}"
 if ! "$GO_BIN" version | grep -q '^go version go'; then
   echo 'A Go compiler is required; set GO_BIN to its executable path.' >&2

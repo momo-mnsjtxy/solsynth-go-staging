@@ -15,8 +15,13 @@ EXPECTED = {
         "TestPGWatcherSoftDeleteAssumptions",
         "TestPGWatcherOneHopChains",
         "TestPGWatcherInputErrors",
+        "TestPGBoardRoundTripIsolation",
+        "TestPGBoardAtomicRollback",
+        "TestPGBoardTransactionConcurrency",
+        "TestPGBoardPolicyAndErrors",
+        "TestPGBoardRestartPersistence",
     },
-    "after": {"TestPGRestartPersistence"},
+    "after": {"TestPGRestartPersistence", "TestPGBoardRestartPersistence"},
 }
 
 

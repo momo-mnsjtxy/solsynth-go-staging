@@ -1,11 +1,11 @@
 {
-  "checkpoint": "excluded-protocol-doc-correction-2026-10-07",
-  "scope": "Documentation-only correction; prohibited protocol definitions absent; runtime unchanged from tested watcher checkpoint",
+  "checkpoint": "board-postgresql-candidate-2026-10-07",
+  "scope": "Disabled-by-default board storage candidate and account transaction correction; pending actual PostgreSQL CI",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
-      "bytes": 1743,
-      "sha256": "550e17ed54f85e70335d52b00c2df8cf260c1fe0c3c8650ba70250648e1cc7f9"
+      "bytes": 1759,
+      "sha256": "91c1a20903ad5d05d611f4942abdc8ca3d4e05f5d918082a318daa7ece6dfe10"
     },
     {
       "path": ".gitignore",
@@ -24,8 +24,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 9265,
-      "sha256": "6a6d4eacd2c6dbbe982864491dfb42434917145d777cefc6a6603280b7fb5d70"
+      "bytes": 10371,
+      "sha256": "61c76637628c12bf4f5fd2dd0efe6a2cff567c18150522559da829572da74626"
     },
     {
       "path": "cmd/solsynth-go/main.go",
@@ -49,8 +49,8 @@
     },
     {
       "path": "docs/ci-postgres-validation.md",
-      "bytes": 2703,
-      "sha256": "fa3a21968029d90e4e823967d103c5241f901427f8475c31ab23718d7caab62b"
+      "bytes": 3097,
+      "sha256": "fc4f4e7d10927e55ea3136a31460298bc0e708276cdab05c12c0385200dd5063"
     },
     {
       "path": "docs/ci-result-2026-10-07.json",
@@ -126,6 +126,31 @@
       "path": "internal/auth/LICENSE_SCOPE_AUDIT.md",
       "bytes": 2948,
       "sha256": "87ba1cefe57a14621b111ba4e469115208790fe301b7599a6563d0d2f1008c17"
+    },
+    {
+      "path": "internal/boardpg/README.md",
+      "bytes": 6151,
+      "sha256": "dd7c1669e457cbe05c61d7e57e8f1290955ae27369c90b6dc87e860bb5c37766"
+    },
+    {
+      "path": "internal/boardpg/repository.go",
+      "bytes": 10962,
+      "sha256": "ddd7175abf5502282bbce448b34c66035c8f6d50cea7c7a3b8fe2794a3d3aea4"
+    },
+    {
+      "path": "internal/boardpg/repository_test.go",
+      "bytes": 2942,
+      "sha256": "ed7c45ae7de5703e2cfe9d3d01a3ddcdbafa60524dbbd558d92d88e4056b99f8"
+    },
+    {
+      "path": "internal/boardpg/schema-evidence.json",
+      "bytes": 569,
+      "sha256": "37ef13fefe6709e6066c4c956062f2b87e2dcc936ab3ad3750b7a1d5715a419b"
+    },
+    {
+      "path": "internal/boardpg/testdata/schema.sql",
+      "bytes": 1035,
+      "sha256": "fe722ef809077a8ac7a9a5bc5c7b19285ebd1fa988baaf7fe0a5a7bfd3dc9618"
     },
     {
       "path": "internal/watchpg/README.md",
@@ -389,13 +414,13 @@
     },
     {
       "path": "ports/passport/board/README.md",
-      "bytes": 5000,
-      "sha256": "186f9b775d0decdd2d98819be63b4d65fefe53cdee5f924454df9660f5687d22"
+      "bytes": 5489,
+      "sha256": "5f5f1865fda38c2cab2709b499f834e811d6d55b94ed243eac209ffc4c33ea4c"
     },
     {
       "path": "ports/passport/board/board.go",
-      "bytes": 12371,
-      "sha256": "8dab0b3184f60a63bc19a87931b592e31b09a8ad1bedad2d7e74ed466ce56386"
+      "bytes": 14722,
+      "sha256": "e6051cc473c699b00a6ca3f901aa268b94f826acd79c40d64eab3684c4852367"
     },
     {
       "path": "ports/passport/board/board_test.go",
@@ -406,6 +431,11 @@
       "path": "ports/passport/board/schema.json",
       "bytes": 1716,
       "sha256": "f88cc92324e0f1a9c116c8f36e939b7646145c52d54f575b77ab9f94051c0720"
+    },
+    {
+      "path": "ports/passport/board/transaction_test.go",
+      "bytes": 2439,
+      "sha256": "852f2743b120059781ee250e27f05491a8e5a180e4a8be81ecbbee3a5987f598"
     },
     {
       "path": "ports/passport/username/ARCHITECTURE.md",
@@ -519,13 +549,13 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 1626,
-      "sha256": "234b2c6fcc8571270e32ced3f45e0f3ac14e760141f424eedf8ee973c73410bb"
+      "bytes": 1861,
+      "sha256": "805c6b578d6daf440a1718cfb95c4e48d579ae39c7a484308e1e71d63156e4da"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 2010,
-      "sha256": "bdcc6bc94778138eeda56b2d8180a5c487a37efedfda6372112158e2753f083c"
+      "bytes": 2131,
+      "sha256": "860e397c6d92919e48bad98539963f47acc89df3044c6f9f9238a1adc1f092a2"
     },
     {
       "path": "scripts/verify.sh",
@@ -546,6 +576,11 @@
       "path": "tests/contract/watch_persistence_test.go",
       "bytes": 3437,
       "sha256": "06052c3a889ef82b8d19d067dcad6a51c1bb5d8940c810aa95cc6c6951fb9934"
+    },
+    {
+      "path": "tests/integration/board_test.go",
+      "bytes": 14630,
+      "sha256": "2ff297223b03d00c6c4dbc280cec462701e92b7e0b56ccf18b635649fcdba7cd"
     },
     {
       "path": "tests/integration/schema.sql",

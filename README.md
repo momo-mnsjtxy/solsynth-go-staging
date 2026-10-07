@@ -76,3 +76,9 @@ Watcher and one-hop chain queries are a separate compatibility candidate. They a
 ## Excluded protocol repository
 
 The unlicensed Solsynth protocol-definition repository is excluded from this work. Its `.proto`/schema files, descriptor exports and generated bindings must not be copied or used as an interface-only substitute. Existing code and synthetic SQL projections are grounded in the separately verified AGPL DysonNetwork/Solian callers, models and migrations. No excluded protocol definitions or bindings are included. Authentication and other missing contracts remain unresolved; the earlier suggestion to supply that repository’s protocol exports is withdrawn.
+
+## Board PostgreSQL compatibility candidate
+
+`internal/boardpg` adds real SQL persistence for the existing transport-independent board service, grounded in licensed DysonNetwork-owned migrations and its pinned current EF snapshot. Account-scoped transactions now include the read used to preserve app-owned payloads, validation and replacement/save; cache invalidation occurs after commit. JSON decoding preserves large numbers, and failed replacements must roll back instead of discarding retained tombstones or changing the source indexes.
+
+Normal `boardpg.New(db)` construction is disabled. The isolated compatibility-test constructor explicitly selects a candidate active-row/audit policy because the excluded shared hooks remain unverified. No board HTTP endpoint, command wiring, authentication, permission adapter or permissive payload validator is added. Cooperating Go writers share the lock protocol; mixed legacy/Go writers are unsupported. The actual-PG workflow requires the five board cases alongside the previous ten cases and checks both preference and board state after a server restart.

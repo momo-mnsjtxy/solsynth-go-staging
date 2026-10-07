@@ -55,6 +55,16 @@ type Repository interface {
 	Save(context.Context, Item) error
 }
 
+// AccountTransactionRepository serializes an entire read/validate/preserve/write
+// operation across cooperating writers. The callback receives a transaction-bound
+// Repository that does not implement this interface, preventing recursion. Commit
+// must succeed before WithinAccount returns nil. Cache work stays outside it.
+// Repositories without this interface retain only their documented per-method
+// guarantees; atomic Replace alone does not prevent stale payload preservation.
+type AccountTransactionRepository interface {
+	WithinAccount(context.Context, string, func(Repository) error) error
+}
+
 type Widget struct {
 	Key           string
 	Enabled       bool
@@ -119,6 +129,19 @@ func (s Service) List(ctx context.Context, accountID string) ([]Item, error) {
 // delegates one atomic replacement, then invalidates the account cache group.
 // A cache error after commit is returned without pretending rollback occurred.
 func (s Service) Replace(ctx context.Context, accountID string, input []Item) ([]Item, error) {
+	var result []Item
+	err := s.mutate(ctx, accountID, func(scoped Service) error {
+		var err error
+		result, err = scoped.replace(ctx, accountID, input)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (s Service) replace(ctx context.Context, accountID string, input []Item) ([]Item, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -186,9 +209,6 @@ func (s Service) Replace(ctx context.Context, accountID string, input []Item) ([
 	if err = s.Repository.Replace(ctx, accountID, items); err != nil {
 		return nil, err
 	}
-	if err = s.Cache.InvalidateGroup(ctx, "account:"+accountID); err != nil {
-		return nil, err
-	}
 	sort.SliceStable(items, func(i, j int) bool { return items[i].Order < items[j].Order })
 	return items, nil
 }
@@ -252,6 +272,19 @@ func (s Service) validateLayout(ctx context.Context, items []Item) error {
 }
 
 func (s Service) UpdateAppPayload(ctx context.Context, accountID, itemID, appID, widgetKey string, payload Payload) (Item, error) {
+	var result Item
+	err := s.mutate(ctx, accountID, func(scoped Service) error {
+		var err error
+		result, err = scoped.updateAppPayload(ctx, accountID, itemID, appID, widgetKey, payload)
+		return err
+	})
+	if err != nil {
+		return Item{}, err
+	}
+	return result, nil
+}
+
+func (s Service) updateAppPayload(ctx context.Context, accountID, itemID, appID, widgetKey string, payload Payload) (Item, error) {
 	if err := ctx.Err(); err != nil {
 		return Item{}, err
 	}
@@ -292,6 +325,19 @@ func (s Service) UpdateAppPayload(ctx context.Context, accountID, itemID, appID,
 }
 
 func (s Service) UpdateAdminPayload(ctx context.Context, accountID, itemID string, payload Payload) (Item, error) {
+	var result Item
+	err := s.mutate(ctx, accountID, func(scoped Service) error {
+		var err error
+		result, err = scoped.updateAdminPayload(ctx, accountID, itemID, payload)
+		return err
+	})
+	if err != nil {
+		return Item{}, err
+	}
+	return result, nil
+}
+
+func (s Service) updateAdminPayload(ctx context.Context, accountID, itemID string, payload Payload) (Item, error) {
 	if err := ctx.Err(); err != nil {
 		return Item{}, err
 	}
@@ -341,10 +387,38 @@ func (s Service) save(ctx context.Context, item Item) (Item, error) {
 	if err := s.Repository.Save(ctx, item); err != nil {
 		return Item{}, err
 	}
-	if err := s.Cache.InvalidateGroup(ctx, "account:"+item.AccountID); err != nil {
-		return Item{}, err
-	}
 	return item, nil
+}
+
+// mutate invalidates exactly once after a successful repository transaction.
+// It never moves cache invalidation into a callback that can still roll back.
+func (s Service) mutate(ctx context.Context, accountID string, fn func(Service) error) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if s.Repository == nil {
+		return dependency("repository")
+	}
+	if s.Cache == nil {
+		return dependency("cache")
+	}
+	var err error
+	if transactional, ok := s.Repository.(AccountTransactionRepository); ok {
+		err = transactional.WithinAccount(ctx, accountID, func(repo Repository) error {
+			if repo == nil {
+				return dependency("transaction repository")
+			}
+			scoped := s
+			scoped.Repository = repo
+			return fn(scoped)
+		})
+	} else {
+		err = fn(s)
+	}
+	if err != nil {
+		return err
+	}
+	return s.Cache.InvalidateGroup(ctx, "account:"+accountID)
 }
 
 const zeroID = "00000000-0000-0000-0000-000000000000"

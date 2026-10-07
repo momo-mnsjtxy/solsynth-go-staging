@@ -30,8 +30,14 @@ it is not an executable migration or a claim that current schema is identical.
 ## Integration contract
 
 Repository.Replace must be atomic and finish committing before it returns.
+For full read/preserve/write serialization, a repository can implement
+AccountTransactionRepository.WithinAccount. The service then runs the complete
+mutation inside that transaction and invalidates cache only after commit.
+Atomic Replace alone does not cover the preceding stale-payload read race.
 Its error must leave the previous persisted board intact. Tests use an in-memory
-fake only: no PostgreSQL transaction or durability test has been performed.
+fake in the package tests. The separately gated internal/boardpg candidate and
+tests/integration now own actual database verification; their results must be
+checked independently.
 Auditing, soft deletion, first-match widget SQL semantics, and current schema
 must be handled by an integration adapter. Reads must return detached values.
 
@@ -58,8 +64,9 @@ rollback. A deployed recovery policy remains an integration responsibility.
 ## Explicitly unfinished
 
 No HTTP server, JWT/authentication, permission evaluator, app-secret transport,
-protobuf descriptors/adapter, PostgreSQL driver, audit lifecycle or cache backend
-is included. Full response fields, permission wire values, RPC caller identity,
+protobuf descriptors/adapter, verified production audit lifecycle or cache backend
+is included. The separate boardpg adapter defaults disabled while row/audit policy
+is unverified. Full response fields, permission wire values, RPC caller identity,
 protobuf field numbers and universal-normalization edge cases remain unknown.
 No bypass or permissive fallback is provided for those gaps.
 

@@ -1,0 +1,162 @@
+{
+  "repository": "https://github.com/Solsynth/DysonNetwork",
+  "commit": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "license": "AGPL-3.0",
+  "snapshot": {
+    "path": "DysonNetwork.Sphere/Migrations/AppDatabaseModelSnapshot.cs",
+    "git_blob_sha1": "97288c526bb8dd7c120fd9157d56069663487b4b",
+    "size_bytes": 150920,
+    "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Migrations/AppDatabaseModelSnapshot.cs"
+  },
+  "query_source": "DysonNetwork.Sphere/Post/PostWatchService.cs",
+  "entities": [
+    {
+      "entity": "SnPost",
+      "source_start_line": 222,
+      "table": "posts",
+      "observed_columns": [
+        {
+          "property": "Id",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "id",
+          "nullable": false
+        },
+        {
+          "property": "ChainedPostId",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "chained_post_id",
+          "nullable": true
+        },
+        {
+          "property": "DeletedAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "deleted_at",
+          "nullable": true
+        },
+        {
+          "property": "PublisherId",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "publisher_id",
+          "nullable": false
+        },
+        {
+          "property": "RepliedPostId",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "replied_post_id",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "entity": "SnPostBookmark",
+      "source_start_line": 527,
+      "table": "post_bookmarks",
+      "observed_columns": [
+        {
+          "property": "Id",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "id",
+          "nullable": false
+        },
+        {
+          "property": "AccountId",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "account_id",
+          "nullable": false
+        },
+        {
+          "property": "DeletedAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "deleted_at",
+          "nullable": true
+        },
+        {
+          "property": "PostId",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "post_id",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "entity": "SnPostReaction",
+      "source_start_line": 797,
+      "table": "post_reactions",
+      "observed_columns": [
+        {
+          "property": "Id",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "id",
+          "nullable": false
+        },
+        {
+          "property": "AccountId",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "account_id",
+          "nullable": true
+        },
+        {
+          "property": "DeletedAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "deleted_at",
+          "nullable": true
+        },
+        {
+          "property": "PostId",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "post_id",
+          "nullable": false
+        },
+        {
+          "property": "PublisherId",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "publisher_id",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "entity": "SnPublisher",
+      "source_start_line": 1014,
+      "table": "publishers",
+      "observed_columns": [
+        {
+          "property": "Id",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "id",
+          "nullable": false
+        },
+        {
+          "property": "AccountId",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "account_id",
+          "nullable": true
+        },
+        {
+          "property": "DeletedAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "deleted_at",
+          "nullable": true
+        }
+      ]
+    }
+  ],
+  "contract_status": "Disabled by default with ErrUnverifiedWatcherPolicy. Fixed soft-delete-only compatibility-test constructor only; exact shared global-filter policy remains unverified. Projection fixture is not full schema."
+}

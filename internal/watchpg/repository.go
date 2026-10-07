@@ -25,7 +25,12 @@ var (
 // supplies a configured database/sql driver, normally pgx/stdlib. All writers
 // must follow this adapter's account advisory-lock protocol; legacy C# writers
 // do not and must not run concurrently against the same preference records.
-type Repository struct{ db *sql.DB }
+type Repository struct {
+	db *sql.DB
+	// Only the explicitly named compatibility-test constructor sets this.
+	// It is immutable after construction and never enabled by the command.
+	softDeleteOnlyWatcherCandidate bool
+}
 
 func New(db *sql.DB) *Repository { return &Repository{db: db} }
 

@@ -38,7 +38,7 @@ The original nullable unique index alone permits multiple live rows because NULL
 - Inserted rows get equal created_at/updated_at from Go's UTC clock; updates preserve id/created_at and set updated_at. The exact shared ModelBase/audit-hook behavior was not inspected or copied, so timestamp lifecycle parity is not claimed
 - Strict lowercase UUID validation and refusing unknown source values are explicit adapter constraints
 - The shared implementation license/access boundary remains intact. No shared source was translated. Its hook names and model usage were observed only in licensed callers
-- This adapter persists preferences only. Bookmark/reactor/replier queries, notification delivery, real authorization, the rest of Sphere and existing-user-data migration are not implemented here
+- Ordinary repositories expose preferences only. Watcher/chain methods fail closed with ErrUnverifiedWatcherPolicy because global filters are unverified. The explicitly named NewSoftDeleteOnlyCompatibilityTestCandidate constructor enables synthetic-test-only bookmark/reactor/replier and chain queries; see WATCHER-COMPATIBILITY.md. It is not wired to the command/HTTP/event delivery. Notification delivery, real authorization, the rest of Sphere and existing-user-data migration remain unimplemented
 - There is no automatic DDL, destructive cleanup, credential management, payment action or deployment
 
 Unit tests cover enum mapping, UUID validation/generation, account separation checks and transactional dispatch. Disposable PostgreSQL integration tests are maintained separately under tests/contract by the validator; do not confuse unit compilation with real database verification.

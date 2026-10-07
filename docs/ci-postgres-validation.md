@@ -2,7 +2,7 @@
 
 The `PostgreSQL contract validation` workflow performs local build/vet/race checks, then initializes a fresh PostgreSQL 16 cluster under the runner's private temporary directory. Only a private Unix-domain socket is enabled; `listen_addresses` is empty. No existing database, service secret, deployment, or external account data is used. PostgreSQL is stopped on exit and explicitly restarted between write and persistence-read phases.
 
-Six named real-database cases must pass before restart; the persistence case must pass again after restart. `PG_TEST_REQUIRED=1` makes absent configuration fatal. The JSON result guard also rejects skips, failures, missing test cases and empty output. Ordinary `verify.sh` without the disposable runner still clearly reports that database tests skipped.
+Ten named real-database cases must pass before restart; the persistence case must pass again after restart. These include four watcher-query cases covering recipient union/preferences, explicit soft-delete assumptions, one-hop chains and input errors/default-denial. Watcher reads explicitly opt into a soft-delete-only compatibility-test policy; the normal repository denies those reads until the global-filter contract is verified. Passing those candidate queries is not upstream recipient-policy parity. `PG_TEST_REQUIRED=1` makes absent configuration fatal. The JSON result guard also rejects skips, failures, missing test cases and empty output. Ordinary `verify.sh` without the disposable runner still clearly reports that database tests skipped.
 
 Official action references were resolved through GitHub's public tag refs on 2026-10-07 and pinned immutably:
 

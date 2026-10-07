@@ -33,6 +33,7 @@ start() {
 }
 start
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f tests/integration/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/watchpg/testdata/watchers-projection.sql
 PG_TEST_PHASE=before "$GO_BIN" test -race -count=1 -json ./tests/integration | tee "$run/before.jsonl"
 python3 scripts/check-integration-results.py before "$run/before.jsonl"
 "$PG_BIN/pg_ctl" -D "$run/data" -m fast -w stop

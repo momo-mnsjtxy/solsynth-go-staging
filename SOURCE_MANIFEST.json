@@ -1,11 +1,11 @@
 {
-  "checkpoint": "private-staging-ci-2026-10-07",
-  "scope": "Checkpoint2 plus mandatory real PostgreSQL Actions validation; CI not yet run",
+  "checkpoint": "gated-watcher-candidate-2026-10-07",
+  "scope": "Preference PG tests previously passed; watcher candidate disabled by default, pending new actual CI",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
-      "bytes": 1641,
-      "sha256": "c9e2efdd2cb3aab13e83d6779b0bd6513f56fa1def5ff318b9e37d0c59574bae"
+      "bytes": 1743,
+      "sha256": "550e17ed54f85e70335d52b00c2df8cf260c1fe0c3c8650ba70250648e1cc7f9"
     },
     {
       "path": ".gitignore",
@@ -24,8 +24,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 7485,
-      "sha256": "9325c95c6f1ac193142a538eca50b905a6ba38d6f2ad917b49192604421e66f2"
+      "bytes": 8673,
+      "sha256": "6b00ba593acad133385a043cb82bb43a0887ebc824ae06d3d879e978a71b6648"
     },
     {
       "path": "cmd/solsynth-go/main.go",
@@ -49,8 +49,13 @@
     },
     {
       "path": "docs/ci-postgres-validation.md",
-      "bytes": 2304,
-      "sha256": "609b476e44d445c436db7a9dee943dc80310a1711a321840299acbab2798a395"
+      "bytes": 2703,
+      "sha256": "fa3a21968029d90e4e823967d103c5241f901427f8475c31ab23718d7caab62b"
+    },
+    {
+      "path": "docs/ci-result-2026-10-07.json",
+      "bytes": 1220,
+      "sha256": "f04fc0b6baa5d53cc1dbb50d4250c123fe12f971a88705dc1153dd3304e0fe88"
     },
     {
       "path": "docs/compatibility-inventory.md",
@@ -113,14 +118,24 @@
       "sha256": "f98f78371a9b9c4f1623e7196e51a5631e417f2e2069114b7c509bef3f3484a7"
     },
     {
+      "path": "internal/auth/HTTP_RECONSTRUCTION.md",
+      "bytes": 6977,
+      "sha256": "1146583bea64d36b2d37a736a8f1776bf348949bf3c34b3b47ae7c0f608b3890"
+    },
+    {
       "path": "internal/watchpg/README.md",
-      "bytes": 5979,
-      "sha256": "44664677fa993b1760a72724265e0eeb28c15147f5e00d33176f1c8f3d2e30d3"
+      "bytes": 6284,
+      "sha256": "ab05a987f1b3e6eeefb141bd33cfe623b5bced3176243fe5c13a2de1c2a51380"
+    },
+    {
+      "path": "internal/watchpg/WATCHER-COMPATIBILITY.md",
+      "bytes": 5368,
+      "sha256": "c0bd693d2652c00674c6f80d49e602cfdc8d371796a5f31f497c2396d24ef1f1"
     },
     {
       "path": "internal/watchpg/repository.go",
-      "bytes": 9098,
-      "sha256": "5e7f8b1e794646b065fbb9694dc4cc87d35272c54c8605f14e96ff42fa4bb80d"
+      "bytes": 9282,
+      "sha256": "3a948e81d102ee085f7c63ea50ad2f287ef2334c19cd8ef96ed7d24dd1ffa13f"
     },
     {
       "path": "internal/watchpg/repository_test.go",
@@ -136,6 +151,26 @@
       "path": "internal/watchpg/testdata/schema.sql",
       "bytes": 919,
       "sha256": "c5bfda0fc9a1d1799978857fa06d0b1fbf995969b16d1b061c8cc7adff843a86"
+    },
+    {
+      "path": "internal/watchpg/testdata/watchers-projection.sql",
+      "bytes": 1045,
+      "sha256": "3a045934497f1934a610c8988b0f4a9b6e1a2e8eb3b39b35b0ee23151a61895f"
+    },
+    {
+      "path": "internal/watchpg/watcher-schema-evidence.json",
+      "bytes": 4442,
+      "sha256": "f5d4cd760d4b24845c1852137719039b8cf8a2f790a9a3cc0490cce03a4e7ea8"
+    },
+    {
+      "path": "internal/watchpg/watchers.go",
+      "bytes": 4913,
+      "sha256": "3b0d56ac7b6030a6304b5f172dcdae1aa7ee990f747fc7768bf79629bacc8019"
+    },
+    {
+      "path": "internal/watchpg/watchers_test.go",
+      "bytes": 2534,
+      "sha256": "00d283344f6d69cde08063a8238a4378c1a206c469d4a25484c3cd403ccc9e2a"
     },
     {
       "path": "internal/watchstore/store.go",
@@ -419,8 +454,8 @@
     },
     {
       "path": "ports/sphere/parity.json",
-      "bytes": 76555,
-      "sha256": "dc26614019e7cd6385a83c04dbc8895f9669aa19963199f51930cb07a6ee8cba"
+      "bytes": 77563,
+      "sha256": "4060e1790bb4fc3cccddb2efa2a5fd345468f1c594f439ad8fab4c7b5821dada"
     },
     {
       "path": "ports/sphere/ranking.go",
@@ -479,13 +514,13 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 1458,
-      "sha256": "8ef92dfdfe4e95a8e2083305c9ffd489f294ffc0652c6c055739bbf86ddc7a94"
+      "bytes": 1626,
+      "sha256": "234b2c6fcc8571270e32ced3f45e0f3ac14e760141f424eedf8ee973c73410bb"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 1908,
-      "sha256": "304331d5338c1afae209a4acb750bc546369d8cc3a8ba0e60c57416fed98711c"
+      "bytes": 2010,
+      "sha256": "bdcc6bc94778138eeda56b2d8180a5c487a37efedfda6372112158e2753f083c"
     },
     {
       "path": "scripts/verify.sh",
@@ -511,6 +546,11 @@
       "path": "tests/integration/schema.sql",
       "bytes": 751,
       "sha256": "4117024de7548fda716ae5b98ba636fb0c0f4c2d65226798a59f3be69319fa99"
+    },
+    {
+      "path": "tests/integration/watchers_test.go",
+      "bytes": 6985,
+      "sha256": "c46bd266ec50d07d56891e8546d389379a14b016ebb7a0beb5c51e0e077e6819"
     },
     {
       "path": "tests/integration/watchpg_test.go",

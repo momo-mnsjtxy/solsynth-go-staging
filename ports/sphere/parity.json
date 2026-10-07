@@ -51,6 +51,22 @@
         "No production authorization adapter"
       ],
       "verification_blocker": "Disposable PG16 initdb succeeded; postgres socket creation EPERM, including one reviewed escalation retry. Six integration cases prepared but not executed. See docs/postgres-integration-result.json."
+    },
+    {
+      "component": "PostgreSQL watcher/chain compatibility-test reader",
+      "files": [
+        "../../internal/watchpg/watchers.go"
+      ],
+      "status": "candidate implementation; ordinary repositories fail closed with ErrUnverifiedWatcherPolicy",
+      "interface": "sphere.WatcherRepository with immutable NewSoftDeleteOnlyCompatibilityTestCandidate constructor only",
+      "source": "Licensed PostWatchService.cs and own AppDatabaseModelSnapshot.cs at 4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "verification": "Unit/race/vet pass; real PostgreSQL candidate-policy scenarios delegated to validator",
+      "limits": [
+        "Exact shared global soft-delete filter unverified; production recipient exposure disabled",
+        "Synthetic projection fixture is not full production schema",
+        "No command, HTTP route, event-delivery or notification wiring",
+        "No new visibility/draft/realm/shadowban/localness filters beyond observed source query predicates"
+      ]
     }
   ],
   "controllers": [

@@ -11,6 +11,10 @@ EXPECTED = {
         "TestPGTransactionRollbackAndCancellation",
         "TestPGRestartPersistence",
         "TestPGIdentityAndTimestampPreservation",
+        "TestPGWatcherRecipientsAndPreferences",
+        "TestPGWatcherSoftDeleteAssumptions",
+        "TestPGWatcherOneHopChains",
+        "TestPGWatcherInputErrors",
     },
     "after": {"TestPGRestartPersistence"},
 }

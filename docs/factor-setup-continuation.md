@@ -101,14 +101,30 @@ sensitive mutations cancel pending setup in the same transaction.
 
 The policy fingerprint covers effective canonical rules/punishments, factor
 UUIDs/revisions, optional current wallet policy version, trusted issuer and seal
-configuration. It also includes canonical grant, punishment, group membership,
-group-grant and credentials row mutation identities (`xmin`) so withdrawal and
-restoration cannot restore a prior receipt's policy. These short-lived row
-version witnesses are HMACed and are not a new authorization policy. A mismatch
-invalidates pending metadata durably before returning denial. Canonical writers
-must continue to follow the existing account-lock contract for group/grant
-changes. A dump/restore or replacement of these rows may conservatively require
-restarting enrollment. Normal PostgreSQL restart retains the receipt metadata.
+configuration. It also includes durable, transactional `factor_policy_version`
+counters on the existing canonical account and its current groups. Canonical
+policy, membership, credential and factor row changes advance the account's
+counter and cancel its setup/provenance in the same transaction. Group-grant
+changes advance the group's counter and cancel currently visible members' setup;
+the group counter also covers a concurrent joining member outside that query's
+snapshot. Only that account and its current groups contribute to its fingerprint.
+
+Surviving IDs/`xmin` alone do not remember an empty-to-present-to-empty change.
+The durable counters retain this history and same-ID delete/recreate history;
+rolled-back changes retain neither a counter advance nor cancellation. No new
+authorization authority or secret store is introduced. No-op writes and normal
+forward TOTP replay-counter updates do not change history. Authorized setup
+writes rebind their own receipt after the factor write within the account lock,
+without moving its original deadline. A fingerprint mismatch durably cancels
+pending metadata before denial, including after a new credential login.
+
+Apply the factor-setup migration atomically. Reapplying it preserves history.
+Existing pending metadata using the old fingerprint is conservatively rejected.
+Canonical writers retain account-before-dependent-row locking; multi-account
+policy changes can be retried after a transaction conflict without partial
+progress. Normal PostgreSQL restart retains versions and cancellation metadata.
+See `factor-policy-history-review.md` for the independent defect and regression
+coverage.
 
 Pre-upgrade pending TOTP factors lack the new provenance and must be deleted
 with fresh assurance and enrolled again; existing enabled factors and ordinary
@@ -121,7 +137,10 @@ refresh and non-renewal, fixed deadlines and fresh-login fallback, origin/sessio
 and restored-policy invalidation, concurrent starts and activation, durable
 failed-OTP budgets, rollback, bodyless/JSON-null recovery rotation, single
 response disclosure, one-use recovery login, explicit disable/re-enable and
-restart persistence. Existing continuity's factor scenario now creates the
+restart persistence. Six independent policy-history cases additionally cover
+empty restoration, same-ID recreation, group/member history, unrelated-account
+isolation, transactional rollback, concurrent joining members, no-op writes and
+fresh-login rejection after invalidation. Existing continuity's factor scenario now creates the
 pending TOTP before refresh and activates through the receipt afterward; its
 broadcast invalidation assertions remain intact.
 

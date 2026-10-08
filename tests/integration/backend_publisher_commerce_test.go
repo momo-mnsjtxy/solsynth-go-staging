@@ -90,7 +90,7 @@ func TestPGBackendPublisherCommerceComposition(t *testing.T) {
 		t.Fatal(before)
 	}
 	query(t, f.db, `UPDATE owned_text_posts SET created_at=$2::timestamptz WHERE id=$1::uuid`, p.ID, day.Add(12*time.Hour))
-	backendJSONCall(t, app, "POST", path+"/reactions", f.otherToken, map[string]any{"symbol": "synthetic-composed-positive", "attitude": 0}, 200)
+	backendJSONCall(t, app, "POST", path+"/reactions", f.otherToken, map[string]any{"symbol": "thumb_up", "attitude": 0}, 200)
 	// Other synthetic fixtures may leave a larger eligible rating backlog.
 	// Drain bounded batches until this publisher's durable receipt is observed.
 	workCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)

@@ -1,15 +1,15 @@
 {
-  "checkpoint": "factor-sponsorship449",
-  "scope": "Bounded compatible factor setup and rotation, funded sponsorship/rating host, reviewed transfer expiry fixture and SQL column correction. Full local build/vet/test/race, 449/60 guard and PG16.1 offline syntax passed; actual PostgreSQL pending.",
+  "checkpoint": "factor-policy-aba455",
+  "scope": "Isolated durable policy/factor history repair, six regression cases, canonical reaction fixture inputs and workflow YAML validation. Full local verification passed; actual PostgreSQL pending.",
   "inputs": {
-    "remote_parent": "830fa0ba63359833fe43870ee67dba1ee1713dbe"
+    "remote_parent": "4c95148c221ba29323346903966036028b3c8da2"
   },
-  "verification": "docs/published-board-discovery-ci.json",
+  "verification": "docs/factor-policy-history-review.md",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
-      "bytes": 2445,
-      "sha256": "34bd5b1017c3ef7daced5cb8126a46facfdd7778f299bb3dc0ae84e7f4d23053"
+      "bytes": 2496,
+      "sha256": "dd99472e70ef397d6ca08f8f5294b143752f3269d7ea2eb7d7b0920a4af31c47"
     },
     {
       "path": ".github/workflows/recover-source-5e695228.yml",
@@ -492,9 +492,14 @@
       "sha256": "044c48861d071b6866b5191270fbb983bbd7ad4d89f58cbca43bca05276b88af"
     },
     {
+      "path": "docs/factor-policy-history-review.md",
+      "bytes": 5163,
+      "sha256": "08b2611e15f3f3d5eb1351f8a376d06bf0702a397197a6d5e5b37e5ec7732f26"
+    },
+    {
       "path": "docs/factor-setup-continuation.md",
-      "bytes": 8040,
-      "sha256": "8024f915b247ff72a2f14a60859dc984329c7e4098e5f9bf127f36fad3d6dec0"
+      "bytes": 9323,
+      "sha256": "1f49ffad080837bd41d7b5aed4c8cbbd417c6f5ae083efbcfda65622b2a084f1"
     },
     {
       "path": "docs/factor-setup-source-evidence.json",
@@ -1568,8 +1573,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 53518,
-      "sha256": "accada2b29f8e31d57b6a0eb15b617984ae550fdf7dc6dbf2cd62b32a926be94"
+      "bytes": 53556,
+      "sha256": "0acdc7618a1ef45a228282805ff892c1b07aa42a769681eb281080682ab8e5ba"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -3113,13 +3118,13 @@
     },
     {
       "path": "internal/signinpg/factor_setup.go",
-      "bytes": 5673,
-      "sha256": "e38ec5a5f4ec3f2978759c8b1c997e742042164797e14462160e7a6129a7b17c"
+      "bytes": 5147,
+      "sha256": "3f27171e454c14bb3602afccdf33533eaed8cc86283d6e57378fdaf9448ccb1c"
     },
     {
       "path": "internal/signinpg/factor_setup_schema.sql",
-      "bytes": 1832,
-      "sha256": "72cca729d5c3c667cde99f9009c81360e2f87a8f54a7c9be7ddcdce273e6d028"
+      "bytes": 6781,
+      "sha256": "e58a454a4cd5924768a1437aec76da021b51ed8c7fcc5683adf51a2c560f1c8f"
     },
     {
       "path": "internal/signinpg/payment_pin.go",
@@ -8473,8 +8478,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 29691,
-      "sha256": "5876cf1541682649d5526d514361ed6e659dddae4123d17e7023825d8e8f4681"
+      "bytes": 30059,
+      "sha256": "1656e3e31aed2cc39495e863a64a89bb26e7f664b8f494e91134bc9f2a037081"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -8487,14 +8492,19 @@
       "sha256": "9edef09d27ba735a9d4a8d70c710c497adce24d317e9d649a1312ec24f467777"
     },
     {
+      "path": "scripts/check-workflow-yaml.py",
+      "bytes": 1423,
+      "sha256": "7fce84c91d8d5cb37ed597a553dcbe4a9d9bac2a7556f63a9b6a26cfc8a838eb"
+    },
+    {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 8348,
-      "sha256": "b175a93d34dbf6dc5bf86e091de3d4f35eb2ee309526c9bf50b6958a49202f88"
+      "bytes": 8369,
+      "sha256": "d0370548bc304d21522ce10e5f15a2085b694cd696c524ccaf099c114f1c616a"
     },
     {
       "path": "scripts/sql-parser-requirements.txt",
-      "bytes": 94,
-      "sha256": "2f9be8943d48f01c886cc944e2206af8de6001765adad4f4beb9a0882df140f5"
+      "bytes": 108,
+      "sha256": "3fafe4f918f3b36a753a6a9a50c78af4827d2bd1405e3bf77913d90c46926d8f"
     },
     {
       "path": "scripts/test-coverage-format.py",
@@ -8508,8 +8518,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 14857,
-      "sha256": "57b76f15f5e9239d3d3da8032f84ea17b48b61756203829e63e3a78f4df3d37d"
+      "bytes": 15218,
+      "sha256": "c9040a870b19afb61046680676ce069c428fbc242659d36d1b7bda4ee6cafd70"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -8543,8 +8553,8 @@
     },
     {
       "path": "scripts/verify.sh",
-      "bytes": 1267,
-      "sha256": "574142f1fccab208e9fd6c274c6f50b57bda6f6b76ca699e2c23eb30bd1c2a5d"
+      "bytes": 1306,
+      "sha256": "4275be8afa55cbff39ee4401d5cb5092978846119b604e1687b2d7c26d12c3f7"
     },
     {
       "path": "tests/contract/badges-oracle/ApiError.cs",
@@ -8903,8 +8913,8 @@
     },
     {
       "path": "tests/integration/backend_publisher_commerce_test.go",
-      "bytes": 6818,
-      "sha256": "6f53a1ce3e785169376103c48cdc3feca640e027216346ca04122a7168c302a4"
+      "bytes": 6799,
+      "sha256": "2af5b3421a290b7b0848e19961aae0b25cacd50743da6d7863879005c5f9e1b1"
     },
     {
       "path": "tests/integration/backend_reader_test.go",
@@ -9025,6 +9035,11 @@
       "path": "tests/integration/domain_trust_test.go",
       "bytes": 12064,
       "sha256": "db848ae4317494a0414549c97aa33339dfb03e4c4dd396a3bb03335d27065d77"
+    },
+    {
+      "path": "tests/integration/factor_setup_review_test.go",
+      "bytes": 15060,
+      "sha256": "a6e201474e196fd96476c6d644585f2a1bac1de0970c0e7f3b281b140c1d6ed7"
     },
     {
       "path": "tests/integration/factor_setup_test.go",
@@ -9163,8 +9178,8 @@
     },
     {
       "path": "tests/integration/publisher_ratings_test.go",
-      "bytes": 9232,
-      "sha256": "71735abc45b2a50b57efa3a7f1665399b5376887c7a52b88d9607356b6e1d65a"
+      "bytes": 9102,
+      "sha256": "8d2030d025f4a975b58289ff356e648d05a0e8ece84e6eb4c96cbb4d1d000ea2"
     },
     {
       "path": "tests/integration/publisher_sponsorship_test.go",

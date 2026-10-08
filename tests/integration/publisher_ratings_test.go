@@ -54,19 +54,19 @@ func (f *ratingFixture) react(t *testing.T, p posts.Post, actor string, ctx cont
 func TestPGPublisherRatingProducerCountsPrivacyAndReplay(t *testing.T) {
 	f := newRatingFixture(t)
 	p := f.dated(t, f.individual, "Synthetic rating canonical activity", posts.Public)
-	f.react(t, p, f.actor, f.ctx, "synthetic-positive-a", interactions.Positive)
-	f.react(t, p, f.other, f.otherCtx, "synthetic-positive-b", interactions.Positive)
-	f.react(t, p, f.actor, f.ctx, "synthetic-negative", interactions.Negative)
-	f.react(t, p, f.actor, f.ctx, "synthetic-neutral", interactions.Neutral)
-	f.react(t, p, f.outside, f.outsideCtx, "synthetic-disabled-positive", interactions.Positive)
+	f.react(t, p, f.actor, f.ctx, "thumb_up", interactions.Positive)
+	f.react(t, p, f.other, f.otherCtx, "heart", interactions.Positive)
+	f.react(t, p, f.actor, f.ctx, "thumb_down", interactions.Negative)
+	f.react(t, p, f.actor, f.ctx, "confuse", interactions.Neutral)
+	f.react(t, p, f.outside, f.outsideCtx, "thumb_up", interactions.Positive)
 	query(t, f.db, `UPDATE owned_authority_accounts SET disabled=true WHERE id=$1::uuid`, f.outside)
 	private := f.dated(t, f.individual, "SYNTHETIC_PRIVATE_RATING_INPUT", posts.Private)
-	f.react(t, private, f.actor, f.ctx, "synthetic-private", interactions.Positive)
+	f.react(t, private, f.actor, f.ctx, "heart", interactions.Positive)
 	linked := f.dated(t, f.individual, "Synthetic realm rating input", posts.Public)
 	if _, e := f.posts.Update(f.ctx, f.actor, linked.ID, posts.Patch{RealmID: &f.private.ID}); e != nil {
 		t.Fatal(e)
 	}
-	f.react(t, linked, f.actor, f.ctx, "synthetic-realm", interactions.Positive)
+	f.react(t, linked, f.actor, f.ctx, "heart", interactions.Positive)
 	processed, e := f.ratings.ProcessPublisherDay(f.ctx, f.individual.ID, f.day)
 	if e != nil || processed != 1 {
 		t.Fatal(processed, e)
@@ -99,8 +99,8 @@ func TestPGPublisherRatingRanksAliasesAndCurrentPrivacy(t *testing.T) {
 	f := newRatingFixture(t)
 	a := f.dated(t, f.individual, "Synthetic first tied publisher", posts.Public)
 	b := f.dated(t, f.publicPub, "Synthetic second tied publisher", posts.Public)
-	f.react(t, a, f.actor, f.ctx, "synthetic-first", interactions.Positive)
-	f.react(t, b, f.actor, f.ctx, "synthetic-second", interactions.Positive)
+	f.react(t, a, f.actor, f.ctx, "heart", interactions.Positive)
+	f.react(t, b, f.actor, f.ctx, "heart", interactions.Positive)
 	for _, pub := range []accounts.Publisher{f.individual, f.publicPub} {
 		if _, e := f.ratings.ProcessPublisherDay(f.ctx, pub.ID, f.day); e != nil {
 			t.Fatal(e)
@@ -138,7 +138,7 @@ func TestPGPublisherRatingRanksAliasesAndCurrentPrivacy(t *testing.T) {
 func TestPGPublisherRatingBatchRollbackAndConcurrency(t *testing.T) {
 	f := newRatingFixture(t)
 	p := f.dated(t, f.individual, "Synthetic rating rollback", posts.Public)
-	f.react(t, p, f.actor, f.ctx, "synthetic-rating-up", interactions.Positive)
+	f.react(t, p, f.actor, f.ctx, "thumb_up", interactions.Positive)
 	name := "synthetic_rating_rollback_" + strings.ReplaceAll(f.actor, "-", "")
 	query(t, f.db, `ALTER TABLE owned_publisher_rating_records ADD CONSTRAINT `+name+` CHECK(publisher_id<>'`+f.individual.ID+`'::uuid) NOT VALID`)
 	t.Cleanup(func() {
@@ -213,7 +213,7 @@ func TestPGPublisherRatingRestartPersistence(t *testing.T) {
 	}
 	f := newRatingFixture(t)
 	p := f.dated(t, f.individual, marker, posts.Public)
-	f.react(t, p, f.actor, f.ctx, "synthetic-durable-up", interactions.Positive)
+	f.react(t, p, f.actor, f.ctx, "thumb_up", interactions.Positive)
 	if n, e := f.ratings.ProcessPublisherDay(f.ctx, f.individual.ID, f.day); e != nil || n != 1 {
 		t.Fatal(n, e)
 	}

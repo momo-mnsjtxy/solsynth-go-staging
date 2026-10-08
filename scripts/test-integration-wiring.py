@@ -106,6 +106,8 @@ def check(runner, read_schema=None):
         raise ValueError("PIN policy references require wallet and factors first")
     if schemas.index("internal/signinpg/factor_setup_schema.sql") <= max(schemas.index("internal/signinpg/payment_pin_schema.sql"),schemas.index("internal/authoritypg/continuity_schema.sql")):
         raise ValueError("factor setup requires factors and session continuity")
+    if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/signinpg/factor_setup_schema.sql' not in runner:
+        raise ValueError("factor setup policy history migration must be atomic")
     if schemas.index("internal/accountpg/name_schema.sql") <= schemas.index("internal/accountpg/schema.sql"):
         raise ValueError("publisher reservations require canonical publishers first")
     if schemas.index("internal/federationpg/identity_schema.sql") <= max(schemas.index("internal/federationpg/schema.sql"), schemas.index("internal/accountpg/name_schema.sql")):
@@ -196,6 +198,7 @@ def main():
     authority = PSQL + "internal/authoritypg/schema.sql"
     accounts = PSQL + "internal/accountpg/schema.sql"
     mutations = [
+        source.replace("--single-transaction -f internal/signinpg/factor_setup_schema.sql", "-f internal/signinpg/factor_setup_schema.sql"),
         source.replace("--single-transaction -f internal/authoritypg/continuity_schema.sql", "-f internal/authoritypg/continuity_schema.sql"),
         source.replace("-f internal/messagerpg/testdata/schema.sql", "-f tests/integration/schema.sql"),
         source.replace("export MESSAGER_SYNC_BINARY=", "export OMITTED_MESSAGER_SYNC_BINARY="),

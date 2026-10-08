@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
+python3 scripts/check-workflow-yaml.py
 python3 scripts/check-source-evidence.py
 python3 scripts/test-source-evidence.py
 python3 scripts/test-integration-guard.py

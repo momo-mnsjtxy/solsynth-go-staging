@@ -62,17 +62,14 @@ func (t *transaction) SetupPaymentVersion() (int64, error) {
 	return v, e
 }
 
-// Include row mutation identities as well as the effective rules: withdrawing
-// and restoring a grant/membership cannot resurrect an earlier setup. These are
-// PostgreSQL row versions, not a second permission/identity authority.
+// Include durable history owned by the canonical account and its current groups.
+// Unlike surviving row IDs/xmin, these versions retain insert/delete and restore
+// evidence, including group grants changed while a membership was being added.
 func (t *transaction) SetupPolicyIdentity() (string, error) {
 	var v string
-	e := t.tx.QueryRowContext(t.ctx, `SELECT jsonb_build_array(
-  (SELECT COALESCE(jsonb_agg(jsonb_build_array(g.id,g.xmin::text)ORDER BY g.id),'[]'::jsonb) FROM owned_authority_grants g WHERE g.account_id=$1::uuid),
-  (SELECT COALESCE(jsonb_agg(jsonb_build_array(p.id,p.xmin::text)ORDER BY p.id),'[]'::jsonb) FROM owned_authority_punishments p WHERE p.account_id=$1::uuid),
-  (SELECT COALESCE(jsonb_agg(jsonb_build_array(m.group_id,m.xmin::text)ORDER BY m.group_id),'[]'::jsonb) FROM owned_authority_group_members m WHERE m.account_id=$1::uuid),
-  (SELECT COALESCE(jsonb_agg(jsonb_build_array(g.id,g.xmin::text)ORDER BY g.id),'[]'::jsonb) FROM owned_authority_group_grants g JOIN owned_authority_group_members m ON m.group_id=g.group_id WHERE m.account_id=$1::uuid),
-  (SELECT jsonb_build_array(c.email,c.verified_at,c.xmin::text) FROM owned_authority_credentials c WHERE c.account_id=$1::uuid)
- )::text`, t.canonical.Account().ID).Scan(&v)
+	e := t.tx.QueryRowContext(t.ctx, `SELECT jsonb_build_array(a.factor_policy_version,
+  (SELECT COALESCE(jsonb_agg(jsonb_build_array(g.id,g.factor_policy_version)ORDER BY g.id),'[]'::jsonb)
+   FROM owned_authority_groups g JOIN owned_authority_group_members m ON m.group_id=g.id WHERE m.account_id=a.id)
+ )::text FROM owned_authority_accounts a WHERE a.id=$1::uuid`, t.canonical.Account().ID).Scan(&v)
 	return v, e
 }

@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Narrow factor setup/rotation, funded sponsorship and reaction-only publisher ratings composed with reviewed atomic transfer requests",
+  "local_source_checkpoint": "Isolated durable factor-policy ABA repair and canonical reaction fixture symbols",
   "last_fully_passed_ci": {
     "commit": "af51dc3d10fe182901063aaa993b00b5b005e2df",
     "run": 37811114928,
@@ -10,12 +10,13 @@
     "after_restart": 56
   },
   "latest_candidate": {
-    "commit": "830fa0ba63359833fe43870ee67dba1ee1713dbe",
-    "required_before": 427,
-    "required_after_restart": 57,
-    "status": "PG installation failed on reserved internal column name; corrected locally to is_frozen, no PG cases executed"
+    "commit": "4c95148c221ba29323346903966036028b3c8da2",
+    "run": 37821515121,
+    "required_before": 449,
+    "required_after_restart": 60,
+    "status": "Actual before phase failed five unsupported-symbol fixtures; restart not reached. Fixture symbols corrected here. Durable ABA repair is locally tested but not yet PG verified."
   },
-  "local_required_before": 449,
+  "local_required_before": 455,
   "local_required_after_restart": 60,
   "families": [
     {

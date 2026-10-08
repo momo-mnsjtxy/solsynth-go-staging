@@ -42,7 +42,7 @@ start
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/accountpg/name_schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/signinpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/signinpg/payment_pin_schema.sql
-"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/signinpg/factor_setup_schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/signinpg/factor_setup_schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/accountsettingspg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/ticketpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/notificationpg/schema.sql

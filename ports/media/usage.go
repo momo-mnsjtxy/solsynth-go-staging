@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 package media
 
-// ValidateUsage recognizes the authored composer label only. Usage is descriptive
+// ValidateUsage recognizes the authored composer and documented profile labels. Usage is descriptive
 // metadata and never authorizes a read, selects a storage pool, or changes quota.
 func ValidateUsage(value string) error {
-	if value != "" && value != "post" {
+	if value != "" && value != "post" && value != "profile_picture" {
 		return ErrUnsupported
 	}
 	return nil

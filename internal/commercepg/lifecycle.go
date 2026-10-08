@@ -13,6 +13,7 @@ import (
 	sponsor "solsynth.local/go-migration/ports/sphere/sponsorship"
 	wallet "solsynth.local/go-migration/ports/wallet/accounts"
 	c "solsynth.local/go-migration/ports/wallet/commerce"
+	"strings"
 	"time"
 )
 
@@ -60,6 +61,9 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 			return o, e
 		}
 		if e = lockOrderApp(ctx, tx, peek); e != nil {
+			return o, e
+		}
+		if _, _, e = prepareRecurringOrder(ctx, tx, actor, peek); e != nil {
 			return o, e
 		}
 	}
@@ -148,6 +152,13 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		}
 	}
 
+	recurring, isRecurring, e := prepareRecurringOrder(ctx, tx, actor, o)
+	if e != nil {
+		return o, e
+	}
+	if isRecurring && (sub.Valid || gift.Valid) {
+		return o, c.ErrConflict
+	}
 	tr, e := walletpg.CommerceHold(ctx, tx, o.ID, actor, payer, o.PayeeWalletID, o.Currency, o.Amount, now)
 	if e != nil {
 		return o, e
@@ -158,6 +169,15 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 	o.UpdatedAt = now
 	if _, e = tx.ExecContext(ctx, `UPDATE commerce_v1.orders SET actor_id=$2 WHERE id=$1`, o.ID, actor); e != nil {
 		return o, e
+	}
+	if isRecurring {
+		if e = r.fulfillRecurringOrder(ctx, tx, actor, &o, recurring, now); e != nil {
+			return o, e
+		}
+		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+			return o, e
+		}
+		o.Status = c.Finished
 	}
 	if sub.Valid {
 		if e = r.activateSubscription(ctx, tx, sub.String, o, now); e != nil {
@@ -254,10 +274,24 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		}
 	}
 
+	if isRecurring {
+		if _, e = recurringConsent(ctx, tx, actor, recurring, 0); e != nil {
+			return o, e
+		}
+	}
+	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.pay"); e != nil {
+		return o, e
+	}
 	if r.payments != nil {
 		if e = r.payments.CheckPayment(ctx, r.db, tx, actor, wallet.PaymentOrder, wallet.OrderPaymentBinding(idv, requested)); e != nil {
 			return o, e
 		}
+	}
+	// Wallet/fulfillment locks may have waited after the initial deadline check.
+	// Rejecting here rolls back the hold, settlement, entitlement and outboxes
+	// together; an earlier clock sample must not extend this checkout's lifetime.
+	if !o.ExpiredAt.After(r.now().UTC()) {
+		return c.Order{}, c.ErrConflict
 	}
 	return o, tx.Commit()
 }
@@ -325,7 +359,11 @@ func definition(ctx context.Context, tx *sql.Tx, identifier string) (c.Definitio
 	if e := lockDefinitionApp(ctx, tx, initialApp); e != nil {
 		return d, e
 	}
-	e := tx.QueryRowContext(ctx, `SELECT document,payee_wallet_id::text FROM commerce_v1.definitions WHERE identifier=$1 AND enabled FOR SHARE`, identifier).Scan(&b, &d.PayeeWalletID)
+	currentProduct, e := lockDefinitionProduct(ctx, tx, d)
+	if e != nil {
+		return d, e
+	}
+	e = tx.QueryRowContext(ctx, `SELECT document,payee_wallet_id::text FROM commerce_v1.definitions WHERE identifier=$1 AND enabled FOR SHARE`, identifier).Scan(&b, &d.PayeeWalletID)
 	if e != nil {
 		return d, notFound(e)
 	}
@@ -342,6 +380,15 @@ func definition(ctx context.Context, tx *sql.Tx, identifier string) (c.Definitio
 	if e = lockDefinitionApp(ctx, tx, d.AppIdentifier); e != nil {
 		return d, e
 	}
+	if d.ProductID != "" {
+		d.ProductTerms, e = recurringTerms(d)
+		if e != nil {
+			return d, e
+		}
+		if d.ProductTerms != currentProduct.ProductTerms {
+			return d, c.ErrConflict
+		}
+	}
 	if d.Identifier != identifier || d.BasePrice.Sign() <= 0 || d.CycleDurationDays < 1 || d.CycleDurationDays > 366 || d.Currency == "" {
 		return d, c.ErrUnavailable
 	}
@@ -351,7 +398,7 @@ func (r *Repository) Catalog(ctx context.Context) ([]c.Definition, error) {
 	if r == nil || r.db == nil {
 		return nil, c.ErrUnavailable
 	}
-	rows, e := r.db.QueryContext(ctx, `SELECT document FROM commerce_v1.definitions WHERE enabled ORDER BY identifier`)
+	rows, e := r.db.QueryContext(ctx, `SELECT document FROM commerce_v1.definitions d WHERE enabled AND `+catalogVisible+` ORDER BY identifier`)
 	if e != nil {
 		return nil, e
 	}
@@ -378,7 +425,7 @@ func subscriptionRow(ctx context.Context, tx *sql.Tx, idv string, locked bool) (
 	return decode[c.Subscription](tx.QueryRowContext(ctx, `SELECT document FROM commerce_v1.subscriptions WHERE id=$1`+suffix, idv))
 }
 func lookupSubscription(ctx context.Context, tx *sql.Tx, actor, identifier string) (c.Subscription, error) {
-	return decode[c.Subscription](tx.QueryRowContext(ctx, `SELECT document FROM commerce_v1.subscriptions WHERE account_id=$1 AND identifier=$2 ORDER BY begun_at DESC,id DESC LIMIT 1 FOR UPDATE`, actor, identifier))
+	return decode[c.Subscription](tx.QueryRowContext(ctx, `SELECT document FROM commerce_v1.subscriptions WHERE account_id=$1 AND (identifier=$2 OR id::text=$2) ORDER BY begun_at DESC,id DESC LIMIT 1 FOR UPDATE`, actor, identifier))
 }
 func saveSubscription(ctx context.Context, tx *sql.Tx, s c.Subscription) error {
 	b, e := jsonBytes(s)
@@ -422,8 +469,13 @@ func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c
 	if !allowed {
 		return s, c.ErrForbidden
 	}
-	if req.CycleDurationDays != nil && *req.CycleDurationDays != d.CycleDurationDays {
-		return s, c.ErrInvalid
+	days, price, e := c.CyclePrice(d, req.CycleDurationDays)
+	if e != nil {
+		return s, e
+	}
+	consentVersion, e := recurringConsent(ctx, tx, actor, d, 0)
+	if e != nil {
+		return s, e
 	}
 	if req.PaymentDetails.Currency != "" && req.PaymentDetails.Currency != d.Currency {
 		return s, c.ErrInvalid
@@ -463,8 +515,11 @@ func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c
 	}
 	now := r.now().UTC()
 	renew := d.AllowInternalWalletRenewal && (req.IsAutoRenewal == nil || *req.IsAutoRenewal)
-	s = c.Subscription{ID: sid, AccountID: actor, Identifier: d.Identifier, GroupIdentifier: d.GroupIdentifier, DisplayName: d.DisplayName, Status: c.SubscriptionUnpaid, PaymentMethod: req.PaymentMethod, PaymentDetails: c.PaymentDetails{Currency: d.Currency, PayerWalletID: &payer}, BasePrice: d.BasePrice, FinalPrice: d.BasePrice, BegunAt: now, EndedAt: now.Add(time.Duration(d.CycleDurationDays) * 24 * time.Hour), CreatedAt: now, UpdatedAt: now}
-	if e = insertSubscription(ctx, tx, s, d.CycleDurationDays, renew); e != nil {
+	if d.ProductID != "" {
+		renew = d.AllowInternalWalletRenewal && req.IsAutoRenewal != nil && *req.IsAutoRenewal
+	}
+	s = c.Subscription{AppIdentifier: d.AppIdentifier, ProductTerms: d.ProductTerms, ConsentVersion: consentVersion, CycleDurationDays: days, IsAutoRenewal: renew, ID: sid, AccountID: actor, Identifier: d.Identifier, GroupIdentifier: d.GroupIdentifier, DisplayName: d.DisplayName, Status: c.SubscriptionUnpaid, PaymentMethod: req.PaymentMethod, PaymentDetails: c.PaymentDetails{Currency: d.Currency, PayerWalletID: &payer}, BasePrice: d.BasePrice, FinalPrice: price, BegunAt: now, EndedAt: now.Add(time.Duration(days) * 24 * time.Hour), CreatedAt: now, UpdatedAt: now}
+	if e = insertSubscription(ctx, tx, s, days, renew); e != nil {
 		return s, e
 	}
 	if e = recordIdem(ctx, tx, "account:"+actor, key, "subscription", fp, s.ID); e != nil {
@@ -483,6 +538,10 @@ func (r *Repository) Subscription(ctx context.Context, actor, identifier string)
 	}
 	defer tx.Rollback()
 	s, e = lookupSubscription(ctx, tx, actor, identifier)
+	if e != nil {
+		return s, e
+	}
+	s, e = subscriptionAccess(ctx, tx, s, r.now().UTC())
 	if e != nil {
 		return s, e
 	}
@@ -521,6 +580,12 @@ func (r *Repository) Subscriptions(ctx context.Context, actor string, q c.PageQu
 	if e != nil {
 		return nil, 0, e
 	}
+	for i := range out {
+		out[i], e = subscriptionAccess(ctx, tx, out[i], r.now().UTC())
+		if e != nil {
+			return nil, 0, e
+		}
+	}
 	return out, total, tx.Commit()
 }
 func (r *Repository) CancelSubscription(ctx context.Context, actor, identifier string) (c.Subscription, error) {
@@ -542,6 +607,7 @@ func (r *Repository) CancelSubscription(ctx context.Context, actor, identifier s
 	}
 	now := r.now().UTC()
 	s.Status = c.SubscriptionCancelled
+	s.IsAutoRenewal = false
 	s.IsActive = false
 	s.RenewalAt = nil
 	s.UpdatedAt = now
@@ -573,8 +639,11 @@ func (r *Repository) SubscriptionOrder(ctx context.Context, actor, identifier st
 	if s.Status == c.SubscriptionCancelled {
 		return o, c.ErrConflict
 	}
-	d, e := definition(ctx, tx, identifier)
+	d, e := definition(ctx, tx, s.Identifier)
 	if e != nil {
+		return o, e
+	}
+	if e = subscriptionEconomics(ctx, tx, s, d); e != nil {
 		return o, e
 	}
 	o, e = r.resourceOrder(ctx, tx, actor, d, s.ID, "", s.PaymentDetails.PayerWalletID, s.FinalPrice)
@@ -606,7 +675,12 @@ func (r *Repository) resourceOrder(ctx context.Context, tx *sql.Tx, actor string
 		o.AppIdentifier = "gift"
 		o.Meta["gift_id"], _ = json.Marshal(gift)
 	}
-	return o, insertOrder(ctx, tx, o, "", actor, sub, gift)
+	app := ""
+	if d.ProductID != "" && d.AppIdentifier != nil {
+		o.AppIdentifier = *d.AppIdentifier
+		app = strings.TrimPrefix(*d.AppIdentifier, "developer.app:")
+	}
+	return o, insertOrder(ctx, tx, o, app, actor, sub, gift)
 }
 func (r *Repository) activateSubscription(ctx context.Context, tx *sql.Tx, sid string, o c.Order, now time.Time) error {
 	s, e := subscriptionRow(ctx, tx, sid, true)
@@ -626,7 +700,10 @@ func (r *Repository) activateSubscription(ctx context.Context, tx *sql.Tx, sid s
 	if e != nil {
 		return e
 	}
-	if s.FinalPrice.Cmp(o.Amount) != 0 || s.PaymentDetails.Currency != o.Currency {
+	if e = subscriptionEconomics(ctx, tx, s, d); e != nil {
+		return e
+	}
+	if s.FinalPrice.Cmp(o.Amount) != 0 || s.PaymentDetails.Currency != o.Currency || o.PayeeWalletID != d.PayeeWalletID {
 		return c.ErrConflict
 	}
 	if s.Status == c.SubscriptionActive && s.EndedAt.After(now) {
@@ -641,7 +718,9 @@ func (r *Repository) activateSubscription(ctx context.Context, tx *sql.Tx, sid s
 	}
 
 	s.RenewalAt = nil
-	if renew && d.AllowInternalWalletRenewal {
+	s.IsAutoRenewal = renew && d.AllowInternalWalletRenewal
+	s.CycleDurationDays = days
+	if s.IsAutoRenewal {
 		s.RenewalAt = &s.EndedAt
 	}
 	s.Status = c.SubscriptionActive

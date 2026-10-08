@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/develop/apps"
 	wallet "solsynth.local/go-migration/ports/wallet/accounts"
 	c "solsynth.local/go-migration/ports/wallet/commerce"
 	"sort"
@@ -32,6 +33,7 @@ type Product struct {
 	StockQuantity            *int64
 	Recurrence               string
 	RequiresAddress          bool
+	Catalog                  apps.Product
 }
 
 // These adapters run inside the supplied transaction, locking canonical app
@@ -250,7 +252,7 @@ func (r *Repository) CreateOrder(ctx context.Context, req c.CreateOrder, key str
 		if e != nil || len(b) > 16384 {
 			return o, c.ErrInvalid
 		}
-		for _, reserved := range []string{"subscription_id", "gift_id", "app_subscription", "fulfillment", "address_contact_id", "address_snapshot"} {
+		for _, reserved := range []string{"subscription_id", "gift_id", "app_subscription", "fulfillment", "address_contact_id", "address_snapshot", "required_scopes"} {
 			if _, ok := req.Meta[reserved]; ok {
 				return o, c.ErrInvalid
 			}
@@ -305,7 +307,26 @@ func (r *Repository) CreateOrder(ctx context.Context, req c.CreateOrder, key str
 			if e != nil {
 				return o, e
 			}
-			if !p.Enabled || !c.ValidPrice(p.Price) || p.RequiresAddress || p.Recurrence != "" && p.Recurrence != "none" {
+			if !p.Enabled || !c.ValidPrice(p.Price) || p.RequiresAddress {
+				return o, c.ErrUnavailable
+			}
+			if p.Recurrence != "" && p.Recurrence != "none" {
+				if len(names) != 1 || totals[name] != 1 {
+					return o, c.ErrInvalid
+				}
+				if e = r.SyncProduct(ctx, tx, p.Catalog, false); e != nil {
+					return o, e
+				}
+				d, e := definition(ctx, tx, productDefinitionID(p.ID))
+				if e != nil {
+					return o, e
+				}
+				o.Meta["app_subscription"], e = jsonBytes(d)
+				if e != nil {
+					return o, e
+				}
+			} else if p.Catalog.Fulfillment != nil && len(p.Catalog.Fulfillment.RequiredScopes) > 0 {
+				// One-time products requiring consent need a separate fulfillment adapter.
 				return o, c.ErrUnavailable
 			}
 			if o.Currency == "" {
@@ -390,7 +411,11 @@ func (r *Repository) GetOrder(ctx context.Context, actor, idv string, public boo
 			return o, e
 		}
 	} else {
-		o.Meta = map[string]json.RawMessage{}
+		publicMeta := map[string]json.RawMessage{}
+		if d, recurring, err := recurringSnapshot(o); err == nil && recurring {
+			publicMeta["app_subscription"], _ = jsonBytes(d)
+		}
+		o.Meta = publicMeta
 		o.PayerWalletID = nil
 		o.TransactionID = nil
 	}

@@ -132,6 +132,11 @@ func (r *Repository) Products(ctx context.Context, s apps.Scope, ref string, p *
 				}
 			}
 		}
+		if r.productCatalog != nil {
+			if e := r.productCatalog.SyncProduct(ctx, tx, v, action == "delete"); e != nil {
+				return e
+			}
+		}
 		out = append(out, v)
 		return audit(ctx, tx, s.Actor, s.App, "developers.apps.products."+action, v.ID, now)
 	})

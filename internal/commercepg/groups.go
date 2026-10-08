@@ -16,7 +16,7 @@ func (r *Repository) SubscriptionGroup(ctx context.Context, actor, group string)
 		return out, e
 	}
 	defer tx.Rollback()
-	rows, e := tx.QueryContext(ctx, `SELECT document FROM commerce_v1.definitions WHERE enabled AND COALESCE(NULLIF(document->>'group_identifier',''),identifier)=$1 ORDER BY identifier`, group)
+	rows, e := tx.QueryContext(ctx, `SELECT document FROM commerce_v1.definitions d WHERE enabled AND `+catalogVisible+` AND COALESCE(NULLIF(document->>'group_identifier',''),identifier)=$1 ORDER BY identifier`, group)
 	if e != nil {
 		return out, e
 	}
@@ -72,6 +72,21 @@ func (r *Repository) SubscriptionGroup(ctx context.Context, actor, group string)
 	rows.Close()
 	if e != nil {
 		return out, e
+	}
+	out.Current, out.Next = nil, nil
+	for i := range out.Subscriptions {
+		s, err := subscriptionAccess(ctx, tx, out.Subscriptions[i].Subscription, now)
+		if err != nil {
+			return out, err
+		}
+		out.Subscriptions[i].Subscription = s
+		if s.IsActive {
+			if !s.BegunAt.After(now) {
+				out.Current = &out.Subscriptions[i]
+			} else if out.Next == nil {
+				out.Next = &out.Subscriptions[i]
+			}
+		}
 	}
 	return out, tx.Commit()
 }

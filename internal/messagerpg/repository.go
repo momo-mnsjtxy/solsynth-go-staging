@@ -28,6 +28,7 @@ var (
 // remain explicit synthetic choices; production construction is always denied.
 type Repository struct {
 	owned              bool
+	decorator          MessageDecorator
 	roomAccess         rooms.AccessPolicy
 	unreadPolicy       *SyntheticUnreadPolicy
 	db                 *sql.DB
@@ -36,6 +37,22 @@ type Repository struct {
 	now                func() time.Time
 }
 
+// MessageDecorator hydrates current optional resource projections in the same read snapshot.
+type MessageDecorator interface {
+	Load(context.Context, *sql.Tx, string, *messager.MessageProjection) error
+}
+
+func (r *Repository) WithMessageDecorator(d MessageDecorator) *Repository { r.decorator = d; return r }
+func (r *Repository) decorate(ctx context.Context, tx *sql.Tx, actor string, messages []messager.MessageProjection) error {
+	if r.decorator != nil {
+		for i := range messages {
+			if e := r.decorator.Load(ctx, tx, actor, &messages[i]); e != nil {
+				return e
+			}
+		}
+	}
+	return nil
+}
 func (r *Repository) WithRoomAccess(p rooms.AccessPolicy) *Repository { r.roomAccess = p; return r }
 
 func New(db *sql.DB) *Repository { return &Repository{db: db} }
@@ -179,6 +196,9 @@ func (r *Repository) Sync(ctx context.Context, q messager.SyncQuery) (messager.S
 	if err != nil {
 		return messager.SyncResponse{}, err
 	}
+	if err = r.decorate(ctx, tx, q.AccountID, messages); err != nil {
+		return messager.SyncResponse{}, err
+	}
 	now := time.Now
 	if r.now != nil {
 		now = r.now
@@ -216,6 +236,9 @@ func (r *Repository) ListMessages(ctx context.Context, q messager.MessageListQue
 	if err != nil {
 		return messager.MessagePage{}, err
 	}
+	if err = r.decorate(ctx, tx, q.AccountID, messages); err != nil {
+		return messager.MessagePage{}, err
+	}
 	if err = tx.Commit(); err != nil {
 		return messager.MessagePage{}, err
 	}
@@ -242,6 +265,9 @@ func (r *Repository) GetMessage(ctx context.Context, q messager.MessageQuery) (m
 	}
 	if len(messages) == 0 {
 		return messager.MessageProjection{}, messager.ErrSyncMessageNotFound
+	}
+	if err = r.decorate(ctx, tx, q.AccountID, messages); err != nil {
+		return messager.MessageProjection{}, err
 	}
 	if err = tx.Commit(); err != nil {
 		return messager.MessageProjection{}, err

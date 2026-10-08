@@ -46,6 +46,11 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if err := r.store.Ready(ctx); err != nil {
 		return err
 	}
+	if policy, ok := r.readVisibility.(interface{ Ready(context.Context) error }); ok {
+		if err := policy.Ready(ctx); err != nil {
+			return err
+		}
+	}
 	_, err := r.db.ExecContext(ctx, `SELECT id,charge,expires_at,usage FROM owned_media_files LIMIT 0; SELECT account_id,limit_bytes,used_bytes,reserved_bytes FROM owned_media_quotas LIMIT 0`)
 	if err == nil {
 		if _, ok := r.store.(media.ChunkObjectStore); ok {
@@ -304,7 +309,7 @@ func (r *Repository) read(ctx context.Context, actor, id string, open bool) (med
 	// disable that committed while it waited. The optional policy never changes
 	// the file's public flag or its canonical ownership.
 	var active bool
-	if err = tx.QueryRowContext(ctx, `SELECT NOT disabled FROM owned_authority_accounts WHERE id=$1`, f.AccountID).Scan(&active); err != nil {
+	if err = tx.QueryRowContext(ctx, `SELECT NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=a.id AND p.kind='disable_account' AND(p.starts_at IS NULL OR p.starts_at<=statement_timestamp())AND(p.expires_at IS NULL OR p.expires_at>statement_timestamp())) FROM owned_authority_accounts a WHERE a.id=$1`, f.AccountID).Scan(&active); err != nil {
 		return f, nil, err
 	}
 	if !active {

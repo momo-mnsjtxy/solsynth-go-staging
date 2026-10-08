@@ -133,10 +133,17 @@ func (r *Repository) dueOne(ctx context.Context, kind string) (bool, error) {
 	}
 	renew, days := row.Renew, row.Days
 	d, e := definition(ctx, tx, s.Identifier)
-	if e != nil && !errors.Is(e, c.ErrNotFound) {
+	if e != nil && !errors.Is(e, c.ErrNotFound) && !errors.Is(e, c.ErrConflict) {
 		return false, e
 	}
-	canRenew := e == nil && !disabled && paymentAllowed && renew && d.AllowInternalWalletRenewal && s.PaymentMethod == "solian.wallet" && s.PaymentDetails.PayerWalletID != nil && s.RenewalAt != nil && s.FinalPrice.Cmp(d.BasePrice) == 0 && s.PaymentDetails.Currency == d.Currency
+	canRenew := e == nil && !disabled && paymentAllowed && renew && d.AllowInternalWalletRenewal && s.PaymentMethod == "solian.wallet" && s.PaymentDetails.PayerWalletID != nil && s.RenewalAt != nil && s.PaymentDetails.Currency == d.Currency
+	if canRenew {
+		x := subscriptionEconomics(ctx, tx, s, d)
+		if x != nil && !errors.Is(x, c.ErrConflict) && !errors.Is(x, c.ErrForbidden) && !errors.Is(x, c.ErrNotFound) {
+			return false, x
+		}
+		canRenew = x == nil
+	}
 	if canRenew {
 		old, e := order(ctx, tx, s.PaymentDetails.OrderID, false)
 		if e != nil {
@@ -189,10 +196,14 @@ func (r *Repository) dueOne(ctx context.Context, kind string) (bool, error) {
 			if e = event(ctx, tx, "subscription.renewed", s.ID, s, now); e != nil {
 				return false, e
 			}
+			if _, e = recurringConsent(ctx, tx, actor, d, s.ConsentVersion); e != nil {
+				return false, e
+			}
 			return true, tx.Commit()
 		}
 	}
 	s.Status = c.SubscriptionExpired
+	s.IsAutoRenewal = false
 	s.IsActive = false
 	s.RenewalAt = nil
 	s.UpdatedAt = now

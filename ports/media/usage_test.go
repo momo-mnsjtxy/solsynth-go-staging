@@ -63,7 +63,7 @@ func TestDirectUsageBeforeAndAfterFileHasSameMeaning(t *testing.T) {
 	}
 }
 func TestUsageIsBoundedMetadataAndDefaultsRemainNullable(t *testing.T) {
-	for _, value := range []string{"", "post"} {
+	for _, value := range []string{"", "post", "profile_picture"} {
 		if e := ValidateUsage(value); e != nil {
 			t.Fatal(value, e)
 		}

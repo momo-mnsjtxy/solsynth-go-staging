@@ -856,7 +856,10 @@ func (s *Service) EnableFactor(ctx context.Context, token, fid, code string) (Fa
 			// Revocation/security generation changes invalidate the enrollment itself;
 			// mere receipt expiry may be recovered by a separate fresh login and OTP.
 			origin, e := tx.Authority().Session(receipt.SessionID)
-			if receipt.State != "disabled" && (e != nil || origin.RevokedAt != nil || origin.AuthorizationEpoch != receipt.AuthorizationEpoch || origin.AccountVersion != pending.AccountVersion) {
+			// Disable deliberately advances the account version before rebinding its
+			// pending metadata. Only that version mismatch is expected; subsequent
+			// origin revocation or authorization changes must still invalidate it.
+			if e != nil || origin.RevokedAt != nil || origin.AuthorizationEpoch != receipt.AuthorizationEpoch || receipt.State != "disabled" && origin.AccountVersion != pending.AccountVersion {
 				return rejectSetup(setup, ErrInvalid)
 			}
 			continuation := receipt.State == "pending" && receipt.TOTPID == fid && receipt.TOTPRevision == f.Revision && s.setupValid(receipt, p, policy)

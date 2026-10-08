@@ -116,6 +116,11 @@ type PaymentDetails struct {
 	PayerWalletID *string `json:"payer_wallet_id,omitempty"`
 }
 type Definition struct {
+	ProductID                  string              `json:"product_id,omitempty"`
+	ProductIdentifier          string              `json:"product_identifier,omitempty"`
+	UnitPrice                  json.Number         `json:"unit_price,omitempty"`
+	ProductTerms               string              `json:"-"`
+	RequiredScopes             []string            `json:"required_scopes,omitempty"`
 	AppIdentifier              *string             `json:"app_identifier,omitempty"`
 	Identifier                 string              `json:"identifier"`
 	GroupIdentifier            string              `json:"group_identifier"`
@@ -139,24 +144,29 @@ type CreateSubscription struct {
 	IsAutoRenewal     *bool          `json:"is_auto_renewal"`
 }
 type Subscription struct {
-	ID              string             `json:"id"`
-	AccountID       string             `json:"account_id"`
-	Identifier      string             `json:"identifier"`
-	GroupIdentifier string             `json:"group_identifier"`
-	DisplayName     string             `json:"display_name"`
-	Status          SubscriptionStatus `json:"status"`
-	IsActive        bool               `json:"is_active"`
-	IsFreeTrial     bool               `json:"is_free_trial"`
-	IsTesting       bool               `json:"is_testing"`
-	PaymentMethod   string             `json:"payment_method"`
-	PaymentDetails  PaymentDetails     `json:"payment_details"`
-	BasePrice       wallet.Amount      `json:"base_price"`
-	FinalPrice      wallet.Amount      `json:"final_price"`
-	BegunAt         time.Time          `json:"begun_at"`
-	EndedAt         time.Time          `json:"ended_at"`
-	RenewalAt       *time.Time         `json:"renewal_at"`
-	CreatedAt       time.Time          `json:"created_at"`
-	UpdatedAt       time.Time          `json:"updated_at"`
+	AppIdentifier     *string            `json:"app_identifier,omitempty"`
+	ProductTerms      string             `json:"product_terms,omitempty"`
+	ConsentVersion    int64              `json:"consent_version,omitempty"`
+	CycleDurationDays int                `json:"cycle_duration_days"`
+	IsAutoRenewal     bool               `json:"is_auto_renewal"`
+	ID                string             `json:"id"`
+	AccountID         string             `json:"account_id"`
+	Identifier        string             `json:"identifier"`
+	GroupIdentifier   string             `json:"group_identifier"`
+	DisplayName       string             `json:"display_name"`
+	Status            SubscriptionStatus `json:"status"`
+	IsActive          bool               `json:"is_active"`
+	IsFreeTrial       bool               `json:"is_free_trial"`
+	IsTesting         bool               `json:"is_testing"`
+	PaymentMethod     string             `json:"payment_method"`
+	PaymentDetails    PaymentDetails     `json:"payment_details"`
+	BasePrice         wallet.Amount      `json:"base_price"`
+	FinalPrice        wallet.Amount      `json:"final_price"`
+	BegunAt           time.Time          `json:"begun_at"`
+	EndedAt           time.Time          `json:"ended_at"`
+	RenewalAt         *time.Time         `json:"renewal_at"`
+	CreatedAt         time.Time          `json:"created_at"`
+	UpdatedAt         time.Time          `json:"updated_at"`
 }
 type PurchaseGift struct {
 	SubscriptionIdentifier   string         `json:"subscription_identifier"`

@@ -35,6 +35,28 @@ func Total(items []OrderItem) (wallet.Amount, error) {
 	}
 	return wallet.ParseAmount(s[:len(s)-3] + "." + s[len(s)-3:])
 }
+
+// CyclePrice is an independently authored bounded policy for the retained
+// client's 1..12 cycle purchase control. It accepts whole cycles only and uses
+// the exact product unit price before truncating the complete purchase once.
+func CyclePrice(d Definition, requested *int) (int, wallet.Amount, error) {
+	days := d.CycleDurationDays
+	if requested != nil {
+		days = *requested
+	}
+	if d.CycleDurationDays < 1 || days < 1 || days > 366 || days%d.CycleDurationDays != 0 || days/d.CycleDurationDays > 12 {
+		return 0, wallet.Amount{}, ErrInvalid
+	}
+	price := d.UnitPrice
+	if price == "" {
+		price = json.Number(d.BasePrice.String())
+	}
+	total, e := Total([]OrderItem{{UnitPrice: price, Quantity: days / d.CycleDurationDays}})
+	if e != nil || total.Sign() <= 0 {
+		return 0, wallet.Amount{}, ErrInvalid
+	}
+	return days, total, nil
+}
 func (q *ItemRequest) UnmarshalJSON(b []byte) error {
 	var raw struct {
 		ProductIdentifier string `json:"product_identifier"`

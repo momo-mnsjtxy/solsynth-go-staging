@@ -59,8 +59,8 @@ There is no standalone public settlement method.
 An unpaid order snapshots server-side product prices and its configured payout
 wallet. Duplicate items are combined and products locked in sorted order.
 Unlimited/manual stock counts unpaid unexpired plus paid/finished reservations;
-cancelled/expired orders release availability. Recurring or address-required
-app products fail unavailable until their trusted fulfillment adapters exist.
+cancelled/expired orders release availability. Digital recurring app products use the canonical subscription fulfillment
+described in `recurring-products.md`; address-required products remain unavailable.
 Exact rational prices are added before the single truncation to canonical
 thousandths. Positive amounts and quantities, ranges, body sizes and duration
 limits are bounded. Idempotency keys bind scope, operation and payload.
@@ -100,9 +100,8 @@ require the host's publisher and idempotent consumers.
 ## Explicit remaining boundaries
 
 No automatic migration of legacy Wallet databases; realm-owned payer wallet
-payment; merchant payouts; coupon/free-trial programs; pricing for caller-chosen
-cycle multiples; periodic product stock resets; address-contact fulfillment;
-recurring app product entitlement writes; subscription activation switching;
+payment; merchant payouts; coupon/free-trial programs; nonintegral or unbounded cycle durations; periodic product stock resets;
+address-contact fulfillment; subscription activation switching;
 billing relation views; sponsor badge/golden-point grants; provider gold-currency
 minting; external billing cancellation; production provider clients; delivery of
 outbox events. Unsupported requests fail closed or are unrouted. These are not
@@ -137,3 +136,6 @@ without skips in CI:
 Add all six to the before phase and only RestartPersistence to the after phase.
 All funding, accounts, app credentials and provider purchases in these tests are
 synthetic and confined to the marked disposable cluster.
+
+Recurring app product fulfillment and bounded whole-cycle pricing are now implemented;
+see `recurring-products.md` for the complete contracts, independent policy and tests.

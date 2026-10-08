@@ -2,37 +2,46 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Egress/private live HLS, quarantine, funded post awards and durable policy-history repair composed; exact-commit PG pending",
+  "local_source_checkpoint": "Chat media/reactions, profile media, wallet funds, recurring app products and assurance-origin repair composed; exact-commit PG pending",
   "last_fully_passed_ci": {
-    "commit": "af51dc3d10fe182901063aaa993b00b5b005e2df",
-    "run": 37811114928,
-    "before": 421,
-    "after_restart": 56
+    "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+    "run": 37829272433,
+    "job": 113490073832,
+    "before": 455,
+    "after_restart": 60,
+    "skipped": 0
   },
   "latest_candidate": {
-    "commit": "22e2e96d13bb5c90919cf3bfb78f7506dd832beb",
-    "required_before": 455,
-    "required_after_restart": 60,
-    "status": "Durable ABA repair and reaction-fixture correction published separately; actual PostgreSQL pending"
+    "commit": "854cf4571b0be15a5cd094482a40a9190b3ad851",
+    "required_before": 484,
+    "required_after_restart": 63,
+    "status": "Private CI pending; separate455 rerun includes explicit phase timeouts. Six durable ABA regressions passed in22e2e96d before the package timed out; restart not reached."
   },
-  "local_required_before": 484,
-  "local_required_after_restart": 63,
+  "local_required_before": 516,
+  "local_required_after_restart": 67,
   "families": [
     {
       "source_family": "develop.apps_products",
       "local_status": "implemented",
       "supported_flows": [
         "Canonical app/product CRUD, scoped app keys and public app reads",
-        "Owned OAuth/OIDC execution is tracked separately below; resource API delegation remains restricted"
+        "Owned OAuth/OIDC execution is tracked separately below; resource API delegation remains restricted",
+        "App-scoped recurring catalog definitions, explicit buyer renewal opt-in, exact cycle/economics snapshot and current consent revocation"
       ],
       "guarded_pg_cases": [
         "TestPGDeveloperAppsConcurrentRevocation",
         "TestPGDeveloperAppsIsolationAndRevocation",
         "TestPGDeveloperAppsLifecycle",
-        "TestPGDeveloperAppsRestartPersistence"
+        "TestPGDeveloperAppsRestartPersistence",
+        "TestPGRecurringProductCheckoutAtomicAndIsolation",
+        "TestPGRecurringProductRenewalEconomicsAndRevocation",
+        "TestPGRecurringProductConsentWaitAndSnapshot",
+        "TestPGRecurringProductOppositeWalletPayments",
+        "TestPGRecurringProductHostPINCatalogAndCancel",
+        "TestPGRecurringProductRestartPersistence"
       ],
       "unsupported_or_remaining": [
-        "Recurring app fulfillment and remaining legacy app-management contracts"
+        "Remaining legacy app-management contracts, required address/stock fulfillment and external workspace/provider execution"
       ]
     },
     {
@@ -132,7 +141,8 @@
       "local_status": "partial",
       "supported_flows": [
         "Canonical text send/edit/delete, read/sync/unread and sequences",
-        "Current DM/realm restrictions consistently apply to message reads, sync, unread, sends and notification replay"
+        "Current DM/realm restrictions consistently apply to message reads, sync, unread, sends and notification replay",
+        "Canonical attachment-only/rich send and edit, ownership-bound file reads, reaction toggle/remove/list and authored null fields/client message IDs"
       ],
       "guarded_pg_cases": [
         "TestPGChatAuthorityAndUnsupportedBoundaries",
@@ -147,10 +157,15 @@
         "TestPGMessagerReadOnlyFailuresAndIndependentPool",
         "TestPGMessagerRestartPersistence",
         "TestPGMessagerTimestampSequenceAndRangeRecovery",
-        "TestPGMessagerUnreadMatchesRetainedPolicy"
+        "TestPGMessagerUnreadMatchesRetainedPolicy",
+        "TestPGChatMediaLifecycleCurrentVisibilityAndIsolation",
+        "TestPGChatReactionsContractsConcurrencyAndRollback",
+        "TestPGChatMediaAuthorityAndFileWaitRevalidation",
+        "TestPGBackendChatMediaAndReactionsComposition",
+        "TestPGChatMediaReactionsRestartPersistence"
       ],
       "unsupported_or_remaining": [
-        "E2EE/media messages, message reactions, full source message types"
+        "E2EE control plane integrating separately; full source message types, non-null thread/forward operations remain unsupported"
       ]
     },
     {
@@ -244,7 +259,8 @@
         "Verified-session presence leases, status and privacy settings",
         "Source-backed profile aliases with owner-only birthday",
         "Canonical email contacts, verification, public opt-in and primary promotion with stale-proof revocation",
-        "Owned string-level notification preferences enforced by existing projection/delivery"
+        "Owned string-level notification preferences enforced by existing projection/delivery",
+        "Canonical picture/background references, current file ownership, public profile sharing and removal with current visibility"
       ],
       "guarded_pg_cases": [
         "TestPGAccountsAtomicRollbackAndQuotaRace",
@@ -270,10 +286,16 @@
         "TestPGContactAtomicityExpiryAndAuthority",
         "TestPGNotificationPreferenceProjectionAndQueuedDelivery",
         "TestPGAccountSettingsRestartPersistence",
-        "TestPGBackendAccountSettingsComposition"
+        "TestPGBackendAccountSettingsComposition",
+        "TestPGProfileMediaComposedUploadReferenceAndRemoval",
+        "TestPGProfileMediaOwnershipAtomicityAndCurrentPrivacy",
+        "TestPGProfileMediaAuthorityAndFileLockWait",
+        "TestPGProfileMediaReadWaitObservesCurrentVisibility",
+        "TestPGProfileMediaMembershipCannotRedistribute",
+        "TestPGProfileMediaRestartPersistence"
       ],
       "unsupported_or_remaining": [
-        "Admin contacts, phone/address verification, profile media/security modes and excluded SDK preference encoding",
+        "Admin contacts, phone/address verification, security modes and excluded SDK preference encoding",
         "External identity providers, PassKit/artwork and remaining source account operations"
       ]
     },
@@ -487,7 +509,7 @@
         "TestPGRealmPublisherUnsupportedPublicIntegrations"
       ],
       "unsupported_or_remaining": [
-        "Ratings/settlement/subscription administration; organization collections/sticker management/apps/taxonomy/federation remain unsupported"
+        "Remaining ratings/settlement/subscription administration and organization-specific collection/sticker/app/taxonomy/federation compatibility; implemented subflows are tracked in dedicated families"
       ]
     },
     {
@@ -496,7 +518,7 @@
       "supported_flows": [],
       "guarded_pg_cases": [],
       "unsupported_or_remaining": [
-        "Source-supported sponsorship and livestream lifecycle are implemented in dedicated families; provider-backed egress is in progress"
+        "Live provider configuration and actual external egress remain unvalidated; owned synthetic egress lifecycle is tracked in sphere.livestream_egress_hls"
       ]
     },
     {
@@ -665,7 +687,8 @@
       "source_family": "wallet.orders_payments",
       "local_status": "partial",
       "supported_flows": [
-        "Canonical held-fund orders, stock, checkout metadata and settlement/refund"
+        "Canonical held-fund orders, stock, checkout metadata and settlement/refund",
+        "Checkout expiry is rechecked after wallet and fulfillment waits, rolling back all effects on expiry"
       ],
       "guarded_pg_cases": [
         "TestPGCommerceConcurrentPaymentStockAndRollback",
@@ -673,7 +696,8 @@
         "TestPGCommerceHTTPPaymentAndUnavailableProvider",
         "TestPGCommerceOrderSettlementAndIsolation",
         "TestPGCommerceRestartPersistence",
-        "TestPGCommerceSubscriptionRenewCancelAndGiftRedeem"
+        "TestPGCommerceSubscriptionRenewCancelAndGiftRedeem",
+        "TestPGRecurringProductCheckoutExpiryDuringWalletWait"
       ],
       "unsupported_or_remaining": [
         "Live provider clients, address fulfillment, coupons, payouts"
@@ -683,7 +707,8 @@
       "source_family": "wallet.subscriptions_gifts",
       "local_status": "partial",
       "supported_flows": [
-        "Subscription activation/renew/cancel, gift pay/send/redeem/expiry"
+        "Subscription activation/renew/cancel, gift pay/send/redeem/expiry",
+        "App-scoped recurring catalog definitions, explicit buyer renewal opt-in, exact cycle/economics snapshot and current consent revocation"
       ],
       "guarded_pg_cases": [
         "TestPGCommerceConcurrentPaymentStockAndRollback",
@@ -691,10 +716,16 @@
         "TestPGCommerceHTTPPaymentAndUnavailableProvider",
         "TestPGCommerceOrderSettlementAndIsolation",
         "TestPGCommerceRestartPersistence",
-        "TestPGCommerceSubscriptionRenewCancelAndGiftRedeem"
+        "TestPGCommerceSubscriptionRenewCancelAndGiftRedeem",
+        "TestPGRecurringProductCheckoutAtomicAndIsolation",
+        "TestPGRecurringProductRenewalEconomicsAndRevocation",
+        "TestPGRecurringProductConsentWaitAndSnapshot",
+        "TestPGRecurringProductOppositeWalletPayments",
+        "TestPGRecurringProductHostPINCatalogAndCancel",
+        "TestPGRecurringProductRestartPersistence"
       ],
       "unsupported_or_remaining": [
-        "Provider synchronization, recurring app fulfillment, trials and billing views"
+        "Provider synchronization, trials and remaining billing views; address/stock and external workspace fulfillment"
       ]
     },
     {
@@ -1037,14 +1068,19 @@
     },
     {
       "source_family": "owned.factor_setup",
-      "local_status": "implemented, actual PG pending",
+      "local_status": "implemented; six policy-history regressions have real PG evidence; new origin/account-flag regressions pending",
       "supported_flows": [
         "One completed credential login supports prerequisite recovery setup, one pending TOTP and OTP activation via bounded same-session receipt",
         "Refresh preserves only original setup deadline; unrelated security changes invalidate pending enrollment",
-        "Separate fresh assurance for bodyless recovery rotation and still-valid expired-receipt TOTP activation"
+        "Separate fresh assurance for bodyless recovery rotation and still-valid expired-receipt TOTP activation",
+        "Durable policy mutation history prevents empty/add/remove and delete/recreate ABA resurrection",
+        "Disabled-factor fallback preserves original session revocation/generation; canonical account security flag changes cancel pending enrollment"
       ],
       "guarded_pg_cases": [
-        "TestPGFactorSetupAuthoredHTTPChainAndRefresh"
+        "TestPGFactorSetupAuthoredHTTPChainAndRefresh",
+        "TestPGFactorSetupAccountSecurityRestoration",
+        "TestPGFactorSetupAccountSecurityRollbackAndProfileWrites",
+        "TestPGFactorSetupSessionOriginFreshFallback"
       ],
       "unsupported_or_remaining": [
         "Pre-upgrade pending factors without owned provenance require restart",
@@ -1057,7 +1093,8 @@
       "supported_flows": [
         "Canonical golds checkout creates paid-only sponsorship bids with atomic rollback and current public visibility",
         "Bounded durable hourly weighted placements and impression counts",
-        "Idempotent reaction-derived daily publisher rating receipts with explicit policy flag"
+        "Idempotent reaction-derived daily publisher rating receipts with explicit policy flag",
+        "Paid post award contribution is integrated under sphere.post_awards with captured settlement policy"
       ],
       "guarded_pg_cases": [
         "TestPGBackendPublisherCommerceComposition",
@@ -1065,7 +1102,6 @@
         "TestPGPublisherRatingRestartPersistence"
       ],
       "unsupported_or_remaining": [
-        "Paid PostAward contribution is a separate upcoming source-backed integration",
         "Prior reaction-only receipts are not silently rewritten",
         "Operator must configure treasury and rating start day"
       ]
@@ -1119,6 +1155,33 @@
         "XP/social-credit projections and global resettlement",
         "Automatic individual-wallet fallback",
         "Retroactive rewrite of reaction-only rating receipts"
+      ]
+    },
+    {
+      "source_family": "wallet.funds",
+      "local_status": "implemented, actual PG pending",
+      "supported_flows": [
+        "Exact-mills held red packets with open/invited admission and even/random splits",
+        "Raising contributions settle to captured creator beneficiary on success, and cancellation/expiry refunds remaining reservations once",
+        "Canonical PIN/current policy and durable concurrency/idempotency boundaries"
+      ],
+      "guarded_pg_cases": [
+        "TestPGWalletFundsRedPacketExactClaimsAndPublicHTTP",
+        "TestPGWalletFundsRaisingInvitesPayoutAndImmutableBeneficiary",
+        "TestPGWalletFundsCancellationRefundsRemainingHoldsOnce",
+        "TestPGWalletFundsConcurrentFinalContributionAndClaims",
+        "TestPGWalletFundsExpiryRefundsAndClosureRaces",
+        "TestPGWalletFundsExpiryWinsQueuedFinalContribution",
+        "TestPGWalletFundsRollbackAndIdempotentCreation",
+        "TestPGWalletFundsPINPolicyProofAndRateLimits",
+        "TestPGWalletFundsAuthorityAndNotificationProjection",
+        "TestPGWalletFundsRestartPersistence",
+        "TestPGWalletFundsFixedRandomAndInputBounds"
+      ],
+      "unsupported_or_remaining": [
+        "Original source defects corrected with explicitly owned conservation semantics",
+        "PIN-required contribution requires optional owned pin_code field; omitted PIN never bypasses policy",
+        "Client-only recipient/order routes lack corresponding retained controller contract"
       ]
     }
   ],

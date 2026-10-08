@@ -63,6 +63,8 @@ type Account struct {
 	Contacts  []signin.Contact `json:"contacts,omitempty"`
 }
 type Profile struct {
+	Picture      map[string]any    `json:"picture"`
+	Background   map[string]any    `json:"background"`
 	Verification *VerificationMark `json:"verification,omitempty"`
 	ID           string            `json:"id"`
 	Bio          string            `json:"bio"`
@@ -82,24 +84,26 @@ type Link struct {
 	URL  string `json:"url"`
 }
 type ProfilePatch struct {
-	Name            *string         `json:"name"`
-	Nick            *string         `json:"nick"`
-	Language        *string         `json:"language"`
-	Region          *string         `json:"region"`
-	Bio             *string         `json:"bio"`
-	Pronouns        *string         `json:"pronouns"`
-	Location        *string         `json:"location"`
-	TimeZone        *string         `json:"time_zone"`
-	Links           *[]Link         `json:"links"`
-	PictureID       *string         `json:"picture_id"`
-	BackgroundID    *string         `json:"background_id"`
-	FirstName       *string         `json:"first_name"`
-	MiddleName      *string         `json:"middle_name"`
-	LastName        *string         `json:"last_name"`
-	Gender          *string         `json:"gender"`
-	Birthday        *time.Time      `json:"birthday"`
-	BirthdayPresent bool            `json:"-"`
-	UsernameColor   json.RawMessage `json:"username_color"`
+	Name              *string         `json:"name"`
+	Nick              *string         `json:"nick"`
+	Language          *string         `json:"language"`
+	Region            *string         `json:"region"`
+	Bio               *string         `json:"bio"`
+	Pronouns          *string         `json:"pronouns"`
+	Location          *string         `json:"location"`
+	TimeZone          *string         `json:"time_zone"`
+	Links             *[]Link         `json:"links"`
+	PictureID         *string         `json:"picture_id"`
+	PicturePresent    bool            `json:"-"`
+	BackgroundID      *string         `json:"background_id"`
+	BackgroundPresent bool            `json:"-"`
+	FirstName         *string         `json:"first_name"`
+	MiddleName        *string         `json:"middle_name"`
+	LastName          *string         `json:"last_name"`
+	Gender            *string         `json:"gender"`
+	Birthday          *time.Time      `json:"birthday"`
+	BirthdayPresent   bool            `json:"-"`
+	UsernameColor     json.RawMessage `json:"username_color"`
 }
 
 // Role values are owned API encoding, not copied from the excluded Shared enum.

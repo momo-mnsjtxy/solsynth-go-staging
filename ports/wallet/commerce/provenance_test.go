@@ -13,13 +13,20 @@ import (
 )
 
 func TestRetainedCommerceSourceBytes(t *testing.T) {
+	checkCommerceSources(t, "source/manifest.json")
+}
+func TestRetainedRecurringProductSourceBytes(t *testing.T) {
+	checkCommerceSources(t, "recurring-source/manifest.json")
+}
+func checkCommerceSources(t *testing.T, manifest string) {
+	t.Helper()
 	var m struct {
 		Files []struct {
 			File, Blob, SHA256 string
 			Bytes              int
 		}
 	}
-	b, e := os.ReadFile("source/manifest.json")
+	b, e := os.ReadFile(manifest)
 	if e != nil {
 		t.Fatal(e)
 	}

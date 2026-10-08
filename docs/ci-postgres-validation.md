@@ -2,7 +2,7 @@
 
 The `PostgreSQL contract validation` workflow performs local build/vet/race checks, then initializes a fresh PostgreSQL 16 cluster under the runner's private temporary directory. Only a private Unix-domain socket is enabled; `listen_addresses` is empty. No existing database, service secret, deployment, or external account data is used. PostgreSQL is stopped on exit and explicitly restarted between write and persistence-read phases.
 
-Thirty named real-database cases must pass before restart; six preference, board, app discovery, package-counter, bot-command and NodeInfo persistence cases must pass again after restart. These include four watcher-query cases covering recipient union/preferences, explicit soft-delete assumptions, one-hop chains and input errors/default-denial. Watcher reads explicitly opt into a soft-delete-only compatibility-test policy; the normal repository denies those reads until the global-filter contract is verified. Five board cases cover account/JSON/ID/order/null roundtrips, real SQL rollback including retained tombstone order conflicts, both transaction interleavings with observable advisory-lock waits, default policy denial/errors, and board restart persistence. Board catalog/normalizer/cache adapters are explicitly synthetic fixtures. Passing candidate policies is not upstream recipient, board filter/audit, or production authorization parity. `PG_TEST_REQUIRED=1` makes absent configuration fatal. The JSON result guard also rejects skips, failures, missing test cases and empty output. Ordinary `verify.sh` without the disposable runner still clearly reports that database tests skipped.
+The original discovery checkpoint required thirty real-database cases and six post-restart cases. The current required set is maintained in `scripts/check-integration-results.py`, with flow coverage and exact-commit status in `docs/runtime-flow-acceptance.json`. These include four watcher-query cases covering recipient union/preferences, explicit soft-delete assumptions, one-hop chains and input errors/default-denial. Watcher reads explicitly opt into a soft-delete-only compatibility-test policy; the normal repository denies those reads until the global-filter contract is verified. Five board cases cover account/JSON/ID/order/null roundtrips, real SQL rollback including retained tombstone order conflicts, both transaction interleavings with observable advisory-lock waits, default policy denial/errors, and board restart persistence. Board catalog/normalizer/cache adapters are explicitly synthetic fixtures. Passing candidate policies is not upstream recipient, board filter/audit, or production authorization parity. `PG_TEST_REQUIRED=1` makes absent configuration fatal. The JSON result guard also rejects skips, failures, missing test cases and empty output. Ordinary `verify.sh` without the disposable runner still clearly reports that database tests skipped.
 
 Official action references were resolved through GitHub's public tag refs on 2026-10-07 and pinned immutably:
 
@@ -13,7 +13,7 @@ These are official-origin checks, not a claim that every line of each action has
 
 Local preflight passed shell/YAML parsing, Go build/vet/ordinary/race checks, and synthetic guard checks proving that missing/skipped/failed results are rejected. The local runtime still cannot create Unix sockets; only a completed remote workflow run can establish actual database results. This workflow does not establish production authentication, migration rollout, C# differential compatibility or whole-platform parity.
 
-## Continuation gate, 2026-10-08
+## Historical discovery continuation gate, 2026-10-08
 
 The combined tree adds four app-discovery cases, four package download/counter
 cases, three bot-command cases, and four NodeInfo cases to the earlier fifteen-case baseline. Its compiled
@@ -22,6 +22,27 @@ and NodeInfo statistics. The package/NodeInfo smoke runs after all restart
 assertions so its download-count writes cannot invalidate the restart oracle.
 All connections target the marked disposable cluster; redirect targets are never
 followed. Scripts are checked for syntax and unit-level assumptions locally.
-The combined actual-DB/process suite has not executed because local sockets are
-blocked and remote publication/CI awaits approval. Old successful CI results
-remain valid only for their recorded commits.
+That early combined suite was subsequently published to the authorized private
+recovery branch and validated. Local socket restrictions persist. Successful CI
+results remain valid only for their recorded commits; later expanded candidates
+are tracked separately in the runtime flow acceptance map.
+
+
+## Expanded suite budgets
+
+The composed candidate now requires 516 before-restart cases and 67 restart
+cases, with the exact names enforced by the guard. Each Go test command retains
+`-race -count=1 -json` and all security derivation work. The before phase has an
+explicit 20-minute package timeout; restart has 10 minutes. The Actions job has
+35 minutes, allowing both bounded phases plus build/setup and process checks.
+
+Commit `22e2e96d13bb5c90919cf3bfb78f7506dd832beb` reached Go's former default
+10-minute package timeout after 378 completed top-level PG cases; all six new
+factor policy-history regressions had passed. The timeout stack showed active
+password PBKDF2 computation in an ordinary sign-in test, rather than a blocked
+SQL wait. No individual assertion failure was reported before termination;
+restart was not reached. This focused evidence does not establish a full pass.
+The narrow timeout-only correction is `e104bdc31c1202d2e154bf84a677a35c9490afda`.
+JSON test events preserve individual durations, and an enlarged timeout must not
+be used to mask a blocked test, weaken derivation, remove race checks or skip a
+required case.

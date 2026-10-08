@@ -73,6 +73,11 @@ func (r *Repository) RelationsReady(ctx context.Context) error {
 	if r == nil || r.db == nil || r.social == nil || r.guard == nil {
 		return rooms.ErrUnavailable
 	}
+	if r.associations != nil {
+		if e := r.associations.Ready(ctx); e != nil {
+			return e
+		}
+	}
 	_, e := r.db.ExecContext(ctx, `SELECT account_low,account_high,room_id FROM owned_chat_direct_pairs LIMIT 0; SELECT room_id,realm_id FROM owned_chat_realm_links LIMIT 0;SELECT action,occurred_at FROM owned_chat_relations_audit LIMIT 0;SELECT owned_relation_guard,owned_type FROM chat_rooms LIMIT 0;SELECT owned_confirmed_at,owned_timeout_until FROM chat_members LIMIT 0`)
 	return e
 }

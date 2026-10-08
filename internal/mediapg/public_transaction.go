@@ -22,5 +22,5 @@ func (r *Repository) ResolvePublicInTransaction(ctx context.Context, tx *sql.Tx,
 	if actor != "" && !authority.ValidID(actor) {
 		return media.File{}, media.ErrForbidden
 	}
-	return scan(tx.QueryRowContext(ctx, `SELECT `+fields+` FROM owned_media_files WHERE id=$1 AND state='ready' AND is_public AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=owned_media_files.account_id AND NOT a.disabled) FOR SHARE`, id))
+	return scan(tx.QueryRowContext(ctx, `SELECT `+fields+` FROM owned_media_files WHERE id=$1 AND state='ready' AND is_public AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=owned_media_files.account_id AND NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=a.id AND p.kind='disable_account' AND(p.starts_at IS NULL OR p.starts_at<=statement_timestamp())AND(p.expires_at IS NULL OR p.expires_at>statement_timestamp()))) FOR SHARE`, id))
 }

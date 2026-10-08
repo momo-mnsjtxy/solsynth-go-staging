@@ -107,7 +107,7 @@ func TestStrictTextHTTPRejectsUnsupportedAndAmbiguousInput(t *testing.T) {
 	for _, v := range []struct {
 		body   string
 		status int
-	}{{`{"content":"one","content":"two"}`, 400}, {`{"Content":"one"}`, 400}, {`null`, 400}, {`[]`, 400}, {`{"content":"one"} {}`, 400}, {`{"content":"one","sender_id":"x"}`, 400}, {`{"content":"one","encryption_meta":{}}`, 501}, {`{"content":"one","attachments_id":[]}`, 501}, {`{"content":"one","thread_id":null}`, 501}, {`{"content":"one","meta":{"message_id":"x"}}`, 501}} {
+	}{{`{"content":"one","content":"two"}`, 400}, {`{"Content":"one"}`, 400}, {`null`, 400}, {`[]`, 400}, {`{"content":"one"} {}`, 400}, {`{"content":"one","sender_id":"x"}`, 400}, {`{"content":"one","encryption_meta":{}}`, 501}, {`{"content":"one","thread_id":"c2000000-0000-4000-8000-000000000001"}`, 501}, {`{"content":"one","forwarded_message_id":"x"}`, 501}} {
 		w := call(h, "POST", target, v.body, "Bearer fixture")
 		if w.Code != v.status || repo.writes != 0 {
 			t.Fatal(v, w, repo)
@@ -160,7 +160,7 @@ func TestTextAndRoomValidation(t *testing.T) {
 	if e != nil || q.ClientMessageID == nil || *q.ClientMessageID != "n" || q.Nonce != nil {
 		t.Fatal(q, e)
 	}
-	if _, e = ValidateText(TextRequest{Content: "edit", ClientMessageID: &nonce}, true); !errors.Is(e, ErrUnsupported) {
+	if _, e = ValidateText(TextRequest{Content: "edit", ThreadID: &nonce}, true); !errors.Is(e, ErrUnsupported) {
 		t.Fatal(e)
 	}
 }

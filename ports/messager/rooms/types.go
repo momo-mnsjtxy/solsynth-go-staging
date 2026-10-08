@@ -5,6 +5,7 @@ package rooms
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"net/http"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/messager"
@@ -123,10 +124,16 @@ type SocialProvider interface {
 	RealmInTransaction(context.Context, *sql.Tx, string) (social.Realm, error)
 }
 type TextRequest struct {
-	Content          string  `json:"content"`
-	ClientMessageID  *string `json:"client_message_id"`
-	Nonce            *string `json:"nonce"`
-	RepliedMessageID *string `json:"replied_message_id"`
+	Content            string            `json:"content"`
+	ContentSet         bool              `json:"-"`
+	AttachmentsID      *[]string         `json:"attachments_id,omitempty"`
+	Meta               json.RawMessage   `json:"meta,omitempty"`
+	Embeds             *[]map[string]any `json:"embeds,omitempty"`
+	ClientMessageID    *string           `json:"client_message_id"`
+	Nonce              *string           `json:"nonce"`
+	ThreadID           *string           `json:"thread_id,omitempty"`
+	ForwardedMessageID *string           `json:"forwarded_message_id,omitempty"`
+	RepliedMessageID   *string           `json:"replied_message_id"`
 }
 type MemberAction string
 

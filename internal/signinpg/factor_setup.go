@@ -39,7 +39,7 @@ func (t *transaction) SavePendingEnrollment(v signin.PendingEnrollment) error {
 	return e
 }
 func (t *transaction) CancelFactorSetup() error {
-	if _, e := t.tx.ExecContext(t.ctx, `UPDATE owned_authority_factor_setups SET state='cancelled' WHERE account_id=$1::uuid AND state IN('recovery','pending')`, t.canonical.Account().ID); e != nil {
+	if _, e := t.tx.ExecContext(t.ctx, `UPDATE owned_authority_factor_setups SET state='cancelled' WHERE account_id=$1::uuid AND state IN('recovery','pending','disabled')`, t.canonical.Account().ID); e != nil {
 		return e
 	}
 	_, e := t.tx.ExecContext(t.ctx, `UPDATE owned_authority_pending_enrollments SET valid=false WHERE account_id=$1::uuid AND valid`, t.canonical.Account().ID)

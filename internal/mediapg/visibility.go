@@ -15,3 +15,36 @@ type ReadVisibility interface {
 }
 
 func (r *Repository) WithReadVisibility(v ReadVisibility) *Repository { r.readVisibility = v; return r }
+
+// AnyReadVisibility combines independent parent-resource grants, failing closed
+// on errors instead of interpreting an unavailable policy as authorization.
+type AnyReadVisibility []ReadVisibility
+
+// Ready preserves the dependency probes of composed resource policies. Pure
+// policies may omit a probe; constructors still never install schemas.
+func (v AnyReadVisibility) Ready(ctx context.Context) error {
+	for _, policy := range v {
+		if ready, ok := policy.(interface{ Ready(context.Context) error }); ok {
+			if err := ready.Ready(ctx); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (v AnyReadVisibility) CanReadInTransaction(ctx context.Context, tx *sql.Tx, actor, id string) (bool, error) {
+	for _, policy := range v {
+		if policy == nil {
+			continue
+		}
+		yes, e := policy.CanReadInTransaction(ctx, tx, actor, id)
+		if e != nil {
+			return false, e
+		}
+		if yes {
+			return true, nil
+		}
+	}
+	return false, nil
+}

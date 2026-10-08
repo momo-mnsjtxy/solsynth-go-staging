@@ -49,8 +49,10 @@ func ValidateProfile(p ProfilePatch) error {
 			return ErrUnsupported
 		}
 	}
-	if p.PictureID != nil || p.BackgroundID != nil {
-		return ErrUnsupported
+	for _, id := range []*string{p.PictureID, p.BackgroundID} {
+		if id != nil && !authority.ValidID(*id) {
+			return ErrInvalid
+		}
 	}
 	if p.Nick != nil && strings.TrimSpace(*p.Nick) == "" {
 		return ErrInvalid

@@ -31,6 +31,7 @@ type Repository struct {
 	requireAuthority bool
 	realms           RealmProvider
 	contacts         PublicContactProvider
+	profileMedia     ProfileMediaStore
 }
 
 type PublicContactProvider interface {
@@ -132,17 +133,10 @@ func lookupAccount(ctx context.Context, q querier, ref string) (accounts.Account
 		// account whose display name happens to resemble that UUID.
 		match = `a.id=$1::uuid`
 	}
-	return scanAccount(q.QueryRowContext(ctx, `SELECT `+accountColumns+` FROM owned_authority_accounts a LEFT JOIN owned_accounts_profiles p ON p.account_id=a.id WHERE NOT a.disabled AND `+match, ref))
+	return scanAccount(q.QueryRowContext(ctx, `SELECT `+accountColumns+` FROM owned_authority_accounts a LEFT JOIN owned_accounts_profiles p ON p.account_id=a.id WHERE NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments pun WHERE pun.account_id=a.id AND pun.kind='disable_account' AND(pun.starts_at IS NULL OR pun.starts_at<=statement_timestamp())AND(pun.expires_at IS NULL OR pun.expires_at>statement_timestamp())) AND `+match, ref))
 }
 func (r *Repository) LookupAccount(ctx context.Context, ref string) (accounts.Account, error) {
-	if r == nil || r.db == nil {
-		return accounts.Account{}, accounts.ErrUnavailable
-	}
-	a, e := lookupAccount(ctx, r.db, ref)
-	if e == nil && r.contacts != nil {
-		a.Contacts, e = r.contacts.PublicContacts(ctx, r.db, a.ID)
-	}
-	return a, e
+	return r.LookupAccountForViewer(ctx, "", ref)
 }
 func (r *Repository) write(ctx context.Context, actor, permission string, fn func(*sql.Tx, time.Time) error) error {
 	if r == nil || r.db == nil || r.requireAuthority && r.guard == nil {
@@ -276,12 +270,31 @@ func (r *Repository) UpdateProfile(ctx context.Context, actor string, p accounts
 		if _, e = tx.ExecContext(ctx, `UPDATE owned_accounts_profiles SET first_name=$2::text,middle_name=$3::text,last_name=$4::text,gender=$5::text,birthday=$6::timestamptz WHERE account_id=$1::uuid`, actor, v.FirstName, v.MiddleName, v.LastName, v.Gender, v.Birthday); e != nil {
 			return e
 		}
+		if r.profileMedia != nil {
+			if e = r.profileMedia.Apply(ctx, tx, actor, p); e != nil {
+				return e
+			}
+		} else if p.PicturePresent || p.BackgroundPresent || p.PictureID != nil || p.BackgroundID != nil {
+			return accounts.ErrUnsupported
+		}
 		a, e = lookupAccount(ctx, tx, actor)
 		if e != nil {
 			return e
 		}
 		if e = tx.QueryRowContext(ctx, `SELECT birthday FROM owned_accounts_profiles WHERE account_id=$1::uuid`, actor).Scan(&a.Profile.Birthday); e != nil {
 			return e
+		}
+		if r.profileMedia != nil {
+			if e = r.profileMedia.Load(ctx, tx, actor, &a); e != nil {
+				return e
+			}
+		}
+		// A media row can block after the initial authority check. The account
+		// lock prevents revocation but cannot stop wall-clock proof expiry.
+		if r.requireAuthority {
+			if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "accounts.manage"); e != nil {
+				return e
+			}
 		}
 		return audit(ctx, tx, actor, "accounts.profile.update", actor, now)
 	})

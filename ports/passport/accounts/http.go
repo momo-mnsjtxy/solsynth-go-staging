@@ -77,7 +77,14 @@ func decode(w http.ResponseWriter, r *http.Request, v any) error {
 		if json.Unmarshal(raw, &fields) != nil {
 			return ErrInvalid
 		}
+		for key := range fields {
+			if key != strings.ToLower(key) {
+				return ErrInvalid
+			}
+		}
 		_, p.BirthdayPresent = fields["birthday"]
+		_, p.PicturePresent = fields["picture_id"]
+		_, p.BackgroundPresent = fields["background_id"]
 	}
 	return nil
 }
@@ -159,7 +166,26 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == "GET" && len(parts) == 3 && (parts[0] == "api" || parts[0] == "stargate") && parts[1] == "accounts" && parts[2] != "me" {
-		a, e := s.Repository.LookupAccount(r.Context(), parts[2])
+		viewer := ""
+		ctx := r.Context()
+		if authPresent {
+			p, err := s.principal(r)
+			if err != nil {
+				failure(w, err)
+				return
+			}
+			viewer = p.Account.ID
+			ctx = accountContext(s.Repository, ctx, p)
+		}
+		var a Account
+		var e error
+		if scoped, ok := s.Repository.(interface {
+			LookupAccountForViewer(context.Context, string, string) (Account, error)
+		}); ok {
+			a, e = scoped.LookupAccountForViewer(ctx, viewer, parts[2])
+		} else {
+			a, e = s.Repository.LookupAccount(ctx, parts[2])
+		}
 		if e != nil {
 			failure(w, e)
 			return

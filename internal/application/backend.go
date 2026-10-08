@@ -15,6 +15,7 @@ import (
 	"solsynth.local/go-migration/internal/autocompletepg"
 	"solsynth.local/go-migration/internal/boardpg"
 	"solsynth.local/go-migration/internal/botpg"
+	"solsynth.local/go-migration/internal/chatmediapg"
 	"solsynth.local/go-migration/internal/chatpg"
 	"solsynth.local/go-migration/internal/commercepg"
 	"solsynth.local/go-migration/internal/fortunepg"
@@ -33,6 +34,7 @@ import (
 	"solsynth.local/go-migration/internal/postmediapg"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/internal/presencepg"
+	"solsynth.local/go-migration/internal/profilemediapg"
 	"solsynth.local/go-migration/internal/progressionpg"
 	"solsynth.local/go-migration/internal/publisherratingpg"
 	"solsynth.local/go-migration/internal/readerpg"
@@ -230,6 +232,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	merchantRepo := merchantpg.New(db, guard)
 	merchantHTTP := merchants.NewHandler(merchantRepo, postIdentity{identity})
 	commerceRepo := commercepg.New(db, guard, commercepg.AppAdapters(appRepo)).WithPaymentAuthorization(paymentPIN)
+	appRepo.WithProductCatalog(commerceRepo)
 	if c.Authority.Now != nil {
 		commerceRepo.WithClock(c.Authority.Now)
 	}
@@ -252,6 +255,9 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
+	chatMedia := chatmediapg.New(db, cr, c.MessagerPolicy.NoneEncryptionMode)
+	cr.WithAssociations(chatMedia)
+	mr.WithMessageDecorator(chatMedia)
 	mh := (&rooms.Service{Repository: cr, Authority: proofIdentity{identity}, Reader: mr}).Handler()
 	th := taxonomy.NewAuthorityHandler(taxonomypg.NewWithAuthority(db, *c.PublicVisibility, guard), taxonomyIdentity{identity, publisherRepository{accountRepo}}, time.Now)
 	presenceRepo := presencepg.NewWithAuthority(db, guard)
@@ -312,6 +318,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	postRepository.WithAssociations(timelineRepo).WithVisibility(socialRepo)
 	ph := posts.NewHandler(postRepository, postIdentity{identity})
 	wh, wallet := walletHandler(db, identity, paymentPIN, guard, socialRepo)
+	wallet.WithClock(c.Authority.Now)
 	var signinHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "SIGNIN_ISSUER_UNCONFIGURED") })
 	var signinService *signin.Service
 	if c.Signin != nil {
@@ -369,7 +376,9 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		if err != nil {
 			return nil, err
 		}
-		mediaRepo.WithReadVisibility(postMedia)
+		profileMedia := profilemediapg.New(db, mediapg.AnyReadVisibility{postMedia, chatMedia})
+		accountRepo.WithProfileMedia(profileMedia)
+		mediaRepo.WithReadVisibility(profileMedia)
 		mediaHTTP = (&media.Service{Repository: mediaRepo, Authority: proofIdentity{identity}, MaxFileBytes: c.MaxMediaBytes}).Handler()
 	}
 	var calendarRepo *notabledaypg.Repository
@@ -497,6 +506,9 @@ func (b *Backend) ProcessDue(ctx context.Context, limit int) (int, error) {
 		return 0, errors.New("lifecycle batch size must be between 1 and 1000")
 	}
 	n, e := b.wallet.ProcessDue(ctx, limit)
+	funds, fundErr := b.wallet.ProcessFundsDue(ctx, limit)
+	n += funds
+	e = errors.Join(e, fundErr)
 	if b.oauth != nil {
 		m, x := b.oauth.ProcessDue(ctx, min(limit, 100))
 		n += m

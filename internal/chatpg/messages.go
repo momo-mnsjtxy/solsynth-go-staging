@@ -13,17 +13,20 @@ import (
 	"time"
 )
 
-const textColumns = `id::text,chat_room_id::text,sender_id::text,type,room_sequence,content,client_message_id,created_at,updated_at,deleted_at,edited_at,meta,replied_message_id::text`
+const textColumns = `id::text,chat_room_id::text,sender_id::text,type,room_sequence,content,client_message_id,created_at,updated_at,deleted_at,edited_at,meta,replied_message_id::text,reactions_count`
 
 func textMessage(s scanner) (messager.MessageProjection, error) {
 	v := messager.MessageProjection{Meta: json.RawMessage(`null`), MembersMentioned: json.RawMessage(`[]`), Attachments: json.RawMessage(`[]`), EncryptionMeta: json.RawMessage(`null`), ReactionsCount: json.RawMessage(`{}`), ReactionsMade: map[string]bool{}}
-	var meta []byte
-	e := s.Scan(&v.ID, &v.ChatRoomID, &v.SenderID, &v.Type, &v.RoomSequence, &v.Content, &v.ClientMessageID, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt, &v.EditedAt, &meta, &v.RepliedMessageID)
+	var meta, reactions []byte
+	e := s.Scan(&v.ID, &v.ChatRoomID, &v.SenderID, &v.Type, &v.RoomSequence, &v.Content, &v.ClientMessageID, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt, &v.EditedAt, &meta, &v.RepliedMessageID, &reactions)
 	if errors.Is(e, sql.ErrNoRows) {
 		e = rooms.ErrNotFound
 	}
 	if len(meta) > 0 {
 		v.Meta = meta
+	}
+	if len(reactions) > 0 {
+		v.ReactionsCount = reactions
 	}
 	return v, e
 }
@@ -77,7 +80,7 @@ func appendMessage(ctx context.Context, tx *sql.Tx, rid, sender, kind string, co
 	if len(meta) == 0 {
 		meta = []byte(`null`)
 	}
-	return textMessage(tx.QueryRowContext(ctx, `INSERT INTO chat_messages(id,chat_room_id,sender_id,type,room_sequence,content,client_message_id,created_at,updated_at,edited_at,meta,members_mentioned,replied_message_id,owned_request_hash) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$8,$9,$10::jsonb,'[]',$11,$12) RETURNING `+textColumns, mid, rid, sender, kind, seq, content, client, at, edited, meta, reply, hash))
+	return textMessage(tx.QueryRowContext(ctx, `INSERT INTO chat_messages(id,chat_room_id,sender_id,type,room_sequence,content,client_message_id,created_at,updated_at,edited_at,meta,members_mentioned,replied_message_id,owned_request_hash,owned_creation_client_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$8,$9,$10::jsonb,'[]',$11,$12,$7) RETURNING `+textColumns, mid, rid, sender, kind, seq, content, client, at, edited, meta, reply, hash))
 }
 func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRequest) (messager.MessageProjection, error) {
 	if e := valid(actor, rid); e != nil {
@@ -96,15 +99,25 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
+	meta := mergeMeta(nil, p)
 	encoded, _ := json.Marshal(struct {
-		Content string
-		Reply   *string
-	}{p.Content, p.RepliedMessageID})
+		Content     string
+		Reply       *string
+		Attachments *[]string
+		Meta        json.RawMessage
+	}{p.Content, p.RepliedMessageID, p.AttachmentsID, meta})
+	// Preserve pre-rich-message idempotency digests for existing plain-text rows.
+	if p.AttachmentsID == nil && len(p.Meta) == 0 && p.Embeds == nil {
+		encoded, _ = json.Marshal(struct {
+			Content string
+			Reply   *string
+		}{p.Content, p.RepliedMessageID})
+	}
 	digest := sha256.Sum256(encoded)
 	if p.ClientMessageID != nil {
 		var stored []byte
 		var prior string
-		e = tx.QueryRowContext(ctx, `SELECT id::text,owned_request_hash FROM chat_messages WHERE chat_room_id=$1 AND sender_id=$2 AND type='text' AND client_message_id=$3 AND owned_request_hash IS NOT NULL`, rid, m.ID, *p.ClientMessageID).Scan(&prior, &stored)
+		e = tx.QueryRowContext(ctx, `SELECT id::text,owned_request_hash FROM chat_messages WHERE chat_room_id=$1 AND sender_id=$2 AND type='text' AND coalesce(owned_creation_client_id,client_message_id)=$3 AND owned_request_hash IS NOT NULL`, rid, m.ID, *p.ClientMessageID).Scan(&prior, &stored)
 		if e == nil {
 			if !bytes.Equal(stored, digest[:]) {
 				return messager.MessageProjection{}, rooms.ErrConflict
@@ -116,10 +129,20 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 			if v.DeletedAt != nil {
 				return messager.MessageProjection{}, rooms.ErrConflict
 			}
+			if e = r.loadMessage(ctx, tx, actor, &v); e != nil {
+				return v, e
+			}
 			return v, r.commit(ctx, tx, actor, "chat.messages.create")
 		}
 		if !errors.Is(e, sql.ErrNoRows) {
 			return messager.MessageProjection{}, e
+		}
+		var occupied bool
+		if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM chat_messages WHERE chat_room_id=$1 AND sender_id=$2 AND type='text' AND client_message_id=$3 AND owned_request_hash IS NOT NULL)`, rid, m.ID, *p.ClientMessageID).Scan(&occupied); e != nil {
+			return messager.MessageProjection{}, e
+		}
+		if occupied {
+			return messager.MessageProjection{}, rooms.ErrConflict
 		}
 	}
 	if p.RepliedMessageID != nil {
@@ -132,9 +155,22 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 			return messager.MessageProjection{}, rooms.ErrNotFound
 		}
 	}
-	v, e := appendMessage(ctx, tx, rid, m.ID, "text", &p.Content, p.ClientMessageID, p.RepliedMessageID, nil, digest[:], nil)
+	var content *string
+	if p.Content != "" {
+		content = &p.Content
+	}
+	v, e := appendMessage(ctx, tx, rid, m.ID, "text", content, p.ClientMessageID, p.RepliedMessageID, meta, digest[:], nil)
 	if e != nil {
 		return v, e
+	}
+	if e = r.applyAttachments(ctx, tx, actor, &v, p.AttachmentsID); e != nil {
+		return v, e
+	}
+	if e = r.loadMessage(ctx, tx, actor, &v); e != nil {
+		return v, e
+	}
+	if messageEmpty(v) {
+		return messager.MessageProjection{}, rooms.ErrInvalid
 	}
 	return v, r.commit(ctx, tx, actor, "chat.messages.create")
 }
@@ -165,23 +201,71 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 	if v.Type != "text" {
 		return messager.MessageProjection{}, rooms.ErrUnsupported
 	}
-	if v.Content != nil && *v.Content == p.Content {
+	if e = r.loadMessage(ctx, tx, actor, &v); e != nil {
+		return v, e
+	}
+	previousAttachments := append([]byte(nil), v.Attachments...)
+	content := v.Content
+	if p.ContentSet || p.Content != "" {
+		content = &p.Content
+	}
+	// The authored service ignores arbitrary meta and reply changes on edits.
+	metaPatch := p
+	metaPatch.Meta = nil
+	meta := mergeMeta(v.Meta, metaPatch)
+	client := v.ClientMessageID
+	if p.ClientMessageID != nil {
+		client = p.ClientMessageID
+	}
+	sameClient := (client == nil && v.ClientMessageID == nil) || (client != nil && v.ClientMessageID != nil && *client == *v.ClientMessageID)
+	if !sameClient {
+		var occupied bool
+		if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM chat_messages WHERE chat_room_id=$1 AND sender_id=$2 AND id<>$3 AND type='text' AND owned_request_hash IS NOT NULL AND(client_message_id=$4 OR coalesce(owned_creation_client_id,client_message_id)=$4))`, rid, m.ID, mid, *client).Scan(&occupied); e != nil {
+			return v, e
+		}
+		if occupied {
+			return v, rooms.ErrConflict
+		}
+	}
+	unchanged := ((content == nil && v.Content == nil) || (content != nil && v.Content != nil && *content == *v.Content)) && bytes.Equal(meta, mergeMeta(v.Meta, rooms.TextRequest{}))
+	v.Content = content
+	v.Meta = meta
+	if e = r.applyAttachments(ctx, tx, actor, &v, p.AttachmentsID); e != nil {
+		return v, e
+	}
+	if e = r.loadMessage(ctx, tx, actor, &v); e != nil {
+		return v, e
+	}
+	if messageEmpty(v) {
+		return messager.MessageProjection{}, rooms.ErrInvalid
+	}
+	if unchanged && sameClient && bytes.Equal(previousAttachments, v.Attachments) {
 		return v, r.commit(ctx, tx, actor, "chat.messages.update")
 	}
-	meta, _ := json.Marshal(map[string]string{"message_id": v.ID})
-	event, e := appendMessage(ctx, tx, rid, m.ID, "messages.update", &p.Content, nil, v.RepliedMessageID, meta, nil, nil)
+	eventMeta := map[string]any{}
+	_ = json.Unmarshal(meta, &eventMeta)
+	if eventMeta == nil {
+		eventMeta = map[string]any{}
+	}
+	eventMeta["message_id"] = v.ID
+	encoded, _ := json.Marshal(eventMeta)
+	event, e := appendMessage(ctx, tx, rid, m.ID, "messages.update", content, nil, v.RepliedMessageID, encoded, nil, nil)
 	if e != nil {
 		return v, e
 	}
-	v, e = textMessage(tx.QueryRowContext(ctx, `UPDATE chat_messages SET content=$2,edited_at=$3,updated_at=$3 WHERE id=$1 RETURNING `+textColumns, mid, p.Content, event.CreatedAt))
+	v, e = textMessage(tx.QueryRowContext(ctx, `UPDATE chat_messages SET content=$2,meta=$3::jsonb,edited_at=$4,updated_at=$4,owned_creation_client_id=coalesce(owned_creation_client_id,client_message_id),client_message_id=$5 WHERE id=$1 RETURNING `+textColumns, mid, content, meta, event.CreatedAt, client))
 	if e != nil {
 		return v, e
 	}
 	if _, e = tx.ExecContext(ctx, `UPDATE chat_messages SET edited_at=$2 WHERE id=$1`, event.ID, event.CreatedAt); e != nil {
 		return v, e
 	}
+	if e = r.loadMessage(ctx, tx, actor, &v); e != nil {
+		return v, e
+	}
 	return v, r.commit(ctx, tx, actor, "chat.messages.update")
 }
+
 func (r *Repository) DeleteMessage(ctx context.Context, actor, rid, mid string) error {
 	if e := valid(actor, rid, mid); e != nil {
 		return e
@@ -217,6 +301,14 @@ func (r *Repository) DeleteMessage(ctx context.Context, actor, rid, mid string) 
 	// remains sync-visible without retaining plaintext in its event metadata.
 	_, e = tx.ExecContext(ctx, `UPDATE chat_messages SET deleted_at=$3,updated_at=$3 WHERE chat_room_id=$1 AND (id=$2::uuid OR type='messages.update' AND meta->>'message_id'=$2::text) AND deleted_at IS NULL`, rid, mid, event.CreatedAt)
 	if e != nil {
+		return e
+	}
+	if r.associations != nil {
+		if e = r.associations.Remove(ctx, tx, mid); e != nil {
+			return e
+		}
+	}
+	if _, e = tx.ExecContext(ctx, `UPDATE chat_reactions SET deleted_at=$2,owned_updated_at=$2 WHERE message_id=$1 AND deleted_at IS NULL`, mid, event.CreatedAt); e != nil {
 		return e
 	}
 	return r.commit(ctx, tx, actor, "chat.messages.delete")

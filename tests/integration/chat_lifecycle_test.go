@@ -359,7 +359,7 @@ func TestPGChatAuthorityAndUnsupportedBoundaries(t *testing.T) {
 	f := newChatFixture(t)
 	room := createChat(t, f, true)
 	base := "/api/chat/" + room.ID
-	for _, body := range []string{`{"content":"hi","attachments_id":[]}`, `{"content":"hi","encryption_meta":{}}`, `{"content":"hi","fund_id":null}`, `{"content":"hi","thread_id":null}`} {
+	for _, body := range []string{`{"content":"hi","encryption_meta":{}}`, `{"content":"hi","fund_id":null}`, `{"content":"hi","thread_id":"c2000000-0000-4000-8000-000000000001"}`} {
 		chatCall(t, f.handler, "POST", base+"/messages", f.token, body, 501)
 	}
 	chatCall(t, f.handler, "POST", base+"/messages?identity="+f.other, f.token, `{"content":"hi"}`, 501)

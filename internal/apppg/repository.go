@@ -26,9 +26,10 @@ type TransactionGuard interface {
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
 }
 type Repository struct {
-	db    *sql.DB
-	guard TransactionGuard
-	cache board.Cache
+	db             *sql.DB
+	guard          TransactionGuard
+	cache          board.Cache
+	productCatalog ProductCatalog
 }
 
 // New enables public reads and app-authenticated operations. Account-owned

@@ -101,6 +101,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, out)
 		return
 	}
+	if h.publicFund(w, r, path) {
+		return
+	}
 	if h.Authentication == nil {
 		fail(w, ErrUnavailable)
 		return
@@ -138,6 +141,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	suffix := strings.TrimPrefix(path, "/api/wallets")
+	if h.fundHTTP(w, r, p, suffix) {
+		return
+	}
 	var value any
 	switch {
 	case r.Method == "GET" && suffix == "":

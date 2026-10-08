@@ -193,10 +193,16 @@ func run(args []string, out io.Writer) error {
 	if e != nil {
 		return errors.New("authority verifier unavailable")
 	}
-	repository := walletpg.New(db)
+	guard := authoritypg.NewTransactionGuard(authoritypg.New(db), verifier)
+	payments := walletpg.NewPINVerifier(db, peppers).WithAuthority(guard)
+	repository := walletpg.NewWithAuthority(db, guard).WithPaymentAuthorization(payments)
 	handler := accounts.NewAuthorityHandler(repository, verifier, func(p authority.Principal) accounts.Principal {
 		return accounts.Principal{AccountID: p.Account.ID, SessionID: p.Session.ID}
-	}, walletpg.NewRealmAuthority(db), walletpg.NewPINVerifier(db, peppers), authorityError)
+	}, walletpg.NewRealmAuthority(db), payments.Atomic(), authorityError)
+	handler = bindWalletAuthority(verifier, guard, handler)
+	if e = repository.FundsReady(ctx); e != nil {
+		return errors.New("wallet funds schema unavailable")
+	}
 	server := &http.Server{Addr: *listen, Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 20 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 32768}
 	go func() {
 		ticker := time.NewTicker(*interval)
@@ -208,6 +214,8 @@ func run(args []string, out io.Writer) error {
 			case <-ticker.C:
 				job, cancel := context.WithTimeout(ctx, 20*time.Second)
 				_, err := repository.ProcessDue(job, 100)
+				_, fundErr := repository.ProcessFundsDue(job, 100)
+				err = errors.Join(err, fundErr)
 				cancel()
 				if err != nil {
 					fmt.Fprintln(out, "Wallet settlement batch failed; committed items remain durable and pending work will retry.")

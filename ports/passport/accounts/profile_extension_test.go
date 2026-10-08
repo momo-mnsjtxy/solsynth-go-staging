@@ -42,3 +42,22 @@ func TestAuthoredProfileAliasesNeutralStyleAndBirthdayClear(t *testing.T) {
 		}
 	}
 }
+
+func TestProfileMediaReferenceNullAndOmission(t *testing.T) {
+	repo := &authoredProfileRepo{}
+	s := &Service{Repository: repo, Authority: &authoredProfileAuth{}}
+	id := "a7100000-0000-4000-8000-000000000001"
+	w := request(s, "PATCH", "/stargate/accounts/me/profile", `{"picture_id":"`+id+`","background_id":null}`, true)
+	if w.Code != 200 || repo.patch.PictureID == nil || *repo.patch.PictureID != id || !repo.patch.PicturePresent || !repo.patch.BackgroundPresent || repo.patch.BackgroundID != nil {
+		t.Fatal(w.Code, repo.patch)
+	}
+	w = request(s, "PATCH", "/stargate/accounts/me/profile", `{"bio":"retains media"}`, true)
+	if w.Code != 200 || repo.patch.PicturePresent || repo.patch.BackgroundPresent {
+		t.Fatal(w.Code, repo.patch)
+	}
+	for _, raw := range []string{`{"picture_id":"bad"}`, `{"picture_id":""}`, `{"picture_id":null,"picture_id":null}`, `{"Picture_ID":null}`, `{"picture_id":null,"PICTURE_ID":"` + id + `"}`} {
+		if w := request(s, "PATCH", "/stargate/accounts/me/profile", raw, true); w.Code != 400 {
+			t.Fatal("ambiguous reference accepted", raw, w.Code)
+		}
+	}
+}

@@ -5,6 +5,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/chatmediapg/schema.sql",
+ "internal/profilemediapg/schema.sql",
+ "internal/walletpg/funds_schema.sql",
  "internal/postawardpg/schema.sql",
  "internal/sponsorshippg/schema.sql",
  "internal/publisherratingpg/schema.sql",
@@ -128,6 +131,10 @@ def check(runner, read_schema=None):
         raise ValueError("canonical taxonomy view requires posts first")
     if schemas.index("internal/interactionpg/schema.sql") <= schemas.index("internal/application/schema.sql"):
         raise ValueError("interactions require taxonomy first")
+    if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/mediapg/usage_schema.sql' not in runner:
+        raise ValueError("media usage constraint migration must be atomic")
+    if schemas.index("internal/profilemediapg/schema.sql") <= max(schemas.index("internal/accountpg/schema.sql"), schemas.index("internal/mediapg/schema.sql"), schemas.index("internal/socialpg/schema.sql")):
+        raise ValueError("profile media requires canonical accounts, media and social policy")
     if schemas.index("internal/mediapg/resumable_schema.sql") <= schemas.index("internal/mediapg/schema.sql"):
         raise ValueError("resumable media requires base schema")
     if any(schemas.index("internal/commercepg/schema.sql") <= schemas.index(name) for name in ("internal/apppg/schema.sql","internal/walletpg/schema.sql")):
@@ -203,6 +210,7 @@ def main():
     authority = PSQL + "internal/authoritypg/schema.sql"
     accounts = PSQL + "internal/accountpg/schema.sql"
     mutations = [
+        source.replace("--single-transaction -f internal/mediapg/usage_schema.sql", "-f internal/mediapg/usage_schema.sql"),
         source.replace("test -timeout 20m -race", "test -race"),
         source.replace("test -timeout 10m -race", "test -race"),
         source.replace("--single-transaction -f internal/signinpg/factor_setup_schema.sql", "-f internal/signinpg/factor_setup_schema.sql"),

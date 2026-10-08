@@ -36,6 +36,20 @@ BEGIN
 END;
 $$;
 
+-- SaveAccount permits trusted security-flag writes without requiring a version
+-- bump. Remember disable/re-enable and superuser grant/revoke even when their
+-- final values equal the pending enrollment's original account projection.
+CREATE OR REPLACE FUNCTION owned_authority_account_factor_policy_changed() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF (NEW.disabled,NEW.is_superuser) IS DISTINCT FROM (OLD.disabled,OLD.is_superuser) THEN
+  PERFORM owned_authority_cancel_factor_policy(NEW.id);
+ END IF;
+ RETURN NULL;
+END;
+$$;
+DROP TRIGGER IF EXISTS owned_factor_policy_account_security ON owned_authority_accounts;
+CREATE TRIGGER owned_factor_policy_account_security AFTER UPDATE OF disabled,is_superuser ON owned_authority_accounts FOR EACH ROW EXECUTE FUNCTION owned_authority_account_factor_policy_changed();
+
 -- AFTER ROW avoids invalidation for an INSERT ... ON CONFLICT DO NOTHING and
 -- catches every canonical writer, including trusted provisioning and exams.
 -- Ordinary writers must retain their account-before-dependent-row lock order.

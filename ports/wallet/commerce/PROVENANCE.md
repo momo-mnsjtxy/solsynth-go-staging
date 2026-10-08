@@ -36,3 +36,8 @@ all held money remains in the canonical wallet ledger; no API creates money;
 open gift capabilities use 128 cryptographic random bits and never enter events;
 paid gifts require recipient redemption and refund on cancellation/expiry;
 external provider support consists of fail-closed injected verification adapters.
+
+The recurring-product continuation retains additional complete licensed source and
+client files in `recurring-source/manifest.json`. `docs/recurring-products.md` records
+source conflicts, app-scoped identifiers, exact whole-cycle pricing, explicit buyer
+renewal opt-in, shared consent enforcement, and remaining fulfillment boundaries.

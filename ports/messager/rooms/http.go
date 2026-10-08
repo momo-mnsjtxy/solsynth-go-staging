@@ -150,6 +150,10 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	if rest != "" {
 		p = strings.Split(strings.TrimPrefix(rest, "/"), "/")
 	}
+	if len(p) >= 4 && p[1] == "messages" && p[3] == "reactions" {
+		s.serveReactions(w, r, p)
+		return
+	}
 	if isReadRoute(r, p) {
 		if s == nil || s.Reader == nil {
 			failure(w, ErrUnavailable)
@@ -182,6 +186,8 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		permission = "chat.messages.create"
 	case len(p) == 3 && p[1] == "messages" && r.Method == "PATCH":
 		permission = "chat.messages.update"
+	case len(p) >= 4 && p[1] == "messages" && p[3] == "reactions" && (r.Method == "POST" || r.Method == "DELETE"):
+		permission = "chat.messages.react"
 	case len(p) == 3 && p[1] == "messages" && r.Method == "DELETE":
 		permission = "chat.messages.delete"
 	}
@@ -446,7 +452,10 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			var req TextRequest
-			e = decode(w, r, &req, "content", "client_message_id", "nonce", "replied_message_id")
+			e = decode(w, r, &req, "content", "client_message_id", "nonce", "replied_message_id", "attachments_id", "meta", "embeds", "thread_id", "forwarded_message_id")
+			if e == nil {
+				req, e = ValidateText(req, false)
+			}
 			if e == nil {
 				result, e = s.Repository.Send(ctx, actor, rid, req)
 			}
@@ -454,7 +463,10 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			switch r.Method {
 			case "PATCH":
 				var req TextRequest
-				e = decode(w, r, &req, "content", "client_message_id", "nonce", "replied_message_id")
+				e = decode(w, r, &req, "content", "client_message_id", "nonce", "replied_message_id", "attachments_id", "meta", "embeds", "thread_id", "forwarded_message_id")
+				if e == nil {
+					req, e = ValidateText(req, true)
+				}
 				if e == nil {
 					result, e = s.Repository.Edit(ctx, actor, rid, p[2], req)
 				}

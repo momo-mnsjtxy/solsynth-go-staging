@@ -29,13 +29,16 @@ type paymentProof struct {
 }
 
 func paymentOperation(purpose, binding string) bool {
-	if purpose != accounts.PaymentTransfer && purpose != accounts.PaymentOrder {
+	if purpose != accounts.PaymentTransfer && purpose != accounts.PaymentOrder && purpose != accounts.PaymentFundCreate && purpose != accounts.PaymentFundContribute {
 		return false
 	}
 	b, e := hex.DecodeString(binding)
 	return e == nil && len(b) == 32 && hex.EncodeToString(b) == binding
 }
 func paymentPermission(purpose string) string {
+	if purpose == accounts.PaymentFundCreate || purpose == accounts.PaymentFundContribute {
+		return accounts.PermissionFunds
+	}
 	if purpose == accounts.PaymentOrder {
 		return "orders.pay"
 	}

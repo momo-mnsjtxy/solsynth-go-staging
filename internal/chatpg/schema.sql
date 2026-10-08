@@ -72,3 +72,16 @@ CREATE UNIQUE INDEX IF NOT EXISTS owned_chat_text_idempotency ON chat_messages(c
  WHERE type='text' AND client_message_id IS NOT NULL AND owned_request_hash IS NOT NULL;
 CREATE INDEX IF NOT EXISTS owned_chat_joined ON chat_members(account_id,chat_room_id) WHERE joined_at IS NOT NULL AND leave_at IS NULL AND deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS owned_chat_invites ON chat_members(account_id,chat_room_id) WHERE joined_at IS NULL AND leave_at IS NULL AND deleted_at IS NULL;
+
+-- Attitude is an opaque client integer; no shared enum mapping is inferred.
+ALTER TABLE chat_reactions ADD COLUMN IF NOT EXISTS owned_attitude integer NOT NULL DEFAULT 0;
+ALTER TABLE chat_reactions ADD COLUMN IF NOT EXISTS owned_created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE chat_reactions ADD COLUMN IF NOT EXISTS owned_updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
+CREATE INDEX IF NOT EXISTS owned_chat_reaction_lookup ON chat_reactions(message_id,sender_id,symbol) WHERE deleted_at IS NULL;
+
+-- Keep the original send request identity when a caller replaces its edit
+-- correlation ID. Existing rows continue to resolve by their original column.
+ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS owned_creation_client_id varchar(128);
+CREATE UNIQUE INDEX IF NOT EXISTS owned_chat_creation_idempotency
+ ON chat_messages(chat_room_id,sender_id,coalesce(owned_creation_client_id,client_message_id))
+ WHERE type='text' AND owned_request_hash IS NOT NULL;

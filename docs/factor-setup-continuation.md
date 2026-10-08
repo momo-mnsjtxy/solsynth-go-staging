@@ -103,7 +103,7 @@ The policy fingerprint covers effective canonical rules/punishments, factor
 UUIDs/revisions, optional current wallet policy version, trusted issuer and seal
 configuration. It also includes durable, transactional `factor_policy_version`
 counters on the existing canonical account and its current groups. Canonical
-policy, membership, credential and factor row changes advance the account's
+policy, membership, credential, factor and changed account security flags advance the account's
 counter and cancel its setup/provenance in the same transaction. Group-grant
 changes advance the group's counter and cancel currently visible members' setup;
 the group counter also covers a concurrent joining member outside that query's
@@ -125,6 +125,12 @@ policy changes can be retried after a transaction conflict without partial
 progress. Normal PostgreSQL restart retains versions and cancellation metadata.
 See `factor-policy-history-review.md` for the independent defect and regression
 coverage.
+
+Explicit disable/re-enable allows the account-version advance caused by disable
+itself, while retaining the originating session's revocation and authorization
+generation checks. A later origin security change cannot be rescued by fresh
+login. See `factor-origin-review.md` for the reproduced service case, bounded
+canonical-writer reachability, and the account-security SQL validation limits.
 
 Pre-upgrade pending TOTP factors lack the new provenance and must be deleted
 with fresh assurance and enrolled again; existing enabled factors and ordinary

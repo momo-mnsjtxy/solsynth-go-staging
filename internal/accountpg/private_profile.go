@@ -27,6 +27,9 @@ func (r *Repository) LookupSelf(ctx context.Context, actor string) (out accounts
 		if out.Profile != nil {
 			e = tx.QueryRowContext(ctx, `SELECT birthday FROM owned_accounts_profiles WHERE account_id=$1::uuid`, actor).Scan(&out.Profile.Birthday)
 		}
+		if e == nil && r.profileMedia != nil {
+			e = r.profileMedia.Load(ctx, tx, actor, &out)
+		}
 		return e
 	})
 	return

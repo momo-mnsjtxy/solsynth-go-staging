@@ -13,7 +13,7 @@ CREATE TABLE owned_media_files (
  idempotency_key varchar(128) NOT NULL,
  name varchar(255) NOT NULL,
  mime_type varchar(255) NOT NULL,
- usage text NOT NULL DEFAULT '' CHECK(usage IN ('','post')),
+ usage text NOT NULL DEFAULT '' CHECK(usage IN ('','post','profile_picture')),
  size bigint NOT NULL CHECK(size >= 0),
  sha256 char(64) NOT NULL CHECK(sha256 ~ '^[0-9a-f]{64}$'),
  is_public boolean NOT NULL DEFAULT false,

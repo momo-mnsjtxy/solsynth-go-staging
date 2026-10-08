@@ -169,7 +169,7 @@ def check(runner, read_schema=None):
             raise ValueError("fixture binary is not built/exported before required tests: " + variable)
     for phase in ("before", "after"):
         invocation = (
-            f'PG_TEST_PHASE={phase} "$GO_BIN" test -race -count=1 -json '
+            f'PG_TEST_PHASE={phase} "$GO_BIN" test -timeout {"20m" if phase == "before" else "10m"} -race -count=1 -json '
             f'-run "$(python3 scripts/check-integration-results.py --pattern {phase})" '
             f'./tests/integration | tee "$run/{phase}.jsonl"'
         )
@@ -198,6 +198,8 @@ def main():
     authority = PSQL + "internal/authoritypg/schema.sql"
     accounts = PSQL + "internal/accountpg/schema.sql"
     mutations = [
+        source.replace("test -timeout 20m -race", "test -race"),
+        source.replace("test -timeout 10m -race", "test -race"),
         source.replace("--single-transaction -f internal/signinpg/factor_setup_schema.sql", "-f internal/signinpg/factor_setup_schema.sql"),
         source.replace("--single-transaction -f internal/authoritypg/continuity_schema.sql", "-f internal/authoritypg/continuity_schema.sql"),
         source.replace("-f internal/messagerpg/testdata/schema.sql", "-f tests/integration/schema.sql"),

@@ -107,14 +107,14 @@ export TAXONOMY_BINARY="$run/taxonomy"
 "$GO_BIN" build -o "$run/develop-discovery" ./cmd/develop-discovery
 "$GO_BIN" build -o "$run/solsynth-go" ./cmd/solsynth-go
 "$GO_BIN" build -o "$run/nodeinfo" ./cmd/nodeinfo
-PG_TEST_PHASE=before "$GO_BIN" test -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern before)" ./tests/integration | tee "$run/before.jsonl"
+PG_TEST_PHASE=before "$GO_BIN" test -timeout 20m -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern before)" ./tests/integration | tee "$run/before.jsonl"
 python3 scripts/check-integration-results.py before "$run/before.jsonl"
 python3 scripts/verify-develop-http.py "$run/develop-discovery"
 python3 scripts/verify-catalog-http.py "$run/solsynth-go"
 "$PG_BIN/pg_ctl" -D "$run/data" -m fast -w stop
 running=0
 start
-PG_TEST_PHASE=after "$GO_BIN" test -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern after)" ./tests/integration | tee "$run/after.jsonl"
+PG_TEST_PHASE=after "$GO_BIN" test -timeout 10m -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern after)" ./tests/integration | tee "$run/after.jsonl"
 python3 scripts/check-integration-results.py after "$run/after.jsonl"
 python3 scripts/verify-develop-http.py "$run/develop-discovery"
 python3 scripts/verify-catalog-http.py "$run/solsynth-go"

@@ -1,6 +1,6 @@
 {
-  "checkpoint": "factor-policy-aba455",
-  "scope": "Isolated durable policy/factor history repair, six regression cases, canonical reaction fixture inputs and workflow YAML validation. Full local verification passed; actual PostgreSQL pending.",
+  "checkpoint": "factor-policy-aba455-bounded-test-timeout",
+  "scope": "Isolated durable policy/factor history repair, six regression cases, canonical reaction fixture inputs and workflow YAML validation. Full local verification passed; actual PostgreSQL pending. Explicit Go test phase budgets preserve full required case coverage beyond the default ten-minute package timeout.",
   "inputs": {
     "remote_parent": "4c95148c221ba29323346903966036028b3c8da2"
   },
@@ -9,7 +9,7 @@
     {
       "path": ".github/workflows/postgres-validation.yml",
       "bytes": 2496,
-      "sha256": "dd99472e70ef397d6ca08f8f5294b143752f3269d7ea2eb7d7b0920a4af31c47"
+      "sha256": "65fa738f0acb39baaf2f41400deae21838af71d187b9653121cea2babbee34ea"
     },
     {
       "path": ".github/workflows/recover-source-5e695228.yml",
@@ -8498,8 +8498,8 @@
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 8369,
-      "sha256": "d0370548bc304d21522ce10e5f15a2085b694cd696c524ccaf099c114f1c616a"
+      "bytes": 8395,
+      "sha256": "9f2df2b4066f69719b14f8f93fce519d7366e520c4121fc898a60217ebef4024"
     },
     {
       "path": "scripts/sql-parser-requirements.txt",
@@ -8518,8 +8518,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 15218,
-      "sha256": "c9040a870b19afb61046680676ce069c428fbc242659d36d1b7bda4ee6cafd70"
+      "bytes": 15397,
+      "sha256": "628b1bd603427078203eb81ca910d3c47f7e576d8351783698728188a852b71b"
     },
     {
       "path": "scripts/test-source-evidence.py",

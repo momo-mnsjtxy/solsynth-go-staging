@@ -1,0 +1,30 @@
+[
+  {
+    "file": "internal/autocompletepg/repository.go",
+    "sha256": "a3efb14ea7b21862c5a3b8435327f3d1001947d9dbc78c9062720c91b3ab24b2"
+  },
+  {
+    "file": "ports/sphere/autocomplete/http.go",
+    "sha256": "e8b20d02088c1a8c3b186e045a19b8fed1b61402b0c32503b1bb6375d18e8954"
+  },
+  {
+    "file": "ports/sphere/autocomplete/types.go",
+    "sha256": "b8398c86b983a96fb022e5bc910139a13167cc04fe5eb88d1169a1663cc8db91"
+  },
+  {
+    "file": "ports/sphere/autocomplete/http_test.go",
+    "sha256": "01d2f0943a1559a25bd2817ad5b1affa349674dec1cc1ca4207cb1c38af336b2"
+  },
+  {
+    "file": "internal/accountpg/transaction_reads.go",
+    "sha256": "a8c8901941f41cc7e0e3a03d76280cbda882239e374b608c4498b235f0f99953"
+  },
+  {
+    "file": "internal/socialpg/transaction_reads.go",
+    "sha256": "e6f73a16c2464513c105be9863a3846ab900b1e53476a28695cf1d35f8ac2638"
+  },
+  {
+    "file": "internal/stickerpg/suggestions.go",
+    "sha256": "bb1d43a9d196041be1539c9be1db6513aa9df5f3b9ac4269b9621542975be051"
+  }
+]

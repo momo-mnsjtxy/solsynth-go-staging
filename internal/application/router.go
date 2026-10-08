@@ -11,8 +11,10 @@ import (
 	"solsynth.local/go-migration/ports/develop/bots"
 	"solsynth.local/go-migration/ports/passport/accountsettings"
 	"solsynth.local/go-migration/ports/passport/ipcheck"
+	"solsynth.local/go-migration/ports/passport/namecards"
 	"solsynth.local/go-migration/ports/passport/presence"
 	"solsynth.local/go-migration/ports/passport/progression"
+	"solsynth.local/go-migration/ports/passport/rewind"
 	"solsynth.local/go-migration/ports/sphere/autocomplete"
 	"solsynth.local/go-migration/ports/sphere/timeline"
 	"strings"
@@ -21,6 +23,7 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	namecards, rewind                                                                                                                                                                                                                                    http.Handler
 	ipcheck                                                                                                                                                                                                                                              http.Handler
 	accountSettings                                                                                                                                                                                                                                      http.Handler
 	translation, autocomplete                                                                                                                                                                                                                            http.Handler
@@ -244,6 +247,14 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if h.accountSettings != nil && (service == "api" || service == "passport") && accountsettings.RouteMatches(canonical) {
 		target = h.accountSettings
+	}
+	if service == "api" || service == "passport" || service == "stargate" {
+		if h.namecards != nil && namecards.RouteMatches(canonical) {
+			target = h.namecards
+		}
+		if h.rewind != nil && rewind.RouteMatches(canonical) {
+			target = h.rewind
+		}
 	}
 	if h.ipcheck != nil && (service == "api" || service == "passport") && ipcheck.Route(canonical) {
 		target = h.ipcheck

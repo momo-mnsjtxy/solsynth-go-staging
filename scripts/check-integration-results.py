@@ -5,6 +5,18 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGNameCardPaidAccountRenameAndIdempotency",
+        "TestPGNameCardPaymentAndRenameRollback",
+        "TestPGNameCardOneUseAndFreshPublisherAuthority",
+        "TestPGNameCardFederationBoundaryAndSourceFreeRealmSlug",
+        "TestPGNameCardRestartPersistence",
+        "TestPGRewindCanonicalSnapshotSharingAndRevocation",
+        "TestPGRewindConfiguredComponentsAndIsolation",
+        "TestPGRewindAtomicCreationAndBlockedPublicRevocation",
+        "TestPGRewindRestartPersistence",
+        "TestPGBackendPaidNameCardComposition",
+        "TestPGBackendRewindComposition",
+
         "TestPGBackendIPCheckComposition",
         "TestPGBackendAccountSettingsComposition",
         "TestPGProfileAuthoredAliasesAndPrivateBirthday",
@@ -345,6 +357,9 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGNameCardRestartPersistence",
+        "TestPGRewindRestartPersistence",
+
         "TestPGAccountSettingsRestartPersistence",
 
         "TestPGTranslationRestartPersistence",

@@ -41,10 +41,11 @@ type Adapters struct {
 	Product func(context.Context, *sql.Tx, string, string) (Product, error)
 }
 type Repository struct {
-	db       *sql.DB
-	guard    *authoritypg.TransactionGuard
-	adapters Adapters
-	now      func() time.Time
+	namecards NameCardFulfillment
+	db        *sql.DB
+	guard     *authoritypg.TransactionGuard
+	adapters  Adapters
+	now       func() time.Time
 }
 
 func New(db *sql.DB, guard *authoritypg.TransactionGuard, adapters Adapters) *Repository {

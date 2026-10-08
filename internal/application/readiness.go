@@ -27,6 +27,9 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err != nil || !ready {
 		return errors.New("post realm schema unavailable")
 	}
+	if err := b.accountExtras.ready(ctx); err != nil {
+		return err
+	}
 	if b.accountSettings != nil {
 		if err := b.accountSettings.Ready(ctx); err != nil {
 			return err

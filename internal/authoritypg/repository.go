@@ -312,18 +312,19 @@ func (r *Repository) ReplacePolicy(ctx context.Context, id string, rules []autho
 }
 
 // LookupAccount is a trusted domain lookup, never proof of authentication or
-// permission. UUID references are exact canonical IDs; names are case-sensitive.
+// permission. UUID references are exact canonical IDs; names use the canonical
+// case-folded uniqueness constraint shared by account lookup and registration.
 // It does not return private account factors or credentials.
 func (r *Repository) LookupAccount(ctx context.Context, reference string) (authority.Account, error) {
 	var a authority.Account
-	if r == nil || r.db == nil || reference == "" || len(reference) > 200 {
+	if r == nil || r.db == nil || reference == "" || len(reference) > 256 {
 		return a, authority.ErrNotFound
 	}
-	column := "name"
+	match := "lower(name)=lower($1::text)"
 	if authority.ValidID(reference) {
-		column = "id"
+		match = "id=$1::uuid"
 	}
-	e := r.db.QueryRowContext(ctx, `SELECT id::text,name,nick,language,region,is_superuser,disabled,version,created_at FROM owned_authority_accounts WHERE `+column+`=$1`, reference).Scan(&a.ID, &a.Name, &a.Nick, &a.Language, &a.Region, &a.Superuser, &a.Disabled, &a.Version, &a.CreatedAt)
+	e := r.db.QueryRowContext(ctx, `SELECT id::text,name,nick,language,region,is_superuser,disabled,version,created_at FROM owned_authority_accounts WHERE `+match, reference).Scan(&a.ID, &a.Name, &a.Nick, &a.Language, &a.Region, &a.Superuser, &a.Disabled, &a.Version, &a.CreatedAt)
 	if errors.Is(e, sql.ErrNoRows) {
 		e = authority.ErrNotFound
 	}

@@ -57,7 +57,9 @@ func (r *Repository) CreatePublisher(ctx context.Context, actor string, patch ac
 }
 func (r *Repository) UpdatePublisher(ctx context.Context, actor, ref string, patch accounts.PublisherPatch) (accounts.Publisher, error) {
 	var p accounts.Publisher
-	if e := accounts.ValidatePublisher(patch, false); e != nil {
+	validation := patch
+	validation.Name = nil
+	if e := accounts.ValidatePublisher(validation, false); e != nil {
 		return p, e
 	}
 	e := r.write(ctx, actor, "publishers.update", func(tx *sql.Tx, now time.Time) error {
@@ -68,6 +70,9 @@ func (r *Repository) UpdatePublisher(ctx context.Context, actor, ref string, pat
 		}
 		if e = r.require(ctx, tx, p.ID, actor, accounts.Manager); e != nil {
 			return e
+		}
+		if patch.Name != nil && *patch.Name != p.Name {
+			return accounts.ErrNameChange
 		}
 		if patch.Nick != nil {
 			p.Nick = *patch.Nick

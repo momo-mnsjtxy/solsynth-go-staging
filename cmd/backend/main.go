@@ -63,6 +63,7 @@ func run(args []string, out io.Writer) error {
 	readerSettings := readerFlags(fs)
 	translationSettings := translationFlags(fs)
 	ipCheckSettings := ipCheckFlags(fs)
+	accountExtrasSettings := accountExtraFlags(fs)
 	factorIssuer := fs.String("factor-issuer-label", "SoSYS", "human-readable TOTP issuer label")
 	enableOAuth := fs.Bool("enable-oauth", false, "enable owned OAuth authorization-code and OIDC userinfo flows")
 	consentURL := fs.String("oauth-consent-url", "", "deployed HTTPS consent UI calling the owned authorization API")
@@ -217,6 +218,9 @@ func run(args []string, out io.Writer) error {
 		catalogProviders = []exchangecatalog.Provider{provider}
 	}
 	appConfig := application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
+	if err = accountExtrasSettings.apply(&appConfig); err != nil {
+		return err
+	}
 	if *enableOAuth {
 		u, e := url.Parse(*consentURL)
 		if e != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" {

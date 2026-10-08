@@ -336,7 +336,7 @@ func (s *Service) invalidate(tx Transaction) error {
 }
 func (s *Service) Start(ctx context.Context, r StartRequest, peer string) (Challenge, error) {
 	var out Challenge
-	if r.Account == "" || len(r.Account) > 254 || len(r.DeviceID) > 200 || len(r.DeviceName) > 200 || len(r.UserAgent) > 512 || r.Platform < 0 || r.Platform > 6 {
+	if r.Account == "" || len(r.Account) > 256 || len(r.DeviceID) > 200 || len(r.DeviceName) > 200 || len(r.UserAgent) > 512 || r.Platform < 0 || r.Platform > 6 {
 		return out, ErrInput
 	}
 	if e := s.limit(ctx, "login-peer", peer, 60, 10*time.Minute); e != nil {

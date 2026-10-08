@@ -102,7 +102,7 @@ func (r *Repository) Lookup(ctx context.Context, ref string) (string, error) {
 	if r == nil || r.db == nil {
 		return id, authority.ErrUnavailable
 	}
-	e := r.db.QueryRowContext(ctx, `SELECT a.id::text FROM owned_authority_accounts a JOIN owned_authority_credentials c ON c.account_id=a.id WHERE a.name=$1 OR c.email=$2`, ref, strings.ToLower(ref)).Scan(&id)
+	e := r.db.QueryRowContext(ctx, `SELECT a.id::text FROM owned_authority_accounts a JOIN owned_authority_credentials c ON c.account_id=a.id WHERE lower(a.name)=lower($1::text) OR c.email=$2::text`, ref, strings.ToLower(ref)).Scan(&id)
 	if errors.Is(e, sql.ErrNoRows) {
 		e = authority.ErrNotFound
 	}

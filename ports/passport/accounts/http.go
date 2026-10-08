@@ -365,7 +365,7 @@ func (s *Service) publisherWrite(w http.ResponseWriter, r *http.Request, p []str
 		failure(w, e)
 		return
 	}
-	ctx := r.Context()
+	ctx := accountContext(s.Repository, r.Context(), actor)
 	switch operation {
 	case "create", "organization", "update":
 		var patch PublisherPatch
@@ -373,7 +373,24 @@ func (s *Service) publisherWrite(w http.ResponseWriter, r *http.Request, p []str
 			failure(w, e)
 			return
 		}
-		if e = ValidatePublisher(patch, operation != "update"); e != nil {
+		if operation == "update" && patch.Name != nil {
+			current, lookupErr := s.lookupPublisher(ctx, actor.Account.ID, p[0])
+			if lookupErr != nil {
+				failure(w, lookupErr)
+				return
+			}
+			if *patch.Name != current.Name {
+				failure(w, ErrNameChange)
+				return
+			}
+			// Keep the requested name for the repository's locked recheck.
+			validation := patch
+			validation.Name = nil
+			if e = ValidatePublisher(validation, false); e != nil {
+				failure(w, e)
+				return
+			}
+		} else if e = ValidatePublisher(patch, operation != "update"); e != nil {
 			failure(w, e)
 			return
 		}

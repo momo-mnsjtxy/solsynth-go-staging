@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Canonical account utilities plus local IP-check diagnostics/geolocation candidate",
+  "local_source_checkpoint": "Name-card canonical paid settlement/rename and annual rewind composed with prior validated modules",
   "last_fully_passed_ci": {
     "commit": "e3e6decd9840e6eda6b38ec65400a8613d9ba662",
     "run": 37777273608,
@@ -16,8 +16,8 @@
     "status": "Fully passed315 actual PostgreSQL and44 real restart cases; no skips",
     "run": 37772653508
   },
-  "local_required_before": 316,
-  "local_required_after_restart": 44,
+  "local_required_before": 327,
+  "local_required_after_restart": 46,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -272,7 +272,7 @@
         "TestPGBackendAccountSettingsComposition"
       ],
       "unsupported_or_remaining": [
-        "Paid rename/cards and rewind in progress",
+        "Paid rename/cards and rewind are composed candidates; see dedicated flow entries",
         "Admin contacts, phone/address verification, profile media/security modes and excluded SDK preference encoding",
         "External identity providers, PassKit/domain trust/artwork and remaining source account operations"
       ]
@@ -773,6 +773,45 @@
       ],
       "unsupported_or_remaining": [
         "Original MaxMind/MMDB adapter and licensed geographic dataset not bundled; explicit owned JSON CIDR format"
+      ]
+    },
+    {
+      "source_family": "passport.name_cards",
+      "local_status": "implemented and composed; actual PostgreSQL candidate pending",
+      "supported_flows": [
+        "Source paid-card order/list/use; canonical payment and receipt in one transaction",
+        "Account/realm/publisher rename and account session invalidation"
+      ],
+      "guarded_pg_cases": [
+        "TestPGNameCardPaidAccountRenameAndIdempotency",
+        "TestPGNameCardPaymentAndRenameRollback",
+        "TestPGNameCardOneUseAndFreshPublisherAuthority",
+        "TestPGNameCardFederationBoundaryAndSourceFreeRealmSlug",
+        "TestPGNameCardRestartPersistence",
+        "TestPGBackendPaidNameCardComposition"
+      ],
+      "unsupported_or_remaining": [
+        "Federation-registered publisher rename remains unavailable pending stable actor alias delivery"
+      ]
+    },
+    {
+      "source_family": "passport.rewind",
+      "local_status": "implemented and composed; actual PostgreSQL candidate pending",
+      "supported_flows": [
+        "Annual canonical activity snapshot with current reference privacy",
+        "Revocable public share with private DM/call/word projection redacted"
+      ],
+      "guarded_pg_cases": [
+        "TestPGRewindCanonicalSnapshotSharingAndRevocation",
+        "TestPGRewindConfiguredComponentsAndIsolation",
+        "TestPGRewindAtomicCreationAndBlockedPublicRevocation",
+        "TestPGRewindRestartPersistence",
+        "TestPGBackendRewindComposition"
+      ],
+      "unsupported_or_remaining": [
+        "Optional original action telemetry provider",
+        "Licensed/configured tokenizer and dictionary",
+        "Original hardcoded-year and time-truncation defects deliberately corrected"
       ]
     }
   ],

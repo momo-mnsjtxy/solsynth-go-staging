@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"solsynth.local/go-migration/internal/walletpg"
+	"solsynth.local/go-migration/ports/passport/namecards"
 	wallet "solsynth.local/go-migration/ports/wallet/accounts"
 	c "solsynth.local/go-migration/ports/wallet/commerce"
 	"time"
@@ -140,6 +141,21 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		if e = event(ctx, tx, "gift.paid", g.ID, g, now); e != nil {
 			return o, e
 		}
+	}
+	if o.AppIdentifier == "internal" && o.ProductIdentifier != nil && *o.ProductIdentifier == namecards.Product {
+		if r.namecards == nil || sub.Valid || gift.Valid {
+			return o, c.ErrUnavailable
+		}
+		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+			return o, e
+		}
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.pay"); e != nil {
+			return o, e
+		}
+		if e = r.namecards.FulfillNameCard(ctx, r.db, tx, actor, o, now); e != nil {
+			return o, e
+		}
+		o.Status = c.Finished
 	}
 	if e = saveOrder(ctx, tx, o); e != nil {
 		return o, e

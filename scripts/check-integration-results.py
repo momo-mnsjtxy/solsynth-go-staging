@@ -5,6 +5,18 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGCollectionAdminAuditRollbackAndDeleteRace",
+        "TestPGCollectionAdminMetadataAndNestedPrivacy",
+        "TestPGDomainTrustAuditRollbackAndFreshAuthority",
+        "TestPGDomainTrustConcurrentMetricsAndCardinality",
+        "TestPGDomainTrustLocalEvaluationAndQueryPrivacy",
+        "TestPGDomainTrustMetricFailureRollsBackDecision",
+        "TestPGDomainTrustPriorityDefaultsAndCurrentRules",
+        "TestPGDomainTrustRestartPersistence",
+        "TestPGDomainTrustRuleLifecycleAndGlobalAuthority",
+        "TestPGDomainTrustRuleUpdateWinsQueuedValidation",
+        "TestPGBackendDomainCollectionsComposition",
+
         "TestPGLiveStreamAwardsPaidLifecycleAndConservation",
         "TestPGLiveStreamAwardsFulfillmentRollbackAndReplay",
         "TestPGLiveStreamAwardsFreshAuthorityAndNOWAITRollback",
@@ -421,6 +433,8 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGDomainTrustRestartPersistence",
+
         "TestPGLiveStreamAwardsPayoutRestartPersistence",
         "TestPGLiveStreamChatOutboxRestartPersistence",
 

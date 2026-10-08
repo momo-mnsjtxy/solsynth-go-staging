@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
  "internal/livestreampg/chat_schema.sql",
  "internal/livestreampg/awards_schema.sql",
+ "internal/domaintrustpg/schema.sql",
  "internal/accountpg/name_schema.sql",
  "internal/federationpg/identity_schema.sql",
  "internal/adminpg/schema.sql",

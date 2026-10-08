@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Recovered canonical green source plus paid livestream awards and provider-free reserve maintenance",
+  "local_source_checkpoint": "Domain trust rules/host-only metrics and collection metadata administration composed after recovered awards",
   "last_fully_passed_ci": {
     "commit": "5e695228fab2e3c4eb956851731e09dcad15d04a",
     "run": 37792619865,
@@ -10,12 +10,13 @@
     "after_restart": 51
   },
   "latest_candidate": {
+    "commit": "ce5aa8b63c71b11ee6a449a250e6dc1d12fadf80",
     "required_before": 386,
     "required_after_restart": 52,
-    "status": "Recovered exact award worker patch and reconstructed host composition; real PostgreSQL pending"
+    "status": "Published recovered awards; real PostgreSQL CI in progress"
   },
-  "local_required_before": 386,
-  "local_required_after_restart": 52,
+  "local_required_before": 397,
+  "local_required_after_restart": 53,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -963,6 +964,23 @@
         "External payment providers",
         "Realm publisher beneficiaries",
         "Realtime award packets"
+      ]
+    },
+    {
+      "source_family": "passport.domain_trust_and_sphere.collection_admin",
+      "local_status": "implemented, real PG pending",
+      "supported_flows": [
+        "Current global-admin domain rules, deterministic local validation and bounded durable metrics",
+        "Canonical collection metadata list/detail/rename/delete with current global authority"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBackendDomainCollectionsComposition",
+        "TestPGDomainTrustRestartPersistence",
+        "TestPGCollectionAdminAuditRollbackAndDeleteRace"
+      ],
+      "unsupported_or_remaining": [
+        "Metrics retention/purge operations",
+        "Domain trust does not authorize network fetching"
       ]
     }
   ],

@@ -327,6 +327,11 @@ func (s *Service) replacePassword(tx Transaction, hash []byte) error {
 	return ErrInvalid
 }
 func (s *Service) invalidate(tx Transaction) error {
+	if setup, ok := tx.(FactorSetupTransaction); ok {
+		if e := setup.CancelFactorSetup(); e != nil {
+			return e
+		}
+	}
 	a := tx.Authority().Account()
 	a.Version++
 	if e := tx.Authority().SaveAccount(a); e != nil {
@@ -569,7 +574,8 @@ func (s *Service) authenticated(ctx context.Context, token string, recent bool, 
 		}
 	}
 	ctx = s.store.Bind(ctx, p)
-	return known(s.store.Within(ctx, p.Account.ID, func(tx Transaction) error {
+	var committed error
+	err := s.store.Within(ctx, p.Account.ID, func(tx Transaction) error {
 		fresh, e := tx.Authenticate()
 		if e != nil {
 			return e
@@ -580,8 +586,18 @@ func (s *Service) authenticated(ctx context.Context, token string, recent bool, 
 		if recent && (s.now().Sub(fresh.Session.CreatedAt) > 10*time.Minute || s.now().Before(fresh.Session.CreatedAt)) {
 			return ErrRecent
 		}
-		return fn(tx, fresh)
-	}))
+		err := fn(tx, fresh)
+		var failure committedSetupFailure
+		if errors.As(err, &failure) {
+			committed = failure.err
+			return nil
+		}
+		return err
+	})
+	if err == nil && committed != nil {
+		return committed
+	}
+	return known(err)
 }
 func (s *Service) Factors(ctx context.Context, token string) ([]Factor, error) {
 	out := []Factor{}
@@ -629,13 +645,44 @@ func (s *Service) CreateFactor(ctx context.Context, token string, typ int, secre
 	if secret != "" {
 		return out, ErrInput
 	}
-	e := s.authenticated(ctx, token, true, func(tx Transaction, p authority.Principal) error {
+	e := s.sensitiveFactor(ctx, token, func(tx Transaction, p authority.Principal) error {
 		fs, e := tx.Factors()
 		if e != nil {
 			return e
 		}
+		var recovery Factor
+		hasTOTP := false
 		for _, f := range fs {
 			if f.Type == typ {
+				return ErrConflict
+			}
+			if f.Type == 5 {
+				recovery = f
+			}
+			if f.Type == 3 {
+				hasTOTP = true
+			}
+		}
+		setup, ok := tx.(FactorSetupTransaction)
+		if !ok {
+			return authority.ErrUnavailable
+		}
+		policy, e := s.factorPolicy(tx, fs)
+		if e != nil {
+			return e
+		}
+		receipt, re := setup.FactorSetup()
+		if re != nil && !errors.Is(re, authority.ErrNotFound) {
+			return re
+		}
+		continuation := typ == 3 && re == nil && receipt.State == "recovery" && s.setupValid(receipt, p, policy) && receipt.RecoveryID == recovery.ID && receipt.RecoveryRevision == recovery.Revision
+		var assurance authority.CredentialAssurance
+		if !continuation {
+			assurance, e = s.freshFactorAssurance(tx, p)
+			if e != nil {
+				return e
+			}
+			if !(typ == 5 && hasTOTP) && re == nil && (receipt.State == "recovery" || receipt.State == "pending") && s.now().Before(receipt.ExpiresAt) && receipt.PolicyHash == policy {
 				return ErrConflict
 			}
 		}
@@ -674,7 +721,55 @@ func (s *Service) CreateFactor(ctx context.Context, token string, typ int, secre
 			out.EnabledAt = &now
 			out.CreatedResponse = map[string]string{"recovery_code": raw}
 		}
-		return tx.SaveFactor(out)
+		// A recovery replacement while TOTP exists is a separate sensitive mutation.
+		if typ == 5 && hasTOTP {
+			if e = tx.SaveFactor(out); e != nil {
+				return e
+			}
+			out.Revision = 1
+			if e = s.consumeFactorAssurance(tx, p, assurance, "create", out); e != nil {
+				return e
+			}
+			return s.invalidate(tx)
+		}
+		if e = setup.SaveSetupFactor(out); e != nil {
+			return e
+		}
+		out.Revision = 1
+		if !continuation {
+			if e = s.consumeFactorAssurance(tx, p, assurance, "create", out); e != nil {
+				return e
+			}
+			receipt = FactorSetup{SessionID: p.Session.ID, AccountVersion: p.Account.Version, AuthorizationEpoch: p.Session.AuthorizationEpoch, AuthTime: assurance.AuthTime, ExpiresAt: assurance.ExpiresAt, RecoveryID: recovery.ID, RecoveryRevision: recovery.Revision}
+		} else {
+			if _, e = tx.Authenticate(); e != nil {
+				return e
+			}
+			if !s.now().Before(receipt.ExpiresAt) {
+				return ErrReauthentication
+			}
+		}
+		fs, e = tx.Factors()
+		if e != nil {
+			return e
+		}
+		receipt.PolicyHash, e = s.factorPolicy(tx, fs)
+		if e != nil {
+			return e
+		}
+		if typ == 5 {
+			receipt.RecoveryID = out.ID
+			receipt.RecoveryRevision = out.Revision
+			receipt.State = "recovery"
+		} else {
+			receipt.TOTPID = out.ID
+			receipt.TOTPRevision = out.Revision
+			receipt.State = "pending"
+			if e = setup.SavePendingEnrollment(PendingEnrollment{FactorID: out.ID, FactorRevision: out.Revision, AccountVersion: p.Account.Version, PolicyHash: receipt.PolicyHash, PendingUntil: *out.PendingUntil, Valid: true}); e != nil {
+				return e
+			}
+		}
+		return setup.SaveFactorSetup(receipt)
 	})
 	if e != nil {
 		return Factor{}, e
@@ -689,7 +784,7 @@ func (s *Service) EnableFactor(ctx context.Context, token, fid, code string) (Fa
 		return s.mutatePaymentPIN(ctx, token, "enable", fid, code)
 	}
 	var out Factor
-	e := s.authenticated(ctx, token, true, func(tx Transaction, p authority.Principal) error {
+	e := s.sensitiveFactor(ctx, token, func(tx Transaction, p authority.Principal) error {
 		fs, e := tx.Factors()
 		if e != nil {
 			return e
@@ -698,11 +793,79 @@ func (s *Service) EnableFactor(ctx context.Context, token, fid, code string) (Fa
 			if f.ID != fid {
 				continue
 			}
-			if f.Type != 3 {
+			if f.Type != 3 && f.Type != 5 {
 				return ErrUnsupported
 			}
-			if f.EnabledAt != nil || f.PendingUntil == nil || !s.now().Before(*f.PendingUntil) {
+			if f.EnabledAt != nil {
 				return ErrInvalid
+			}
+			if f.Type == 5 {
+				if code != "" {
+					return ErrInput
+				}
+				a, e := s.freshFactorAssurance(tx, p)
+				if e != nil {
+					return e
+				}
+				raw, e := newSecret()
+				if e != nil {
+					return e
+				}
+				now := s.now()
+				f.Secret = digest(raw)
+				f.EnabledAt = &now
+				f.PendingUntil = nil
+				if e = tx.SaveFactor(f); e != nil {
+					return e
+				}
+				if e = s.consumeFactorAssurance(tx, p, a, "enable", f); e != nil {
+					return e
+				}
+				if e = s.invalidate(tx); e != nil {
+					return e
+				}
+				out = cleanFactor(f)
+				out.CreatedResponse = map[string]string{"recovery_code": raw}
+				return nil
+			}
+			if f.PendingUntil == nil || !s.now().Before(*f.PendingUntil) {
+				return ErrInvalid
+			}
+			setup, ok := tx.(FactorSetupTransaction)
+			if !ok {
+				return authority.ErrUnavailable
+			}
+			pending, e := setup.PendingEnrollment(fid)
+			if errors.Is(e, authority.ErrNotFound) {
+				return ErrInvalid
+			}
+			if e != nil {
+				return e
+			}
+			policy, e := s.factorPolicy(tx, fs)
+			if e != nil {
+				return e
+			}
+			if !pending.Valid || pending.AccountVersion != p.Account.Version || pending.FactorRevision != f.Revision || pending.PolicyHash != policy || !pending.PendingUntil.Equal(*f.PendingUntil) {
+				return rejectSetup(setup, ErrInvalid)
+			}
+			receipt, e := setup.FactorSetup()
+			if e != nil {
+				return e
+			}
+			// Revocation/security generation changes invalidate the enrollment itself;
+			// mere receipt expiry may be recovered by a separate fresh login and OTP.
+			origin, e := tx.Authority().Session(receipt.SessionID)
+			if receipt.State != "disabled" && (e != nil || origin.RevokedAt != nil || origin.AuthorizationEpoch != receipt.AuthorizationEpoch || origin.AccountVersion != pending.AccountVersion) {
+				return rejectSetup(setup, ErrInvalid)
+			}
+			continuation := receipt.State == "pending" && receipt.TOTPID == fid && receipt.TOTPRevision == f.Revision && s.setupValid(receipt, p, policy)
+			var a authority.CredentialAssurance
+			if !continuation {
+				a, e = s.freshFactorAssurance(tx, p)
+				if e != nil {
+					return e
+				}
 			}
 			raw, e := s.open(f.Secret, p.Account.ID, fid)
 			if e != nil {
@@ -716,7 +879,27 @@ func (s *Service) EnableFactor(ctx context.Context, token, fid, code string) (Fa
 			f.EnabledAt = &now
 			f.PendingUntil = nil
 			f.LastCounter = counter
-			if e = tx.SaveFactor(f); e != nil {
+			if e = setup.SaveSetupFactor(f); e != nil {
+				return e
+			}
+			if continuation {
+				if _, e = tx.Authenticate(); e != nil {
+					return e
+				}
+				if !s.now().Before(receipt.ExpiresAt) {
+					return ErrReauthentication
+				}
+			} else {
+				if e = s.consumeFactorAssurance(tx, p, a, "enable", f); e != nil {
+					return e
+				}
+			}
+			pending.Valid = false
+			if e = setup.SavePendingEnrollment(pending); e != nil {
+				return e
+			}
+			receipt.State = "complete"
+			if e = setup.SaveFactorSetup(receipt); e != nil {
 				return e
 			}
 			out = cleanFactor(f)
@@ -724,7 +907,32 @@ func (s *Service) EnableFactor(ctx context.Context, token, fid, code string) (Fa
 		}
 		return ErrInvalid
 	})
-	return out, e
+	if e != nil {
+		return Factor{}, e
+	}
+	return out, nil
+}
+
+// EnableFactorBody preserves the authored bodyless recovery-code request while
+// keeping missing-body rejection for factors that require a verification code.
+func (s *Service) EnableFactorBody(ctx context.Context, token, fid, code string, present bool) (Factor, error) {
+	if !present {
+		fs, e := s.Factors(ctx, token)
+		if e != nil {
+			return Factor{}, e
+		}
+		bodyless := false
+		for _, f := range fs {
+			if f.ID == fid && f.Type == 5 {
+				bodyless = true
+				break
+			}
+		}
+		if !bodyless {
+			return Factor{}, ErrInput
+		}
+	}
+	return s.EnableFactor(ctx, token, fid, code)
 }
 func (s *Service) DeleteFactor(ctx context.Context, token, fid string) error {
 	if yes, e := s.isPaymentPIN(ctx, token, fid); e != nil {
@@ -733,7 +941,7 @@ func (s *Service) DeleteFactor(ctx context.Context, token, fid string) error {
 		_, e = s.mutatePaymentPIN(ctx, token, "delete", fid, "")
 		return e
 	}
-	return s.authenticated(ctx, token, true, func(tx Transaction, p authority.Principal) error {
+	return s.sensitiveFactor(ctx, token, func(tx Transaction, p authority.Principal) error {
 		fs, e := tx.Factors()
 		if e != nil {
 			return e
@@ -745,13 +953,17 @@ func (s *Service) DeleteFactor(ctx context.Context, token, fid string) error {
 			if f.Type == 0 {
 				return authority.ErrForbidden
 			}
+			a, e := s.freshFactorAssurance(tx, p)
+			if e != nil {
+				return e
+			}
 			if e = tx.DeleteFactor(fid); e != nil {
 				return e
 			}
-			if f.EnabledAt != nil {
-				return s.invalidate(tx)
+			if e = s.consumeFactorAssurance(tx, p, a, "delete", f); e != nil {
+				return e
 			}
-			return nil
+			return s.invalidate(tx)
 		}
 		return ErrInvalid
 	})
@@ -764,7 +976,7 @@ func (s *Service) DisableFactor(ctx context.Context, token, fid string) error {
 		_, e = s.mutatePaymentPIN(ctx, token, "disable", fid, "")
 		return e
 	}
-	return s.authenticated(ctx, token, true, func(tx Transaction, p authority.Principal) error {
+	return s.sensitiveFactor(ctx, token, func(tx Transaction, p authority.Principal) error {
 		fs, e := tx.Factors()
 		if e != nil {
 			return e
@@ -773,19 +985,53 @@ func (s *Service) DisableFactor(ctx context.Context, token, fid string) error {
 			if f.ID != fid {
 				continue
 			}
-			if f.Type != 3 {
+			if f.Type != 3 && f.Type != 5 {
 				return ErrUnsupported
 			}
 			if f.EnabledAt == nil {
 				return ErrInvalid
 			}
+			a, e := s.freshFactorAssurance(tx, p)
+			if e != nil {
+				return e
+			}
 			f.EnabledAt = nil
-			end := s.now().Add(15 * time.Minute)
-			f.PendingUntil = &end
+			if f.Type == 3 {
+				end := s.now().Add(15 * time.Minute)
+				f.PendingUntil = &end
+			} else {
+				f.PendingUntil = nil
+			}
 			if e = tx.SaveFactor(f); e != nil {
 				return e
 			}
-			return s.invalidate(tx)
+			if e = s.consumeFactorAssurance(tx, p, a, "disable", f); e != nil {
+				return e
+			}
+			if e = s.invalidate(tx); e != nil {
+				return e
+			}
+			if f.Type == 3 {
+				setup, ok := tx.(FactorSetupTransaction)
+				if !ok {
+					return authority.ErrUnavailable
+				}
+				fs, e := tx.Factors()
+				if e != nil {
+					return e
+				}
+				policy, e := s.factorPolicy(tx, fs)
+				if e != nil {
+					return e
+				}
+				f.Revision++
+				pending := PendingEnrollment{FactorID: f.ID, FactorRevision: f.Revision, AccountVersion: tx.Authority().Account().Version, PolicyHash: policy, PendingUntil: *f.PendingUntil, Valid: true}
+				if e = setup.SavePendingEnrollment(pending); e != nil {
+					return e
+				}
+				return setup.SaveFactorSetup(FactorSetup{SessionID: p.Session.ID, AccountVersion: pending.AccountVersion, AuthorizationEpoch: p.Session.AuthorizationEpoch, AuthTime: a.AuthTime, ExpiresAt: a.ExpiresAt, PolicyHash: policy, TOTPID: f.ID, TOTPRevision: f.Revision, State: "disabled"})
+			}
+			return nil
 		}
 		return ErrInvalid
 	})

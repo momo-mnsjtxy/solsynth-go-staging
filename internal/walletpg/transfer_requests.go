@@ -14,7 +14,7 @@ import (
 //go:embed transfer_requests_schema.sql
 var TransferRequestsSchema string
 
-const requestFields = `r.id::text,r.status,r.currency,r.amount::text,r.remark,r.freeze,r.require_confirmation,r.expires_at,r.fulfilled_at,r.payee_wallet_id::text,w.public_id,r.transaction_id::text`
+const requestFields = `r.id::text,r.status,r.currency,r.amount::text,r.remark,r.is_frozen,r.require_confirmation,r.expires_at,r.fulfilled_at,r.payee_wallet_id::text,w.public_id,r.transaction_id::text`
 
 func scanRequest(row interface{ Scan(...any) error }) (v accounts.TransferRequestRecord, e error) {
 	e = row.Scan(&v.ID, &v.Status, &v.Currency, &v.Amount, &v.Remark, &v.Freeze, &v.RequireConfirmation, &v.ExpiresAt, &v.FulfilledAt, &v.PayeeWalletID, &v.PayeePublicID, &v.TransactionID)
@@ -72,7 +72,7 @@ func (r *Repository) CreateTransferRequest(ctx context.Context, actor string, ow
 		return
 	}
 	out = accounts.TransferRequestRecord{ID: id, Status: accounts.RequestActive, Currency: q.Currency, Amount: q.Amount, Remark: q.Remark, Freeze: q.Freeze, RequireConfirmation: q.RequireConfirmation, ExpiresAt: now.Add(time.Duration(q.ExpirationHours) * time.Hour), PayeeWalletID: wid, PayeePublicID: w.PublicID}
-	_, e = tx.ExecContext(ctx, `INSERT INTO wallet_v1.transfer_requests(id,creator_account_id,payee_wallet_id,currency,amount,remark,freeze,require_confirmation,created_at,expires_at)VALUES($1::uuid,$2::uuid,$3::uuid,$4::text,$5::numeric,$6::text,$7::boolean,$8::boolean,$9::timestamptz,$10::timestamptz)`, id, actor, wid, q.Currency, q.Amount, q.Remark, q.Freeze, q.RequireConfirmation, now, out.ExpiresAt)
+	_, e = tx.ExecContext(ctx, `INSERT INTO wallet_v1.transfer_requests(id,creator_account_id,payee_wallet_id,currency,amount,remark,is_frozen,require_confirmation,created_at,expires_at)VALUES($1::uuid,$2::uuid,$3::uuid,$4::text,$5::numeric,$6::text,$7::boolean,$8::boolean,$9::timestamptz,$10::timestamptz)`, id, actor, wid, q.Currency, q.Amount, q.Remark, q.Freeze, q.RequireConfirmation, now, out.ExpiresAt)
 	if e != nil {
 		return
 	}

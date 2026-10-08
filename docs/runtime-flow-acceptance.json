@@ -2,21 +2,21 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Wallet transfer request creation, public resolution and atomic canonical fulfillment",
+  "local_source_checkpoint": "Narrow factor setup/rotation, funded sponsorship and reaction-only publisher ratings composed with reviewed atomic transfer requests",
   "last_fully_passed_ci": {
-    "commit": "b3f7497fa996ef16a16d263ec6b07dc79f61845d",
-    "run": 37808387289,
-    "before": 418,
-    "after_restart": 55
+    "commit": "af51dc3d10fe182901063aaa993b00b5b005e2df",
+    "run": 37811114928,
+    "before": 421,
+    "after_restart": 56
   },
   "latest_candidate": {
-    "commit": "af51dc3d10fe182901063aaa993b00b5b005e2df",
-    "required_before": 421,
-    "required_after_restart": 56,
-    "status": "Published fixture-only shadowban consistency correction; PostgreSQL rerun pending"
+    "commit": "830fa0ba63359833fe43870ee67dba1ee1713dbe",
+    "required_before": 427,
+    "required_after_restart": 57,
+    "status": "PG installation failed on reserved internal column name; corrected locally to is_frozen, no PG cases executed"
   },
-  "local_required_before": 427,
-  "local_required_after_restart": 57,
+  "local_required_before": 449,
+  "local_required_after_restart": 60,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -496,7 +496,7 @@
       "supported_flows": [],
       "guarded_pg_cases": [],
       "unsupported_or_remaining": [
-        "Advertising and sponsorship auctions are in implementation; livestream lifecycle is implemented in sphere.livestreams"
+        "Source-supported sponsorship and livestream lifecycle are implemented in dedicated families; provider-backed egress is in progress"
       ]
     },
     {
@@ -998,8 +998,7 @@
       "unsupported_or_remaining": [
         "Automatic frontend reauthentication prompt",
         "Provider/passwordless assurance",
-        "Generic no-PIN opt-out or automatic PIN recovery",
-        "Uniform other-factor assurance policy remains under review"
+        "Generic no-PIN opt-out or automatic PIN recovery"
       ]
     },
     {
@@ -1034,6 +1033,41 @@
       "unsupported_or_remaining": [
         "Original full enum encoding not evidenced; owned numeric status declared",
         "Explicit retention/purge policy"
+      ]
+    },
+    {
+      "source_family": "owned.factor_setup",
+      "local_status": "implemented, actual PG pending",
+      "supported_flows": [
+        "One completed credential login supports prerequisite recovery setup, one pending TOTP and OTP activation via bounded same-session receipt",
+        "Refresh preserves only original setup deadline; unrelated security changes invalidate pending enrollment",
+        "Separate fresh assurance for bodyless recovery rotation and still-valid expired-receipt TOTP activation"
+      ],
+      "guarded_pg_cases": [
+        "TestPGFactorSetupAuthoredHTTPChainAndRefresh"
+      ],
+      "unsupported_or_remaining": [
+        "Pre-upgrade pending factors without owned provenance require restart",
+        "Residual fresh-bearer window is documented; no claim of per-action credential reentry"
+      ]
+    },
+    {
+      "source_family": "sphere.publisher_sponsorship_and_ratings",
+      "local_status": "implemented, actual PG pending",
+      "supported_flows": [
+        "Canonical golds checkout creates paid-only sponsorship bids with atomic rollback and current public visibility",
+        "Bounded durable hourly weighted placements and impression counts",
+        "Idempotent reaction-derived daily publisher rating receipts with explicit policy flag"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBackendPublisherCommerceComposition",
+        "TestPGPublisherSponsorshipRestartPersistence",
+        "TestPGPublisherRatingRestartPersistence"
+      ],
+      "unsupported_or_remaining": [
+        "Paid PostAward contribution is a separate upcoming source-backed integration",
+        "Prior reaction-only receipts are not silently rewritten",
+        "Operator must configure treasury and rating start day"
       ]
     }
   ],

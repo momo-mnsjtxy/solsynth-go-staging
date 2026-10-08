@@ -5,6 +5,20 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGBackendPublisherCommerceComposition",
+        "TestPGPublisherRatingBatchRollbackAndConcurrency",
+        "TestPGPublisherRatingProducerCountsPrivacyAndReplay",
+        "TestPGPublisherRatingRanksAliasesAndCurrentPrivacy",
+        "TestPGPublisherRatingRestartPersistence",
+        "TestPGPublisherSponsorshipAuctionCurrentVisibilityAndAds",
+        "TestPGPublisherSponsorshipAuditRollbackConservation",
+        "TestPGPublisherSponsorshipAuthorityAndPrivateRevalidation",
+        "TestPGPublisherSponsorshipConcurrencyAndSecondaryLockRetry",
+        "TestPGPublisherSponsorshipOppositeOwnerPayments",
+        "TestPGPublisherSponsorshipOrderAndBidExpiry",
+        "TestPGPublisherSponsorshipPaymentExactlyOnceAndIsolation",
+        "TestPGPublisherSponsorshipRestartPersistence",
+
         "TestPGWalletTransferRequestSourceHTTPAndAtomicFulfillment",
         "TestPGWalletTransferRequestConcurrentPayersAndReplay",
         "TestPGWalletTransferRequestVisibilityPermissionAndExpiry",
@@ -463,8 +477,20 @@ EXPECTED = {
         "TestPGPaymentPINRestartPersistence",
         "TestPGPaymentPINDisabledPolicyBlocksStandingRenewal",
         "TestPGPaymentPINAssuranceExpiryDuringPolicyWait",
+        "TestPGFactorSetupAuthoredHTTPChainAndRefresh",
+        "TestPGFactorSetupExpiryFreshActivationAndPendingLifetime",
+        "TestPGFactorSetupSecurityInvalidationAndSessionIsolation",
+        "TestPGFactorSetupConcurrentStartOTPAndRollback",
+        "TestPGFactorSetupWrongOTPBudgetAndNoRefreshRenewal",
+        "TestPGRecoveryBodylessRotationAndOneTimeDisclosure",
+        "TestPGFactorSetupRestartPersistence",
+        "TestPGRecoveryRotationRollbackAndConcurrentUse",
+        "TestPGTOTPDisableAndFreshReenable",
     },
     "after": {
+        "TestPGPublisherRatingRestartPersistence",
+        "TestPGPublisherSponsorshipRestartPersistence",
+
         "TestPGWalletTransferRequestRestartPersistence",
         "TestPGBoardDiscoveryRestartPersistence",
         "TestPGRefreshContinuityRestartPersistence",
@@ -547,6 +573,7 @@ EXPECTED = {
         "TestPGTaxonomyRestartPersistence",
         "TestPGWalletRestartPersistence",
         "TestPGPaymentPINRestartPersistence",
+        "TestPGFactorSetupRestartPersistence",
     },
 }
 

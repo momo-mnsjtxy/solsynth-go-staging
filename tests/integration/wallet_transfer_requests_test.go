@@ -3,7 +3,10 @@ package integration_test
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -13,6 +16,7 @@ import (
 	w "solsynth.local/go-migration/ports/wallet/accounts"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -123,6 +127,14 @@ func TestPGWalletTransferRequestVisibilityPermissionAndExpiry(t *testing.T) {
 	backendCall(t, f.app, "GET", "/wallet/wallets/transfer/requests/"+q.ID, "", "", 404)
 	f.pay(t, q.ID, 404)
 	backendCall(t, f.app, "POST", "/wallet/wallets/"+f.payee.ID+"/public-id/enable", f.otherToken, "", 200)
+	query(t, f.db, `UPDATE owned_authority_accounts SET disabled=true WHERE id=$1::uuid`, f.other)
+	backendCall(t, f.app, "GET", "/api/wallets/transfer/requests/"+q.ID, "", "", 404)
+	f.pay(t, q.ID, 404)
+	query(t, f.db, `UPDATE owned_authority_accounts SET disabled=false WHERE id=$1::uuid`, f.other)
+	query(t, f.db, `UPDATE wallet_v1.wallets SET deleted_at=clock_timestamp() WHERE id=$1::uuid`, f.payee.ID)
+	backendCall(t, f.app, "GET", "/api/wallets/transfer/requests/"+q.ID, "", "", 404)
+	f.pay(t, q.ID, 404)
+	query(t, f.db, `UPDATE wallet_v1.wallets SET deleted_at=NULL WHERE id=$1::uuid`, f.payee.ID)
 	query(t, f.db, `UPDATE wallet_v1.transfer_requests SET created_at=clock_timestamp()-interval '2 hours',expires_at=clock_timestamp()-interval '1 hour' WHERE id=$1::uuid`, q.ID)
 	backendCall(t, f.app, "GET", "/api/wallets/transfer/requests/"+q.ID, "", "", 404)
 	f.pay(t, q.ID, 404)
@@ -145,6 +157,12 @@ func TestPGWalletTransferRequestRollbackAndBounds(t *testing.T) {
 	query(t, f.db, `ALTER TABLE wallet_v1.transfer_requests ADD CONSTRAINT `+name+` CHECK(id<>'`+q.ID+`'::uuid OR status<>1) NOT VALID`)
 	t.Cleanup(func() { _, _ = f.db.Exec(`ALTER TABLE wallet_v1.transfer_requests DROP CONSTRAINT IF EXISTS ` + name) })
 	f.pay(t, q.ID, 500)
+	if n := commerceCount(t, f.db, `SELECT count(*)FROM wallet_v1.payment_authorizations WHERE account_id=$1::uuid AND consumed_at IS NOT NULL`, f.actor); n != 0 {
+		t.Fatal("rolled back request consumed payment proof", n)
+	}
+	if n := commerceCount(t, f.db, `SELECT count(*)FROM wallet_v1.payment_authorizations WHERE account_id=$1::uuid AND consumed_at IS NULL`, f.actor); n != 1 {
+		t.Fatal("failed transaction lost retryable payment proof", n)
+	}
 	walletAssertBalance(t, walletpg.New(f.db), f.payer.ID, "synthetic-request", "100.000", "0.000", "100.000")
 	if n := commerceCount(t, f.db, `SELECT count(*)FROM wallet_v1.transactions WHERE payer_wallet_id=$1::uuid`, f.payer.ID); n != 0 {
 		t.Fatal("failed request committed transfer")
@@ -152,11 +170,48 @@ func TestPGWalletTransferRequestRollbackAndBounds(t *testing.T) {
 	backendCall(t, f.app, "GET", "/wallet/wallets/transfer/requests/"+q.ID, "", "", 200)
 	query(t, f.db, `ALTER TABLE wallet_v1.transfer_requests DROP CONSTRAINT `+name)
 	f.pay(t, q.ID, 200)
+	if n := commerceCount(t, f.db, `SELECT count(*)FROM wallet_v1.payment_authorizations WHERE account_id=$1::uuid AND consumed_at IS NOT NULL`, f.actor); n != 1 {
+		t.Fatal("successful retry proof count", n)
+	}
 }
 func TestPGWalletTransferRequestExpiresDuringWalletWait(t *testing.T) {
 	f := newRequestFixture(t)
 	q := f.create(t)
-	query(t, f.db, `UPDATE wallet_v1.transfer_requests SET expires_at=clock_timestamp()+interval '2 seconds' WHERE id=$1::uuid`, q.ID)
+	clock := &atomic.Int64{}
+	clock.Store(time.Now().UTC().UnixMicro())
+	now := func() time.Time { return time.UnixMicro(clock.Load()).UTC() }
+	query(t, f.db, `UPDATE wallet_v1.transfer_requests SET expires_at=$2::timestamptz WHERE id=$1::uuid`, q.ID, now().Add(time.Minute))
+	canonical := authoritypg.New(f.db)
+	verifier, e := authority.NewVerifier(canonical, f.config)
+	if e != nil {
+		t.Fatal(e)
+	}
+	guard := authoritypg.NewTransactionGuard(canonical, verifier)
+	pin := walletpg.NewPINVerifier(f.db, nil).WithAuthority(guard).WithClock(now)
+	repo := walletpg.NewWithAuthority(f.db, guard).WithClock(now).WithPaymentAuthorization(pin)
+	handler := w.NewAuthorityHandler(repo, verifier, func(p authority.Principal) w.Principal {
+		return w.Principal{AccountID: p.Account.ID, SessionID: p.Session.ID}
+	}, walletpg.NewRealmAuthority(f.db), pin.Atomic(), func(e error) error {
+		var failure *authority.Failure
+		if errors.As(e, &failure) {
+			if failure.Status == 401 {
+				return w.ErrUnauthorized
+			}
+			if failure.Status == 403 || failure.Status == 423 {
+				return w.ErrForbidden
+			}
+		}
+		return w.ErrUnavailable
+	})
+	composed := http.HandlerFunc(func(out http.ResponseWriter, r *http.Request) {
+		p, e := verifier.AuthenticateRequest(r)
+		if e != nil {
+			t.Error(e)
+			out.WriteHeader(401)
+			return
+		}
+		handler.ServeHTTP(out, r.WithContext(guard.Bind(r.Context(), p)))
+	})
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	af := atomicAuthorityFixture{db: f.db, ctx: ctx}
@@ -165,18 +220,44 @@ func TestPGWalletTransferRequestExpiresDuringWalletWait(t *testing.T) {
 	body, _ := json.Marshal(map[string]any{"transfer_request_id": q.ID, "payer_wallet_id": f.payer.ID})
 	go func() {
 		v := httptest.NewRecorder()
-		f.app.ServeHTTP(v, fixtureRawJSONRequest("POST", "/wallet/wallets/transfer", f.token, string(body)).WithContext(ctx))
+		composed.ServeHTTP(v, fixtureRawJSONRequest("POST", "/api/wallets/transfer", f.token, string(body)).WithContext(ctx))
 		done <- v.Code
 	}()
-	waitAtomicBlocked(t, af, pid, "wallet_v1.wallets")
-	time.Sleep(2100 * time.Millisecond)
-	if e := tx.Commit(); e != nil {
+	ticker := time.NewTicker(5 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		select {
+		case status := <-done:
+			t.Fatalf("transfer completed before expected wallet lock: HTTP %d", status)
+		default:
+		}
+		var blocked int
+		e := f.db.QueryRowContext(ctx, `SELECT pid FROM pg_stat_activity WHERE datname=current_database() AND $1::integer=ANY(pg_blocking_pids(pid)) AND position('wallet_v1.wallets' in query)>0 LIMIT 1`, pid).Scan(&blocked)
+		if e == nil {
+			break
+		}
+		if !errors.Is(e, sql.ErrNoRows) {
+			t.Fatal(e)
+		}
+		select {
+		case status := <-done:
+			t.Fatalf("transfer completed before expected wallet lock: HTTP %d", status)
+		case <-ctx.Done():
+			t.Fatal("expected SQL lock wait was not observed", ctx.Err())
+		case <-ticker.C:
+		}
+	}
+	clock.Add(int64(61 * time.Second / time.Microsecond))
+	if e = tx.Commit(); e != nil {
 		t.Fatal(e)
 	}
 	if status := <-done; status != 409 {
 		t.Fatal("expired locked request accepted", status)
 	}
 	walletAssertBalance(t, walletpg.New(f.db), f.payer.ID, "synthetic-request", "100.000", "0.000", "100.000")
+	if n := commerceCount(t, f.db, `SELECT count(*)FROM wallet_v1.payment_authorizations WHERE account_id=$1::uuid AND consumed_at IS NOT NULL`, f.actor); n != 0 {
+		t.Fatal("expiry consumed payment proof", n)
+	}
 }
 func TestPGWalletTransferRequestRestartPersistence(t *testing.T) {
 	db := database(t)

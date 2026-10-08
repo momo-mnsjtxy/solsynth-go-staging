@@ -40,8 +40,11 @@ func NewWithAuthority(db *sql.DB, guard *authoritypg.TransactionGuard) *Reposito
 	r.authority = guard
 	return r
 }
-func NewWithClock(db *sql.DB, clock func() time.Time) *Repository {
-	r := New(db)
+func NewWithClock(db *sql.DB, clock func() time.Time) *Repository { return New(db).WithClock(clock) }
+
+// WithClock injects a trusted server clock without replacing authority or payment
+// adapters. It performs no I/O and does not accept an HTTP-provided timestamp.
+func (r *Repository) WithClock(clock func() time.Time) *Repository {
 	if clock != nil {
 		r.now = clock
 	}

@@ -22,7 +22,10 @@ var baseSchema string
 
 //go:embed payment_pin_schema.sql
 var PaymentPINSchema string
-var Schema = baseSchema + "\n" + PaymentPINSchema
+
+//go:embed factor_setup_schema.sql
+var FactorSetupSchema string
+var Schema = baseSchema + "\n" + PaymentPINSchema + "\n" + FactorSetupSchema
 
 type Repository struct {
 	pin       PaymentPINStore
@@ -190,7 +193,7 @@ func (t *transaction) SaveCredentials(c signin.Credentials) error {
 	return e
 }
 func (t *transaction) Factors() ([]signin.Factor, error) {
-	rows, e := t.tx.QueryContext(t.ctx, `SELECT id::text,type,created_at,enabled_at,secret,last_counter,pending_until FROM owned_authority_factors WHERE account_id=$1 ORDER BY type,id`, t.canonical.Account().ID)
+	rows, e := t.tx.QueryContext(t.ctx, `SELECT id::text,type,created_at,enabled_at,secret,last_counter,pending_until,revision FROM owned_authority_factors WHERE account_id=$1 ORDER BY type,id`, t.canonical.Account().ID)
 	if e != nil {
 		return nil, e
 	}
@@ -198,7 +201,7 @@ func (t *transaction) Factors() ([]signin.Factor, error) {
 	out := []signin.Factor{}
 	for rows.Next() {
 		f := signin.Factor{Trustworthy: 1}
-		if e = rows.Scan(&f.ID, &f.Type, &f.CreatedAt, &f.EnabledAt, &f.Secret, &f.LastCounter, &f.PendingUntil); e != nil {
+		if e = rows.Scan(&f.ID, &f.Type, &f.CreatedAt, &f.EnabledAt, &f.Secret, &f.LastCounter, &f.PendingUntil, &f.Revision); e != nil {
 			return nil, e
 		}
 		if f.Type == 4 {
@@ -209,14 +212,32 @@ func (t *transaction) Factors() ([]signin.Factor, error) {
 	return out, rows.Err()
 }
 func (t *transaction) SaveFactor(f signin.Factor) error {
+	return t.saveFactor(f, false)
+}
+func (t *transaction) SaveSetupFactor(f signin.Factor) error {
+	return t.saveFactor(f, true)
+}
+func (t *transaction) saveFactor(f signin.Factor, setup bool) error {
 	if !authority.ValidID(f.ID) || (f.Type == 4 && len(f.Secret) != 0) || (f.Type != 4 && len(f.Secret) == 0) || f.Type != 0 && f.Type != 3 && f.Type != 4 && f.Type != 5 {
 		return authority.ErrInvalid
 	}
-	res, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_factors(id,account_id,type,created_at,enabled_at,secret,last_counter,pending_until) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(id) DO UPDATE SET enabled_at=EXCLUDED.enabled_at,secret=EXCLUDED.secret,last_counter=EXCLUDED.last_counter,pending_until=EXCLUDED.pending_until WHERE owned_authority_factors.account_id=EXCLUDED.account_id AND owned_authority_factors.type=EXCLUDED.type`, f.ID, t.canonical.Account().ID, f.Type, f.CreatedAt, f.EnabledAt, f.Secret, f.LastCounter, f.PendingUntil)
+	res, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_factors(id,account_id,type,created_at,enabled_at,secret,last_counter,pending_until) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(id) DO UPDATE SET enabled_at=EXCLUDED.enabled_at,secret=EXCLUDED.secret,last_counter=EXCLUDED.last_counter,pending_until=EXCLUDED.pending_until,revision=owned_authority_factors.revision+CASE WHEN (owned_authority_factors.enabled_at,owned_authority_factors.secret,owned_authority_factors.pending_until) IS DISTINCT FROM (EXCLUDED.enabled_at,EXCLUDED.secret,EXCLUDED.pending_until) THEN 1 ELSE 0 END WHERE owned_authority_factors.account_id=EXCLUDED.account_id AND owned_authority_factors.type=EXCLUDED.type AND owned_authority_factors.revision=$9::bigint`, f.ID, t.canonical.Account().ID, f.Type, f.CreatedAt, f.EnabledAt, f.Secret, f.LastCounter, f.PendingUntil, f.Revision)
 	if e != nil {
 		return conflict(e)
 	}
-	return one(res)
+	if e = one(res); e != nil {
+		return e
+	}
+	if !setup {
+		var revision int64
+		if e = t.tx.QueryRowContext(t.ctx, `SELECT revision FROM owned_authority_factors WHERE id=$1::uuid`, f.ID).Scan(&revision); e != nil {
+			return e
+		}
+		if revision != f.Revision {
+			return t.CancelFactorSetup()
+		}
+	}
+	return nil
 }
 func one(r sql.Result) error {
 	n, e := r.RowsAffected()
@@ -236,7 +257,10 @@ func (t *transaction) DeleteFactor(id string) error {
 	if e != nil {
 		return e
 	}
-	return one(r)
+	if e = one(r); e != nil {
+		return e
+	}
+	return t.CancelFactorSetup()
 }
 func (t *transaction) Challenge(hash []byte) (signin.Challenge, error) {
 	var c signin.Challenge

@@ -5,6 +5,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/sponsorshippg/schema.sql",
+ "internal/publisherratingpg/schema.sql",
  "internal/authoritypg/continuity_schema.sql",
  "internal/livestreampg/chat_schema.sql",
  "internal/livestreampg/awards_schema.sql",
@@ -62,6 +64,7 @@ REQUIRED_SCHEMAS = {
     "internal/taxonomypg/testdata/schema.sql",
  "internal/authoritypg/assurance_schema.sql",
  "internal/signinpg/payment_pin_schema.sql",
+ "internal/signinpg/factor_setup_schema.sql",
  "internal/walletpg/pin_schema.sql",
  "internal/walletpg/transfer_requests_schema.sql",
 }
@@ -101,6 +104,8 @@ def check(runner, read_schema=None):
         raise ValueError("PIN factor migration requires canonical sign-in first")
     if schemas.index("internal/walletpg/pin_schema.sql") <= max(schemas.index("internal/walletpg/schema.sql"), schemas.index("internal/signinpg/payment_pin_schema.sql")):
         raise ValueError("PIN policy references require wallet and factors first")
+    if schemas.index("internal/signinpg/factor_setup_schema.sql") <= max(schemas.index("internal/signinpg/payment_pin_schema.sql"),schemas.index("internal/authoritypg/continuity_schema.sql")):
+        raise ValueError("factor setup requires factors and session continuity")
     if schemas.index("internal/accountpg/name_schema.sql") <= schemas.index("internal/accountpg/schema.sql"):
         raise ValueError("publisher reservations require canonical publishers first")
     if schemas.index("internal/federationpg/identity_schema.sql") <= max(schemas.index("internal/federationpg/schema.sql"), schemas.index("internal/accountpg/name_schema.sql")):

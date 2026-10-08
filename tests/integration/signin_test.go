@@ -670,7 +670,7 @@ func TestPGSigninAuthorityBoundary(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if _, e = f.service.CreateFactor(f.ctx, fresh.Token, 3, ""); !errors.Is(e, signin.ErrRecent) {
+	if _, e = f.service.CreateFactor(f.ctx, fresh.Token, 3, ""); !errors.Is(e, signin.ErrReauthentication) {
 		t.Fatal("refresh bypassed recent login", e)
 	}
 }

@@ -1,0 +1,7 @@
+# Offline PostgreSQL syntax guard
+
+scripts/check-postgres-syntax.py parses every Git-maintained or newly queued .sql file, including PL/pgSQL bodies. Pinned pglast6.7 reports PostgreSQL grammar16.1; the guard rejects any different package version or PostgreSQL major. CI uses PostgreSQL16, so a newer-major grammar cannot silently certify unsupported syntax. Four negative controls include an unquoted freeze column, malformed DDL and a broken procedural body; quoted identifiers and typed parameters remain valid.
+
+Install scripts/sql-parser-requirements.txt from the official PyPI registry into a dedicated Python environment (or target directory supplied via PYTHONPATH) before scripts/verify.sh. The workflow performs that explicit pinned installation. The parser performs no networking or SQL execution during verification, starts no server and uses no sockets. It cannot validate catalog resolution, parameter type inference, foreign-key compatibility, data constraints, permissions, transactions, locks, concurrency or restart behavior. Existing disposable PostgreSQL16 multi-connection/process/restart CI remains required. Parser16.1 is an older minor grammar within the target major; a syntax pass is not full PostgreSQL16 compatibility certification.
+
+Primary references: https://pypi.org/project/pglast/6.7/ and https://pglast.readthedocs.io/en/v6/parser.html . The package is GPLv3-or-later and is an external development dependency; its binaries are not vendored into this source snapshot.

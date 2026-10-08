@@ -21,7 +21,7 @@ var (
 )
 
 // The current caller can sign in normally and retry without a new header.
-var ErrReauthentication = &authority.Failure{Code: "REAUTHENTICATION_REQUIRED", Message: "Sign in again with your password and required second factor, then retry this PIN action within five minutes.", Status: 403}
+var ErrReauthentication = &authority.Failure{Code: "REAUTHENTICATION_REQUIRED", Message: "Sign in again with your password and required second factor, then retry this sensitive action within five minutes.", Status: 403}
 
 type Credentials struct {
 	AccountID, Email string
@@ -35,6 +35,7 @@ type Factor struct {
 	EnabledAt       *time.Time        `json:"enabled_at"`
 	CreatedResponse map[string]string `json:"createdResponse,omitempty"`
 	Secret          []byte            `json:"-"`
+	Revision        int64             `json:"-"`
 	LastCounter     int64             `json:"-"`
 	PendingUntil    *time.Time        `json:"-"`
 }

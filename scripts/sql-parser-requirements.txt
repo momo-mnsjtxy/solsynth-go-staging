@@ -1,0 +1,2 @@
+# Pure offline PostgreSQL 16 grammar guard; runtime checks enforce both versions.
+pglast==6.7

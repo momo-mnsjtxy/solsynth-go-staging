@@ -18,6 +18,7 @@ import (
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/messager/calls"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	live "solsynth.local/go-migration/ports/sphere/livestreams"
@@ -259,6 +260,14 @@ func TestPGRefreshContinuityPasswordAndFactorEndBroadcast(t *testing.T) {
 			pair := f.login(t, account.Name, syntheticPassword)
 			app, _ := continuityApp(t, f.db, authorityConfig(t, f.keys, f.now), f.issuer, "wss://synthetic-security-"+account.ID+".invalid")
 			s := continuityBroadcast(t, f.db, app, account.ID, pair.Token)
+			var factor signin.Factor
+			if kind == "factor" {
+				var e error
+				factor, e = f.service.CreateFactor(f.ctx, pair.Token, 3, "")
+				if e != nil {
+					t.Fatal(e)
+				}
+			}
 			rotated, e := f.issuer.Refresh(f.ctx, pair.RefreshToken, 0, "")
 			if e != nil {
 				t.Fatal(e)
@@ -267,10 +276,6 @@ func TestPGRefreshContinuityPasswordAndFactorEndBroadcast(t *testing.T) {
 			if kind == "password" {
 				e = f.service.ChangePassword(f.ctx, rotated.Token, syntheticPassword, "synthetic changed password only 5678")
 			} else {
-				factor, x := f.service.CreateFactor(f.ctx, rotated.Token, 3, "")
-				if x != nil {
-					t.Fatal(x)
-				}
 				_, e = f.service.EnableFactor(f.ctx, rotated.Token, factor.ID, syntheticTOTP(t, factor.CreatedResponse["uri"], f.now.Load()))
 			}
 			if e != nil {

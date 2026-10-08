@@ -25,7 +25,11 @@ jobs:
         run: |
           go mod download
           go mod verify
+      - name: Install pinned PostgreSQL 16 syntax parser
+        run: python3 -m pip install --isolated --disable-pip-version-check --no-input --index-url https://pypi.org/simple --only-binary=:all: --no-deps --target "$RUNNER_TEMP/sql-parser" -r scripts/sql-parser-requirements.txt
       - name: Ordinary build, vet and race checks
+        env:
+          PYTHONPATH: ${{ runner.temp }}/sql-parser
         env:
           GO_BIN: go
         run: bash scripts/verify.sh
@@ -41,5 +45,5 @@ jobs:
       - name: Record scope
         if: success()
         run: |
-          echo 'Local build/vet/race checks passed. 427 actual PostgreSQL cases across owned Authority, Accounts, Wallet, Posts, Chat, Social, Interactions, Media, Apps, Notifications and Backend plus retained watcher/Board/Develop/NodeInfo/Messager/Taxonomy fixtures, 57 post-restart persistence assertions and real loopback backend/Board/Messager/Taxonomy/Develop/catalog/package/bot/NodeInfo process HTTP checks passed without skips.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Local build/vet/race checks passed. 449 actual PostgreSQL cases across owned Authority, Accounts, Wallet, Posts, Chat, Social, Interactions, Media, Apps, Notifications and Backend plus retained watcher/Board/Develop/NodeInfo/Messager/Taxonomy fixtures, 60 post-restart persistence assertions and real loopback backend/Board/Messager/Taxonomy/Develop/catalog/package/bot/NodeInfo process HTTP checks passed without skips.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Synthetic disposable private-socket database only. This validates the implemented owned authority protocol and explicitly configured domain policies; it does not establish upstream identity-protocol compatibility, production migration readiness, C# differential behavior, upstream watcher/global-filter parity, or whole-platform parity.' >> "$GITHUB_STEP_SUMMARY"

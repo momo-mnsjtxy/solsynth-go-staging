@@ -263,12 +263,12 @@ func (s *Service) RegisterRoutes(m *http.ServeMux) {
 			failure(w, e)
 			return
 		}
-		var code string
-		if e = decode(w, r, &code); e != nil {
+		code, present, e := decodeEnableBody(w, r)
+		if e != nil {
 			failure(w, e)
 			return
 		}
-		v, e := s.EnableFactor(r.Context(), token, r.PathValue("id"), code)
+		v, e := s.EnableFactorBody(r.Context(), token, r.PathValue("id"), code, present)
 		if e != nil {
 			failure(w, e)
 			return

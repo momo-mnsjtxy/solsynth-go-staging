@@ -25,6 +25,7 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	publisherCommerce                                                                                                                                                                                                                                    publisherCommerceModules
 	domainCollections                                                                                                                                                                                                                                    domainCollectionModules
 	admin                                                                                                                                                                                                                                                adminModules
 	livestreams                                                                                                                                                                                                                                          http.Handler
@@ -51,6 +52,10 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// between services. Neither a service-name prefix nor traversal is authority.
 	if p == "" || p[0] != '/' || path.Clean(p) != p || strings.Contains(p, "\\") || strings.Contains(p, "//") || r.URL.RawPath != "" && r.URL.EscapedPath() != p {
 		problem(w, 400, "INVALID_ROUTE_PATH")
+		return
+	}
+	if handler := h.publisherCommerce.route(p); handler != nil {
+		handler.ServeHTTP(w, r)
 		return
 	}
 	if handler := h.domainCollections.route(p); handler != nil {

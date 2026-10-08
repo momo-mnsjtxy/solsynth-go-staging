@@ -28,10 +28,10 @@ func TestRecordedSessionEligibilityRevocationScopeAndParents(t *testing.T) {
 			t.Fatal(got, e, want)
 		}
 	}
-	check(base, p.Session.ID, p.Account.Version, p.Session.Epoch, at, "posts.create", true)
-	check(base, p.Session.ID, p.Account.Version, p.Session.Epoch, at, "wallets.pay", false)
-	check(base, p.Session.ID, p.Account.Version+1, p.Session.Epoch, at, "posts.create", false)
-	check(base, p.Session.ID, p.Account.Version, p.Session.Epoch+1, at, "posts.create", false)
+	check(base, p.Session.ID, p.Account.Version, p.Session.AuthorizationEpoch, at, "posts.create", true)
+	check(base, p.Session.ID, p.Account.Version, p.Session.AuthorizationEpoch, at, "wallets.pay", false)
+	check(base, p.Session.ID, p.Account.Version+1, p.Session.AuthorizationEpoch, at, "posts.create", false)
+	check(base, p.Session.ID, p.Account.Version, p.Session.AuthorizationEpoch+1, at, "posts.create", false)
 	for _, change := range []func(*memState){
 		func(st *memState) { st.rules = nil },
 		func(st *memState) { st.rules = append(st.rules, Rule{Pattern: "posts.*", Deny: true}) },
@@ -55,7 +55,7 @@ func TestRecordedSessionEligibilityRevocationScopeAndParents(t *testing.T) {
 	} {
 		st := cloneState(base)
 		change(st)
-		check(st, p.Session.ID, p.Account.Version, p.Session.Epoch, at, "posts.create", false)
+		check(st, p.Session.ID, p.Account.Version, p.Session.AuthorizationEpoch, at, "posts.create", false)
 	}
 	st := cloneState(base)
 	child := st.sessions[p.Session.ID]
@@ -65,16 +65,16 @@ func TestRecordedSessionEligibilityRevocationScopeAndParents(t *testing.T) {
 	child.ParentID = parent.ID
 	st.sessions[parent.ID] = parent
 	st.sessions[child.ID] = child
-	check(st, child.ID, p.Account.Version, p.Session.Epoch, at, "posts.create", true)
+	check(st, child.ID, p.Account.Version, p.Session.AuthorizationEpoch, at, "posts.create", true)
 	parent.Scopes = []string{"wallets.*"}
 	st.sessions[parent.ID] = parent
-	check(st, child.ID, p.Account.Version, p.Session.Epoch, at, "posts.create", false)
+	check(st, child.ID, p.Account.Version, p.Session.AuthorizationEpoch, at, "posts.create", false)
 	parent.Scopes = []string{"posts.*"}
 	parent.ExpiresAt = at
 	st.sessions[parent.ID] = parent
-	check(st, child.ID, p.Account.Version, p.Session.Epoch, at, "posts.create", false)
+	check(st, child.ID, p.Account.Version, p.Session.AuthorizationEpoch, at, "posts.create", false)
 	parent.ExpiresAt = at.Add(time.Hour)
 	parent.RevokedAt = &at
 	st.sessions[parent.ID] = parent
-	check(st, child.ID, p.Account.Version, p.Session.Epoch, at, "posts.create", false)
+	check(st, child.ID, p.Account.Version, p.Session.AuthorizationEpoch, at, "posts.create", false)
 }

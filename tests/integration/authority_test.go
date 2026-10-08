@@ -394,7 +394,7 @@ func TestPGAuthorityRestartPersistence(t *testing.T) {
 	switch os.Getenv("PG_TEST_PHASE") {
 	case "before":
 		query(t, db, `INSERT INTO owned_authority_accounts(id,name,nick,version,disabled,created_at) VALUES($1,'authority_restart','Restart',7,true,'2026-01-01')`, account)
-		query(t, db, `INSERT INTO owned_authority_sessions(id,account_id,label,type,client_id,created_at,last_granted_at,category,epoch,account_version,expires_at,revoked_at,scopes) VALUES($1,$2,'Restart',0,'','2026-01-01','2026-01-01','test',3,7,'2027-01-01','2026-02-01','["accounts.manage"]')`, session, account)
+		query(t, db, `INSERT INTO owned_authority_sessions(id,account_id,label,type,client_id,created_at,last_granted_at,category,epoch,authorization_epoch,account_version,expires_at,revoked_at,scopes) VALUES($1,$2,'Restart',0,'','2026-01-01','2026-01-01','test',3,3,7,'2027-01-01','2026-02-01','["accounts.manage"]')`, session, account)
 		query(t, db, `INSERT INTO owned_authority_grants(account_id,pattern,deny) VALUES($1,'accounts.*',true)`, account)
 	case "after":
 	default:

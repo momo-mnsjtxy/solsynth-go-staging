@@ -129,7 +129,15 @@ func (m *memTx) SaveSession(s Session) error {
 	if m.fail {
 		return errors.New("injected persistence failure")
 	}
-	m.state.sessions[s.ID] = s
+	var prior *Session
+	if old, ok := m.state.sessions[s.ID]; ok {
+		prior = &old
+	}
+	next, e := PrepareSessionWrite(prior, s)
+	if e != nil {
+		return e
+	}
+	m.state.sessions[s.ID] = next
 	return nil
 }
 func (m *memTx) Rules() ([]Rule, error)             { return m.state.rules, nil }
@@ -258,7 +266,7 @@ func TestAuthorityConcurrentRefreshGraceAndStorage(t *testing.T) {
 	}
 	m.mu.Lock()
 	for _, se := range m.state[accountA].sessions {
-		if se.Epoch != 2 || bytes.Contains(se.SealedPair, []byte(canonical.RefreshToken)) || bytes.Equal(se.RefreshHash, []byte(canonical.RefreshToken)) {
+		if se.Epoch != 2 || se.AuthorizationEpoch != 1 || bytes.Contains(se.SealedPair, []byte(canonical.RefreshToken)) || bytes.Equal(se.RefreshHash, []byte(canonical.RefreshToken)) {
 			t.Fatal("unsafe or repeated rotation")
 		}
 	}

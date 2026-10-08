@@ -12,10 +12,24 @@ import (
 // This resource lane accepts ordinary Type-0 sessions only; delegated sessions
 // remain restricted to their separately reviewed OAuth binding/route lane.
 func (v *Verifier) RecordedSessionEligible(tx Transaction, id string, version, epoch int64, now time.Time, permissions ...string) (bool, error) {
+	if len(permissions) == 0 {
+		return false, nil
+	}
+	return v.recordedSessionEligible(tx, id, version, epoch, now, permissions)
+}
+
+// RecordedAuthenticationEligible is only for previously recorded admissions
+// whose original contract required authentication and canonical membership. It
+// grants no permission and cannot authorize a new request or admission.
+func (v *Verifier) RecordedAuthenticationEligible(tx Transaction, id string, version, epoch int64, now time.Time) (bool, error) {
+	return v.recordedSessionEligible(tx, id, version, epoch, now, nil)
+}
+
+func (v *Verifier) recordedSessionEligible(tx Transaction, id string, version, epoch int64, now time.Time, permissions []string) (bool, error) {
 	if v == nil || v.service == nil || tx == nil {
 		return false, ErrUnavailable
 	}
-	if !ValidID(id) || version < 1 || epoch < 1 || len(permissions) == 0 {
+	if !ValidID(id) || version < 1 || epoch < 1 {
 		return false, nil
 	}
 	a := tx.Account()
@@ -36,13 +50,13 @@ func (v *Verifier) RecordedSessionEligible(tx Transaction, id string, version, e
 	if e != nil {
 		return denial(e)
 	}
-	if initial.Epoch != epoch {
+	if initial.AuthorizationEpoch != epoch {
 		return false, nil
 	}
 	seen := map[string]bool{}
 	current := initial
 	for depth := 0; ; depth++ {
-		if depth >= 64 || seen[current.ID] || current.AccountID != a.ID || current.AccountVersion != version || current.Type != 0 || current.ClientID != "" || current.RevokedAt != nil || !current.ExpiresAt.After(now) || current.CreatedAt.After(now) || current.Epoch < 1 {
+		if depth >= 64 || seen[current.ID] || current.AccountID != a.ID || current.AccountVersion != version || current.Type != 0 || current.ClientID != "" || current.RevokedAt != nil || !current.ExpiresAt.After(now) || current.CreatedAt.After(now) || current.Epoch < 1 || current.AuthorizationEpoch < 1 || current.AuthorizationEpoch > current.Epoch {
 			return false, nil
 		}
 		seen[current.ID] = true
@@ -54,8 +68,10 @@ func (v *Verifier) RecordedSessionEligible(tx Transaction, id string, version, e
 				return false, nil
 			}
 		}
-		if e = evaluatePolicy(tx, a, current, now, permissions); e != nil {
-			return denial(e)
+		if len(permissions) > 0 {
+			if e = evaluatePolicy(tx, a, current, now, permissions); e != nil {
+				return denial(e)
+			}
 		}
 		if current.ParentID == "" {
 			break

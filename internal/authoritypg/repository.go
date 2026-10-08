@@ -21,7 +21,10 @@ var baseSchema string
 //go:embed assurance_schema.sql
 var AssuranceSchema string
 
-var Schema = baseSchema + "\n" + AssuranceSchema
+//go:embed continuity_schema.sql
+var ContinuitySchema string
+
+var Schema = baseSchema + "\n" + AssuranceSchema + "\n" + ContinuitySchema
 
 type Repository struct{ db *sql.DB }
 
@@ -130,7 +133,7 @@ func (t *transaction) SaveAccount(a authority.Account) error {
 	return nil
 }
 
-const sessionColumns = `id::text,account_id::text,COALESCE(parent_id::text,''),label,type,client_id,created_at,last_granted_at,category,trusted,epoch,account_version,expires_at,revoked_at,scopes,refresh_hash,previous_hash,previous_until,sealed_pair`
+const sessionColumns = `id::text,account_id::text,COALESCE(parent_id::text,''),label,type,client_id,created_at,last_granted_at,category,trusted,epoch,authorization_epoch,account_version,expires_at,revoked_at,scopes,refresh_hash,previous_hash,previous_until,sealed_pair`
 
 type scanner interface{ Scan(...any) error }
 
@@ -138,7 +141,7 @@ func scanSession(row scanner) (authority.Session, error) {
 	var s authority.Session
 	var scopes []byte
 	var previous sql.NullTime
-	e := row.Scan(&s.ID, &s.AccountID, &s.ParentID, &s.Label, &s.Type, &s.ClientID, &s.CreatedAt, &s.LastGrantedAt, &s.Category, &s.Trusted, &s.Epoch, &s.AccountVersion, &s.ExpiresAt, &s.RevokedAt, &scopes, &s.RefreshHash, &s.PreviousHash, &previous, &s.SealedPair)
+	e := row.Scan(&s.ID, &s.AccountID, &s.ParentID, &s.Label, &s.Type, &s.ClientID, &s.CreatedAt, &s.LastGrantedAt, &s.Category, &s.Trusted, &s.Epoch, &s.AuthorizationEpoch, &s.AccountVersion, &s.ExpiresAt, &s.RevokedAt, &scopes, &s.RefreshHash, &s.PreviousHash, &previous, &s.SealedPair)
 	if errors.Is(e, sql.ErrNoRows) {
 		return s, authority.ErrNotFound
 	}
@@ -179,8 +182,19 @@ func (t *transaction) SaveSession(s authority.Session) error {
 	if t.readOnly {
 		return authority.ErrForbidden
 	}
-	if s.AccountID != t.account.ID || !authority.ValidID(s.ID) || s.Epoch < 1 || s.AccountVersion < 1 {
+	if s.AccountID != t.account.ID || !authority.ValidID(s.ID) || s.Epoch < 1 || s.AuthorizationEpoch < 1 || s.AuthorizationEpoch > s.Epoch || s.AccountVersion < 1 {
 		return authority.ErrInvalid
+	}
+	var previous *authority.Session
+	old, e := t.Session(s.ID)
+	if e == nil {
+		previous = &old
+	} else if !errors.Is(e, authority.ErrNotFound) {
+		return e
+	}
+	s, e = authority.PrepareSessionWrite(previous, s)
+	if e != nil {
+		return e
 	}
 	scopes, e := json.Marshal(s.Scopes)
 	if e != nil {
@@ -197,7 +211,7 @@ func (t *transaction) SaveSession(s authority.Session) error {
 	if !s.PreviousUntil.IsZero() {
 		until = s.PreviousUntil
 	}
-	res, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_sessions(id,account_id,parent_id,label,type,client_id,created_at,last_granted_at,category,trusted,epoch,account_version,expires_at,revoked_at,scopes,refresh_hash,previous_hash,previous_until,sealed_pair) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) ON CONFLICT(id) DO UPDATE SET label=EXCLUDED.label,last_granted_at=EXCLUDED.last_granted_at,epoch=EXCLUDED.epoch,expires_at=EXCLUDED.expires_at,revoked_at=EXCLUDED.revoked_at,scopes=EXCLUDED.scopes,refresh_hash=EXCLUDED.refresh_hash,previous_hash=EXCLUDED.previous_hash,previous_until=EXCLUDED.previous_until,sealed_pair=EXCLUDED.sealed_pair WHERE owned_authority_sessions.account_id=EXCLUDED.account_id AND EXCLUDED.epoch>=owned_authority_sessions.epoch AND (owned_authority_sessions.revoked_at IS NULL OR EXCLUDED.revoked_at IS NOT NULL) AND owned_authority_sessions.account_version=EXCLUDED.account_version AND owned_authority_sessions.type=EXCLUDED.type AND owned_authority_sessions.client_id=EXCLUDED.client_id`, s.ID, s.AccountID, parent, s.Label, s.Type, s.ClientID, s.CreatedAt, s.LastGrantedAt, s.Category, s.Trusted, s.Epoch, s.AccountVersion, s.ExpiresAt, s.RevokedAt, scopes, s.RefreshHash, s.PreviousHash, until, s.SealedPair)
+	res, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_sessions(id,account_id,parent_id,label,type,client_id,created_at,last_granted_at,category,trusted,epoch,authorization_epoch,account_version,expires_at,revoked_at,scopes,refresh_hash,previous_hash,previous_until,sealed_pair) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) ON CONFLICT(id) DO UPDATE SET label=EXCLUDED.label,last_granted_at=EXCLUDED.last_granted_at,epoch=EXCLUDED.epoch,authorization_epoch=EXCLUDED.authorization_epoch,expires_at=EXCLUDED.expires_at,revoked_at=EXCLUDED.revoked_at,scopes=EXCLUDED.scopes,refresh_hash=EXCLUDED.refresh_hash,previous_hash=EXCLUDED.previous_hash,previous_until=EXCLUDED.previous_until,sealed_pair=EXCLUDED.sealed_pair WHERE owned_authority_sessions.account_id=EXCLUDED.account_id AND EXCLUDED.epoch>=owned_authority_sessions.epoch AND EXCLUDED.authorization_epoch>=owned_authority_sessions.authorization_epoch AND (owned_authority_sessions.revoked_at IS NULL OR EXCLUDED.revoked_at IS NOT NULL) AND owned_authority_sessions.account_version=EXCLUDED.account_version AND owned_authority_sessions.type=EXCLUDED.type AND owned_authority_sessions.client_id=EXCLUDED.client_id`, s.ID, s.AccountID, parent, s.Label, s.Type, s.ClientID, s.CreatedAt, s.LastGrantedAt, s.Category, s.Trusted, s.Epoch, s.AuthorizationEpoch, s.AccountVersion, s.ExpiresAt, s.RevokedAt, scopes, s.RefreshHash, s.PreviousHash, until, s.SealedPair)
 	if e != nil {
 		return e
 	}

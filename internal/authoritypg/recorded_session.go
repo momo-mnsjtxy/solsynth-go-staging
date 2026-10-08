@@ -13,6 +13,16 @@ import (
 // caller transaction. It cannot authenticate a request or authorize a new grant.
 // Callers retain their canonical account/domain locks when acting on its result.
 func (g *TransactionGuard) StoredSessionEligible(ctx context.Context, db *sql.DB, tx *sql.Tx, actor, session string, version, epoch int64, permissions ...string) (bool, error) {
+	return g.storedSessionEligible(ctx, db, tx, actor, session, version, epoch, false, permissions)
+}
+
+// StoredAuthenticationEligible only reconciles existing authentication-based
+// admissions; the caller must also enforce its canonical domain membership.
+func (g *TransactionGuard) StoredAuthenticationEligible(ctx context.Context, db *sql.DB, tx *sql.Tx, actor, session string, version, epoch int64) (bool, error) {
+	return g.storedSessionEligible(ctx, db, tx, actor, session, version, epoch, true, nil)
+}
+
+func (g *TransactionGuard) storedSessionEligible(ctx context.Context, db *sql.DB, tx *sql.Tx, actor, session string, version, epoch int64, authenticationOnly bool, permissions []string) (bool, error) {
 	if g == nil || g.db == nil || g.db != db || g.verifier == nil || tx == nil {
 		return false, authority.ErrUnavailable
 	}
@@ -34,6 +44,9 @@ func (g *TransactionGuard) StoredSessionEligible(ctx context.Context, db *sql.DB
 	var at time.Time
 	if e = tx.QueryRowContext(ctx, `SELECT clock_timestamp()`).Scan(&at); e != nil {
 		return false, e
+	}
+	if authenticationOnly {
+		return g.verifier.RecordedAuthenticationEligible(&transaction{tx: tx, ctx: ctx, account: a, readOnly: true}, session, version, epoch, at.UTC())
 	}
 	return g.verifier.RecordedSessionEligible(&transaction{tx: tx, ctx: ctx, account: a, readOnly: true}, session, version, epoch, at.UTC(), permissions...)
 }

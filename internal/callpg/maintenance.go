@@ -89,7 +89,7 @@ func (r *Repository) finishEnd(ctx context.Context, cid string) error {
 	return tx.Commit()
 }
 
-const invalidAdmission = `NOT EXISTS(SELECT 1 FROM chat_members m JOIN owned_authority_accounts a ON a.id=cm.account_id JOIN owned_authority_sessions s ON s.id=cm.session_id WHERE m.id=cm.member_id AND m.joined_at IS NOT NULL AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned AND(m.owned_timeout_until IS NULL OR m.owned_timeout_until<=clock_timestamp()) AND NOT a.disabled AND a.version=cm.account_version AND s.revoked_at IS NULL AND s.expires_at>clock_timestamp() AND s.epoch=cm.session_epoch AND s.account_version=a.version)
+const invalidAdmission = `NOT EXISTS(SELECT 1 FROM chat_members m JOIN owned_authority_accounts a ON a.id=cm.account_id JOIN owned_authority_sessions s ON s.id=cm.session_id WHERE m.id=cm.member_id AND m.joined_at IS NOT NULL AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned AND(m.owned_timeout_until IS NULL OR m.owned_timeout_until<=clock_timestamp()) AND NOT a.disabled AND a.version=cm.account_version AND s.revoked_at IS NULL AND s.expires_at>clock_timestamp() AND s.authorization_epoch=cm.session_epoch AND s.account_version=a.version)
  OR EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=cm.account_id AND p.kind='disable_account' AND (p.starts_at IS NULL OR p.starts_at<=clock_timestamp()) AND (p.expires_at IS NULL OR p.expires_at>clock_timestamp()))
  OR EXISTS(WITH RECURSIVE parents AS(SELECT s.id,s.parent_id,s.revoked_at,s.expires_at,ARRAY[s.id] AS seen,false AS cycle FROM owned_authority_sessions s WHERE s.id=cm.session_id UNION ALL SELECT s.id,s.parent_id,s.revoked_at,s.expires_at,p.seen||s.id,s.id=ANY(p.seen) FROM owned_authority_sessions s JOIN parents p ON s.id=p.parent_id WHERE NOT p.cycle AND cardinality(p.seen)<64) SELECT 1 FROM parents WHERE revoked_at IS NOT NULL OR expires_at<=clock_timestamp() OR cycle OR cardinality(seen)>=64)`
 
@@ -107,7 +107,7 @@ func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
 	if e := r.configured(); e != nil {
 		return 0, e
 	}
-	rows, e := r.db.QueryContext(ctx, `SELECT c.id::text,c.room_id::text FROM call_v1.calls c JOIN chat_rooms r ON r.id=c.room_id WHERE c.ended_at IS NULL AND (c.state='ending' OR c.expires_at<=clock_timestamp() OR r.deleted_at IS NOT NULL OR r.encryption_mode<>$1 OR EXISTS(SELECT 1 FROM call_v1.members cm WHERE cm.call_id=c.id AND (cm.state='removing' OR cm.state='admitted' AND (`+r.admissionPolicy()+`)))) ORDER BY c.updated_at,c.id LIMIT $2`, r.cfg.NoneEncryptionMode, limit)
+	rows, e := r.db.QueryContext(ctx, `SELECT c.id::text,c.room_id::text FROM call_v1.calls c JOIN chat_rooms r ON r.id=c.room_id WHERE c.ended_at IS NULL ORDER BY c.updated_at,c.id LIMIT $1`, limit)
 	if e != nil {
 		return 0, e
 	}
@@ -161,6 +161,9 @@ func (r *Repository) markDue(ctx context.Context, cid, rid string) (bool, error)
 	}
 	_, e = tx.ExecContext(ctx, `UPDATE call_v1.members cm SET state='removing' WHERE call_id=$1 AND state='admitted' AND (`+r.admissionPolicy()+`)`, cid)
 	if e != nil {
+		return false, e
+	}
+	if e = r.reconcileAuthority(ctx, tx, cid); e != nil {
 		return false, e
 	}
 	if _, e = tx.ExecContext(ctx, `UPDATE call_v1.calls SET updated_at=clock_timestamp() WHERE id=$1`, cid); e != nil {

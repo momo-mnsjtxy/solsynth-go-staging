@@ -41,26 +41,27 @@ type Account struct {
 	Disabled  bool      `json:"-"`
 }
 type Session struct {
-	ID             string     `json:"id"`
-	AccountID      string     `json:"-"`
-	ParentID       string     `json:"-"`
-	Label          string     `json:"label"`
-	Type           int        `json:"type"`
-	ClientID       string     `json:"-"`
-	CreatedAt      time.Time  `json:"created_at"`
-	LastGrantedAt  time.Time  `json:"last_granted_at"`
-	IsCurrent      bool       `json:"is_current"`
-	Category       string     `json:"category"`
-	Trusted        bool       `json:"trusted"`
-	Epoch          int64      `json:"-"`
-	AccountVersion int64      `json:"-"`
-	ExpiresAt      time.Time  `json:"-"`
-	RevokedAt      *time.Time `json:"-"`
-	Scopes         []string   `json:"-"`
-	RefreshHash    []byte     `json:"-"`
-	PreviousHash   []byte     `json:"-"`
-	PreviousUntil  time.Time  `json:"-"`
-	SealedPair     []byte     `json:"-"`
+	ID                 string     `json:"id"`
+	AccountID          string     `json:"-"`
+	ParentID           string     `json:"-"`
+	Label              string     `json:"label"`
+	Type               int        `json:"type"`
+	ClientID           string     `json:"-"`
+	CreatedAt          time.Time  `json:"created_at"`
+	LastGrantedAt      time.Time  `json:"last_granted_at"`
+	IsCurrent          bool       `json:"is_current"`
+	Category           string     `json:"category"`
+	Trusted            bool       `json:"trusted"`
+	Epoch              int64      `json:"-"`
+	AuthorizationEpoch int64      `json:"-"`
+	AccountVersion     int64      `json:"-"`
+	ExpiresAt          time.Time  `json:"-"`
+	RevokedAt          *time.Time `json:"-"`
+	Scopes             []string   `json:"-"`
+	RefreshHash        []byte     `json:"-"`
+	PreviousHash       []byte     `json:"-"`
+	PreviousUntil      time.Time  `json:"-"`
+	SealedPair         []byte     `json:"-"`
 }
 type Rule struct {
 	Pattern   string

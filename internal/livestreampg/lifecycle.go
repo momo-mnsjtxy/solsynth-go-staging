@@ -144,7 +144,7 @@ func (r *Repository) Start(ctx context.Context, actor, id string, req live.Start
 			return out, x
 		}
 		stage = "insert durable run intent"
-		_, e = tx.ExecContext(ctx, `INSERT INTO owned_livestream_runs(stream_id,generation,room_name,provider,endpoint,actor_id,session_id,account_version,session_epoch,owner_id,owner_version,mode,identity,ingress_name,participant_name,transcoding,request_hash,phase,created_at,updated_at,expires_at,next_attempt_at)VALUES($1::uuid,$2::bigint,$3::text,$4::text,$5::text,$6::uuid,$7::uuid,$8::bigint,$9::bigint,$17::uuid,$18::bigint,$10::integer,$11::text,$3::text,$12::text,$13::boolean,$14::bytea,'attempted',$15::timestamptz,$15::timestamptz,$16::timestamptz,$15::timestamptz)`, id, generation, room, r.provider.Name(), r.provider.Endpoint(), actor, p.Session.ID, p.Account.Version, p.Session.Epoch, mode, identity, name, transcode, digest, at, at.Add(r.cfg.MaxRunDuration), ownerScope.owner, ownerVersion)
+		_, e = tx.ExecContext(ctx, `INSERT INTO owned_livestream_runs(stream_id,generation,room_name,provider,endpoint,actor_id,session_id,account_version,session_epoch,owner_id,owner_version,mode,identity,ingress_name,participant_name,transcoding,request_hash,phase,created_at,updated_at,expires_at,next_attempt_at)VALUES($1::uuid,$2::bigint,$3::text,$4::text,$5::text,$6::uuid,$7::uuid,$8::bigint,$9::bigint,$17::uuid,$18::bigint,$10::integer,$11::text,$3::text,$12::text,$13::boolean,$14::bytea,'attempted',$15::timestamptz,$15::timestamptz,$16::timestamptz,$15::timestamptz)`, id, generation, room, r.provider.Name(), r.provider.Endpoint(), actor, p.Session.ID, p.Account.Version, p.Session.AuthorizationEpoch, mode, identity, name, transcode, digest, at, at.Add(r.cfg.MaxRunDuration), ownerScope.owner, ownerVersion)
 		if e != nil {
 			return out, e
 		}
@@ -180,7 +180,7 @@ func (r *Repository) Start(ctx context.Context, actor, id string, req live.Start
 	if e = r.providerMatches(run); e != nil {
 		return out, e
 	}
-	if run.Actor != actor || run.Session != p.Session.ID || run.Version != p.Account.Version || run.Epoch != p.Session.Epoch || !bytes.Equal(run.Hash, digest) || (run.Phase != "attempted" && run.Phase != "active") {
+	if run.Actor != actor || run.Session != p.Session.ID || run.Version != p.Account.Version || run.Epoch != p.Session.AuthorizationEpoch || !bytes.Equal(run.Hash, digest) || (run.Phase != "attempted" && run.Phase != "active") {
 		return out, live.ErrConflict
 	}
 	at, e := now(ctx, tx)
@@ -326,7 +326,7 @@ func (r *Repository) Token(ctx context.Context, actor, id string, streamer, tool
 	if e != nil || token == "" {
 		return out, live.ErrProvider
 	}
-	_, e = tx.ExecContext(ctx, `INSERT INTO owned_livestream_admissions(stream_id,generation,session_id,actor_id,tool,publishing,permission,identity,account_version,session_epoch,state,issued_at,expires_at)VALUES($1::uuid,$2::bigint,$3::uuid,$4::uuid,$5::boolean,$6::boolean,$12::text,$7::uuid,$8::bigint,$9::bigint,'admitted',$10::timestamptz,$11::timestamptz)ON CONFLICT(stream_id,generation,session_id,tool,publishing)DO UPDATE SET identity=EXCLUDED.identity,account_version=EXCLUDED.account_version,session_epoch=EXCLUDED.session_epoch,state='admitted',permission=EXCLUDED.permission,issued_at=EXCLUDED.issued_at,expires_at=EXCLUDED.expires_at`, id, run.Generation, p.Session.ID, actor, tool, streamer, identity, p.Account.Version, p.Session.Epoch, at, expiry, permission)
+	_, e = tx.ExecContext(ctx, `INSERT INTO owned_livestream_admissions(stream_id,generation,session_id,actor_id,tool,publishing,permission,identity,account_version,session_epoch,state,issued_at,expires_at)VALUES($1::uuid,$2::bigint,$3::uuid,$4::uuid,$5::boolean,$6::boolean,$12::text,$7::uuid,$8::bigint,$9::bigint,'admitted',$10::timestamptz,$11::timestamptz)ON CONFLICT(stream_id,generation,session_id,tool,publishing)DO UPDATE SET identity=EXCLUDED.identity,account_version=EXCLUDED.account_version,session_epoch=EXCLUDED.session_epoch,state='admitted',permission=EXCLUDED.permission,issued_at=EXCLUDED.issued_at,expires_at=EXCLUDED.expires_at`, id, run.Generation, p.Session.ID, actor, tool, streamer, identity, p.Account.Version, p.Session.AuthorizationEpoch, at, expiry, permission)
 	if e != nil {
 		return out, e
 	}

@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/authoritypg/continuity_schema.sql",
  "internal/livestreampg/chat_schema.sql",
  "internal/livestreampg/awards_schema.sql",
  "internal/domaintrustpg/schema.sql",
@@ -77,7 +78,7 @@ def check(runner, read_schema=None):
         read_schema = lambda name: (ROOT / name).read_text()
     # Inspect only the explicit disposable schema paths, not deployment files.
     installs = list(re.finditer(
-        r'^"\$PG_BIN/psql" "\$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f ([a-zA-Z0-9_./-]+)$',
+        r'^"\$PG_BIN/psql" "\$PG_TEST_DSN" -v ON_ERROR_STOP=1 (?:--single-transaction )?-f ([a-zA-Z0-9_./-]+)$',
         runner, re.M,
     ))
     schemas = [match.group(1) for match in installs]
@@ -89,6 +90,10 @@ def check(runner, read_schema=None):
         raise ValueError("all disposable schemas must precede the before phase")
     if not schemas.index("internal/authoritypg/schema.sql") < schemas.index("internal/accountpg/schema.sql"):
         raise ValueError("accounts require the authority schema first")
+    if schemas.index("internal/authoritypg/continuity_schema.sql") <= schemas.index("internal/authoritypg/schema.sql"):
+        raise ValueError("session continuity requires canonical authority first")
+    if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/authoritypg/continuity_schema.sql' not in runner:
+        raise ValueError("session continuity migration must be atomic")
     if schemas.index("internal/authoritypg/assurance_schema.sql") <= schemas.index("internal/authoritypg/schema.sql"):
         raise ValueError("credential assurance requires canonical authority first")
     if schemas.index("internal/signinpg/payment_pin_schema.sql") <= schemas.index("internal/signinpg/schema.sql"):
@@ -185,6 +190,7 @@ def main():
     authority = PSQL + "internal/authoritypg/schema.sql"
     accounts = PSQL + "internal/accountpg/schema.sql"
     mutations = [
+        source.replace("--single-transaction -f internal/authoritypg/continuity_schema.sql", "-f internal/authoritypg/continuity_schema.sql"),
         source.replace("-f internal/messagerpg/testdata/schema.sql", "-f tests/integration/schema.sql"),
         source.replace("export MESSAGER_SYNC_BINARY=", "export OMITTED_MESSAGER_SYNC_BINARY="),
         source.replace("export BACKEND_BINARY=", "export OMITTED_BACKEND_BINARY="),

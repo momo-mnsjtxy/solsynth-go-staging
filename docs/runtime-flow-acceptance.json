@@ -2,21 +2,21 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Compatible PIN credential assurance and canonical atomic payment proofs composed with awards and domain administration",
+  "local_source_checkpoint": "Separate token rotation from durable authorization generation; refresh keeps eligible chat/broadcast/call admissions while revocation remains current",
   "last_fully_passed_ci": {
-    "commit": "ce5aa8b63c71b11ee6a449a250e6dc1d12fadf80",
-    "run": 37803131549,
-    "before": 386,
-    "after_restart": 52
+    "commit": "bff7fdada24a41395e94e6c1cfdf83a39601df9b",
+    "run": 37803956613,
+    "before": 397,
+    "after_restart": 53
   },
   "latest_candidate": {
-    "commit": "bff7fdada24a41395e94e6c1cfdf83a39601df9b",
-    "required_before": 397,
-    "required_after_restart": 53,
-    "status": "Published domain/collection composition; actual CI running"
+    "commit": "ef3586f7cb9cf13ba23115c20e8d59f5c9843880",
+    "required_before": 410,
+    "required_after_restart": 54,
+    "status": "Published compatible PIN; actual CI running"
   },
-  "local_required_before": 410,
-  "local_required_after_restart": 54,
+  "local_required_before": 418,
+  "local_required_after_restart": 55,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -271,9 +271,8 @@
         "TestPGBackendAccountSettingsComposition"
       ],
       "unsupported_or_remaining": [
-        "Paid rename/cards and rewind are composed candidates; see dedicated flow entries",
         "Admin contacts, phone/address verification, profile media/security modes and excluded SDK preference encoding",
-        "External identity providers, PassKit/domain trust/artwork and remaining source account operations"
+        "External identity providers, PassKit/artwork and remaining source account operations"
       ]
     },
     {
@@ -495,7 +494,7 @@
       "supported_flows": [],
       "guarded_pg_cases": [],
       "unsupported_or_remaining": [
-        "Live-stream ingress/lifecycle, advertising and sponsorship auctions"
+        "Advertising and sponsorship auctions are in implementation; livestream lifecycle is implemented in sphere.livestreams"
       ]
     },
     {
@@ -657,7 +656,7 @@
         "TestPGWalletVerifiedAuthorityComposition"
       ],
       "unsupported_or_remaining": [
-        "User PIN enrollment and legacy import policy"
+        "Legacy import policy; compatible user PIN enrollment is implemented in passport.payment_pin"
       ]
     },
     {
@@ -790,7 +789,7 @@
         "TestPGBackendPaidNameCardComposition"
       ],
       "unsupported_or_remaining": [
-        "Stable federated publisher aliases now composed candidate; see federation.publisher_aliases"
+        "Remote actor Move/origin migration; stable publisher aliases are implemented in federation.publisher_aliases"
       ]
     },
     {
@@ -836,9 +835,8 @@
         "TestPGBackendContentModerationComposition"
       ],
       "unsupported_or_remaining": [
-        "Verification marks/admin statistics/automod next slice",
         "Custom realm permission overrides",
-        "Full legacy model hydration/global middleware internal parity"
+        "Full legacy model hydration/global middleware internal parity; verification/admin stats/manual automod are implemented in their dedicated family"
       ]
     },
     {
@@ -863,11 +861,10 @@
         "TestPGBackendLivestreamComposition"
       ],
       "unsupported_or_remaining": [
-        "Stream chat composed candidate; see dedicated flow entry",
         "Configured egress/HLS output/playback policy",
-        "Canonical paid awards/order fulfillment",
         "Subscriber notifications/provider webhooks",
-        "Unobservable ingress creates require operator/provider reconciliation; never blind retry"
+        "Unobservable ingress creates require operator/provider reconciliation; never blind retry",
+        "Chat and canonical paid awards are implemented in their dedicated families"
       ]
     },
     {
@@ -1001,6 +998,21 @@
         "Provider/passwordless assurance",
         "Generic no-PIN opt-out or automatic PIN recovery",
         "Uniform other-factor assurance policy remains under review"
+      ]
+    },
+    {
+      "source_family": "owned.authority_refresh_continuity",
+      "local_status": "implemented, actual PG pending",
+      "supported_flows": [
+        "Strict access-token rotation and unchanged short PIN/payment Epoch binding",
+        "Durable live/chat/call authorization generation with current account/session/ancestor/scope/policy/membership checks",
+        "Atomic one-time backfill preserves stale capture rejection"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBackendRefreshContinuesBroadcastChatThenLogoutRevokes"
+      ],
+      "unsupported_or_remaining": [
+        "Operator must stop old writers and apply explicit atomic schema migration before rollout"
       ]
     }
   ],

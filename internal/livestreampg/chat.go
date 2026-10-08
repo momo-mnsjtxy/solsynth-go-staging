@@ -166,7 +166,7 @@ func (r *Repository) enqueueChat(ctx context.Context, tx *sql.Tx, v run, p autho
 	if expiry.After(v.ExpiresAt) {
 		expiry = v.ExpiresAt
 	}
-	_, e := tx.ExecContext(ctx, `INSERT INTO owned_livestream_chat_outbox(id,stream_id,generation,actor_id,message_id,kind,payload,request_key_hash,request_hash,created_at,next_attempt_at,expires_at,session_id,account_version,session_epoch,permission)VALUES($1::uuid,$2::uuid,$3::bigint,$4::uuid,$5::uuid,$6::text,$7::bytea,$8::bytea,$9::bytea,$10::timestamptz,$10::timestamptz,$11::timestamptz,$12::uuid,$13::bigint,$14::bigint,$15::text)`, id, v.Stream, v.Generation, actor, mid, kind, payload, keyHash, fingerprint, at, expiry, p.Session.ID, p.Account.Version, p.Session.Epoch, permission)
+	_, e := tx.ExecContext(ctx, `INSERT INTO owned_livestream_chat_outbox(id,stream_id,generation,actor_id,message_id,kind,payload,request_key_hash,request_hash,created_at,next_attempt_at,expires_at,session_id,account_version,session_epoch,permission)VALUES($1::uuid,$2::uuid,$3::bigint,$4::uuid,$5::uuid,$6::text,$7::bytea,$8::bytea,$9::bytea,$10::timestamptz,$10::timestamptz,$11::timestamptz,$12::uuid,$13::bigint,$14::bigint,$15::text)`, id, v.Stream, v.Generation, actor, mid, kind, payload, keyHash, fingerprint, at, expiry, p.Session.ID, p.Account.Version, p.Session.AuthorizationEpoch, permission)
 	return e
 }
 func (r *Repository) SendChat(ctx context.Context, actor, sid, content, key string) (out live.ChatMessage, e error) {

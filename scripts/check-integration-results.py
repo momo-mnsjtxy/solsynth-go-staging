@@ -5,6 +5,15 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGRefreshContinuityMigrationPreservesStaleCaptures",
+        "TestPGRefreshContinuityConcurrentRotationAndScopeRollback",
+        "TestPGBackendRefreshContinuesBroadcastChatThenLogoutRevokes",
+        "TestPGRefreshContinuityPasswordAndFactorEndBroadcast",
+        "TestPGRefreshContinuityCallAdmissionAndScopeRemoval",
+        "TestPGRefreshContinuityStreamScopePolicyAndAncestorRevocation",
+        "TestPGRefreshContinuityCallAccountWaitRollsBack",
+        "TestPGRefreshContinuityRestartPersistence",
+
         "TestPGCollectionAdminAuditRollbackAndDeleteRace",
         "TestPGCollectionAdminMetadataAndNestedPrivacy",
         "TestPGDomainTrustAuditRollbackAndFreshAuthority",
@@ -446,6 +455,7 @@ EXPECTED = {
         "TestPGPaymentPINAssuranceExpiryDuringPolicyWait",
     },
     "after": {
+        "TestPGRefreshContinuityRestartPersistence",
         "TestPGDomainTrustRestartPersistence",
 
         "TestPGLiveStreamAwardsPayoutRestartPersistence",

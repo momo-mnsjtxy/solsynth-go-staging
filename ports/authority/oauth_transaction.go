@@ -89,7 +89,7 @@ func (s *Service) IssueOAuthTransaction(ctx context.Context, tx Transaction, par
 	if e != nil {
 		return se, pair, e
 	}
-	se = Session{ID: id, AccountID: tx.Account().ID, ParentID: parent, Label: "OAuth app", Type: 1, ClientID: client, CreatedAt: now, LastGrantedAt: now, Category: OAuthSessionCategory, Epoch: 1, AccountVersion: tx.Account().Version, ExpiresAt: expires, Scopes: append([]string{}, scopes...)}
+	se = Session{ID: id, AccountID: tx.Account().ID, ParentID: parent, Label: "OAuth app", Type: 1, ClientID: client, CreatedAt: now, LastGrantedAt: now, Category: OAuthSessionCategory, Epoch: 1, AuthorizationEpoch: 1, AccountVersion: tx.Account().Version, ExpiresAt: expires, Scopes: append([]string{}, scopes...)}
 	pair, e = s.mint(tx.Account(), &se, now)
 	if e != nil {
 		return se, pair, e

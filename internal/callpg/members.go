@@ -42,7 +42,7 @@ func (r *Repository) Join(ctx context.Context, actor, rid, tool string) (calls.J
 	if e != nil && !errors.Is(e, sql.ErrNoRows) {
 		return out, e
 	}
-	if state == "removing" || state == "admitted" && (session != p.Session.ID || epoch != p.Session.Epoch || version != p.Account.Version) {
+	if state == "removing" || state == "admitted" && (session != p.Session.ID || epoch != p.Session.AuthorizationEpoch || version != p.Account.Version) {
 		return out, calls.ErrConflict
 	}
 	if fresh && state != "left" {
@@ -79,7 +79,7 @@ func (r *Repository) Join(ctx context.Context, actor, rid, tool string) (calls.J
 	if e != nil || token == "" {
 		return out, calls.ErrProvider
 	}
-	_, e = tx.ExecContext(ctx, `INSERT INTO call_v1.members(call_id,member_id,account_id,tool,identity,session_id,session_epoch,account_version,state,admitted_at,token_expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,'admitted',$9,$10) ON CONFLICT(call_id,member_id,tool) DO UPDATE SET identity=EXCLUDED.identity,session_id=EXCLUDED.session_id,session_epoch=EXCLUDED.session_epoch,account_version=EXCLUDED.account_version,state='admitted',admitted_at=CASE WHEN call_v1.members.state='left' THEN EXCLUDED.admitted_at ELSE call_v1.members.admitted_at END,token_expires_at=EXCLUDED.token_expires_at,revoked_at=NULL`, c.ID, m.ID, actor, tool, identity, p.Session.ID, p.Session.Epoch, p.Account.Version, now, expiry)
+	_, e = tx.ExecContext(ctx, `INSERT INTO call_v1.members(call_id,member_id,account_id,tool,identity,session_id,session_epoch,account_version,state,admitted_at,token_expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,'admitted',$9,$10) ON CONFLICT(call_id,member_id,tool) DO UPDATE SET identity=EXCLUDED.identity,session_id=EXCLUDED.session_id,session_epoch=EXCLUDED.session_epoch,account_version=EXCLUDED.account_version,state='admitted',admitted_at=CASE WHEN call_v1.members.state='left' THEN EXCLUDED.admitted_at ELSE call_v1.members.admitted_at END,token_expires_at=EXCLUDED.token_expires_at,revoked_at=NULL`, c.ID, m.ID, actor, tool, identity, p.Session.ID, p.Session.AuthorizationEpoch, p.Account.Version, now, expiry)
 	if e != nil {
 		return out, e
 	}
@@ -108,9 +108,10 @@ func (r *Repository) participants(ctx context.Context, tx *sql.Tx, c calls.Call)
 	}
 	out := make([]calls.Participant, 0, len(items))
 	for _, p := range items {
-		var account, state string
+		var account, state, session string
+		var version, epoch int64
 		var valid bool
-		e = tx.QueryRowContext(ctx, `SELECT cm.account_id::text,cm.state,NOT (`+invalidAdmission+`) FROM call_v1.members cm WHERE cm.call_id=$1 AND cm.identity::text=$2`, c.ID, p.Identity).Scan(&account, &state, &valid)
+		e = tx.QueryRowContext(ctx, `SELECT cm.account_id::text,cm.state,cm.session_id::text,cm.account_version,cm.session_epoch,NOT (`+r.admissionPolicy()+`) FROM call_v1.members cm WHERE cm.call_id=$1 AND cm.identity::text=$2`, c.ID, p.Identity).Scan(&account, &state, &session, &version, &epoch, &valid)
 		if errors.Is(e, sql.ErrNoRows) {
 			p.State = "unrecognized"
 			out = append(out, p)
@@ -118,6 +119,12 @@ func (r *Repository) participants(ctx context.Context, tx *sql.Tx, c calls.Call)
 		}
 		if e != nil {
 			return nil, e
+		}
+		if valid {
+			valid, e = r.guard.StoredAuthenticationEligible(ctx, r.db, tx, account, session, version, epoch)
+			if e != nil {
+				return nil, e
+			}
 		}
 		p.AccountID = account
 		p.State = state
@@ -247,9 +254,6 @@ func (r *Repository) finishRemovals(ctx context.Context, cid, target, tool strin
 	if e != nil {
 		return e
 	}
-	if e = r.checkProvider(c); e != nil {
-		return e
-	}
 	rows, e := tx.QueryContext(ctx, `SELECT identity::text,account_id::text FROM call_v1.members WHERE call_id=$1 AND state='removing' AND ($2='' OR account_id::text=$2) AND ($3='*' OR tool=$3) ORDER BY identity`, cid, target, tool)
 	if e != nil {
 		return e
@@ -268,6 +272,11 @@ func (r *Repository) finishRemovals(ctx context.Context, cid, target, tool strin
 	rows.Close()
 	if e != nil {
 		return e
+	}
+	if len(list) > 0 {
+		if e = r.checkProvider(c); e != nil {
+			return e
+		}
 	}
 	for _, item := range list {
 		now, e := dbnow(ctx, tx)

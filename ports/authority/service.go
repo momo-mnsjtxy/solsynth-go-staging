@@ -80,7 +80,7 @@ func (s *Service) check(tx Transaction, c claims, now time.Time) (Principal, err
 	if se.RevokedAt != nil {
 		return Principal{}, ErrRevoked
 	}
-	if a.Version != c.Version || se.AccountVersion != a.Version || se.Epoch != c.Epoch {
+	if a.Version != c.Version || se.AccountVersion != a.Version || se.Epoch != c.Epoch || se.AuthorizationEpoch < 1 || se.AuthorizationEpoch > se.Epoch {
 		return Principal{}, ErrStale
 	}
 	if c.Issued > now.Unix() || c.NotBefore > now.Unix() {
@@ -243,7 +243,7 @@ func (s *Service) newSession(tx Transaction, o SessionOptions, now time.Time) (S
 	if e != nil {
 		return se, pair, e
 	}
-	se = Session{ID: id, AccountID: a.ID, Label: o.Label, Type: o.Type, ClientID: o.ClientID, CreatedAt: now, LastGrantedAt: now, Category: "device", Epoch: 1, AccountVersion: a.Version, ExpiresAt: now.Add(s.cfg.SessionTTL), Scopes: append([]string(nil), o.Scopes...)}
+	se = Session{ID: id, AccountID: a.ID, Label: o.Label, Type: o.Type, ClientID: o.ClientID, CreatedAt: now, LastGrantedAt: now, Category: "device", Epoch: 1, AuthorizationEpoch: 1, AccountVersion: a.Version, ExpiresAt: now.Add(s.cfg.SessionTTL), Scopes: append([]string(nil), o.Scopes...)}
 	pair, e = s.mint(a, &se, now)
 	if e != nil {
 		return se, pair, e

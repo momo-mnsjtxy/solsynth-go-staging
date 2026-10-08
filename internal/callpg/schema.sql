@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS call_v1.calls (
  ended_at timestamptz, CHECK((state='ended')=(ended_at IS NOT NULL))
 );
 CREATE UNIQUE INDEX IF NOT EXISTS call_one_ongoing ON call_v1.calls(room_id) WHERE ended_at IS NULL;
+-- Bounded fair authority reconciliation visits healthy and revoked calls.
+CREATE INDEX IF NOT EXISTS call_authority_reconcile ON call_v1.calls(updated_at,id) WHERE ended_at IS NULL;
 CREATE TABLE IF NOT EXISTS call_v1.members (
  call_id uuid NOT NULL REFERENCES call_v1.calls(id), member_id uuid NOT NULL REFERENCES chat_members(id),
  account_id uuid NOT NULL REFERENCES owned_authority_accounts(id), tool varchar(32) NOT NULL,

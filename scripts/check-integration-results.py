@@ -5,6 +5,33 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGDomainTransactionAuthority",
+        "TestPGTaxonomyPublisherMembershipGuard",
+        "TestPGBackendSigninHTTPProcessRestart",
+        "TestPGVerificationAdaptersHTTPFlow",
+        "TestPGVerificationSMTPRequiredTLSAndFailure",
+        "TestPGVerificationDeliveryFailureRemainsRecoverable",
+        "TestPGSigninLifecycle",
+        "TestPGSigninTOTPAndRecovery",
+        "TestPGSigninRateConcurrency",
+        "TestPGSigninHTTP",
+        "TestPGSigninAuthorityBoundary",
+        "TestPGSigninRestartPersistence",
+
+        "TestPGCommerceOrderSettlementAndIsolation",
+        "TestPGCommerceConcurrentPaymentStockAndRollback",
+        "TestPGCommerceSubscriptionRenewCancelAndGiftRedeem",
+        "TestPGCommerceRestartPersistence",
+        "TestPGCommerceHTTPPaymentAndUnavailableProvider",
+        "TestPGCommerceExpiryAndAuthorityOrdering",
+        "TestPGMediaResumableLifecycleAndIsolation",
+        "TestPGMediaResumableQuotaAndIdempotencyConcurrency",
+        "TestPGMediaResumableBoundsHashFailureAndCleanup",
+        "TestPGMediaResumablePublicationRecovery",
+        "TestPGMediaResumableExpiryCancellationAndFreshAuthority",
+        "TestPGMediaResumableHTTPMultipartAndAsyncContract",
+        "TestPGMediaResumableRestartPersistence",
+
         "TestPGNotificationsInboxOutboxIsolation",
         "TestPGNotificationsDeliveryRetryAndLeaseRecovery",
         "TestPGNotificationsConcurrentIdempotency",
@@ -132,6 +159,10 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGSigninRestartPersistence",
+        "TestPGCommerceRestartPersistence",
+        "TestPGMediaResumableRestartPersistence",
+
         "TestPGNotificationsRestartPersistence",
         "TestPGDeveloperAppsRestartPersistence",
 

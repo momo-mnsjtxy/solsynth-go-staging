@@ -121,7 +121,11 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, rid string, action
 	} else {
 		target = actor
 	}
-	tx, e := r.begin(ctx, false)
+	permission, e := memberPermission(action)
+	if e != nil {
+		return rooms.Member{}, e
+	}
+	tx, e := r.beginWrite(ctx, actor, permission)
 	if e != nil {
 		return rooms.Member{}, e
 	}
@@ -243,7 +247,7 @@ func (r *Repository) SetNotify(ctx context.Context, actor, rid string, n int32) 
 	if !r.policy.ValidNotify(n) {
 		return rooms.Member{}, rooms.ErrInvalid
 	}
-	tx, e := r.begin(ctx, false)
+	tx, e := r.beginWrite(ctx, actor, "")
 	if e != nil {
 		return rooms.Member{}, e
 	}
@@ -268,7 +272,7 @@ func (r *Repository) MarkRead(ctx context.Context, actor, rid, messageID string)
 	if e := valid(actor, rid, messageID); e != nil {
 		return rooms.Member{}, e
 	}
-	tx, e := r.begin(ctx, false)
+	tx, e := r.beginWrite(ctx, actor, "")
 	if e != nil {
 		return rooms.Member{}, e
 	}
@@ -293,4 +297,19 @@ func (r *Repository) MarkRead(ctx context.Context, actor, rid, messageID string)
 		return m, e
 	}
 	return m, tx.Commit()
+}
+
+// Permissions match the owned HTTP routes; accepting, declining, joining and
+// leaving affect only the verified actor and require authentication only.
+func memberPermission(action rooms.MemberAction) (string, error) {
+	switch action {
+	case rooms.Invite:
+		return "chat.invites.manage", nil
+	case rooms.Remove:
+		return "chat.members.kick", nil
+	case rooms.Accept, rooms.Decline, rooms.Join, rooms.Leave:
+		return "", nil
+	default:
+		return "", rooms.ErrInvalid
+	}
 }

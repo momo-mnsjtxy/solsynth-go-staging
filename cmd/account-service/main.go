@@ -118,8 +118,18 @@ func run(args []string) error {
 	if e = db.PingContext(check); e != nil {
 		return errors.New("database unavailable")
 	}
-	service := &accounts.Service{Repository: accountpg.New(db), Authority: verifier}
-	server := &http.Server{Addr: c.listen, Handler: service.Handler(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 20 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 32768}
+	guard := authoritypg.NewTransactionGuard(authoritypg.New(db), verifier)
+	service := &accounts.Service{Repository: accountpg.NewWithAuthority(db, guard), Authority: verifier}
+	serviceHandler := service.Handler()
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// The service keeps responsibility for anonymous/invalid requests. Only
+		// a verified original proof is bound for its later mutation transaction.
+		if proof, err := verifier.AuthenticateRequest(r); err == nil {
+			r = r.WithContext(guard.Bind(r.Context(), proof))
+		}
+		serviceHandler.ServeHTTP(w, r)
+	})
+	server := &http.Server{Addr: c.listen, Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 20 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 32768}
 	go func() {
 		<-ctx.Done()
 		shutdown, c := context.WithTimeout(context.Background(), 5*time.Second)

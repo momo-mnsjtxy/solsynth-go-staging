@@ -28,23 +28,29 @@ type Config struct {
 	PendingTTL   time.Duration
 }
 type Repository struct {
-	db    *sql.DB
-	store media.ObjectStore
-	guard *authoritypg.TransactionGuard
-	cfg   Config
+	db         *sql.DB
+	store      media.ObjectStore
+	guard      *authoritypg.TransactionGuard
+	cfg        Config
+	completion *completionQueue
 }
 
 func New(db *sql.DB, store media.ObjectStore, guard *authoritypg.TransactionGuard, cfg Config) (*Repository, error) {
 	if db == nil || store == nil || guard == nil || cfg.MaxFileBytes <= 0 || cfg.MaxFileBytes > 1<<40 || cfg.PendingTTL < time.Minute || cfg.PendingTTL > 24*time.Hour {
 		return nil, media.ErrInvalid
 	}
-	return &Repository{db, store, guard, cfg}, nil
+	return &Repository{db: db, store: store, guard: guard, cfg: cfg, completion: newCompletionQueue()}, nil
 }
 func (r *Repository) Ready(ctx context.Context) error {
 	if err := r.store.Ready(ctx); err != nil {
 		return err
 	}
 	_, err := r.db.ExecContext(ctx, `SELECT id,charge,expires_at FROM owned_media_files LIMIT 0; SELECT account_id,limit_bytes,used_bytes,reserved_bytes FROM owned_media_quotas LIMIT 0`)
+	if err == nil {
+		if _, ok := r.store.(media.ChunkObjectStore); ok {
+			return r.ResumableReady(ctx)
+		}
+	}
 	return err
 }
 func uuid() (string, error) {
@@ -125,6 +131,16 @@ func (r *Repository) reserve(ctx context.Context, actor string, u media.Upload) 
 		return media.File{}, false, err
 	}
 	defer tx.Rollback()
+	f, replayed, err := r.reserveTx(ctx, tx, actor, u)
+	if err != nil {
+		return f, replayed, err
+	}
+	return f, replayed, tx.Commit()
+}
+
+// reserveTx shares the quota/file reservation with multipart and resumable uploads.
+// The caller has already acquired the canonical account lock and owns the commit.
+func (r *Repository) reserveTx(ctx context.Context, tx *sql.Tx, actor string, u media.Upload) (media.File, bool, error) {
 	f, err := scan(tx.QueryRowContext(ctx, `SELECT `+fields+` FROM owned_media_files WHERE account_id=$1 AND idempotency_key=$2`, actor, u.IdempotencyKey))
 	if err == nil {
 		if !same(f, u) {
@@ -136,7 +152,7 @@ func (r *Repository) reserve(ctx context.Context, actor string, u media.Upload) 
 				return f, false, e
 			}
 			body.Close()
-			return f, true, tx.Commit()
+			return f, true, nil
 		}
 		if f.State == "deleted" || f.State == "deleting" {
 			return f, false, media.ErrGone
@@ -168,7 +184,7 @@ func (r *Repository) reserve(ctx context.Context, actor string, u media.Upload) 
 	if _, err = tx.ExecContext(ctx, `UPDATE owned_media_quotas SET reserved_bytes=reserved_bytes+$2 WHERE account_id=$1`, actor, u.Size); err != nil {
 		return f, false, err
 	}
-	return f, false, tx.Commit()
+	return f, false, nil
 }
 func (r *Repository) Upload(ctx context.Context, actor string, u media.Upload, reader io.Reader) (media.File, bool, error) {
 	return r.upload(ctx, actor, u, reader, false)

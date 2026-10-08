@@ -29,3 +29,5 @@ The new raw-stream upload protocol, private default, SHA-256 integrity,
 idempotency, quota schema, explicit permissions, guarded SQL transactions,
 filesystem adapter and cleanup worker are owned semantics. License retention
 does not establish equivalence for unsupported providers or full UI behavior.
+
+The subsequent resumable implementation is described in docs/media-resumable-continuation.md. It adopts the newer authored asynchronous202 completion contract; earlier notes describing all async uploads as unsupported are superseded for those eight routes. Hierarchy, providers and E2EE remain explicit gaps.

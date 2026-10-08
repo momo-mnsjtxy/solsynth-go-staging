@@ -67,7 +67,7 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
-	tx, e := r.begin(ctx, false)
+	tx, e := r.beginWrite(ctx, actor, "chat.messages.create")
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
@@ -126,7 +126,7 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
-	tx, e := r.begin(ctx, false)
+	tx, e := r.beginWrite(ctx, actor, "chat.messages.update")
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
@@ -166,7 +166,7 @@ func (r *Repository) DeleteMessage(ctx context.Context, actor, rid, mid string) 
 	if e := valid(actor, rid, mid); e != nil {
 		return e
 	}
-	tx, e := r.begin(ctx, false)
+	tx, e := r.beginWrite(ctx, actor, "chat.messages.delete")
 	if e != nil {
 		return e
 	}

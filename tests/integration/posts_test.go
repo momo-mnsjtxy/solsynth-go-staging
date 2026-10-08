@@ -45,7 +45,7 @@ func postPublisher(t *testing.T, db *sql.DB, n int) (string, accounts.Publisher)
 	t.Helper()
 	actor := postAccount(t, db, n)
 	query(t, db, `INSERT INTO owned_publisher_quota(account_id,total,starts_at)VALUES($1,3,CURRENT_TIMESTAMP)`, actor)
-	p, e := accountpg.New(db).CreatePublisher(context.Background(), actor, accounts.PublisherPatch{Name: postString(fmt.Sprintf("post-publisher-%d", n)), Nick: postString("Post publisher")})
+	p, e := accountpg.NewForCompatibilityTests(db).CreatePublisher(context.Background(), actor, accounts.PublisherPatch{Name: postString(fmt.Sprintf("post-publisher-%d", n)), Nick: postString("Post publisher")})
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -66,7 +66,7 @@ func createPost(t *testing.T, r *postpg.Repository, actor, publisher, body strin
 }
 func joinPostEditor(t *testing.T, db *sql.DB, owner, editor, publisher string) {
 	t.Helper()
-	r := accountpg.New(db)
+	r := accountpg.NewForCompatibilityTests(db)
 	_, e := r.ChangeMember(context.Background(), owner, publisher, accounts.MemberChange{Action: accounts.InviteMember, AccountID: editor, Role: accounts.Editor})
 	if e != nil {
 		t.Fatal(e)
@@ -119,7 +119,7 @@ func TestPGPostsLifecycleAndPrivacy(t *testing.T) {
 	if list, total, e := r.List(ctx, owner, posts.ListOptions{Drafts: true, Take: 1}); e != nil || total != 1 || len(list) != 1 || list[0].ID != draft.ID {
 		t.Fatal(list, total, e)
 	}
-	if _, e := accountpg.New(db).ChangeMember(ctx, owner, pub.ID, accounts.MemberChange{Action: accounts.InviteMember, AccountID: editor, Role: accounts.Editor}); e != nil {
+	if _, e := accountpg.NewForCompatibilityTests(db).ChangeMember(ctx, owner, pub.ID, accounts.MemberChange{Action: accounts.InviteMember, AccountID: editor, Role: accounts.Editor}); e != nil {
 		t.Fatal(e)
 	}
 	if _, e := r.Get(ctx, editor, draft.ID); !errors.Is(e, posts.ErrNotFound) {
@@ -128,7 +128,7 @@ func TestPGPostsLifecycleAndPrivacy(t *testing.T) {
 	if _, e := r.Update(ctx, editor, public.ID, posts.Patch{Title: postString("pending")}); !errors.Is(e, accounts.ErrForbidden) {
 		t.Fatal("pending invitation write", e)
 	}
-	if _, e := accountpg.New(db).ChangeMember(ctx, editor, pub.ID, accounts.MemberChange{Action: accounts.AcceptInvite}); e != nil {
+	if _, e := accountpg.NewForCompatibilityTests(db).ChangeMember(ctx, editor, pub.ID, accounts.MemberChange{Action: accounts.AcceptInvite}); e != nil {
 		t.Fatal(e)
 	}
 	if _, e := r.Get(ctx, editor, private.ID); e != nil {
@@ -167,7 +167,7 @@ func TestPGPostsLifecycleAndPrivacy(t *testing.T) {
 	if e = db.QueryRow(`SELECT count(*) FROM owned_text_post_audit WHERE post_id=$1`, public.ID).Scan(&audits); e != nil || audits != 3 {
 		t.Fatal("mutation audits", audits, e)
 	}
-	if e = accountpg.New(db).DeletePublisher(ctx, owner, pub.ID); e != nil {
+	if e = accountpg.NewForCompatibilityTests(db).DeletePublisher(ctx, owner, pub.ID); e != nil {
 		t.Fatal(e)
 	}
 	if _, e = r.Get(ctx, "", draft.ID); !errors.Is(e, posts.ErrNotFound) {

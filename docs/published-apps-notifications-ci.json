@@ -1,0 +1,11 @@
+{
+  "commit": "d4ee9b826ae65138ba53d460ff5874d4181384fa",
+  "workflow_run": 37737268425,
+  "job": 113179557605,
+  "conclusion": "success",
+  "required_pg_before": 122,
+  "required_pg_after_actual_database_restart": 20,
+  "skipped": 0,
+  "composed_backend_process_http": "passed",
+  "scope": "Apps, notifications and all preceding owned modules; newer local sign-in/commerce/resumable/review changes not included"
+}

@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-const transactionCols = `id::text,payer_wallet_id::text,payee_wallet_id::text,currency,amount::text,remarks,status,is_frozen,require_confirmation,frozen_at,expires_at,confirmed_at,confirmation_received_at,created_at,updated_at,deleted_at`
+const transactionCols = `CASE WHEN purpose='commerce' THEN 1 ELSE 0 END,id::text,payer_wallet_id::text,payee_wallet_id::text,currency,amount::text,remarks,status,is_frozen,require_confirmation,frozen_at,expires_at,confirmed_at,confirmation_received_at,created_at,updated_at,deleted_at`
 
 func scanTransaction(row scanner) (accounts.Transaction, error) {
 	var t accounts.Transaction
-	e := row.Scan(&t.ID, &t.PayerWalletID, &t.PayeeWalletID, &t.Currency, &t.Amount, &t.Remarks, &t.Status, &t.IsFrozen, &t.RequireConfirmation, &t.FrozenAt, &t.ExpiresAt, &t.ConfirmedAt, &t.ConfirmationReceivedAt, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt)
+	e := row.Scan(&t.Type, &t.ID, &t.PayerWalletID, &t.PayeeWalletID, &t.Currency, &t.Amount, &t.Remarks, &t.Status, &t.IsFrozen, &t.RequireConfirmation, &t.FrozenAt, &t.ExpiresAt, &t.ConfirmedAt, &t.ConfirmationReceivedAt, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt)
 	return t, mapErr(e)
 }
 func (r *Repository) Transfer(ctx context.Context, c accounts.TransferCommand) (accounts.Transaction, error) {
@@ -123,7 +123,7 @@ func (r *Repository) GetTransaction(ctx context.Context, id string) (accounts.Tr
 	return scanTransaction(r.db.QueryRowContext(ctx, `SELECT `+transactionCols+` FROM wallet_v1.transactions WHERE id=$1 AND deleted_at IS NULL`, id))
 }
 
-const transactionWhere = `deleted_at IS NULL AND (payer_wallet_id=$1 OR payee_wallet_id=$1) AND ($2='' OR ($2='in' AND payee_wallet_id=$1) OR ($2='out' AND payer_wallet_id=$1)) AND ($3::integer IS NULL OR $3=0) AND (NOT $4 OR (payee_wallet_id=$1 AND status IN (0,1) AND require_confirmation))`
+const transactionWhere = `deleted_at IS NULL AND (payer_wallet_id=$1 OR payee_wallet_id=$1) AND ($2='' OR ($2='in' AND payee_wallet_id=$1) OR ($2='out' AND payer_wallet_id=$1)) AND ($3::integer IS NULL OR $3=CASE WHEN purpose='commerce' THEN 1 ELSE 0 END) AND (NOT $4 OR (payee_wallet_id=$1 AND status IN (0,1) AND require_confirmation))`
 
 func (r *Repository) Transactions(ctx context.Context, q accounts.TransactionQuery) (accounts.TransactionPage, error) {
 	out := accounts.TransactionPage{Items: []accounts.Transaction{}}
@@ -172,7 +172,7 @@ func (r *Repository) Transition(ctx context.Context, id string, payee accounts.O
 	if e = r.writeAuthority(ctx, tx, payee, "", accounts.PermissionTransactions); e != nil {
 		return accounts.Transaction{}, e
 	}
-	old, e := scanTransaction(tx.QueryRowContext(ctx, `SELECT `+transactionCols+` FROM wallet_v1.transactions WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, id))
+	old, e := scanTransaction(tx.QueryRowContext(ctx, `SELECT `+transactionCols+` FROM wallet_v1.transactions WHERE id=$1 AND deleted_at IS NULL AND managed_by IS NULL FOR UPDATE`, id))
 	if e != nil {
 		return old, e
 	}
@@ -269,7 +269,7 @@ func (r *Repository) processOne(ctx context.Context) (bool, error) {
 	}
 	defer tx.Rollback()
 	now := r.now().UTC()
-	old, e := scanTransaction(tx.QueryRowContext(ctx, `SELECT `+transactionCols+` FROM wallet_v1.transactions WHERE deleted_at IS NULL AND status IN (0,1) AND expires_at<=$1 ORDER BY expires_at,id LIMIT 1 FOR UPDATE SKIP LOCKED`, now))
+	old, e := scanTransaction(tx.QueryRowContext(ctx, `SELECT `+transactionCols+` FROM wallet_v1.transactions WHERE deleted_at IS NULL AND managed_by IS NULL AND status IN (0,1) AND expires_at<=$1 ORDER BY expires_at,id LIMIT 1 FOR UPDATE SKIP LOCKED`, now))
 	if errors.Is(e, accounts.ErrNotFound) {
 		return false, nil
 	}

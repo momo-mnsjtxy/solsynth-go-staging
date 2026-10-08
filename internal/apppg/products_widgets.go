@@ -241,6 +241,23 @@ func activeClientByID(ctx context.Context, q queryer, app string, lock bool) (ap
 	if e != nil {
 		return a, e
 	}
+	// Publisher owner status is part of app authority. Lock the owner before
+	// publisher/project/app rows, matching account-owned management writes.
+	var owner sql.NullString
+	if e = q.QueryRowContext(ctx, `SELECT account_id::text FROM owned_publishers WHERE id=$1 AND deleted_at IS NULL`, a.PublisherID).Scan(&owner); e != nil {
+		return a, mapped(e)
+	}
+	if owner.Valid {
+		if lock {
+			var id string
+			if e = q.QueryRowContext(ctx, `SELECT id::text FROM owned_authority_accounts WHERE id=$1 FOR SHARE`, owner.String).Scan(&id); e != nil {
+				return a, mapped(e)
+			}
+		}
+		if e = payloadAccountActive(ctx, q, owner.String); e != nil {
+			return a, e
+		}
+	}
 	if lock {
 		// Match management lock order: publisher, project, then app. Re-read after waits.
 		var yes bool
@@ -257,6 +274,11 @@ func activeClientByID(ctx context.Context, q queryer, app string, lock bool) (ap
 	}
 	if a.Status != apps.Production {
 		return a, apps.ErrForbidden
+	}
+	if owner.Valid {
+		if e = payloadAccountActive(ctx, q, owner.String); e != nil {
+			return a, e
+		}
 	}
 	return a, nil
 }

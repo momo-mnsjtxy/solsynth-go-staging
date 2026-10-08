@@ -10,7 +10,7 @@ import (
 
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
-type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps http.Handler }
+type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps, commerce, signin http.Handler }
 type router struct{ modules }
 
 func under(p, base string) bool { return p == base || strings.HasPrefix(p, base+"/") }
@@ -23,6 +23,10 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// between services. Neither a service-name prefix nor traversal is authority.
 	if p == "" || p[0] != '/' || path.Clean(p) != p || strings.Contains(p, "\\") || strings.Contains(p, "//") || r.URL.RawPath != "" && r.URL.EscapedPath() != p {
 		problem(w, 400, "INVALID_ROUTE_PATH")
+		return
+	}
+	if h.signin != nil && signinRoute(r.Method, p) {
+		h.signin.ServeHTTP(w, r)
 		return
 	}
 	if h.realtime != nil && (p == "/ws" || under(p, "/api/realtime")) {
@@ -146,6 +150,9 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.public != nil && publicCatalogRoute(canonical) && (service == "wallet" || service == "passport" || service == "api") {
 		target = h.public
 	}
+	if h.commerce != nil && (under(canonical, "/api/orders") || under(canonical, "/api/subscriptions")) && (service == "wallet" || service == "api") {
+		target = h.commerce
+	}
 	if h.apps != nil && appRoute(canonical) && (service == "develop" || service == "api") {
 		target = h.apps
 	}
@@ -220,4 +227,10 @@ func socialRoute(p string) bool {
 
 func appRoute(p string) bool {
 	return under(p, "/api/developers") || under(p, "/api/private/projects") || under(p, "/api/private/apps") || under(p, "/api/apps")
+}
+
+// Credential protocol endpoints perform their own factor/session verification;
+// their bearer input must reach that verifier, rather than the domain adapter.
+func signinRoute(method, p string) bool {
+	return method == "POST" && p == "/stargate/accounts" || p == "/stargate/accounts/verify" || p == "/stargate/accounts/verification" || under(p, "/stargate/auth/challenge") || under(p, "/stargate/factors") || p == "/stargate/accounts/me/password" || p == "/passport/accounts/recovery/password"
 }

@@ -33,7 +33,7 @@ func accountFixture(t *testing.T, db *sql.DB, n int) string {
 func sp(s string) *string { return &s }
 func TestPGAccountsPublisherLifecycle(t *testing.T) {
 	db := accountDB(t)
-	r := accountpg.New(db)
+	r := accountpg.NewForCompatibilityTests(db)
 	ctx := context.Background()
 	owner := accountFixture(t, db, 1)
 	editor := accountFixture(t, db, 2)
@@ -48,7 +48,7 @@ func TestPGAccountsPublisherLifecycle(t *testing.T) {
 	if e != nil || a.Profile == nil || a.Profile.Bio != "Owned profile" || a.Profile.ID == owner {
 		t.Fatalf("profile: %+v %v", a, e)
 	}
-	reloaded, e := accountpg.New(database(t)).LookupAccount(ctx, owner)
+	reloaded, e := accountpg.NewForCompatibilityTests(database(t)).LookupAccount(ctx, owner)
 	if e != nil || reloaded.Profile == nil || reloaded.Profile.ID != a.Profile.ID || reloaded.Nick != "Updated" {
 		t.Fatal("persisted profile missing", e)
 	}
@@ -193,7 +193,7 @@ func TestPGAccountsPublisherLifecycle(t *testing.T) {
 // restart. It never initializes fixtures in the after phase.
 func TestPGAccountsRestartPersistence(t *testing.T) {
 	db := accountDB(t)
-	r := accountpg.New(db)
+	r := accountpg.NewForCompatibilityTests(db)
 	ctx := context.Background()
 	owner := accountID(40)
 	if os.Getenv("PG_TEST_PHASE") != "after" {
@@ -226,7 +226,7 @@ func TestPGAccountsRestartPersistence(t *testing.T) {
 
 func TestPGAccountsProfileConcurrencyAndCanonicalLookup(t *testing.T) {
 	db := accountDB(t)
-	r := accountpg.New(db)
+	r := accountpg.NewForCompatibilityTests(db)
 	ctx := context.Background()
 	actor := accountFixture(t, db, 50)
 	shadow := accountFixture(t, db, 51)
@@ -256,7 +256,7 @@ func TestPGAccountsProfileConcurrencyAndCanonicalLookup(t *testing.T) {
 }
 func TestPGAccountsAtomicRollbackAndQuotaRace(t *testing.T) {
 	db := accountDB(t)
-	r := accountpg.New(db)
+	r := accountpg.NewForCompatibilityTests(db)
 	ctx := context.Background()
 	owner := accountFixture(t, db, 20)
 	query(t, db, `INSERT INTO owned_publisher_quota(account_id,total,starts_at) VALUES($1,1,CURRENT_TIMESTAMP)`, owner)
@@ -300,7 +300,7 @@ func TestPGAccountsAtomicRollbackAndQuotaRace(t *testing.T) {
 func TestPGAccountsProcessPersistence(t *testing.T) {
 	if os.Getenv("SOLSYNTH_ACCOUNT_RESTART_CHILD") == "1" {
 		db := accountDB(t)
-		a, e := accountpg.New(db).LookupAccount(context.Background(), accountID(30))
+		a, e := accountpg.NewForCompatibilityTests(db).LookupAccount(context.Background(), accountID(30))
 		if e != nil || a.Profile == nil || a.Profile.Bio != "process sentinel" {
 			t.Fatal("fresh process profile missing", e)
 		}
@@ -308,7 +308,7 @@ func TestPGAccountsProcessPersistence(t *testing.T) {
 	}
 	db := accountDB(t)
 	id := accountFixture(t, db, 30)
-	if _, e := accountpg.New(db).UpdateProfile(context.Background(), id, accounts.ProfilePatch{Bio: sp("process sentinel")}); e != nil {
+	if _, e := accountpg.NewForCompatibilityTests(db).UpdateProfile(context.Background(), id, accounts.ProfilePatch{Bio: sp("process sentinel")}); e != nil {
 		t.Fatal(e)
 	}
 	cmd := exec.Command(os.Args[0], "-test.run=^TestPGAccountsProcessPersistence$")

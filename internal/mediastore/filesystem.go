@@ -191,5 +191,5 @@ func (s *Filesystem) Remove(ctx context.Context, key string) error {
 			return err
 		}
 	}
-	return s.syncDirectory()
+	return s.removeChunks(ctx, key)
 }

@@ -31,8 +31,10 @@ CREATE TABLE wallet_v1.transactions (
  frozen_at timestamptz,expires_at timestamptz,confirmed_at timestamptz,confirmation_received_at timestamptz,
  created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL,deleted_at timestamptz,
  idempotency_key varchar(128),fingerprint char(64) NOT NULL,
+ purpose varchar(16) NOT NULL DEFAULT 'transfer' CHECK(purpose IN ('transfer','commerce')),
+ managed_by uuid, CHECK ((purpose='commerce')=(managed_by IS NOT NULL)),
  CHECK(payer_wallet_id<>payee_wallet_id),CHECK(amount>0 AND amount<=79228162514264337593543950335),
- CHECK(status IN (0,1,2,3,4)),CHECK(status NOT IN (0,1) OR expires_at IS NOT NULL),
+ CHECK(status IN (0,1,2,3,4)),CHECK(status NOT IN (0,1) OR expires_at IS NOT NULL OR managed_by IS NOT NULL),
  UNIQUE(actor_id,idempotency_key)
 );
 CREATE INDEX wallet_transaction_payer ON wallet_v1.transactions(payer_wallet_id,created_at DESC,id DESC);

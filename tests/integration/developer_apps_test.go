@@ -95,7 +95,7 @@ func newDeveloperFixture(t *testing.T) developerFixture {
 	})
 	query(t, db, `INSERT INTO owned_publisher_quota(account_id,total,starts_at)VALUES($1,1,now())`, f.actor)
 	name := "devpub-" + strings.ReplaceAll(f.actor, "-", "")
-	pub, e := accountpg.New(db).CreatePublisher(context.Background(), f.actor, profiles.PublisherPatch{Name: &name, Nick: &name})
+	pub, e := accountpg.NewForCompatibilityTests(db).CreatePublisher(context.Background(), f.actor, profiles.PublisherPatch{Name: &name, Nick: &name})
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -164,7 +164,7 @@ func TestPGDeveloperAppsLifecycle(t *testing.T) {
 	if w.Code != 401 {
 		t.Fatal("mixed identity accepted", w.Code)
 	}
-	service := board.Service{Repository: boardpg.NewWithIndependentPolicy(f.db, nil), Catalog: f.repo, Normalizer: board.DocumentedEnvelope{}, Cache: board.NewGroupCache()}
+	service := board.Service{Repository: boardpg.NewForCompatibilityTests(f.db, nil), Catalog: f.repo, Normalizer: board.DocumentedEnvelope{}, Cache: board.NewGroupCache()}
 	key := "weather"
 	layout, e := service.Replace(context.Background(), f.other, []board.Item{{Kind: board.CustomApp, CustomAppID: &a.ID, CustomAppWidgetKey: &key, IsEnabled: true}})
 	if e != nil || len(layout) != 1 {
@@ -176,6 +176,28 @@ func TestPGDeveloperAppsLifecycle(t *testing.T) {
 	out := backendDecode[board.Item](t, backendCall(t, f.handler, "POST", root+"/board/payload", *secret.Secret, body, 200))
 	if out.ID != layout[0].ID {
 		t.Fatal("wrong board item")
+	}
+	// An app credential cannot bypass a currently disabled owner or recipient.
+	// Scheduled/expired punishments remain half-open; block_login is not disable.
+	before, later := time.Now().Add(-time.Minute), time.Now().Add(time.Hour)
+	for _, subject := range []string{f.actor, f.other} {
+		for _, punishment := range []authority.Punishment{{Kind: "disable_account", StartsAt: &later}, {Kind: "disable_account", ExpiresAt: &before}, {Kind: "block_login"}} {
+			if e = authoritypg.New(f.db).ReplacePolicy(context.Background(), subject, []authority.Rule{{Pattern: "*"}}, []authority.Punishment{punishment}); e != nil {
+				t.Fatal(e)
+			}
+			backendCall(t, f.handler, "POST", root+"/board/payload", *secret.Secret, body, 200)
+		}
+		if e = authoritypg.New(f.db).ReplacePolicy(context.Background(), subject, []authority.Rule{{Pattern: "*"}}, []authority.Punishment{{Kind: "disable_account"}}); e != nil {
+			t.Fatal(e)
+		}
+		status := 403
+		if subject == f.actor {
+			status = 401
+		}
+		backendCall(t, f.handler, "POST", root+"/board/payload", *secret.Secret, body, status)
+		if e = authoritypg.New(f.db).ReplacePolicy(context.Background(), subject, []authority.Rule{{Pattern: "*"}}, nil); e != nil {
+			t.Fatal(e)
+		}
 	}
 	backendCall(t, f.handler, "POST", root+"/board/payload", *secret.Secret, `{"account_id":"`+f.actor+`","widget_key":"weather","payload":{}}`, 403)
 	rotate := backendDecode[apps.Secret](t, backendCall(t, f.handler, "POST", root+"/secrets/"+secret.ID+"/rotate"+q, f.token, `{}`, 200))

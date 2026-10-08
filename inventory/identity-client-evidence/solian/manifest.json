@@ -595,6 +595,16 @@
       "sha256": "c784524190ea8181fa4af753768219fd9ca50aa760fda31d5aeba95833955dd8",
       "license": "AGPL-3.0 (repository LICENSE.txt)",
       "source_kind": "Eligible authored client source/test/config, not excluded generated protocol definitions"
+    },
+    {
+      "path": "lib/accounts/screens/me/settings_auth_factors.dart",
+      "git_blob_sha": "53b3eacfe79fe4c5d04c4e2d34b54cbb9dd42a65",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/me/settings_auth_factors.dart",
+      "upstream_path": "lib/accounts/screens/me/settings_auth_factors.dart",
+      "bytes": 33790,
+      "sha256": "ef1639da0baff9940e9f2cccc2dac4b9a3b90e68c15a173748ce3d011129f11a",
+      "license": "AGPL-3.0 (repository LICENSE.txt)",
+      "source_kind": "Eligible authored client source/test/config, not excluded generated protocol definitions"
     }
   ],
   "license_bytes": 34522,

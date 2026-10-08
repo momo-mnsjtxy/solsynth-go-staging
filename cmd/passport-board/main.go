@@ -86,7 +86,7 @@ func run() error {
 		if err != nil {
 			return errors.New("disposable PostgreSQL unavailable")
 		}
-		repo := boardpg.NewWithIndependentPolicy(db, nil)
+		repo := boardpg.NewForCompatibilityTests(db, nil)
 		handler = fixture.HTTPHandler(repo, repo)
 	}
 	server := &http.Server{Addr: *listen, Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 30 * time.Second}

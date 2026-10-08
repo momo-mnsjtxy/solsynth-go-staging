@@ -75,7 +75,7 @@ func newAtomicAuthorityFixture(t *testing.T) atomicAuthorityFixture {
 	f.wallets = walletpg.NewWithAuthority(db, f.guard)
 	query(t, db, `INSERT INTO owned_publisher_quota(account_id,total,starts_at) VALUES($1,2,now())`, f.actor)
 	name := "atomic_" + strings.ReplaceAll(f.actor, "-", "")
-	pub, err := accountpg.New(db).CreatePublisher(ctx, f.actor, profiles.PublisherPatch{Name: &name, Nick: &name})
+	pub, err := accountpg.NewForCompatibilityTests(db).CreatePublisher(ctx, f.actor, profiles.PublisherPatch{Name: &name, Nick: &name})
 	if err != nil {
 		t.Fatal(err)
 	}

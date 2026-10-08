@@ -38,7 +38,7 @@ type chatFixture struct {
 
 func chatRepo(t *testing.T, db *sql.DB) *chatpg.Repository {
 	t.Helper()
-	r, e := chatpg.New(db, chatPolicy)
+	r, e := chatpg.NewForCompatibilityTests(db, chatPolicy)
 	if e != nil {
 		t.Fatal(e)
 	}

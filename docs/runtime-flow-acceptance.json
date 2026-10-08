@@ -1,0 +1,553 @@
+{
+  "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
+  "original_static_http_attributes": 818,
+  "runtime_endpoint_total": null,
+  "local_source_checkpoint": "e7fa653a33bf9970ca2e7b4623d310b929153b64",
+  "last_fully_passed_ci": {
+    "commit": "d4ee9b826ae65138ba53d460ff5874d4181384fa",
+    "run": 37737268425,
+    "before": 122,
+    "after_restart": 20
+  },
+  "latest_candidate": {
+    "scope": "Reviewed core plus sign-in, commerce, resumable media and verification adapters",
+    "status": "Local verification; actual PG pending publication"
+  },
+  "local_required_before": 147,
+  "local_required_after_restart": 23,
+  "families": [
+    {
+      "source_family": "develop.apps_products",
+      "local_status": "implemented",
+      "supported_flows": [
+        "Canonical app/product CRUD, scoped app keys and public app reads"
+      ],
+      "guarded_pg_cases": [
+        "TestPGDeveloperAppsConcurrentRevocation",
+        "TestPGDeveloperAppsIsolationAndRevocation",
+        "TestPGDeveloperAppsLifecycle",
+        "TestPGDeveloperAppsRestartPersistence"
+      ],
+      "unsupported_or_remaining": [
+        "External OAuth/OIDC, bot provisioning, recurring fulfillment"
+      ]
+    },
+    {
+      "source_family": "develop.developers",
+      "local_status": "implemented",
+      "supported_flows": [
+        "Publisher-owned developer enrollment"
+      ],
+      "guarded_pg_cases": [
+        "TestPGDeveloperAppsConcurrentRevocation",
+        "TestPGDeveloperAppsIsolationAndRevocation",
+        "TestPGDeveloperAppsLifecycle",
+        "TestPGDeveloperAppsRestartPersistence"
+      ],
+      "unsupported_or_remaining": []
+    },
+    {
+      "source_family": "develop.projects",
+      "local_status": "implemented",
+      "supported_flows": [
+        "Canonical project CRUD and owner/member isolation"
+      ],
+      "guarded_pg_cases": [
+        "TestPGDeveloperAppsConcurrentRevocation",
+        "TestPGDeveloperAppsIsolationAndRevocation",
+        "TestPGDeveloperAppsLifecycle",
+        "TestPGDeveloperAppsRestartPersistence"
+      ],
+      "unsupported_or_remaining": []
+    },
+    {
+      "source_family": "develop.bots",
+      "local_status": "candidate_only",
+      "supported_flows": [
+        "Retained standalone SQL command-read candidate"
+      ],
+      "guarded_pg_cases": [
+        "TestPGDevelopBotCommandsPayloads",
+        "TestPGDevelopBotCommandsPolicyAndErrors",
+        "TestPGDevelopBotCommandsRestartPersistence"
+      ],
+      "unsupported_or_remaining": [
+        "Bot account provisioning, authorization and command execution"
+      ]
+    },
+    {
+      "source_family": "develop.boards",
+      "local_status": "implemented",
+      "supported_flows": [
+        "Widget manifests, consent and app-authenticated board payload writes"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBoardHTTPFamily",
+        "TestPGBoardHTTPProcessRestart",
+        "TestPGBoardHTTPRestartPersistence",
+        "TestPGBoardHTTPValidationRollback",
+        "TestPGDeveloperAppsConcurrentRevocation",
+        "TestPGDeveloperAppsIsolationAndRevocation",
+        "TestPGDeveloperAppsLifecycle",
+        "TestPGDeveloperAppsRestartPersistence"
+      ],
+      "unsupported_or_remaining": [
+        "Public /api/apps/board discovery"
+      ]
+    },
+    {
+      "source_family": "develop.miniapps",
+      "local_status": "candidate_only",
+      "supported_flows": [
+        "Retained standalone package download/counter candidate"
+      ],
+      "guarded_pg_cases": [
+        "TestPGDevelopPackageAtomicCounter",
+        "TestPGDevelopPackageDownloadBranches",
+        "TestPGDevelopPackagePolicyAndFailures",
+        "TestPGDevelopPackageRestartPersistence"
+      ],
+      "unsupported_or_remaining": [
+        "Miniapp CRUD, release publication, hosted execution"
+      ]
+    },
+    {
+      "source_family": "messager.messages",
+      "local_status": "partial",
+      "supported_flows": [
+        "Canonical text send/edit/delete, read/sync/unread and sequences"
+      ],
+      "guarded_pg_cases": [
+        "TestPGChatAuthorityAndUnsupportedBoundaries",
+        "TestPGChatConcurrentRemovalAndSend",
+        "TestPGChatConcurrentSequencesAndRollback",
+        "TestPGChatMembershipPrivacyAndPolicy",
+        "TestPGChatRestartPersistence",
+        "TestPGChatRoomTextLifecycle",
+        "TestPGMessagerHydrationAndMessageReads",
+        "TestPGMessagerLimitAndExactInt64",
+        "TestPGMessagerMembershipAndVisibility",
+        "TestPGMessagerReadOnlyFailuresAndIndependentPool",
+        "TestPGMessagerRestartPersistence",
+        "TestPGMessagerTimestampSequenceAndRangeRecovery",
+        "TestPGMessagerUnreadMatchesRetainedPolicy"
+      ],
+      "unsupported_or_remaining": [
+        "E2EE/media messages, message reactions, full source message types"
+      ]
+    },
+    {
+      "source_family": "messager.rooms",
+      "local_status": "partial",
+      "supported_flows": [
+        "Group/community rooms, invitations, members and read markers"
+      ],
+      "guarded_pg_cases": [
+        "TestPGChatAuthorityAndUnsupportedBoundaries",
+        "TestPGChatConcurrentRemovalAndSend",
+        "TestPGChatConcurrentSequencesAndRollback",
+        "TestPGChatMembershipPrivacyAndPolicy",
+        "TestPGChatRestartPersistence",
+        "TestPGChatRoomTextLifecycle"
+      ],
+      "unsupported_or_remaining": [
+        "Direct-message and realm-room creation; custom roles"
+      ]
+    },
+    {
+      "source_family": "messager.calls",
+      "local_status": "in_progress",
+      "supported_flows": [],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Call signaling/provider slice awaiting integration and actual CI"
+      ]
+    },
+    {
+      "source_family": "passport.badges",
+      "local_status": "partial",
+      "supported_flows": [
+        "Licensed public badge manifest and icon routes"
+      ],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Earned badge assignment/progression integration"
+      ]
+    },
+    {
+      "source_family": "passport.fortunes",
+      "local_status": "not_implemented",
+      "supported_flows": [],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Daily fortune flow and licensed corpus; excluded/unlicensed corpus not imported"
+      ]
+    },
+    {
+      "source_family": "passport.accounts_presence",
+      "local_status": "partial",
+      "supported_flows": [
+        "Canonical profiles/publishers; first-party password/TOTP/recovery and session flows"
+      ],
+      "guarded_pg_cases": [
+        "TestPGAccountsAtomicRollbackAndQuotaRace",
+        "TestPGAccountsProcessPersistence",
+        "TestPGAccountsProfileConcurrencyAndCanonicalLookup",
+        "TestPGAccountsPublisherLifecycle",
+        "TestPGAccountsRestartPersistence",
+        "TestPGAuthorityAtomicWrites",
+        "TestPGAuthorityLifecycle",
+        "TestPGAuthorityRestartPersistence",
+        "TestPGSigninAuthorityBoundary",
+        "TestPGSigninHTTP",
+        "TestPGSigninLifecycle",
+        "TestPGSigninRateConcurrency",
+        "TestPGSigninRestartPersistence",
+        "TestPGSigninTOTPAndRecovery"
+      ],
+      "unsupported_or_remaining": [
+        "Presence/status, contacts, paid rename, external identity providers"
+      ]
+    },
+    {
+      "source_family": "passport.progression",
+      "local_status": "not_implemented",
+      "supported_flows": [],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Experience, achievements and progression mutation flows"
+      ]
+    },
+    {
+      "source_family": "passport.social_realms",
+      "local_status": "partial",
+      "supported_flows": [
+        "Friend requests, block/close-friend visibility, realms/members and realm wallets"
+      ],
+      "guarded_pg_cases": [
+        "TestPGPostInteractionsAuditRollback",
+        "TestPGPostInteractionsAuthenticatedHTTPAndRevocation",
+        "TestPGPostInteractionsCanonicalTaxonomyAndAtomicLinks",
+        "TestPGPostInteractionsCollectionOwnershipAndBatch",
+        "TestPGPostInteractionsDeletedAndDisabledIsolation",
+        "TestPGPostInteractionsIndependentPoolRaces",
+        "TestPGPostInteractionsMembershipRevocation",
+        "TestPGPostInteractionsReactionBookmarkPrivacy",
+        "TestPGPostInteractionsRestartPersistence",
+        "TestPGPostInteractionsSocialVisibility",
+        "TestPGSocialRealmWriteRevocationOrdering",
+        "TestPGSocialRealms",
+        "TestPGSocialRelationships",
+        "TestPGSocialRestartPersistence",
+        "TestPGSocialTransactionsAndHTTP"
+      ],
+      "unsupported_or_remaining": [
+        "Mute expiry, custom roles/permissions, boosts, organization publisher creation"
+      ]
+    },
+    {
+      "source_family": "passport.location_nfc",
+      "local_status": "not_implemented",
+      "supported_flows": [],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Location/meet/NFC lifecycle"
+      ]
+    },
+    {
+      "source_family": "passport.tickets_exams",
+      "local_status": "not_implemented",
+      "supported_flows": [],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Support tickets, on-call and examinations"
+      ]
+    },
+    {
+      "source_family": "passport.notable_days",
+      "local_status": "not_implemented",
+      "supported_flows": [],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Notable-day and calendar lifecycle"
+      ]
+    },
+    {
+      "source_family": "sphere.federation_discovery",
+      "local_status": "candidate_only",
+      "supported_flows": [
+        "Retained standalone NodeInfo/host-meta candidates"
+      ],
+      "guarded_pg_cases": [
+        "TestPGNodeInfoCountsAndHTTP",
+        "TestPGNodeInfoFailurePropagation",
+        "TestPGNodeInfoPolicyAndReadOnly",
+        "TestPGNodeInfoRestartPersistence"
+      ],
+      "unsupported_or_remaining": [
+        "Canonical host discovery integration"
+      ]
+    },
+    {
+      "source_family": "sphere.federation",
+      "local_status": "awaiting_integration",
+      "supported_flows": [],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Delivered signed federation subset needs host/schema/CI integration; remote discovery/private/media federation unsupported"
+      ]
+    },
+    {
+      "source_family": "sphere.taxonomy",
+      "local_status": "partial",
+      "supported_flows": [
+        "Tags/categories/admin operations/subscriptions and canonical post associations"
+      ],
+      "guarded_pg_cases": [
+        "TestPGPostInteractionsAuditRollback",
+        "TestPGPostInteractionsAuthenticatedHTTPAndRevocation",
+        "TestPGPostInteractionsCanonicalTaxonomyAndAtomicLinks",
+        "TestPGPostInteractionsCollectionOwnershipAndBatch",
+        "TestPGPostInteractionsDeletedAndDisabledIsolation",
+        "TestPGPostInteractionsIndependentPoolRaces",
+        "TestPGPostInteractionsMembershipRevocation",
+        "TestPGPostInteractionsReactionBookmarkPrivacy",
+        "TestPGPostInteractionsRestartPersistence",
+        "TestPGPostInteractionsSocialVisibility",
+        "TestPGTaxonomyAdminFiltersAndTombstones",
+        "TestPGTaxonomyConcurrentClaimAndQuota",
+        "TestPGTaxonomyConcurrentCreateAndSubscribe",
+        "TestPGTaxonomyCreateUpdateConstraints",
+        "TestPGTaxonomyListSearchOrder",
+        "TestPGTaxonomyOwnershipQuotaEvent",
+        "TestPGTaxonomyPolicyErrorsAndReadOnly",
+        "TestPGTaxonomyRestartPersistence",
+        "TestPGTaxonomySubscriptionsAndDeleteRollback",
+        "TestPGTaxonomyTransactionalAudit"
+      ],
+      "unsupported_or_remaining": [
+        "Legacy entitlement and migration equivalence"
+      ]
+    },
+    {
+      "source_family": "sphere.publishers",
+      "local_status": "partial",
+      "supported_flows": [
+        "Canonical publisher identity, memberships, defaults and quotas"
+      ],
+      "guarded_pg_cases": [
+        "TestPGAccountsAtomicRollbackAndQuotaRace",
+        "TestPGAccountsProcessPersistence",
+        "TestPGAccountsProfileConcurrencyAndCanonicalLookup",
+        "TestPGAccountsPublisherLifecycle",
+        "TestPGAccountsRestartPersistence",
+        "TestPGSocialRealmWriteRevocationOrdering",
+        "TestPGSocialRealms",
+        "TestPGSocialRelationships",
+        "TestPGSocialRestartPersistence",
+        "TestPGSocialTransactionsAndHTTP"
+      ],
+      "unsupported_or_remaining": [
+        "Publisher following awaiting timeline integration; ratings/settlement/subscription administration"
+      ]
+    },
+    {
+      "source_family": "sphere.live_ads",
+      "local_status": "not_implemented",
+      "supported_flows": [],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Live-stream ingress/lifecycle, advertising and sponsorship auctions"
+      ]
+    },
+    {
+      "source_family": "sphere.content_utilities",
+      "local_status": "not_implemented",
+      "supported_flows": [],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Web reader, translation and autocompletion runtime"
+      ]
+    },
+    {
+      "source_family": "sphere.stickers_surveys",
+      "local_status": "in_progress",
+      "supported_flows": [],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Survey/sticker slice under implementation"
+      ]
+    },
+    {
+      "source_family": "sphere.timeline",
+      "local_status": "awaiting_integration",
+      "supported_flows": [],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Delivered feed/search/thread/follow/watch slice needs host/schema/CI integration; documented state-enum gap"
+      ]
+    },
+    {
+      "source_family": "sphere.posts",
+      "local_status": "partial",
+      "supported_flows": [
+        "Text lifecycle, visibility, reactions/bookmarks/collections and taxonomy links"
+      ],
+      "guarded_pg_cases": [
+        "TestPGPostInteractionsAuditRollback",
+        "TestPGPostInteractionsAuthenticatedHTTPAndRevocation",
+        "TestPGPostInteractionsCanonicalTaxonomyAndAtomicLinks",
+        "TestPGPostInteractionsCollectionOwnershipAndBatch",
+        "TestPGPostInteractionsDeletedAndDisabledIsolation",
+        "TestPGPostInteractionsIndependentPoolRaces",
+        "TestPGPostInteractionsMembershipRevocation",
+        "TestPGPostInteractionsReactionBookmarkPrivacy",
+        "TestPGPostInteractionsRestartPersistence",
+        "TestPGPostInteractionsSocialVisibility",
+        "TestPGPostsAtomicRollbackAndCancellation",
+        "TestPGPostsAuthenticatedHTTPAndFreshAuthority",
+        "TestPGPostsIndependentPoolConcurrency",
+        "TestPGPostsLifecycleAndPrivacy",
+        "TestPGPostsMembershipRevocationSerializesWithWrites",
+        "TestPGPostsRestartPersistence",
+        "TestPGPostsVisibilityAndStateGuards"
+      ],
+      "unsupported_or_remaining": [
+        "Replies/reposts awaiting timeline integration; attachment publication, Blog, scheduling/moderation and remaining source operations"
+      ]
+    },
+    {
+      "source_family": "wallet.product_catalog",
+      "local_status": "partial",
+      "supported_flows": [
+        "Exchange and explicit product configuration catalogs composed into host"
+      ],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Configuration provisioning and full provider purchase flows"
+      ]
+    },
+    {
+      "source_family": "wallet.ledger",
+      "local_status": "partial",
+      "supported_flows": [
+        "Exact-decimal wallets/transfers/holds/confirm/refund/expiry, PIN verification and realm grants"
+      ],
+      "guarded_pg_cases": [
+        "TestPGAuthorityAtomicWrites",
+        "TestPGWalletAtomicPrecisionRollbackAndIdempotency",
+        "TestPGWalletConcurrentDebitAndDuplicate",
+        "TestPGWalletConcurrentQuotaDefaultAndConfirm",
+        "TestPGWalletDurablePINPolicyAndLockout",
+        "TestPGWalletFreshRealmGrantPolicy",
+        "TestPGWalletHTTPFamily",
+        "TestPGWalletHeldLifecycleAndExpiry",
+        "TestPGWalletRestartPersistence",
+        "TestPGWalletVerifiedAuthorityComposition"
+      ],
+      "unsupported_or_remaining": [
+        "User PIN enrollment and legacy import policy"
+      ]
+    },
+    {
+      "source_family": "wallet.orders_payments",
+      "local_status": "partial",
+      "supported_flows": [
+        "Canonical held-fund orders, stock, checkout metadata and settlement/refund"
+      ],
+      "guarded_pg_cases": [
+        "TestPGCommerceConcurrentPaymentStockAndRollback",
+        "TestPGCommerceExpiryAndAuthorityOrdering",
+        "TestPGCommerceHTTPPaymentAndUnavailableProvider",
+        "TestPGCommerceOrderSettlementAndIsolation",
+        "TestPGCommerceRestartPersistence",
+        "TestPGCommerceSubscriptionRenewCancelAndGiftRedeem"
+      ],
+      "unsupported_or_remaining": [
+        "Live provider clients, address fulfillment, coupons, payouts"
+      ]
+    },
+    {
+      "source_family": "wallet.subscriptions_gifts",
+      "local_status": "partial",
+      "supported_flows": [
+        "Subscription activation/renew/cancel, gift pay/send/redeem/expiry"
+      ],
+      "guarded_pg_cases": [
+        "TestPGCommerceConcurrentPaymentStockAndRollback",
+        "TestPGCommerceExpiryAndAuthorityOrdering",
+        "TestPGCommerceHTTPPaymentAndUnavailableProvider",
+        "TestPGCommerceOrderSettlementAndIsolation",
+        "TestPGCommerceRestartPersistence",
+        "TestPGCommerceSubscriptionRenewCancelAndGiftRedeem"
+      ],
+      "unsupported_or_remaining": [
+        "Provider synchronization, recurring app fulfillment, trials and billing views"
+      ]
+    },
+    {
+      "source_family": "wallet.merchants",
+      "local_status": "partial",
+      "supported_flows": [
+        "Trusted canonical payout binding and app credential checks"
+      ],
+      "guarded_pg_cases": [
+        "TestPGCommerceConcurrentPaymentStockAndRollback",
+        "TestPGCommerceExpiryAndAuthorityOrdering",
+        "TestPGCommerceHTTPPaymentAndUnavailableProvider",
+        "TestPGCommerceOrderSettlementAndIsolation",
+        "TestPGCommerceRestartPersistence",
+        "TestPGCommerceSubscriptionRenewCancelAndGiftRedeem"
+      ],
+      "unsupported_or_remaining": [
+        "Merchant management/payout endpoints"
+      ]
+    },
+    {
+      "source_family": "wallet.reporting",
+      "local_status": "not_implemented",
+      "supported_flows": [],
+      "guarded_pg_cases": [],
+      "unsupported_or_remaining": [
+        "Wallet/admin aggregate reporting"
+      ]
+    }
+  ],
+  "additional_cross_service_flows": [
+    {
+      "family": "owned.media",
+      "flows": [
+        "Streaming/direct multipart, quota, private/public download and cleanup",
+        "Resumable/chunk/async202 lifecycle"
+      ],
+      "tests": [
+        "tests/integration/media_test.go",
+        "tests/integration/media_resumable_test.go"
+      ]
+    },
+    {
+      "family": "owned.notifications",
+      "flows": [
+        "Inbox/outbox, wallet/chat projection, WebSocket/SSE/replay and one-use browser tickets"
+      ],
+      "tests": [
+        "tests/integration/notifications_test.go",
+        "tests/integration/backend_test.go"
+      ]
+    },
+    {
+      "family": "owned.verification",
+      "flows": [
+        "Configured Turnstile and SMTP verification adapters; no live provider activation"
+      ],
+      "tests": [
+        "tests/integration/verification_adapters_test.go"
+      ]
+    }
+  ],
+  "global_remaining": [
+    "Full original external contracts and migration/rollback validation",
+    "Independent auth/transaction review fixes pending integration",
+    "Configured providers, secrets and production deployment require separate authorization; no live transmissions performed"
+  ]
+}

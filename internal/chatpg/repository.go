@@ -8,6 +8,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/messager/rooms"
 	"time"
 )
@@ -18,8 +19,15 @@ import (
 var Schema string
 
 type Repository struct {
-	db     *sql.DB
-	policy rooms.Policy
+	db      *sql.DB
+	policy  rooms.Policy
+	guard   TransactionGuard
+	fixture bool
+}
+
+type TransactionGuard interface {
+	Authenticate(context.Context, *sql.DB, *sql.Tx, string) (authority.Principal, error)
+	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
 }
 
 var _ rooms.Repository = (*Repository)(nil)
@@ -32,6 +40,46 @@ func New(db *sql.DB, p rooms.Policy) (*Repository, error) {
 		return nil, e
 	}
 	return &Repository{db: db, policy: p}, nil
+}
+
+func NewWithAuthority(db *sql.DB, p rooms.Policy, guard TransactionGuard) (*Repository, error) {
+	r, err := New(db, p)
+	if err == nil {
+		r.guard = guard
+	}
+	return r, err
+}
+
+// NewForCompatibilityTests permits only explicitly trusted synthetic callers.
+// Ordinary constructors deny mutations without original transaction proof.
+func NewForCompatibilityTests(db *sql.DB, p rooms.Policy) (*Repository, error) {
+	r, err := New(db, p)
+	if err == nil {
+		r.fixture = true
+	}
+	return r, err
+}
+
+func (r *Repository) beginWrite(ctx context.Context, actor, permission string) (*sql.Tx, error) {
+	if r == nil || (!r.fixture && r.guard == nil) {
+		return nil, rooms.ErrUnavailable
+	}
+	tx, err := r.begin(ctx, false)
+	if err != nil {
+		return nil, err
+	}
+	if !r.fixture {
+		if permission == "" {
+			_, err = r.guard.Authenticate(ctx, r.db, tx, actor)
+		} else {
+			_, err = r.guard.Authorize(ctx, r.db, tx, actor, permission)
+		}
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+	return tx, nil
 }
 func id() (string, error) {
 	var b [16]byte
@@ -148,7 +196,7 @@ func (r *Repository) Create(ctx context.Context, actor string, p rooms.RoomPatch
 	if e := rooms.ValidateRoom(p, true, r.policy); e != nil {
 		return rooms.Room{}, e
 	}
-	tx, e := r.begin(ctx, false)
+	tx, e := r.beginWrite(ctx, actor, "chat.create")
 	if e != nil {
 		return rooms.Room{}, e
 	}
@@ -251,7 +299,7 @@ func (r *Repository) Update(ctx context.Context, actor, rid string, p rooms.Room
 	if e := rooms.ValidateRoom(p, false, r.policy); e != nil {
 		return rooms.Room{}, e
 	}
-	tx, e := r.begin(ctx, false)
+	tx, e := r.beginWrite(ctx, actor, "chat.update")
 	if e != nil {
 		return rooms.Room{}, e
 	}
@@ -291,7 +339,7 @@ func (r *Repository) Delete(ctx context.Context, actor, rid string) error {
 	if e := valid(actor, rid); e != nil {
 		return e
 	}
-	tx, e := r.begin(ctx, false)
+	tx, e := r.beginWrite(ctx, actor, "chat.delete")
 	if e != nil {
 		return e
 	}

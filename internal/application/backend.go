@@ -13,16 +13,19 @@ import (
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/boardpg"
 	"solsynth.local/go-migration/internal/chatpg"
+	"solsynth.local/go-migration/internal/commercepg"
 	"solsynth.local/go-migration/internal/interactionpg"
 	"solsynth.local/go-migration/internal/mediapg"
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/internal/notificationpg"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/internal/realtime"
+	"solsynth.local/go-migration/internal/signinpg"
 	"solsynth.local/go-migration/internal/socialpg"
 	"solsynth.local/go-migration/internal/taxonomypg"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/develop/apps"
 	"solsynth.local/go-migration/ports/media"
 	"solsynth.local/go-migration/ports/messager/rooms"
@@ -33,6 +36,7 @@ import (
 	"solsynth.local/go-migration/ports/sphere/interactions"
 	"solsynth.local/go-migration/ports/sphere/posts"
 	"solsynth.local/go-migration/ports/sphere/taxonomy"
+	"solsynth.local/go-migration/ports/wallet/commerce"
 	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
 )
 
@@ -50,6 +54,8 @@ type Config struct {
 	MediaStore                    media.ObjectStore
 	MaxMediaBytes                 int64
 	NotificationApp               string
+	CommerceProviders             map[string]commerce.Provider
+	Signin                        *signin.Config
 }
 type Backend struct {
 	handler            http.Handler
@@ -58,6 +64,8 @@ type Backend struct {
 	wallet             *walletpg.Repository
 	media              *mediapg.Repository
 	notificationWorker *notificationpg.Worker
+	commerce           *commercepg.Repository
+	signinEnabled      bool
 }
 
 func (b *Backend) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -89,11 +97,13 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if authorityDB != db && c.AllowNonAtomicAuthorityWrites {
 		guard = nil
 	}
-	accountRepo := accountpg.New(db)
-	accountHTTP := bindIdentity(v, (&profiles.Service{Repository: accountRepo, Authority: proofIdentity{identity}}).Handler())
+	accountRepo := accountpg.NewWithAuthority(db, guard)
+	accountHTTP := bindIdentity(v, bindTransactionAuthority(guard, (&profiles.Service{Repository: accountRepo, Authority: proofIdentity{identity}}).Handler()))
 	cache := board.NewGroupCache()
 	appRepo := apppg.NewWithAuthority(db, guard).WithBoardCache(cache)
 	appService := &apps.Service{Repository: appRepo, Authority: proofIdentity{identity}}
+	commerceRepo := commercepg.New(db, guard, commercepg.AppAdapters(appRepo))
+	commerceHTTP := (&commerce.Service{Store: commerceRepo, Identity: commerceIdentity{identity}, Payments: walletpg.NewPINVerifier(db, c.PINPeppers), Providers: c.CommerceProviders}).Handler()
 	appNormal := bindIdentity(v, bindTransactionAuthority(guard, appService.Handler()))
 	appHTTP := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if apps.IsAppCredentialRoute(r) {
@@ -102,18 +112,18 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		}
 		appNormal.ServeHTTP(w, r)
 	})
-	bRepo := boardpg.NewWithIndependentPolicy(db, nil)
+	bRepo := boardpg.NewWithAuthority(db, guard, nil)
 	bh := board.NewHTTPHandler(board.HTTPOptions{Service: board.Service{Repository: bRepo, Catalog: appRepo, Normalizer: board.DocumentedEnvelope{}, Cache: cache}, Authority: boardIdentity{identity}, Accounts: accountResolver{aStore}, AccountCache: cache, Delete: bRepo})
 	mr, err := messagerpg.NewWithIndependentPolicy(db, *c.MessagerPolicy)
 	if err != nil {
 		return nil, err
 	}
-	cr, err := chatpg.New(db, rooms.Policy{NoneEncryptionMode: c.MessagerPolicy.NoneEncryptionMode, NotifyAll: c.MessagerPolicy.NotifyAll, NotifyMentions: c.MessagerPolicy.NotifyMentions, NotifyNone: c.MessagerPolicy.NotifyNone})
+	cr, err := chatpg.NewWithAuthority(db, rooms.Policy{NoneEncryptionMode: c.MessagerPolicy.NoneEncryptionMode, NotifyAll: c.MessagerPolicy.NotifyAll, NotifyMentions: c.MessagerPolicy.NotifyMentions, NotifyNone: c.MessagerPolicy.NotifyNone}, guard)
 	if err != nil {
 		return nil, err
 	}
 	mh := (&rooms.Service{Repository: cr, Authority: proofIdentity{identity}, Reader: mr}).Handler()
-	th := taxonomy.NewAuthorityHandler(taxonomypg.NewWithIndependentPolicy(db, *c.PublicVisibility), taxonomyIdentity{identity, publisherRepository{accountRepo}}, time.Now)
+	th := taxonomy.NewAuthorityHandler(taxonomypg.NewWithAuthority(db, *c.PublicVisibility, guard), taxonomyIdentity{identity, publisherRepository{accountRepo}}, time.Now)
 	socialRepo := socialpg.NewWithAuthority(db, guard)
 	socialHTTP := (&social.Service{Repository: socialRepo, Authority: proofIdentity{identity}}).Handler()
 	interactionRepo := interactionpg.NewWithAuthority(db, guard).WithVisibility(socialRepo)
@@ -125,10 +135,34 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	postRepository.WithAssociations(interactionRepo).WithVisibility(socialRepo)
 	ph := posts.NewHandler(postRepository, postIdentity{identity})
 	wh, wallet := walletHandler(db, identity, c.PINPeppers, guard, socialRepo)
+	var signinHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "SIGNIN_ISSUER_UNCONFIGURED") })
+	var signinService *signin.Service
+	if c.Signin != nil {
+		if authorityDB != db {
+			return nil, errors.New("sign-in requires same-pool canonical authority")
+		}
+		if c.SessionService == nil {
+			c.SessionService, err = authority.New(aStore, c.Authority)
+			if err != nil {
+				return nil, err
+			}
+		}
+		signinService, err = signin.New(signinpg.New(db, aStore, guard), c.SessionService, v, *c.Signin)
+		if err != nil {
+			return nil, err
+		}
+		signinHTTP = signinService.Handler()
+	}
 	session := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 501, "AUTHORITY_ISSUER_ROLE_REQUIRED") })
 	var sessionHTTP http.Handler = session
 	if c.SessionService != nil {
 		sessionHTTP = c.SessionService.Handler()
+		if signinService != nil {
+			mux := http.NewServeMux()
+			signinService.RegisterRoutes(mux)
+			mux.Handle("/", sessionHTTP)
+			sessionHTTP = mux
+		}
 	}
 	var mediaRepo *mediapg.Repository
 	var mediaHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "MEDIA_STORAGE_UNCONFIGURED") })
@@ -157,8 +191,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bh), taxonomy: bindIdentity(v, th), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, mh), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, db: db, authorityDB: authorityDB}, nil
+	h := router{modules{signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	return &Backend{handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 }
 
 type accountLookup interface {
@@ -183,5 +217,10 @@ func (b *Backend) ProcessDue(ctx context.Context, limit int) (int, error) {
 	if b == nil || b.wallet == nil {
 		return 0, errors.New("backend: wallet unavailable")
 	}
-	return b.wallet.ProcessDue(ctx, limit)
+	n, e := b.wallet.ProcessDue(ctx, limit)
+	if b.commerce == nil {
+		return n, e
+	}
+	m, ce := b.commerce.ProcessDue(ctx, limit)
+	return n + m, errors.Join(e, ce)
 }

@@ -21,11 +21,29 @@ var Schema string
 
 // New never migrates or provisions accounts, grants, entitlements or quota.
 type Repository struct {
-	db  *sql.DB
-	now func() time.Time
+	db               *sql.DB
+	now              func() time.Time
+	guard            TransactionGuard
+	requireAuthority bool
 }
 
-func New(db *sql.DB) *Repository { return &Repository{db: db, now: time.Now} }
+// New permits reads but denies writes until a transaction guard is supplied.
+func New(db *sql.DB) *Repository { return NewWithAuthority(db, nil) }
+
+// NewForCompatibilityTests permits explicitly trusted synthetic fixture writes.
+// Never use this constructor in an authenticated HTTP host.
+func NewForCompatibilityTests(db *sql.DB) *Repository { return &Repository{db: db, now: time.Now} }
+
+type TransactionGuard interface {
+	Authenticate(context.Context, *sql.DB, *sql.Tx, string) (authority.Principal, error)
+	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
+}
+
+// NewWithAuthority requires the original proof to be revalidated while holding
+// the canonical account lock, through the domain commit. A nil guard denies.
+func NewWithAuthority(db *sql.DB, guard TransactionGuard) *Repository {
+	return &Repository{db: db, now: time.Now, guard: guard, requireAuthority: true}
+}
 
 var _ accounts.Repository = (*Repository)(nil)
 
@@ -99,8 +117,8 @@ func (r *Repository) LookupAccount(ctx context.Context, ref string) (accounts.Ac
 	}
 	return lookupAccount(ctx, r.db, ref)
 }
-func (r *Repository) write(ctx context.Context, actor string, fn func(*sql.Tx, time.Time) error) error {
-	if r == nil || r.db == nil {
+func (r *Repository) write(ctx context.Context, actor, permission string, fn func(*sql.Tx, time.Time) error) error {
+	if r == nil || r.db == nil || r.requireAuthority && r.guard == nil {
 		return accounts.ErrUnavailable
 	}
 	if !authority.ValidID(actor) {
@@ -111,6 +129,16 @@ func (r *Repository) write(ctx context.Context, actor string, fn func(*sql.Tx, t
 		return e
 	}
 	defer tx.Rollback()
+	if r.requireAuthority {
+		if permission == "" {
+			_, e = r.guard.Authenticate(ctx, r.db, tx, actor)
+		} else {
+			_, e = r.guard.Authorize(ctx, r.db, tx, actor, permission)
+		}
+		if e != nil {
+			return e
+		}
+	}
 	var disabled bool
 	if e = tx.QueryRowContext(ctx, `SELECT disabled FROM owned_authority_accounts WHERE id=$1 FOR UPDATE`, actor).Scan(&disabled); e != nil {
 		return mapped(e)
@@ -132,7 +160,7 @@ func (r *Repository) UpdateProfile(ctx context.Context, actor string, p accounts
 	if e := accounts.ValidateProfile(p); e != nil {
 		return a, e
 	}
-	e := r.write(ctx, actor, func(tx *sql.Tx, now time.Time) error {
+	e := r.write(ctx, actor, "accounts.manage", func(tx *sql.Tx, now time.Time) error {
 		var e error
 		a, e = lookupAccount(ctx, tx, actor)
 		if e != nil {

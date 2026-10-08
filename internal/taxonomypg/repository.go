@@ -17,6 +17,7 @@ type Repository struct {
 	synthetic        bool
 	owned            bool
 	publicVisibility int32
+	authorityGuard   TransactionGuard
 }
 
 func New(db *sql.DB) *Repository { return &Repository{db: db} }
@@ -273,6 +274,14 @@ func (r *Repository) Create(ctx context.Context, row taxonomy.Record) (taxonomy.
 		return taxonomy.Record{}, err
 	}
 	defer tx.Rollback()
+	if r.owned {
+		if err = r.authorizeRecord(ctx, tx, row, "create"); err != nil {
+			return taxonomy.Record{}, err
+		}
+		if err = lockPublishers(ctx, tx, row.OwnerPublisherID); err != nil {
+			return taxonomy.Record{}, err
+		}
+	}
 	// Snapshot has no unique slug index. Serializing fixture mutations protects
 	// the source-visible case-insensitive duplicate check under concurrency.
 	if _, err = tx.ExecContext(ctx, "LOCK TABLE "+tbl+" IN SHARE ROW EXCLUSIVE MODE"); err != nil {
@@ -288,6 +297,11 @@ func (r *Repository) Create(ctx context.Context, row taxonomy.Record) (taxonomy.
 		}
 		if !ok {
 			return taxonomy.Record{}, taxonomy.Problem("TAG_OWNER_PUBLISHER_NOT_FOUND", "Owner publisher not found.", 400)
+		}
+	}
+	if r.owned {
+		if err = r.publisherPolicy(ctx, tx, row, row, "create"); err != nil {
+			return taxonomy.Record{}, err
 		}
 	}
 	if row.Kind == taxonomy.Category {
@@ -322,12 +336,31 @@ func (r *Repository) Mutate(ctx context.Context, k taxonomy.Kind, slug string, o
 		return taxonomy.Record{}, err
 	}
 	defer tx.Rollback()
+	var observed taxonomy.Record
+	if r.owned {
+		if err = r.authorize(ctx, tx, "", ""); err != nil {
+			return taxonomy.Record{}, err
+		}
+		observed, err = get(ctx, tx, k, slug, false, false)
+		if err != nil {
+			return taxonomy.Record{}, err
+		}
+		// Publisher-before-taxonomy order matches canonical post association
+		// writes. Detect any owner change after these locks rather than acquiring
+		// a new publisher lock in the opposite order while holding the table.
+		if err = lockPublishers(ctx, tx, observed.OwnerPublisherID, c.PublisherID); err != nil {
+			return taxonomy.Record{}, err
+		}
+	}
 	if _, err = tx.ExecContext(ctx, "LOCK TABLE "+tbl+" IN SHARE ROW EXCLUSIVE MODE"); err != nil {
 		return taxonomy.Record{}, err
 	}
 	row, err := get(ctx, tx, k, slug, false, true)
 	if err != nil {
 		return taxonomy.Record{}, err
+	}
+	if r.owned && (row.ID != observed.ID || !sameOwner(row.OwnerPublisherID, observed.OwnerPublisherID)) {
+		return taxonomy.Record{}, taxonomy.Problem("TAXONOMY_CHANGED", "The taxonomy owner changed. Try again.", 409)
 	}
 	state := taxonomy.MutationState{}
 	owner := c.PublisherID
@@ -350,6 +383,17 @@ func (r *Repository) Mutate(ctx context.Context, k taxonomy.Kind, slug string, o
 	}
 	if next.ID != row.ID || next.Kind != row.Kind || !taxonomy.ValidID(next.AuditActorID) {
 		return taxonomy.Record{}, taxonomy.ErrInvalid
+	}
+	if r.owned {
+		if next.OwnerPublisherID != nil && !sameOwner(next.OwnerPublisherID, observed.OwnerPublisherID) && !sameOwner(next.OwnerPublisherID, c.PublisherID) {
+			return taxonomy.Record{}, taxonomy.ErrInvalid
+		}
+		if err = r.authorizeRecord(ctx, tx, next, op); err != nil {
+			return taxonomy.Record{}, err
+		}
+		if err = r.publisherPolicy(ctx, tx, row, next, op); err != nil {
+			return taxonomy.Record{}, err
+		}
 	}
 	if op == taxonomy.Delete {
 		link, key := links(k)
@@ -472,6 +516,15 @@ func (r *Repository) Subscription(ctx context.Context, k taxonomy.Kind, slug, ac
 		return taxonomy.Subscription{}, false, err
 	}
 	defer tx.Rollback()
+	if r.owned {
+		permission := ""
+		if action != "subscription" {
+			permission = "post.categories.subscribe"
+		}
+		if err = r.authorize(ctx, tx, account, permission); err != nil {
+			return taxonomy.Subscription{}, false, err
+		}
+	}
 	// Lock taxonomy before subscriptions, same order as category/tag deletion.
 	// A shared table lock protects the target from concurrent fixture deletion.
 	if _, err = tx.ExecContext(ctx, "LOCK TABLE "+tbl+" IN SHARE MODE"); err != nil {

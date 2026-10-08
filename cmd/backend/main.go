@@ -17,6 +17,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -26,6 +27,7 @@ import (
 	"solsynth.local/go-migration/internal/mediastore"
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/media"
 	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
 )
@@ -53,6 +55,14 @@ func run(args []string, out io.Writer) error {
 	all := fs.String("messager-notify-all", "", "explicit all-notifications mode stored in database")
 	mentions := fs.String("messager-notify-mentions", "", "explicit mentions-only notification mode")
 	noNotify := fs.String("messager-notify-none", "", "explicit no-notifications mode")
+	verificationSettings := verificationFlags(fs)
+	factorIssuer := fs.String("factor-issuer-label", "SoSYS", "human-readable TOTP issuer label")
+	enableSignin := fs.Bool("enable-signin", false, "explicitly enable owned first-party issuer and factor protocol")
+	signingFile := fs.String("issuer-private-key-file", "", "explicit RSA issuer key PEM")
+	refreshEnv := fs.String("issuer-refresh-hash-env", "", "explicit base64 refresh-hash key variable")
+	replayEnv := fs.String("issuer-replay-seal-env", "", "explicit independent base64 refresh-seal key variable")
+	signinEnv := fs.String("signin-seal-env", "", "explicit independent base64 factor-seal key variable")
+	memberGrants := fs.String("initial-member-permissions", "", "explicit comma-separated concrete initial registration permissions")
 	notificationApp := fs.String("notification-app", "dev.solsynth.solian", "explicit first-party inbox and stream namespace")
 	mediaRoot := fs.String("media-root", "", "explicit preprovisioned private filesystem media directory")
 	mediaMax := fs.Int64("media-max-bytes", 20<<20, "maximum streamed media object bytes")
@@ -83,6 +93,47 @@ func run(args []string, out io.Writer) error {
 	config := authority.Config{Issuer: *issuer, Audience: *audience, TrustedKeys: map[string]*rsa.PublicKey{*kid: pubKey}, AccessTTL: *maxLifetime}
 	if _, err = authority.NewVerifier(authoritypg.New(nil), config); err != nil {
 		return errors.New("invalid authority verification configuration")
+	}
+	var signinConfig *signin.Config
+	if *enableSignin {
+		config.SigningKeyID = *kid
+		config.SigningKey, err = issuerKey(*signingFile)
+		if err != nil {
+			return err
+		}
+		config.RefreshHashKey, err = issuerSecret(*refreshEnv)
+		if err != nil {
+			return err
+		}
+		config.ReplaySealKey, err = issuerSecret(*replayEnv)
+		if err != nil {
+			return err
+		}
+		seal, e := issuerSecret(*signinEnv)
+		if e != nil {
+			return e
+		}
+		if base64.StdEncoding.EncodeToString(seal) == base64.StdEncoding.EncodeToString(config.RefreshHashKey) || base64.StdEncoding.EncodeToString(seal) == base64.StdEncoding.EncodeToString(config.ReplaySealKey) {
+			return errors.New("factor seal key must be independent")
+		}
+		if _, err = authority.New(authoritypg.New(nil), config); err != nil {
+			return errors.New("invalid explicit issuer configuration")
+		}
+		signinConfig = &signin.Config{SealKey: seal, Issuer: *factorIssuer}
+		if *memberGrants != "" {
+			for _, permission := range strings.Split(*memberGrants, ",") {
+				permission = strings.TrimSpace(permission)
+				if !authority.ValidPermissionPattern(permission) || strings.Contains(permission, "*") {
+					return errors.New("initial permissions must be concrete keys")
+				}
+				signinConfig.InitialMemberPermissions = append(signinConfig.InitialMemberPermissions, permission)
+			}
+		}
+	} else if *signingFile != "" || *refreshEnv != "" || *replayEnv != "" || *signinEnv != "" || *memberGrants != "" {
+		return errors.New("issuer configuration requires explicit enable-signin")
+	}
+	if err = verificationSettings.apply(signinConfig); err != nil {
+		return err
 	}
 	publicVisibility, err := explicitInt(*public, "taxonomy-public-visibility")
 	if err != nil {
@@ -157,7 +208,7 @@ func run(args []string, out io.Writer) error {
 	db.SetMaxOpenConns(30)
 	db.SetMaxIdleConns(5)
 	db.SetConnMaxLifetime(30 * time.Minute)
-	backend, err := application.NewPostgres(db, nil, application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp})
+	backend, err := application.NewPostgres(db, nil, application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig})
 	if err != nil {
 		return errors.New("backend configuration unavailable")
 	}

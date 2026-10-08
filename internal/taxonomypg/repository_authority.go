@@ -14,6 +14,14 @@ func NewWithIndependentPolicy(db *sql.DB, publicVisibility int32) *Repository {
 	return &Repository{db: db, synthetic: true, owned: true, publicVisibility: publicVisibility}
 }
 
+// NewWithAuthority binds every owned mutation to the original actor proof.
+// NewWithIndependentPolicy remains usable for reads; unguarded writes deny.
+func NewWithAuthority(db *sql.DB, publicVisibility int32, guard TransactionGuard) *Repository {
+	r := NewWithIndependentPolicy(db, publicVisibility)
+	r.authorityGuard = guard
+	return r
+}
+
 // policyTx changes only fixed schema-qualified identifiers in authored SQL.
 // User values remain positional arguments, never part of rewritten SQL.
 type policyTx struct {
@@ -29,6 +37,9 @@ func policySQL(query string, owned bool) string {
 	return strings.ReplaceAll(query, "taxonomy_candidate.", "owned_taxonomy.")
 }
 func (r *Repository) begin(ctx context.Context, opts *sql.TxOptions) (*policyTx, error) {
+	if opts == nil {
+		opts = &sql.TxOptions{Isolation: sql.LevelReadCommitted}
+	}
 	tx, err := r.db.BeginTx(ctx, opts)
 	if err != nil {
 		return nil, err

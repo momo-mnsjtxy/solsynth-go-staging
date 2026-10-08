@@ -100,6 +100,9 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		s.direct(w, r)
 		return
 	}
+	if s.resumableHTTP(w, r) {
+		return
+	}
 	if p == "/api/media/files" && r.Method == http.MethodPost {
 		principal, err = s.principal(r, CreatePermission)
 		if err != nil {

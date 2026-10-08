@@ -7,6 +7,9 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
     "internal/notificationpg/schema.sql",
     "internal/apppg/schema.sql",
+    "internal/signinpg/schema.sql",
+    "internal/commercepg/schema.sql",
+    "internal/mediapg/resumable_schema.sql",
     "internal/mediapg/schema.sql",
     "internal/socialpg/schema.sql",
     "internal/interactionpg/schema.sql",
@@ -61,6 +64,10 @@ def check(runner, read_schema=None):
         raise ValueError("canonical taxonomy view requires posts first")
     if schemas.index("internal/interactionpg/schema.sql") <= schemas.index("internal/application/schema.sql"):
         raise ValueError("interactions require taxonomy first")
+    if schemas.index("internal/mediapg/resumable_schema.sql") <= schemas.index("internal/mediapg/schema.sql"):
+        raise ValueError("resumable media requires base schema")
+    if any(schemas.index("internal/commercepg/schema.sql") <= schemas.index(name) for name in ("internal/apppg/schema.sql","internal/walletpg/schema.sql")):
+        raise ValueError("commerce requires canonical apps and wallet first")
     tables = {}
     for name in schemas:
         source = read_schema(name)

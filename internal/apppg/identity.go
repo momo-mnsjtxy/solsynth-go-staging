@@ -258,6 +258,9 @@ func (r *Repository) PushPayload(ctx context.Context, app, token string, req app
 	if e = tx.QueryRowContext(ctx, `SELECT disabled FROM owned_authority_accounts WHERE id=$1 FOR UPDATE`, req.AccountID).Scan(&disabled); e != nil || disabled {
 		return out, apps.ErrForbidden
 	}
+	if e = payloadAccountActive(ctx, tx, req.AccountID); e != nil {
+		return out, e
+	}
 	if e = authenticateApp(ctx, tx, app, token); e != nil {
 		return out, e
 	}
@@ -319,6 +322,9 @@ func (r *Repository) PushPayload(ctx context.Context, app, token string, req app
 	if e = authenticateApp(ctx, tx, app, token); e != nil {
 		return out, e
 	}
+	if e = payloadAccountActive(ctx, tx, req.AccountID); e != nil {
+		return out, e
+	}
 	if e = tx.QueryRowContext(ctx, `SELECT expires_at>statement_timestamp() AND revoked_at IS NULL FROM owned_app_consents WHERE account_id=$1 AND app_id=$2`, req.AccountID, app).Scan(&active); e != nil || !active {
 		return out, apps.ErrForbidden
 	}
@@ -340,4 +346,20 @@ func (r *Repository) PushPayload(ctx context.Context, app, token string, req app
 		e = r.cache.InvalidateGroup(ctx, "account:"+req.AccountID)
 	}
 	return out, e
+}
+
+// The caller holds the canonical account row lock through commit, so authority
+// policy writes cannot race this check. Recheck after downstream lock waits:
+// a scheduled disable punishment can become active without a database write.
+// block_login affects issuance only and does not disable an existing consent.
+func payloadAccountActive(ctx context.Context, q queryer, account string) error {
+	var active bool
+	err := q.QueryRowContext(ctx, `SELECT NOT disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments WHERE account_id=$1 AND kind='disable_account' AND (starts_at IS NULL OR starts_at<=statement_timestamp()) AND (expires_at IS NULL OR expires_at>statement_timestamp())) FROM owned_authority_accounts WHERE id=$1`, account).Scan(&active)
+	if err != nil {
+		return err
+	}
+	if !active {
+		return apps.ErrForbidden
+	}
+	return nil
 }

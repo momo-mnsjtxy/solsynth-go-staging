@@ -401,7 +401,7 @@ func (s *Service) Sessions(ctx context.Context, token string, offset, take int, 
 		}
 		out = []Session{}
 		for _, se := range rows {
-			if se.RevokedAt != nil || !now.Before(se.ExpiresAt) || !children && se.ParentID != "" {
+			if se.RevokedAt != nil || se.AccountVersion != p.Account.Version || !now.Before(se.ExpiresAt) || !children && se.ParentID != "" {
 				continue
 			}
 			se.IsCurrent = se.ID == p.Session.ID

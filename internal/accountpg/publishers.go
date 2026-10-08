@@ -15,7 +15,7 @@ func (r *Repository) CreatePublisher(ctx context.Context, actor string, patch ac
 	if e := accounts.ValidatePublisher(patch, true); e != nil {
 		return p, e
 	}
-	e := r.write(ctx, actor, func(tx *sql.Tx, now time.Time) error {
+	e := r.write(ctx, actor, "publishers.create", func(tx *sql.Tx, now time.Time) error {
 		var total, used int64
 		e := tx.QueryRowContext(ctx, `SELECT total FROM owned_publisher_quota WHERE account_id=$1 AND starts_at<=$2 AND(expires_at IS NULL OR expires_at>$2) FOR UPDATE`, actor, now).Scan(&total)
 		if errors.Is(e, sql.ErrNoRows) {
@@ -60,7 +60,7 @@ func (r *Repository) UpdatePublisher(ctx context.Context, actor, ref string, pat
 	if e := accounts.ValidatePublisher(patch, false); e != nil {
 		return p, e
 	}
-	e := r.write(ctx, actor, func(tx *sql.Tx, now time.Time) error {
+	e := r.write(ctx, actor, "publishers.update", func(tx *sql.Tx, now time.Time) error {
 		var e error
 		p, e = lookupPublisher(ctx, tx, ref, true)
 		if e != nil {
@@ -87,7 +87,7 @@ func (r *Repository) UpdatePublisher(ctx context.Context, actor, ref string, pat
 	return p, e
 }
 func (r *Repository) DeletePublisher(ctx context.Context, actor, ref string) error {
-	return r.write(ctx, actor, func(tx *sql.Tx, now time.Time) error {
+	return r.write(ctx, actor, "publishers.delete", func(tx *sql.Tx, now time.Time) error {
 		p, e := lookupPublisher(ctx, tx, ref, true)
 		if e != nil {
 			return e
@@ -121,7 +121,11 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c acco
 	if (c.Action == accounts.InviteMember || c.Action == accounts.UpdateRole) && (!c.Role.Valid() || c.Role == accounts.Owner) {
 		return out, accounts.ErrInvalid
 	}
-	e := r.write(ctx, actor, func(tx *sql.Tx, now time.Time) error {
+	permission, e := memberPermission(c.Action)
+	if e != nil {
+		return out, e
+	}
+	e = r.write(ctx, actor, permission, func(tx *sql.Tx, now time.Time) error {
 		p, e := lookupPublisher(ctx, tx, ref, true)
 		if e != nil {
 			return e
@@ -226,6 +230,19 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c acco
 		return audit(ctx, tx, actor, "publishers.members."+string(c.Action), p.ID, now)
 	})
 	return out, e
+}
+
+func memberPermission(action accounts.Mutation) (string, error) {
+	switch action {
+	case accounts.InviteMember, accounts.AcceptInvite, accounts.DeclineInvite:
+		return "publishers.invites.manage", nil
+	case accounts.RemoveMember, accounts.UpdateRole:
+		return "publishers.members.manage", nil
+	case accounts.LeavePublisher:
+		return "", nil
+	default:
+		return "", accounts.ErrInvalid
+	}
 }
 func (r *Repository) ListMembers(ctx context.Context, ref string, offset, take int) ([]accounts.Member, int64, error) {
 	if r == nil || r.db == nil {

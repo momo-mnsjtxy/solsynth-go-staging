@@ -57,7 +57,11 @@ func NewHandler(repo Repository, auth s.Auth) http.Handler {
 			s.WriteError(w, e)
 			return
 		}
-		w.Header().Set("X-Publisher-Rating-Policy", Policy)
+		policy := Policy
+		if configured, ok := repo.(interface{ PolicyName() string }); ok {
+			policy = configured.PolicyName()
+		}
+		w.Header().Set("X-Publisher-Rating-Policy", policy)
 		if total >= 0 {
 			w.Header().Set("X-Total", strconv.Itoa(total))
 		}

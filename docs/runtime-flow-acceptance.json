@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Isolated durable factor-policy ABA repair and canonical reaction fixture symbols",
+  "local_source_checkpoint": "Egress/private live HLS, quarantine, funded post awards and durable policy-history repair composed; exact-commit PG pending",
   "last_fully_passed_ci": {
     "commit": "af51dc3d10fe182901063aaa993b00b5b005e2df",
     "run": 37811114928,
@@ -10,14 +10,13 @@
     "after_restart": 56
   },
   "latest_candidate": {
-    "commit": "4c95148c221ba29323346903966036028b3c8da2",
-    "run": 37821515121,
-    "required_before": 449,
+    "commit": "22e2e96d13bb5c90919cf3bfb78f7506dd832beb",
+    "required_before": 455,
     "required_after_restart": 60,
-    "status": "Actual before phase failed five unsupported-symbol fixtures; restart not reached. Fixture symbols corrected here. Durable ABA repair is locally tested but not yet PG verified."
+    "status": "Durable ABA repair and reaction-fixture correction published separately; actual PostgreSQL pending"
   },
-  "local_required_before": 455,
-  "local_required_after_restart": 60,
+  "local_required_before": 484,
+  "local_required_after_restart": 63,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -1069,6 +1068,57 @@
         "Paid PostAward contribution is a separate upcoming source-backed integration",
         "Prior reaction-only receipts are not silently rewritten",
         "Operator must configure treasury and rating start day"
+      ]
+    },
+    {
+      "source_family": "sphere.livestream_egress_hls",
+      "local_status": "implemented, actual PG pending",
+      "supported_flows": [
+        "Fixed operator destinations with one-use durable output intents and bounded cleanup",
+        "Current stream/session/privacy-authorized private live HLS playlist and segment reads",
+        "Provider adapters and explicit compatible private mounted namespace"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBackendLivestreamOutputPlaybackComposition",
+        "TestPGLiveStreamOutputsRestartPersistence"
+      ],
+      "unsupported_or_remaining": [
+        "Uncorrelated uncertain RTMP starts require operator investigation, never blind retry",
+        "Archived HLS playback",
+        "Live provider/storage activation is not performed"
+      ]
+    },
+    {
+      "source_family": "wallet.maintenance_quarantine",
+      "local_status": "implemented, actual PG pending",
+      "supported_flows": [
+        "Inconsistent subscription projections are quarantined before financial effects",
+        "Bounded subsequent due-work progress and trusted coherent retry"
+      ],
+      "guarded_pg_cases": [
+        "TestPGCommerceMaintenanceQuarantineAllowsOtherRenewals",
+        "TestPGCommerceMaintenanceQuarantineRestartPersistence"
+      ],
+      "unsupported_or_remaining": [
+        "Operator HTTP UI for inspection/retry"
+      ]
+    },
+    {
+      "source_family": "sphere.post_awards",
+      "local_status": "implemented, actual PG pending",
+      "supported_flows": [
+        "Authored order_id checkout response with positive/negative paid award score",
+        "Captured explicit merchant wallet, exact100% default payout; explicit80% alternative",
+        "Canonical reserves, idempotent release and paid-award daily rating policy"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBackendPostAwardCheckoutAndRelease",
+        "TestPGPostAwardRestartPersistence"
+      ],
+      "unsupported_or_remaining": [
+        "XP/social-credit projections and global resettlement",
+        "Automatic individual-wallet fallback",
+        "Retroactive rewrite of reaction-only rating receipts"
       ]
     }
   ],

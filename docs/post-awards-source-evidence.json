@@ -1,0 +1,92 @@
+{
+  "source_revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "client_revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+  "sources": [
+    {
+      "path": "docs/POST_AWARD_SETTLEMENT.md",
+      "blob": "a21b767259ee526ffa46ee68a1f06ab4468b5137",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/POST_AWARD_SETTLEMENT.md"
+    },
+    {
+      "path": "docs/PERMISSIONS.md",
+      "blob": "524bc9fd360bd3e358ffc108cbf60823bd734361",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/PERMISSIONS.md"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Startup/PaymentOrderAwardEvent.cs",
+      "blob": "88b69586d743025d38228091f2f6016990e4eb06",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Startup/PaymentOrderAwardEvent.cs"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostService.cs",
+      "blob": "dbacff11ded248680bc34d9fe422cc7e38c49068",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostService.cs"
+    },
+    {
+      "path": "DysonNetwork.Wallet/Payment/MerchantService.cs",
+      "blob": "6bd2dc404929e7fb776304ba9905d96e73c71b65",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/MerchantService.cs"
+    },
+    {
+      "path": "DysonNetwork.Wallet/Payment/MerchantController.cs",
+      "blob": "b73ef4254b4b20a75811ea3b9e4b46a6b041fa93",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/MerchantController.cs"
+    },
+    {
+      "path": "DysonNetwork.Wallet/Payment/MerchantServiceGrpc.cs",
+      "blob": "4b96c0ac576d689998af902a7bd192dc36dfddf2",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/MerchantServiceGrpc.cs"
+    },
+    {
+      "path": "DysonNetwork.Wallet/Payment/AppSettlementJob.cs",
+      "blob": "ac59a4ad6945d7f9a8e656e671623a53f9fc221d",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/AppSettlementJob.cs"
+    },
+    {
+      "path": "DysonNetwork.Wallet/Payment/PaymentService.cs",
+      "blob": "1d599181db3e6482b21e1e86463739d3cf2dadd1",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/PaymentService.cs"
+    },
+    {
+      "path": "DysonNetwork.Wallet/Payment/WalletService.cs",
+      "blob": "a0e515e89a1c2fd3b1be49ee2adbf58977b7456c",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/WalletService.cs"
+    }
+  ],
+  "additional_authored_sources": [
+    {
+      "path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "location": "retained licensed inventory/operation-sources",
+      "operations": [
+        "POST /api/posts/{id}/awards",
+        "GET /api/posts/{id}/awards",
+        "GET /api/posts/{id}/awards/pending"
+      ]
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherRatingService.cs",
+      "blob": "1fc978542baf1c1c6f212487cbbeca6a1fb2226e"
+    },
+    {
+      "repository": "Solsynth/Solian",
+      "path": "lib/posts/widgets/compose/post_award_sheet.dart",
+      "flow": "raw POST reads order_id, then opens PaymentOverlay; current body omits attitude, preserving default Positive 0"
+    },
+    {
+      "repository": "Solsynth/Solian",
+      "path": "lib/posts/widgets/compose/post_award_history_sheet.dart",
+      "flow": "raw paginated GET, X-Total; authored renderer compares positive 0 and negative 2"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherService.cs",
+      "blob": "1cc5f897afbf44a801487aa1cb38b02bedadb411",
+      "evidence": "Full positive amount to merchant settlement; rating delta (int)(netVotes + awardScore * 0.1)."
+    }
+  ],
+  "settlement_conflict": {
+    "executable": "Merchant RPC captures explicit merchant wallet; MerchantService sums full pending amounts, PaymentService directly credits full truncated amount, and hold/release paths preserve transaction amount. Default merchant_full_v1.",
+    "documentation": "POST_AWARD_SETTLEMENT.md describes 80/20 and individual fallback. 80% is an explicit alternative only; fallback is not enabled.",
+    "owned_accounting": "Canonical settled points treasury credit plus matching held distribution; never nil-payer issuance. Immutable per-award policy/share/beneficiary. Alternative floor per award to mills, not group rounding."
+  },
+  "excluded": "No Shared/Proto/generated model or migration definitions, unlicensed repositories or original fortune corpus were read for this implementation."
+}

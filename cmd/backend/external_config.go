@@ -22,6 +22,7 @@ import (
 )
 
 type externalFlagSet struct {
+	outputs                                      outputSettings
 	streamChat                                   *bool
 	streamMessages, streamEvents, streamAttempts *int
 	streamEventTTL, streamSendTimeout            *time.Duration
@@ -35,6 +36,7 @@ type externalFlagSet struct {
 
 func externalFlags(fs *flag.FlagSet) externalFlagSet {
 	return externalFlagSet{
+		outputs:           livestreamOutputFlags(fs),
 		streamChat:        fs.Bool("enable-livestream-chat", false, "enable durable canonical livestream chat and configured provider data delivery"),
 		streamMessages:    fs.Int("livestream-chat-message-limit", 100000, "retained messages per stream including deleted messages"),
 		streamEvents:      fs.Int("livestream-chat-event-limit", 200000, "retained durable chat events per stream"),
@@ -56,6 +58,10 @@ func externalFlags(fs *flag.FlagSet) externalFlagSet {
 	}
 }
 func (v externalFlagSet) apply(c *application.Config) error {
+	outputPolicy, outputConfig, outputError := v.outputs.load(*v.streams, c)
+	if outputError != nil {
+		return outputError
+	}
 	if *v.streamChat && !*v.streams {
 		return errors.New("livestream chat requires explicit livestream enablement")
 	}
@@ -85,7 +91,14 @@ func (v externalFlagSet) apply(c *application.Config) error {
 		secret := []byte(os.Getenv(*v.secretEnv))
 		defer clear(secret)
 		transport := &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12}, ResponseHeaderTimeout: 5 * time.Second, MaxResponseHeaderBytes: 32768, MaxIdleConns: 20, IdleConnTimeout: 90 * time.Second, ForceAttemptHTTP2: true}
-		provider, e := rtcprovider.New(rtcprovider.Config{Endpoint: *v.endpoint, APIKey: os.Getenv(*v.keyEnv), APISecret: secret, CloudRevocation: *v.cloudRevocation, Timeout: 5 * time.Second}, transport)
+		providerConfig := rtcprovider.Config{Endpoint: *v.endpoint, APIKey: os.Getenv(*v.keyEnv), APISecret: secret, CloudRevocation: *v.cloudRevocation, Timeout: 5 * time.Second}
+		var provider *rtcprovider.LiveKit
+		var e error
+		if outputPolicy != nil {
+			provider, e = rtcprovider.NewWithOutputs(providerConfig, *outputPolicy, transport)
+		} else {
+			provider, e = rtcprovider.New(providerConfig, transport)
+		}
 		if e != nil {
 			return errors.New("LiveKit provider configuration is incomplete or unsupported")
 		}
@@ -93,7 +106,7 @@ func (v externalFlagSet) apply(c *application.Config) error {
 			c.Calls = &application.CallConfig{Provider: provider, TokenTTL: *v.tokenTTL, CallTTL: *v.callTTL}
 		}
 		if *v.streams {
-			c.Livestreams = &application.LivestreamConfig{Provider: provider, Policy: livestreampg.Config{TokenTTL: *v.streamTTL, MaxRunDuration: *v.streamLifetime, IdleGrace: *v.streamIdle, MaxStreamsPerPublisher: *v.streamLimit}}
+			c.Livestreams = &application.LivestreamConfig{Provider: provider, Outputs: outputConfig, Policy: livestreampg.Config{TokenTTL: *v.streamTTL, MaxRunDuration: *v.streamLifetime, IdleGrace: *v.streamIdle, MaxStreamsPerPublisher: *v.streamLimit}}
 		}
 	}
 	if *v.streamChat {

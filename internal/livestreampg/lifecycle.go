@@ -125,6 +125,11 @@ func (r *Repository) Start(ctx context.Context, actor, id string, req live.Start
 	}{mode, transcode, name})
 	create := false
 	if v.OperationState == "ready" && (v.Status == live.Pending || v.Status == live.Ended) {
+		if pending, x := r.outputPending(ctx, tx, id); x != nil {
+			return out, x
+		} else if pending {
+			return out, live.ErrConflict
+		}
 		at, x := now(ctx, tx)
 		if x != nil {
 			return out, x

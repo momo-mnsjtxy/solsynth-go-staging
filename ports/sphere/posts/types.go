@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	wallet "solsynth.local/go-migration/ports/wallet/accounts"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -68,6 +69,7 @@ type Collection struct {
 }
 
 type Post struct {
+	AwardedScore         wallet.Amount                 `json:"awarded_score"`
 	Attachments          []postmedia.Attachment        `json:"attachments"`
 	RepliedPostID        *string                       `json:"replied_post_id"`
 	ForwardedPostID      *string                       `json:"forwarded_post_id"`

@@ -31,3 +31,5 @@ ALTER TABLE owned_text_posts ADD CONSTRAINT owned_text_posts_content_check CHECK
 ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS realm_id uuid;
 ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS shadowban_reason text;
 ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS shadowbanned_at timestamptz;
+
+ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS awarded_score numeric(32,3) NOT NULL DEFAULT 0;

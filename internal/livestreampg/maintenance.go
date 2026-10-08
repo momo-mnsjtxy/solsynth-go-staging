@@ -448,5 +448,12 @@ func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
 		result = errors.Join(result, e)
 	}
 	count, e := r.processLifecycleDue(ctx, limit)
-	return n + count, errors.Join(result, e)
+	n += count
+	result = errors.Join(result, e)
+	if r != nil && r.outputs != nil {
+		count, e = r.ProcessOutputsDue(ctx, limit)
+		n += count
+		result = errors.Join(result, e)
+	}
+	return n, result
 }

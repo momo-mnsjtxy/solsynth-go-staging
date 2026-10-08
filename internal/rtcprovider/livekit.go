@@ -27,9 +27,10 @@ type Config struct {
 	Timeout         time.Duration
 }
 type LiveKit struct {
-	cfg    Config
-	api    string
-	client *http.Client
+	cfg     Config
+	api     string
+	client  *http.Client
+	outputs *OutputPolicy
 }
 
 var _ calls.Provider = (*LiveKit)(nil)
@@ -45,7 +46,7 @@ func New(c Config, transport http.RoundTripper) (*LiveKit, error) {
 	if transport == nil {
 		transport = http.DefaultTransport
 	}
-	return &LiveKit{c, u.String(), &http.Client{Transport: transport, Timeout: c.Timeout, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
+	return &LiveKit{cfg: c, api: u.String(), client: &http.Client{Transport: transport, Timeout: c.Timeout, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
 }
 func (p *LiveKit) Name() string           { return "livekit" }
 func (p *LiveKit) Endpoint() string       { return p.cfg.Endpoint }

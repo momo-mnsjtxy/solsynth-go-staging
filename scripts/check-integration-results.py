@@ -5,6 +5,31 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGLiveStreamHLSHTTPPlaybackAndCurrentPrivacy",
+        "TestPGLiveStreamOutputsRequireFixedDestinationsAndAdminEditor",
+        "TestPGLiveStreamOutputsUncertainStartNeverRecreates",
+        "TestPGLiveStreamOutputsActivationRollbackRetainsCleanup",
+        "TestPGLiveStreamOutputsFreshPolicyAndDurableStopRetry",
+        "TestPGLiveStreamOutputsConcurrentIdempotencyAndCapacity",
+        "TestPGLiveStreamOutputsDisableDuringAuthorityWait",
+        "TestPGLiveStreamOutputsEndCleanupIndependentAndUnconfigured",
+        "TestPGLiveStreamOutputsRestartPersistence",
+        "TestPGBackendLivestreamOutputPlaybackComposition",
+        "TestPGPostAwardCheckoutReceiptAndConservation",
+        "TestPGPostAwardNegativeAndExplicitRounding",
+        "TestPGPostAwardImmutableBeneficiaryAndMissingBinding",
+        "TestPGPostAwardPrivateRealmAndCurrentAuthority",
+        "TestPGPostAwardAuditRollbackIsAtomic",
+        "TestPGPostAwardConcurrentReplayAndLockRetry",
+        "TestPGPostAwardReleaseDisabledBeneficiaryAndRollback",
+        "TestPGPostAwardExpiryAndPolicySnapshot",
+        "TestPGPostAwardRatingSignedTermAndOldReceipt",
+        "TestPGPostAwardOppositePublisherPayments",
+        "TestPGPostAwardRestartPersistence",
+        "TestPGPostAwardOrganizationWalletAndRevocation",
+        "TestPGPostAwardAuthorityAfterAccountWait",
+        "TestPGBackendPostAwardCheckoutAndRelease",
+
         "TestPGBackendPublisherCommerceComposition",
         "TestPGPublisherRatingBatchRollbackAndConcurrency",
         "TestPGPublisherRatingProducerCountsPrivacyAndReplay",
@@ -492,8 +517,16 @@ EXPECTED = {
         "TestPGFactorSetupRestartPersistence",
         "TestPGRecoveryRotationRollbackAndConcurrentUse",
         "TestPGTOTPDisableAndFreshReenable",
+        "TestPGCommerceMaintenanceQuarantineAllowsOtherRenewals",
+        "TestPGCommerceMaintenanceMalformedIdentityAndBudget",
+        "TestPGCommerceMaintenanceQuarantineRollback",
+        "TestPGCommerceMaintenanceStaleCandidateContinues",
+        "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGLiveStreamOutputsRestartPersistence",
+        "TestPGPostAwardRestartPersistence",
+
         "TestPGPublisherRatingRestartPersistence",
         "TestPGPublisherSponsorshipRestartPersistence",
 
@@ -580,6 +613,7 @@ EXPECTED = {
         "TestPGWalletRestartPersistence",
         "TestPGPaymentPINRestartPersistence",
         "TestPGFactorSetupRestartPersistence",
+        "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
 }
 

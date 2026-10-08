@@ -39,6 +39,8 @@ type Repository struct {
 	chat          *ChatConfig
 	awards        *AwardConfig
 	awardCommerce AwardCommerce
+	outputs       *OutputConfig
+	outputStore   live.ArtifactStore
 }
 
 var _ live.Repository = (*Repository)(nil)
@@ -62,6 +64,9 @@ func (r *Repository) Ready(ctx context.Context) error {
 	}
 	if e == nil && r.awards != nil {
 		e = r.AwardsReady(ctx)
+	}
+	if e == nil && r.outputs != nil {
+		e = r.OutputsReady(ctx)
 	}
 	return e
 }
@@ -341,6 +346,9 @@ func (r *Repository) visible(ctx context.Context, tx *sql.Tx, actor string, v *l
 		}
 	}
 	if e = r.awardTotals(ctx, tx, v); e != nil {
+		return false, e
+	}
+	if e = r.outputProjection(ctx, tx, v); e != nil {
 		return false, e
 	}
 	return editor, nil

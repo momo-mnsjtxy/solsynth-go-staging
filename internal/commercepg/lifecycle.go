@@ -9,6 +9,7 @@ import (
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/passport/namecards"
 	live "solsynth.local/go-migration/ports/sphere/livestreams"
+	postaward "solsynth.local/go-migration/ports/sphere/postawards"
 	sponsor "solsynth.local/go-migration/ports/sphere/sponsorship"
 	wallet "solsynth.local/go-migration/ports/wallet/accounts"
 	c "solsynth.local/go-migration/ports/wallet/commerce"
@@ -137,6 +138,16 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 			return o, sponsorError(e)
 		}
 	}
+	isPostAward := o.AppIdentifier == "internal" && o.ProductIdentifier != nil && *o.ProductIdentifier == postaward.Product
+	if isPostAward {
+		if r.postAwards == nil || sub.Valid || gift.Valid {
+			return o, c.ErrUnavailable
+		}
+		if e = r.postAwards.PreparePostAward(ctx, r.db, tx, actor, o, payer, now); e != nil {
+			return o, postAwardError(e)
+		}
+	}
+
 	tr, e := walletpg.CommerceHold(ctx, tx, o.ID, actor, payer, o.PayeeWalletID, o.Currency, o.Amount, now)
 	if e != nil {
 		return o, e
@@ -204,6 +215,16 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		}
 		o.Status = c.Finished
 	}
+	if isPostAward {
+		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+			return o, e
+		}
+		if e = r.postAwards.FulfillPostAward(ctx, r.db, tx, actor, o, now); e != nil {
+			return o, postAwardError(e)
+		}
+		o.Status = c.Finished
+	}
+
 	if isSponsor {
 		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
 			return o, e
@@ -227,6 +248,12 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 			return o, e
 		}
 	}
+	if isPostAward {
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "posts.award", "orders.pay"); e != nil {
+			return o, e
+		}
+	}
+
 	if r.payments != nil {
 		if e = r.payments.CheckPayment(ctx, r.db, tx, actor, wallet.PaymentOrder, wallet.OrderPaymentBinding(idv, requested)); e != nil {
 			return o, e

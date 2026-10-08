@@ -5,10 +5,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/postawardpg/schema.sql",
  "internal/sponsorshippg/schema.sql",
  "internal/publisherratingpg/schema.sql",
  "internal/authoritypg/continuity_schema.sql",
  "internal/livestreampg/chat_schema.sql",
+ "internal/livestreampg/outputs_schema.sql",
  "internal/livestreampg/awards_schema.sql",
  "internal/domaintrustpg/schema.sql",
  "internal/accountpg/name_schema.sql",
@@ -43,6 +45,7 @@ REQUIRED_SCHEMAS = {
     "internal/apppg/schema.sql",
     "internal/signinpg/schema.sql",
     "internal/commercepg/schema.sql",
+    "internal/commercepg/maintenance_schema.sql",
     "internal/mediapg/resumable_schema.sql",
     "internal/mediapg/schema.sql",
     "internal/socialpg/schema.sql",
@@ -112,6 +115,8 @@ def check(runner, read_schema=None):
         raise ValueError("publisher reservations require canonical publishers first")
     if schemas.index("internal/federationpg/identity_schema.sql") <= max(schemas.index("internal/federationpg/schema.sql"), schemas.index("internal/accountpg/name_schema.sql")):
         raise ValueError("federation anchors require registrations and name reservations first")
+    if schemas.index("internal/commercepg/maintenance_schema.sql") <= schemas.index("internal/commercepg/schema.sql"):
+        raise ValueError("maintenance quarantine requires canonical subscriptions")
     for name in ("walletpg", "application", "postpg"):
         if schemas.index("internal/accountpg/schema.sql") >= schemas.index(f"internal/{name}/schema.sql"):
             raise ValueError("owned dependent schema must follow accounts: " + name)

@@ -94,7 +94,11 @@ func TestLiveHTTPRejectsSpoofedActorAndUnsupportedEffects(t *testing.T) {
 		t.Fatal(w)
 	}
 	for _, route := range []string{"awards", "chat", "egress", "hls"} {
-		if w = request(h, "POST", "/api/livestreams/"+stream+"/"+route, `{}`, "Bearer synthetic"); w.Code != 501 || repo.called != 0 {
+		status := 501
+		if route == "egress" || route == "hls" {
+			status = 503
+		}
+		if w = request(h, "POST", "/api/livestreams/"+stream+"/"+route, `{}`, "Bearer synthetic"); w.Code != status || repo.called != 0 {
 			t.Fatal(w)
 		}
 	}

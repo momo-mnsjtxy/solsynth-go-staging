@@ -119,6 +119,13 @@ func (r *Repository) Update(ctx context.Context, actor, id string, p live.Patch)
 	if v.Status == live.Active && p.Visibility != nil && *p.Visibility != v.Visibility {
 		return v, live.ErrConflict
 	}
+	if p.Visibility != nil && *p.Visibility != v.Visibility {
+		if pending, x := r.outputPending(ctx, tx, id); x != nil {
+			return v, x
+		} else if pending {
+			return v, live.ErrConflict
+		}
+	}
 	if p.Title != nil {
 		v.Title = p.Title
 	}

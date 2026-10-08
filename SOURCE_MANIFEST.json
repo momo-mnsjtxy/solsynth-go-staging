@@ -1,15 +1,15 @@
 {
-  "checkpoint": "factor-policy-aba455-bounded-test-timeout",
-  "scope": "Isolated durable policy/factor history repair, six regression cases, canonical reaction fixture inputs and workflow YAML validation. Full local verification passed; actual PostgreSQL pending. Explicit Go test phase budgets preserve full required case coverage beyond the default ten-minute package timeout.",
+  "checkpoint": "outputs-quarantine-postawards484-bounded-test-timeout",
+  "scope": "Canonical egress/private live HLS, bounded corrupt-renewal quarantine and paid post awards, preserving durable ABA repair. Full local verification passed; actual PostgreSQL pending. Explicit Go test phase budgets preserve full required case coverage beyond the default ten-minute package timeout.",
   "inputs": {
-    "remote_parent": "4c95148c221ba29323346903966036028b3c8da2"
+    "remote_parent": "22e2e96d13bb5c90919cf3bfb78f7506dd832beb"
   },
   "verification": "docs/factor-policy-history-review.md",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
       "bytes": 2496,
-      "sha256": "65fa738f0acb39baaf2f41400deae21838af71d187b9653121cea2babbee34ea"
+      "sha256": "f2da00c95ec621ead267ade9fa5ae946a221b2fbe1f3a68310e7f16f5db32a7e"
     },
     {
       "path": ".github/workflows/recover-source-5e695228.yml",
@@ -78,8 +78,8 @@
     },
     {
       "path": "cmd/backend/external_config.go",
-      "bytes": 11181,
-      "sha256": "43a83199117c3943e645b561a2f737fd9e3b3562df105851ff108ed5a3d340d1"
+      "bytes": 11649,
+      "sha256": "66eb712f637c1ebfd4a06c9127eb90835396418636599d5739849c5f840f30d1"
     },
     {
       "path": "cmd/backend/external_config_test.go",
@@ -137,9 +137,29 @@
       "sha256": "780a9bf4a6826def644ce07cfda33e77ef9f6ef792ea9531bb32d2a7168700ad"
     },
     {
+      "path": "cmd/backend/livestream_outputs_config.go",
+      "bytes": 5970,
+      "sha256": "78ae8817497d477644476444ae0e4ce398284c31012986573fb83dc072ec9cb4"
+    },
+    {
+      "path": "cmd/backend/livestream_outputs_config_test.go",
+      "bytes": 3350,
+      "sha256": "06895f7b669c340913cf5e234a4ec527b5b898da92aa995e0591ffb54c859acc"
+    },
+    {
       "path": "cmd/backend/main.go",
-      "bytes": 15221,
-      "sha256": "a3a41014f8d07f9eb8f82e9c6c75ac7b53b4d6692a2a7046f94263791851c70e"
+      "bytes": 15382,
+      "sha256": "8755b0d46ac1e6186011e9635534adafa17b1c1d9b9eae234d9680983412fd5a"
+    },
+    {
+      "path": "cmd/backend/post_awards_config.go",
+      "bytes": 3302,
+      "sha256": "33cdddc0afb23a15e4579e49c47211deb5064377a2b4edf220d418d0851549b0"
+    },
+    {
+      "path": "cmd/backend/post_awards_config_test.go",
+      "bytes": 1042,
+      "sha256": "98d7c4a10ca5fb34557d029bbce1ae95f0cf48cd7ddd1861ccbb53fe32048ace"
     },
     {
       "path": "cmd/backend/publisher_commerce_config.go",
@@ -432,6 +452,11 @@
       "sha256": "8f0e89c1d4b3c58516418a13284738b06e059c61ac8f31cbe1697b6c279b4289"
     },
     {
+      "path": "docs/commerce-maintenance-quarantine.md",
+      "bytes": 4793,
+      "sha256": "39a48b26fe781aeeacbbe5c88abec3e06c7a137ad5f718ad1fd79f406644b695"
+    },
+    {
       "path": "docs/compatibility-inventory.md",
       "bytes": 7630,
       "sha256": "0b8391650e405d4f20bb2433ff79ef2cc0fdac38e9258bdbe7bd5d2c931f2262"
@@ -580,6 +605,16 @@
       "path": "docs/livestream-continuation.md",
       "bytes": 16383,
       "sha256": "483934cbcfbe1f00ed835f7491a234610549e37ecff936c5ba879b79d1f3c01e"
+    },
+    {
+      "path": "docs/livestream-outputs-continuation.md",
+      "bytes": 14441,
+      "sha256": "6a8a63fa630fcdb99a07c874598442046550cc48915f40f5c05dd40e5a288081"
+    },
+    {
+      "path": "docs/livestream-outputs-source-evidence.json",
+      "bytes": 2896,
+      "sha256": "185422a9ba5776613eede5d9e7f44f438f0a3cc8f660d15dee5bac8411eb7727"
     },
     {
       "path": "docs/local-final-checkpoint.json",
@@ -1337,6 +1372,16 @@
       "sha256": "68ef0789506e6efffd1d4e8af506622eda487e39ca5686ba9ae96ff9c8db14f2"
     },
     {
+      "path": "docs/post-awards-continuation.md",
+      "bytes": 9730,
+      "sha256": "6254d56184e9b29e42b7dfd0008a4c0a0a72d7f1816b9bd3d492adad6939a7ec"
+    },
+    {
+      "path": "docs/post-awards-source-evidence.json",
+      "bytes": 4932,
+      "sha256": "72b9c0b65c658a1f31cbd778bfcc04996b7cc3d16c414e2c77f6f982ad2b45f4"
+    },
+    {
       "path": "docs/post-interactions-canonical-schema.patch",
       "bytes": 2165,
       "sha256": "82b3ede16ae4040ff1ce5883c1ee8c7a7f72e00ea373dd363de2dec3cf8e23b0"
@@ -1573,8 +1618,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 53556,
-      "sha256": "0acdc7618a1ef45a228282805ff892c1b07aa42a769681eb281080682ab8e5ba"
+      "bytes": 55663,
+      "sha256": "d622305a6b4fbf468e56871581620cf89c4c42078a7973b74c65be9cb5ea58c0"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -1783,8 +1828,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 26640,
-      "sha256": "a6f0032927a12a68d42dfcdd9bd887086bd3f6d396361576bd172e54e713ce3a"
+      "bytes": 26743,
+      "sha256": "8e08d1da38a57df3d2e21fc5b6702f234ccb3c3de4d6b7e8b859967d6ae49fd5"
     },
     {
       "path": "internal/application/commerce.go",
@@ -1823,8 +1868,8 @@
     },
     {
       "path": "internal/application/livestreams.go",
-      "bytes": 2093,
-      "sha256": "72395552edacf662b5e867ad582895ce9c52a5b7fd060f0c065d0dba502c99df"
+      "bytes": 2599,
+      "sha256": "a21a5ec084afb74a33cd7439106054bbcf5f532828736dc8ac03242555e46994"
     },
     {
       "path": "internal/application/media.go",
@@ -1858,8 +1903,8 @@
     },
     {
       "path": "internal/application/publisher_commerce.go",
-      "bytes": 3906,
-      "sha256": "e475b098331af32efbf4f6a9fffcf60d5eef0ad09d7d3cf0849d1c7d5b961019"
+      "bytes": 4975,
+      "sha256": "3455947572bd7290c2497c26efe9db7c00d5ce2224e889e3bb03e2a86cbcf021"
     },
     {
       "path": "internal/application/publishers.go",
@@ -1868,8 +1913,8 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 7886,
-      "sha256": "27603bcae8197982b10933a9ddfa08cb3a78e2854d5caf75ef268f6c3137c0ba"
+      "bytes": 8059,
+      "sha256": "faa6fffc90c74c502dddccd9ccc6c1bc5d418d407aa93160a20ee07eb9299459"
     },
     {
       "path": "internal/application/router.go",
@@ -2263,8 +2308,8 @@
     },
     {
       "path": "internal/commercepg/lifecycle.go",
-      "bytes": 19922,
-      "sha256": "e9e02df998a4d16731fa66c1efd30ba8eb4a6e18759499e6ed9804b8fa80f833"
+      "bytes": 20731,
+      "sha256": "9a51052190be3907630611aa8473a3f35a18f62743f5fec5baf8ce2be642435b"
     },
     {
       "path": "internal/commercepg/livestream_awards.go",
@@ -2273,8 +2318,23 @@
     },
     {
       "path": "internal/commercepg/maintenance.go",
-      "bytes": 9028,
-      "sha256": "4af72ef77e5e9caa665023124c892194928f6bcc9852a640f42f70922d0e64b8"
+      "bytes": 9838,
+      "sha256": "daea6f2ec94c73b455f1468e73f4ebcb8b533635d31ef054a384b260ba646947"
+    },
+    {
+      "path": "internal/commercepg/maintenance_quarantine.go",
+      "bytes": 5859,
+      "sha256": "98bc9831d2166401d8603c3506cf1764afd26e9cf88aabdad4d8335f5a0f2869"
+    },
+    {
+      "path": "internal/commercepg/maintenance_quarantine_test.go",
+      "bytes": 1880,
+      "sha256": "553ee92d8483417a4f5548d4acb4633c79a1ad080a749c50f84fc31acd8f11c5"
+    },
+    {
+      "path": "internal/commercepg/maintenance_schema.sql",
+      "bytes": 839,
+      "sha256": "1b7c468fb97995d1f4a4cbae85cddbaa90e7c137330a18e2151a9eb216d950ce"
     },
     {
       "path": "internal/commercepg/namecards.go",
@@ -2287,9 +2347,14 @@
       "sha256": "8ec1c6092a99f20c7ef64602fe5a6dd0a76b15d582f0ee66b18b9b7c60da77ba"
     },
     {
+      "path": "internal/commercepg/post_awards.go",
+      "bytes": 7517,
+      "sha256": "b4e53550b1fb6e573419e288846649f6fe636851a2470e7bc52d6f2e3449ce72"
+    },
+    {
       "path": "internal/commercepg/repository.go",
-      "bytes": 15863,
-      "sha256": "d7016ead531f9c83552cb6f431f1945beb7cd514227da7faa6c0f2ececbce658"
+      "bytes": 15897,
+      "sha256": "53bdefaca633e854c67a1fc3fed2863a13851ef7b308d85037b098c83ec95ab1"
     },
     {
       "path": "internal/commercepg/schema.sql",
@@ -2513,23 +2578,43 @@
     },
     {
       "path": "internal/livestreampg/lifecycle.go",
-      "bytes": 15068,
-      "sha256": "30f662e6d45184622e32044c64cc04c040b821756ef7f924f546929f85f2f812"
+      "bytes": 15203,
+      "sha256": "f1d4f717c633942a3a95f042571a9c178a36f558863a048412e6d869b00d21dc"
     },
     {
       "path": "internal/livestreampg/maintenance.go",
-      "bytes": 13167,
-      "sha256": "8eac03b3e1decb431cf39968ddd4a9b9048175cc93a1ccb07245bd90cc63f3d1"
+      "bytes": 13318,
+      "sha256": "676d4d9e2b121053d5af9663481c4b5ac0a5d05702c9683e61da0960e75ed0d7"
     },
     {
       "path": "internal/livestreampg/metadata.go",
-      "bytes": 5346,
-      "sha256": "ea764c9eab7fc7597ca162540588bca3d18b9223a6d4ce8e72dde2c6028c1d82"
+      "bytes": 5539,
+      "sha256": "47271fc769973947c227d9ad1562a5b32b4a2bea6cf775825bfc2fbd8c6ef3b0"
+    },
+    {
+      "path": "internal/livestreampg/output_lifecycle.go",
+      "bytes": 13768,
+      "sha256": "d4552f8bbd1b90b52447d79552d35002e17440e919f293e3893bc8aa696d4bf8"
+    },
+    {
+      "path": "internal/livestreampg/output_playback.go",
+      "bytes": 4446,
+      "sha256": "e13ea18f455e6170dfc05f0b8ae3e25a8a084887503c5cb65b7bdfd5f211389a"
+    },
+    {
+      "path": "internal/livestreampg/outputs.go",
+      "bytes": 12565,
+      "sha256": "d0cf3652ecbe87456f3dd93d82f84cbe08e5b91b45f03f6eef18dd3f06b49b71"
+    },
+    {
+      "path": "internal/livestreampg/outputs_schema.sql",
+      "bytes": 2440,
+      "sha256": "0d5a0d337d2a4b8d9f22cd0c6746c13fb0a789412975696266a4d4be526721a8"
     },
     {
       "path": "internal/livestreampg/repository.go",
-      "bytes": 15046,
-      "sha256": "c0ac8ede93833cb2a10992feafa9067df7c70edc06c85aac36e7c7f16fc9f526"
+      "bytes": 15245,
+      "sha256": "f7fc556ffeee5284bb927095420e144ad1a22f0fa946e9aed3567e1a77a935c6"
     },
     {
       "path": "internal/livestreampg/schema.sql",
@@ -2640,6 +2725,21 @@
       "path": "internal/mediastore/resumable_test.go",
       "bytes": 6907,
       "sha256": "ea69459d7c129178c2237c7f888c32dab7b7a418b192312f841668a403ac7207"
+    },
+    {
+      "path": "internal/mediastore/streaming.go",
+      "bytes": 3178,
+      "sha256": "6652fe0442bef5d7fcf4d3812647690269bc1b3adbf9603ced898e2bb517a2ab"
+    },
+    {
+      "path": "internal/mediastore/streaming_test.go",
+      "bytes": 2224,
+      "sha256": "ac93ccba2e4be0f9c59451115c0d2611f481513e6fc63b81a9238d26a3413d05"
+    },
+    {
+      "path": "internal/mediastore/streaming_unsupported.go",
+      "bytes": 446,
+      "sha256": "ddcc0a35ca3f901a067a853b71f98be39f7cd9b8b41ddea593c8df53cb0fb35a"
     },
     {
       "path": "internal/merchantpg/catalog.go",
@@ -2872,6 +2972,36 @@
       "sha256": "af0460c00aa302f2903e46e952b65ab2c71cc596c2e6926e7d000362dde87751"
     },
     {
+      "path": "internal/postawardpg/fulfillment.go",
+      "bytes": 6373,
+      "sha256": "e128ba4df95f1d324cec4afaa434bd3ead76ebb2e9f0904e8e62750a86dad1b3"
+    },
+    {
+      "path": "internal/postawardpg/merchant.go",
+      "bytes": 4407,
+      "sha256": "ef07c30a6caff4545136bbb532813503bee45930f1edd60c30c9af3a174f3440"
+    },
+    {
+      "path": "internal/postawardpg/read.go",
+      "bytes": 4148,
+      "sha256": "edce09183cccf26c27ea7e81f35c4e0e2849d6bd30a555cc4aecfc848ce48f0f"
+    },
+    {
+      "path": "internal/postawardpg/repository.go",
+      "bytes": 11326,
+      "sha256": "9e8c9450415ab91a1853679726f24091577c38ca3fbb1270ab547e8789453f75"
+    },
+    {
+      "path": "internal/postawardpg/schema.sql",
+      "bytes": 2695,
+      "sha256": "6d80f0c17986cdf943ca209eacc6928d58972f4c5323a4f258fe35016dd63659"
+    },
+    {
+      "path": "internal/postawardpg/settlement.go",
+      "bytes": 5216,
+      "sha256": "f4397bac7ee978d22ca00437c6685f9e48efb578acd81bae625cd220aecd0e54"
+    },
+    {
       "path": "internal/postmediapg/repository.go",
       "bytes": 6950,
       "sha256": "a3813737608d439045c545a2766e9a21e963cb0e5cd9ae23105abf166c575e16"
@@ -2913,8 +3043,8 @@
     },
     {
       "path": "internal/postpg/repository.go",
-      "bytes": 15552,
-      "sha256": "a892c2d07105baa68e39a6e5e27ad05f9c44d8c691c6f12e0a7310708d36588e"
+      "bytes": 15591,
+      "sha256": "e01e8ffed6dd0a71083c36b8df42f70060b3ac70ec3d7b175dddbb8569188d32"
     },
     {
       "path": "internal/postpg/repository_test.go",
@@ -2923,8 +3053,8 @@
     },
     {
       "path": "internal/postpg/schema.sql",
-      "bytes": 2494,
-      "sha256": "0c9caf9591373b75450dabcf0dc96871058aeec1e53dbcf3d8cc53eb56d16334"
+      "bytes": 2597,
+      "sha256": "94a94c6a7baecf378f00c0705408e522cf4c10dc23308f612a75a1de398ce5cd"
     },
     {
       "path": "internal/postpg/scope_observation.go",
@@ -2998,18 +3128,18 @@
     },
     {
       "path": "internal/publisherratingpg/producer.go",
-      "bytes": 4242,
-      "sha256": "dd8cdac4643f2c32d70e9e637632fedcb3212eb546d875857ae7f26a2936c86d"
+      "bytes": 4773,
+      "sha256": "78fba86d6a4d1324960036314168e4ca9732aa2a5d846e18e72a91ff17205d59"
     },
     {
       "path": "internal/publisherratingpg/repository.go",
-      "bytes": 7250,
-      "sha256": "713a6b6c4d3ba72cc4596334bc15201da5faaac600e4142e32376556df426bd5"
+      "bytes": 7684,
+      "sha256": "40515b65acd4eec1d639ce08efa3cb919d1ea59abbc73a488eed93bd6b568944"
     },
     {
       "path": "internal/publisherratingpg/schema.sql",
-      "bytes": 601,
-      "sha256": "7b45db8eb43f5449a41278f8d17a8ee8cb304c9ef293aeb12e35081da0f16464"
+      "bytes": 1404,
+      "sha256": "48723013a083cd44986245425821793f3a05a71e7ea1d51ac89bbc75b4521767"
     },
     {
       "path": "internal/readerfetch/extract.go",
@@ -3083,8 +3213,8 @@
     },
     {
       "path": "internal/rtcprovider/livekit.go",
-      "bytes": 6549,
-      "sha256": "18dd4b4bdb20f8ae4d74952fad8ec733573ecfc2bd702cdea41724db1b26882b"
+      "bytes": 6593,
+      "sha256": "57ff8604291a9b3a3c1f5577814745040f28e3e59da4d43042889a1e6510f93c"
     },
     {
       "path": "internal/rtcprovider/livekit_test.go",
@@ -3110,6 +3240,16 @@
       "path": "internal/rtcprovider/livestream_test.go",
       "bytes": 5801,
       "sha256": "359a1e9c67c052a7839859c9f8f4ab9f38b1ff68868d2a47ea252a51b7d106cf"
+    },
+    {
+      "path": "internal/rtcprovider/outputs.go",
+      "bytes": 11247,
+      "sha256": "3bfa03ff190156766fd9f2d4b509fac5076d7ab4a8eb374c936e408dfa07835e"
+    },
+    {
+      "path": "internal/rtcprovider/outputs_test.go",
+      "bytes": 7863,
+      "sha256": "c82c102f1eefcd5e51d745dbe386e831e3978b6d7f80582776bda45a14e5dee4"
     },
     {
       "path": "internal/signinpg/contacts.go",
@@ -3485,6 +3625,11 @@
       "path": "internal/walletpg/pin_test.go",
       "bytes": 1507,
       "sha256": "7973379ff176d9b564d35b7d758be8504644941e82ae27c8e8f0381005ff2300"
+    },
+    {
+      "path": "internal/walletpg/post_award_composition.go",
+      "bytes": 3259,
+      "sha256": "8ba3b2ba28e3464f7e570d8ddfcb92caaf931a19758313ad2ed2a2516cd67805"
     },
     {
       "path": "internal/walletpg/realm.go",
@@ -7263,13 +7408,13 @@
     },
     {
       "path": "ports/sphere/livestreams/http.go",
-      "bytes": 9557,
-      "sha256": "6a61293bc1dac68c275fb261f42c18096b72bc4e41979c5c20d68f5c6096d660"
+      "bytes": 9614,
+      "sha256": "bd841ea17e55b046e057537d14c30cc127310d89dd9029ac09e9a180cb01dfc8"
     },
     {
       "path": "ports/sphere/livestreams/http_test.go",
-      "bytes": 3682,
-      "sha256": "428ea9e5b3f03e6c78b5ba9a221cd446cd85051e3fe776ff0279a648e6731023"
+      "bytes": 3764,
+      "sha256": "692fb2d55df700f6ab646aeea56ee5d0497a172f7a5c5f74eceb71337192379d"
     },
     {
       "path": "ports/sphere/livestreams/operations-source/DysonNetwork.Sphere__Models__LiveStreamAward.cs",
@@ -7290,6 +7435,26 @@
       "path": "ports/sphere/livestreams/operations-source/manifest.json",
       "bytes": 2875,
       "sha256": "ee01c8a558d64af1711eb82de538ce2750eb5a6ad7b7e0e95239aa7dbcd071b9"
+    },
+    {
+      "path": "ports/sphere/livestreams/outputs.go",
+      "bytes": 3951,
+      "sha256": "2670dc8b9c8b5f5aab25621e1ce9a31ab42e742f3c2295834848feecb8e3d6d1"
+    },
+    {
+      "path": "ports/sphere/livestreams/outputs_http.go",
+      "bytes": 2006,
+      "sha256": "082509d7a95b1e258cd80d410187b029518f3ebe9a6e4428c9aebbd34cf5e0f9"
+    },
+    {
+      "path": "ports/sphere/livestreams/playlist.go",
+      "bytes": 4059,
+      "sha256": "ce70323302c0cca4335529f2669d0feef2f99677f43dec11394d16d6901889e4"
+    },
+    {
+      "path": "ports/sphere/livestreams/playlist_test.go",
+      "bytes": 2133,
+      "sha256": "d413038f6539494b6d65204f0110bb482492c24ea41d11f5c2bc20f48060f8e2"
     },
     {
       "path": "ports/sphere/livestreams/source/DysonNetwork.Sphere__Live__LiveKitLivestreamService.cs",
@@ -7502,6 +7667,26 @@
       "sha256": "4060e1790bb4fc3cccddb2efa2a5fd345468f1c594f439ad8fab4c7b5821dada"
     },
     {
+      "path": "ports/sphere/postawards/http.go",
+      "bytes": 3830,
+      "sha256": "929c1e7693cf21f74ede6bdae1ca42765439d7a02bc2f3f40c234148a9b48bf1"
+    },
+    {
+      "path": "ports/sphere/postawards/http_test.go",
+      "bytes": 2015,
+      "sha256": "2011ef523a342a779dc63e1bb49141269ed183619ceeb9c88d6f2cdb3bb2d921"
+    },
+    {
+      "path": "ports/sphere/postawards/types.go",
+      "bytes": 4632,
+      "sha256": "cf00a6d9442459b2f07af77c5a17598ce2f5c6aa34c11e498e90bdc61567f7fa"
+    },
+    {
+      "path": "ports/sphere/postawards/types_test.go",
+      "bytes": 829,
+      "sha256": "af2320616e65e068e00bb570899e0fb5791e5533e9af2ab510e66f515618e885"
+    },
+    {
       "path": "ports/sphere/postmedia/types.go",
       "bytes": 1188,
       "sha256": "973df1c9ced8080cd7b0873e35ad85f2b735cc288dc6193dbb6b47bf593ee371"
@@ -7533,8 +7718,8 @@
     },
     {
       "path": "ports/sphere/posts/types.go",
-      "bytes": 9281,
-      "sha256": "7ad44ab60e726d0a2d3138ee2c2e3c10f1fbcb3c4c6146f13abc94b3372ea074"
+      "bytes": 9416,
+      "sha256": "95b30e05475a0b4a9af76756b21a339674312d616cda7edc030ea62b0ad7cc68"
     },
     {
       "path": "ports/sphere/posts/upstream/DYSON-LICENSE.txt",
@@ -7578,8 +7763,8 @@
     },
     {
       "path": "ports/sphere/publisherrating/http.go",
-      "bytes": 1630,
-      "sha256": "c531c0332ff7cf551a743e0466318265e9c13cf57778622a44fca1056ae61a4d"
+      "bytes": 1758,
+      "sha256": "25fbc56eeedd3a61c3ea26ffaaa4a47d429cf8a0f5276ab088fd3251a152a5c6"
     },
     {
       "path": "ports/sphere/publisherrating/types.go",
@@ -8478,8 +8663,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 30059,
-      "sha256": "1656e3e31aed2cc39495e863a64a89bb26e7f664b8f494e91134bc9f2a037081"
+      "bytes": 31938,
+      "sha256": "916cc22284fe1c1ec75211f8c82f5f03abb7e8a3b16d2bdccf4efd9ef8f02b8f"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -8498,8 +8683,8 @@
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 8395,
-      "sha256": "9f2df2b4066f69719b14f8f93fce519d7366e520c4121fc898a60217ebef4024"
+      "bytes": 8667,
+      "sha256": "b5855afdfb76dc0da7686840e73373fa249ef19055aaff0ce7eb9b3f93eef4ee"
     },
     {
       "path": "scripts/sql-parser-requirements.txt",
@@ -8518,8 +8703,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 15397,
-      "sha256": "628b1bd603427078203eb81ca910d3c47f7e576d8351783698728188a852b71b"
+      "bytes": 15731,
+      "sha256": "a9b8c2ff75d302a63e50c53c407990b20d7da95bac98ae84de06b59b58432dd5"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -8892,6 +9077,11 @@
       "sha256": "c6cdfb80de8ee2920aa0ef49acb741f1a9af4176b2d45e6d7ccdef089ff6e7a7"
     },
     {
+      "path": "tests/integration/backend_livestream_outputs_test.go",
+      "bytes": 2937,
+      "sha256": "0035551bd195b752833cbf96f87c5ea583af69e585250a81b7c43d0f14d6271d"
+    },
+    {
       "path": "tests/integration/backend_livestream_test.go",
       "bytes": 3103,
       "sha256": "a60521fd8b3a38f2eaff9b92ff3a5bd9bc51b900ce4f69768899abd8b89abd38"
@@ -8905,6 +9095,11 @@
       "path": "tests/integration/backend_portals_test.go",
       "bytes": 6118,
       "sha256": "75c3803ddfa732714abea2f2d8a4e234be29effc68be4debb011bc4c2f8982b9"
+    },
+    {
+      "path": "tests/integration/backend_post_awards_test.go",
+      "bytes": 2740,
+      "sha256": "fbb5cb970d64ff4f1b61124708ce8685ff9f097504ee6e262a3c6eee51703963"
     },
     {
       "path": "tests/integration/backend_presence_test.go",
@@ -8985,6 +9180,11 @@
       "path": "tests/integration/collection_admin_test.go",
       "bytes": 4912,
       "sha256": "56ab80920903d9f67fd97804a2d0a24126f22164e9b5261bdf41c4b4a0891c15"
+    },
+    {
+      "path": "tests/integration/commerce_maintenance_test.go",
+      "bytes": 10556,
+      "sha256": "7fa30a8117435a41e000dab317bef7338473d986f594b7315fc8a05144751822"
     },
     {
       "path": "tests/integration/commerce_test.go",
@@ -9082,6 +9282,11 @@
       "sha256": "ef2d4b6c88e3b8c3373da95cfa544ea21c3d1b4418ac9ed941dca8289bb3e87a"
     },
     {
+      "path": "tests/integration/livestream_outputs_test.go",
+      "bytes": 23684,
+      "sha256": "5f5c8d7da573d350dabc285bd98d389ef45d04908c7e4025cdb49dd5c776eb88"
+    },
+    {
       "path": "tests/integration/livestreams_test.go",
       "bytes": 22452,
       "sha256": "074c194bcb99e618b8631fc14303602de53c3f3eb0c28e27ae63321bc2609d37"
@@ -9150,6 +9355,11 @@
       "path": "tests/integration/payment_pin_test.go",
       "bytes": 34419,
       "sha256": "491e2caeefa84b36827908569775493960295f003ca9cb6c9aedcb3d90aef13f"
+    },
+    {
+      "path": "tests/integration/post_awards_test.go",
+      "bytes": 21027,
+      "sha256": "9b695196a57b384eee3d2d3ba82d145352cb041a6f221968d9d2345eefe8706b"
     },
     {
       "path": "tests/integration/post_interactions_test.go",

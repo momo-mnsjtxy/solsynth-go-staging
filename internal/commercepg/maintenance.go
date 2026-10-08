@@ -14,6 +14,8 @@ import (
 // ProcessDue is bounded, durable, and restart-safe. It creates no external
 // payments. Renewal consumes the explicitly authorized auto_renew row, original
 // payer, price and payee; cancellation/account disabling serialize before it.
+// The result counts committed transitions or quarantine decisions. The limit
+// also bounds stale-candidate retries; corrupt subscriptions never move money.
 func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
 	if limit < 1 || limit > 1000 {
 		return 0, c.ErrInvalid
@@ -21,16 +23,21 @@ func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
 	if r == nil || r.db == nil {
 		return 0, c.ErrUnavailable
 	}
-	count := 0
+	count, budget := 0, limit
 	for _, kind := range []string{"order", "gift", "subscription"} {
-		for count < limit {
+		for budget > 0 {
 			did, e := r.dueOne(ctx, kind)
+			if errors.Is(e, errMaintenanceAdvanced) {
+				budget--
+				continue
+			}
 			if e != nil {
 				return count, e
 			}
 			if !did {
 				break
 			}
+			budget--
 			count++
 		}
 	}
@@ -77,7 +84,7 @@ func (r *Repository) dueOne(ctx context.Context, kind string) (bool, error) {
 	// Locate a candidate, then acquire the same account row before the subscription
 	// row used by request writers. A stale candidate is rechecked after both locks.
 	var sid, actor string
-	e = tx.QueryRowContext(ctx, `SELECT id::text,account_id::text FROM commerce_v1.subscriptions WHERE status=1 AND ended_at<=$1 ORDER BY ended_at,id LIMIT 1`, now).Scan(&sid, &actor)
+	e = tx.QueryRowContext(ctx, `SELECT s.id::text,s.account_id::text FROM commerce_v1.subscriptions s WHERE s.status=1 AND s.ended_at<=$1::timestamptz AND NOT EXISTS(SELECT 1 FROM commerce_v1.subscription_maintenance_quarantine q WHERE q.subscription_id=s.id AND q.resolved_at IS NULL) ORDER BY s.ended_at,s.id LIMIT 1`, now).Scan(&sid, &actor)
 	if errors.Is(e, sql.ErrNoRows) {
 		return false, nil
 	}
@@ -100,19 +107,31 @@ func (r *Repository) dueOne(ctx context.Context, kind string) (bool, error) {
 			return false, e
 		}
 	}
-	s, e := subscriptionRow(ctx, tx, sid, true)
+	row, e := lockedSubscriptionProjection(ctx, tx, sid)
 	if e != nil {
 		return false, e
+	}
+	if row.AccountID != actor {
+		return skipMaintenance(tx)
+	}
+	var quarantined bool
+	if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM commerce_v1.subscription_maintenance_quarantine WHERE subscription_id=$1::uuid AND resolved_at IS NULL)`, sid).Scan(&quarantined); e != nil {
+		return false, e
+	}
+	if quarantined {
+		return skipMaintenance(tx)
+	}
+	s, reason := row.validate()
+	if reason != "" {
+		if e = quarantineSubscription(ctx, tx, row, reason, r.now().UTC()); e != nil {
+			return false, e
+		}
+		return true, tx.Commit()
 	}
 	if s.Status != c.SubscriptionActive || s.EndedAt.After(now) {
-		return false, tx.Commit()
+		return skipMaintenance(tx)
 	}
-	var renew bool
-	var days int
-	e = tx.QueryRowContext(ctx, `SELECT auto_renew,cycle_days FROM commerce_v1.subscriptions WHERE id=$1`, sid).Scan(&renew, &days)
-	if e != nil {
-		return false, e
-	}
+	renew, days := row.Renew, row.Days
 	d, e := definition(ctx, tx, s.Identifier)
 	if e != nil && !errors.Is(e, c.ErrNotFound) {
 		return false, e

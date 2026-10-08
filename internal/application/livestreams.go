@@ -20,6 +20,7 @@ type LivestreamConfig struct {
 	Policy   livestreampg.Config
 	Chat     *livestreampg.ChatConfig
 	Awards   *livestreampg.AwardConfig
+	Outputs  *livestreampg.OutputConfig
 }
 
 func (x *externalModules) configureStreams(db *sql.DB, c Config, v *authority.Verifier, g *authoritypg.TransactionGuard, a *accountpg.Repository, s *socialpg.Repository, m *mediapg.Repository, commerceRepo *commercepg.Repository) (http.Handler, error) {
@@ -50,6 +51,19 @@ func (x *externalModules) configureStreams(db *sql.DB, c Config, v *authority.Ve
 	}
 	if c.Livestreams.Chat != nil {
 		if err = x.streams.WithChat(*c.Livestreams.Chat); err != nil {
+			return nil, err
+		}
+	}
+	if c.Livestreams.Outputs != nil {
+		var artifacts live.ArtifactStore
+		if len(c.Livestreams.Outputs.HLSNamespaces) > 0 {
+			var ok bool
+			artifacts, ok = c.MediaStore.(live.ArtifactStore)
+			if !ok || c.Livestreams.Outputs.MaxSegmentBytes > c.MaxMediaBytes {
+				return nil, errors.New("HLS requires the configured canonical private artifact store")
+			}
+		}
+		if err = x.streams.WithOutputs(*c.Livestreams.Outputs, artifacts); err != nil {
 			return nil, err
 		}
 	}

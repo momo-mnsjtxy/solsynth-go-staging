@@ -23,6 +23,7 @@ var Schema string
 
 type Config struct {
 	ReactionOnly bool
+	PaidAwards   bool
 	EarliestDay  time.Time
 	Now          func() time.Time
 }
@@ -40,7 +41,10 @@ func New(db *sql.DB, v postpg.VisibilityProvider, c Config) (*Repository, error)
 	if c.Now == nil {
 		c.Now = time.Now
 	}
-	if c.ReactionOnly && (c.EarliestDay.IsZero() || !c.EarliestDay.Equal(c.EarliestDay.UTC().Truncate(24*time.Hour))) {
+	if c.ReactionOnly && c.PaidAwards {
+		return nil, s.ErrInvalid
+	}
+	if (c.ReactionOnly || c.PaidAwards) && (c.EarliestDay.IsZero() || !c.EarliestDay.Equal(c.EarliestDay.UTC().Truncate(24*time.Hour))) {
 		return nil, s.ErrInvalid
 	}
 	realms, _ := v.(accountpg.RealmProvider)
@@ -50,7 +54,7 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if r == nil {
 		return s.ErrUnavailable
 	}
-	_, e := r.db.ExecContext(ctx, `SELECT publisher_id,delta,period_start FROM owned_publisher_rating_records LIMIT 0;SELECT post_id,attitude FROM owned_post_reactions LIMIT 0`)
+	_, e := r.db.ExecContext(ctx, `SELECT publisher_id,delta,period_start,awarded_score FROM owned_publisher_rating_records LIMIT 0;SELECT awarded_score FROM owned_text_posts LIMIT 0;SELECT post_id,attitude FROM owned_post_reactions LIMIT 0`)
 	return e
 }
 func missing(e error) error {
@@ -128,6 +132,8 @@ func (r *Repository) Overview(ctx context.Context, actor, ref string) (out ratin
 		return out, missing(e)
 	}
 	enrich(&out)
+	out.Policy = r.PolicyName()
+	out.AwardScoreIncluded = r.cfg.PaidAwards
 	return out, tx.Commit()
 }
 func (r *Repository) Leaderboard(ctx context.Context, actor string, q s.Page) (out []rating.Entry, total int, e error) {
@@ -156,7 +162,8 @@ func (r *Repository) Leaderboard(ctx context.Context, actor string, q s.Page) (o
 		enrich(&o)
 		v.Percentile = o.Percentile
 		v.Grade = o.Grade
-		v.Policy = rating.Policy
+		v.Policy = r.PolicyName()
+		v.AwardScoreIncluded = r.cfg.PaidAwards
 		out = append(out, v)
 	}
 	e = rows.Err()
@@ -199,7 +206,7 @@ func (r *Repository) History(ctx context.Context, actor, ref string, q s.Page) (
 		}
 		v.UpdatedAt = v.CreatedAt
 		v.ReasonType = "publishers.rewards"
-		v.Reason = "Reaction-only publisher activity for " + v.PeriodStart.UTC().Format("2006-01-02")
+		v.Reason = "Publisher activity (" + v.Policy + ") for " + v.PeriodStart.UTC().Format("2006-01-02")
 		out.Records = append(out.Records, v)
 	}
 	e = rows.Err()
@@ -222,3 +229,10 @@ func id() (string, error) {
 }
 
 var _ rating.Repository = (*Repository)(nil)
+
+func (r *Repository) PolicyName() string {
+	if r != nil && r.cfg.PaidAwards {
+		return "reaction_and_paid_awards_v1"
+	}
+	return rating.Policy
+}

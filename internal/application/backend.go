@@ -29,6 +29,7 @@ import (
 	"solsynth.local/go-migration/internal/notabledaypg"
 	"solsynth.local/go-migration/internal/notificationpg"
 	"solsynth.local/go-migration/internal/oauthpg"
+	"solsynth.local/go-migration/internal/postawardpg"
 	"solsynth.local/go-migration/internal/postmediapg"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/internal/presencepg"
@@ -84,6 +85,7 @@ import (
 // Config is injected by the embedding application. Enum values are mandatory
 // explicit database-policy decisions; zero is never silently treated as public.
 type Config struct {
+	PostAwards                    *postawardpg.Config
 	Sponsorship                   *sponsorshippg.Config
 	PublisherRatings              *publisherratingpg.Config
 	Livestreams                   *LivestreamConfig

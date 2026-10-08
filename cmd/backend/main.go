@@ -63,6 +63,7 @@ func run(args []string, out io.Writer) error {
 	externalSettings := externalFlags(fs)
 	awardSettings := livestreamAwardFlags(fs)
 	publisherSettings := publisherCommerceFlags(fs)
+	postAwardSettings := postAwardFlags(fs)
 	ticketSettings := ticketFlags(fs)
 	fortuneSettings := fortuneFlags(fs)
 	readerSettings := readerFlags(fs)
@@ -252,6 +253,9 @@ func run(args []string, out io.Writer) error {
 	if err = publisherSettings.apply(&appConfig); err != nil {
 		return err
 	}
+	if err = postAwardSettings.apply(&appConfig); err != nil {
+		return err
+	}
 	fortuneConfig, fortuneCorpus, err := fortuneSettings.config()
 	if err != nil {
 		return err
@@ -335,6 +339,7 @@ func run(args []string, out io.Writer) error {
 	}
 	fortuneSettings.start(ctx, backend, out)
 	publisherSettings.start(ctx, backend, out)
+	postAwardSettings.start(ctx, backend, out)
 	server := &http.Server{Handler: backend, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 20 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 32768}
 	go func() {
 		ticker := time.NewTicker(*settlement)

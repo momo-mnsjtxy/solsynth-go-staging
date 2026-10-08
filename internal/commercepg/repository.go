@@ -41,6 +41,7 @@ type Adapters struct {
 	Product func(context.Context, *sql.Tx, string, string) (Product, error)
 }
 type Repository struct {
+	postAwards  PostAwardFulfillment
 	sponsorship SponsorFulfillment
 	payments    PaymentAuthorization
 	namecards   NameCardFulfillment

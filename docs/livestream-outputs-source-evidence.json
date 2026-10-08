@@ -1,0 +1,76 @@
+{
+  "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "scope": "Retained licensed authored controller/services/model; no excluded or generated protocol sources",
+  "license": "inventory/operation-sources/LICENSE.txt",
+  "sources": [
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Live/LiveStreamController.cs",
+      "sha256": "18aaf9343d105a03e38b76db3555eb91dc9d34eb9fcc93e93547228f4b6c2a50"
+    },
+    {
+      "path": "ports/sphere/livestreams/source/DysonNetwork.Sphere__Live__LiveStreamService.cs",
+      "sha256": "67c017ccf90d54299c45edee5571e9cc6b1fa89c984e4476370b464c2313143a"
+    },
+    {
+      "path": "ports/sphere/livestreams/source/DysonNetwork.Sphere__Live__LiveKitLivestreamService.cs",
+      "sha256": "6285835175a0f7118624168af13650c5bb5a834bab9443ea65dc068a798cc6d2"
+    },
+    {
+      "path": "ports/sphere/livestreams/source/DysonNetwork.Sphere__Models__LiveStream.cs",
+      "sha256": "3cbd2e13481a09240d0d932f2b48032aa448bd89acccbebee97cb4c049aae960"
+    }
+  ],
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/{id}/egress",
+      "controller_line": 290
+    },
+    {
+      "method": "POST",
+      "path": "/{id}/egress/stop",
+      "controller_line": 322
+    },
+    {
+      "method": "POST",
+      "path": "/{id}/hls",
+      "controller_line": 347
+    },
+    {
+      "method": "POST",
+      "path": "/{id}/hls/stop",
+      "controller_line": 398
+    }
+  ],
+  "public_primary_docs": [
+    {
+      "url": "https://docs.livekit.io/reference/other/egress/api/",
+      "checked_at": "2026-10-08",
+      "used": "Current StartEgress, ListEgress, StopEgress JSON fields/grant, status values, storage/output options; no create idempotency guarantee"
+    },
+    {
+      "url": "https://docs.livekit.io/reference/other/egress/examples/",
+      "checked_at": "2026-10-08",
+      "used": "Authored JSON examples of source/output/storage structure"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc8216",
+      "checked_at": "2026-10-08",
+      "used": "HLS media-playlist URI/tag framing; explicitly limited owned supported subset"
+    }
+  ],
+  "owned_extensions": [
+    "Operator destination IDs, fixed endpoint/private storage configuration and versioned contract",
+    "Durable one-attempt intent, pending status GET, idempotency keys and rollback cleanup observation",
+    "Authenticated per-request HLS projection under canonical object-store namespace",
+    "Playlist allowlist and segment framing/size bounds"
+  ],
+  "unsupported": [
+    "Raw caller RTMP URLs/file paths/custom HLS base URLs",
+    "Nonzero segment_count from source (unused by authored service)",
+    "Archive download/media import and current client player integration",
+    "Automatic resolution of uncorrelated RTMP creation outcomes",
+    "Master/key/fMP4/byterange/unknown-tag playlists",
+    "Unconfigured or unconfirmed private output storage"
+  ]
+}

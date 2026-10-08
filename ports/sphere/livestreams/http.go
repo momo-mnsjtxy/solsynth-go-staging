@@ -222,7 +222,7 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	required := r.Method != "GET" || len(parts) >= 2 && (parts[1] == "token" || parts[1] == "chat")
+	required := r.Method != "GET" || len(parts) >= 2 && (parts[1] == "token" || parts[1] == "chat" || parts[1] == "hls" || parts[1] == "egress")
 	ctx, actor, e := s.principal(r, required)
 	if e != nil {
 		failure(w, e)
@@ -294,7 +294,7 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if len(parts) > 1 && (parts[1] == "egress" || parts[1] == "hls") {
-			failure(w, ErrUnsupported)
+			s.outputsHTTP(w, r, ctx, actor, parts)
 			return
 		}
 		switch {

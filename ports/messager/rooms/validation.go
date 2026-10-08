@@ -24,6 +24,9 @@ func validText(s string, max int) bool {
 	return true
 }
 func ValidateRoom(p RoomPatch, create bool, policy Policy) error {
+	if p.PictureID != nil && !ValidID(*p.PictureID) || p.BackgroundID != nil && !ValidID(*p.BackgroundID) || p.RemovePicture && p.PictureID != nil || p.RemoveBackground && p.BackgroundID != nil || create && (p.RemovePicture || p.RemoveBackground) {
+		return ErrInvalid
+	}
 	if p.RealmID != nil && !ValidID(*p.RealmID) {
 		return ErrInvalid
 	}

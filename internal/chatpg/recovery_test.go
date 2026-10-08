@@ -17,6 +17,8 @@ func TestDirectRecoveryDoesNotCopyNestedOrCachedFields(t *testing.T) {
 	peer := &accounts.Account{ID: "peer", Name: "synthetic-hidden-name", Profile: &accounts.Profile{Bio: "synthetic-hidden-bio", Location: "synthetic-hidden-location", Picture: map[string]any{"content": "synthetic-hidden-message"}}, Contacts: []signin.Contact{{Content: "synthetic-hidden-contact"}}}
 	own := rooms.Member{ID: "self-member", AccountID: "self", ChatRoomID: "room", JoinedAt: &now, ConfirmedAt: &now, Account: peer, Room: &rooms.Room{Name: "synthetic-hidden-cached-room"}}
 	source := rooms.Room{ID: "room", AccountID: "unexpected-owner", Name: "synthetic-hidden-room", Description: "synthetic-hidden-description", MLSGroupID: &key, MLSEpoch: 12, MLSStateVersion: 7, Members: []rooms.Member{own, {AccountID: "peer", Account: peer}}, DirectMembers: []rooms.Member{{AccountID: "unexpected-third", Account: peer}}}
+	source.Picture = map[string]any{"content": "synthetic-hidden-picture"}
+	source.Background = map[string]any{"key": "synthetic-hidden-background"}
 	got := directRecoveryRoom(source, own, "peer")
 	raw, e := json.Marshal(got)
 	if e != nil {

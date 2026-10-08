@@ -4,7 +4,7 @@ The source's tickets are private support cases. Examinations are a separate acco
 
 ## Runtime and schema
 
-New packages: `ports/passport/tickets` and `internal/ticketpg`. Install `ticketpg.Schema` explicitly after canonical authority schema; the configured verified-contact policy also requires the existing signin credentials schema. Constructors/readiness/request handlers never migrate or seed permissions. All protected operations use the same-pool `TransactionGuard`, including reads and administrative permission probes.
+New packages: `ports/passport/tickets` and `internal/ticketpg`. Install `ticketpg.Schema` explicitly after canonical authority schema including `authoritypg.ActivationSchema`; the configured verified-contact policy also requires the existing signin credentials schema. Constructors/readiness/request handlers never migrate or seed permissions. All protected operations use the same-pool `TransactionGuard`, including reads and administrative permission probes.
 
 ```go
 repo, err := ticketpg.New(db, guard, ticketpg.Config{
@@ -44,7 +44,7 @@ Passing can add membership to an already-existing canonical authority group only
 
 Configured experience is once per account/test on the first non-trial pass/fail, preserving the snapshot amount. `owned_exam_rewards` is a receipt, not a balance. A configured `RewardSink.GrantExamRewardInTransaction(context.Context, *sql.Tx, accountID, testID, attemptID string, amount int64) error` joins the transaction and must target the existing progression provider idempotently. A failed sink rolls back to a savepoint and leaves the exam completed with a pending receipt; it cannot leave a partial reward mutation. No network callback or retry scheduler is started.
 
-Activation checks configured required non-trial passes and the existing canonical verified-email timestamp. Satisfaction creates one durable pending request. `is_activated` remains false: no disabled account is enabled, no session changes, no email-verification bypass and no false completed activation. A later configured authority policy must consume/revalidate the request. A missing policy is reported as unconfigured rather than successful activation. Registration invitation bypasses are unsupported.
+Activation checks configured required non-trial passes and the existing canonical verified-email timestamp. Without an explicit completion policy, satisfaction creates one durable pending request. The optional once-only canonical activation policy and registration-invite adapter are documented in [affiliation and activation](affiliation-and-activation.md): they preserve contact verification, current root or first-party contact proof, deny rules and once-only grant provenance. A missing policy is reported as unconfigured rather than successful activation.
 
 ## Bounds, transactions and owned differences
 
@@ -54,7 +54,7 @@ Activation checks configured required non-trial passes and the existing canonica
 - Canonical actor/proof locks precede domain rows. Test definitions precede group locks sorted by UUID. Manual review takes a target account lock with NOWAIT after the reviewer lock, so inverse account ordering returns a retryable conflict instead of waiting in a cycle. Claims, answers, final status and audits share one commit.
 - Duplicate answer/question/choice IDs and unknown choices fail rather than source last-wins/ignored-input behavior. Group reassignment on question update is explicitly unsupported. Group-key renames remain reflected in linked test projections.
 - Ticket types/priorities and the older client status mapping are bounded to 0..3, with priority default 1. Newer waiting-status enum values require verified encoding before support. Case deletion uses owned tombstones. Resources are bounded strings, never fetched.
-- Ticket file IDs remain explicitly unsupported, including source `usage: 'ticket'`; no raw references confer file access. Push/email delivery, full Shared model parity, contact spell integration, global bank prune/export, dedicated docs-only listing route and production provider wiring are not claimed.
+- Ticket file IDs remain explicitly unsupported, including source `usage: 'ticket'`; no raw references confer file access. Push/email delivery, full Shared model parity, full legacy contact-spell integration, global bank prune/export, dedicated docs-only listing route and production provider wiring are not claimed.
 - Errors use stable owned Passport codes; cross-account ticket detail uses 404 rather than the source's existence-revealing 403. Count/page metadata follows the guarded ReadCommitted transaction; it is not advertised as a cross-query repeatable snapshot.
 
 ## Evidence and verification
@@ -77,6 +77,6 @@ Add TestPGTicketsExamsRestartPersistence to required-after. The suite covers pri
 
 Final SQL audit: repeated text/UUID ticket filters have explicit text→UUID casts; optional status/trial parameters are explicitly typed; nullable fingerprints and JSON-derived titles scan through `sql.NullString`, while JSON documents scan through `[]byte`. Time-window arithmetic happens in Go and binds `time.Time` values rather than ambiguous interval parameters. Rollback fault injection uses an actor-scoped synthetic trigger, so it introduces no validating CHECK constraint over preexisting rows.
 
-The unified host defaults the typed exam reward sink to the canonical progression XP ledger and verifies the grading receipt in that same transaction. A composed HTTP test proves one11-XP credit and one canonical group claim after submission/replay. The executable exposes explicit exam group mappings and activation eligibility flags; no group is created and no account is enabled by configuration.
+The unified host defaults the typed exam reward sink to the canonical progression XP ledger and verifies the grading receipt in that same transaction. A composed HTTP test proves one11-XP credit and one canonical group claim after submission/replay. The executable exposes explicit exam group mappings and activation eligibility flags; no group is created and no disabled account is enabled. Explicit activation completion is a separate opt-in, described above.
 
 The host lifecycle now retries pending reward receipts in bounded batches. Account locks precede receipt locks, disabled/punished accounts remain pending, a failed sink rolls back completely, and one failure does not stop other selected receipts. This recovers a completed exam without requiring another attempt.

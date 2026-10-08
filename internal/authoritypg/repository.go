@@ -24,7 +24,10 @@ var AssuranceSchema string
 //go:embed continuity_schema.sql
 var ContinuitySchema string
 
-var Schema = baseSchema + "\n" + AssuranceSchema + "\n" + ContinuitySchema
+//go:embed activation_schema.sql
+var ActivationSchema string
+
+var Schema = baseSchema + "\n" + AssuranceSchema + "\n" + ContinuitySchema + "\n" + ActivationSchema
 
 type Repository struct{ db *sql.DB }
 

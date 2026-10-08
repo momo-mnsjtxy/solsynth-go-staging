@@ -123,7 +123,7 @@ func state(c Challenge, raw string) Challenge {
 }
 func (s *Service) Register(ctx context.Context, r RegisterRequest, peer string) (authority.Account, error) {
 	var a authority.Account
-	if !accountName.MatchString(r.Name) || len(r.Nick) > 100 || len(r.Language) > 32 || !validPassword(r.Password) || r.AffiliationSpell != "" {
+	if !accountName.MatchString(r.Name) || len(r.Nick) > 100 || len(r.Language) > 32 || !validPassword(r.Password) || len(r.AffiliationSpell) > 4096 {
 		return a, ErrInput
 	}
 	email, e := NormalizeEmail(r.Email)
@@ -161,7 +161,15 @@ func (s *Service) Register(ctx context.Context, r RegisterRequest, peer string) 
 		return a, e
 	}
 	f := Factor{ID: fid, Type: 0, Trustworthy: 1, CreatedAt: now, EnabledAt: &now, Secret: hash, LastCounter: -1}
-	e = s.store.Register(ctx, a, Credentials{AccountID: id, Email: email}, f, c, s.cfg.InitialMemberPermissions)
+	if r.AffiliationSpell != "" {
+		admission, ok := s.store.(AffiliationRegistrationStore)
+		if !ok {
+			return authority.Account{}, ErrInput
+		}
+		e = admission.RegisterWithAffiliation(ctx, a, Credentials{AccountID: id, Email: email}, f, c, s.cfg.InitialMemberPermissions, strings.TrimSpace(r.AffiliationSpell))
+	} else {
+		e = s.store.Register(ctx, a, Credentials{AccountID: id, Email: email}, f, c, s.cfg.InitialMemberPermissions)
+	}
 	if e != nil {
 		return authority.Account{}, known(e)
 	}
@@ -180,15 +188,24 @@ func (s *Service) VerifyEmail(ctx context.Context, raw string) error {
 			if !ok || !authority.ValidID(c.ContactID) {
 				return ErrInvalid
 			}
-			return contacts.VerifyContact(c.ContactID, s.now())
+			if e := contacts.VerifyContact(c.ContactID, s.now()); e != nil {
+				return e
+			}
+		} else {
+			v, e := tx.Credentials()
+			if e != nil {
+				return e
+			}
+			n := s.now()
+			v.VerifiedAt = &n
+			if e = tx.SaveCredentials(v); e != nil {
+				return e
+			}
 		}
-		v, e := tx.Credentials()
-		if e != nil {
-			return e
+		if completion, ok := tx.(ContactVerificationCompletion); ok {
+			return completion.CompleteContactVerification(c)
 		}
-		n := s.now()
-		v.VerifiedAt = &n
-		return tx.SaveCredentials(v)
+		return nil
 	})
 }
 func (s *Service) deliver(ctx context.Context, account, captcha, peer, purpose string) error {

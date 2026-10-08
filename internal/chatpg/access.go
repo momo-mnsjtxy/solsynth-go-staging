@@ -84,6 +84,11 @@ func (r *Repository) RelationsReady(ctx context.Context) error {
 	if e := r.MLSReady(ctx); e != nil {
 		return e
 	}
+	if r.roomMedia != nil {
+		if e := r.roomMedia.Ready(ctx); e != nil {
+			return e
+		}
+	}
 	if r.associations != nil {
 		if e := r.associations.Ready(ctx); e != nil {
 			return e
@@ -110,6 +115,11 @@ func canonicalAccount(ctx context.Context, tx *sql.Tx, id string) (*accounts.Acc
 	return &a, nil
 }
 func (r *Repository) decorateRoom(ctx context.Context, tx *sql.Tx, v *rooms.Room, actor string) error {
+	if r.roomMedia != nil {
+		if e := r.roomMedia.Load(ctx, tx, actor, v); e != nil {
+			return e
+		}
+	}
 	if r.mls && v.EncryptionMode == rooms.MLSEncryptionMode {
 		if e := tx.QueryRowContext(ctx, `SELECT id,epoch,state_version FROM owned_mls_groups WHERE room_id=$1`, v.ID).Scan(&v.MLSGroupID, &v.MLSEpoch, &v.MLSStateVersion); e != nil {
 			return e

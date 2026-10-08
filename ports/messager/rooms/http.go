@@ -177,6 +177,8 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		permission = "chat.create"
 	case len(p) == 4 && p[1] == "members" && p[3] == "timeout":
 		permission = "chat.members.timeout"
+	case len(p) == 3 && p[1] == "media" && r.Method == "DELETE":
+		permission = "chat.update"
 	case len(p) == 1 && r.Method == "PATCH":
 		permission = "chat.update"
 	case len(p) == 1 && r.Method == "DELETE":
@@ -273,7 +275,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			result = map[string]any{"rooms": list}
 		case "POST":
 			var req RoomPatch
-			e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode", "realm_id")
+			e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode", "realm_id", "picture_id", "background_id")
 			if e == nil {
 				result, e = s.Repository.Create(ctx, actor, req)
 			}
@@ -372,13 +374,23 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 				e = relations.Timeout(ctx, actor, rid, p[2], req)
 			}
 			status = 204
+		case len(p) == 3 && p[1] == "media" && (p[2] == "picture" || p[2] == "background"):
+			if r.Method != "DELETE" {
+				method(w, "DELETE")
+				return
+			}
+			e = empty(w, r)
+			if e == nil {
+				_, e = s.Repository.Update(ctx, actor, rid, RoomPatch{RemovePicture: p[2] == "picture", RemoveBackground: p[2] == "background"})
+			}
+			status = 204
 		case len(p) == 1:
 			switch r.Method {
 			case "GET":
 				result, e = s.Repository.Get(ctx, actor, rid)
 			case "PATCH":
 				var req RoomPatch
-				e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode", "realm_id")
+				e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode", "realm_id", "picture_id", "background_id")
 				if e == nil {
 					result, e = s.Repository.Update(ctx, actor, rid, req)
 				}

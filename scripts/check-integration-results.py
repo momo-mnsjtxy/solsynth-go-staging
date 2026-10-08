@@ -6,6 +6,27 @@ import sys
 EXPECTED = {
     "before": {
         "TestPGDirectRecoveryPrivacyRestartPersistence",
+        "TestPGBackendAffiliationRoutesAndActivation",
+        "TestPGAffiliationTrackingIsolationAndRevocation",
+        "TestPGAffiliationRestartPersistence",
+        "TestPGAffiliationRegistrationAndContactActivation",
+        "TestPGAffiliationPrimaryContactChallengeActivationAndRollback",
+        "TestPGAffiliationNonBypassInviteRequiresCanonicalExam",
+        "TestPGAffiliationIssuerRevocationAfterWaitRollsBackActivation",
+        "TestPGAffiliationInviteExpiryRootAndWaitRevocation",
+        "TestPGAffiliationExaminerCannotSupplyRecipientRootProof",
+        "TestPGAffiliationConcurrentInviteConsumptionAndReplay",
+        "TestPGAffiliationCanonicalActivationOnceOnly",
+        "TestPGAffiliationActivationRollbackAndInviteRevocation",
+        "TestPGRoomMediaEncryptedAudienceDoesNotUsePublicFlag",
+        "TestPGRoomMediaCanonicalLifecycleAndAudience",
+        "TestPGRoomMediaOwnershipAndAtomicRollback",
+        "TestPGRoomMediaWaitRevalidatesFileMembershipAndAuthority",
+        "TestPGRoomMediaRealmRevocationAndDirectAudience",
+        "TestPGRoomMediaReadWaitObservesRevokedGrantAndFileOwner",
+        "TestPGRoomMediaConcurrentSlotsAndBackendComposition",
+        "TestPGRoomMediaSavedRestartPersistence",
+
         "TestPGPasskitInternalProgramEligibility",
         "TestPGPasskitProvisioningAuthorizationAndWaitRevocation",
         "TestPGRelationshipExpiryImmediateDegradeAndCleanup",
@@ -629,6 +650,8 @@ EXPECTED = {
     },
     "after": {
         "TestPGDirectRecoveryPrivacyRestartPersistence",
+        "TestPGAffiliationRestartPersistence",
+        "TestPGRoomMediaSavedRestartPersistence",
         "TestPGRelationshipExpiryRestartPersistence",
         "TestPGRealmPermissionRestartPersistence",
 

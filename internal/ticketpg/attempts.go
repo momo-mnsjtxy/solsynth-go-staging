@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/tickets"
 )
@@ -564,10 +565,22 @@ func (r *Repository) activation(ctx context.Context, tx *sql.Tx, actor string, r
 	if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_exam_activation_requests WHERE account_id=$1)`, actor).Scan(&state.ActivationPending); e != nil {
 		return state, e
 	}
+	if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_authority_activations WHERE account_id=$1)`, actor).Scan(&state.IsActivated); e != nil {
+		return state, e
+	}
+	if state.IsActivated {
+		state.ActivationPending = false
+	}
 	if r.cfg.Activation == nil {
 		return state, nil
 	}
 	policy := r.cfg.Activation
+	if r.invites != nil {
+		state.TestsBypassed, e = r.invites.TestsBypassed(ctx, tx, actor)
+		if e != nil {
+			return state, e
+		}
+	}
 	state.RequireVerifiedContact = policy.RequireVerifiedContact
 	state.TestsEnabled = len(policy.RequiredTestKeys) > 0
 	state.IsSatisfied = true
@@ -582,7 +595,11 @@ func (r *Repository) activation(ctx context.Context, tx *sql.Tx, actor string, r
 			state.IsSatisfied = false
 		}
 	}
-	for _, key := range policy.RequiredTestKeys {
+	keys := policy.RequiredTestKeys
+	if state.TestsBypassed {
+		keys = nil
+	}
+	for _, key := range keys {
 		item := tickets.ActivationTest{Key: key, Title: key}
 		var id string
 		var data []byte
@@ -616,7 +633,37 @@ func (r *Repository) activation(ctx context.Context, tx *sql.Tx, actor string, r
 		}
 		state.Tests = append(state.Tests, item)
 	}
-	if request && state.IsSatisfied {
+	complete := false
+	if request && state.IsSatisfied && !state.IsActivated && policy.Completion != nil {
+		complete, e = r.currentActivationAssurance(ctx, tx, actor)
+		if e != nil {
+			return state, e
+		}
+	}
+	if complete {
+		provenance := struct {
+			Policy        ActivationPolicy `json:"policy"`
+			TestsBypassed bool             `json:"tests_bypassed"`
+		}{*policy, state.TestsBypassed}
+		var data []byte
+		data, e = json.Marshal(provenance)
+		if e != nil {
+			return state, e
+		}
+		e = authoritypg.New(r.db).CompleteActivation(ctx, r.db, tx, actor, policy.Completion.PolicyID, data, policy.Completion.Permissions, r.cfg.Now().UTC())
+		if e != nil {
+			return state, e
+		}
+		if _, e = r.currentActivationAssurance(ctx, tx, actor); e != nil {
+			return state, e
+		}
+		state.IsActivated = true
+		if _, e = tx.ExecContext(ctx, `DELETE FROM owned_exam_activation_requests WHERE account_id=$1`, actor); e != nil {
+			return state, e
+		}
+		state.ActivationPending = false
+	}
+	if request && state.IsSatisfied && !state.IsActivated {
 		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_exam_activation_requests(account_id,created_at)VALUES($1,$2)ON CONFLICT DO NOTHING`, actor, now); e != nil {
 			return state, e
 		}

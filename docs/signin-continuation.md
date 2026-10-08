@@ -11,7 +11,7 @@ The pinned, licensed Solian authored callers under
 
 - `lib/auth/create_account_content.dart`: `POST /stargate/accounts` with
   `name`, `nick`, `email`, `password`, `language`, `captcha_token` and optional
-  `affiliation_spell`. Nonempty affiliation spells are explicitly unsupported.
+  `affiliation_spell`. The unified host joins the configured affiliation adapter to registration atomically; see [affiliation and activation](affiliation-and-activation.md). Stores without that optional adapter continue to reject nonempty affiliation spells.
 - `lib/auth/login_content.dart`: `POST /stargate/auth/challenge` with account
   and device metadata; `GET/PATCH /stargate/auth/challenge/{id}`; factor listing
   and preparation; `factor_id` and `password` verification; `step_remain` and

@@ -47,26 +47,28 @@ func (p Policy) ValidNotify(n int32) bool {
 
 // Room and Member are explicitly versioned projections, not full legacy DTOs.
 type Room struct {
-	RecoveryOnly    bool          `json:"recovery_only,omitempty"`
-	Type            int           `json:"type"`
-	RealmID         *string       `json:"realm_id,omitempty"`
-	Realm           *social.Realm `json:"realm,omitempty"`
-	DirectMembers   []Member      `json:"direct_members,omitempty"`
-	Members         []Member      `json:"members,omitempty"`
-	RelationGuard   bool          `json:"-"`
-	ID              string        `json:"id"`
-	AccountID       string        `json:"account_id"`
-	Name            string        `json:"name"`
-	Description     string        `json:"description"`
-	IsPublic        bool          `json:"is_public"`
-	IsCommunity     bool          `json:"is_community"`
-	EncryptionMode  int32         `json:"encryption_mode"`
-	MLSGroupID      *string       `json:"mls_group_id,omitempty"`
-	MLSStateVersion int64         `json:"mls_state_version,omitempty"`
-	MLSEpoch        int64         `json:"mls_epoch,omitempty"`
-	CreatedAt       time.Time     `json:"created_at"`
-	UpdatedAt       time.Time     `json:"updated_at"`
-	DeletedAt       *time.Time    `json:"deleted_at"`
+	RecoveryOnly    bool           `json:"recovery_only,omitempty"`
+	Picture         map[string]any `json:"picture"`
+	Background      map[string]any `json:"background"`
+	Type            int            `json:"type"`
+	RealmID         *string        `json:"realm_id,omitempty"`
+	Realm           *social.Realm  `json:"realm,omitempty"`
+	DirectMembers   []Member       `json:"direct_members,omitempty"`
+	Members         []Member       `json:"members,omitempty"`
+	RelationGuard   bool           `json:"-"`
+	ID              string         `json:"id"`
+	AccountID       string         `json:"account_id"`
+	Name            string         `json:"name"`
+	Description     string         `json:"description"`
+	IsPublic        bool           `json:"is_public"`
+	IsCommunity     bool           `json:"is_community"`
+	EncryptionMode  int32          `json:"encryption_mode"`
+	MLSGroupID      *string        `json:"mls_group_id,omitempty"`
+	MLSStateVersion int64          `json:"mls_state_version,omitempty"`
+	MLSEpoch        int64          `json:"mls_epoch,omitempty"`
+	CreatedAt       time.Time      `json:"created_at"`
+	UpdatedAt       time.Time      `json:"updated_at"`
+	DeletedAt       *time.Time     `json:"deleted_at"`
 }
 type Member struct {
 	ConfirmedAt  *time.Time        `json:"confirmed_at"`
@@ -83,12 +85,17 @@ type Member struct {
 	Room         *Room             `json:"chat_room,omitempty"`
 }
 type RoomPatch struct {
-	RealmID        *string `json:"realm_id"`
-	Name           *string `json:"name"`
-	Description    *string `json:"description"`
-	IsPublic       *bool   `json:"is_public"`
-	IsCommunity    *bool   `json:"is_community"`
-	EncryptionMode *int32  `json:"encryption_mode"`
+	PictureID    *string `json:"picture_id"`
+	BackgroundID *string `json:"background_id"`
+	// Removal is available only through the explicit owned media DELETE route.
+	RemovePicture    bool    `json:"-"`
+	RemoveBackground bool    `json:"-"`
+	RealmID          *string `json:"realm_id"`
+	Name             *string `json:"name"`
+	Description      *string `json:"description"`
+	IsPublic         *bool   `json:"is_public"`
+	IsCommunity      *bool   `json:"is_community"`
+	EncryptionMode   *int32  `json:"encryption_mode"`
 }
 
 type TimeoutCause struct {

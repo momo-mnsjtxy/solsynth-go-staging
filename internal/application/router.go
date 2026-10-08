@@ -25,6 +25,7 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	affiliations                                                                                                                                                                                                                                         http.Handler
 	artwork                                                                                                                                                                                                                                              http.Handler
 	passkit                                                                                                                                                                                                                                              passkitModules
 	publisherCommerce                                                                                                                                                                                                                                    publisherCommerceModules
@@ -128,6 +129,22 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			handler.ServeHTTP(w, copy)
 			return
 		}
+	}
+	if h.affiliations != nil && (under(p, "/api/affiliations") || under(p, "/passport/affiliations")) {
+		copy := r.Clone(r.Context())
+		u := *r.URL
+		u.Path = strings.Replace(p, "/passport/", "/api/", 1)
+		copy.URL = &u
+		h.affiliations.ServeHTTP(w, copy)
+		return
+	}
+	if h.tickets != nil && (p == "/api/accounts/me/activation/progress" || p == "/passport/accounts/me/activation/progress") {
+		copy := r.Clone(r.Context())
+		u := *r.URL
+		u.Path = "/api/tests/activation"
+		copy.URL = &u
+		h.tickets.ServeHTTP(w, copy)
+		return
 	}
 	if h.artwork != nil && under(p, "/api/presence/artworks") {
 		h.artwork.ServeHTTP(w, r)

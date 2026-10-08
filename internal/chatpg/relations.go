@@ -548,6 +548,9 @@ func (r *Repository) RealmRooms(ctx context.Context, actor, ref string, take, of
 		if x != nil {
 			return out, x
 		}
+		if x = r.decorateRoom(ctx, tx, &v, actor); x != nil {
+			return out, x
+		}
 		out = append(out, v)
 	}
 	return out, tx.Commit()

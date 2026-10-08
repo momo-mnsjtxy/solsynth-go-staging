@@ -25,6 +25,7 @@ var Schema string
 type ActivationPolicy struct {
 	RequiredTestKeys       []string
 	RequireVerifiedContact bool
+	Completion             *ActivationCompletion
 }
 
 // RewardSink joins the same SQL transaction and must be idempotent per canonical
@@ -39,10 +40,11 @@ type Config struct {
 	Now           func() time.Time
 }
 type Repository struct {
-	db    *sql.DB
-	guard *authoritypg.TransactionGuard
-	cfg   Config
-	media MediaStore
+	db      *sql.DB
+	guard   *authoritypg.TransactionGuard
+	cfg     Config
+	media   MediaStore
+	invites InviteAdmission
 }
 
 func New(db *sql.DB, guard *authoritypg.TransactionGuard, cfg Config) (*Repository, error) {
@@ -73,6 +75,18 @@ func New(db *sql.DB, guard *authoritypg.TransactionGuard, cfg Config) (*Reposito
 			}
 			seen[strings.ToLower(key)] = true
 		}
+		if copy.Completion != nil {
+			completion := *copy.Completion
+			if err := ValidateActivationCompletion(completion); err != nil {
+				return nil, err
+			}
+			// Contact proof remains mandatory for actual canonical completion.
+			if !copy.RequireVerifiedContact {
+				return nil, tickets.ErrInvalid
+			}
+			completion.Permissions = append([]string{}, completion.Permissions...)
+			copy.Completion = &completion
+		}
 		cfg.Activation = &copy
 	}
 	return &Repository{db: db, guard: guard, cfg: cfg}, nil
@@ -88,6 +102,9 @@ func (r *Repository) Ready(ctx context.Context) error {
 		return tickets.ErrUnavailable
 	}
 	_, e := r.db.ExecContext(ctx, `SELECT id,creator_id,status FROM owned_ticket_cases LIMIT 0; SELECT id,snapshot,submission_hash FROM owned_exam_attempts LIMIT 0; SELECT account_id,state FROM owned_exam_claims LIMIT 0; SELECT account_id,state FROM owned_exam_rewards LIMIT 0; SELECT account_id,state FROM owned_exam_activation_requests LIMIT 0; SELECT id,data FROM owned_exam_groups LIMIT 0; SELECT id,data FROM owned_exam_questions LIMIT 0; SELECT id,data FROM owned_exams LIMIT 0; SELECT id,data FROM owned_exam_trials LIMIT 0; SELECT account_id FROM owned_ticket_on_call LIMIT 0; SELECT id,sender_id,request_key FROM owned_ticket_messages LIMIT 0; SELECT test_id,group_id FROM owned_exam_group_links LIMIT 0; SELECT id,value,reviewed_by_id FROM owned_exam_answers LIMIT 0; SELECT actor_id,operation FROM owned_ticket_exam_audit LIMIT 0`)
+	if e == nil {
+		_, e = r.db.ExecContext(ctx, `SELECT account_id,policy_sha256 FROM owned_authority_activations LIMIT 0`)
+	}
 	if e == nil && r.cfg.Activation != nil && r.cfg.Activation.RequireVerifiedContact {
 		_, e = r.db.ExecContext(ctx, `SELECT account_id,verified_at FROM owned_authority_credentials LIMIT 0`)
 	}
@@ -239,6 +256,24 @@ func (r *Repository) Execute(ctx context.Context, actor string, c tickets.Comman
 			return out, e
 		}
 	}
+	if c.Operation == "activation.recheck" && r.cfg.Activation != nil && r.cfg.Activation.Completion != nil {
+		p, e := r.guard.Authenticate(ctx, r.db, tx, actor)
+		if e != nil {
+			return out, e
+		}
+		if e = rootActivation(p); e != nil {
+			return out, e
+		}
+	}
+	if !public && r.cfg.Activation != nil && r.cfg.Activation.Completion != nil {
+		principal, err := r.guard.Authenticate(ctx, r.db, tx, actor)
+		if err != nil {
+			return out, err
+		}
+		if rootActivation(principal) == nil {
+			ctx = permitRootActivation(ctx, principal)
+		}
+	}
 	now := r.cfg.Now().UTC().Truncate(time.Microsecond)
 	switch {
 	case strings.HasPrefix(c.Operation, "ticket."), strings.HasPrefix(c.Operation, "oncall."):
@@ -271,6 +306,16 @@ func (r *Repository) Execute(ctx context.Context, actor string, c tickets.Comman
 	if write && out.Changed {
 		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_ticket_exam_audit(actor_id,operation,resource_id,occurred_at)VALUES($1,$2,$3,$4)`, actor, c.Operation, nullable(out.ResourceID), now); e != nil {
 			return tickets.Result{}, mapped(e)
+		}
+	}
+	if !public {
+		if perm == "" {
+			_, e = r.guard.Authenticate(ctx, r.db, tx, actor)
+		} else {
+			_, e = r.guard.Authorize(ctx, r.db, tx, actor, perm)
+		}
+		if e != nil {
+			return tickets.Result{}, e
 		}
 	}
 	if e = tx.Commit(); e != nil {

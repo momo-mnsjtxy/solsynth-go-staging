@@ -27,6 +27,7 @@ type Repository struct {
 	mls          bool
 	social       rooms.SocialProvider
 	associations MessageAssociations
+	roomMedia    RoomMedia
 }
 
 func (r *Repository) WithSocial(p rooms.SocialProvider) *Repository { r.social = p; return r }
@@ -278,6 +279,12 @@ func (r *Repository) Create(ctx context.Context, actor string, p rooms.RoomPatch
 			return v, e
 		}
 	}
+	if e = r.applyRoomMedia(ctx, tx, actor, &v, p, false); e != nil {
+		return v, e
+	}
+	if e = r.decorateRoom(ctx, tx, &v, actor); e != nil {
+		return v, e
+	}
 	e = r.commit(ctx, tx, actor, "chat.create")
 	return v, e
 }
@@ -404,6 +411,9 @@ func (r *Repository) Update(ctx context.Context, actor, rid string, p rooms.Room
 	}
 	v, e = scanRoom(tx.QueryRowContext(ctx, `UPDATE chat_rooms SET owned_name=$2,owned_description=$3,is_public=$4,owned_is_community=$5,owned_updated_at=clock_timestamp() WHERE id=$1 RETURNING `+roomColumns, rid, v.Name, v.Description, v.IsPublic, v.IsCommunity))
 	if e != nil {
+		return v, e
+	}
+	if e = r.applyRoomMedia(ctx, tx, actor, &v, p, true); e != nil {
 		return v, e
 	}
 	if e = r.decorateRoom(ctx, tx, &v, actor); e != nil {

@@ -28,10 +28,12 @@ var FactorSetupSchema string
 var Schema = baseSchema + "\n" + PaymentPINSchema + "\n" + FactorSetupSchema
 
 type Repository struct {
-	pin       PaymentPINStore
-	db        *sql.DB
-	authority *authoritypg.Repository
-	guard     *authoritypg.TransactionGuard
+	admission  RegistrationAdmission
+	activation ContactActivation
+	pin        PaymentPINStore
+	db         *sql.DB
+	authority  *authoritypg.Repository
+	guard      *authoritypg.TransactionGuard
 }
 
 func New(db *sql.DB, canonical *authoritypg.Repository, guard *authoritypg.TransactionGuard) *Repository {
@@ -54,6 +56,15 @@ func conflict(e error) error {
 	return e
 }
 func (r *Repository) Register(ctx context.Context, a authority.Account, c signin.Credentials, f signin.Factor, ch signin.Challenge, permissions []string) error {
+	return r.register(ctx, a, c, f, ch, permissions, "")
+}
+func (r *Repository) RegisterWithAffiliation(ctx context.Context, a authority.Account, c signin.Credentials, f signin.Factor, ch signin.Challenge, permissions []string, word string) error {
+	if r.admission == nil || word == "" {
+		return signin.ErrInput
+	}
+	return r.register(ctx, a, c, f, ch, permissions, word)
+}
+func (r *Repository) register(ctx context.Context, a authority.Account, c signin.Credentials, f signin.Factor, ch signin.Challenge, permissions []string, word string) error {
 	if r == nil || r.db == nil || r.authority == nil || a.ID != c.AccountID || a.ID != ch.AccountID || !authority.ValidID(a.ID) {
 		return authority.ErrInvalid
 	}
@@ -72,6 +83,14 @@ func (r *Repository) Register(ctx context.Context, a authority.Account, c signin
 	defer tx.Rollback()
 	if _, e = tx.ExecContext(ctx, `INSERT INTO owned_authority_accounts(id,name,nick,language,created_at) VALUES($1,$2,$3,$4,$5)`, a.ID, a.Name, a.Nick, a.Language, a.CreatedAt); e != nil {
 		return conflict(e)
+	}
+	// The newly inserted account cannot be held by another transaction. Lock
+	// any existing invite issuer before email advisory locks, matching ordinary
+	// account/contact writers and avoiding owner-account <-> email inversion.
+	if word != "" {
+		if e = r.admission.LockRegistrationAdmission(ctx, r.db, tx, a.ID, word); e != nil {
+			return e
+		}
 	}
 	if e = lockEmails(ctx, tx, c.Email); e != nil {
 		return e
@@ -100,6 +119,11 @@ func (r *Repository) Register(ctx context.Context, a authority.Account, c signin
 	}
 	for _, key := range permissions {
 		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_authority_grants(account_id,pattern) VALUES($1,$2)`, a.ID, key); e != nil {
+			return e
+		}
+	}
+	if word != "" {
+		if e = r.admission.AdmitRegistration(ctx, r.db, tx, a.ID, word); e != nil {
 			return e
 		}
 	}
@@ -189,8 +213,18 @@ func (t *transaction) SaveCredentials(c signin.Credentials) error {
 	if c.AccountID != t.canonical.Account().ID {
 		return authority.ErrInvalid
 	}
-	_, e := t.tx.ExecContext(t.ctx, `UPDATE owned_authority_credentials SET verified_at=$2 WHERE account_id=$1 AND email=$3`, c.AccountID, c.VerifiedAt, c.Email)
-	return e
+	res, e := t.tx.ExecContext(t.ctx, `UPDATE owned_authority_credentials SET verified_at=$2 WHERE account_id=$1 AND email=$3`, c.AccountID, c.VerifiedAt, c.Email)
+	if e != nil {
+		return e
+	}
+	n, e := res.RowsAffected()
+	if e != nil {
+		return e
+	}
+	if n != 1 {
+		return signin.ErrConflict
+	}
+	return nil
 }
 func (t *transaction) Factors() ([]signin.Factor, error) {
 	rows, e := t.tx.QueryContext(t.ctx, `SELECT id::text,type,created_at,enabled_at,secret,last_counter,pending_until,revision FROM owned_authority_factors WHERE account_id=$1 ORDER BY type,id`, t.canonical.Account().ID)

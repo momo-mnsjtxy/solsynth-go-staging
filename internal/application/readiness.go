@@ -121,6 +121,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 			return err
 		}
 	}
+	if b.affiliations != nil {
+		if e := b.affiliations.Ready(ctx); e != nil {
+			return e
+		}
+	}
 	if b.tickets != nil {
 		if err := b.tickets.Ready(ctx); err != nil {
 			return err

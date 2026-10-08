@@ -10,6 +10,7 @@ import (
 
 	"solsynth.local/go-migration/internal/accountpg"
 	"solsynth.local/go-migration/internal/accountsettingspg"
+	"solsynth.local/go-migration/internal/affiliationpg"
 	"solsynth.local/go-migration/internal/apppg"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/autocompletepg"
@@ -40,6 +41,7 @@ import (
 	"solsynth.local/go-migration/internal/readerpg"
 	"solsynth.local/go-migration/internal/realtime"
 	"solsynth.local/go-migration/internal/rewindpg"
+	"solsynth.local/go-migration/internal/roommediapg"
 	"solsynth.local/go-migration/internal/signinpg"
 	"solsynth.local/go-migration/internal/socialpg"
 	"solsynth.local/go-migration/internal/sponsorshippg"
@@ -62,6 +64,7 @@ import (
 	"solsynth.local/go-migration/ports/notifications"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/accountsettings"
+	"solsynth.local/go-migration/ports/passport/affiliation"
 	"solsynth.local/go-migration/ports/passport/artwork"
 	"solsynth.local/go-migration/ports/passport/board"
 	"solsynth.local/go-migration/ports/passport/fortunes"
@@ -125,6 +128,7 @@ type Config struct {
 	Federation                    *FederationConfig
 }
 type Backend struct {
+	affiliations             *affiliationpg.Repository
 	passkit                  passkitModules
 	social                   *socialpg.Repository
 	publisherCommerce        publisherCommerceModules
@@ -274,6 +278,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	}
 	chatMedia := chatmediapg.New(db, cr, c.MessagerPolicy.NoneEncryptionMode)
 	cr.WithAssociations(chatMedia)
+	roomMedia := roommediapg.New(db, cr, c.MessagerPolicy.NoneEncryptionMode)
+	cr.WithRoomMedia(roomMedia)
 	mr.WithMessageDecorator(chatMedia)
 	mh := (&rooms.Service{Repository: cr, Authority: proofIdentity{identity}, Reader: mr}).Handler()
 	th := taxonomy.NewAuthorityHandler(taxonomypg.NewWithAuthority(db, *c.PublicVisibility, guard), taxonomyIdentity{identity, publisherRepository{accountRepo}}, time.Now)
@@ -312,6 +318,17 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 			return nil, err
 		}
 		ticketHTTP = bindIdentity(v, (&tickets.Service{Repository: ticketRepo, Authority: proofIdentity{identity}}).Handler())
+	}
+	var affiliationRepo *affiliationpg.Repository
+	var affiliationHTTP http.Handler = (&affiliation.Service{}).Handler()
+	if guard != nil {
+		affiliationRepo, err = affiliationpg.New(db, guard, affiliationpg.Config{Now: c.Authority.Now, Activation: ticketRepo})
+		if err != nil {
+			return nil, err
+		}
+		ticketRepo.WithInviteAdmission(affiliationRepo)
+		signinRepo.WithAffiliation(affiliationRepo).WithActivation(ticketRepo)
+		affiliationHTTP = (&affiliation.Service{Repository: affiliationRepo, Authority: v}).Handler()
 	}
 	locationRepo := locationpg.NewWithAuthority(db, guard)
 	locationHTTP := locations.NewHandler(locationRepo, postIdentity{identity})
@@ -396,7 +413,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		}
 		ticketMedia := ticketmediapg.New(db, ticketRepo)
 		ticketRepo.WithMedia(ticketMedia)
-		profileMedia := profilemediapg.New(db, mediapg.AnyReadVisibility{postMedia, chatMedia, ticketMedia})
+		profileMedia := profilemediapg.New(db, mediapg.AnyReadVisibility{postMedia, chatMedia, roomMedia, ticketMedia})
 		accountRepo.WithProfileMedia(profileMedia)
 		mediaRepo.WithReadVisibility(profileMedia)
 		artworkHTTP = (&artwork.Service{Repository: mediaRepo, Authority: proofIdentity{identity}}).Handler()
@@ -501,8 +518,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{passkit: passkitModule, artwork: bindIdentity(v, bindTransactionAuthority(guard, artworkHTTP)), publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, livestreams: streamHTTP, moderation: moderationHTTP, namecards: extras.cardsHTTP, rewind: extras.rewindHTTP, ipcheck: ipHTTP, accountSettings: settingsHTTP, translation: translationHTTP, autocomplete: autocompleteHTTP, reader: readerHTTP, oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{social: socialRepo, passkit: passkitModule, publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, moderation: moderationRepo, moderationSink: notificationRepo, moderationApp: c.NotificationApp, accountExtras: extras, accountSettings: settingsRepo, translation: translationRepo, autocomplete: autocompleteRepo, chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	h := router{modules{affiliations: affiliationHTTP, passkit: passkitModule, artwork: bindIdentity(v, bindTransactionAuthority(guard, artworkHTTP)), publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, livestreams: streamHTTP, moderation: moderationHTTP, namecards: extras.cardsHTTP, rewind: extras.rewindHTTP, ipcheck: ipHTTP, accountSettings: settingsHTTP, translation: translationHTTP, autocomplete: autocompleteHTTP, reader: readerHTTP, oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	return &Backend{affiliations: affiliationRepo, social: socialRepo, passkit: passkitModule, publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, moderation: moderationRepo, moderationSink: notificationRepo, moderationApp: c.NotificationApp, accountExtras: extras, accountSettings: settingsRepo, translation: translationRepo, autocomplete: autocompleteRepo, chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 
 }
 

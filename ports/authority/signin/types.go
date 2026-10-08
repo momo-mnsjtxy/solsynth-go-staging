@@ -103,6 +103,15 @@ type Config struct {
 	// It defaults to no grants and accepts only concrete permission keys.
 	InitialMemberPermissions []string
 }
+
+// ContactVerificationCompletion optionally joins canonical activation to the
+// same purpose-bound one-use contact challenge transaction.
+type ContactVerificationCompletion interface {
+	CompleteContactVerification(Challenge) error
+}
+type AffiliationRegistrationStore interface {
+	RegisterWithAffiliation(context.Context, authority.Account, Credentials, Factor, Challenge, []string, string) error
+}
 type Store interface {
 	Register(context.Context, authority.Account, Credentials, Factor, Challenge, []string) error
 	Lookup(context.Context, string) (string, error)

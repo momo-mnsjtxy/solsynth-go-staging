@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/jackc/pgx/v5/pgconn"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -329,6 +330,23 @@ func TestPGSocialTransactionsAndHTTP(t *testing.T) {
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatal("invalid auth downgrade", rec.Code)
 	}
+	// Timed blocking is now a real mutation: restore a valid pending request
+	// through the authored forget/request routes before testing acceptance rollback.
+	if got := call("DELETE", "/stargate/relationships/"+b, ""); got != 204 {
+		t.Fatal("reset timed block", got)
+	}
+	if got := call("POST", "/stargate/relationships/"+b+"/friends", ""); got != 200 {
+		t.Fatal("restore pending request", got)
+	}
+	for _, pair := range [][2]string{{a, b}, {b, a}} {
+		if _, e = plain.Relationship(ctx, pair[0], pair[1]); !errors.Is(e, social.ErrNotFound) {
+			t.Fatal("rollback setup contains a relationship", e)
+		}
+	}
+	var pending int
+	if e = db.QueryRow(`SELECT count(*) FROM owned_social_effective_requests WHERE account_id=$1 AND related_id=$2`, a, b).Scan(&pending); e != nil || pending != 1 {
+		t.Fatal("rollback setup lacks exact pending request", pending, e)
+	}
 	// Deliberate audit failure must roll back both friendship directions and request removal.
 	query(t, db, `ALTER TABLE owned_social_audit ADD CONSTRAINT social_test_rollback CHECK(action<>'relationships.accept') NOT VALID`)
 	t.Cleanup(func() {
@@ -336,6 +354,11 @@ func TestPGSocialTransactionsAndHTTP(t *testing.T) {
 	})
 	if _, e = plain.ChangeRelationship(ctx, b, a, social.RelationshipChange{Action: social.AcceptFriend}); e == nil {
 		t.Fatal("expected audit rollback")
+	} else {
+		var constraint *pgconn.PgError
+		if !errors.As(e, &constraint) || constraint.Code != "23514" || constraint.ConstraintName != "social_test_rollback" {
+			t.Fatal("acceptance failed before intended audit constraint", e)
+		}
 	}
 	query(t, db, `ALTER TABLE owned_social_audit DROP CONSTRAINT social_test_rollback`)
 	if _, e = plain.Relationship(ctx, a, b); !errors.Is(e, social.ErrNotFound) {

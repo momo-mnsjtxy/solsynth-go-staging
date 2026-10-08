@@ -12,6 +12,11 @@ func TestExamPolicyRequiresExplicitBoundedCanonicalMappings(t *testing.T) {
 		ok   bool
 	}{
 		{nil, true},
+		{[]string{"--activation-policy-id=members-v1"}, false},
+		{[]string{"--exam-activation-policy", "--activation-policy-id=members-v1", "--activation-member-permissions=posts.create,tests.take"}, true},
+		{[]string{"--exam-activation-policy", "--activation-policy-id=members-v1", "--activation-member-permissions=accounts.manage"}, false},
+		{[]string{"--exam-activation-policy", "--activation-policy-id=members-v1", "--activation-member-permissions=posts.*"}, false},
+		{[]string{"--exam-activation-policy", "--exam-required-tests=entry", "--exam-require-verified-contact=false", "--activation-policy-id=members-v1"}, false},
 		{[]string{"--exam-group-mappings=graduates=12345678-1234-4234-9234-123456789012"}, true},
 		{[]string{"--exam-group-mappings=graduates=not-a-group"}, false},
 		{[]string{"--exam-required-tests=entry"}, false},

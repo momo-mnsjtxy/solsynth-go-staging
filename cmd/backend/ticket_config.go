@@ -11,16 +11,19 @@ import (
 )
 
 type ticketOptions struct {
-	groups, required     *string
-	activation, verified *bool
+	groups, required              *string
+	completion, memberPermissions *string
+	activation, verified          *bool
 }
 
 func ticketFlags(f *flag.FlagSet) ticketOptions {
 	return ticketOptions{
-		groups:     f.String("exam-group-mappings", "", "explicit exam key=existing canonical group UUID mappings, comma separated"),
-		required:   f.String("exam-required-tests", "", "explicit required test keys for activation requests, comma separated"),
-		activation: f.Bool("exam-activation-policy", false, "enable pending activation eligibility checks; never enables an account"),
-		verified:   f.Bool("exam-require-verified-contact", true, "require canonical verified email for activation eligibility"),
+		completion:        f.String("activation-policy-id", "", "explicit once-only canonical activation policy ID; requires verified contact"),
+		memberPermissions: f.String("activation-member-permissions", "", "explicit allowlisted member permission keys, comma separated; no default grants"),
+		groups:            f.String("exam-group-mappings", "", "explicit exam key=existing canonical group UUID mappings, comma separated"),
+		required:          f.String("exam-required-tests", "", "explicit required test keys for activation requests, comma separated"),
+		activation:        f.Bool("exam-activation-policy", false, "enable pending activation eligibility checks; never enables an account"),
+		verified:          f.Bool("exam-require-verified-contact", true, "require canonical verified email for activation eligibility"),
 	}
 }
 func (o ticketOptions) config() (*ticketpg.Config, error) {
@@ -40,8 +43,8 @@ func (o ticketOptions) config() (*ticketpg.Config, error) {
 		}
 	}
 	if !*o.activation {
-		if *o.required != "" {
-			return nil, errors.New("required tests need explicit activation policy")
+		if *o.required != "" || *o.completion != "" || *o.memberPermissions != "" {
+			return nil, errors.New("completion and required tests need explicit activation policy")
 		}
 		return cfg, nil
 	}
@@ -60,6 +63,18 @@ func (o ticketOptions) config() (*ticketpg.Config, error) {
 	}
 	if len(cfg.Activation.RequiredTestKeys) == 0 && !cfg.Activation.RequireVerifiedContact {
 		return nil, errors.New("activation policy needs a verified requirement")
+	}
+	if *o.completion != "" {
+		completion := &ticketpg.ActivationCompletion{PolicyID: *o.completion, Permissions: []string{}}
+		if *o.memberPermissions != "" {
+			completion.Permissions = strings.Split(*o.memberPermissions, ",")
+		}
+		if err := ticketpg.ValidateActivationCompletion(*completion); err != nil || !*o.verified {
+			return nil, errors.New("invalid canonical activation completion policy")
+		}
+		cfg.Activation.Completion = completion
+	} else if *o.memberPermissions != "" {
+		return nil, errors.New("member permissions require explicit completion policy")
 	}
 	return cfg, nil
 }

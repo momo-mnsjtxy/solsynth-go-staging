@@ -1,8 +1,8 @@
 {
-  "checkpoint": "reviewed-direct-recovery581",
-  "scope": "Bounded runtime privacy fix for direct pair recovery and direct-state responses, with independent review and negative regression: fresh sorted-account proof/visibility checks and freshly constructed minimal DTO. Three remaining existing fixture contracts corrected without relaxing runtime. Full combined offline verification passed;581/77 actualPG/restart pending.",
+  "checkpoint": "reviewed-room-media-affiliation601-social-correction",
+  "scope": "Canonical room-media references and explicitly configured once-only affiliation activation, with independent assurance/contact review fixes and distinct privileged invite-issuance permission. Preserves all current privacy, quote and fixture corrections. Exact601before/79restart grouping/dependencies reviewed; full combined offline build/vet/unit/race/SQL/source checks passed. ActualPG remains pending; no production activation. Final social rollback fixture restores request via authored routes and requires exact audit constraint failure. Full combined offline rerun passed after cache-only cleanup; no runtime changes in this followup.",
   "inputs": {
-    "remote_parent": "8100e0557089da3fbd762687ce3c6308a8a56c34"
+    "remote_parent": "2972bb32c1d700027a139c256b0e72739b2d6355"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -10,7 +10,8 @@
     "ports/federation/quote-evidence/ActivityPubDeliveryService.cs",
     "ports/passport/artwork/source/ServiceCollectionExtensions.cs",
     "ports/passport/social/contract-evidence/RealmService.cs",
-    "ports/passport/social/expiry-evidence/RelationshipService.cs"
+    "ports/passport/social/expiry-evidence/RelationshipService.cs",
+    "ports/messager/room-media-evidence/DYSON-LICENSE.txt"
   ],
   "files": [
     {
@@ -200,13 +201,13 @@
     },
     {
       "path": "cmd/backend/ticket_config.go",
-      "bytes": 2403,
-      "sha256": "04d88dc96f022bb85bd02167054dc057cf6b3a19613f07a5a53d32cc11edb783"
+      "bytes": 3415,
+      "sha256": "00b4d2b221caba2ab7016ba4326b054cdadea578776fd85e85e240e9595f2783"
     },
     {
       "path": "cmd/backend/ticket_config_test.go",
-      "bytes": 941,
-      "sha256": "50bdd0560d4cef3ed049972fe0e1d53d2031252920500937f2927ab2f21e6ed8"
+      "bytes": 1567,
+      "sha256": "5fdb6568d0f197ccae01590f6d3bee2608c62514fac9ba48a8a9f951d45e4c19"
     },
     {
       "path": "cmd/backend/translation_config.go",
@@ -394,6 +395,11 @@
       "sha256": "d5b40d5ff97d94aca7d0c9171b491d0302ed21467d9f87265ac0e28b0591a3c7"
     },
     {
+      "path": "docs/affiliation-and-activation.md",
+      "bytes": 13237,
+      "sha256": "0cadaeeb12ec6d7a3e8dcbdd597a3621880be4be6a6a70694d960fbdd1fc7467"
+    },
+    {
       "path": "docs/apple-wallet-passkit.md",
       "bytes": 11336,
       "sha256": "6baec88c620809a437993170f5ad4dfbaee715296b4144f1ad51533f5bb7222d"
@@ -470,13 +476,13 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 88277,
-      "sha256": "8fbf57a39df03693667e1a00850670cf874a20ee53402ea86f0bac15628979a3"
+      "bytes": 92046,
+      "sha256": "7a5a8cae0e013d91b05d5d5ca2a7af1ddab84000cfd9a7884b51a3f343770778"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
-      "bytes": 13362,
-      "sha256": "79f4ecddf8198e5af8a21d8c9e39bfaca1675f6728878bbd50215d359450bef3"
+      "bytes": 12803,
+      "sha256": "3d5e243268952c76c21726fcb8d2ab33c25ea5ed7de47c21e0b701ff31c84dc3"
     },
     {
       "path": "docs/combined-domain-integration-review.md",
@@ -1719,19 +1725,24 @@
       "sha256": "a842d7767ce7d18c60d03d2016f25dc2239eef765765246f8e3a9f671cda286b"
     },
     {
+      "path": "docs/room-media-continuation.md",
+      "bytes": 8115,
+      "sha256": "55e6fc1fbbfbf7819346e7b1eca76da56320d9485e3ef4225d4297aec7db8907"
+    },
+    {
       "path": "docs/runtime-flow-acceptance-history.json",
       "bytes": 4865,
       "sha256": "2a008306108779f111a95f5bb1d23e89857bee480a10b3c48f658907e15e150d"
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 99168,
-      "sha256": "56944e149368753b172c3fa5b4a28da0fceff7dc00e2ea0b0197335670dfe06d"
+      "bytes": 102331,
+      "sha256": "cd82a44970e48e06e290ab25a40230d5510bf316a090be825de3d0f774743f66"
     },
     {
       "path": "docs/signin-continuation.md",
-      "bytes": 8176,
-      "sha256": "18e9671dc50d33fcbe306db65d6b09fbcae7c41a2d5bf7d99d778d2280e715f5"
+      "bytes": 8356,
+      "sha256": "8eaeb70566c63603a24d9cae4d0c611bbbaffea5100752b7b4933802636c036b"
     },
     {
       "path": "docs/social-continuation.md",
@@ -1765,8 +1776,8 @@
     },
     {
       "path": "docs/tickets-exams-continuation.md",
-      "bytes": 11429,
-      "sha256": "3711820a479d56bc54645e4749ec3a2b339934e4442b9123b614c629f8af8210"
+      "bytes": 11598,
+      "sha256": "9cffaed7d8eec889f8cdaa70bef8ba22a67a3caadeb3580ff9d8764fe2c2903c"
     },
     {
       "path": "docs/timeline-continuation.md",
@@ -1959,6 +1970,16 @@
       "sha256": "141b8daab9e3035c74d436e23632a48bbc46e3a6e8e774e587cc832bf2d793d1"
     },
     {
+      "path": "internal/affiliationpg/repository.go",
+      "bytes": 16931,
+      "sha256": "0800d878c2ad8ec7d66b6d7256a1489ede0aabc3e77a407da7d30ed60634f0d2"
+    },
+    {
+      "path": "internal/affiliationpg/schema.sql",
+      "bytes": 1614,
+      "sha256": "073e203ae60f228c3062dd3606ab4412696f9b8d6de5580b5ead6f31850e778c"
+    },
+    {
       "path": "internal/application/account_extras.go",
       "bytes": 2092,
       "sha256": "356109ab5183b1f0fd919fcbb894f01d3f781f0576d1598e7591434a896d63df"
@@ -1975,8 +1996,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 28779,
-      "sha256": "68d80a8a86725a46ac87feaa02588d973f2a5ec3178ab361b47956fcd6db7db5"
+      "bytes": 29694,
+      "sha256": "303e44beb7781faebb48f45a4f62cff9c242ef8d0f51d325a77d449091410561"
     },
     {
       "path": "internal/application/commerce.go",
@@ -2085,13 +2106,13 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 8696,
-      "sha256": "929f3b45ddb813d21084bd4cea6f7acd9f9205424d31e622ae521658e51c5137"
+      "bytes": 8791,
+      "sha256": "748285206612ad2eaac2d4cd2cc6e93cc67d19ea8a44cd7eddce3cd2847864bf"
     },
     {
       "path": "internal/application/router.go",
-      "bytes": 18809,
-      "sha256": "083d79522ca04d21e1258893a8d0cbe32ef79b02c48ae00d712aa507cfe2c2f2"
+      "bytes": 19597,
+      "sha256": "e2829252e6fb532749fdb2b7e338f0ec1fa0675ac204512be0dc136ec4c0d7ab"
     },
     {
       "path": "internal/application/router_test.go",
@@ -2244,6 +2265,16 @@
       "sha256": "3278d8dfbad8b3adbb1603270ca42dbb51eed16367388444f97ee5f71fbd5b42"
     },
     {
+      "path": "internal/authoritypg/activation.go",
+      "bytes": 2341,
+      "sha256": "c377d85ad872bc9ee6dfa23845ec03c30bdb9d7b50f089eaca588289635aa311"
+    },
+    {
+      "path": "internal/authoritypg/activation_schema.sql",
+      "bytes": 470,
+      "sha256": "738d9dc2ff21b6d16d2ba700a2ce07727eab0985aa0ace2c251f9d217b169ecd"
+    },
+    {
       "path": "internal/authoritypg/assurance_schema.sql",
       "bytes": 1576,
       "sha256": "c409ea7c1fd68b6b1879bf7f02bd755cdfaca51a6544b123f6a8c84ab0b35832"
@@ -2285,8 +2316,8 @@
     },
     {
       "path": "internal/authoritypg/repository.go",
-      "bytes": 13652,
-      "sha256": "df62aa66507776e89a41a64396caee3831e6d0a790bacd1646a13140fe4513d9"
+      "bytes": 13740,
+      "sha256": "3272a354bbaa9e8ae5d7daae27067ca2df7329dced38fd4ee9c1d0b6f3d334bc"
     },
     {
       "path": "internal/authoritypg/repository_test.go",
@@ -2415,8 +2446,8 @@
     },
     {
       "path": "internal/chatpg/access.go",
-      "bytes": 9214,
-      "sha256": "b893cdd79b4225235012ef9bfae3d12fad21ac1fc338f3fb35d9ad154b65bc72"
+      "bytes": 9405,
+      "sha256": "be8e575aa3ed8601f97f2ba41528b850bbec22397b63449a8b3909144a455f5c"
     },
     {
       "path": "internal/chatpg/access_test.go",
@@ -2485,13 +2516,13 @@
     },
     {
       "path": "internal/chatpg/recovery_test.go",
-      "bytes": 1843,
-      "sha256": "78e854b6ddcd10bbb9783c4859b7d03849bd8b53961f005055558883e4ed5a0b"
+      "bytes": 1989,
+      "sha256": "d4f65b97d3452895b2aa10693a4b0201b783e4b1f0f0b39d449ed9a491966345"
     },
     {
       "path": "internal/chatpg/relations.go",
-      "bytes": 20905,
-      "sha256": "bce6cadefe35450a4b728ad03bc2a1745f423e49d97b0b1b532719cd5fb5aa2a"
+      "bytes": 20982,
+      "sha256": "746dda652dc47540eb1cfc1d6d38044d4f16a39c6099190c669521dc446b0188"
     },
     {
       "path": "internal/chatpg/relations_schema.sql",
@@ -2500,8 +2531,8 @@
     },
     {
       "path": "internal/chatpg/repository.go",
-      "bytes": 13449,
-      "sha256": "e36c37bb0e0765570517af439ce44e8ebd86a34314ee54344afa91d11226bd51"
+      "bytes": 13712,
+      "sha256": "4db5238a31ee37e5534b703a47d68eb4b8414e258c13c52bdb1850a395db4d2f"
     },
     {
       "path": "internal/chatpg/repository_test.go",
@@ -2512,6 +2543,11 @@
       "path": "internal/chatpg/rewind.go",
       "bytes": 840,
       "sha256": "856b1e58b9c9b2ed39ccf3ad0cafcc03f28bdd856835013db1d0e073597267df"
+    },
+    {
+      "path": "internal/chatpg/room_media.go",
+      "bytes": 2396,
+      "sha256": "eecd93c4131b49860f1a4c37db6777719193ab8c43011229c8648f55677c3d59"
     },
     {
       "path": "internal/chatpg/schema.sql",
@@ -3549,6 +3585,16 @@
       "sha256": "cea01da792ee362e05581c553acc67780a612f24745f349fe22255d10f3348b0"
     },
     {
+      "path": "internal/roommediapg/repository.go",
+      "bytes": 8293,
+      "sha256": "d8d4a5b629b064eeb6ede5015c8e42cb3f4c47d43a6157efa886908c7e20b9dc"
+    },
+    {
+      "path": "internal/roommediapg/schema.sql",
+      "bytes": 570,
+      "sha256": "4872c00bc35955b6c177f25f183929379ae8302d5eac70c5e2398e46f83d1d83"
+    },
+    {
       "path": "internal/rtcprovider/livekit.go",
       "bytes": 6593,
       "sha256": "57ff8604291a9b3a3c1f5577814745040f28e3e59da4d43042889a1e6510f93c"
@@ -3589,6 +3635,11 @@
       "sha256": "c82c102f1eefcd5e51d745dbe386e831e3978b6d7f80582776bda45a14e5dee4"
     },
     {
+      "path": "internal/signinpg/affiliation.go",
+      "bytes": 1207,
+      "sha256": "78c61d93fe99e7f61716fb3aae1b80586c394ace7f4e35809a97f85fd6951fd2"
+    },
+    {
       "path": "internal/signinpg/contacts.go",
       "bytes": 9417,
       "sha256": "9fa3a573ff8071019d24c9f9cd2207ee127e3e4542e0bba15e10ac6d1118ea84"
@@ -3620,8 +3671,8 @@
     },
     {
       "path": "internal/signinpg/repository.go",
-      "bytes": 12857,
-      "sha256": "a40342a303d2aff602641ae8728fcf3a2903d9a594b709db2f1a02ab49ba5dc3"
+      "bytes": 14070,
+      "sha256": "9d8449b90d728428f88cb1a3fc90fbdd10d76ba7ade2a561ecbf5b417d2748fc"
     },
     {
       "path": "internal/signinpg/schema.sql",
@@ -3834,9 +3885,19 @@
       "sha256": "ac3e0e0be2635ea85c2836b5af6b95d348a2b2b7c9dc0275817e4714f1eed9dd"
     },
     {
+      "path": "internal/ticketpg/activation.go",
+      "bytes": 6729,
+      "sha256": "48b74c660fdd4fa263ad6f1e64519e72c5871fa8a415e1c6adcb95a27d007a67"
+    },
+    {
+      "path": "internal/ticketpg/activation_test.go",
+      "bytes": 2519,
+      "sha256": "6632261dcb37e451a8fd6e8888e9c45f6c47f99c85e8f06de0e64952e19e4eb7"
+    },
+    {
       "path": "internal/ticketpg/attempts.go",
-      "bytes": 20946,
-      "sha256": "7b7a91305e4d1a0ecca77de47270d6a6ece32d608e177e7223b2b1a1f8025c79"
+      "bytes": 22417,
+      "sha256": "4fae34f1e4ea1d84a783d582e1a5b54c4609a21203b903b3b319410b657f9848"
     },
     {
       "path": "internal/ticketpg/bank.go",
@@ -3860,8 +3921,8 @@
     },
     {
       "path": "internal/ticketpg/repository.go",
-      "bytes": 10222,
-      "sha256": "be0f5968d58b3829f88f2ed83cb287e21f25db7a1001ccaee93c2d05af90a0e7"
+      "bytes": 11587,
+      "sha256": "83e37c7356f32f66f7ef22cb225b977e7820e245c589a1ed2c2320844f1984e2"
     },
     {
       "path": "internal/ticketpg/rewards.go",
@@ -5779,6 +5840,11 @@
       "sha256": "4859cecb0b06bca3f127edce8801eec54bbe971caea057ffda1e67ff98f6cd19"
     },
     {
+      "path": "ports/authority/activation.go",
+      "bytes": 718,
+      "sha256": "de42704ce7e395e7839ceaf54f9f7884770776f64edb1f2b226c16c8d3003541"
+    },
+    {
       "path": "ports/authority/authority_test.go",
       "bytes": 16673,
       "sha256": "4ba371ad2108e14da84d77229af233e500f0fc3a453dd13313d62638ade7de62"
@@ -5940,13 +6006,13 @@
     },
     {
       "path": "ports/authority/signin/service.go",
-      "bytes": 28449,
-      "sha256": "af2f1d009b7cfa53ea82779e3c3b07bf9e9cd675e4d76ef85e1caedf964193bd"
+      "bytes": 28992,
+      "sha256": "181cf3b52b24ce6b261537c2c492207a558091846f492a52764bbcd104894651"
     },
     {
       "path": "ports/authority/signin/types.go",
-      "bytes": 5687,
-      "sha256": "5c6a9716686b04489daf1ad46ea9a0d45509a47748ba403798b1dde4381a9580"
+      "bytes": 6087,
+      "sha256": "941792b7bbd40f8596b6795d6f7adaf9d41d1cb485ebb52f0abb24e2e61d3f33"
     },
     {
       "path": "ports/authority/transaction.go",
@@ -6629,9 +6695,34 @@
       "sha256": "e8d58eedd551834f9755f3f7a40ed5498bb055f348a5c3fa1c2c96aec839f142"
     },
     {
+      "path": "ports/messager/room-media-evidence/ChatRoomService.cs",
+      "bytes": 27052,
+      "sha256": "b366429d359958219f8a55172bfb8d8eb054f9115a5a8aaad5cf48cc3dc744ef"
+    },
+    {
+      "path": "ports/messager/room-media-evidence/DYSON-LICENSE.txt",
+      "bytes": 34524,
+      "sha256": "e9df4c4e4e64b8168a71c3c67668dcffabbe8fca11d4ac4a7d5482562cd1679c"
+    },
+    {
+      "path": "ports/messager/room-media-evidence/SOLIAN-LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/messager/room-media-evidence/chat_room_form.dart",
+      "bytes": 12831,
+      "sha256": "1f926f7d97ccd07baa5d8f92da9efb1005145fb70c13ba370ac3a32b3053193d"
+    },
+    {
+      "path": "ports/messager/room-media-evidence/manifest.json",
+      "bytes": 1769,
+      "sha256": "56adf41db4c34044c91b000c0ce3966f1540f2c116d7539819b1474b56b2610d"
+    },
+    {
       "path": "ports/messager/rooms/http.go",
-      "bytes": 16415,
-      "sha256": "43cc4ffccb1212e790d901e89e204792ef5170db0e33aab557dc1c61f853a390"
+      "bytes": 16913,
+      "sha256": "044e5a68ee392b7856bbf3b77d86d5b6c2a37bb9d7eef57373e5b9ba36ae8e98"
     },
     {
       "path": "ports/messager/rooms/http_test.go",
@@ -6674,14 +6765,19 @@
       "sha256": "515365998b6695ce94a4807eea35fc7becaa6129cf6a57a35feea0ec96343153"
     },
     {
+      "path": "ports/messager/rooms/room_media_test.go",
+      "bytes": 2464,
+      "sha256": "23274e490c47c23398bf5deee533a0f4817400ce780484551b726752f38cb959"
+    },
+    {
       "path": "ports/messager/rooms/types.go",
-      "bytes": 7942,
-      "sha256": "972bfa67c90729526494f2f34bd7bf3b524c9979fcb13f302cb55231d5d7ee01"
+      "bytes": 8313,
+      "sha256": "8b1dfd1028db68e53c28d221b8a34edaff44ca8392ad8619ed37827b6b6a147f"
     },
     {
       "path": "ports/messager/rooms/validation.go",
-      "bytes": 3837,
-      "sha256": "723157981750b2a655b63c897efac7582c9300f78acbda05e15d3349da01e9fc"
+      "bytes": 4106,
+      "sha256": "c0b494d73d41c30c4496b894b272eca8b0ed641e2145ac54af49967c5b3b2344"
     },
     {
       "path": "ports/messager/source/ChatController.cs",
@@ -6979,6 +7075,16 @@
       "sha256": "d9ba469eba46e1266736e8576dd82cba5cd60099f00c92f7f220736e9a6d8078"
     },
     {
+      "path": "ports/passport/affiliation/http.go",
+      "bytes": 6382,
+      "sha256": "8b06d26f3f9a75cd055e3da78ae5d3014a33dc68640767e2a0efda69121bb217"
+    },
+    {
+      "path": "ports/passport/affiliation/http_test.go",
+      "bytes": 2914,
+      "sha256": "a6ba693f3c7c6eed6d485316de855253ac9155bfe260a8ffc086c9ee09b0b98c"
+    },
+    {
       "path": "ports/passport/affiliation/source/AffiliationPurchaseOptions.cs",
       "bytes": 289,
       "sha256": "b8098c35b46c6b9b2d1b20183ba15f268bb60257ffade37db075f52f628cd65c"
@@ -7022,6 +7128,11 @@
       "path": "ports/passport/affiliation/source/manifest.json",
       "bytes": 4843,
       "sha256": "6fdad00d443c71b296a2e13f3c7b90755c8a3dc512922a6348540879ff199c9b"
+    },
+    {
+      "path": "ports/passport/affiliation/types.go",
+      "bytes": 3931,
+      "sha256": "8b08e09b4d6a57bcaf8e440c9f93fd2d93b4f97203d7981518f3055d2c2406eb"
     },
     {
       "path": "ports/passport/artwork/http.go",
@@ -9550,8 +9661,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 39082,
-      "sha256": "eee4fb2fef801ae1957a7971c2196cca71a22f82573ce3afacfb21d7a8fe10d2"
+      "bytes": 40409,
+      "sha256": "b8ad7b60cdf7514019864fbf7380964bef40397948b6037dca8b22d2c5a09cd0"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -9560,8 +9671,8 @@
     },
     {
       "path": "scripts/check-source-evidence.py",
-      "bytes": 6783,
-      "sha256": "75c73ab3c4cf8e9d4bfc1175845c2d913c09a1516201f306796d5b46a8bea5db"
+      "bytes": 6821,
+      "sha256": "8b3df6d763c23ade3f18a803ab450fca935294d0746c6e3080dcf400acb1cea2"
     },
     {
       "path": "scripts/check-sql-argument-count.py",
@@ -9575,13 +9686,13 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 69862,
-      "sha256": "7969bcc2c328d9f2a3ee4a207b5306f8707b55724421010a0e5cfe2dfe8009fe"
+      "bytes": 73489,
+      "sha256": "276554a6835daf5a104931fe7efd9373473294e26270ee2a34b98fae15ccf66c"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 11485,
-      "sha256": "db770cc91b6019affbd899b4a9c637ebecf5c13098f162d4617ca850d53cf174"
+      "bytes": 11750,
+      "sha256": "616c84f933940d93b0e798fb87ca76e2c60604c3acd3c7c39197fd7034ae62c2"
     },
     {
       "path": "scripts/integration_groups.py",
@@ -9620,13 +9731,13 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 19599,
-      "sha256": "8fa6fd97a0e5adbb56d03cb9e89f6b98f68c06e6e4534d99cc28d1b6e3d418ea"
+      "bytes": 19720,
+      "sha256": "6c69581f6ff41ef30ccef9bfa509baecde4e4c19e9281a4120a18a55ae14d515"
     },
     {
       "path": "scripts/test-source-evidence.py",
-      "bytes": 3339,
-      "sha256": "4136f134832660c13e5acfb3a86f016b0495dc4eca67935bf8c579a85e3f77b4"
+      "bytes": 3478,
+      "sha256": "ca5f1506be0795ef8eabf7c55ca359a871c6ee88ed09b9f2b53ec0cc9549cf4c"
     },
     {
       "path": "scripts/verify-candidate-http.py",
@@ -9917,6 +10028,16 @@
       "path": "tests/integration/admin_extensions_test.go",
       "bytes": 20672,
       "sha256": "205ba94e3e4707ea049118ec0806a2dda2fdfeefcc15048d2388f0b6c06c51b5"
+    },
+    {
+      "path": "tests/integration/affiliation_review_test.go",
+      "bytes": 12635,
+      "sha256": "5089d98ae8ec29c708e9c8203bf70ee1e7328ba5d316ef595ef8b1426f43afc7"
+    },
+    {
+      "path": "tests/integration/affiliation_test.go",
+      "bytes": 28072,
+      "sha256": "b3eba31de9a0018b8928bec27f7d103188d8856678c3d4f85f690295c5319950"
     },
     {
       "path": "tests/integration/authority_atomic_test.go",
@@ -10434,6 +10555,11 @@
       "sha256": "113cbe9bc4e0576a99858000a71e47e1cdb39ba711fcba90ed0c62eba96c6bea"
     },
     {
+      "path": "tests/integration/room_media_test.go",
+      "bytes": 22006,
+      "sha256": "93940706b2b5cdf92215c684a9b75aa2e85258f810c43be4636311f256994b12"
+    },
+    {
       "path": "tests/integration/schema.sql",
       "bytes": 751,
       "sha256": "4117024de7548fda716ae5b98ba636fb0c0f4c2d65226798a59f3be69319fa99"
@@ -10450,8 +10576,8 @@
     },
     {
       "path": "tests/integration/social_test.go",
-      "bytes": 19373,
-      "sha256": "acf57959d391180eecb3712560bfef4871eb20ff6579190b11a24d00ac4a1d7f"
+      "bytes": 20497,
+      "sha256": "300829edb43d8c76f0382727a39ce95bd4d59648953d05efe3a843a3f159de65"
     },
     {
       "path": "tests/integration/subscription_activation_test.go",

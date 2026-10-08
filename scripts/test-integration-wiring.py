@@ -210,10 +210,10 @@ def check(runner, read_schema=None):
     for phase in ("before", "after"):
         invocation = (
             f'PG_TEST_PHASE={phase} "$GO_BIN" test -timeout {"30m" if phase == "before" else "10m"} -race -count=1 -json '
-            f'-run "$(python3 scripts/check-integration-results.py --pattern {phase})" '
+            f'-run "$(python3 scripts/check-integration-results.py --pattern {phase} --group "$group")" '
             f'./tests/integration | tee "$run/{phase}.jsonl"'
         )
-        verification = f'python3 scripts/check-integration-results.py {phase} "$run/{phase}.jsonl"'
+        verification = f'python3 scripts/check-integration-results.py {phase} "$run/{phase}.jsonl" --group "$group"'
         if invocation not in runner or verification not in runner:
             raise ValueError("phase selector/log guard must use the required-set source: " + phase)
         if runner.index(verification) <= runner.index(invocation):
@@ -259,7 +259,7 @@ def main():
         source.replace("-f internal/taxonomypg/testdata/schema.sql", "-f internal/watchpg/testdata/schema.sql"),
         source.replace(authority + "\n", "").replace(accounts, accounts + "\n" + authority),
         source.replace(accounts + "\n", "").replace("PG_TEST_PHASE=before ", accounts + "\nPG_TEST_PHASE=before ", 1),
-        source.replace('stop\nrunning=0\nstart\nPG_TEST_PHASE=after ', 'stop\nrunning=0\nPG_TEST_PHASE=after '),
+        source.replace('stop\nrunning=0\nstart\n', 'stop\nrunning=0\n'),
         source.replace("set -euo pipefail", "set -eu"),
         source.replace("host=$run/socket", "host=external.example.invalid"),
         source.replace("-c listen_addresses=''", "-c listen_addresses='*'"),

@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Bounded fixture corrections: encryption-only MLS JSON shape with offline negative control; complete recreated realm-member timestamps; reciprocal realm comment admission and explicit diagnostic errors. Runtime policy and lock assertions unchanged.",
+  "local_source_checkpoint": "Reviewed bounded two-cluster CI pilot at580/76, preserving full-suite all mode and all runtime/test/SQL bodies. Exact292/288 before and36/40 restart assignment; actual pilot pending.",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,11 +12,11 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "8b656f0626ce065ca745bf4918b58d412a5391fc",
+    "commit": "06a1166835970f1c03bec45d8a2849b890671fff",
+    "run": 37850668467,
     "required_before": 580,
     "required_after_restart": 76,
-    "status": "Running. Preceding560/73 ran all560 before cases:557pass,3fail,0skip; restart not reached. Three fixture corrections are now under local validation.",
-    "run": 37850061137
+    "status": "Fixture-corrected monolithic run pending. Reviewed two-cluster pilot not yet validated."
   },
   "local_required_before": 580,
   "local_required_after_restart": 76,
@@ -2123,9 +2123,10 @@
       "Source-declaration818 acceptance map remains an operation inventory, not runtime endpoint count or proof of whole-platform completion"
     ],
     "active_implementation": [
-      "Room profile picture/background canonical media associations",
-      "Affiliation tracking, bounded invitations and explicitly configured once-only activation",
-      "Offline isolated-cluster CI partition review (not active)"
+      "Room profile picture/background media associations delivered, pending integration",
+      "Affiliation/invitation/once-only activation delivered, independent review active",
+      "Scheduled-post lifecycle reconstruction",
+      "Reviewed two-cluster580/76 pilot pending actual execution"
     ],
     "not_remaining_missing_features": [
       "PIN enrollment/rotation/removal",

@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  contracts:
+  checks:
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     steps:
@@ -33,18 +33,78 @@ jobs:
           PYTHONPATH: ${{ runner.temp }}/sql-parser
           GO_BIN: go
         run: bash scripts/verify.sh
-      - name: Require actual PostgreSQL 16 cases and restart persistence
+
+  postgres:
+    name: PostgreSQL ${{ matrix.group }}
+    needs: checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [group-a, group-b]
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+        with:
+          go-version: '1.26.4'
+          cache: true
+      - name: Download and verify declared modules
+        run: |
+          go mod download
+          go mod verify
+      - name: Require assigned actual PostgreSQL cases and restart persistence
         env:
           GO_BIN: go
-          PYTHONPATH: ${{ runner.temp }}/sql-parser
           PG_BIN: /usr/lib/postgresql/16/bin
           PG_TEST_ROOT: ${{ runner.temp }}/solsynth-pg
+          PG_TEST_GROUP: ${{ matrix.group }}
+          PG_TEST_RESULTS: ${{ runner.temp }}/pg-results
         run: |
           test -x "$PG_BIN/initdb"
           "$PG_BIN/postgres" --version | grep -E '^postgres \(PostgreSQL\) 16\.'
           bash scripts/integration-postgres.sh
-      - name: Record scope
-        if: success()
+      - name: Preserve this group's result evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # official v4.6.2
+        with:
+          name: postgres-${{ matrix.group }}-attempt-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/pg-results/${{ matrix.group }}/
+          if-no-files-found: error
+          retention-days: 7
+
+  contracts:
+    if: always()
+    needs: [checks, postgres]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require both groups and ordinary checks to succeed
+        env:
+          ORDINARY_RESULT: ${{ needs.checks.result }}
+          POSTGRES_RESULT: ${{ needs.postgres.result }}
         run: |
-          echo 'Local build/vet/race checks passed. 560 actual PostgreSQL cases across owned Authority, Accounts, Wallet, Posts, Chat, Social, Interactions, Media, Apps, Notifications and Backend plus retained watcher/Board/Develop/NodeInfo/Messager/Taxonomy fixtures, 73 post-restart persistence assertions and real loopback backend/Board/Messager/Taxonomy/Develop/catalog/package/bot/NodeInfo process HTTP checks passed without skips.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Synthetic disposable private-socket database only. This validates the implemented owned authority protocol and explicitly configured domain policies; it does not establish upstream identity-protocol compatibility, production migration readiness, C# differential behavior, upstream watcher/global-filter parity, or whole-platform parity.' >> "$GITHUB_STEP_SUMMARY"
+          test "$ORDINARY_RESULT" = success
+          test "$POSTGRES_RESULT" = success
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Download both named result artifacts from this run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # official v4.3.0
+        with:
+          pattern: postgres-group-*-attempt-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/pg-evidence
+          merge-multiple: false
+      - name: Recompute the complete fail-closed contract result
+        env:
+          EVIDENCE_ROOT: ${{ runner.temp }}/pg-evidence
+        run: |
+          set -euo pipefail
+          python3 scripts/check-integration-groups.py aggregate --directory "$EVIDENCE_ROOT" | tee "$RUNNER_TEMP/pg-summary.txt"
+          cat "$RUNNER_TEMP/pg-summary.txt" >> "$GITHUB_STEP_SUMMARY"
+          echo 'Synthetic disposable private-socket databases only. Full build/vet/race and complete named PostgreSQL coverage are required. This does not establish upstream identity-protocol compatibility, production migration readiness, C# differential behavior, upstream watcher/global-filter parity, or whole-platform parity.' >> "$GITHUB_STEP_SUMMARY"

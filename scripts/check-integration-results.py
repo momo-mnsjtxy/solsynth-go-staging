@@ -741,8 +741,8 @@ EXPECTED = {
 EXPECTED_PACKAGE = "solsynth.local/go-migration/tests/integration"
 
 
-def check(phase, events):
-    expected = EXPECTED[phase]
+def check(phase, events, expected=None):
+    expected = EXPECTED[phase] if expected is None else set(expected)
     passed = set()
     started = set()
     package_passed = False
@@ -752,7 +752,7 @@ def check(phase, events):
         name, action = event.get("Test", ""), event.get("Action")
         if not isinstance(name, str):
             raise ValueError("invalid test name")
-        if action == "fail" or (name.startswith("TestPG") and action == "skip"):
+        if action in ("fail", "skip"):
             raise ValueError(f"integration failed or skipped: {name or event.get('Package')}")
         if name.startswith("TestPG"):
             top = name.split("/", 1)[0]
@@ -779,13 +779,26 @@ def check(phase, events):
 
 
 if __name__ == "__main__":
+    import argparse
+    from integration_groups import selected
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--group', default='all')
+    parser.add_argument('--pattern', choices=('before', 'after'))
+    parser.add_argument('phase', nargs='?', choices=('before', 'after'))
+    parser.add_argument('path', nargs='?')
+    args = parser.parse_args()
     try:
-        if len(sys.argv) == 3 and sys.argv[1] == "--pattern":
-            print("^(" + "|".join(sorted(EXPECTED[sys.argv[2]])) + ")$")
+        phase = args.pattern or args.phase
+        if not phase or (args.pattern and (args.phase or args.path)):
+            raise ValueError('provide either a pattern phase or a phase and JSONL log')
+        expected = selected(EXPECTED, phase, args.group)
+        if args.pattern:
+            print("^(" + "|".join(sorted(expected)) + ")$")
             sys.exit(0)
-        phase, path = sys.argv[1:]
-        with open(path, encoding="utf-8") as handle:
-            count = check(phase, [json.loads(line) for line in handle if line.strip()])
-        print(f"Verified {count} required PostgreSQL case(s) passed in {phase} phase; none skipped")
+        if not args.path:
+            raise ValueError('result log required')
+        with open(args.path, encoding="utf-8") as handle:
+            count = check(phase, [json.loads(line) for line in handle if line.strip()], expected)
+        print(f"Verified {count} required PostgreSQL case(s) passed in {phase} / {args.group}; none skipped")
     except (ValueError, KeyError, OSError) as error:
         sys.exit(str(error))

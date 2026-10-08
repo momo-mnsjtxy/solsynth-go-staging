@@ -5,6 +5,7 @@ python3 scripts/check-workflow-yaml.py
 python3 scripts/check-source-evidence.py
 python3 scripts/test-source-evidence.py
 python3 scripts/test-integration-guard.py
+python3 scripts/test-integration-groups.py
 python3 scripts/test-integration-wiring.py
 python3 scripts/check-postgres-syntax.py
 python3 scripts/verify-coverage-plan.py
@@ -26,6 +27,7 @@ if [[ -n "$unformatted" ]]; then
   exit 1
 fi
 "$GO_BIN" run ./scripts/sqlargs . | python3 scripts/check-sql-argument-count.py
+"$GO_BIN" test ./tests/integration -list '^TestPG' | python3 scripts/check-integration-groups.py compiled
 "$GO_BIN" build ./...
 "$GO_BIN" vet ./...
 "$GO_BIN" test -count=1 ./...

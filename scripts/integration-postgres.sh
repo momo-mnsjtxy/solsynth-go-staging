@@ -5,6 +5,9 @@ PG_BIN="${PG_BIN:-/workspace/shared/toolchains/postgres/bin}"
 GO_BIN="${GO_BIN:-/workspace/shared/toolchains/go/bin/go}"
 root="${PG_TEST_ROOT:-/workspace/shared/solsynth-go-integration}"
 [[ "$root" == /* ]] || { echo 'PG_TEST_ROOT must be absolute' >&2; exit 2; }
+group="${PG_TEST_GROUP:-all}"
+case "$group" in all|group-a|group-b) ;; *) echo 'unknown PG_TEST_GROUP' >&2; exit 2 ;; esac
+python3 scripts/check-integration-groups.py validate
 umask 077
 mkdir -p "$root"
 run=$(mktemp -d "$root/run.XXXXXXXX")
@@ -20,10 +23,24 @@ export GOCACHE="${GOCACHE:-$("$GO_BIN" env GOCACHE)}"
 export GOPATH="${GOPATH:-$("$GO_BIN" env GOPATH)}"
 export GOMODCACHE="${GOMODCACHE:-$("$GO_BIN" env GOMODCACHE)}"
 export GOPROXY=off GOSUMDB=off
+results="${PG_TEST_RESULTS:-$run/results}"
+[[ "$results" == /* ]] || { echo 'PG_TEST_RESULTS must be absolute' >&2; exit 2; }
+mkdir -p "$results"
+mkdir "$results/$group"
+: > "$run/process-smokes.txt"
 running=0
 cleanup() {
-  if [[ "$running" == 1 ]]; then "$PG_BIN/pg_ctl" -D "$run/data" -m fast -w stop; fi
+  status=$?
+  for evidence in before.jsonl after.jsonl cluster-before.txt cluster-after.txt process-smokes.txt receipt.json; do
+    if [[ -f "$run/$evidence" ]]; then
+      if ! cp "$run/$evidence" "$results/$group/$evidence"; then status=1; fi
+    fi
+  done
+  if [[ "$running" == 1 ]]; then
+    if ! "$PG_BIN/pg_ctl" -D "$run/data" -m fast -w stop; then status=1; fi
+  fi
   printf 'Disposable integration files retained at %s\n' "$run"
+  exit "$status"
 }
 trap cleanup EXIT
 "$PG_BIN/initdb" -D "$run/data" -U synthetic --auth=trust --no-locale > "$run/initdb.log"
@@ -121,16 +138,30 @@ export TAXONOMY_BINARY="$run/taxonomy"
 "$GO_BIN" build -o "$run/develop-discovery" ./cmd/develop-discovery
 "$GO_BIN" build -o "$run/solsynth-go" ./cmd/solsynth-go
 "$GO_BIN" build -o "$run/nodeinfo" ./cmd/nodeinfo
-PG_TEST_PHASE=before "$GO_BIN" test -timeout 30m -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern before)" ./tests/integration | tee "$run/before.jsonl"
-python3 scripts/check-integration-results.py before "$run/before.jsonl"
-python3 scripts/verify-develop-http.py "$run/develop-discovery"
-python3 scripts/verify-catalog-http.py "$run/solsynth-go"
+"$PG_BIN/psql" "$PG_TEST_DSN" -A -t -F '|' -v ON_ERROR_STOP=1 -c 'SELECT system_identifier,pg_postmaster_start_time() FROM pg_control_system()' > "$run/cluster-before.txt"
+PG_TEST_PHASE=before "$GO_BIN" test -timeout 30m -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern before --group "$group")" ./tests/integration | tee "$run/before.jsonl"
+python3 scripts/check-integration-results.py before "$run/before.jsonl" --group "$group"
+if [[ "$group" == all || "$group" == group-a ]]; then
+  python3 scripts/verify-develop-http.py "$run/develop-discovery"
+  printf 'develop-before\n' >> "$run/process-smokes.txt"
+  python3 scripts/verify-catalog-http.py "$run/solsynth-go"
+  printf 'catalog-before\n' >> "$run/process-smokes.txt"
+fi
 "$PG_BIN/pg_ctl" -D "$run/data" -m fast -w stop
 running=0
 start
-PG_TEST_PHASE=after "$GO_BIN" test -timeout 10m -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern after)" ./tests/integration | tee "$run/after.jsonl"
-python3 scripts/check-integration-results.py after "$run/after.jsonl"
-python3 scripts/verify-develop-http.py "$run/develop-discovery"
-python3 scripts/verify-catalog-http.py "$run/solsynth-go"
-
-python3 scripts/verify-candidate-http.py "$run/develop-discovery" "$run/nodeinfo" "$PG_BIN/psql"
+"$PG_BIN/psql" "$PG_TEST_DSN" -A -t -F '|' -v ON_ERROR_STOP=1 -c 'SELECT system_identifier,pg_postmaster_start_time() FROM pg_control_system()' > "$run/cluster-after.txt"
+PG_TEST_PHASE=after "$GO_BIN" test -timeout 10m -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern after --group "$group")" ./tests/integration | tee "$run/after.jsonl"
+python3 scripts/check-integration-results.py after "$run/after.jsonl" --group "$group"
+if [[ "$group" == all || "$group" == group-a ]]; then
+  python3 scripts/verify-develop-http.py "$run/develop-discovery"
+  printf 'develop-after\n' >> "$run/process-smokes.txt"
+  python3 scripts/verify-catalog-http.py "$run/solsynth-go"
+  printf 'catalog-after\n' >> "$run/process-smokes.txt"
+  python3 scripts/verify-candidate-http.py "$run/develop-discovery" "$run/nodeinfo" "$PG_BIN/psql"
+  printf 'candidate-after\n' >> "$run/process-smokes.txt"
+fi
+if [[ "$group" != all ]]; then
+  python3 scripts/check-integration-groups.py finalize --group "$group" --directory "$run" \
+    --commit "${GITHUB_SHA:-$(git rev-parse HEAD)}" --run-id "${GITHUB_RUN_ID:-local}" --attempt "${GITHUB_RUN_ATTEMPT:-1}"
+fi

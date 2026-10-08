@@ -1,8 +1,8 @@
 {
-  "checkpoint": "fixture-boundary-corrections580",
-  "scope": "Only composed fixture corrections and current evidence: omit plaintext content in opaque MLS request with offline positive/negative validation; preserve required realm member timestamps; establish reciprocal comment admission while retaining ordered lock/rollback assertions. Runtime unchanged. Full offline verification passed; actual PG pending.",
+  "checkpoint": "reviewed-two-cluster580-pilot",
+  "scope": "Approved bounded private two-cluster CI pilot. Complete exact580/76 disjoint assignments, preserved all mode, attempt-bound raw evidence/receipts and all-job checks. Full offline build/vet/unit/race/SQL/source and89 partition rejection controls passed. Actual two-cluster run pending; no runtime/test-body/schema/module changes in this checkpoint.",
   "inputs": {
-    "remote_parent": "8b656f0626ce065ca745bf4918b58d412a5391fc"
+    "remote_parent": "06a1166835970f1c03bec45d8a2849b890671fff"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -15,8 +15,8 @@
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
-      "bytes": 2496,
-      "sha256": "d1635db6a342b1e67c4b2f4ec0394a0121d84d3086b7287787da756e6995f07b"
+      "bytes": 4311,
+      "sha256": "d35769297386eb552b679086fb42aecf62412438bb765d627fb22512378613ea"
     },
     {
       "path": ".github/workflows/recover-source-5e695228.yml",
@@ -467,6 +467,16 @@
       "path": "docs/ci-result-2026-10-07.json",
       "bytes": 1220,
       "sha256": "f04fc0b6baa5d53cc1dbb50d4250c123fe12f971a88705dc1153dd3304e0fe88"
+    },
+    {
+      "path": "docs/ci-two-groups-dependencies.json",
+      "bytes": 86229,
+      "sha256": "60735fcf10c00033985f3ec8de47ed6eb9a7f4c1d8fad1ee0c5ac5aa3a49e650"
+    },
+    {
+      "path": "docs/ci-two-groups-proposal.md",
+      "bytes": 12803,
+      "sha256": "3d5e243268952c76c21726fcb8d2ab33c25ea5ed7de47c21e0b701ff31c84dc3"
     },
     {
       "path": "docs/combined-domain-integration-review.md",
@@ -1715,8 +1725,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 98741,
-      "sha256": "528f5b8446e409cab645014964e9130f21b3f5500d4f4f86cd956cd98ffaf605"
+      "bytes": 98677,
+      "sha256": "7ff0078d4b2312e2c26f1368b8533d3d2d1afbfe440283720e83e1cd825f4cd4"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -9524,9 +9534,19 @@
       "sha256": "f52b6b4527be44b0b53e816be733f7affefaee975c356a57806e23b711707aa8"
     },
     {
+      "path": "scripts/check-integration-ci-jobs.py",
+      "bytes": 3872,
+      "sha256": "441c08d39c2a91cc0c78527d164bc0685c5b2c04fdf627a83c33f7dca81fd095"
+    },
+    {
+      "path": "scripts/check-integration-groups.py",
+      "bytes": 7854,
+      "sha256": "4d8305c7212c1df01037ea85c37582bc3bc285b52630a8303bc18a01b0b4c6ca"
+    },
+    {
       "path": "scripts/check-integration-results.py",
-      "bytes": 38315,
-      "sha256": "53e6464e649cce7e77c245508469f65c3cd09f530b9d8dc85e0176a5839d4ee8"
+      "bytes": 38968,
+      "sha256": "db5840e6b29b696b0f9cae248c134c8b12637a99964bc21913bf457feb8b7e51"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -9549,9 +9569,24 @@
       "sha256": "7fce84c91d8d5cb37ed597a553dcbe4a9d9bac2a7556f63a9b6a26cfc8a838eb"
     },
     {
+      "path": "scripts/integration-groups.json",
+      "bytes": 69694,
+      "sha256": "78dc68aa806d5734114c83611e1b95c27220c4171b99d0d491b8ecd66c0f38e3"
+    },
+    {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 9735,
-      "sha256": "b83b1a3f0f964df0d1637d45826f6d84dc5283a6638afa8d6741e4ad0ee3f249"
+      "bytes": 11485,
+      "sha256": "db770cc91b6019affbd899b4a9c637ebecf5c13098f162d4617ca850d53cf174"
+    },
+    {
+      "path": "scripts/integration_groups.py",
+      "bytes": 4079,
+      "sha256": "daca77387c577155a6a1f1bfd06c9b3188b1ef7da082bc987ca695ac38b62886"
+    },
+    {
+      "path": "scripts/refresh-integration-groups.py",
+      "bytes": 8108,
+      "sha256": "66c28e81c1fd7602c80510d3b5bbbcfa29594540ab2c63e93c8b6a79eaf4ccab"
     },
     {
       "path": "scripts/sql-parser-requirements.txt",
@@ -9569,14 +9604,19 @@
       "sha256": "2d40a9bbe5116c82abe1361c01ed3db376ef0aedb7f0e668f50190dda606ef14"
     },
     {
+      "path": "scripts/test-integration-groups.py",
+      "bytes": 25002,
+      "sha256": "65fe1ed5e12427a0bff907456ff3ffc5ca1ae08d78bbcd307c88ea4f1fa1e085"
+    },
+    {
       "path": "scripts/test-integration-guard.py",
       "bytes": 4150,
       "sha256": "9f65efbea5b568c91b92249dbcd5de66e3e598475b8f8f6fe23b977cabdbae5d"
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 19605,
-      "sha256": "5eccb755fb952b0b476b0524e240dec2717d09b141553a5b22bb1ab7256c9efc"
+      "bytes": 19599,
+      "sha256": "8fa6fd97a0e5adbb56d03cb9e89f6b98f68c06e6e4534d99cc28d1b6e3d418ea"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -9610,8 +9650,8 @@
     },
     {
       "path": "scripts/verify.sh",
-      "bytes": 1386,
-      "sha256": "4b074795822c27b2c5b0cfc9bc30134b9ae02e435a32491cceea211848ec819c"
+      "bytes": 1535,
+      "sha256": "d68540131385fd507605d641defdf66dd3479b6e30e95a26d86e34b6b9249f5e"
     },
     {
       "path": "tests/contract/badges-oracle/ApiError.cs",

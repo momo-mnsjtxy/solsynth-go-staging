@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"path"
 	"solsynth.local/go-migration/internal/federationhttp"
+	"solsynth.local/go-migration/ports/admin/content"
 	"solsynth.local/go-migration/ports/authority/oauth"
 	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/develop/bots"
@@ -23,6 +24,7 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	moderation                                                                                                                                                                                                                                           http.Handler
 	namecards, rewind                                                                                                                                                                                                                                    http.Handler
 	ipcheck                                                                                                                                                                                                                                              http.Handler
 	accountSettings                                                                                                                                                                                                                                      http.Handler
@@ -255,6 +257,9 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if h.rewind != nil && rewind.RouteMatches(canonical) {
 			target = h.rewind
 		}
+	}
+	if h.moderation != nil && content.Handles(canonical) && (service == "api" || service == "passport" && under(canonical, "/api/admin/realms") || service == "sphere" && !under(canonical, "/api/admin/realms")) {
+		target = h.moderation
 	}
 	if h.ipcheck != nil && (service == "api" || service == "passport") && ipcheck.Route(canonical) {
 		target = h.ipcheck

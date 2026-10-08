@@ -233,6 +233,15 @@ func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v
 	if e = r.authorizeRealms(ctx, tx, actor, p.Publisher.Type, realm, v, deleting); e != nil {
 		return posts.Post{}, e
 	}
+	if v.RealmID != nil && !SameOptionalID(p.RealmID, v.RealmID) {
+		var removed bool
+		if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_realm_post_moderation WHERE post_id=$1 AND realm_id=$2)`, p.ID, *v.RealmID).Scan(&removed); e != nil {
+			return posts.Post{}, e
+		}
+		if removed {
+			return posts.Post{}, posts.ErrConflict
+		}
+	}
 	if p.LockedAt != nil {
 		return posts.Post{}, posts.ErrLocked
 	}

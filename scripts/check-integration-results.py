@@ -5,6 +5,18 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGContentModerationGlobalIsolationAndLifecycle",
+        "TestPGContentModerationShadowbanPropagation",
+        "TestPGContentModerationAtomicBatchAndAuditRollback",
+        "TestPGContentModerationScopedRemovalAndNotification",
+        "TestPGContentModerationOwnerTransferAndDeletedRealm",
+        "TestPGContentModerationCurrentAuthorityAndMembershipAfterWait",
+        "TestPGContentModerationFederationWithdrawalRetry",
+        "TestPGContentModerationRestartPersistence",
+        "TestPGContentModerationConcurrentBatchesAndScopedRevocation",
+        "TestPGContentModerationPublicMetadataAndNestedReads",
+        "TestPGBackendContentModerationComposition",
+
         "TestPGNameCardPaidAccountRenameAndIdempotency",
         "TestPGNameCardPaymentAndRenameRollback",
         "TestPGNameCardOneUseAndFreshPublisherAuthority",
@@ -357,6 +369,8 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGContentModerationRestartPersistence",
+
         "TestPGNameCardRestartPersistence",
         "TestPGRewindRestartPersistence",
 

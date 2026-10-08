@@ -24,7 +24,8 @@ func (r *Repository) ReconcilePosts(ctx context.Context, limit int) (int, error)
 	if r.keys == nil {
 		return 0, f.ErrUnavailable
 	}
-	rows, e := r.db.QueryContext(ctx, `SELECT p.id::text FROM owned_text_posts p JOIN owned_federation_publishers f ON f.publisher_id=p.publisher_id AND f.enabled JOIN owned_publishers pub ON pub.id=p.publisher_id AND pub.deleted_at IS NULL JOIN owned_authority_accounts a ON a.id=pub.account_id AND NOT a.disabled LEFT JOIN owned_federation_post_state s ON s.post_id=p.id WHERE (s.post_id IS NULL AND p.realm_id IS NULL AND p.visibility=0 AND p.deleted_at IS NULL AND p.drafted_at IS NULL AND p.published_at<=$1) OR (s.post_id IS NOT NULL AND (s.source_updated_at<>p.updated_at OR s.source_audit_id<>COALESCE((SELECT max(audit.id) FROM owned_text_post_audit audit WHERE audit.post_id=p.id),0) OR s.public<>(p.realm_id IS NULL AND p.visibility=0 AND p.deleted_at IS NULL AND p.drafted_at IS NULL AND COALESCE(p.published_at<=$1,false)))) ORDER BY p.updated_at,p.id LIMIT $2`, r.config.Clock(), limit)
+	public := `pub.type=0 AND pub.deleted_at IS NULL AND pub.shadowbanned_at IS NULL AND NOT a.disabled AND p.shadowbanned_at IS NULL AND p.realm_id IS NULL AND p.visibility=0 AND p.deleted_at IS NULL AND p.drafted_at IS NULL AND COALESCE(p.published_at<=$1,false)`
+	rows, e := r.db.QueryContext(ctx, `SELECT p.id::text FROM owned_text_posts p JOIN owned_federation_publishers f ON f.publisher_id=p.publisher_id AND f.enabled JOIN owned_publishers pub ON pub.id=p.publisher_id AND pub.type=0 JOIN owned_authority_accounts a ON a.id=pub.account_id LEFT JOIN owned_federation_post_state s ON s.post_id=p.id WHERE (s.post_id IS NULL AND (`+public+`)) OR (s.post_id IS NOT NULL AND (s.source_updated_at<>p.updated_at OR s.source_audit_id<>COALESCE((SELECT max(audit.id)FROM owned_text_post_audit audit WHERE audit.post_id=p.id),0) OR s.public<>(`+public+`))) ORDER BY p.updated_at,p.id LIMIT $2`, r.config.Clock(), limit)
 	if e != nil {
 		return 0, e
 	}
@@ -64,27 +65,32 @@ func (r *Repository) reconcilePost(ctx context.Context, id string) (bool, error)
 	if e = tx.QueryRowContext(ctx, `SELECT publisher_id::text FROM owned_text_posts WHERE id=$1`, id).Scan(&pid); e != nil {
 		return false, mapped(e)
 	}
-	p, e := r.publisher(ctx, tx, pid, true)
+	p, e := r.withdrawalPublisher(ctx, tx, pid)
 	if e != nil {
 		return false, e
 	}
 	var lock string
-	if e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_authority_accounts WHERE id=$1 AND NOT disabled FOR UPDATE`, p.owner).Scan(&lock); e != nil {
+	if e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_authority_accounts WHERE id=$1 FOR UPDATE`, p.owner).Scan(&lock); e != nil {
 		return false, mapped(e)
 	}
-	if e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_publishers WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, pid).Scan(&lock); e != nil {
+	if e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_publishers WHERE id=$1 FOR UPDATE`, pid).Scan(&lock); e != nil {
 		return false, mapped(e)
 	}
-	if _, e = r.publisher(ctx, tx, pid, true); e != nil {
+	if _, e = r.withdrawalPublisher(ctx, tx, pid); e != nil {
 		return false, e
 	}
 	var updated time.Time
 	var sourceAudit int64
 	var visible bool
-	e = tx.QueryRowContext(ctx, `SELECT updated_at,realm_id IS NULL AND visibility=0 AND deleted_at IS NULL AND drafted_at IS NULL AND COALESCE(published_at<=$2,false),COALESCE((SELECT max(a.id) FROM owned_text_post_audit a WHERE a.post_id=owned_text_posts.id),0) FROM owned_text_posts WHERE id=$1 FOR UPDATE`, id, r.config.Clock()).Scan(&updated, &visible, &sourceAudit)
+	e = tx.QueryRowContext(ctx, `SELECT updated_at,realm_id IS NULL AND visibility=0 AND deleted_at IS NULL AND shadowbanned_at IS NULL AND drafted_at IS NULL AND COALESCE(published_at<=$2,false),COALESCE((SELECT max(a.id) FROM owned_text_post_audit a WHERE a.post_id=owned_text_posts.id),0) FROM owned_text_posts WHERE id=$1 FOR UPDATE`, id, r.config.Clock()).Scan(&updated, &visible, &sourceAudit)
 	if e != nil {
 		return false, e
 	}
+	public, e := publisherPublic(ctx, tx, pid)
+	if e != nil {
+		return false, e
+	}
+	visible = visible && public
 	var oldUpdated time.Time
 	var wasPublic bool
 	var revision, oldAudit int64
@@ -256,7 +262,12 @@ func (r *Repository) deliver(ctx context.Context, transport f.Transport, d deliv
 	if e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_publishers WHERE id=$1 FOR UPDATE`, d.publisher).Scan(&lock); e != nil {
 		return e
 	}
-	p, e := r.publisher(ctx, tx, d.publisher, true)
+	var p publisher
+	if d.kind == "Delete" && d.post.Valid {
+		p, e = r.withdrawalPublisher(ctx, tx, d.publisher)
+	} else {
+		p, e = r.publisher(ctx, tx, d.publisher, true)
+	}
 	if errors.Is(e, f.ErrNotFound) {
 		return finish("cancelled")
 	}
@@ -274,11 +285,16 @@ func (r *Repository) deliver(ctx context.Context, transport f.Transport, d deliv
 		var updated time.Time
 		var audit int64
 		var visible bool
-		e = tx.QueryRowContext(ctx, `SELECT updated_at,realm_id IS NULL AND visibility=0 AND deleted_at IS NULL AND drafted_at IS NULL AND COALESCE(published_at<=$2,false),COALESCE((SELECT max(a.id) FROM owned_text_post_audit a WHERE a.post_id=owned_text_posts.id),0) FROM owned_text_posts WHERE id=$1 FOR UPDATE`, d.post.String, r.config.Clock()).Scan(&updated, &visible, &audit)
+		e = tx.QueryRowContext(ctx, `SELECT updated_at,realm_id IS NULL AND visibility=0 AND deleted_at IS NULL AND shadowbanned_at IS NULL AND drafted_at IS NULL AND COALESCE(published_at<=$2,false),COALESCE((SELECT max(a.id) FROM owned_text_post_audit a WHERE a.post_id=owned_text_posts.id),0) FROM owned_text_posts WHERE id=$1 FOR UPDATE`, d.post.String, r.config.Clock()).Scan(&updated, &visible, &audit)
 		if e != nil {
 			return e
 		}
-		if audit != d.audit.Int64 || !updated.Equal(d.updated.Time) || d.kind != "Delete" && !visible {
+		public, e := publisherPublic(ctx, tx, d.publisher)
+		if e != nil {
+			return e
+		}
+		visible = visible && public
+		if d.kind != "Delete" && (audit != d.audit.Int64 || !updated.Equal(d.updated.Time) || !visible) || d.kind == "Delete" && visible {
 			return finish("cancelled")
 		}
 		var follows bool

@@ -23,6 +23,7 @@ import (
 	"solsynth.local/go-migration/internal/mediapg"
 	"solsynth.local/go-migration/internal/merchantpg"
 	"solsynth.local/go-migration/internal/messagerpg"
+	"solsynth.local/go-migration/internal/moderationpg"
 	"solsynth.local/go-migration/internal/namecardpg"
 	"solsynth.local/go-migration/internal/notabledaypg"
 	"solsynth.local/go-migration/internal/notificationpg"
@@ -43,6 +44,7 @@ import (
 	"solsynth.local/go-migration/internal/timelinepg"
 	"solsynth.local/go-migration/internal/translationpg"
 	"solsynth.local/go-migration/internal/walletpg"
+	"solsynth.local/go-migration/ports/admin/content"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/authority/oauth"
 	"solsynth.local/go-migration/ports/authority/signin"
@@ -105,6 +107,9 @@ type Config struct {
 	Federation                    *FederationConfig
 }
 type Backend struct {
+	moderation               *moderationpg.Repository
+	moderationSink           *notificationpg.Repository
+	moderationApp            string
 	accountExtras            accountExtraModules
 	accountSettings          *accountsettingspg.Repository
 	translation              *translationpg.Repository
@@ -420,8 +425,17 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{namecards: extras.cardsHTTP, rewind: extras.rewindHTTP, ipcheck: ipHTTP, accountSettings: settingsHTTP, translation: translationHTTP, autocomplete: autocompleteHTTP, reader: readerHTTP, oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{accountExtras: extras, accountSettings: settingsRepo, translation: translationRepo, autocomplete: autocompleteRepo, chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	var moderationRepo *moderationpg.Repository
+	var moderationHTTP http.Handler = content.NewHandler(nil, nil)
+	if guard != nil {
+		moderationRepo, err = moderationpg.New(db, guard, moderationpg.Config{Now: c.Authority.Now, PostAssociations: timelineRepo})
+		if err != nil {
+			return nil, err
+		}
+		moderationHTTP = bindIdentity(v, bindTransactionAuthority(guard, content.NewHandler(moderationRepo, postIdentity{identity})))
+	}
+	h := router{modules{moderation: moderationHTTP, namecards: extras.cardsHTTP, rewind: extras.rewindHTTP, ipcheck: ipHTTP, accountSettings: settingsHTTP, translation: translationHTTP, autocomplete: autocompleteHTTP, reader: readerHTTP, oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	return &Backend{moderation: moderationRepo, moderationSink: notificationRepo, moderationApp: c.NotificationApp, accountExtras: extras, accountSettings: settingsRepo, translation: translationRepo, autocomplete: autocompleteRepo, chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 }
 
 type accountLookup interface {
@@ -457,6 +471,11 @@ func (b *Backend) ProcessDue(ctx context.Context, limit int) (int, error) {
 	}
 	if b.commerce != nil {
 		m, x := b.commerce.ProcessDue(ctx, limit)
+		n += m
+		e = errors.Join(e, x)
+	}
+	if b.moderation != nil {
+		m, x := b.moderation.ProcessNotifications(ctx, b.moderationSink, b.moderationApp, min(limit, 100))
 		n += m
 		e = errors.Join(e, x)
 	}

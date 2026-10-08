@@ -30,6 +30,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err := b.accountExtras.ready(ctx); err != nil {
 		return err
 	}
+	if b.moderation != nil {
+		if e := b.moderation.Ready(ctx); e != nil {
+			return e
+		}
+	}
 	if b.accountSettings != nil {
 		if err := b.accountSettings.Ready(ctx); err != nil {
 			return err

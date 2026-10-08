@@ -30,3 +30,5 @@ CREATE TABLE IF NOT EXISTS owned_publishing_settings(account_id uuid PRIMARY KEY
 CREATE TABLE IF NOT EXISTS owned_publisher_quota(account_id uuid PRIMARY KEY REFERENCES owned_authority_accounts(id),total bigint NOT NULL CHECK(total>=0),starts_at timestamptz NOT NULL,expires_at timestamptz);
 CREATE TABLE IF NOT EXISTS owned_publisher_entitlements(publisher_id uuid PRIMARY KEY REFERENCES owned_publishers(id),protected_tag_total bigint NOT NULL CHECK(protected_tag_total>=0),level integer NOT NULL CHECK(level>=0),perk_level integer NOT NULL CHECK(perk_level>=0),starts_at timestamptz NOT NULL,expires_at timestamptz);
 CREATE TABLE IF NOT EXISTS owned_accounts_audit(id bigserial PRIMARY KEY,actor_id uuid NOT NULL REFERENCES owned_authority_accounts(id),action text NOT NULL,target_id uuid NOT NULL,occurred_at timestamptz NOT NULL);
+ALTER TABLE owned_publishers ADD COLUMN IF NOT EXISTS shadowban_reason text;
+ALTER TABLE owned_publishers ADD COLUMN IF NOT EXISTS shadowbanned_at timestamptz;

@@ -91,7 +91,7 @@ func (r *Repository) lookupPublisher(ctx context.Context, q queryer, ref string,
 	if byID {
 		predicate = `p.id=$1::uuid`
 	}
-	e := q.QueryRowContext(ctx, `SELECT p.id::text,p.name,p.nick,p.bio,p.account_id::text,p.created_at,COALESCE(f.enabled,false),COALESCE(f.manual,true) FROM owned_publishers p JOIN owned_authority_accounts a ON a.id=p.account_id LEFT JOIN owned_federation_publishers f ON f.publisher_id=p.id WHERE `+predicate+` AND p.type=0 AND p.deleted_at IS NULL AND NOT a.disabled`, ref).Scan(&p.id, &p.name, &p.nick, &p.bio, &p.owner, &p.created, &p.enabled, &p.manual)
+	e := q.QueryRowContext(ctx, `SELECT p.id::text,p.name,p.nick,p.bio,p.account_id::text,p.created_at,COALESCE(f.enabled,false),COALESCE(f.manual,true) FROM owned_publishers p JOIN owned_authority_accounts a ON a.id=p.account_id LEFT JOIN owned_federation_publishers f ON f.publisher_id=p.id WHERE `+predicate+` AND p.type=0 AND p.deleted_at IS NULL AND p.shadowbanned_at IS NULL AND NOT a.disabled`, ref).Scan(&p.id, &p.name, &p.nick, &p.bio, &p.owner, &p.created, &p.enabled, &p.manual)
 	if e != nil {
 		return p, mapped(e)
 	}
@@ -99,6 +99,25 @@ func (r *Repository) lookupPublisher(ctx context.Context, q queryer, ref string,
 		return p, f.ErrNotFound
 	}
 	return p, nil
+}
+
+// withdrawalPublisher is exclusively for existing post delivery cleanup. It
+// cannot project an actor or a Note, and still rejects organization publishers.
+func (r *Repository) withdrawalPublisher(ctx context.Context, q queryer, id string) (publisher, error) {
+	var p publisher
+	e := q.QueryRowContext(ctx, `SELECT p.id::text,p.name,p.nick,p.bio,p.account_id::text,p.created_at,f.enabled,f.manual FROM owned_publishers p JOIN owned_federation_publishers f ON f.publisher_id=p.id WHERE p.id=$1 AND p.type=0 AND f.enabled`, id).Scan(&p.id, &p.name, &p.nick, &p.bio, &p.owner, &p.created, &p.enabled, &p.manual)
+	if e != nil {
+		return p, mapped(e)
+	}
+	if !f.ValidName(p.name) {
+		return p, f.ErrNotFound
+	}
+	return p, nil
+}
+func publisherPublic(ctx context.Context, q queryer, id string) (bool, error) {
+	var allowed bool
+	e := q.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publishers p JOIN owned_authority_accounts a ON a.id=p.account_id WHERE p.id=$1 AND p.type=0 AND p.deleted_at IS NULL AND p.shadowbanned_at IS NULL AND NOT a.disabled)`, id).Scan(&allowed)
+	return allowed, e
 }
 func (r *Repository) localKey(ctx context.Context, p publisher) (f.PublicKey, error) {
 	if r.keys == nil {
@@ -134,7 +153,7 @@ func (r *Repository) note(ctx context.Context, q queryer, id string) (f.Note, st
 	if !authority.ValidID(id) {
 		return n, "", updated, f.ErrNotFound
 	}
-	e := q.QueryRowContext(ctx, `SELECT p.publisher_id::text,p.content,p.published_at,p.updated_at FROM owned_text_posts p WHERE p.id=$1 AND p.deleted_at IS NULL AND p.drafted_at IS NULL AND p.realm_id IS NULL AND p.visibility=0 AND p.published_at<= $2`, id, r.config.Clock()).Scan(&pid, &content, &n.Published, &updated)
+	e := q.QueryRowContext(ctx, `SELECT p.publisher_id::text,p.content,p.published_at,p.updated_at FROM owned_text_posts p WHERE p.id=$1 AND p.deleted_at IS NULL AND p.shadowbanned_at IS NULL AND p.drafted_at IS NULL AND p.realm_id IS NULL AND p.visibility=0 AND p.published_at<= $2`, id, r.config.Clock()).Scan(&pid, &content, &n.Published, &updated)
 	if e != nil {
 		return n, "", updated, mapped(e)
 	}
@@ -184,7 +203,7 @@ func (r *Repository) Outbox(ctx context.Context, name string, offset, take int) 
 	}
 	defer tx.Rollback()
 	var total int64
-	where := ` FROM owned_text_posts WHERE publisher_id=$1 AND realm_id IS NULL AND visibility=0 AND drafted_at IS NULL AND deleted_at IS NULL AND published_at<=$2`
+	where := ` FROM owned_text_posts WHERE publisher_id=$1 AND realm_id IS NULL AND visibility=0 AND drafted_at IS NULL AND deleted_at IS NULL AND shadowbanned_at IS NULL AND published_at<=$2`
 	if e = tx.QueryRowContext(ctx, `SELECT count(*)`+where, p.id, r.config.Clock()).Scan(&total); e != nil {
 		return f.Collection{}, e
 	}

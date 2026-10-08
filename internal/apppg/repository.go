@@ -166,7 +166,7 @@ func (r *Repository) Developers(ctx context.Context, actor, name string, enroll 
 	query := `SELECT d.id::text,d.publisher_id::text,p.name,d.created_at FROM owned_developers d JOIN owned_publishers p ON p.id=d.publisher_id WHERE p.deleted_at IS NULL AND p.type=0`
 	args := []any{}
 	if name != "" {
-		query += ` AND lower(p.name)=lower($1)`
+		query += ` AND p.shadowbanned_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=p.account_id AND NOT owner.disabled) AND lower(p.name)=lower($1)`
 		args = append(args, name)
 	} else {
 		if !authority.ValidID(actor) {
@@ -406,7 +406,7 @@ func (r *Repository) PublicApp(ctx context.Context, slug string) (apps.App, erro
 	if r == nil || r.db == nil {
 		return apps.App{}, apps.ErrUnavailable
 	}
-	return appScan(r.db.QueryRowContext(ctx, `SELECT `+appColumns+appJoins+` WHERE lower(a.slug)=lower($1) AND a.status=1 AND `+activeApp, slug))
+	return appScan(r.db.QueryRowContext(ctx, `SELECT `+appColumns+appJoins+` WHERE lower(a.slug)=lower($1) AND a.status=1 AND pub.shadowbanned_at IS NULL AND `+activeApp, slug))
 }
 func (r *Repository) Discover(ctx context.Context, q develop.Query) (develop.Page, error) {
 	out := develop.Page{Apps: []develop.AppDiscovery{}}
@@ -425,7 +425,7 @@ func (r *Repository) Discover(ctx context.Context, q develop.Query) (develop.Pag
 		return out, e
 	}
 	defer tx.Rollback()
-	where := ` WHERE ` + activeApp + ` AND a.status=1 AND($1='' OR a.slug ILIKE '%'||$1||'%' OR a.name ILIKE '%'||$1||'%' OR a.description ILIKE '%'||$1||'%')`
+	where := ` WHERE ` + activeApp + ` AND pub.shadowbanned_at IS NULL AND a.status=1 AND($1='' OR a.slug ILIKE '%'||$1||'%' OR a.name ILIKE '%'||$1||'%' OR a.description ILIKE '%'||$1||'%')`
 	if e = tx.QueryRowContext(ctx, `SELECT count(*)`+appJoins+where, search).Scan(&out.Total); e != nil {
 		return out, e
 	}

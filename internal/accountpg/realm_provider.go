@@ -22,7 +22,7 @@ func (r *Repository) WithRealms(v RealmProvider) *Repository { r.realms = v; ret
 
 func (r *Repository) publisherVisible(alias, actor string) string {
 	if r.realms == nil {
-		return alias + `.type=0`
+		return `(` + alias + `.type=0 AND ` + PublisherModerationPredicate(alias, actor, alias+`.type=0`) + `)`
 	}
 	return r.realms.PublisherVisibilitySQL(alias, actor)
 }

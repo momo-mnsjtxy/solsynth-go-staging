@@ -45,6 +45,13 @@ func (r *Repository) Collection(ctx context.Context, actor, publisher, slug stri
 	if e != nil {
 		return v, e
 	}
+	allowed, e := postpg.CanViewPublisher(ctx, tx, actor, v.PublisherID, r.visibility)
+	if e != nil {
+		return posts.Collection{}, e
+	}
+	if !allowed {
+		return posts.Collection{}, interactions.ErrCollectionNotFound
+	}
 	if e = tx.Commit(); e != nil {
 		return posts.Collection{}, e
 	}
@@ -66,14 +73,15 @@ func (r *Repository) Collections(ctx context.Context, actor, publisher string, p
 	}
 	defer tx.Rollback()
 	where := collectionFrom + ` AND ($1='' OR lower(u.name)=lower($1)) AND ($2='' OR c.slug ILIKE $3 OR c.name ILIKE $3 OR c.description ILIKE $3 OR u.name ILIKE $3 OR u.nick ILIKE $3)`
-	args := []any{publisher, q, "%" + q + "%"}
+	where += ` AND ` + accountpg.PublisherModerationPredicate("u", "$4", `u.type=0`)
+	args := []any{publisher, q, "%" + q + "%", actor}
 	var total int64
 	if e = tx.QueryRowContext(ctx, `SELECT count(*)`+where, args...).Scan(&total); e != nil {
 		return nil, 0, e
 	}
 	paging := ""
 	if publisher == "" {
-		paging = ` OFFSET $4 LIMIT $5`
+		paging = ` OFFSET $5 LIMIT $6`
 		args = append(args, p.Offset, p.Take)
 	}
 	rows, e := tx.QueryContext(ctx, `SELECT `+collectionColumns+where+` ORDER BY coalesce(c.name,c.slug),c.slug,c.id`+paging, args...)

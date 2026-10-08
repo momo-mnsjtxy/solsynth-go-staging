@@ -289,9 +289,26 @@ func activeByID(ctx context.Context, q queryer, app string, lock bool) (apps.App
 	}
 	return a, e
 }
+
+// Public widget projections share content moderation's publisher boundary.
+// Credential and owner-management paths retain their separate authority checks.
+func publicWidgetPublisher(ctx context.Context, q queryer, app string) error {
+	var visible bool
+	e := q.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1`+appJoins+` WHERE a.id=$1 AND `+activeApp+` AND pub.shadowbanned_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=pub.account_id AND NOT owner.disabled))`, app).Scan(&visible)
+	if e != nil {
+		return e
+	}
+	if !visible {
+		return board.ErrAppNotFound
+	}
+	return nil
+}
 func (r *Repository) Manifests(ctx context.Context, app string) ([]board.Manifest, error) {
 	if r == nil || r.db == nil {
 		return nil, board.ErrDependency
+	}
+	if e := publicWidgetPublisher(ctx, r.db, app); e != nil {
+		return nil, e
 	}
 	if _, e := activeByID(ctx, r.db, app, false); e != nil {
 		return nil, board.ErrAppNotFound
@@ -301,6 +318,9 @@ func (r *Repository) Manifests(ctx context.Context, app string) ([]board.Manifes
 func (r *Repository) Lookup(ctx context.Context, app, key string) (*board.Widget, error) {
 	if r == nil || r.db == nil {
 		return nil, board.ErrDependency
+	}
+	if e := publicWidgetPublisher(ctx, r.db, app); e != nil {
+		return nil, e
 	}
 	if _, e := activeByID(ctx, r.db, app, false); e != nil {
 		return nil, board.ErrAppNotFound
@@ -318,6 +338,9 @@ func (r *Repository) Lookup(ctx context.Context, app, key string) (*board.Widget
 func (r *Repository) Validate(ctx context.Context, app, key string, p board.Payload) (board.Payload, error) {
 	if r == nil || r.db == nil {
 		return nil, board.ErrDependency
+	}
+	if e := publicWidgetPublisher(ctx, r.db, app); e != nil {
+		return nil, e
 	}
 	if _, e := activeByID(ctx, r.db, app, false); e != nil {
 		return nil, board.ErrAppNotFound

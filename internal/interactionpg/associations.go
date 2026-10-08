@@ -147,7 +147,7 @@ func (r *Repository) Load(ctx context.Context, tx *sql.Tx, actor string, p *post
 	if p.DeletedAt != nil {
 		return nil
 	}
-	rows, e := tx.QueryContext(ctx, `SELECT t.id::text,t.slug,t.name,t.description,t.owner_publisher_id::text,t.is_protected,t.is_event,t.event_ends_at FROM owned_taxonomy.post_tags t JOIN owned_taxonomy.post_tag_links l ON l.tags_id=t.id WHERE l.posts_id=$1 AND t.deleted_at IS NULL AND (t.owner_publisher_id IS NULL OR EXISTS(SELECT 1 FROM owned_publishers owner WHERE owner.id=t.owner_publisher_id AND owner.type=0)) ORDER BY t.slug,t.id`, p.ID)
+	rows, e := tx.QueryContext(ctx, `SELECT t.id::text,t.slug,t.name,t.description,t.owner_publisher_id::text,t.is_protected,t.is_event,t.event_ends_at FROM owned_taxonomy.post_tags t JOIN owned_taxonomy.post_tag_links l ON l.tags_id=t.id WHERE l.posts_id=$1 AND t.deleted_at IS NULL AND (t.owner_publisher_id IS NULL OR EXISTS(SELECT 1 FROM owned_publishers owner WHERE owner.id=t.owner_publisher_id AND owner.type=0 AND owner.deleted_at IS NULL AND owner.shadowbanned_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=owner.account_id AND NOT a.disabled))) ORDER BY t.slug,t.id`, p.ID)
 	if e != nil {
 		return e
 	}

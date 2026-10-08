@@ -450,7 +450,7 @@ func (r *Repository) Quota(ctx context.Context, id string) ([]taxonomy.QuotaReco
 	}
 	q := `SELECT id::text,slug,name,description,is_protected,is_event,event_ends_at FROM taxonomy_candidate.post_tags WHERE owner_publisher_id=$1 AND deleted_at IS NULL`
 	if r.owned {
-		q += ` AND EXISTS(SELECT 1 FROM owned_publishers owner WHERE owner.id=$1 AND owner.type=0)`
+		q += ` AND EXISTS(SELECT 1 FROM owned_publishers owner WHERE owner.id=$1 AND owner.type=0 AND owner.deleted_at IS NULL AND owner.shadowbanned_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=owner.account_id AND NOT a.disabled))`
 	}
 	rows, err := r.db.QueryContext(ctx, policySQL(q+` ORDER BY is_protected DESC,updated_at DESC`, r.owned), id)
 	if err != nil {
@@ -616,4 +616,4 @@ func appendAudit(ctx context.Context, tx *policyTx, row taxonomy.Record, operati
 
 // Owned organization tag ownership has no public realm policy yet. Retained or
 // imported rows cannot reveal a private publisher through global taxonomy.
-const ownedTagPublisherScope = `(t.owner_publisher_id IS NULL OR EXISTS(SELECT 1 FROM owned_publishers owner WHERE owner.id=t.owner_publisher_id AND owner.type=0))`
+const ownedTagPublisherScope = `(t.owner_publisher_id IS NULL OR EXISTS(SELECT 1 FROM owned_publishers owner WHERE owner.id=t.owner_publisher_id AND owner.type=0 AND owner.deleted_at IS NULL AND owner.shadowbanned_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=owner.account_id AND NOT a.disabled)))`

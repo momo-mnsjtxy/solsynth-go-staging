@@ -29,3 +29,5 @@ ALTER TABLE owned_text_posts ADD CONSTRAINT owned_text_posts_content_check CHECK
 -- Nullable projection also exists for standalone hosts without a realm provider.
 -- The canonical foreign key is installed by realm_schema.sql after socialpg.
 ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS realm_id uuid;
+ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS shadowban_reason text;
+ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS shadowbanned_at timestamptz;

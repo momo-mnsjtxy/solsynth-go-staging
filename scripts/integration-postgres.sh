@@ -80,6 +80,7 @@ start
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/taxonomypg/testdata/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/namecardpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/rewindpg/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/moderationpg/schema.sql
 "$GO_BIN" build -o "$run/backend" ./cmd/backend
 export BACKEND_BINARY="$run/backend"
 "$GO_BIN" build -o "$run/passport-board" ./cmd/passport-board

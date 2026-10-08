@@ -2,22 +2,22 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Name-card canonical paid settlement/rename and annual rewind composed with prior validated modules",
+  "local_source_checkpoint": "Canonical content moderation composed with previously frozen account extras",
   "last_fully_passed_ci": {
-    "commit": "e3e6decd9840e6eda6b38ec65400a8613d9ba662",
-    "run": 37777273608,
-    "before": 315,
+    "commit": "d4d61e14302ab8a67418b7e4848a50d879d60732",
+    "run": 37780665119,
+    "before": 316,
     "after_restart": 44
   },
   "latest_candidate": {
-    "commit": "dac0491a4c27a3d8827eca6dbce6165c39fb6314",
-    "required_before": 315,
-    "required_after_restart": 44,
-    "status": "Fully passed315 actual PostgreSQL and44 real restart cases; no skips",
-    "run": 37772653508
+    "commit": "ee2340ce8bde9ce9db4c55e148fe65f7e3de9c95",
+    "required_before": 327,
+    "required_after_restart": 46,
+    "status": "Published; actual PostgreSQL running",
+    "run": 37782048798
   },
-  "local_required_before": 327,
-  "local_required_after_restart": 46,
+  "local_required_before": 338,
+  "local_required_after_restart": 47,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -763,7 +763,7 @@
     },
     {
       "source_family": "passport.ip_check",
-      "local_status": "implemented; actual PG candidate pending",
+      "local_status": "fully validated in d4d61e14,316/44",
       "supported_flows": [
         "Caller geolocation through explicitly configured local CIDR dataset",
         "Current Superuser plus admin.ip.check diagnostics; explicit trusted proxy chain and redacted header projection"
@@ -812,6 +812,34 @@
         "Optional original action telemetry provider",
         "Licensed/configured tokenizer and dictionary",
         "Original hardcoded-year and time-truncation defects deliberately corrected"
+      ]
+    },
+    {
+      "source_family": "admin.content_moderation",
+      "local_status": "implemented and composed; actual PG candidate pending",
+      "supported_flows": [
+        "Current Superuser plus named-permission post/publisher/realm administration",
+        "Shadowban propagation through ordinary reads, public metadata, nested/media/survey projections and federation withdrawal",
+        "Scoped realm post removal with local notification and reattachment prevention",
+        "Atomic batch locks, realm member/owner invariants and soft deletion"
+      ],
+      "guarded_pg_cases": [
+        "TestPGContentModerationGlobalIsolationAndLifecycle",
+        "TestPGContentModerationShadowbanPropagation",
+        "TestPGContentModerationAtomicBatchAndAuditRollback",
+        "TestPGContentModerationScopedRemovalAndNotification",
+        "TestPGContentModerationOwnerTransferAndDeletedRealm",
+        "TestPGContentModerationCurrentAuthorityAndMembershipAfterWait",
+        "TestPGContentModerationFederationWithdrawalRetry",
+        "TestPGContentModerationRestartPersistence",
+        "TestPGContentModerationConcurrentBatchesAndScopedRevocation",
+        "TestPGContentModerationPublicMetadataAndNestedReads",
+        "TestPGBackendContentModerationComposition"
+      ],
+      "unsupported_or_remaining": [
+        "Verification marks/admin statistics/automod next slice",
+        "Custom realm permission overrides",
+        "Full legacy model hydration/global middleware internal parity"
       ]
     }
   ],

@@ -10,7 +10,7 @@ CREATE SCHEMA owned_taxonomy;
 CREATE VIEW owned_taxonomy.posts AS
  SELECT p.id,p.created_at,p.drafted_at,p.visibility,p.deleted_at
  FROM owned_text_posts p JOIN owned_publishers u ON u.id=p.publisher_id
- WHERE p.deleted_at IS NULL AND p.realm_id IS NULL AND u.deleted_at IS NULL AND u.type=0
+ WHERE p.deleted_at IS NULL AND p.realm_id IS NULL AND p.shadowbanned_at IS NULL AND u.shadowbanned_at IS NULL AND u.deleted_at IS NULL AND u.type=0
  AND (u.account_id IS NULL OR EXISTS(
    SELECT 1 FROM owned_authority_accounts a WHERE a.id=u.account_id AND NOT a.disabled
  ));

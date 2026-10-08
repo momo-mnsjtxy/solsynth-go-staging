@@ -4,6 +4,7 @@ package socialpg
 import (
 	"context"
 	"database/sql"
+	"solsynth.local/go-migration/internal/accountpg"
 	"sort"
 
 	"solsynth.local/go-migration/ports/authority"
@@ -21,7 +22,7 @@ func (r *Repository) realmPublisherPredicate(alias, actor string, public bool) s
 	return `(` + alias + `.type=0 OR (` + alias + `.type=1 AND EXISTS(SELECT 1 FROM owned_realms realm JOIN owned_authority_accounts realm_owner ON realm_owner.id=realm.account_id WHERE realm.id=` + alias + `.realm_id AND realm.deleted_at IS NULL AND NOT realm_owner.disabled AND ` + member + `)))`
 }
 func (r *Repository) PublisherVisibilitySQL(alias, actor string) string {
-	return r.realmPublisherPredicate(alias, actor, true)
+	return `(` + r.realmPublisherPredicate(alias, actor, true) + ` AND ` + accountpg.PublisherModerationPredicate(alias, actor, r.realmPublisherPredicate(alias, actor, false)) + `)`
 }
 func (r *Repository) PublisherMembershipSQL(alias, actor string) string {
 	return r.realmPublisherPredicate(alias, actor, false)

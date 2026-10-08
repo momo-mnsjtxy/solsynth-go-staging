@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/readerpg/schema.sql",
  "internal/postpg/realm_schema.sql",
  "internal/notabledaypg/schema.sql",
  "internal/oauthpg/schema.sql",
@@ -168,7 +169,7 @@ def main():
         source.replace("--pattern before", "--pattern after"),
         source.replace("check-integration-results.py after", "check-integration-results.py before"),
         source.replace("-f internal/taxonomypg/testdata/schema.sql", "-f internal/watchpg/testdata/schema.sql"),
-        source.replace(authority + "\n" + accounts, accounts + "\n" + authority),
+        source.replace(authority + "\n", "").replace(accounts, accounts + "\n" + authority),
         source.replace(accounts + "\n", "").replace("PG_TEST_PHASE=before ", accounts + "\nPG_TEST_PHASE=before ", 1),
         source.replace('stop\nrunning=0\nstart\nPG_TEST_PHASE=after ', 'stop\nrunning=0\nPG_TEST_PHASE=after '),
         source.replace("set -euo pipefail", "set -eu"),

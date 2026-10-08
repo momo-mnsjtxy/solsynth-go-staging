@@ -60,6 +60,7 @@ func run(args []string, out io.Writer) error {
 	externalSettings := externalFlags(fs)
 	ticketSettings := ticketFlags(fs)
 	fortuneSettings := fortuneFlags(fs)
+	readerSettings := readerFlags(fs)
 	factorIssuer := fs.String("factor-issuer-label", "SoSYS", "human-readable TOTP issuer label")
 	enableOAuth := fs.Bool("enable-oauth", false, "enable owned OAuth authorization-code and OIDC userinfo flows")
 	consentURL := fs.String("oauth-consent-url", "", "deployed HTTPS consent UI calling the owned authorization API")
@@ -232,6 +233,10 @@ func run(args []string, out io.Writer) error {
 		return err
 	}
 	appConfig.Fortunes = fortuneConfig
+	appConfig.Reader, err = readerSettings.config()
+	if err != nil {
+		return err
+	}
 	if !*serve {
 		_, err = fmt.Fprintln(out, "Backend configuration validated. No database connection, schema, account, key, grant, listener or transfer was created.")
 		return err

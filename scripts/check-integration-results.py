@@ -5,6 +5,13 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGBackendReaderComposition",
+        "TestPGReaderCacheLifecycleAndIsolation",
+        "TestPGReaderInvalidationFencesInflightFetch",
+        "TestPGReaderCacheCapacityAndAtomicRollback",
+        "TestPGReaderInvalidationFreshAuthorityAndPool",
+        "TestPGReaderRestartPersistence",
+
         "TestPGOAuthPreviewRechecksRegistrationAndOwnerVersion",
         "TestPGOAuthConfidentialPurposeScopeWithdrawal",
         "TestPGBackendOAuthComposition",
@@ -304,6 +311,8 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGReaderRestartPersistence",
+
         "TestPGOAuthRestartPersistence",
 
         "TestPGFortuneRestartPersistence",

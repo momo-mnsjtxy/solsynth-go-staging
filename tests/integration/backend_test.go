@@ -86,12 +86,9 @@ func newBackendFixture(t *testing.T) backendFixture {
 
 func backendCall(t *testing.T, app http.Handler, method, path, token, body string, status int) *httptest.ResponseRecorder {
 	t.Helper()
-	r := httptest.NewRequest(method, path, strings.NewReader(body))
-	if token != "" {
-		r.Header.Set("Authorization", "Bearer "+token)
-	}
+	r := fixtureNoBodyRequest(method, path, token)
 	if body != "" {
-		r.Header.Set("Content-Type", "application/json")
+		r = fixtureRawJSONRequest(method, path, token, body)
 	}
 	w := httptest.NewRecorder()
 	app.ServeHTTP(w, r)

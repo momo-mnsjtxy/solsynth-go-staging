@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed OAuth/OIDC, post-level realm links and optional fortune host composition; actual PostgreSQL pending",
+  "local_source_checkpoint": "Optional bounded reader cache/outbound adapter and shared typed JSON fixture helpers",
   "last_fully_passed_ci": {
     "commit": "df782ccb6eeafb3c27429fe5ae4a3cb76641075d",
     "run": 37752979316,
@@ -10,14 +10,14 @@
     "after_restart": 33
   },
   "latest_candidate": {
-    "commit": "8f5d31194f60f209c95ddda06f27f53d227addaf",
-    "run": 37762367316,
+    "commit": "7911a4bbabbf9540b8a44fa1b12bb0b3dfb7af60",
+    "run": 37764765732,
     "required_before": 279,
     "required_after_restart": 39,
-    "status": "Build/vet/race passed; schema order prevented any actual PG test. Corrected OAuth dependency order and synthetic sticker prefix queued."
+    "status": "Narrow JSON request construction corrections published; CI running. Previous279 run passed277 before cases and withheld restart."
   },
-  "local_required_before": 279,
-  "local_required_after_restart": 39,
+  "local_required_before": 285,
+  "local_required_after_restart": 40,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -477,11 +477,22 @@
     },
     {
       "source_family": "sphere.content_utilities",
-      "local_status": "not_implemented",
-      "supported_flows": [],
-      "guarded_pg_cases": [],
+      "local_status": "partial",
+      "supported_flows": [
+        "Anonymous configured-origin link previews, bounded optional HTTPS fetch and durable cache",
+        "Fresh cache.scrap authorization with generation-fenced atomic invalidation"
+      ],
+      "guarded_pg_cases": [
+        "TestPGReaderCacheLifecycleAndIsolation",
+        "TestPGReaderInvalidationFencesInflightFetch",
+        "TestPGReaderCacheCapacityAndAtomicRollback",
+        "TestPGReaderInvalidationFreshAuthorityAndPool",
+        "TestPGReaderRestartPersistence",
+        "TestPGBackendReaderComposition"
+      ],
       "unsupported_or_remaining": [
-        "Web reader, translation and autocompletion runtime"
+        "Translation and source-supported autocomplete in progress",
+        "Internal article/gRPC contract not reproduced"
       ]
     },
     {
@@ -764,9 +775,10 @@
     },
     {
       "group": "content utilities",
-      "state": "licensed contract research active",
+      "state": "Reader locally integrated; translation/autocomplete implementation active",
       "remaining": [
-        "Link preview/cache controls, translation and autocompletion"
+        "Translation and source-supported autocomplete",
+        "Reader actual PostgreSQL/host validation pending"
       ],
       "source_controllers": [
         "WebReaderController",

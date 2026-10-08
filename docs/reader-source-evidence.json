@@ -1,0 +1,61 @@
+{
+  "base": "8e223ab2b1e88816d910c01fff9feff5900a20e1",
+  "sources": [
+    {
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Sphere/Reader/WebReaderController.cs",
+      "git_blob_sha": "1bc029048a0aff222778b7bf249a75cb96c0e6fd",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Reader/WebReaderController.cs",
+      "license": "AGPL-3.0-only",
+      "retention": "Full authored source read at the pinned revision; full bytes are not copied into this slice."
+    },
+    {
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Sphere/Reader/WebReaderService.cs",
+      "git_blob_sha": "5fe8a4b004a588b0997b5fdcf3f2d49567e559ae",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Reader/WebReaderService.cs",
+      "license": "AGPL-3.0-only",
+      "retention": "Full authored source read at the pinned revision; full bytes are not copied into this slice."
+    },
+    {
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Sphere/Reader/WebReaderGrpcService.cs",
+      "git_blob_sha": "be869dbacf7be5b7d35073c3aa9f17f159984941",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Reader/WebReaderGrpcService.cs",
+      "license": "AGPL-3.0-only",
+      "retention": "Full authored source read at the pinned revision; full bytes are not copied into this slice."
+    },
+    {
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Sphere/Reader/ScrapedArticle.cs",
+      "git_blob_sha": "791530a86f84b26fc5e22c86097afbe23d4c2735",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Reader/ScrapedArticle.cs",
+      "license": "AGPL-3.0-only",
+      "retention": "Full authored source read at the pinned revision; full bytes are not copied into this slice."
+    },
+    {
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "lib/core/link_preview.dart",
+      "git_blob_sha": "d1940fa3f2e7cb1f522eb502ae60701039033f0a",
+      "url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/link_preview.dart",
+      "license": "AGPL-3.0-only",
+      "retention": "Full authored source read at the pinned revision; full bytes are not copied into this slice."
+    },
+    {
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "lib/posts/widgets/compose/post_shared.dart",
+      "git_blob_sha": "ee6e448c585cfa05038ad03d7ea351e75626da64",
+      "url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/posts/widgets/compose/post_shared.dart",
+      "license": "AGPL-3.0-only",
+      "retention": "Full authored source read at the pinned revision; full bytes are not copied into this slice."
+    }
+  ],
+  "boundary": "Only licensed authored controller, service, article record and Solian caller/widget source was inspected. Excluded Shared definitions, SDK/generated bindings, SoSYS/Spec/NeTo were not inspected.",
+  "contract_limit": "Link JSON is an owned projection of evidenced service properties. Excluded shared model serialization and gRPC wire parity are not claimed."
+}

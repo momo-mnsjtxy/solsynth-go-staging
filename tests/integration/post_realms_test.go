@@ -60,11 +60,11 @@ func postRealmEditor(t *testing.T, f *realmPublishingFixture, actor string, ctx 
 }
 func postRealmHTTP(t *testing.T, f *realmPublishingFixture, method, path, body string) *httptest.ResponseRecorder {
 	t.Helper()
-	r := httptest.NewRequest(method, path, strings.NewReader(body)).WithContext(f.ctx)
-	r.Header.Set("Authorization", "Bearer "+f.token)
+	r := fixtureNoBodyRequest(method, path, f.token)
 	if body != "" {
-		r.Header.Set("Content-Type", "application/json")
+		r = fixtureRawJSONRequest(method, path, f.token, body)
 	}
+	r = r.WithContext(f.ctx)
 	w := httptest.NewRecorder()
 	posts.NewVerifiedHandler(f.posts, f.verifier).ServeHTTP(w, r)
 	return w

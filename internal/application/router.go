@@ -17,6 +17,7 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	reader                                                                                                                                                                                                                                               http.Handler
 	oauth                                                                                                                                                                                                                                                http.Handler
 	fortunes                                                                                                                                                                                                                                             http.Handler
 	calls, federationPublic, federationPrivate                                                                                                                                                                                                           http.Handler
@@ -227,6 +228,9 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if h.public != nil && publicCatalogRoute(canonical) && (service == "wallet" || service == "passport" || service == "api") {
 		target = h.public
+	}
+	if h.reader != nil && (service == "api" || service == "sphere") && under(canonical, "/api/scrap") {
+		target = h.reader
 	}
 	if h.calendar != nil && (service == "api" || service == "passport") && calendarRoute(canonical) {
 		target = h.calendar

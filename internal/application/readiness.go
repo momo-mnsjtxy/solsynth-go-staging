@@ -27,6 +27,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err != nil || !ready {
 		return errors.New("post realm schema unavailable")
 	}
+	if b.reader != nil {
+		if err := b.reader.Ready(ctx); err != nil {
+			return err
+		}
+	}
 	if b.oauth != nil {
 		if err := b.oauth.Ready(ctx); err != nil {
 			return err

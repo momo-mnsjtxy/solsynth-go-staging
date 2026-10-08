@@ -134,7 +134,9 @@ func TestPGTranslationRejectsIneligibleCanonicalGrants(t *testing.T) {
 			case "future":
 				query(t, f.db, `UPDATE commerce_v1.subscriptions SET begun_at=$2 WHERE id=$1`, f.subscription, f.config.Now().Add(time.Hour))
 			case "expired":
-				query(t, f.db, `UPDATE commerce_v1.subscriptions SET ended_at=$2 WHERE id=$1`, f.subscription, f.config.Now())
+				// Preserve the canonical row/document invariant so later global maintenance
+				// sees the same expired fixture rather than an inconsistent future projection.
+				query(t, f.db, `UPDATE commerce_v1.subscriptions SET ended_at=$2::timestamptz,document=jsonb_set(document,'{ended_at}',to_jsonb($2::timestamptz)) WHERE id=$1::uuid`, f.subscription, f.config.Now())
 			case "cancelled":
 				query(t, f.db, `UPDATE commerce_v1.subscriptions SET status=2 WHERE id=$1`, f.subscription)
 			case "disabled_definition":

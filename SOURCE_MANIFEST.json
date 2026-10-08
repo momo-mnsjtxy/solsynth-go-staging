@@ -1,8 +1,8 @@
 {
-  "checkpoint": "refresh-continuity418",
-  "scope": "Separate token and durable authorization epochs, preserve current revocation; full local verification passed, real PostgreSQL pending.",
+  "checkpoint": "renewal-fixture418",
+  "scope": "Only synchronize a synthetic translation entitlement expiry across SQL and serialized document. Runtime and renewal assertions unchanged; actual CI pending.",
   "inputs": {
-    "remote_parent": "ef3586f7cb9cf13ba23115c20e8d59f5c9843880"
+    "remote_parent": "af6ea8b2abddd8c89d7c5dbc19e39677b9cc8ed8"
   },
   "verification": "docs/published-domain-collections-ci.json",
   "files": [
@@ -1510,6 +1510,11 @@
       "path": "docs/remaining-services-inventory.json",
       "bytes": 92286,
       "sha256": "cf3976d2d268ef76af057e73b7265d1b4ddab2591bd527ab284617b2f05ce56b"
+    },
+    {
+      "path": "docs/renewal-fixture-correction.md",
+      "bytes": 1091,
+      "sha256": "a842d7767ce7d18c60d03d2016f25dc2239eef765765246f8e3a9f671cda286b"
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
@@ -8768,8 +8773,8 @@
     },
     {
       "path": "tests/integration/content_translation_test.go",
-      "bytes": 13642,
-      "sha256": "e18fe7db97929b538a9a44f478a3f53dfc4f874e8aa3d1396430f08007a09df9"
+      "bytes": 13894,
+      "sha256": "6bffe6bed38058ba77d0731e37679c2da64b28cd58eec37ce2608941b2ce89b1"
     },
     {
       "path": "tests/integration/develop_bot_commands_test.go",

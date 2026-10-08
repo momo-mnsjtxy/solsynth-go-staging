@@ -1,0 +1,21 @@
+{
+  "audit_date": "2026-10-08",
+  "authored_go_files_in_tree": 46,
+  "authored_go_files_retained": 46,
+  "tree_truncated": false,
+  "generated_or_schema_files_retained": 0,
+  "upstream_tests_executed": false,
+  "live_backend_requests": false,
+  "dependency_source_retrieved": false,
+  "historical_local_audit_files": 58,
+  "historical_local_audit_total_bytes": 386133,
+  "retained_pinned_blob_verifications": 53,
+  "retained_bytes": 374990,
+  "publication_omitted_files": [
+    "configs/config.toml",
+    "configs/docker.toml",
+    "configs/relay.toml",
+    "docker-compose.relay.yml",
+    "docker-compose.yml"
+  ]
+}

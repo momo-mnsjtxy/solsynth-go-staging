@@ -41,5 +41,5 @@ jobs:
       - name: Record scope
         if: success()
         run: |
-          echo 'Local build/vet/race checks passed. Fifteen actual PostgreSQL cases (including explicitly opted-in candidate watcher and board policy tests) and both post-restart persistence assertions passed without skips.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Local build/vet/race checks passed. Thirty actual PostgreSQL cases (including explicitly opted-in watcher, board, Develop/package and NodeInfo candidates), six post-restart persistence assertions and real loopback Develop/catalog/package/bot/NodeInfo process HTTP checks passed without skips.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Synthetic disposable private-socket database only. This does not validate production authentication, migration rollout, C# differential behavior, upstream watcher/global-filter parity, or whole-platform parity.' >> "$GITHUB_STEP_SUMMARY"

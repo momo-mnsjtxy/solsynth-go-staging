@@ -1,0 +1,64 @@
+{
+  "scope": "Owned Wallet catalog configuration binder, projection and serializer only",
+  "executed_date": "2026-10-08",
+  "dotnet_sdk": "10.0.401",
+  "dotnet_runtime": "10.0.12",
+  "aspnet_core_runtime": "10.0.12",
+  "platform": "linux-x64",
+  "source_revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "default_currency_fixture": {
+    "value": "golds",
+    "source": "Owned provider purchase API document config/response examples",
+    "canonical_initializer_verified": false
+  },
+  "cases": 388,
+  "direct_definition_diagnostics": 5,
+  "naming_bmp_entries": 2967,
+  "naming_bmp_categories": {
+    "Zs": 17,
+    "Nd": 370,
+    "Lu": 1132,
+    "Ll": 1448
+  },
+  "checks": {
+    "actual_framework_reference": "passed",
+    "fresh_reference_reproduction": "passed",
+    "owned_source_hashes": "passed"
+  },
+  "error_counts": {
+    "configuration": 3,
+    "projection": 4
+  },
+  "files_sha256": {
+    "cases.json": "2ae5d184e7e769c10130ad34f7033e23dbae3ac2461793c15a4213fdb8714cad",
+    "expected.json": "c24736afdd038db5a1b12b0cda20c223117c2e8e15bfce163f9c4f4e724dd29d",
+    "naming-bmp.json": "db429532e7acc74831dcadcc06c080e1a7cfb58d4d28c1ed4cfca15de6a80581",
+    "Program.cs": "ffaed5d1f241777876b36e559b6d5263ec7c1c14258401fcb7295ae6cdc331b5",
+    "OwnedProjection.cs": "d3f6fa435cf1aa5366db6f5701c92389a904b905ce30a3a6b9eebc697a993c4e",
+    "WalletProductOracle.csproj": "21eaca2ae8287016e834a9522edd57d2d8ab4cfb7c1a4581e823ed378758be3b",
+    "NuGet.Config": "2142cfb2dfa2c7feefbe40fabcc68b0dfecadafa99a1db9b70239d977cf2a7ef",
+    "verify.sh": "258774d11b5d946a902987276fdc1222c67878c702f4b6f55ce35ce16ebbc46f",
+    "../../../ports/wallet/productcatalog/source/docs__MULTI_WALLET.md": "ef207ff184c568677e52e349863f5e5e62958d5598aeba2f3b184629f6c34512",
+    "../../../ports/wallet/productcatalog/source/docs__WALLET_PROVIDER_PURCHASE_APIS.md": "f0e2f7b7f6a9276bd0a1f2cfb90a4c6e408a4b346b4be64217c638026e25c354",
+    "../../../ports/wallet/productcatalog/source/docs__WALLET_FUNDS.md": "8ac6b6530c3ad9731312711c5b3f8c99b6bac366c291905cdeaf41edbe0564cf",
+    "../../../ports/wallet/productcatalog/source/DysonNetwork.Wallet__Startup__ServiceCollectionExtensions.cs": "4ef4b702e307b06d44a42bb3bd994ec7c16d7ca36c4728a5fe3d83908e0ddcc7",
+    "../../../ports/wallet/productcatalog/source/DysonNetwork.Wallet__Payment__WalletProductController.cs": "134f855426bdeeb02e3da2e6a29a924557c91105ff8fcb0d2e47bfabaf247599",
+    "../../../ports/wallet/productcatalog/source/DysonNetwork.Wallet__Payment__WalletProductService.cs": "632aabaecaf2893241ff958e50d40c5cdff29b38f5e55d866c2ca85fc1fb1085",
+    "../../../ports/wallet/productcatalog/source/DysonNetwork.Wallet__Models__WalletProductOptions.cs": "e4cc20e37aeafcf7d7b6da79d0b3ffa0e481353c17176a3e57403aff3d2c824f",
+    "../../../ports/wallet/productcatalog/source/LICENSE.txt": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+    "../../../ports/wallet/productcatalog/source/JsonSeparatorNamingPolicy.cs": "45f63b9b970644a3645445606f20cbd4894e153cbdc949635c7ce037007e2049",
+    "../../../ports/wallet/productcatalog/source/LICENSE-MIT.txt": "cbff440b0d8166de75b5dae0e18498c869b3521974b37df7c7093a349e560b3a",
+    "review-cases.json": "c2044ac0f60d2a64a1de8615cefb2326d142884455c57d21520558648c658064",
+    "review-expected.json": "78dc147c1b5f39cb386170214421a3cf0f70a4ee75b3d88781afe2d12ec6f576"
+  },
+  "not_claimed": [
+    "Go differential parity; verify separately",
+    "Excluded Currency constant value",
+    "No-configuration canonical default",
+    "Production middleware or full HTTP parity",
+    "Checkout/payment behavior",
+    "All historical framework/globalization versions"
+  ],
+  "independent_review_cases": 6,
+  "config_reachable_cases": 383
+}

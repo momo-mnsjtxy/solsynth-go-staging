@@ -22,6 +22,7 @@ import (
 	"solsynth.local/go-migration/ports/passport/badgediscovery"
 	"solsynth.local/go-migration/ports/sphere"
 	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
+	"solsynth.local/go-migration/ports/wallet/productcatalog"
 )
 
 // fixtureAuth is explicitly development-only and binds one synthetic account.
@@ -44,12 +45,21 @@ func main() {
 	address := flag.String("listen", "127.0.0.1:8080", "loopback listen address")
 	storage := flag.String("storage", "file", "watch persistence adapter: file, postgres, or none")
 	badgeIcons := flag.String("badge-icons", "./Resources/BadgeIcons", "badge SVG directory; upstream default, missing directory omits icon URLs")
+	var productFlags walletProductFlags
+	flag.BoolVar(&productFlags.enabled, "synthetic-wallet-product-catalog", false, "opt in to documented wallet product configuration candidate; no purchases")
+	flag.Var(&productFlags.configs, "wallet-product-config", "wallet product JSON snapshot provider; repeat in precedence order")
+	flag.StringVar(&productFlags.defaultCurrency, "synthetic-wallet-product-default-currency", "", "explicit fixture default, not inferred upstream constant")
 	var exchangeConfigs configFiles
 	flag.Var(&exchangeConfigs, "exchange-config", "appsettings-style JSON file for exchange catalog; repeat in low-to-high precedence order")
 	dsnEnv := flag.String("postgres-dsn-env", "SOLSYNTH_POSTGRES_DSN", "environment variable holding the PostgreSQL DSN; never logged")
 	data := flag.String("data", "./data/watch-preferences.json", "single-process local persistence file")
 	fixture := flag.String("fixture-account", "", "opt-in synthetic local-test identity; NOT production authentication")
 	flag.Parse()
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "synthetic-wallet-product-default-currency" {
+			productFlags.defaultCurrencySet = true
+		}
+	})
 	host, _, err := net.SplitHostPort(*address)
 	if err != nil {
 		log.Fatal(err)
@@ -59,6 +69,10 @@ func main() {
 		log.Fatal("development host must bind a loopback IP")
 	}
 	catalog, err := loadExchangeCatalog(exchangeConfigs)
+	if err != nil {
+		log.Fatal(err)
+	}
+	products, err := makeWalletProductHandler(productFlags)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,10 +110,18 @@ func main() {
 		log.Fatal("storage must be file, postgres, or none")
 	}
 	service := &sphere.WatchService{Repository: repository}
-	server := &http.Server{Addr: *address, Handler: newAPIHandler(sphere.NewWatchHandler(service, fixtureAuth{account: *fixture}), catalog, badgediscovery.NewHandler(badgediscovery.Config{IconsPath: *badgeIcons})), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
+	server := &http.Server{Addr: *address, Handler: newAPIHandler(sphere.NewWatchHandler(service, fixtureAuth{account: *fixture}), catalog, badgediscovery.NewHandler(badgediscovery.Config{IconsPath: *badgeIcons}), products), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
+	listener, err := net.Listen("tcp", *address)
+	if err != nil {
+		log.Fatal("unable to listen on development loopback address")
+	}
+	defer listener.Close()
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(stop)
+	shutdownDone := make(chan struct{})
 	go func() {
+		defer close(shutdownDone)
 		<-stop
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -112,10 +134,11 @@ func main() {
 	} else {
 		log.Print("SYNTHETIC FIXTURE MODE: no production authentication; local development only")
 	}
-	log.Printf("Solsynth development service listening at %s", *address)
-	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	log.Printf("Solsynth development service listening at %s", listener.Addr())
+	if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
+	<-shutdownDone
 }
 
 // configFiles preserves provider precedence; configuration is a startup snapshot.
@@ -155,6 +178,10 @@ func loadExchangeCatalog(paths []string) (*exchangecatalog.Catalog, error) {
 func newAPIHandler(watch http.Handler, catalog *exchangecatalog.Catalog, badges ...http.Handler) http.Handler {
 	exchange := exchangecatalog.NewHandler(catalog)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if len(badges) > 1 && badges[1] != nil && productcatalog.RouteMatches(r.URL.Path) {
+			badges[1].ServeHTTP(w, r)
+			return
+		}
 		if len(badges) > 0 && badges[0] != nil && badgediscovery.RouteMatches(r.URL.Path) {
 			badges[0].ServeHTTP(w, r)
 			return

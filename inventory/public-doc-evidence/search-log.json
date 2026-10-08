@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "checked_on": "2026-10-08",
+  "browser_search": {
+    "query": "products",
+    "page": "https://kb.solsynth.dev/solar-network/multi-factor-login/",
+    "result": "The visible search dialog remained in its initial prompt with no results after input. This is an unsuccessful search execution, not zero matching documents."
+  },
+  "qualified_negative": "No separate authored public product or bot page was identified in the inspected English/Chinese navigation or these bounded official-domain searches. Existing owned docs and licensed-client audit remain the stronger available evidence. No exhaustive web-absence claim.",
+  "batches": [
+    {
+      "queries": [
+        "site:kb.solsynth.dev \"Permission System\"",
+        "site:kb.solsynth.dev \"Tag Ownership API\"",
+        "site:kb.solsynth.dev \"Developer Services\"",
+        "site:kb.solsynth.dev \"Authentication Methods\""
+      ],
+      "returned_official_urls": [
+        "https://kb.solsynth.dev/solar-network/solarpass-factors/"
+      ]
+    },
+    {
+      "queries": [
+        "site:kb.solsynth.dev \"products\" \"api\"",
+        "site:kb.solsynth.dev \"bots\"",
+        "site:kb.solsynth.dev \"permissions\" \"permission\"",
+        "site:kb.solsynth.dev \"session\" \"token\""
+      ],
+      "returned_official_urls": [
+        "https://kb.solsynth.dev/solar-network/publisher/",
+        "https://kb.solsynth.dev/solar-network/punishment/",
+        "https://kb.solsynth.dev/solar-network/stellar-program/",
+        "https://kb.solsynth.dev/solar-network/developers/presence-activity/",
+        "https://kb.solsynth.dev/solar-network/developers/oauth/",
+        "https://kb.solsynth.dev/zh/solar-network/apis/drive/",
+        "https://kb.solsynth.dev/zh/solar-network/developers/presence-activity/"
+      ]
+    }
+  ],
+  "batch_limit": "The web tool returns combined batch results; no per-query absence or complete search-index coverage is inferred."
+}

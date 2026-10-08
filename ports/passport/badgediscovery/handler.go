@@ -72,12 +72,12 @@ func Catalog(hasIcons bool) Manifest {
 // endpoints. Actual method and basename checks remain in the handler.
 func RouteMatches(path string) bool {
 	path = strings.TrimSuffix(path, "/")
-	return strings.EqualFold(path, manifestPath) || iconRoute(path)
+	return equalRouteLiteral(path, manifestPath) || iconRoute(path)
 }
 
 func iconRoute(path string) bool {
 	return len(path) > len(iconPrefix) &&
-		strings.EqualFold(path[:len(iconPrefix)], iconPrefix) &&
+		equalRouteLiteral(path[:len(iconPrefix)], iconPrefix) &&
 		!strings.Contains(path[len(iconPrefix):], "/")
 }
 
@@ -111,7 +111,7 @@ func (h *handler) fail(w http.ResponseWriter, r *http.Request, status int, code,
 }
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimSuffix(r.URL.Path, "/")
-	isManifest := strings.EqualFold(path, manifestPath)
+	isManifest := equalRouteLiteral(path, manifestPath)
 	isIcon := iconRoute(path)
 	if !isManifest && !isIcon {
 		w.WriteHeader(http.StatusNotFound)
@@ -178,4 +178,25 @@ func (h *handler) icon(w http.ResponseWriter, r *http.Request, name string) {
 	w.Header().Set("Content-Length", fmt.Sprint(len(data)))
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(data)
+}
+
+// Route literals are ASCII. Unicode simple-fold equivalences such as long s
+// and Kelvin sign are not equivalent to ASCII letters in the retained MVC oracle.
+func equalRouteLiteral(value, literal string) bool {
+	if len(value) != len(literal) {
+		return false
+	}
+	for i := range len(literal) {
+		a, b := value[i], literal[i]
+		if a >= 'A' && a <= 'Z' {
+			a += 'a' - 'A'
+		}
+		if b >= 'A' && b <= 'Z' {
+			b += 'a' - 'A'
+		}
+		if a != b {
+			return false
+		}
+	}
+	return true
 }

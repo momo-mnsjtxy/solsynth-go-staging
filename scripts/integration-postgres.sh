@@ -35,10 +35,23 @@ start
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f tests/integration/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/watchpg/testdata/watchers-projection.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/boardpg/testdata/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/developpg/testdata/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/developpg/testdata/packages.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/developpg/testdata/bot_commands.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/nodeinfopg/testdata/schema.sql
+"$GO_BIN" build -o "$run/develop-discovery" ./cmd/develop-discovery
+"$GO_BIN" build -o "$run/solsynth-go" ./cmd/solsynth-go
+"$GO_BIN" build -o "$run/nodeinfo" ./cmd/nodeinfo
 PG_TEST_PHASE=before "$GO_BIN" test -race -count=1 -json ./tests/integration | tee "$run/before.jsonl"
 python3 scripts/check-integration-results.py before "$run/before.jsonl"
+python3 scripts/verify-develop-http.py "$run/develop-discovery"
+python3 scripts/verify-catalog-http.py "$run/solsynth-go"
 "$PG_BIN/pg_ctl" -D "$run/data" -m fast -w stop
 running=0
 start
-PG_TEST_PHASE=after "$GO_BIN" test -race -count=1 -json -run '^(TestPGRestartPersistence|TestPGBoardRestartPersistence)$' ./tests/integration | tee "$run/after.jsonl"
+PG_TEST_PHASE=after "$GO_BIN" test -race -count=1 -json -run '^(TestPGRestartPersistence|TestPGBoardRestartPersistence|TestPGDevelopDiscoveryRestartPersistence|TestPGDevelopPackageRestartPersistence|TestPGNodeInfoRestartPersistence|TestPGDevelopBotCommandsRestartPersistence)$' ./tests/integration | tee "$run/after.jsonl"
 python3 scripts/check-integration-results.py after "$run/after.jsonl"
+python3 scripts/verify-develop-http.py "$run/develop-discovery"
+python3 scripts/verify-catalog-http.py "$run/solsynth-go"
+
+python3 scripts/verify-candidate-http.py "$run/develop-discovery" "$run/nodeinfo" "$PG_BIN/psql"

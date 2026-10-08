@@ -1,0 +1,822 @@
+{
+  "audit_date": "2026-10-08",
+  "repository": "Solsynth/Solian",
+  "ref": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+  "tree_metadata": {
+    "source_url": "https://api.github.com/repos/Solsynth/Solian/git/trees/ffd0838e5f04cb40bea311a39118ebeedad210c1?recursive=1",
+    "returned_sha": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+    "truncated": false,
+    "entries": 1619
+  },
+  "auth_subtree": [
+    {
+      "path": "lib/auth/auth_form_widgets.dart",
+      "git_blob_sha": "abcbbd68fb0762a84b5b0d29cbc9f962a1ad0636",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/authorize_screen.dart",
+      "git_blob_sha": "4071f4080bbf1e95eb2b33fc1ccd4c91311bc75a",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/captcha.config.dart",
+      "git_blob_sha": "a80a5fa3c7873b88279be2b2731f7bd10d1f1672",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/captcha.config.g.dart",
+      "git_blob_sha": "e48d4cc577109da20a3d81ed9360a43567d8d19c",
+      "retained": false,
+      "excluded_from_retention_reason": "Generated client implementation; not required to establish authored call sites"
+    },
+    {
+      "path": "lib/auth/captcha.dart",
+      "git_blob_sha": "08713927d0605639d4fe14c621cbafef71c2836a",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/captcha.native.dart",
+      "git_blob_sha": "c1b8437822355ba441bf24a779168faf889eaf3a",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/captcha.web.dart",
+      "git_blob_sha": "784e6e33cf1d6b4de46ba373238f2e78436a4167",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/challenge_approval_sheet.dart",
+      "git_blob_sha": "b86ee694fc425b9553bc1df0aabc402cddaf63a9",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/challenge_ws_listener.dart",
+      "git_blob_sha": "ba0a02b4fe47f9013917d5a54b68f07b0bd0cdf6",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/create_account.dart",
+      "git_blob_sha": "c9b4767f0e5451ac152ad561f593b9aa89cfe0f5",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/create_account_content.dart",
+      "git_blob_sha": "d5e3d441d64113624f6b74096de66a174966ca75",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/create_account_modal.dart",
+      "git_blob_sha": "a6d6af632ef269643ec3f8ba74fea004cbb4b152",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/login.dart",
+      "git_blob_sha": "5020e8a2ccd54db4e6cb634900ec534d34ddf792",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/login_content.dart",
+      "git_blob_sha": "7c5a700fc02b81b310c4668ab976430ae8081a73",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/login_modal.dart",
+      "git_blob_sha": "e6540dca14c6f174a9b1d14fe69389d7d5f8ec6a",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/models/authorize_client_info.dart",
+      "git_blob_sha": "c28dd0e4d1cb144666011f52ec42d6879cc53709",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/oidc.dart",
+      "git_blob_sha": "600d0d9ebce7f5388762a5e2ce83da51ec64216c",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/oidc.native.dart",
+      "git_blob_sha": "258f234d13da16e0827e14c448e9296a6bce5ccb",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/oidc.web.dart",
+      "git_blob_sha": "ac1cb20725400132a02c73518e61744668a09cd1",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/public_app.dart",
+      "git_blob_sha": "2070bd5b1fb43fd84de0dc15852e17d853f359a9",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/web_auth/auth_request_sheet.dart",
+      "git_blob_sha": "3b8009c75d18ab92125bb85ae439c7bdca829ae4",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/web_auth/web_auth_app_info.dart",
+      "git_blob_sha": "69e80d11ddb4302b837aa4adb269b6a5e7049741",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/web_auth/web_auth_app_info.freezed.dart",
+      "git_blob_sha": "2bfc9b06cd2f530a57e2d88f99c3d054e2d3134a",
+      "retained": false,
+      "excluded_from_retention_reason": "Generated client implementation; not required to establish authored call sites"
+    },
+    {
+      "path": "lib/auth/web_auth/web_auth_app_info.g.dart",
+      "git_blob_sha": "cd1959c5cef6e4ce2502d637fb998a044ced0f8a",
+      "retained": false,
+      "excluded_from_retention_reason": "Generated client implementation; not required to establish authored call sites"
+    },
+    {
+      "path": "lib/auth/web_auth/web_auth_server.dart",
+      "git_blob_sha": "ca56f0175a554f1a7b55ec34dece3f01afb0a30c",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    },
+    {
+      "path": "lib/auth/widgets/auth_consent.dart",
+      "git_blob_sha": "3203e04f7aa921ef01673615aaed9896d2d893ac",
+      "retained": true,
+      "excluded_from_retention_reason": null
+    }
+  ],
+  "queries": [
+    {
+      "query": "TOKEN_EXPIRED",
+      "count": 1,
+      "result_paths": [
+        "lib/core/network.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/network.dart"
+      ]
+    },
+    {
+      "query": "/stargate/sessions",
+      "count": 3,
+      "result_paths": [
+        "ios/SolianWatchApp/Views/AccountSessionsView.swift",
+        "ios/SolianWatchApp/Models/Models.swift",
+        "ios/SolianWatchApp/Services/NetworkService.swift"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Views/AccountSessionsView.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Models/Models.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Services/NetworkService.swift"
+      ]
+    },
+    {
+      "query": "/stargate/permissions",
+      "count": 0,
+      "result_paths": [],
+      "source_url_refs": []
+    },
+    {
+      "query": "cookie",
+      "count": 4,
+      "result_paths": [
+        "ios/SolianWatchApp/Views/InAppWebView.swift",
+        "docs/PLUGIN_SYSTEM.md",
+        "lib/plugins/apis/network_api.dart",
+        "ios/SolianWatchApp/Views/SignInView.swift"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Views/InAppWebView.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/docs/PLUGIN_SYSTEM.md",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/apis/network_api.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Views/SignInView.swift"
+      ]
+    },
+    {
+      "query": "AuthToken",
+      "count": 8,
+      "result_paths": [
+        "lib/auth/oidc.native.dart",
+        "lib/chat/data/message_repository.dart",
+        "lib/core/network/media_proxy_server.dart",
+        "ios/Solian/Services/SharedConstants.swift",
+        "lib/core/network.dart",
+        "lib/core/websocket.dart",
+        "ios/Solian/Services/AppIntentHandlers.swift",
+        "test/core/token_external_rotation_test.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/oidc.native.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/data/message_repository.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/network/media_proxy_server.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/Solian/Services/SharedConstants.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/network.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/websocket.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/Solian/Services/AppIntentHandlers.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/core/token_external_rotation_test.dart"
+      ]
+    },
+    {
+      "query": "permission",
+      "count": 50,
+      "result_paths": [
+        "ios/Podfile",
+        "assets/icons/LICENSE.md",
+        "docs/PLUGIN_SYSTEM.md",
+        "lib/plugins/apis/network_api.dart",
+        "README.md",
+        "ios/Podfile.lock",
+        "windows/flutter/generated_plugins.cmake",
+        "lib/plugins/models/marketplace_plugin.dart",
+        "docs/APP_STORE_SIGNING_SECRETS.md",
+        "lib/plugins/models/plugin_install_preview.dart",
+        "ios/SolianWatchApp/Utils/QRGen/QRCodeECC.swift",
+        "ios/SolianWatchApp/Utils/QRGen/BitBuffer.swift",
+        "windows/flutter/generated_plugin_registrant.cc",
+        "ios/SolianWatchApp/Utils/QRGen/QRCodeMask.swift",
+        "lib/chat/pods/call_controller.dart",
+        "ios/SolianWatchApp/Utils/QRGen/QRCodeError.swift",
+        "ios/SolianWatchApp/Utils/QRGen/QRCodeVersion.swift",
+        "ios/SolianWatchApp/Utils/QRGen/QRCodeConstants.swift",
+        "pubspec.lock",
+        "lib/posts/widgets/compose/compose_recorder.dart",
+        "lib/drive/file_permissions.dart",
+        "lib/drive/file_permissions.g.dart",
+        "lib/misc/dashboard/weather.dart",
+        "lib/core/widgets/content/file_info_sheet.dart",
+        "web/passkeys/bundle.js",
+        "lib/accounts/screens/meet.dart",
+        "lib/accounts/screens/affiliations.dart",
+        "lib/auth/widgets/auth_consent.dart",
+        "ios/SolianWatchApp/Utils/QRGen/QRSegment.swift",
+        "lib/realms/screens/realm_detail.dart",
+        "lib/chat/widgets/chat_input.dart",
+        "web/.well-known/assetlinks.json",
+        "lib/accounts/screens/affiliation_detail.dart",
+        "ios/SolianWatchApp/Utils/QRGen/QRCode.swift",
+        "android/app/src/main/AndroidManifest.xml",
+        "android/app/src/debug/AndroidManifest.xml",
+        "android/app/src/profile/AndroidManifest.xml",
+        "pubspec.yaml",
+        "assets/i18n/zh-OG.json",
+        "assets/i18n/zh-TW.json",
+        "assets/i18n/zh-CN.json",
+        "assets/i18n/es-ES.json",
+        "assets/i18n/en-US.json",
+        "assets/i18n/ko-KR.json",
+        "assets/i18n/ja-JP.json",
+        "lib/plugins/apis/notify_api.dart",
+        "lib/plugins/js_service_native.dart",
+        "lib/plugins/apis/websocket_api.dart",
+        "lib/plugins/apis/dashboard_api.dart",
+        "lib/plugins/apis/icons_api.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/Podfile",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/icons/LICENSE.md",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/docs/PLUGIN_SYSTEM.md",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/apis/network_api.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/README.md",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/Podfile.lock",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/windows/flutter/generated_plugins.cmake",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/models/marketplace_plugin.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/docs/APP_STORE_SIGNING_SECRETS.md",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/models/plugin_install_preview.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Utils/QRGen/QRCodeECC.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Utils/QRGen/BitBuffer.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/windows/flutter/generated_plugin_registrant.cc",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Utils/QRGen/QRCodeMask.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/pods/call_controller.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Utils/QRGen/QRCodeError.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Utils/QRGen/QRCodeVersion.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Utils/QRGen/QRCodeConstants.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/pubspec.lock",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/posts/widgets/compose/compose_recorder.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/drive/file_permissions.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/drive/file_permissions.g.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/misc/dashboard/weather.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/widgets/content/file_info_sheet.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/web/passkeys/bundle.js",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/meet.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/affiliations.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/widgets/auth_consent.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Utils/QRGen/QRSegment.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/realms/screens/realm_detail.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/widgets/chat_input.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/web/.well-known/assetlinks.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/affiliation_detail.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Utils/QRGen/QRCode.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/android/app/src/main/AndroidManifest.xml",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/android/app/src/debug/AndroidManifest.xml",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/android/app/src/profile/AndroidManifest.xml",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/pubspec.yaml",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/zh-OG.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/zh-TW.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/zh-CN.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/es-ES.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/en-US.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/ko-KR.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/ja-JP.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/apis/notify_api.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/js_service_native.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/apis/websocket_api.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/apis/dashboard_api.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/apis/icons_api.dart"
+      ]
+    },
+    {
+      "query": "hasPermission",
+      "count": 4,
+      "result_paths": [
+        "lib/plugins/apis/network_api.dart",
+        "lib/plugins/apis/websocket_api.dart",
+        "lib/posts/widgets/compose/compose_recorder.dart",
+        "lib/chat/widgets/chat_input.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/apis/network_api.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/apis/websocket_api.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/posts/widgets/compose/compose_recorder.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/widgets/chat_input.dart"
+      ]
+    },
+    {
+      "query": "isSuperuser",
+      "count": 21,
+      "result_paths": [
+        "lib/accounts/screens/punishments.dart",
+        "lib/data/message.dart",
+        "lib/accounts/screens/punishment_create_sheet.dart",
+        "lib/tickets/screens/ticket_list.dart",
+        "lib/core/debug_sheet.dart",
+        "lib/discovery/explore.dart",
+        "lib/plugins/models/marketplace_plugin.dart",
+        "lib/accounts/screens/affiliations.dart",
+        "ios/SolianWatchApp/Models/Models.swift",
+        "lib/accounts/screens/affiliation_detail.dart",
+        "lib/accounts/screens/me/account_settings.dart",
+        "test/chat/chat_thread_panel_test.dart",
+        "test/chat/deleted_message_content_test.dart",
+        "test/chat/chat_read_receipt_test.dart",
+        "test/notifications/notification_state_test.dart",
+        "test/chat/chat_search_view_test.dart",
+        "test/data/database_contract_test.dart",
+        "test/chat/messages_notifier_test.dart",
+        "test/chat/message_timeline_markers_test.dart",
+        "test/chat/message_avatar_alignment_test.dart",
+        "test/discovery/explore_wide_layout_test.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/punishments.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/data/message.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/punishment_create_sheet.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/tickets/screens/ticket_list.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/debug_sheet.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/discovery/explore.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/models/marketplace_plugin.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/affiliations.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Models/Models.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/affiliation_detail.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/me/account_settings.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/chat/chat_thread_panel_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/chat/deleted_message_content_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/chat/chat_read_receipt_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/notifications/notification_state_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/chat/chat_search_view_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/data/database_contract_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/chat/messages_notifier_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/chat/message_timeline_markers_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/chat/message_avatar_alignment_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/discovery/explore_wide_layout_test.dart"
+      ]
+    },
+    {
+      "query": "/auth/token",
+      "count": 4,
+      "result_paths": [
+        "lib/core/network.dart",
+        "lib/auth/login_content.dart",
+        "ios/Solian/Services/DataExchange.swift",
+        "lib/auth/create_account_content.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/network.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/login_content.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/Solian/Services/DataExchange.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/create_account_content.dart"
+      ]
+    },
+    {
+      "query": "/auth/logout",
+      "count": 0,
+      "result_paths": [],
+      "source_url_refs": []
+    },
+    {
+      "query": "stargateApiClientProvider",
+      "count": 4,
+      "result_paths": [
+        "lib/core/network.dart",
+        "lib/e2ee/mls_client.dart",
+        "lib/auth/authorize_screen.dart",
+        "lib/chat/widgets/chat_detail_screen.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/network.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/e2ee/mls_client.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/authorize_screen.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/widgets/chat_detail_screen.dart"
+      ]
+    },
+    {
+      "query": "RefreshToken",
+      "count": 9,
+      "result_paths": [
+        "ios/Solian/Services/DataExchange.swift",
+        "lib/core/network.dart",
+        "ios/SolianWatchApp/Services/StandaloneAuthService.swift",
+        "lib/auth/login_content.dart",
+        "lib/shared/widgets/app_wrapper.dart",
+        "lib/auth/create_account_content.dart",
+        "lib/core/debug_sheet.dart",
+        "test/core/auth_callback_token_test.dart",
+        "test/core/token_external_rotation_test.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/Solian/Services/DataExchange.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/network.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Services/StandaloneAuthService.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/login_content.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/shared/widgets/app_wrapper.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/create_account_content.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/debug_sheet.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/core/auth_callback_token_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/core/token_external_rotation_test.dart"
+      ]
+    },
+    {
+      "query": "/accounts/me",
+      "count": 22,
+      "result_paths": [
+        "ios/SolianWatchApp/Models/Models.swift",
+        "lib/accounts/widgets/name_change_card_sheet.dart",
+        "lib/wallets/pin_status.dart",
+        "ios/Solian/Services/SharedConstants.swift",
+        "lib/accounts/account_pod.dart",
+        "docs/PLUGIN_SYSTEM.md",
+        "lib/chat/pods/chat_account_status.dart",
+        "lib/accounts/screens/leveling.dart",
+        "lib/accounts/screens/progress.dart",
+        "lib/auth/web_auth/web_auth_server.dart",
+        "lib/accounts/screens/me/board_edit.dart",
+        "lib/accounts/screens/me/profile_update.dart",
+        "lib/accounts/widgets/account/board.dart",
+        "ios/SolianWatchApp/Services/NetworkService.swift",
+        "lib/accounts/widgets/account/status_creation.dart",
+        "lib/accounts/screens/me/account_activation.dart",
+        "ios/SolianWidgetExtension/SolianCheckInWidget.swift",
+        "lib/accounts/screens/meet.dart",
+        "lib/posts/widgets/compose/compose_meet_sheet.dart",
+        "lib/core/widgets/embeds/embed_list.dart",
+        "test/accounts/check_in_backdate_test.dart",
+        "test/core/widgets/embeds/embed_list_surface_test.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Models/Models.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/widgets/name_change_card_sheet.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/wallets/pin_status.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/Solian/Services/SharedConstants.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/account_pod.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/docs/PLUGIN_SYSTEM.md",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/pods/chat_account_status.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/leveling.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/progress.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/web_auth/web_auth_server.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/me/board_edit.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/me/profile_update.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/widgets/account/board.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Services/NetworkService.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/widgets/account/status_creation.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/me/account_activation.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWidgetExtension/SolianCheckInWidget.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/meet.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/posts/widgets/compose/compose_meet_sheet.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/widgets/embeds/embed_list.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/accounts/check_in_backdate_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/core/widgets/embeds/embed_list_surface_test.dart"
+      ]
+    },
+    {
+      "query": "Authorization",
+      "count": 39,
+      "result_paths": [
+        "docs/SOL_SYNTH_EXPRESS_MIGRATION.md",
+        "ios/Solian/NotifyDelegate.swift",
+        "lib/developers/models/custom_app.dart",
+        "ios/SolianWatchApp/Services/ImageLoader.swift",
+        "docs/PLUGIN_SYSTEM.md",
+        "ios/SolianWatchApp/Services/StandaloneAuthService.swift",
+        "ios/Solian/Services/NetworkService.swift",
+        "lib/plugins/apis/network_api.dart",
+        "lib/auth/oidc.native.dart",
+        "ios/SolianWatchApp/Views/DeviceApprovalQrView.swift",
+        "lib/auth/web_auth/web_auth_server.dart",
+        "lib/core/network.dart",
+        "android/app/src/main/kotlin/dev/solsynth/solian/network/ApiClient.kt",
+        "lib/auth/login_content.dart",
+        "lib/core/websocket.dart",
+        "lib/developers/models/custom_app.g.dart",
+        "lib/shared/widgets/content/audio.dart",
+        "lib/core/network/media_proxy_server.dart",
+        "lib/accounts/screens/me/settings_connections.dart",
+        "ios/SolianWidgetExtension/WidgetNetworking.swift",
+        "lib/chat/data/message_repository.dart",
+        "ios/Solian/AppDelegate.swift",
+        "lib/shared/widgets/content/image.dart",
+        "lib/chat/messages_notifier.dart",
+        "lib/auth/create_account_content.dart",
+        "ios/SolianWatchApp/Views/SignInView.swift",
+        "lib/chat/widgets/message_content.dart",
+        "ios/SolianWatchApp/Views/StickerImage.swift",
+        "lib/shared/widgets/content/video.native.dart",
+        "lib/accounts/screens/me/account_qr.dart",
+        "ios/SolianWatchApp/Services/NetworkService.swift",
+        "ios/SolianWidgetExtension/SolianPostShuffleWidget.swift",
+        "ios/SolianWidgetExtension/SolianNotificationWidget.swift",
+        "assets/i18n/en-US.json",
+        "LICENSE.txt",
+        "buildtools/test-distribution-upload.sh",
+        "test/auth/auth_consent_test.dart",
+        "test/shared/sheet_scaffold_keyboard_test.dart",
+        "lib/developers/models/custom_app.freezed.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/docs/SOL_SYNTH_EXPRESS_MIGRATION.md",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/Solian/NotifyDelegate.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/developers/models/custom_app.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Services/ImageLoader.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/docs/PLUGIN_SYSTEM.md",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Services/StandaloneAuthService.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/Solian/Services/NetworkService.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/apis/network_api.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/oidc.native.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Views/DeviceApprovalQrView.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/web_auth/web_auth_server.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/network.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/android/app/src/main/kotlin/dev/solsynth/solian/network/ApiClient.kt",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/login_content.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/websocket.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/developers/models/custom_app.g.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/shared/widgets/content/audio.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/network/media_proxy_server.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/me/settings_connections.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWidgetExtension/WidgetNetworking.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/data/message_repository.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/Solian/AppDelegate.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/shared/widgets/content/image.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/messages_notifier.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/create_account_content.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Views/SignInView.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/widgets/message_content.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Views/StickerImage.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/shared/widgets/content/video.native.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/me/account_qr.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Services/NetworkService.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWidgetExtension/SolianPostShuffleWidget.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWidgetExtension/SolianNotificationWidget.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/en-US.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/LICENSE.txt",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/buildtools/test-distribution-upload.sh",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/auth/auth_consent_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/shared/sheet_scaffold_keyboard_test.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/developers/models/custom_app.freezed.dart"
+      ]
+    },
+    {
+      "query": "AtField",
+      "count": 0,
+      "result_paths": [],
+      "source_url_refs": []
+    },
+    {
+      "query": "AkField",
+      "count": 0,
+      "result_paths": [],
+      "source_url_refs": []
+    },
+    {
+      "query": "/permissions",
+      "count": 1,
+      "result_paths": [
+        "lib/realms/screens/realm_detail.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/realms/screens/realm_detail.dart"
+      ]
+    },
+    {
+      "query": "/.well-known/permissions",
+      "count": 0,
+      "result_paths": [],
+      "source_url_refs": []
+    },
+    {
+      "query": "token_use",
+      "count": 0,
+      "result_paths": [],
+      "source_url_refs": []
+    },
+    {
+      "query": "account_ver",
+      "count": 0,
+      "result_paths": [],
+      "source_url_refs": []
+    },
+    {
+      "query": "session_epoch",
+      "count": 0,
+      "result_paths": [],
+      "source_url_refs": []
+    },
+    {
+      "query": "revokeCurrentSession",
+      "count": 3,
+      "result_paths": [
+        "ios/SolianWatchApp/Services/NetworkService.swift",
+        "ios/SolianWatchApp/State/AppState.swift",
+        "lib/accounts/account_screen.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Services/NetworkService.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/State/AppState.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/account_screen.dart"
+      ]
+    },
+    {
+      "query": "logOut",
+      "count": 24,
+      "result_paths": [
+        "lib/accounts/account_pod.dart",
+        "lib/e2ee/mls_storage.dart",
+        "lib/developers/models/custom_app.g.dart",
+        "lib/accounts/screens/action_logs.dart",
+        "lib/core/websocket.dart",
+        "lib/accounts/account_screen.dart",
+        "lib/core/services/analytics_service.dart",
+        "lib/plugins/icons/material_symbol_lookup.dart",
+        "ios/SolianWatchApp/State/AppState.swift",
+        "lib/creators/screens/hub.dart",
+        "lib/chat/widgets/message_content.dart",
+        "lib/chat/widgets/call_overlay.dart",
+        "lib/accounts/widgets/account/account_devices.dart",
+        "lib/shared/widgets/app_startup_splash.dart",
+        "lib/accounts/widgets/account/account_authorized_apps.dart",
+        "assets/i18n/zh-OG.json",
+        "assets/i18n/es-ES.json",
+        "assets/i18n/en-US.json",
+        "assets/i18n/ko-KR.json",
+        "assets/i18n/ja-JP.json",
+        "assets/i18n/zh-TW.json",
+        "assets/i18n/zh-CN.json",
+        "lib/developers/models/custom_app.dart",
+        "lib/developers/models/custom_app.freezed.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/account_pod.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/e2ee/mls_storage.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/developers/models/custom_app.g.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/action_logs.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/websocket.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/account_screen.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/services/analytics_service.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/plugins/icons/material_symbol_lookup.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/State/AppState.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/creators/screens/hub.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/widgets/message_content.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/widgets/call_overlay.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/widgets/account/account_devices.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/shared/widgets/app_startup_splash.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/widgets/account/account_authorized_apps.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/zh-OG.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/es-ES.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/en-US.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/ko-KR.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/ja-JP.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/zh-TW.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/zh-CN.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/developers/models/custom_app.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/developers/models/custom_app.freezed.dart"
+      ]
+    },
+    {
+      "query": "revoked",
+      "count": 20,
+      "result_paths": [
+        "ios/SolianWatchApp/State/AppState.swift",
+        "lib/creators/screens/domains/domain_manage.dart",
+        "ios/SolianWatchApp/Utils/L10n.swift",
+        "ios/SolianWatchApp/en.lproj/Localizable.strings",
+        "ios/SolianWatchApp/zh-Hant.lproj/Localizable.strings",
+        "ios/SolianWatchApp/zh-Hans.lproj/Localizable.strings",
+        "ios/SolianWatchApp/Services/StandaloneAuthService.swift",
+        "ios/SolianWatchApp/Services/NetworkService.swift",
+        "assets/i18n/en-US.json",
+        "lib/activity/activity_rpc.dart",
+        "lib/e2ee/mls_identity_manager.dart",
+        "ios/SolianWatchApp/Views/AccountSessionsView.swift",
+        "lib/accounts/screens/me/settings_webdav.dart",
+        "lib/accounts/widgets/account/account_devices.dart",
+        "assets/i18n/zh-TW.json",
+        "assets/i18n/zh-CN.json",
+        "assets/i18n/zh-OG.json",
+        "assets/i18n/es-ES.json",
+        "assets/i18n/ko-KR.json",
+        "assets/i18n/ja-JP.json"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/State/AppState.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/creators/screens/domains/domain_manage.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Utils/L10n.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/en.lproj/Localizable.strings",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/zh-Hant.lproj/Localizable.strings",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/zh-Hans.lproj/Localizable.strings",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Services/StandaloneAuthService.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Services/NetworkService.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/en-US.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/activity/activity_rpc.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/e2ee/mls_identity_manager.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Views/AccountSessionsView.swift",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/me/settings_webdav.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/widgets/account/account_devices.dart",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/zh-TW.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/zh-CN.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/zh-OG.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/es-ES.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/ko-KR.json",
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/assets/i18n/ja-JP.json"
+      ]
+    },
+    {
+      "query": "HttpStatus.unauthorized",
+      "count": 1,
+      "result_paths": [
+        "lib/auth/web_auth/web_auth_server.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/web_auth/web_auth_server.dart"
+      ]
+    },
+    {
+      "query": "post.subscriptions.manage",
+      "count": 0,
+      "result_paths": [],
+      "source_url_refs": []
+    },
+    {
+      "query": "getPermissions",
+      "count": 0,
+      "result_paths": [],
+      "source_url_refs": []
+    },
+    {
+      "query": "getSessionChildren",
+      "count": 1,
+      "result_paths": [
+        "lib/accounts/widgets/account/account_devices.dart"
+      ],
+      "source_url_refs": [
+        "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/widgets/account/account_devices.dart"
+      ]
+    }
+  ],
+  "search_limitation": "Repository-scoped indexed search is discovery, not an exhaustive proof of absence. Relevant source was fetched at immutable ref; broad searches may reach requested result limits.",
+  "dependency_boundary": {
+    "socommon": {
+      "gitlink_sha": "6b870980cfa1bfd66c094ff03a119b285ee2ba29",
+      "status": "Not accessed. Parent confirms unresolved earlier canceled per-repository retrieval scope. No metadata, source, mirror or licensing conclusion."
+    }
+  },
+  "retained_authored_count": 59,
+  "runtime_tests": "None executed; upstream synthetic tests were read only; no backend or credential requests."
+}

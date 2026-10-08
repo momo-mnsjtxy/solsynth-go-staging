@@ -1,0 +1,140 @@
+{
+  "recorded_at": "2026-10-08T01:20:28.023274+00:00",
+  "scope": "Local continuation checkpoint, not completed backend parity or a production release",
+  "inputs": {
+    "remote_main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
+    "main_blobs_verified": 163,
+    "local_recovery_blobs_verified": 187,
+    "recovery_remote_commit": null,
+    "recovery_publication": "blocked pending approval; no alternate route used"
+  },
+  "changes": [
+    "Reconciled both code histories without overwriting newer policy/app discovery work",
+    "Miniapp package download real SQL lookup, atomic counter and explicit synthetic local ZIP storage candidate",
+    "NodeInfo three-route real SQL statistics candidate",
+    "Config-only host-meta route candidate with documented XML escaping",
+    "Corrected recovered JSON trailing-comma and badge route-casing regressions",
+    "Comprehensive operation/RPC/job/schema acceptance map and current auth contract audit"
+  ],
+  "production_services_completed": 0,
+  "local_http_operations": 11,
+  "synthetic_candidate_http_operations": 6,
+  "checks": {
+    "source_integrity_entries": 269,
+    "source_integrity_mutation_rejections": 9,
+    "source_integrity_missing_file_rejection": "passed",
+    "pg_result_guard": "27 required before / 5 after; missing/skipped/failure/declaration checks passed",
+    "build": "passed",
+    "vet": "passed",
+    "unit": "passed",
+    "race": "passed",
+    "race_top_level_counts": {
+      "pass": 169,
+      "skip": 27
+    },
+    "race_counts_including_subtests": {
+      "pass": 2158,
+      "skip": 27
+    },
+    "shell_syntax": "passed",
+    "python_syntax": "passed",
+    "workflow_yaml": "parsed",
+    "diff_whitespace": "Authored Go/Python/shell/YAML/Markdown/JSON staged changes pass; retained exact upstream snapshots preserve their original whitespace and are not reformatted"
+  },
+  "independent_oracles": {
+    "original_exchange_catalog_fixtures_reproduced": 1793,
+    "exchange_mvc_cases_reproduced": 6,
+    "exchange_scalar_map_reproduced": 1475,
+    "original_badge_mvc_cases_reproduced": 34,
+    "new_regression_cases_reproduced": 16,
+    "limitations": "bounded source/framework .NET comparisons only; no full original service, real S3 or client end-to-end run"
+  },
+  "database": {
+    "combined_actual_execution": "not_run",
+    "required_before_cases": 27,
+    "required_post_restart_cases": 5,
+    "unit_invocation_skips": [
+      "TestPGBoardRoundTripIsolation",
+      "TestPGBoardAtomicRollback",
+      "TestPGBoardTransactionConcurrency",
+      "TestPGBoardPolicyAndErrors",
+      "TestPGBoardRestartPersistence",
+      "TestPGDevelopPackageDownloadBranches",
+      "TestPGDevelopPackagePolicyAndFailures",
+      "TestPGDevelopPackageAtomicCounter",
+      "TestPGDevelopPackageRestartPersistence",
+      "TestPGDevelopDiscoveryPagingAndCounts",
+      "TestPGDevelopDiscoverySearch",
+      "TestPGDevelopDiscoveryPolicyAndReadOnly",
+      "TestPGDevelopDiscoveryRestartPersistence",
+      "TestPGNodeInfoCountsAndHTTP",
+      "TestPGNodeInfoPolicyAndReadOnly",
+      "TestPGNodeInfoFailurePropagation",
+      "TestPGNodeInfoRestartPersistence",
+      "TestPGWatcherRecipientsAndPreferences",
+      "TestPGWatcherSoftDeleteAssumptions",
+      "TestPGWatcherOneHopChains",
+      "TestPGWatcherInputErrors",
+      "TestPGOriginalSchemaAndIsolation",
+      "TestPGIndependentServicePatchConcurrency",
+      "TestPGSoftDeleteAndDuplicateLiveRows",
+      "TestPGTransactionRollbackAndCancellation",
+      "TestPGRestartPersistence",
+      "TestPGIdentityAndTimestampPreservation"
+    ],
+    "blocker": "local Unix socket creation returns Operation not permitted; permitted escalated retry also failed; remote CI awaits publication approval"
+  },
+  "process_http": {
+    "combined_actual_execution": "not_run",
+    "wired_scripts": [
+      "scripts/verify-develop-http.py",
+      "scripts/verify-catalog-http.py",
+      "scripts/verify-candidate-http.py"
+    ],
+    "scope": "disposable data, loopback only, no redirect following; live port/process success not inferred from handler tests"
+  },
+  "grouped_blockers": [
+    {
+      "area": "publication_and_validation",
+      "needed": "Approved private staging exact-tree publication, then actual 27-case PostgreSQL suite, 5 restart assertions and compiled-process HTTP checks"
+    },
+    {
+      "area": "current_authority",
+      "needed": "Eligible current token/session/revocation/cache-miss/outage/version/epoch semantics, credential precedence and permission authority decision contract; known key and generic JWT/error docs are already retained"
+    },
+    {
+      "area": "shared_transport_and_data",
+      "needed": "Eligible complete response DTO/enum/gateway/filter/audit contracts and synthetic fixtures; excluded unlicensed schemas/generated code remain unusable"
+    },
+    {
+      "area": "remaining_platform_work",
+      "needed": "Implement/test remaining domain persistence, message/event/job/storage/provider behavior and migration/rollback after their scoped contracts are resolved; static inventory is not feature completion"
+    },
+    {
+      "area": "content_rights",
+      "needed": "Verified corpus/asset permission or specifically approved replacement content; Fortune corpus remains excluded"
+    }
+  ],
+  "not_performed": [
+    "Remote publication",
+    "Production deployment",
+    "Production requests or data migration",
+    "Real finance/provider/account operations",
+    "Excluded protocol/model source reuse",
+    "Bypass of SoSYS or publication denials"
+  ],
+  "evidence_files": [
+    "docs/operation-coverage-plan.json",
+    "docs/operation-coverage-plan.md",
+    "docs/identity-resolution-audit.md",
+    "docs/continuation-review.md",
+    "docs/main-input-blobs.json",
+    "docs/recovery-input-blobs.json",
+    "tests/contract/recovery-regression-oracle/validation.json"
+  ],
+  "local_logs_sha256": {
+    ".cache/continuation-verification.log": "c0f59a50fd5da271edd07573f0cec6b7404d53f07b018c4beb0291c155e14fe5",
+    ".cache/continuation-race.jsonl": "b1a456ffe6cb7a3b9991b4b84dc25c22751101a7f35dbd8d37d7595f951c9a01"
+  },
+  "research_limit": "The operation map inventories permitted server declarations and selected licensed caller/model evidence; it does not claim exhaustive full-client or public-document contract research for every family. Unresearched contracts remain distinct from unavailable contracts."
+}

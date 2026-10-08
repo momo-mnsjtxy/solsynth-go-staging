@@ -1,8 +1,10 @@
 # Badge discovery HTTP family
 
 Source-derived from the owned AGPL DysonNetwork controller at
-4ee2d0cebb9da8284a92483fee6dce795bf6947c. This public family has no database,
-authentication, permission, optional-user, RPC or shared row/audit dependency.
+4ee2d0cebb9da8284a92483fee6dce795bf6947c. The controller-local manifest/SVG logic has no database, account, RPC or shared
+row/audit dependency. The complete Passport host authentication/permission
+pipeline remains unverified; controller-local behavior is not proof of production
+anonymous access through that pipeline.
 No excluded protocol definitions or generated bindings are used.
 
 ## API

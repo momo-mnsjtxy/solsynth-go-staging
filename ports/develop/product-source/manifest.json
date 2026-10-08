@@ -1,0 +1,50 @@
+[
+  {
+    "file": "DysonNetwork.Develop__Identity__AppProductService.cs",
+    "path": "DysonNetwork.Develop/Identity/AppProductService.cs",
+    "blob": "9d1d1f9abcb5d700c81cef13d88d9533dc158582",
+    "repository": "Solsynth/DysonNetwork",
+    "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "sha256": "79f0bffb50102dd1e68432ca309cacd4ea7a307b6f99a5b8e25d99da2d3e5766"
+  },
+  {
+    "file": "DysonNetwork.Develop__Identity__CustomAppController.cs",
+    "path": "DysonNetwork.Develop/Identity/CustomAppController.cs",
+    "blob": "6d8c005d5c90a93c394df012382a98fd49799d1d",
+    "repository": "Solsynth/DysonNetwork",
+    "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "sha256": "6ae6dbccb103875225109b5babd7c08ec90a8f8de922f12721b7b005970438ce"
+  },
+  {
+    "file": "DysonNetwork.Develop__Identity__BotAccountService.cs",
+    "path": "DysonNetwork.Develop/Identity/BotAccountService.cs",
+    "blob": "8a91ad2989d173bcb9daaaf43a8fc344c80c81a9",
+    "repository": "Solsynth/DysonNetwork",
+    "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "sha256": "90251ebebba8f7ecdb1f77b5f425c18617fd4de3c476080ba267ffd24d66ba19"
+  },
+  {
+    "file": "Solian__bot.dart",
+    "path": "lib/developers/models/bot.dart",
+    "blob": "35e4bc2b22a98dafb48b481daac253136abb5e6c",
+    "repository": "Solsynth/Solian",
+    "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+    "sha256": "c2ce8b7c897a550270ca38588d262930a087b463598ddcfce5b23a430db46ff0"
+  },
+  {
+    "file": "DYSON-LICENSE.txt",
+    "path": "LICENSE.txt",
+    "repository": "Solsynth/DysonNetwork",
+    "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+    "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+  },
+  {
+    "file": "SOLIAN-LICENSE.txt",
+    "path": "LICENSE.txt",
+    "repository": "Solsynth/Solian",
+    "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+    "blob": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+    "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+  }
+]

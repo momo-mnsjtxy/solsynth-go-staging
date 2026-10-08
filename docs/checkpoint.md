@@ -1,3 +1,14 @@
+# Current continuation status, 2026-10-08
+
+Local recovery and latest main were reconciled without overwriting newer policy
+or app-discovery work. Package downloads and NodeInfo gained explicit synthetic
+runnable candidates. Local aggregate verification passes; actual combined PG,
+process HTTP and CI verification remains pending. No production service is
+complete. See README and docs/continuation-result.json for current evidence.
+
+The material below is the preserved earlier main checkpoint and historical CI
+record, not a claim that those commits validate this continuation tree.
+
 # Backend migration checkpoint
 
 This is a source checkpoint, not a completed platform replacement.
@@ -58,6 +69,38 @@ No complete production service parity, production authentication, PostgreSQL mig
 
 The PostgreSQL adapter is implemented against the pinned licensed migration, and the development host can select it. It uses explicit per-account transaction locking and applies nullable patches inside the transaction, preserving unspecified fields across cooperating Go instances. It performs no startup schema changes. The original schema fixture and six actual-database test cases are included.
 
-Database verification is **blocked, not passed**: initdb succeeded, but PostgreSQL could not create its private Unix socket. One supported escalation attempt failed the same way; an ordinary `/tmp` diagnostic then showed AF_UNIX socket creation itself raises EPERM before bind. No TCP fallback, OS/security change or production database was attempted. The actual PostgreSQL cases were skipped by the ordinary unit suite and must run in an environment that supports the required private sockets.
+Historical local limitation (superseded by successful private CI at commit
+`0735ebb3f1553d3658d944705c6d32eecf2dd541`, run `37632714563`, with
+fifteen required PostgreSQL cases and two restart assertions): initdb succeeded, but PostgreSQL could not create its private Unix socket. One supported escalation attempt failed the same way; an ordinary `/tmp` diagnostic then showed AF_UNIX socket creation itself raises EPERM before bind. No TCP fallback, OS/security change or production database was attempted. The actual PostgreSQL cases were skipped by the ordinary unit suite and must run in an environment that supports the required private sockets.
 
-Production authentication also remains unimplemented. The lawful contracts establish a shared authoritative authenticator, but its exact RPC descriptors and PostSubscriptionsManage permission value are unavailable. The command continues to deny authentication by default. See `internal/auth/CONTRACT.md` for the smallest missing contract inputs and `docs/postwatch-review.md` for remaining transport/schema differences.
+Production authentication also remains unimplemented. The lawful contracts establish a shared authoritative authenticator, but its current identity, authoritative permission evaluation, Redis failure/version/epoch,
+credential precedence and error semantics remain unverified. The delegated recovery
+report confirms the permission key `post.subscriptions.manage`; that string alone
+does not establish an authorization decision. The command continues to deny authentication by default. See `internal/auth/CONTRACT.md` for the smallest missing contract inputs and `docs/postwatch-review.md` for remaining transport/schema differences.
+
+## Bounded policy continuation
+
+Five further source-backed modules implement message formatting, unread aggregation,
+placeholder state transitions, notification body construction and publisher/realm
+discovery selection. These are executable functions over explicit projections, not
+new HTTP routes or completed production services. See each module’s provenance and
+`docs/policy-followup.md` for validation and remaining dependencies.
+
+## Develop discovery continuation
+
+A new candidate now connects a real PostgreSQL reader, six-field discovery HTTP
+handler and loopback command. Default construction and startup remain disabled;
+synthetic mode requires an explicit fixture status and database environment name.
+The scoped route reads persisted records, without remote hydration, state-writing
+fallbacks or fake response data. Four mandatory database tests, a restart sentinel,
+and actual HTTP subprocess checks extend CI to nineteen database cases and three
+restart assertions. Exact production status/filter/pagination/auth rules remain
+unverified; `ports/develop/PROVENANCE.md` records every candidate difference.
+
+The Library recovery archive remains unmaterialized in this consumer. Exact helper
+error was `library file transfer failed: download failed` (exit 1) on the supported
+attempt and one refreshed retry. Preparation succeeded with a transfer; the error
+provided neither HTTP status nor permission/path reason. It is not evidence of a
+confirmed permission denial, nor evidence the bytes were accessible. No retry or
+alternative route has occurred since the instruction to stop. The saved anonymous
+exchange catalog and badge increments are still outside this checkout.

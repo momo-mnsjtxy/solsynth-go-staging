@@ -1,0 +1,112 @@
+[
+  {
+    "file": "docs__MULTI_WALLET.md",
+    "path": "docs/MULTI_WALLET.md",
+    "blob": "1a95f50badeae5dc3672596fa8ae0d4eae8f1111",
+    "sha256": "ef207ff184c568677e52e349863f5e5e62958d5598aeba2f3b184629f6c34512",
+    "bytes": 6866,
+    "repository": "Solsynth/DysonNetwork",
+    "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "license": "AGPL-3.0-only",
+    "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/MULTI_WALLET.md"
+  },
+  {
+    "file": "docs__WALLET_PROVIDER_PURCHASE_APIS.md",
+    "path": "docs/WALLET_PROVIDER_PURCHASE_APIS.md",
+    "blob": "c553258f1c5d4d6aec8e20abfb0d5ca6077773dd",
+    "sha256": "f0e2f7b7f6a9276bd0a1f2cfb90a4c6e408a4b346b4be64217c638026e25c354",
+    "bytes": 6649,
+    "repository": "Solsynth/DysonNetwork",
+    "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "license": "AGPL-3.0-only",
+    "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/WALLET_PROVIDER_PURCHASE_APIS.md"
+  },
+  {
+    "file": "docs__WALLET_FUNDS.md",
+    "path": "docs/WALLET_FUNDS.md",
+    "blob": "a5ffd693e055e313503363f82de5df924d1c9abf",
+    "sha256": "8ac6b6530c3ad9731312711c5b3f8c99b6bac366c291905cdeaf41edbe0564cf",
+    "bytes": 11835,
+    "repository": "Solsynth/DysonNetwork",
+    "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "license": "AGPL-3.0-only",
+    "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/WALLET_FUNDS.md"
+  },
+  {
+    "file": "DysonNetwork.Wallet__Startup__ServiceCollectionExtensions.cs",
+    "path": "DysonNetwork.Wallet/Startup/ServiceCollectionExtensions.cs",
+    "blob": "4b3bb52da9a66807c585621ef3a33e2216dae3eb",
+    "sha256": "4ef4b702e307b06d44a42bb3bd994ec7c16d7ca36c4728a5fe3d83908e0ddcc7",
+    "bytes": 10897,
+    "repository": "Solsynth/DysonNetwork",
+    "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "license": "AGPL-3.0-only",
+    "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Startup/ServiceCollectionExtensions.cs"
+  },
+  {
+    "file": "DysonNetwork.Wallet__Payment__WalletProductController.cs",
+    "path": "DysonNetwork.Wallet/Payment/WalletProductController.cs",
+    "blob": "4f99c6318440ef8245b1b7210d3fce03cf299804",
+    "sha256": "134f855426bdeeb02e3da2e6a29a924557c91105ff8fcb0d2e47bfabaf247599",
+    "bytes": 5195,
+    "repository": "Solsynth/DysonNetwork",
+    "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "license": "AGPL-3.0-only",
+    "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/WalletProductController.cs"
+  },
+  {
+    "file": "DysonNetwork.Wallet__Payment__WalletProductService.cs",
+    "path": "DysonNetwork.Wallet/Payment/WalletProductService.cs",
+    "blob": "7dfc62726a8d63a8d4de69c2c0d962f6e08da2b1",
+    "sha256": "632aabaecaf2893241ff958e50d40c5cdff29b38f5e55d866c2ca85fc1fb1085",
+    "bytes": 12663,
+    "repository": "Solsynth/DysonNetwork",
+    "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "license": "AGPL-3.0-only",
+    "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/WalletProductService.cs"
+  },
+  {
+    "file": "DysonNetwork.Wallet__Models__WalletProductOptions.cs",
+    "path": "DysonNetwork.Wallet/Models/WalletProductOptions.cs",
+    "blob": "c9ddef8ea10178625e12a4b69e2cc309beb89452",
+    "sha256": "e4cc20e37aeafcf7d7b6da79d0b3ffa0e481353c17176a3e57403aff3d2c824f",
+    "bytes": 544,
+    "repository": "Solsynth/DysonNetwork",
+    "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "license": "AGPL-3.0-only",
+    "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Models/WalletProductOptions.cs"
+  },
+  {
+    "file": "LICENSE.txt",
+    "path": "LICENSE.txt",
+    "blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+    "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+    "bytes": 34523,
+    "repository": "Solsynth/DysonNetwork",
+    "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "license": "AGPL-3.0-only",
+    "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/LICENSE.txt"
+  },
+  {
+    "file": "JsonSeparatorNamingPolicy.cs",
+    "path": "src/libraries/System.Text.Json/Common/JsonSeparatorNamingPolicy.cs",
+    "blob": "2f9d03e80b9da0829e90a1bea081f02843114458",
+    "sha256": "45f63b9b970644a3645445606f20cbd4894e153cbdc949635c7ce037007e2049",
+    "bytes": 7128,
+    "repository": "dotnet/runtime",
+    "revision": "v10.0.0",
+    "license": "MIT",
+    "source_url": "https://github.com/dotnet/runtime/blob/v10.0.0/src/libraries/System.Text.Json/Common/JsonSeparatorNamingPolicy.cs"
+  },
+  {
+    "file": "LICENSE-MIT.txt",
+    "path": "LICENSE.TXT",
+    "blob": "74dd8fbae5a10dc2e6d8e645f80c4e4645deeab6",
+    "sha256": "cbff440b0d8166de75b5dae0e18498c869b3521974b37df7c7093a349e560b3a",
+    "bytes": 1117,
+    "repository": "dotnet/runtime",
+    "revision": "v10.0.0",
+    "license": "MIT",
+    "source_url": "https://github.com/dotnet/runtime/blob/v10.0.0/LICENSE.TXT"
+  }
+]

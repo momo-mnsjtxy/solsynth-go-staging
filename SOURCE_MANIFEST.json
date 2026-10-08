@@ -1,19 +1,23 @@
 {
-  "checkpoint": "local-public-catalog-and-badges-2026-10-07",
-  "scope": "Local public GET catalog and badge discovery families validated; whole backend remains incomplete",
-  "remote_publication": "none for current local additions",
-  "last_verified_remote_head": "0735ebb3f1553d3658d944705c6d32eecf2dd541",
-  "verification": "docs/local-final-checkpoint.json",
+  "checkpoint": "publication-safe-continuation-2026-10-08",
+  "scope": "Reconciled latest main and recovered source plus documented miniapp,bot,NodeInfo,host-meta,wallet-product read candidates and full scoped evidence; not whole backend completion",
+  "inputs": {
+    "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
+    "main_blobs": 163,
+    "recovery_blobs": 187
+  },
+  "remote_publication": "Recovery branch verified at0b129f4dd77a5ab3f96c57282cd48fe9bf1efede; this continuation ready for approved private publication and exact-tree CI",
+  "verification": "docs/continuation-result.json",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
-      "bytes": 1759,
-      "sha256": "91c1a20903ad5d05d611f4942abdc8ca3d4e05f5d918082a318daa7ece6dfe10"
+      "bytes": 1844,
+      "sha256": "a6a0a21bbe274a5949092e9d09bb43d0e8e389bf5a7a1ecc953b1dcddfb6b06d"
     },
     {
       "path": ".gitignore",
-      "bytes": 172,
-      "sha256": "63900d99de52687377f3cdcbcbdbd3c833ac122d024ce149fb5e1e434569f30a"
+      "bytes": 486,
+      "sha256": "6e002265c21c3be9066175becc8e7960d66e7ca0e43e72f383ed6c1e5413f8cb"
     },
     {
       "path": "LICENSE.txt",
@@ -27,8 +31,43 @@
     },
     {
       "path": "README.md",
-      "bytes": 13263,
-      "sha256": "30d0e43ba2826a10eb11d52f7b48931b3385a0b7a0a669070582d560460c87db"
+      "bytes": 22705,
+      "sha256": "e56f74fb5b4074bf84e093fd78395c48bfa7265984908f904674e7da63e42bb0"
+    },
+    {
+      "path": "cmd/develop-discovery/bot_commands_test.go",
+      "bytes": 994,
+      "sha256": "a506ddf53d7b9493fd6b0b1e3c062efa7466abf40e214b71c194abd3afa6ad8b"
+    },
+    {
+      "path": "cmd/develop-discovery/main.go",
+      "bytes": 8887,
+      "sha256": "0f073d0e55e8cc60312daf5d6c4d199077b9d23c8b5002e49ed94dede81e22ac"
+    },
+    {
+      "path": "cmd/develop-discovery/main_test.go",
+      "bytes": 5848,
+      "sha256": "29b7edde968e12f96a59a32277104bd0d74edf55579a4256310ae80e66335d34"
+    },
+    {
+      "path": "cmd/develop-discovery/packages_test.go",
+      "bytes": 2335,
+      "sha256": "6ef197961c7cdf53b402e76b519e36241e0d99988736114608da535a48fe4f7a"
+    },
+    {
+      "path": "cmd/nodeinfo/README.md",
+      "bytes": 2253,
+      "sha256": "dc071a05ed03bcc30757d09ccf37436d0e26caf41e78922e0edc12ae777a05f9"
+    },
+    {
+      "path": "cmd/nodeinfo/main.go",
+      "bytes": 6692,
+      "sha256": "6d5e6b1d2cf25f72c7415a399aacc43517481b8a33fbf899af5c1f199430d768"
+    },
+    {
+      "path": "cmd/nodeinfo/main_test.go",
+      "bytes": 7611,
+      "sha256": "495ff58846bb67fa179e29608df0c339b8164e57e96fd83a43f09f6a68a88698"
     },
     {
       "path": "cmd/solsynth-go/badges_test.go",
@@ -42,13 +81,23 @@
     },
     {
       "path": "cmd/solsynth-go/main.go",
-      "bytes": 6223,
-      "sha256": "e0ec5d1da4b4c5f3e4339bb3dc55a3bcfd017e1c85c0715604ff112064c89cd8"
+      "bytes": 7402,
+      "sha256": "481a31503596ea85e45bbdeb4165573759a557c8d1d2b36f29f9fc3215854bb2"
     },
     {
       "path": "cmd/solsynth-go/main_test.go",
       "bytes": 782,
       "sha256": "5d3906b3410f6c629916365c66180617e959a3ae98aa734d7b3a3cb0c925b8c3"
+    },
+    {
+      "path": "cmd/solsynth-go/products.go",
+      "bytes": 1714,
+      "sha256": "018d029e88578faf75c2b4f71df08620da45c5214a5c07289b4194193073ee92"
+    },
+    {
+      "path": "cmd/solsynth-go/products_test.go",
+      "bytes": 1859,
+      "sha256": "b3121bea914c7b6bc2ef9902343309daad94ed2eebf5137419b5722cb21ebf58"
     },
     {
       "path": "docs/architecture.md",
@@ -62,13 +111,13 @@
     },
     {
       "path": "docs/checkpoint.md",
-      "bytes": 5573,
-      "sha256": "4f06ce51b863e151bae37ebf1e9bae49ca742225bcc43455b042dabe47a2ef8b"
+      "bytes": 8211,
+      "sha256": "ffd3f6795822667dc4064def8fc33257f5a6dc6a921d25ba5dbdad33e691fbd7"
     },
     {
       "path": "docs/ci-postgres-validation.md",
-      "bytes": 3097,
-      "sha256": "fc4f4e7d10927e55ea3136a31460298bc0e708276cdab05c12c0385200dd5063"
+      "bytes": 3968,
+      "sha256": "0198d2b58fd2f9499ef975210a2a4077550c261ae5738381e428271b38a03cdc"
     },
     {
       "path": "docs/ci-result-2026-10-07.json",
@@ -81,9 +130,39 @@
       "sha256": "0b8391650e405d4f20bb2433ff79ef2cc0fdac38e9258bdbe7bd5d2c931f2262"
     },
     {
+      "path": "docs/continuation-result-first-checkpoint.json",
+      "bytes": 6384,
+      "sha256": "a3231de547da3c0ec6cf40ee2cb6e7ab208994843e86180fd231f8f1f5a47467"
+    },
+    {
+      "path": "docs/continuation-result.json",
+      "bytes": 9273,
+      "sha256": "b350775f51b73214dd4cbe22fe8c4393a73cce756d333f604da0316cad1e7c35"
+    },
+    {
+      "path": "docs/continuation-review.md",
+      "bytes": 5671,
+      "sha256": "204cab68cf36e92c1ae0cb6f26af81956e2a39fbce275182660bbb732159b245"
+    },
+    {
       "path": "docs/exchange-live-smoke-result.json",
       "bytes": 735,
       "sha256": "044c48861d071b6866b5191270fbb983bbd7ad4d89f58cbca43bca05276b88af"
+    },
+    {
+      "path": "docs/identity-blade-contract-audit.md",
+      "bytes": 19731,
+      "sha256": "b2d85c47227cc5a79ebc1d9c3296ccd7f2cc343ffb6caf5d6e9ac25faa6a35a9"
+    },
+    {
+      "path": "docs/identity-client-contract-audit.md",
+      "bytes": 21616,
+      "sha256": "a37e6a13836caae31a78997cb33d04d9572d07df5104f87b831d96a7bc79fa6a"
+    },
+    {
+      "path": "docs/identity-resolution-audit.md",
+      "bytes": 20578,
+      "sha256": "f1ddb482b7d8d62b137b5c29889510549dd9c7847ae8481942c9c7b84b4218ed"
     },
     {
       "path": "docs/live-smoke-result.json",
@@ -96,14 +175,664 @@
       "sha256": "eab5af60ef2dad1b1dcca05aa8bc252bf9d55199ee8a8cfe228b16f3f83ed582"
     },
     {
+      "path": "docs/main-input-blobs.json",
+      "bytes": 50560,
+      "sha256": "1af7b73cb328647c27774856f25652121a86b58e1a86f7a6452482d4bc8797e7"
+    },
+    {
+      "path": "docs/main-source-manifest.json",
+      "bytes": 28636,
+      "sha256": "dc45ce0b8e12f0a8d3cd765be157cf498b2773bf18adc30b75860d2f71353e99"
+    },
+    {
       "path": "docs/messager-parity.json",
       "bytes": 43217,
       "sha256": "370cbc1f784bf3cef9084419120436e651a81d35e3608b254f8ae9b3a963f5bb"
     },
     {
+      "path": "docs/operation-coverage-plan-parts/acceptance-0001.json",
+      "bytes": 1295,
+      "sha256": "e1d5cce486e36695fb890fd38bd347b20f157c644810f84ee5baadbaf1d1ae21"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/baseline.json",
+      "bytes": 122,
+      "sha256": "3fc05d56be3c8932b25621e90797349f9b30af4e3455ac61c656cc36d80bc2d9"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/controller_index-0001.json",
+      "bytes": 37591,
+      "sha256": "2a7098a4a8ff2a5f642d74d3ab03ed91af311e7ee90db75d423c9319af9d998c"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/cross_backend_work-0001.json",
+      "bytes": 1705,
+      "sha256": "8ebca3b604fab7ecd1f5baf5eb6c9b8600639e74908b7e159740aa23f183afc8"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/current_checkpoint.json",
+      "bytes": 2051,
+      "sha256": "50aee70ecaee9155e3764347dc94410bd3eb33fde8280162dd01a4113254be8c"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/databases-0001.json",
+      "bytes": 10847,
+      "sha256": "70bccbb3cda41b581a700e3eab1da4d0392cb3d311e18505b0025a3986a1d040"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/evidence-0001.json",
+      "bytes": 263,
+      "sha256": "a11295c77c6f7078f1edc510417d6efea17a62e7acdb6f9fa92a62dc413e5efc"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/families-0001.json",
+      "bytes": 44384,
+      "sha256": "fc25c60bf3b64f9c410292bd8100dfaa49c154ffeb0af9be9fe305de1aba4a12"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/families-0002.json",
+      "bytes": 28546,
+      "sha256": "09e3444d09f178eb3248acf5cabb2198505ab076b55b334fec58fc19c731057d"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/gates-0001.json",
+      "bytes": 3919,
+      "sha256": "3eb605378a247c42c862e98aef4bb3afa46254e1d423f5935b3c62308a0d2fa5"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0001-AppProductController.json",
+      "bytes": 8705,
+      "sha256": "f6a45277c625c3cfe119a17a264ba8e7595a9b37c84e6e5f18d212175044bb63"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0002-BoardPublicController.json",
+      "bytes": 1562,
+      "sha256": "ad23920e711ff94c269d95ced69096c68d5e446e2dec5599a36f892fd178e769"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0003-BotAccountController.json",
+      "bytes": 23891,
+      "sha256": "90c1bf985544d2d6f7ae38d8f000c2e81fe46e4816de0d1243d147005f2ed682"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0004-BotAccountPublicController.json",
+      "bytes": 6466,
+      "sha256": "430bc79387909437dc339b76b0c672ee43851d94a16e9022793771c96dbe399a"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0005-CustomAppController.json",
+      "bytes": 31683,
+      "sha256": "a9a02f003d6683164680f8767dd9c40bd028fde3ac52d258fb259b99296c84ba"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0006-CustomAppPublicController.json",
+      "bytes": 6463,
+      "sha256": "d1336177a5b49daa28c034ebb2857a9974142eacbdf6705feba9b3ae9fc04a76"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0007-DevelopQuotaController.json",
+      "bytes": 1517,
+      "sha256": "111e121842f5e372bd80518ea091a981ea76b28f949b8798b1f078a95fd517ed"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0008-DeveloperController.json",
+      "bytes": 6343,
+      "sha256": "c0f2889618d0296549eb4c437862cd14ba8d700e0e2fd36a60c7e686177aaf42"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0009-MiniAppController.json",
+      "bytes": 11085,
+      "sha256": "8a39250d014ff104fd5022df0a3dcad7eb080363d3adfbb741b9f8caf7a4ebbf"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0010-MiniAppPublicController.json",
+      "bytes": 4705,
+      "sha256": "0837d646c6cc043ae5fa85e94636d9736e7ee08609bc94edaf9a84cf8677e40a"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0011-DevProjectController.json",
+      "bytes": 8182,
+      "sha256": "20403c5c18cf541e36e241fd4ac5ae8a4fb098430cec5850b850a658f1b4da90"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0012-ChatController.json",
+      "bytes": 44908,
+      "sha256": "023eda5180e67f073bcfa0f0477e186fa2c186f8b5e5c5b94aecfbb2242ffbb4"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0013-ChatController.json",
+      "bytes": 1542,
+      "sha256": "51ccf91d48d43c52abcb010703117d07a9e856cd35769b631ce91ef33060e31e"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0014-ChatRoomController.json",
+      "bytes": 44872,
+      "sha256": "36f2cbe952cc79c51548287961954a83b5bb14129a4ccd48373b86eb616dc537"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0015-ChatRoomController.json",
+      "bytes": 14760,
+      "sha256": "314f5e5e9c5d6d0d988c644dca3d259e1126cab76008d08b2e84d6ddc9fe39ee"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0016-RealmChatController.json",
+      "bytes": 1532,
+      "sha256": "e9dcc685e090c72d1f21e358ce9086530acad7f6df944cb277f15c5c6b52b087"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0017-RealtimeCallController.json",
+      "bytes": 15205,
+      "sha256": "38808d81f70ebb0dbdc54079361fce611676a87e97d5e729f91a153d0ba2df55"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0018-AccountAdminController.json",
+      "bytes": 36925,
+      "sha256": "624f35bcd6c76fe8cac29ae37d99a64f1032ec2eea2ffa9bac15893b38a5fdaf"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0019-AccountController.json",
+      "bytes": 15196,
+      "sha256": "d1a87ec2a770c89f93d53c6d5e82087793c0a95c2558c76cbebf1a34a012186e"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0020-AccountCurrentController.json",
+      "bytes": 18213,
+      "sha256": "16cc2418cfb0cce65ffce17077c5865fc53437c5314519846af6a819eb3fa3ce"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0021-AccountEventController.json",
+      "bytes": 36202,
+      "sha256": "663a802f8ef6e300060143928fb8b3271977d071c3cd631500be8af6829d4658"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0022-AccountPublicController.json",
+      "bytes": 4681,
+      "sha256": "49f6deccf637c1dd82b549edead29c4782c345695f6737d98e5bb5ed63ade4c8"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0023-AccountStatsAdminController.json",
+      "bytes": 1597,
+      "sha256": "dff20bbd22db67ec4f89007bee33dcb2eb5505c330642bf9f5b352a1356c0f82"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0024-FortuneSayingController.json",
+      "bytes": 2968,
+      "sha256": "651a370751d322e3106a2214d96b4e72b44a76ad995a70f87e605ccb868bc403"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0025-FriendsController.json",
+      "bytes": 1563,
+      "sha256": "9f83460888f501b2e63b928706f3e7b9082affe6165f6820ef59b1429efed44a"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0026-NotableDaysController.json",
+      "bytes": 8304,
+      "sha256": "965c058dc5ae55710cbbb15fc4f3fee271d05ee8e4b012e32cc162e86fadca3d"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0027-PassKitController.json",
+      "bytes": 10546,
+      "sha256": "55b67f736ecd248bb77389f0c37baff09fdbd629af3d670f07082d18f7997434"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0028-PresenceActivityController.json",
+      "bytes": 17726,
+      "sha256": "914a882e759c6fe50813229e0dd6bd92826ce6bf2c4cb092565912be0aa941db"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0029-PresenceArtworkController.json",
+      "bytes": 3445,
+      "sha256": "7653b185be3deffdc7254efb9950cbc8d9ac503d3c19f90c200ee88edd7ba4af"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0030-AffiliationSpellController.json",
+      "bytes": 13711,
+      "sha256": "9d6d2c1dc1b9881da3920bb3be4875d3766af251760305f98cefee819f4820db"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0031-DomainTrustController.json",
+      "bytes": 14389,
+      "sha256": "ae9305e88517f2fe7667716bd6eb1688e5a3ac6c2249497357292535025fc6f8"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0032-TestAdminController.json",
+      "bytes": 17991,
+      "sha256": "59295d615747f9ddba248ba0fd8880ded07971e0d3953dbf214598057900c5a9"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0033-TestController.json",
+      "bytes": 11200,
+      "sha256": "0e44835401143396845d2613be32a8b60d4a880b85d94c8f7070463808fe80f7"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0034-TestQuestionAdminController.json",
+      "bytes": 11790,
+      "sha256": "b3bf94c5b296819d8a004ca8e70c8b6d110f72ce523b2f8f8620b1435749cac6"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0035-TestQuestionGroupAdminController.json",
+      "bytes": 6766,
+      "sha256": "6f4c7de6a448831f64b3f12edb1f108254a5d56b9d54da6d273e0d5e646135e9"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0036-TestTrialAdminController.json",
+      "bytes": 4886,
+      "sha256": "4f9fb1a56b8fb1cf4039bb7bf3f1f5f1c6bc6c355803971a191b70563dac7721"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0037-TestTrialController.json",
+      "bytes": 3202,
+      "sha256": "c84b05c7761363c653267fafe8fc9de8f24a4ca6931841c1e58515369eb39196"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0038-IpCheckController.json",
+      "bytes": 2996,
+      "sha256": "08c99966f113e1e6a4b201dd0334bca5a83ac7467562e0504ac484815a826713"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0039-LocationPinController.json",
+      "bytes": 13078,
+      "sha256": "d6702bee94cc50b06b002948ca047df04df8e945eff828cd98637b1a9d876b3d"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0040-MeetController.json",
+      "bytes": 18110,
+      "sha256": "2dc013021cb1c276779e66906c4f221f4f42dd15959799c3d3f998242fb29b2b"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0041-NameChangeCardController.json",
+      "bytes": 4874,
+      "sha256": "46b4d1679cbbe7433cac4209db07b3cb79d9c8c6b101523a4c7bd24063648ef8"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0042-NearbyController.json",
+      "bytes": 3328,
+      "sha256": "937e1f924234eb1262d1526a60d046bd9cd7224d51c9063b88ef9991385ff35a"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0043-NfcAdminController.json",
+      "bytes": 3266,
+      "sha256": "8c252909c4ccb8cb4ad30d881dbb696023c673a80f8b025d6fc4c87ffc061b80"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0044-NfcController.json",
+      "bytes": 14360,
+      "sha256": "a6665bd07031944dcf4faccae7fb6917196757e7f70ac3c0ef3faf216b0a6305"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0045-BadgesDiscoveryController.json",
+      "bytes": 3076,
+      "sha256": "8dcb8024b12c3e3cfe1d696b194852cdd42d41add4b5ce81cbf5691fe03d771a"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0046-ProgressionAdminController.json",
+      "bytes": 17166,
+      "sha256": "534bc8b65e705b62126e966d33e6cb6ddda6456e239947ae06b7dad6b0707fdc"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0047-ProgressionController.json",
+      "bytes": 6385,
+      "sha256": "ac48b005fd379a991899abc8b6fd7d34ec26cefcaf52774e4bb27c999aa40800"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0048-RealmAdminController.json",
+      "bytes": 15596,
+      "sha256": "59b682196ff1feefefec3982dcf35c7e441de239ca3e65cd69191d91616b5be7"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0049-RealmController.json",
+      "bytes": 44059,
+      "sha256": "c2a4d81981a91929de7ce9ea5b217e50f14ba100616af7b9697bed0538a1bce2"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0050-RealmController.json",
+      "bytes": 10202,
+      "sha256": "e2c773d8a794d4b5720e5512f31c64a2b507d2788711e58285e90223578d7c59"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0051-RealmPublicController.json",
+      "bytes": 1560,
+      "sha256": "7330da6e0cdae082d8f9205ed35bafc37457728326b143a262c3cbdf0fa21121"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0052-AccountRewindController.json",
+      "bytes": 6614,
+      "sha256": "5243904aef11902136a6887232380c95007e1f2194090ad291d55c64320ad120"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0053-TicketController.json",
+      "bytes": 16462,
+      "sha256": "b48eccc38f9c21a1c4f7a0dd23b49e4d401df663568ad055bb73072a49330c82"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0054-TicketOnCallAdminController.json",
+      "bytes": 4931,
+      "sha256": "52c049256579be30ecede2b509b4d11446cb67c4a850ee213f6ad08f061ae800"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0055-AccountSettingsController.json",
+      "bytes": 3337,
+      "sha256": "5df5ed0447aeee6774cf4bbeca8e2be586c19b1cc16cf5a61c32e0d91ca7f26e"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0056-ActivityPubController.json",
+      "bytes": 11161,
+      "sha256": "9f0b78fa708c2cf2f6da49e2488a029a00114d555b2d2ade9a1f84cd8538e067"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0057-ActivityPubFollowController.json",
+      "bytes": 8402,
+      "sha256": "1fac50bf65e34d7ee6f2f7d85ef25de1a1a6316afbe1ec05edb39631629f00e8"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0058-ActivityPubRealmController.json",
+      "bytes": 6663,
+      "sha256": "c53b7249c17de3073bec8ad934f75bcd55d257fa4c05f33127c3e0bf3d4c50c4"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0059-FediverseActorController.json",
+      "bytes": 17132,
+      "sha256": "777b9377b8685283ca3031120bf06603b17124abce664294927b86581320b581"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0060-FediverseKeyAdminController.json",
+      "bytes": 11588,
+      "sha256": "2579d16365cca4ce816f2c68e8fd8ffb4dc6ec815763720a81669adb96506959"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0061-FediverseKeyController.json",
+      "bytes": 3186,
+      "sha256": "ad92bc0daaac3e817b835a7cf901575221f0c280b4057d22263e7acff947cb5d"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0062-FediverseModerationController.json",
+      "bytes": 21233,
+      "sha256": "c87e70f7ac7b0369ec02c93c4e893afa7de0961dfacb6b34e4706f3eb20d33d8"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0063-NodeInfoController.json",
+      "bytes": 4308,
+      "sha256": "bb00ba9d4f18e13839ad4edb570a1614c71087e66552407c0a44c7f1583baae6"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0064-QuoteAuthorizationController.json",
+      "bytes": 5070,
+      "sha256": "1e2e725641379fe2a4d3443dd58311d5a0751550dfbdf44e96c57535a8e56dea"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0065-ServerActorController.json",
+      "bytes": 7615,
+      "sha256": "20113b8fbf4f77eb19f48ed34f78492e70fb91abab48a23163343d940c070ca6"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0066-WebFingerController.json",
+      "bytes": 3160,
+      "sha256": "770381814c0d68c00d32e4ad1f71788ae101daea5d518678a27ee91510a4292f"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0067-AutocompletionController.json",
+      "bytes": 1595,
+      "sha256": "e865fdec880848d5a97d2408409085542fed9ad5dd880ebfe9f9455908dec0ea"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0068-AutomodController.json",
+      "bytes": 10956,
+      "sha256": "d345974d0275b752e207b29c2f95801c0cacb969272c92331a50dee228fedf68"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0069-LiveStreamController.json",
+      "bytes": 38346,
+      "sha256": "ec3a7a86e9b8761932062e585502174138d7f5997019600240d1c8ad3430743c"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0070-AdsController.json",
+      "bytes": 1549,
+      "sha256": "6317a19cd15205b212a9872a4626fe8991cfcf841c6fa5aeb0f01c9323a7d876"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0071-PostActionController.json",
+      "bytes": 36085,
+      "sha256": "494f87954e58bf576203bc24230d12fa113c7deef4b12c8018feda587e8a703f"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0072-PostAdminController.json",
+      "bytes": 19670,
+      "sha256": "b0a406a59b14dae4abb023b62ac39da03b87168836dae5e0b08dfece00051919"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0073-PostCategoryAdminController.json",
+      "bytes": 8335,
+      "sha256": "c62b1985065fd79e45affaf92ed49370da4fb07c8cb5bf13af9356fba005d83c"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0074-PostCategoryController.json",
+      "bytes": 15028,
+      "sha256": "e31a49ff4e2336cf0f452770ee755444d0c49e7a540df401ce5f4a063bf6caa6"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0075-PostCategorySubController.json",
+      "bytes": 1663,
+      "sha256": "56b5ad29c6ba77f6377ed7363f68d6baaa2ed5e367318a375ad1c1afd6a7ecdb"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0076-PostCollectionAdminController.json",
+      "bytes": 6728,
+      "sha256": "1ab819038c92a67032953096eaf4e2d60f28d2f9b49224dff99057e64bab0e53"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0077-PostCollectionController.json",
+      "bytes": 29115,
+      "sha256": "6075fa34dbfc303338421a39a87b3c4778013d79af6bf424204a8d76a5ec9d47"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0078-PostController.json",
+      "bytes": 35084,
+      "sha256": "b8bc10d2d7a86d0d8b79f193da89bc292ede251ca56aa08857bddf8cef021c1b"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0079-PostStatsAdminController.json",
+      "bytes": 1589,
+      "sha256": "a5005ba954fd9147cb5bfd1000e39189a7e3e29a19ff259efa0a42e352e09bf6"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0080-PostTagController.json",
+      "bytes": 42317,
+      "sha256": "a8969e7d64e6b28672039c4c5d46b2c0791f724c07907cfb469a2f21178b3a4c"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0081-PostWatchController.json",
+      "bytes": 3161,
+      "sha256": "eb5f69671aaa79fe4b65dcf7efe34db556f05036e9cb797b7f0bf4b58809f4f4"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0082-PublisherAdminController.json",
+      "bytes": 13840,
+      "sha256": "859f81e0edede02b17bd955422b7d63d6f8cfb3535c1608cbb6b49453de8d4b1"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0083-PublisherController.json",
+      "bytes": 43623,
+      "sha256": "6dc40e15f0ec4b8e7a4648fde2271b09f29cde65fe0d41f2c45fa9f56053ba60"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0084-PublisherController.json",
+      "bytes": 10366,
+      "sha256": "13d186801542e705634f71329fb204a271fa782567d1d8744e1fc7c65145e8b2"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0085-PublisherPublicController.json",
+      "bytes": 14174,
+      "sha256": "27ce58754147386b6b42b1967483192e180773ad6e211ce2a5a4fd644a0e989b"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0086-PublisherSubscriptionController.json",
+      "bytes": 39042,
+      "sha256": "0b3f301f1beb41e9fd6474ecb2eb76bf1c849c26c31ee6f003f9f0ecdb684a28"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0087-WebReaderController.json",
+      "bytes": 4659,
+      "sha256": "915fe7d69bf9e0f86edefa71aa38aba4880206e0f52b1761b1ca7343a53f14fc"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0088-StickerController.json",
+      "bytes": 36450,
+      "sha256": "9605268eb531642dd0fd7740ae8c06295731e3b2313c2d01be81f6765656d8da"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0089-SurveyController.json",
+      "bytes": 23365,
+      "sha256": "dc89da1533e808e38dfc80baca6159b52e6e9f58a91376dbd2129378a18e2025"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0090-TimelineController.json",
+      "bytes": 1799,
+      "sha256": "9b4ae6ccc4d9ea651624725b412febcb4381d3d6560e70ffb9b1222e69d3c6be"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0091-TimelineDiscoveryController.json",
+      "bytes": 10129,
+      "sha256": "641cb55211e5b4d913c2dfac8ccd03db44b801a13d48e092eb420bbff6f483f6"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0092-TranslationController.json",
+      "bytes": 1626,
+      "sha256": "aeca46e13257945681716be7888c63cdbef017bf5d875a6f924b000de6be1783"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0093-MerchantController.json",
+      "bytes": 15039,
+      "sha256": "72f8c840d3e1560812ca481249f48408e132daadc13181f0a68f762e16cbabf9"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0094-OrderController.json",
+      "bytes": 13405,
+      "sha256": "e45a6be308e5b4cd701979a08badb586a46a9dadf6438b378dbb9c2781c0e666"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0095-PaymentAdminController.json",
+      "bytes": 12628,
+      "sha256": "f4fcbacda4d70c22e52746838aac7ff7dda9cf7eb59f6872b1c14698b78590e0"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0096-SubscriptionAdminController.json",
+      "bytes": 14062,
+      "sha256": "4ca4fb52fa1b254473e18cb6b5adc098812a4aaa5e4f637d76daf00f79bc5b9b"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0097-SubscriptionController.json",
+      "bytes": 35391,
+      "sha256": "c9e65eba00c8e1f661e9ffb049d92580eeb747ad5ceb6a31e50fb7a9f7830a24"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0098-SubscriptionGiftController.json",
+      "bytes": 15102,
+      "sha256": "326252a01d61f1870f822f9b8ef3bda28ee7e5517c25d1ae833e3c2b08c1cd24"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0099-WalletController.json",
+      "bytes": 43703,
+      "sha256": "9c8a4b54e75812b39a13b14b2b5b9a00b58b42bb3ae87a56737439e8480a752c"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0100-WalletController.json",
+      "bytes": 1660,
+      "sha256": "8a822094b90d3fc96d86e1a01cd0c07adeb4c9d514e0d821381e6b4bc4296db9"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0101-WalletProductAdminController.json",
+      "bytes": 3372,
+      "sha256": "6d7131eb898add3c9e12977570fcbd86d8cfeb46aab94640585d6b79aeb6b65f"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0102-WalletProductController.json",
+      "bytes": 5104,
+      "sha256": "c7a902b32df9960fe2cad9c778b8aa5de697e8f5f0b0891e265d90b6a00b60a9"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/http_operations-0103-WalletStatsAdminController.json",
+      "bytes": 1615,
+      "sha256": "fba755b2479c156c0dfb5c3d3bd38400f030b05f0bc705a78bb6f4d7f2c48aa4"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/independent_next_implementations-0001.json",
+      "bytes": 4712,
+      "sha256": "1d23aef6c40a74216b68e7772e347e6a86c9f52038c2b1970284d2aae3a9e791"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/job_sources-0001.json",
+      "bytes": 9441,
+      "sha256": "ffe99bcb65dd77109dd813eb63ae68dc6a5e7a55bb06ae91fc3ae0b5dacdcba6"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/measurement.json",
+      "bytes": 568,
+      "sha256": "201edebc68d698b717897f95d502fecaa2dca07dc9657dfe06f217bcc121cc6a"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/methodology.json",
+      "bytes": 1195,
+      "sha256": "bebb016ac1c7d5db75a59f853d7779cc3f76cd6457ee9acd3c6cc7a1421e5619"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/phases-0001.json",
+      "bytes": 3309,
+      "sha256": "f0a2ef2771bfd7f173c99aca86eba4ef80379ee22e126aacefc4927064b0580b"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/prepared_on.json",
+      "bytes": 13,
+      "sha256": "74aaaeadb6d246dd4bd7d762391d475deb9abf9ac831df65bbe91635586b7ff1"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/production_blocker_groups-0001.json",
+      "bytes": 3007,
+      "sha256": "50c7aab6487ac63675c99e3f105976f87c6c1b4600799aec47e77231c3811eb0"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/public_documentation_followup.json",
+      "bytes": 467,
+      "sha256": "ed3e07a260adbdefffc644e28bf1f6b4bfb667d5050507ec7b70d5a23c8533e3"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/rpc_implementations-0001.json",
+      "bytes": 34632,
+      "sha256": "26336e7c0d76e09e7716ef852ca61ac088975615d04fe24159ccc046404d1483"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/scheduled_job_registrations-0001.json",
+      "bytes": 11338,
+      "sha256": "2a832a622fe95ec0cac42280f59db2176bd25a6ca60244a571763ee165df1d1f"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/schema_version.json",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path": "docs/operation-coverage-plan-parts/scope.json",
+      "bytes": 209,
+      "sha256": "6f720069d64dd0a31a20d3dcd315878c5bcf9e6b8540337a0206c3abd2a70338"
+    },
+    {
+      "path": "docs/operation-coverage-plan.json",
+      "bytes": 27987,
+      "sha256": "561bfe45b6baa513a495cb78a9e224a2538137d686f7154e1540c6771fb6f368"
+    },
+    {
+      "path": "docs/operation-coverage-plan.md",
+      "bytes": 267968,
+      "sha256": "b1cf683e6a79827a9b949a023bd42acfa406164b2248738a14b1701a8a31605b"
+    },
+    {
       "path": "docs/parity-matrix.json",
-      "bytes": 7091,
-      "sha256": "7c7f3d70b9a7674607e71f753bdf5480faaf67f662fa9f4b7ac17af017caf4d5"
+      "bytes": 12142,
+      "sha256": "15e97f2af41b0c2c02a994b4204b37dc5b345ed02bc9aeeb9dd8a23fc3a8b792"
+    },
+    {
+      "path": "docs/policy-followup.md",
+      "bytes": 4106,
+      "sha256": "68ef0789506e6efffd1d4e8af506622eda487e39ca5686ba9ae96ff9c8db14f2"
     },
     {
       "path": "docs/postgres-integration-result.json",
@@ -121,6 +850,36 @@
       "sha256": "e18ac83dfece3b4a6590a8d81ec0e8b6e9e0303c6c3a8f4101ed5323a420a811"
     },
     {
+      "path": "docs/product-client-contract-audit.md",
+      "bytes": 9611,
+      "sha256": "b4df3371b802d105174d3efdbca2fcfeb39ad97d3df78a92706e1a65f003100a"
+    },
+    {
+      "path": "docs/public-api-documentation-audit.md",
+      "bytes": 9685,
+      "sha256": "bdb72e27b09c1da5fea2a2f13d87ed20241cd952fc7064f0360e653f9e6d6853"
+    },
+    {
+      "path": "docs/publication-safety-review.json",
+      "bytes": 1171,
+      "sha256": "eca303097a58d007371db32db2c45d5a9dfabfbb10cb3119e203405a9f67167f"
+    },
+    {
+      "path": "docs/recovery-checkpoint.md",
+      "bytes": 5780,
+      "sha256": "f2e82220d3e510520e40a4e3612da5925658828182ae446d6c796b34ac5c1b3a"
+    },
+    {
+      "path": "docs/recovery-input-blobs.json",
+      "bytes": 33642,
+      "sha256": "2592806fe410de53ddb5368fc109dffae06016c68c2d618126e7aeafd1c8cf9e"
+    },
+    {
+      "path": "docs/recovery-source-manifest.json",
+      "bytes": 33118,
+      "sha256": "c6f5b2bf00c71778c199f01e52016392f0a3d3152b990602266da56d6d9cea9a"
+    },
+    {
       "path": "docs/remaining-services-inventory.json",
       "bytes": 92286,
       "sha256": "cf3976d2d268ef76af057e73b7265d1b4ddab2591bd527ab284617b2f05ce56b"
@@ -129,6 +888,11 @@
       "path": "docs/verification-result.json",
       "bytes": 3497,
       "sha256": "a15548ef7ab5a1ccfebf37f9044de59b3aa954e0b9e239c7d9bdb2e7315a065a"
+    },
+    {
+      "path": "docs/wallet-product-contract-review.md",
+      "bytes": 11374,
+      "sha256": "bc397eb7ab77d7a02bce64b1c53d553f56be91286644d6c2ddff4ce8ec31e04f"
     },
     {
       "path": "go.mod",
@@ -156,6 +920,56 @@
       "sha256": "87ba1cefe57a14621b111ba4e469115208790fe301b7599a6563d0d2f1008c17"
     },
     {
+      "path": "internal/auth/source-docs/AUTH_SESSION_REVOKED_EVENT.md",
+      "bytes": 3759,
+      "sha256": "bf58a2b1b6932a0b18aaf5fc0c41319f2e8a7cfe554868ed61e1906e21b3d2dd"
+    },
+    {
+      "path": "internal/auth/source-docs/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "internal/auth/source-docs/PASS_TOKEN_ENDPOINTS.md",
+      "bytes": 3427,
+      "sha256": "994ccbc38b3de60b6d269cb667fef29061b0ec8e5bc0e51646c9f9e7eb93ae94"
+    },
+    {
+      "path": "internal/auth/source-docs/PERMISSIONS.md",
+      "bytes": 11159,
+      "sha256": "153a84141705315d88b2460388892192de274ef70d7e80ef846d67559d0ea874"
+    },
+    {
+      "path": "internal/auth/source-docs/PUNISHMENT_API.md",
+      "bytes": 3869,
+      "sha256": "6cfd5378ee03f69ac4cabf7fee40b28e454d35375517ed85953f7ea329adf02b"
+    },
+    {
+      "path": "internal/auth/source-docs/SESSION_MANAGEMENT_API.md",
+      "bytes": 4599,
+      "sha256": "c5ac9546351cda7cd7d735a5a65455cd3ca71205eaf073f5fb53ce0b010a9fe1"
+    },
+    {
+      "path": "internal/auth/source-docs/SHARED_API_ERRORS.md",
+      "bytes": 5254,
+      "sha256": "f8287deae117b611476ae7d983bca86bb8ade57aa4fdfae25602995f80739c75"
+    },
+    {
+      "path": "internal/auth/source-docs/SHARED_CACHE_CONTRACT.md",
+      "bytes": 4216,
+      "sha256": "71dbc8efaeff7c8b2c27f15f4af3c6d7d4b79b8caa3227f5314c8e7bae4b9eca"
+    },
+    {
+      "path": "internal/auth/source-docs/UNIFIED_JWT_AUTH.md",
+      "bytes": 5956,
+      "sha256": "d1a17ec094298860b1cd8665d543b2f42dcb50cda4dcd2643c30e5f3e03af4fd"
+    },
+    {
+      "path": "internal/auth/source-docs/manifest.json",
+      "bytes": 4938,
+      "sha256": "3278d8dfbad8b3adbb1603270ca42dbb51eed16367388444f97ee5f71fbd5b42"
+    },
+    {
       "path": "internal/boardpg/README.md",
       "bytes": 6151,
       "sha256": "dd7c1669e457cbe05c61d7e57e8f1290955ae27369c90b6dc87e860bb5c37766"
@@ -179,6 +993,66 @@
       "path": "internal/boardpg/testdata/schema.sql",
       "bytes": 1035,
       "sha256": "fe722ef809077a8ac7a9a5bc5c7b19285ebd1fa988baaf7fe0a5a7bfd3dc9618"
+    },
+    {
+      "path": "internal/developpg/bot_commands.go",
+      "bytes": 1925,
+      "sha256": "d6039900e75ed978164020e1b2ddbf8b0f543883ddda472cb34dc80af230c13c"
+    },
+    {
+      "path": "internal/developpg/bot_commands_test.go",
+      "bytes": 1001,
+      "sha256": "4c14e1449b96e6f6d3ada81f59d664a90448ff895aa271a93832640db51b004c"
+    },
+    {
+      "path": "internal/developpg/packages.go",
+      "bytes": 2930,
+      "sha256": "4fa3f0ee6e8deba8be16793f333a7923a40a97174f351ac214e0fce5d5de7c2d"
+    },
+    {
+      "path": "internal/developpg/packages_test.go",
+      "bytes": 1369,
+      "sha256": "bb37096ae69f17f36f686990fcf31a34b21a45f50cea29f2933a8cb6e187fe51"
+    },
+    {
+      "path": "internal/developpg/repository.go",
+      "bytes": 3842,
+      "sha256": "f11fbeb46c876c360d8d106c8f065b719531217cd4022eb32ef4f2805af25230"
+    },
+    {
+      "path": "internal/developpg/repository_test.go",
+      "bytes": 1348,
+      "sha256": "a1a0e55736b1269153047d28fcb8512c0f6ff1dacfff7918da00e2fc61f724a8"
+    },
+    {
+      "path": "internal/developpg/testdata/bot_commands.sql",
+      "bytes": 516,
+      "sha256": "29284b8b695447a9d71ca3607f93a60f09bd023d9b75cc8cf5cd26946c85c878"
+    },
+    {
+      "path": "internal/developpg/testdata/packages.sql",
+      "bytes": 861,
+      "sha256": "3f0b56e527abe3f162ec170804471a359d1e30c35bbf3e07c5c65dd44188a3cb"
+    },
+    {
+      "path": "internal/developpg/testdata/schema.sql",
+      "bytes": 934,
+      "sha256": "244c6cabd5868d0b64a99adf7c0167b812fc73c228a838c8948d47014921c18b"
+    },
+    {
+      "path": "internal/nodeinfopg/repository.go",
+      "bytes": 3212,
+      "sha256": "5640ed03a7192cd12a9d501ea3e96ea00568ada602629a0bb5ba9ec527b465f9"
+    },
+    {
+      "path": "internal/nodeinfopg/repository_test.go",
+      "bytes": 1476,
+      "sha256": "8ca7e8e4406265ccaf0dc8d722ad9209f3af176ce24256895f5d5e75dc956c12"
+    },
+    {
+      "path": "internal/nodeinfopg/testdata/schema.sql",
+      "bytes": 798,
+      "sha256": "b9ff080c15d99bcc3627e2e3b1ed1c7691f1f8407751d5f27f4ef7fa7fa655ac"
     },
     {
       "path": "internal/watchpg/README.md",
@@ -261,9 +1135,1549 @@
       "sha256": "15789604dd51ec4974d306e97615df5e2e506e143c3ddb04c84d2cd161a39acd"
     },
     {
+      "path": "inventory/identity-client-evidence/blade/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/README.md",
+      "bytes": 10784,
+      "sha256": "11491ed968e72ad269e8d39a5ea949652edd9b416647ade39be45d2cf7c292d6"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/cmd/main.go",
+      "bytes": 17235,
+      "sha256": "acf8bdafc1f657ab873ab1c945350243b27cb0ba4570e260fb93f445eb21ed84"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/cmd/relay/main.go",
+      "bytes": 4229,
+      "sha256": "d932094c4f00fd94371da1f0fe5b169c63f9cb14c1906e877f3a14c74fc31165"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/docs/RELAY_DEPLOYMENT.md",
+      "bytes": 9017,
+      "sha256": "6c06284e81cdbd3e7b6eb6dd05346bf585ca98164febd4bbd0efa9b56628bb4e"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/docs/SERVICE_DISCOVERY_CLIENT.md",
+      "bytes": 7100,
+      "sha256": "58f97a6d83f7147f7e5b0fe0a1371e9c98e31d9fd7340bd70dc05401b97ebdfc"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/docs/SERVICE_REGISTRY.md",
+      "bytes": 4900,
+      "sha256": "3edf2868614ea8fdfb2d5f7f182b4f2ab62cdad1849fc37a8fd5f4cc31360c0b"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/docs/WEBSOCKET_GATEWAY.md",
+      "bytes": 7089,
+      "sha256": "f2c3c548bc1534ea4489d41a678b719c162536bc48b108e6b66ec66e184c6a98"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/go.mod",
+      "bytes": 2730,
+      "sha256": "12180cef644a4fa095de6e3f41a18094aec7f59e770e36933e861ac4b42c426a"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/capabilities/aggregator.go",
+      "bytes": 8093,
+      "sha256": "8ca1535a3b9f1c425e48ecf80df04d937cd87178aeb16a0cd6fc581a50fef7dd"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/capabilities/aggregator_test.go",
+      "bytes": 6235,
+      "sha256": "f75b85278ed68525c74f0d9750afb622a8eff53de220d621d3530e4f432583db"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/config/config.go",
+      "bytes": 9073,
+      "sha256": "63b73bceccb93d0fd7820c7938178c4202bb927aa1cbed89804dae863b7f0712"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/config/config_test.go",
+      "bytes": 3677,
+      "sha256": "0af0a0f0269740de53687fd509856ebdf0ae86f48bdd3f5afb660ea8fae68371"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/discovery/credential.go",
+      "bytes": 682,
+      "sha256": "755021511cf76ee836395fb8083b30a4e098d04761b197f33931480dda936d85"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/discovery/grpc.go",
+      "bytes": 4115,
+      "sha256": "b21beafde1b5c8700018a924aba193a21a23911e84a5e5b53a8161c229b3364d"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/discovery/registry.go",
+      "bytes": 13343,
+      "sha256": "b50f3bb672ade94e593c9e5d78a749687e80c7732ad96d248c9a963c81de8a6c"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/discovery/registry_test.go",
+      "bytes": 2707,
+      "sha256": "1a3a6df168849177323b5bd6ad0fc8e4abfda988c28667d1034201042fed174e"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/discovery/relay_http.go",
+      "bytes": 4700,
+      "sha256": "454c2b2cff7b5c7f6b68b412163d333442bce21bf7b3ffe85d0be7e8cb5791de"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/discovery/relay_http_test.go",
+      "bytes": 8863,
+      "sha256": "5ecd1879c21e5e7095fd79f43da34827531fd1138e1b56ad75a3fe40717435b4"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/discovery/relays.go",
+      "bytes": 2703,
+      "sha256": "d97cd73ee15d2507d6e79184a14e52e87bca3c509dd72651914ca1718834f86e"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/discovery/relays_test.go",
+      "bytes": 2880,
+      "sha256": "1ab81a3a249ea16a2df6ea6a8584097aaebc7cc2e560631280a58665072290cc"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/health/aggregator.go",
+      "bytes": 7228,
+      "sha256": "d2f53e37928ef6cbc7e107fbac94f7980be8d1e9fe0141d9c0bf8fbe46560665"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/health/aggregator_test.go",
+      "bytes": 2953,
+      "sha256": "1499db9130608c7ac65268a19e908a25111a3333a4b459477548e45516251dcb"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/health/response.go",
+      "bytes": 4518,
+      "sha256": "a7b146370dba51fb914f6564a1d7f688bd358beef8937a7ff33f82b448092aa9"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/health/response_test.go",
+      "bytes": 7479,
+      "sha256": "cfc1d133defacae23fd2f9341239f8c4ecde387399054db815df1c05eec24796"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/health/store.go",
+      "bytes": 1356,
+      "sha256": "2c754c0464822185215424c041d515e30363e29dc9197be7116109fba441005d"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/logging/logging.go",
+      "bytes": 727,
+      "sha256": "6d4ec349cd8200809ee5f4f63efd6c5352b003628766f2e4e8f363ef51abbdd3"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/proxy/proxy.go",
+      "bytes": 8036,
+      "sha256": "a16a576c4214aeabad4d13b24bd85c759aa8eca7f5b75ab9b19a08566dca3de2"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/proxy/proxy_test.go",
+      "bytes": 7596,
+      "sha256": "3371e379867712ab1723ab9955074bda1c07657b23025cc9e1bcf0d1d0922359"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/relay/config.go",
+      "bytes": 8354,
+      "sha256": "38c71212fc1a4d3b3280acb4ee2df470f9bd456b6a75cc274611dfce5d4cd99a"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/relay/config_test.go",
+      "bytes": 5209,
+      "sha256": "ce00970d6a490924cb1c4376acc20f02d6e0da7d0c9ee7ec0c2b2a5cd55295a4"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/relay/registration.go",
+      "bytes": 9188,
+      "sha256": "3d3685bd57ff365e6171a8eb1fad5eebc5cb2ea49790a114a9cf2f468734d71b"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/relay/registration_test.go",
+      "bytes": 6935,
+      "sha256": "2367ea0d30aec693858c35188ded5ce8c4c8b780d83867ea6d54f9f765db0621"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/relay/server.go",
+      "bytes": 8384,
+      "sha256": "7bf07cbbf914419f7785f3987f41007b4e030793732976d45700c207a08d2670"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/relay/server_test.go",
+      "bytes": 8926,
+      "sha256": "71969bdedcb7eb5cc0cbc34a8821eaa5ef4509b3d978d2d34e4d145c2dce18cd"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/relay/sni.go",
+      "bytes": 9510,
+      "sha256": "23ae68c517eacac10e6e3a8c1f3f11b5f45d2c5c921d567c85ae8ae07ef1b747"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/relay/sni_test.go",
+      "bytes": 6758,
+      "sha256": "84ac35aa87a2be2babe34642fc6aad6a0e0e2dd493a66fa8344fc8bf2ec549d4"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/relay/upstream.go",
+      "bytes": 1427,
+      "sha256": "5192da9c30d75678a76993e0a53d2347055c7548730f3def2824887913100814"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/relay/upstream_test.go",
+      "bytes": 1150,
+      "sha256": "98fd903298009169c7339dbf18ad5fb894b83b5cfa631d447c9f65adc0869fe8"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/forwarder_nats.go",
+      "bytes": 4595,
+      "sha256": "5c636154a2a176e10a5548109d719052ecda65757e0abb554756ea02fcfbb7f8"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/forwarder_nats_test.go",
+      "bytes": 3778,
+      "sha256": "39ddf4535c57f3b4bc07d72e4f22162939161165f4d4bc7634de5153beabc856"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/grpc.go",
+      "bytes": 8903,
+      "sha256": "72aba6c28382cf056903dba89cf1a1a975d379412662f3e1c0208718d6f0a6fb"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/grpc_test.go",
+      "bytes": 8795,
+      "sha256": "604f61c087ab6ec02f89f47b90720c87fea8a0ce6dc967264a17eac626c8e927"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/http.go",
+      "bytes": 3162,
+      "sha256": "e82a3cd43d04e0dc1e766b38b348b8c7c34548f0e454e7c3f335e46c47f9c36d"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/packet.go",
+      "bytes": 1030,
+      "sha256": "111c8674ab0c140f596ba9fb5073552ad49880e86ed8edc5e039a699e8d879b3"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/presence_redis.go",
+      "bytes": 9854,
+      "sha256": "38c74f4b6e1965fa5f6293a183354a1c7a312d5815841ef857902fe5a9d99015"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/presence_redis_test.go",
+      "bytes": 8189,
+      "sha256": "44c2ace9f7dcbff3db7b3f249d61e387ef1457011149e908d55f70c676ede237"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/push_nats.go",
+      "bytes": 3081,
+      "sha256": "19e45376f6825c290ad28d4187e76cebda8b943041d5e14a5a162f4ef615c257"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/revocation_nats.go",
+      "bytes": 2362,
+      "sha256": "05e451bcac6a5d432640f6afdf9afa19da8dbb97053569e1d112a4e50f49cd7e"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/revocation_nats_test.go",
+      "bytes": 1061,
+      "sha256": "78c304496c0241bc45394b993fa36d2301bb6b151d7e95557b9c8b1ff94be7f9"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/service.go",
+      "bytes": 33780,
+      "sha256": "6048ab72586d0e2ab711b883d7e19ce621df9622c71e134a01d53b5c459c3ede"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/service_forwarding_test.go",
+      "bytes": 1399,
+      "sha256": "bda4d4c3ce2917f6eecf702d02a9910f894223fe8099ea952cf174b86ff820a4"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/internal/wsgateway/service_test.go",
+      "bytes": 14589,
+      "sha256": "4a04d5d135f381afe242c1e81127a51350917c74a53dd09d62bff9ecec8ed476"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/manifest.json",
+      "bytes": 41113,
+      "sha256": "3248c5433751d01f9ad1b7f41e68da844b3980cb35beac2b996dfafe85077fd4"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/tree.json",
+      "bytes": 19252,
+      "sha256": "251a4f087028a324b753003afd079d5d32c7dc142a78a3ecc02f50d94bc151b2"
+    },
+    {
+      "path": "inventory/identity-client-evidence/blade/verification.json",
+      "bytes": 617,
+      "sha256": "8626bc0fef7a61a6aee50491e5eb356a4806ffd56f643f030beaa53366cc9b09"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/android/app/src/main/kotlin/dev/solsynth/solian/network/ApiClient.kt",
+      "bytes": 1612,
+      "sha256": "e01ef7c68b92a8482f47ec474bb265df15caca519fbd25df80ae37655cc17134"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/coverage.json",
+      "bytes": 48661,
+      "sha256": "10647f13c3a5c79860b090dce5c6eb5f99c1184bd2fb9f03b945c6018b6fd0ac"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/ios/Solian/Services/DataExchange.swift",
+      "bytes": 8520,
+      "sha256": "50f601bd5f46d3524c6a9db6218c42a4e3fcd8b82c141ea8622dcbe4c6d9be8f"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/ios/Solian/Services/NetworkService.swift",
+      "bytes": 10660,
+      "sha256": "f22bcf9476d383a5341997d6a21450db60a118eee0d63b6e0f2942d6392ba3c8"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/ios/Solian/Services/SharedConstants.swift",
+      "bytes": 1914,
+      "sha256": "cd9e6b901161505c55cc9872f3c84a52b47df90a9c1dc0697de5b119eba0aaee"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/ios/SolianWatchApp/Models/Models.swift",
+      "bytes": 84523,
+      "sha256": "6c85316dae35bdf17c19b5f9590e2f9593be37921621e1bb40967e1279b73ad4"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/ios/SolianWatchApp/Services/NetworkService.swift",
+      "bytes": 113289,
+      "sha256": "4dce0a5cb6f1b8b9ac3bd99da6160454333cccdd10d2425633b0794f1ce68dcd"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/ios/SolianWatchApp/Services/StandaloneAuthService.swift",
+      "bytes": 20527,
+      "sha256": "3e4625dcf7725f6e9adabb0c7b65aad27e1655fef1ecbdd272ea2a1ed415a333"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/ios/SolianWatchApp/State/AppState.swift",
+      "bytes": 7821,
+      "sha256": "9f1e9a15aa1ad26949747df88878965fc975f0c8cb7550bf6237ee67cf29656f"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/ios/SolianWatchApp/Views/AccountSessionsView.swift",
+      "bytes": 11615,
+      "sha256": "fe8fc78b1a9d4412703e89370c450ad8215f02f0f8309b6f014ea8878f61b588"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/ios/SolianWatchApp/Views/InAppWebView.swift",
+      "bytes": 3477,
+      "sha256": "23e3388d1ffbb40708423e71ce12ad216abf75310beabccdcca9944e8cb01988"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/ios/SolianWatchApp/Views/SignInView.swift",
+      "bytes": 14048,
+      "sha256": "03f349899b38f2c4525928c17a6773b6df74a0875af01a5426d943b46a081c79"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/ios/SolianWidgetExtension/WidgetNetworking.swift",
+      "bytes": 4317,
+      "sha256": "9d6a29c560aa8b8b36d1923f41858bbab109de8605031cfc1f0c2d8e3cb8a70c"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/accounts/account_pod.dart",
+      "bytes": 6894,
+      "sha256": "14342d21dd2d59485c3e861a4ce3ae5a2881e29fcb729a0003716d3e8617ca40"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/accounts/account_screen.dart",
+      "bytes": 26539,
+      "sha256": "1788ba9c7f5e89df8e6b4359127dbc819b1b81049cd7a325af712f2a97ead7c2"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/accounts/models/authorized_app.dart",
+      "bytes": 916,
+      "sha256": "bb623dbd7e6c84e2bf992c4a1d89987a84a7419208cf2e9dd4d15e13bb169f81"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/accounts/punishment_service.dart",
+      "bytes": 2447,
+      "sha256": "7054d46d0cd93847ad4ae73433baa0242dfc0ff8335a27926ec8a8dfea1bd8d6"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/accounts/screens/me/account_settings.dart",
+      "bytes": 110795,
+      "sha256": "882a100553775ad46523b293ed62fd8bc9e9d0d17a8ded905600f45ce6bccc7c"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/accounts/widgets/account/account_authorized_apps.dart",
+      "bytes": 16656,
+      "sha256": "9ab5ef789a420352c203d767a1eb7afb38d9df7cf33191f9378bb9d00655290c"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/accounts/widgets/account/account_devices.dart",
+      "bytes": 68710,
+      "sha256": "5ab51655489401647da2c839390b8e0928e5f2117e05f05064c7f86fec1c0ffd"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/auth_form_widgets.dart",
+      "bytes": 9601,
+      "sha256": "c2d74ce40bee6e0fa6ac74c6baf73e06c3876abc5c678ee95987dca6d9001f01"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/authorize_screen.dart",
+      "bytes": 20086,
+      "sha256": "fb35b53394fab8f986c8d5f6fd26c38ea907764230bafe0524c2824ce1322d96"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/captcha.config.dart",
+      "bytes": 332,
+      "sha256": "429de330664ad053eca990f6f7b9638dd22a8d1ac384b30e9aa3082354409cad"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/captcha.dart",
+      "bytes": 599,
+      "sha256": "e5134bd782049fa15b66c61a09f1b2004d9b2b2378f9f0e8409a9bfba8e3ab7f"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/captcha.native.dart",
+      "bytes": 1273,
+      "sha256": "5f30687e9472685b6050835b3ab35a69bef29792d54c0f6a0158a55ae35b099d"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/captcha.web.dart",
+      "bytes": 2088,
+      "sha256": "e27fa9c114d75e9c8f09fc8b114597c736cf63aaf8f14bbb7519705a4ee5e7d0"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/challenge_approval_sheet.dart",
+      "bytes": 29230,
+      "sha256": "7e3f520877f252a795f2b09d83c6b0971d757390f51ebf4cea221f5ba799a7a5"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/challenge_ws_listener.dart",
+      "bytes": 3862,
+      "sha256": "aa6ff3347e9b2aa7368c99a51c28601fc36c73993496a12378107086d99b3b3d"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/create_account.dart",
+      "bytes": 719,
+      "sha256": "a1cbd060e74a9863e3f2078873fe04d42f664cb4d197f64570da2963181a3fc0"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/create_account_content.dart",
+      "bytes": 27853,
+      "sha256": "dad52a350a17554e38c86ffeff3486784d05483ae0213c9c9a6c4812dc1bb110"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/create_account_modal.dart",
+      "bytes": 569,
+      "sha256": "140ca290f7a3df7ba9c48e35515353bccd0e620927642b4067d508ac1445ea6d"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/login.dart",
+      "bytes": 2436,
+      "sha256": "9a7a236931bb95f6be47cb026549684140870fa548479243c852a695f8ce52fa"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/login_content.dart",
+      "bytes": 54107,
+      "sha256": "278f6f83266cd8ec9d8bcd134d9de0759f891efaf0dd52eef9ae2305d4bb9380"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/login_modal.dart",
+      "bytes": 528,
+      "sha256": "7c53b29bc2783a6cf5391ebb6226a0ef03ec8c43219f05d7f0bcf3935887b222"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/models/authorize_client_info.dart",
+      "bytes": 2119,
+      "sha256": "b1cf674996a3b890140450517379a7dfc401cc3475f30f25ea1c7fa13a33fc67"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/oidc.dart",
+      "bytes": 65,
+      "sha256": "541eb155c9b82a6eb932ba52d6667922459c093696051505d6eeb9a18e8f66c6"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/oidc.native.dart",
+      "bytes": 8511,
+      "sha256": "738dafda3805ba61cddb929e27a1ab29e75f5999489ffe6b855577af96a9a9cb"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/oidc.web.dart",
+      "bytes": 2495,
+      "sha256": "9c49ffbd0bf08ba568ef2e4a1d9e596e607d10a514a48d272bb7f7ba1f2fe87f"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/public_app.dart",
+      "bytes": 1282,
+      "sha256": "d81314197606fc42870e0d731bc346caefc77d73fb2420a9718d432247fbf1ba"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/web_auth/auth_request_sheet.dart",
+      "bytes": 9193,
+      "sha256": "fc67ab836fac97748f79d1eaecb72519adf7c206bfa135750412e4370fde0696"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/web_auth/web_auth_app_info.dart",
+      "bytes": 978,
+      "sha256": "117cf2b40d3148a503241b6a83ad2d9619d8bfa4607f97c85af11688b15016e8"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/web_auth/web_auth_server.dart",
+      "bytes": 12796,
+      "sha256": "00f0d3f3917190c015fcd24e8ecfbcef2a17f876083d7f2b970f6611cd9a73f0"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/auth/widgets/auth_consent.dart",
+      "bytes": 31035,
+      "sha256": "0af822354c4165375749deb13def3eb2a5b4f45384f6f287b5d171b7e493f10d"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/core/config.dart",
+      "bytes": 35146,
+      "sha256": "82dc53987f2d05568322a3c30704f493983be576858e8edb9b0f99dea36d97cb"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/core/network.dart",
+      "bytes": 46284,
+      "sha256": "b89a3a8ed48099643e3062643b4828d51f13f812b41306f1c20eeb7d03a70608"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/core/network/api_error.dart",
+      "bytes": 4059,
+      "sha256": "fa9361ad7c4e1fca5cb5c7dee9d4578332c3061befa02d77553be1c12b97e75a"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/core/websocket.dart",
+      "bytes": 20446,
+      "sha256": "a48483f3a399d4f4b8d6e9b16580c02314acdc232d487dfd25b83ef3598cfa8b"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/developers/models/custom_app.dart",
+      "bytes": 2153,
+      "sha256": "2b2f3024e22b6d37e423020cd2b298b7cbbf12fd37fdb84a38d2b721ddcb76ae"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/plugins/apis/network_api.dart",
+      "bytes": 5048,
+      "sha256": "6d4f063823952b6c77b52214493ca11d4047f94f0502144747bfadae740eb5a8"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/realms/screens/realm_detail.dart",
+      "bytes": 140254,
+      "sha256": "464be7087a07ee95d3f50da06db3ca0c7cc488218f9579360d88c222b8e214e9"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/shared/widgets/alert.dart",
+      "bytes": 16875,
+      "sha256": "89b2ab3bf5b54e494eed1789d0d1f0d348ff5a43261867bdf6e0afd632269288"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/lib/shared/widgets/app_wrapper.dart",
+      "bytes": 57117,
+      "sha256": "bdb19da9b02f7897280d4e76d00d643c775a444c4e0febafc6a23d423f1de249"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/manifest.json",
+      "bytes": 36202,
+      "sha256": "5e31da02b61086b5f6938964d3d13e385cdf25923c4e5fa49e649bd911e51223"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/pubspec.yaml",
+      "bytes": 10409,
+      "sha256": "9cd5d0deab421d71c44203c1779596f3e899e4b9f69edf0de9956be2b4feb79e"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/test/auth/auth_consent_test.dart",
+      "bytes": 9530,
+      "sha256": "3b2d88edeb7c570c75d7b226837ec3e35c057fc2988d5b43e460fa70ed9df966"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/test/auth/auth_user_code_input_test.dart",
+      "bytes": 3544,
+      "sha256": "c3bdf2afd93d8a3442e559acd3b84250fbb476162a5cc40c2316bcfc43da31fa"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/test/auth/challenge_ws_listener_test.dart",
+      "bytes": 6980,
+      "sha256": "d8ac8e1d1fbbe0792ff3dd574a6f64f01b48c8b24864ebfad6756d26c4315d70"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/test/core/auth_callback_token_test.dart",
+      "bytes": 834,
+      "sha256": "c57fad0e2942f9df3c888b3040af383793f1c9a9037d914b5ab9550b7e4e1aa8"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/test/core/network_client_refresh_test.dart",
+      "bytes": 3130,
+      "sha256": "e3f23b0719a1b28b1d0056bcdbcf4b95e7cf8b30fef47f984bbefefa8cf17421"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/test/core/token_external_rotation_test.dart",
+      "bytes": 3327,
+      "sha256": "8c5da9b098037a4898213d46f888ffe63aa116a8df8b20c07af67cdda47e178a"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/test/misc/dashboard_unauthorized_test.dart",
+      "bytes": 3688,
+      "sha256": "c784524190ea8181fa4af753768219fd9ca50aa760fda31d5aeba95833955dd8"
+    },
+    {
+      "path": "inventory/identity-client-evidence/solian/verification.json",
+      "bytes": 10102,
+      "sha256": "63be10be13b734ca24091db9a9947b5e9e2dcd7e2aff43754b6204237c70bc00"
+    },
+    {
       "path": "inventory/license-audit.json",
       "bytes": 13864,
       "sha256": "35b96415b405c48fef6094509301fa42089a2bbcf772b23f6d9079f8205038e1"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/AppDatabase.cs",
+      "bytes": 3047,
+      "sha256": "33763d2ceffb40401d5e467611f20282bc985ebe19641c1c181c3752ffae4ee7"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/AppProductController.cs",
+      "bytes": 11199,
+      "sha256": "72ad83b26523cd52c78b4c6f50b8e55a9f01588ab1d48c46a30dc618fed2a78c"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/BoardPublicController.cs",
+      "bytes": 4571,
+      "sha256": "bac6ba46e90db498c76b3d38ea3f655f896f33bd575bdf21c07be011a696d695"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/BotAccountController.cs",
+      "bytes": 28631,
+      "sha256": "fb0e1938f1d238d19f668c03ee8ee16336b9c275e641003ceb73dc0086bea9a7"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/BotAccountPublicController.cs",
+      "bytes": 3095,
+      "sha256": "1176c4758f09c92abbbf7233df835d5089f4667e2388dd2a4441afa1027dec06"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/CustomAppController.cs",
+      "bytes": 37254,
+      "sha256": "6ae6dbccb103875225109b5babd7c08ec90a8f8de922f12721b7b005970438ce"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/CustomAppPublicController.cs",
+      "bytes": 2889,
+      "sha256": "a19a0143e3d7f854178da56b913c82f9f5135525ccdcc9bcaed4af6ff676a96c"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/CustomAppServiceGrpc.cs",
+      "bytes": 9256,
+      "sha256": "0b6877ee09a41a121f505a27c2025521174eef1e78bbd26e5b50e5b4de189ed9"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/DevelopQuotaController.cs",
+      "bytes": 1071,
+      "sha256": "40ee8df2a7ce7cd8ba02838921da318773cae5de53ba659a7e94785a565266ad"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/DeveloperController.cs",
+      "bytes": 4985,
+      "sha256": "3b1fc0afa746078b9e45468aec2d86e630933b4a1ae12cd3238efbc0525e8c33"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/MiniApp/MiniAppController.cs",
+      "bytes": 14082,
+      "sha256": "332f0b605ed9bdd1aba0574fcb314be4f0a7a35760f1d91d9cb6442651192493"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/MiniApp/MiniAppPublicController.cs",
+      "bytes": 3108,
+      "sha256": "a1c12172fa27bf9040b4ffcf9a8140724c732d9175e9f3e5fc5f259aea231abe"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Project/DevProjectController.cs",
+      "bytes": 5437,
+      "sha256": "f9b96952d3bb7667f6319dc14f3a71daa8b4abe9f7435f709c3507cf8a21075a"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Messager/AppDatabase.cs",
+      "bytes": 12070,
+      "sha256": "d129b490f865cd28e83a60dc38659228d35ed8aed8b4183cab06b5094d4aa3e5"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Messager/Chat/ChatController.cs",
+      "bytes": 82984,
+      "sha256": "22d8a19becdab64fefa234d0213591f49ab3d08458c186b4900609bb02d38c98"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Messager/Chat/ChatRoomController.cs",
+      "bytes": 95014,
+      "sha256": "fbf9898e12c73cb47568035a168203243cab6dbcdd7545cf02861967d6d1d41e"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Messager/Chat/PlaceholderExpirationJob.cs",
+      "bytes": 458,
+      "sha256": "8daefba5b4e840d8ebc4d86051bdd52fd5501fb7d880e6e8e900a0c7f1993d59"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Messager/Chat/RealmChatController.cs",
+      "bytes": 1357,
+      "sha256": "943a2e41499cbe9677368a21d1631b9bff6574d60f5c1914ebf690346062379e"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Messager/Chat/RealtimeCallController.cs",
+      "bytes": 26465,
+      "sha256": "dc23491a63fd7f6a16eadb404218ca59f95a444120c98baa32f61acaa970d204"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Messager/Chat/Voice/ChatVoiceCleanupJob.cs",
+      "bytes": 470,
+      "sha256": "f9b2a6a88aa740acc38c9dff5abe0b6f67f135e6ac09424203d1c644ca73315d"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Messager/Rewind/MessagerRewindServiceGrpc.cs",
+      "bytes": 6615,
+      "sha256": "90f91259677292613eae2747463dc15d3ea03033e702aee77f43694812d4611d"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Messager/Startup/ScheduledJobsConfiguration.cs",
+      "bytes": 1581,
+      "sha256": "23e319fbc23f63f8ad9f8143d0cb978d856899df7d711c243d75d3fc4243903e"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/AccountAdminController.cs",
+      "bytes": 26714,
+      "sha256": "744864a688167eceb954e4232265eb1362c1556dc87898fd446bc62de7c4eeda"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/AccountController.cs",
+      "bytes": 16234,
+      "sha256": "658ade643635667bb81918381025070fc74b68d79df440d3f1e3effece230f76"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/AccountCurrentController.cs",
+      "bytes": 10747,
+      "sha256": "9dac86470690c7258315de060d6803d640173b12bbcf0917fdffbf384072a563"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/AccountEventController.cs",
+      "bytes": 31837,
+      "sha256": "05221730282ef34ed6c5a4687b3270b55946dee23d8b2c47c3c71bbcc7cbba86"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/AccountPublicController.cs",
+      "bytes": 2269,
+      "sha256": "1d017b4285058eb99ecdd6f1d65fcb5f601676e9ff2fd4b032af07d87f10149d"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/AccountServiceGrpc.cs",
+      "bytes": 34905,
+      "sha256": "ab679d62508368c7a60507fd2bd653abc6b821d6a82db8b64fb9afa0db7c4461"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/AccountStatsAdminController.cs",
+      "bytes": 1794,
+      "sha256": "0bedb66156eb1c1a4f2dbf23ca90584d3ead9c96303b0a74b60e2a2324a46b5d"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/FriendsController.cs",
+      "bytes": 3149,
+      "sha256": "994d87a726ef08913b7964c54f22e5dde216c684ddd3672f5237bae5b18ba9fe"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/NightOwlReminderJob.cs",
+      "bytes": 3702,
+      "sha256": "066663bb2c8e39f49420acbacc95ff0c8b69403c72472c24bde0a1815f611330"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/NotableDaysController.cs",
+      "bytes": 7262,
+      "sha256": "bb119af627bec1fafa15428b24ea110901a28bdfa1c7347ff605f62939b666ca"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/PassKitController.cs",
+      "bytes": 6665,
+      "sha256": "9f5ede691b9ac04aaeb1714ae607cd0137e920180e6fa8171a5e7ea9a59028b5"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/PresenceActivityController.cs",
+      "bytes": 27829,
+      "sha256": "3d77cba195578757cc799c24f8fac8a1125845ed327d8ad551cba79c54701a78"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/PresenceArtworkCleanupJob.cs",
+      "bytes": 502,
+      "sha256": "3283a422c63f2c3cba8d5828b481559c46a2de976e7e5a255ca48c40096331d6"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/PresenceArtworkController.cs",
+      "bytes": 3552,
+      "sha256": "6be9f47724b05d20cd60a5cc2adb247101a81fadb65838e19c2781aec973f0c2"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/PresenceServiceGrpc.cs",
+      "bytes": 2460,
+      "sha256": "c360462b62825cd4d6a4f14f4c01a38f3b5b75d35b519308ac0ec87752597dbb"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/Presences/PresenceUpdateJob.cs",
+      "bytes": 3631,
+      "sha256": "64c9a7eca247285f2dc1001c47a84629094b82cccdab5b1e7842350a7fcfc65f"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Account/RelationshipExpiryJob.cs",
+      "bytes": 513,
+      "sha256": "a7baaf6468c8cfb20336a422b995ef90c68f50331fd7f101844f9fe76a990a4b"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Affiliation/AffiliationSpellController.cs",
+      "bytes": 9465,
+      "sha256": "8510db1cf5c1d8a35d728dd624f2db236ea2d41afef6e9f1bb57a8947a5f576a"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/AppDatabase.cs",
+      "bytes": 18632,
+      "sha256": "fc268cd596a7d2d28ddee476a8294b84e70626f6b9ee80b969c358da95a2aa7f"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Credit/SocialCreditServiceGrpc.cs",
+      "bytes": 1083,
+      "sha256": "4f47351f2f4628bf88568fd88357a4b1a5dccf8014cac58e6ba134b9b26d6b68"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Credit/SocialCreditValidationJob.cs",
+      "bytes": 3165,
+      "sha256": "49ca8a4c3eef34331415df2badcd3744f54ef523eea898e1ee0b68476408746a"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/DomainTrust/DomainTrustController.cs",
+      "bytes": 7877,
+      "sha256": "2129a38f3db8ef8af0e266afd0d290654e230c690eefa4a0678190bf0563ae2f"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/DomainTrust/DomainTrustServiceGrpc.cs",
+      "bytes": 1376,
+      "sha256": "5b54e5d72c177047c33fb3e1d3b7afe4849973a326d8794b20a48a6802a759a0"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Examination/TestAdminController.cs",
+      "bytes": 13622,
+      "sha256": "1ba9a850d2c680fa4fde68637457f25d20ccab88ccd400d2cc509cb4c1ccf5f9"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Examination/TestController.cs",
+      "bytes": 8654,
+      "sha256": "c3b5ba0842e60988c5b95b095f62d84cea015cda4db35a63c76e90053782afbb"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Examination/TestQuestionAdminController.cs",
+      "bytes": 10795,
+      "sha256": "fd6799c5b098fc989a879cad06281edf060a59c3796f2f358fe71ec2646c0d4c"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Examination/TestQuestionGroupAdminController.cs",
+      "bytes": 4329,
+      "sha256": "b68c6c479c46d4a1b8749c8d7d66bc43ad90fef387971c2f0bf93d3402dc27a6"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Examination/TestTrialAdminController.cs",
+      "bytes": 3850,
+      "sha256": "4551489dfdc89c76367b51c14e68d900bce3d623092928dd318ee6c674f6c96f"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Examination/TestTrialController.cs",
+      "bytes": 1860,
+      "sha256": "cc0ffa4548666324fc6ed5662aeba22fa0ca64b104dcdba4d9591c3801cfca2c"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/IpCheckController.cs",
+      "bytes": 4037,
+      "sha256": "7ae6dcd106bb285c88e0154fecf536d3e08717d7aa8a4267e05e774175b838f5"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Leveling/ExperienceServiceGrpc.cs",
+      "bytes": 609,
+      "sha256": "22f1b9e4254a3c8b33a4599b3ef8efa379faa35fcd68abf5f06aac190b4eff33"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Meet/LocationPinController.cs",
+      "bytes": 11684,
+      "sha256": "6d7b70b18076919b26c7a9f3c8aa19fae0480ca31d3804c60afd6c57b04e289a"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Meet/MeetController.cs",
+      "bytes": 19503,
+      "sha256": "77893abae4bb20495e323262c13d9733c996fcd0f23358624ab9615b29dce701"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/NameChangeCard/NameChangeCardController.cs",
+      "bytes": 3120,
+      "sha256": "5240da83125b27be04a44c3f21ee9ebbaa9403c1e444906a7ae823fd7d791f36"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Nearby/NearbyController.cs",
+      "bytes": 5237,
+      "sha256": "f2979b5321dc2c4189332725510bf0f00ce982b3bb5852e9cb725e43927c8457"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Nfc/NfcAdminController.cs",
+      "bytes": 5359,
+      "sha256": "167d7e4040865f4c46af55c710d4f77e79c7ee776abf7263a916fd76308d8b7a"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Nfc/NfcController.cs",
+      "bytes": 22144,
+      "sha256": "961fd9deb2b1894034330d8d65749cd544c00e4eacf5628d39836606743b03c8"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Nfc/NfcServiceGrpc.cs",
+      "bytes": 9356,
+      "sha256": "78d4005811e005bb281068c4c9e04039f5005f529e75c4ef0dd949d0c15e74d3"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Progression/BadgesDiscoveryController.cs",
+      "bytes": 8138,
+      "sha256": "b7d0d659f6567958da64a182a02f7c641454ed43887d0dc1ec9925a1fe0e430d"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Progression/ProgressionAdminController.cs",
+      "bytes": 9243,
+      "sha256": "470ad8d553d02cc4bc4d12d4a277b0f22f347ec49ef7c76cecef4e59d90e4ccb"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Progression/ProgressionController.cs",
+      "bytes": 3031,
+      "sha256": "bd50ac221c69983998156d1c086ba924a5a5f2b47d312a317db1ffd5ecd47cd1"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Realm/RealmAdminController.cs",
+      "bytes": 17376,
+      "sha256": "069cf0197a0774e7fba4d3263645cd8884b423926a38c72e98704f06fc6690d6"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Realm/RealmController.cs",
+      "bytes": 58324,
+      "sha256": "b325fdea25d5d4f191fc465e7dff36a9c6289c57d8909046a1c6a63806e9bc74"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Realm/RealmPublicController.cs",
+      "bytes": 1271,
+      "sha256": "168eca901d0ab985fa1c2f252ab75f708acc64c6cd77d6d91cbdfc7357a51bc3"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Realm/RealmServiceGrpc.cs",
+      "bytes": 9778,
+      "sha256": "69a79d9732361ba103be19ee95ab2ccc8aa7478c9d9ae5ae693ea1fff0491a05"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Rewind/AccountRewindController.cs",
+      "bytes": 2868,
+      "sha256": "d4b178f1778cafe4ac62531108f93b93ea77846e4b37e73533d7a933c4b1658a"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Startup/ScheduledJobsConfiguration.cs",
+      "bytes": 4370,
+      "sha256": "7c9bb2481afcb78fe8e2b312b7a3bf9f5ba12fc36ca5a51278e29cf0b19522e9"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Ticket/TicketController.cs",
+      "bytes": 29266,
+      "sha256": "a262d121c12c329e6a327bc9c762d27ac35532f6da102d11fd44c1b20400d7b0"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Passport/Ticket/TicketOnCallAdminController.cs",
+      "bytes": 2021,
+      "sha256": "ec161f7bfdf4b5cdf7743d20ef0bd2c980bf49b9102c8d1f3b84b467745bc90f"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Account/AccountSettingsController.cs",
+      "bytes": 5228,
+      "sha256": "e0918ad9b859c6733e25edb45d2140f7e58224a10b00528a8ff0a428f6b8eb80"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/ActivityPubController.cs",
+      "bytes": 29354,
+      "sha256": "db52059524c21b87d272e8f349a01f5103733b9735f97e08957c77c678814888"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/ActivityPubFollowController.cs",
+      "bytes": 16870,
+      "sha256": "c4911f75f87d88658d7cad1f46bb7fca3712d604d1702251dfaf6f0caf7fd525"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/ActivityPubRealmController.cs",
+      "bytes": 14650,
+      "sha256": "f39aeb04ab1c4c48bcc2a6c4762866a94f0866d8d78678db15bf3bc52166209e"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/FediverseActorController.cs",
+      "bytes": 46363,
+      "sha256": "e773afbf94fce176d3218d68483fc2b77b5b67a0164c5ccf6ab4b0104107b64d"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/FediverseKeyAdminController.cs",
+      "bytes": 5270,
+      "sha256": "8cedf8bbf7a33d279c718e730efc3cc13bd196837e64a2359ad6f544239722d8"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/FediverseKeyController.cs",
+      "bytes": 2421,
+      "sha256": "fc20bba411bd4fae973fde99ed4d47907f85496d93534394f34a70fbc5559686"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/FediverseModerationController.cs",
+      "bytes": 12775,
+      "sha256": "3ac4684f4b4e711a617e3f537c89d8511c6da956d1537c6cb021125a0871bd33"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/NodeInfoController.cs",
+      "bytes": 5061,
+      "sha256": "929548e856f256ed9da58c4337884aa20681636fa34d4b43487ca9bd2f2235c2"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/QuoteAuthorizationController.cs",
+      "bytes": 5046,
+      "sha256": "d644a1eee31f64d83373cfbffa2b6ccadd0cf5216bc0f934afee4d3bf4078778"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/ServerActorController.cs",
+      "bytes": 4886,
+      "sha256": "58e598f9ed22b5c085859223887e73f359d6860685d6888960b4ba76d2381417"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/Services/DeliveryRetryJob.cs",
+      "bytes": 9977,
+      "sha256": "25efae4319b93ab2f56ea80ec1480a1c00a973570b4e8b4add15cd2117c748c5"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/Services/FediverseActorCleanupJob.cs",
+      "bytes": 5898,
+      "sha256": "f10181fa904de82965b7290081c1b52ab9ac762dcbf0e84d608c5546c901f2aa"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/Services/OutboxBackfillJob.cs",
+      "bytes": 1721,
+      "sha256": "5396b906a87416fe9dc472ef9804c8f76b9f5a977baee64bf26b2342f6f6c87a"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/WebFingerController.cs",
+      "bytes": 4661,
+      "sha256": "9388351edf1995ddf18725d490c8193db2de6488e2c0a6582b221459e3fb042a"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/AppDatabase.cs",
+      "bytes": 17092,
+      "sha256": "0ffbb6ccf96e4fcbf35dc2d05eb3f166eccfa45a4e990c67930386099d67d89f"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Autocompletion/AutocompletionController.cs",
+      "bytes": 895,
+      "sha256": "7d946b7f804e7c9c7645f3f252c2f57a3ba0574b7da2515227f844d9b652ff45"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Autocompletion/AutocompletionServiceGrpc.cs",
+      "bytes": 1120,
+      "sha256": "deb11c0211dad90b6092fbd1739b649405bd71d76a86bde298bdcdf04a4ca81e"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Automod/AutomodController.cs",
+      "bytes": 10009,
+      "sha256": "c251ff7a4e9ee5c26175037f6c9367820a1a774e97cd9a3f18f301b52f3a998d"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Live/LiveStreamController.cs",
+      "bytes": 37118,
+      "sha256": "18aaf9343d105a03e38b76db3555eb91dc9d34eb9fcc93e93547228f4b6c2a50"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Live/LiveStreamIngressCleanupJob.cs",
+      "bytes": 3955,
+      "sha256": "fb02eac3705c8bcc1074e2830f9cdd3019b94c1f7c11eb58384fd0f3e48c7188"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/AdsController.cs",
+      "bytes": 1056,
+      "sha256": "efa0e80a4d6c53f5e4555003bcf8757afa310bff64e93f05bddf36b3aaaf26bb"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostActionController.cs",
+      "bytes": 89250,
+      "sha256": "aa30f0451fdd8d6575f7e756f1fc597673c5e415914c58b5dd0440a93c68f285"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostAdminController.cs",
+      "bytes": 12636,
+      "sha256": "69c7069506352436518a19e404328924d46cf9c7ecdded40caad809b8b6985a7"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostCategoryAdminController.cs",
+      "bytes": 8056,
+      "sha256": "8cfaf893015b872f5b28e06000300a5589f7a66dbcb91ab6013cd4472e44f76a"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostCategoryController.cs",
+      "bytes": 11609,
+      "sha256": "2610949761b9e2d95eb2ea407735a2b56763d98ac8d93a757537a9905bb8f86e"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostCategorySubController.cs",
+      "bytes": 1750,
+      "sha256": "b41739f477d3d2e4edf3ce53785ecb9a182dae630f83800e87e89b111f8f1cb3"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostCollectionAdminController.cs",
+      "bytes": 6387,
+      "sha256": "04a32768cab9d475995191fe384080fc58fb3927513ed169951ed7ddcf593b2f"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostCollectionController.cs",
+      "bytes": 22024,
+      "sha256": "4e7e65ad975d7e6a69999b6be70d88ef433a28d08275651c7295b38b60376a49"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostController.cs",
+      "bytes": 91386,
+      "sha256": "d61b58a6c60f3bbecbdabfc7f9e0cad131605c3a5238097203d69bd978a16145"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostIndexBackfillJob.cs",
+      "bytes": 689,
+      "sha256": "7b1c0190013338560bc52b28040e131b9735449a285da8ac6df962a75599fb40"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostServiceGrpc.cs",
+      "bytes": 12868,
+      "sha256": "ef63af27cbc8b92c83cedfc422cb5782d2ed0750ac639e12d3b92c08fe3a79bf"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostSponsorAuctionJob.cs",
+      "bytes": 449,
+      "sha256": "6f638f3cd8e0bb40c1d9e17075c74aa4de8497de8488e81b107a4f23903b952b"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostStatsAdminController.cs",
+      "bytes": 2416,
+      "sha256": "fde432f336af4554eb21279db5ed5a5f2087eb253f28a1d247c46af5ea12c486"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostTagController.cs",
+      "bytes": 22026,
+      "sha256": "e6ef23a79ab7a88125599885a2a27609fcfd1aa6367e091e60f760220419c5e1"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostWatchController.cs",
+      "bytes": 3695,
+      "sha256": "c684c0f9cb664cd92a87c2b139647d7ce2757ad6ce780d0063e8619a3da6b86f"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherAdminController.cs",
+      "bytes": 13146,
+      "sha256": "95794f2a42c41c36db671604bb9a053912eb7760973fd0bf2dcd6445404dc58b"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherController.cs",
+      "bytes": 55901,
+      "sha256": "27f586249fd911cbe552e788f3e19016a5e206b28ea386e0aa1f8bf826358ed9"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherFollowRequestCleanupJob.cs",
+      "bytes": 840,
+      "sha256": "f2dd79b4f95c84b2a8ca425640b071626e3cff2aeee2e70f38c50a3baf9de952"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherPublicController.cs",
+      "bytes": 7601,
+      "sha256": "229ec0f8504e58b5210b8c9390a7f714c95d8f873be49f859948b9d025029eac"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherRatingServiceGrpc.cs",
+      "bytes": 1421,
+      "sha256": "3aa04f6320450678631af519b5d4f501364ac37bbdaec22f255feaa50c0d5288"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherServiceGrpc.cs",
+      "bytes": 6961,
+      "sha256": "ae63950d550efa598c62528234adb6e622ae512c2f433bb04d3c229c58310a8e"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherSettlementJob.cs",
+      "bytes": 361,
+      "sha256": "bef32c4d457c4cb27e1c7889735a6c6cd29bb4d8e6b07003114ec26fb0a8b028"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherSubscriptionController.cs",
+      "bytes": 42996,
+      "sha256": "33ba320c185caef6be6c12a608cdfd3e29a7573c45fa1dc02e6b05f325703ade"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Reader/WebReaderController.cs",
+      "bytes": 2827,
+      "sha256": "c3bcd62fa33a5835f362f3afccb932d457403dc39ba9edd7e1cddfd1a82db254"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Reader/WebReaderGrpcService.cs",
+      "bytes": 1770,
+      "sha256": "2221c31b283f62290b1e4e452b27f88b0d284287c864d357da538ab74a3fef06"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Rewind/SphereRewindServiceGrpc.cs",
+      "bytes": 5956,
+      "sha256": "e04c46d1ad80ce2d24c55cc1b0f27003eda9eccadb6410893629d44918a66025"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Startup/ScheduledJobsConfiguration.cs",
+      "bytes": 5344,
+      "sha256": "b2e20e54ca3588ef85e332aa99fc50a46619ed1738b0b446b2cdf1ac373c74d7"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Sticker/StickerController.cs",
+      "bytes": 26302,
+      "sha256": "21df777b263dabf9e0b6124a165d0a8f18b9436361aef50b95095bb8871bd14e"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Sticker/StickerServiceGrpc.cs",
+      "bytes": 781,
+      "sha256": "eb5c69dfb68fbfe3004fab9a24b5cc7a413fe24ab82274c8a9206187923c25b3"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Survey/SurveyController.cs",
+      "bytes": 34548,
+      "sha256": "f5fe91f7285c5646d6a164f01d2e20223600112e83087b078f4a4de680611d8d"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Survey/SurveyServiceGrpc.cs",
+      "bytes": 5735,
+      "sha256": "f3feb999f49d20e80afb3b117567fd9ab9fcdde45c2eaf23210069ffc5c4817c"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Timeline/TimelineController.cs",
+      "bytes": 4016,
+      "sha256": "40eab60e13603cf2b8604c10890d77ff63c6fc009bf35e841fba2efec2cfc4d4"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Timeline/TimelineDiscoveryController.cs",
+      "bytes": 7041,
+      "sha256": "576ff7f7f56b2f85c8a644e88b4650d8cbc4a27598620923b3cd34ff1e07cf16"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Translation/TranslationController.cs",
+      "bytes": 2076,
+      "sha256": "027f1864f0e3d98f0ad1411b82f2d9412e1510e5ae21ec3a27bd8003af9a4136"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/AppDatabase.cs",
+      "bytes": 6568,
+      "sha256": "bd10f1eda22281e29eadc998898c56b7001dacb094a1e14ab404d5ecaf072a9e"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Models/WalletProductOptions.cs",
+      "bytes": 544,
+      "sha256": "e4cc20e37aeafcf7d7b6da79d0b3ffa0e481353c17176a3e57403aff3d2c824f"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/AppSettlementJob.cs",
+      "bytes": 2018,
+      "sha256": "56591ce8fc4616c3739c617f02ad20dd15a7924a8fd4c18e80e47544bcf63380"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/FundExpirationJob.cs",
+      "bytes": 596,
+      "sha256": "066f6c0bea84e77fd3e0391023a4285e6374c5ff19afd362942af8c9fed28bc1"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/FundRaisingDeadlineJob.cs",
+      "bytes": 635,
+      "sha256": "c9337186b6502e7b415d33ae9767459dc7e991f40e622304df16fa585f225ffa"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/GiftCleanupJob.cs",
+      "bytes": 1239,
+      "sha256": "c050be289b34b594ccf57196f81ed890f7d4192da307f130579c7983285a5623"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/MerchantController.cs",
+      "bytes": 20182,
+      "sha256": "44e46d2abd418922db70d78004df87236eb7b105d3bb7e64e8f7de4cc6f5de2e"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/MerchantServiceGrpc.cs",
+      "bytes": 4543,
+      "sha256": "6868614a2c6bf8b9ca358d273e36bd7c589197b4bcc2ebbbebcf057ae9226c5a"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/OrderController.cs",
+      "bytes": 33420,
+      "sha256": "1a9da5a44048115061ce11af92f726dd67ba4fdf1f33645baa27e1c443291117"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/PaymentAdminController.cs",
+      "bytes": 14040,
+      "sha256": "c049e7ed2e67f3e2e5b775e8ea9b55227dcede38e612c6d7abd7861b2d478cd5"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/PaymentServiceGrpc.cs",
+      "bytes": 8600,
+      "sha256": "09ff21208119e5ffe2d347df7bb161ef8e2a12b61675e927a6a5a7a0f64b8889"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/SubscriptionAdminController.cs",
+      "bytes": 7496,
+      "sha256": "a1801452d70417c603ada9cc4c1ecd7f79d823deb8c44fd0b6a97e36795106c9"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/SubscriptionCatalogServiceGrpc.cs",
+      "bytes": 4742,
+      "sha256": "f120679ceed26ab4b8e0fb6940369d625e01f200b8b8776173a1b79c8a49fa37"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/SubscriptionController.cs",
+      "bytes": 32353,
+      "sha256": "6fd81429fb791e3df571af9065b252860ace406a5702e6fb4553476ddcced086"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/SubscriptionGiftController.cs",
+      "bytes": 11735,
+      "sha256": "db1138da6a1fc62b44b834856576ec61fcad70d0a6311a5e1b57306defaa7c88"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/SubscriptionRenewalJob.cs",
+      "bytes": 7124,
+      "sha256": "eb0e0c2c89251e58a940c145bd1aa8fc4055a0a6eb550f12606b31290466ed05"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/SubscriptionServiceGrpc.cs",
+      "bytes": 3155,
+      "sha256": "4a505f9d848b59047fdd7a5983e3005de342012f1cc567061ac9755c480f1d91"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/TransactionExpirationJob.cs",
+      "bytes": 638,
+      "sha256": "b376f350b52d88b971753307291cf08094e81f1a35cc0f06b0c3b9ae617ebaf9"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/WalletController.cs",
+      "bytes": 61958,
+      "sha256": "66b05f979b09fd732cebf07b24e830836fd46a38980f45c7019dbd1d69562030"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/WalletProductAdminController.cs",
+      "bytes": 2253,
+      "sha256": "cc42800ab234e08d8c1f4e65ba558dfeb5c572ce33d92dd8e19bc48a96dd5fe3"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/WalletProductController.cs",
+      "bytes": 5195,
+      "sha256": "134f855426bdeeb02e3da2e6a29a924557c91105ff8fcb0d2e47bfabaf247599"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/WalletProductService.cs",
+      "bytes": 12663,
+      "sha256": "632aabaecaf2893241ff958e50d40c5cdff29b38f5e55d866c2ca85fc1fb1085"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/WalletServiceGrpc.cs",
+      "bytes": 2168,
+      "sha256": "f7f2ec7ec61ad31b2fc6ead2b61cafb3f6932af17dd25e29da3bc8cf0f38d314"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Payment/WalletStatsAdminController.cs",
+      "bytes": 2803,
+      "sha256": "39ea6759d68b917dce0e78735a87ea69a377d2a1c47904ae5e58e5de31e8c390"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Wallet/Startup/ScheduledJobsConfiguration.cs",
+      "bytes": 2846,
+      "sha256": "ee89b2bd44ec5506cdaf268688ed9a4066a097f6b2f7fa881ee6fe49f0f3a884"
+    },
+    {
+      "path": "inventory/operation-sources/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "inventory/operation-sources/build_coverage_plan.py",
+      "bytes": 27462,
+      "sha256": "18748d77d54082f73a52115350e3233ba5d813708d13cf8468b6525fbe0ad3f3"
+    },
+    {
+      "path": "inventory/operation-sources/coverage-policy.json",
+      "bytes": 51597,
+      "sha256": "a60d132760e9994ca2ea4dfe4b8242d7f71872e45119645137499247325c6fa0"
+    },
+    {
+      "path": "inventory/operation-sources/coverage_format.py",
+      "bytes": 4559,
+      "sha256": "617888b4395aefec3f665cb097346dbe88942ae86befce2900e6cd961cfac3c6"
+    },
+    {
+      "path": "inventory/operation-sources/fortune-operation-metadata.json",
+      "bytes": 4178,
+      "sha256": "4e49cd44207797934b68e840b4206998ee3d56902ca5cecf3aa02901bfb15acc"
+    },
+    {
+      "path": "inventory/operation-sources/manifest.json",
+      "bytes": 78930,
+      "sha256": "c8d21e2f00079def6438db1bc59da018130c12b5266c9137a7aa9cda3a31d6f7"
+    },
+    {
+      "path": "inventory/operation-sources/validation.json",
+      "bytes": 906,
+      "sha256": "6cb38755ae66e0ec7614fb8676d9352da37bcb03f1ef21e1f017267158534c8f"
+    },
+    {
+      "path": "inventory/product-client-evidence/DYSON-LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "inventory/product-client-evidence/DysonNetwork__docs__APP_PRODUCTS.md",
+      "bytes": 7517,
+      "sha256": "01aa3a1ed093ae0a62e3ee115f378bba4af93a102850099a1fa2e2379e4592a0"
+    },
+    {
+      "path": "inventory/product-client-evidence/DysonNetwork__docs__APP_PRODUCTS_AND_APIKEY.md",
+      "bytes": 2519,
+      "sha256": "a37275bc7b93d521b0b27be4ce6f035aded133157a8760248cb683b43283f18a"
+    },
+    {
+      "path": "inventory/product-client-evidence/DysonNetwork__docs__BOT_CHAT_API.md",
+      "bytes": 10138,
+      "sha256": "e86ee2ac0d277ba3ce5d496c6efabcb38805b3c71893dfe7eea8f92ef68c28de"
+    },
+    {
+      "path": "inventory/product-client-evidence/DysonNetwork__docs__BOT_CHAT_MIGRATION.md",
+      "bytes": 2459,
+      "sha256": "adada27384b91ccc2c33a800c0e09c55b3d99d88a5a712d30084d287efb40c4e"
+    },
+    {
+      "path": "inventory/product-client-evidence/SOLIAN-LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__.gitmodules",
+      "bytes": 234,
+      "sha256": "96468c9f289444a26da6f701b4f7f12f630544afd0641227c3b71ebeb73b4f88"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__build.yaml",
+      "bytes": 140,
+      "sha256": "1d3437a0b27a0f0e9ad55d7c6be036788a6fe5550e3bd4dd9eed5b2d9d10cf89"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__ios__SolianWatchApp__Models__Models.swift",
+      "bytes": 84523,
+      "sha256": "6c85316dae35bdf17c19b5f9590e2f9593be37921621e1bb40967e1279b73ad4"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__lib__accounts__screens__profile.dart",
+      "bytes": 41913,
+      "sha256": "6430b1d562fd340f3daff5bc064f81b6571fc31cde44f8b741c982bff0a31813"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__lib__auth__models__authorize_client_info.dart",
+      "bytes": 2119,
+      "sha256": "b1cf674996a3b890140450517379a7dfc401cc3475f30f25ea1c7fa13a33fc67"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__lib__auth__public_app.dart",
+      "bytes": 1282,
+      "sha256": "d81314197606fc42870e0d731bc346caefc77d73fb2420a9718d432247fbf1ba"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__lib__chat__pods__chat_room.dart",
+      "bytes": 50108,
+      "sha256": "e4eb3a1c84a8029c549c8525bc17aa399f1ad307c25bbbbcc01aaa5263277984"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__lib__chat__widgets__chat_input.dart",
+      "bytes": 122634,
+      "sha256": "305203f5125903e59a5785b3f8c1bf750d09295a3506cee4c97f1fe78d432ac6"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__lib__core__network.dart",
+      "bytes": 46284,
+      "sha256": "b89a3a8ed48099643e3062643b4828d51f13f812b41306f1c20eeb7d03a70608"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__lib__payments__payment_overlay.dart",
+      "bytes": 34744,
+      "sha256": "3ecc38508592b096655751ec9f5e23f99c2dd7b0a8e25f22d6c43cd00930b232"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__lib__plugins__apis__network_api.dart",
+      "bytes": 5048,
+      "sha256": "6d4f063823952b6c77b52214493ca11d4047f94f0502144747bfadae740eb5a8"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__pubspec.yaml",
+      "bytes": 10409,
+      "sha256": "9cd5d0deab421d71c44203c1779596f3e899e4b9f69edf0de9956be2b4feb79e"
+    },
+    {
+      "path": "inventory/product-client-evidence/bot-command-oracle/BotCommandOracle.csproj",
+      "bytes": 211,
+      "sha256": "38e201f047792df530db8c7d157c2b6b19d1ed2e4134dba5da5c59e97d3b0da2"
+    },
+    {
+      "path": "inventory/product-client-evidence/bot-command-oracle/NuGet.Config",
+      "bytes": 74,
+      "sha256": "9508cae5f76364f56e80eb97cb16493977243cf38e5cca6284e3d74f83b20a2c"
+    },
+    {
+      "path": "inventory/product-client-evidence/bot-command-oracle/Program.cs",
+      "bytes": 3450,
+      "sha256": "4d6906214faaaae75cd1d39b07d723beccf254c853f7d6693a01f3da361802c3"
+    },
+    {
+      "path": "inventory/product-client-evidence/bot-command-oracle/fixture-manifest.json",
+      "bytes": 824,
+      "sha256": "72f1d7b56b68cb056af09fc03924f88d4e20c6b8af636ea9a87631730194717b"
+    },
+    {
+      "path": "inventory/product-client-evidence/bot-command-oracle/results.json",
+      "bytes": 4576,
+      "sha256": "6125d4d6581deac6141a878a6f016f8e247c606eed3e1feda654c85bdf495f20"
+    },
+    {
+      "path": "inventory/product-client-evidence/exploratory-retrieval-status.json",
+      "bytes": 29337,
+      "sha256": "aca299880f3638ec78c49f98ea0fb331143ff3213e3a99129387c58e54dcecca"
+    },
+    {
+      "path": "inventory/product-client-evidence/manifest.json",
+      "bytes": 9708,
+      "sha256": "a2b30554f0a35a6b3605bccd7c2325452c860e7c716fa56bdb464106039b9719"
+    },
+    {
+      "path": "inventory/product-client-evidence/search-results.json",
+      "bytes": 372477,
+      "sha256": "4b3cf7281cba639ed64f348ee9179e986c4ebe5a902c10fff554374c3edb22b2"
+    },
+    {
+      "path": "inventory/product-client-evidence/solian-tree-selection.json",
+      "bytes": 92703,
+      "sha256": "57f7e9788129a371a194a3e5f77755c8259b4f75514e0f3cf5a79bc3d7aed341"
+    },
+    {
+      "path": "inventory/public-doc-evidence/entrypoints.json",
+      "bytes": 1957,
+      "sha256": "3a2b3e57577c730f9ea9737bfbea09d5cdec3b755b1f9431cc351b458a881c9a"
+    },
+    {
+      "path": "inventory/public-doc-evidence/page-observations.json",
+      "bytes": 10895,
+      "sha256": "324695d13cdc71433c2366c08e103e647afda209ed4686c1c2eac5cbe8ea0792"
+    },
+    {
+      "path": "inventory/public-doc-evidence/search-log.json",
+      "bytes": 1944,
+      "sha256": "b023e817b3c2f0f3b4cb914c20502b4fc7841d41ff9dbe3420b4006c6903861e"
+    },
+    {
+      "path": "inventory/public-doc-evidence/validation.json",
+      "bytes": 1157,
+      "sha256": "e22baa60fc77b86a1ab92fcd3dfc45329c4d58c7906ec87c6ed8a4224fa0fbf7"
     },
     {
       "path": "inventory/sosys-page-2.html",
@@ -281,9 +2695,234 @@
       "sha256": "e8f9510088f69ea71c5a37f8011ba5104a18c30730652ba8bb0c398d586bf865"
     },
     {
+      "path": "ports/develop/PROVENANCE.md",
+      "bytes": 8985,
+      "sha256": "539dbb5657ecdfe0a91378d7d2061f2e517dd22ac3b290fd647a11428a2f9038"
+    },
+    {
+      "path": "ports/develop/bot-commands-PROVENANCE.md",
+      "bytes": 6952,
+      "sha256": "e349573daf8aa882120d11b3ed3e9fa3d2eefeea22551a8706a5d85326154654"
+    },
+    {
+      "path": "ports/develop/bot_commands.go",
+      "bytes": 6308,
+      "sha256": "e9316ba42abd20da69137c06c43fa1b13344b6a72ab872a6193bfaf400c4e70d"
+    },
+    {
+      "path": "ports/develop/bot_commands_http.go",
+      "bytes": 2133,
+      "sha256": "d3dab7c41fd74a5d4abb0c39f4191f69b652eb6271c73ea8cb471ad68d9e95b8"
+    },
+    {
+      "path": "ports/develop/bot_commands_source_test.go",
+      "bytes": 3569,
+      "sha256": "f267754a5a829be37203674d901fd0604d40ccb376ca9b6ba5c71858cdc3dd48"
+    },
+    {
+      "path": "ports/develop/bot_commands_test.go",
+      "bytes": 5819,
+      "sha256": "ed4e70dcb0aa3eadcbe38dbc4cc804dfbc92b07258825c552d1dc29b32cf9c77"
+    },
+    {
+      "path": "ports/develop/discovery.go",
+      "bytes": 1186,
+      "sha256": "85b5329fdf6dd556b656a41e0f5b32f1117a632cfd277d243778b012e0a1af64"
+    },
+    {
+      "path": "ports/develop/discovery_http.go",
+      "bytes": 3478,
+      "sha256": "102feabaa1023c15024f3ad52d450318eba781febe6a2265d8c63e25dda68909"
+    },
+    {
+      "path": "ports/develop/discovery_http_test.go",
+      "bytes": 6809,
+      "sha256": "0b6695f362d666e040eb3c096e27f7069f9560b45b5da9f5ced144abffeb2501"
+    },
+    {
+      "path": "ports/develop/discovery_test.go",
+      "bytes": 456,
+      "sha256": "03100c49dc14bd95c969eb6c9d1ce8a6478b4fd9a50c0c0ce11ac79d2fe4d1ff"
+    },
+    {
+      "path": "ports/develop/package-source/DYSON-LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/develop/package-source/DysonNetwork.Develop__MiniApp__MiniAppService.cs",
+      "bytes": 8055,
+      "sha256": "936cdd41a56024ada9ef938729aa693c8091e58ed163e4479f4de6f298ddd489"
+    },
+    {
+      "path": "ports/develop/package-source/DysonNetwork.Develop__MiniApp__MiniAppStorageService.cs",
+      "bytes": 8428,
+      "sha256": "46a596159864208af443f625f0ac1140a6a9ccd2e871d0eda39ac259fbf72edc"
+    },
+    {
+      "path": "ports/develop/package-source/DysonNetwork.Develop__Models__MiniApp.cs",
+      "bytes": 2160,
+      "sha256": "40ef23c52ab516e5434e52b4f7457d5a57b23754c53c8808a6eb10729e4bf111"
+    },
+    {
+      "path": "ports/develop/package-source/manifest.json",
+      "bytes": 1435,
+      "sha256": "4fe832f582579a2c9b966c33ebe5b246b32eca414a391c38ac40f16ef2372280"
+    },
+    {
+      "path": "ports/develop/packages-PROVENANCE.md",
+      "bytes": 9099,
+      "sha256": "e7413a2a77f07b4fb10829722e668118fc529873bc1a8ea9efd96074e3d1782f"
+    },
+    {
+      "path": "ports/develop/packages.go",
+      "bytes": 4072,
+      "sha256": "82cc96cfd3f62ebde01c3eb4a86636def62e3807f9624de7b171cbafc641e3f3"
+    },
+    {
+      "path": "ports/develop/packages_http.go",
+      "bytes": 3501,
+      "sha256": "179774250a0c4af1bc36d03ed572c128605ba01b4e55c5cc91727a33482373df"
+    },
+    {
+      "path": "ports/develop/packages_http_test.go",
+      "bytes": 4123,
+      "sha256": "fd3bcc113bf6d5f7f6b7e573e0763d44bd7396a8102441aa81a56ffc95ec11f8"
+    },
+    {
+      "path": "ports/develop/packages_source_test.go",
+      "bytes": 3831,
+      "sha256": "b0c450c1c7999610b444db1e47acf703b05c9c5bcd40521d72b2b42ca4253fb8"
+    },
+    {
+      "path": "ports/develop/packages_storage.go",
+      "bytes": 2631,
+      "sha256": "82e186351994428e62f4567a162af7501ee40d538d557d470ef49dcc7720e3b9"
+    },
+    {
+      "path": "ports/develop/packages_storage_test.go",
+      "bytes": 3029,
+      "sha256": "3a34760f8997cd04566af68279763654810da7680ba77ee190e691f7980ebf04"
+    },
+    {
+      "path": "ports/develop/packages_test.go",
+      "bytes": 4990,
+      "sha256": "f75d0a4bae1070f4ac369e1d642c91bb07d5257d2807101692753f6efd36a18a"
+    },
+    {
+      "path": "ports/develop/product-source/DYSON-LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/develop/product-source/DysonNetwork.Develop__Identity__AppProductService.cs",
+      "bytes": 4705,
+      "sha256": "79f0bffb50102dd1e68432ca309cacd4ea7a307b6f99a5b8e25d99da2d3e5766"
+    },
+    {
+      "path": "ports/develop/product-source/DysonNetwork.Develop__Identity__BotAccountService.cs",
+      "bytes": 7392,
+      "sha256": "90251ebebba8f7ecdb1f77b5f425c18617fd4de3c476080ba267ffd24d66ba19"
+    },
+    {
+      "path": "ports/develop/product-source/DysonNetwork.Develop__Identity__CustomAppController.cs",
+      "bytes": 37254,
+      "sha256": "6ae6dbccb103875225109b5babd7c08ec90a8f8de922f12721b7b005970438ce"
+    },
+    {
+      "path": "ports/develop/product-source/SOLIAN-LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/develop/product-source/Solian__bot.dart",
+      "bytes": 1646,
+      "sha256": "c2ce8b7c897a550270ca38588d262930a087b463598ddcfce5b23a430db46ff0"
+    },
+    {
+      "path": "ports/develop/product-source/manifest.json",
+      "bytes": 2090,
+      "sha256": "8d9e1f0f13c403886d5e08df19b9103f9a9b35d32310954c6ad09b8648f14e67"
+    },
+    {
+      "path": "ports/develop/products-PROVENANCE.md",
+      "bytes": 3431,
+      "sha256": "4f4f3ce688ea772aa914c7c6c443b51cc3438f313d4591ac0cef51be1d39fa2d"
+    },
+    {
+      "path": "ports/develop/source/DYSON-LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__AppDatabase.cs",
+      "bytes": 3047,
+      "sha256": "33763d2ceffb40401d5e467611f20282bc985ebe19641c1c181c3752ffae4ee7"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Identity__BoardPublicController.cs",
+      "bytes": 4571,
+      "sha256": "bac6ba46e90db498c76b3d38ea3f655f896f33bd575bdf21c07be011a696d695"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Identity__BotAccountPublicController.cs",
+      "bytes": 3095,
+      "sha256": "1176c4758f09c92abbbf7233df835d5089f4667e2388dd2a4441afa1027dec06"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Identity__CustomAppPublicController.cs",
+      "bytes": 2889,
+      "sha256": "a19a0143e3d7f854178da56b913c82f9f5135525ccdcc9bcaed4af6ff676a96c"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Identity__CustomAppService.cs",
+      "bytes": 19007,
+      "sha256": "025883b599df33148927b5bc740802179d92584727aabf65a750f81d526f8bb0"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Migrations__AppDatabaseModelSnapshot.cs",
+      "bytes": 30647,
+      "sha256": "dab8948a3da3026491fa4fdc9c9204fdd850ee174051c9c56f61d604d99c2f2a"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__MiniApp__MiniAppPublicController.cs",
+      "bytes": 3108,
+      "sha256": "a1c12172fa27bf9040b4ffcf9a8140724c732d9175e9f3e5fc5f259aea231abe"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Program.cs",
+      "bytes": 1059,
+      "sha256": "e7d5349148aa0bd028ca85b9cfb898633d4525857a55f2abcd17c46632861268"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Startup__ApplicationConfiguration.cs",
+      "bytes": 717,
+      "sha256": "aa683eb1b6ae067ef6ef5d286b0f8850f690172e7ded9bbb27ffad874675048e"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Startup__ServiceCollectionExtensions.cs",
+      "bytes": 2870,
+      "sha256": "11366bab721723dad14dd18a86aade6fcda8b584ec56198107952b78725589a2"
+    },
+    {
+      "path": "ports/develop/source/SOLIAN-LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/develop/source/Solian__custom_app.dart",
+      "bytes": 2153,
+      "sha256": "2b2f3024e22b6d37e423020cd2b298b7cbbf12fd37fdb84a38d2b721ddcb76ae"
+    },
+    {
+      "path": "ports/develop/source/manifest.json",
+      "bytes": 4809,
+      "sha256": "170f65467e6577b740ddd2fc84ae8496f01a03a76b840789d8874601c120df2c"
+    },
+    {
       "path": "ports/messager/PARITY.md",
-      "bytes": 4444,
-      "sha256": "1e318128f278ff871f37658ebddca1ad1a41cb4d8037ae455b2fe50cb2267e71"
+      "bytes": 4603,
+      "sha256": "e6683eada751332e8b2dcd80db29ca193a49eb1d1e661abce1774449aeb0d7b2"
     },
     {
       "path": "ports/messager/README.md",
@@ -334,6 +2973,51 @@
       "path": "ports/messager/contract-evidence/manifest.json",
       "bytes": 1925,
       "sha256": "532fdf58c08020d3f4a6b811f6ae49dbe98ce7f126c0cc7a01d549340a7881a5"
+    },
+    {
+      "path": "ports/messager/formatting-PROVENANCE.md",
+      "bytes": 3563,
+      "sha256": "3a41df303d2228dc127f4c9d3dc4caa298925163d72e925fb7e765fd3eed6563"
+    },
+    {
+      "path": "ports/messager/formatting.go",
+      "bytes": 2710,
+      "sha256": "85584d7919f8aa04cc0056c26dca72b00b8d346dda17bd310d436c25afe7b74e"
+    },
+    {
+      "path": "ports/messager/formatting_test.go",
+      "bytes": 4288,
+      "sha256": "02eedbfa040fc47a31c89f2de53450b169be2fe9cdca96973666456837764635"
+    },
+    {
+      "path": "ports/messager/notification-text-PROVENANCE.md",
+      "bytes": 3413,
+      "sha256": "72fc7cdc4e9cd835f32d07b2cff7a6e03f71c92bfd89fc2d28d123f550a84e94"
+    },
+    {
+      "path": "ports/messager/notification_text.go",
+      "bytes": 5787,
+      "sha256": "445f106368453949316ed1c338e7ad6c6095ee055dec1d1abc0ce5ca786ccab7"
+    },
+    {
+      "path": "ports/messager/notification_text_test.go",
+      "bytes": 6597,
+      "sha256": "4e50dcdd4522587ca343eda66f38a02583bc48b8f3aa63b6dd9de30583bde695"
+    },
+    {
+      "path": "ports/messager/placeholder-PROVENANCE.md",
+      "bytes": 4557,
+      "sha256": "25e146fc5441004d2bc8da9965e74c9be1224c7a6dc3c79b5dbee5a0fbdfb9b8"
+    },
+    {
+      "path": "ports/messager/placeholder.go",
+      "bytes": 7872,
+      "sha256": "bdc696acacfb495aaa58f20a7bec1ddfc3a6d1180be0ff15d220953d2f44739e"
+    },
+    {
+      "path": "ports/messager/placeholder_test.go",
+      "bytes": 7543,
+      "sha256": "758297a716a01b96c54cc2846456cc842074dbc0e006d111309e6ea99fe107b8"
     },
     {
       "path": "ports/messager/recovery.go",
@@ -446,14 +3130,29 @@
       "sha256": "637d7b82c38e1e38c27e6842e4e54314576c369c462275c41386fcc719fe1bc8"
     },
     {
+      "path": "ports/messager/unread-PROVENANCE.md",
+      "bytes": 4046,
+      "sha256": "a8c25a425cf0b3268468a41646fb3526d375f7efb7ad63db8a27ee8c685659cc"
+    },
+    {
+      "path": "ports/messager/unread.go",
+      "bytes": 4600,
+      "sha256": "ac7c4a0459f13cd149af6b496ffb2d5008f51527cfeb956f655127c75407fc04"
+    },
+    {
+      "path": "ports/messager/unread_test.go",
+      "bytes": 5445,
+      "sha256": "764336da5d9ddfff468650d6dc469a175094414fb2323dc1b76ee88833763162"
+    },
+    {
       "path": "ports/passport/badgediscovery/LICENSE.txt",
       "bytes": 34524,
       "sha256": "e9df4c4e4e64b8168a71c3c67668dcffabbe8fca11d4ac4a7d5482562cd1679c"
     },
     {
       "path": "ports/passport/badgediscovery/README.md",
-      "bytes": 4326,
-      "sha256": "20d8fec7fa225b8fc68d511112569cf54afbe757f1a6751661980969d72388ac"
+      "bytes": 4488,
+      "sha256": "7285954d13529bd9535e654c5fa5e0d0453b945f2b4dc4bd77e9220e59db7281"
     },
     {
       "path": "ports/passport/badgediscovery/assets/APACHE-2.0.txt",
@@ -537,8 +3236,8 @@
     },
     {
       "path": "ports/passport/badgediscovery/handler.go",
-      "bytes": 5665,
-      "sha256": "3f3f769e0b6c6822b6e8cc25cbc81e889642a1aedfce20fcc633f1bc5f91db62"
+      "bytes": 6144,
+      "sha256": "09b76e782f994c3df76cd6c58dd5e99b2c00232fb304861a54eae22b4b52ecec"
     },
     {
       "path": "ports/passport/badgediscovery/handler_test.go",
@@ -549,6 +3248,11 @@
       "path": "ports/passport/badgediscovery/manifest.json",
       "bytes": 9717,
       "sha256": "a0350b9bfb8736a9cd9ae0d0034c02b230d06a2ea9c3477234624727dd5876e6"
+    },
+    {
+      "path": "ports/passport/badgediscovery/route_regression_test.go",
+      "bytes": 909,
+      "sha256": "471e1435efc29540baa61225396df5df8101ceee8b8010dbf99341f58787e8a2"
     },
     {
       "path": "ports/passport/badgediscovery/source/BadgesDiscoveryController.cs",
@@ -636,6 +3340,86 @@
       "sha256": "6ed8647026d41fa8b4a5ca580bd64d977ac199b5aa9fdd443c3b7e1a1f24c4a4"
     },
     {
+      "path": "ports/sphere/discovery-PROVENANCE.md",
+      "bytes": 3801,
+      "sha256": "f8335eb07639054e05520e763765ebe1b383771b6fa92b85080e1566860c409e"
+    },
+    {
+      "path": "ports/sphere/discovery.go",
+      "bytes": 5861,
+      "sha256": "21022749366c8fdeadc4f5b9aef504346c19fe8795f83e1829f3d990c051e216"
+    },
+    {
+      "path": "ports/sphere/discovery_test.go",
+      "bytes": 7104,
+      "sha256": "e87b722b513d8fd4d7a105f43f3eda481eb0f8406f9480edf391b58e2c434baa"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/PROVENANCE.md",
+      "bytes": 7431,
+      "sha256": "17f98b7bc4d99d3b079064374941507987d7c2b5ded6f1886726e339ee0c3fc7"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/hostmeta.go",
+      "bytes": 974,
+      "sha256": "feeba49f20fab29e9157d3cef3fab29643f986b19d319827413f2e39e4920e66"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/hostmeta_test.go",
+      "bytes": 2031,
+      "sha256": "561d0afa1eab6caf89d14f134fa6424431ce8563137715b3acb4f8b4b2bc187e"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/http.go",
+      "bytes": 3544,
+      "sha256": "653e7cd0354df2ea3fd50c5e1c61394fef9ad80774b0499e337cec252cb6d44d"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/http_test.go",
+      "bytes": 5841,
+      "sha256": "04f1bfa35e6eab843cba9cbaf9e5d324cfe7a0b826ba53f0b0d3ad5a4ec93508"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/nodeinfo.go",
+      "bytes": 4717,
+      "sha256": "d1233ec59938b2d7064af878702af701ebbbb4aea666da0433b684b9184a396b"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/nodeinfo_test.go",
+      "bytes": 4029,
+      "sha256": "9317d01c78a21e01fd162bca9c5cd60202a3480dc6fa7ab87efbf79596531087"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/source/DysonNetwork.Sphere__ActivityPub__NodeInfoController.cs",
+      "bytes": 5061,
+      "sha256": "929548e856f256ed9da58c4337884aa20681636fa34d4b43487ca9bd2f2235c2"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/source/DysonNetwork.Sphere__AppDatabase.cs",
+      "bytes": 17092,
+      "sha256": "0ffbb6ccf96e4fcbf35dc2d05eb3f166eccfa45a4e990c67930386099d67d89f"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/source/DysonNetwork.Sphere__Migrations__AppDatabaseModelSnapshot.cs",
+      "bytes": 150920,
+      "sha256": "1516fbd348413b0c0cd8b102bf5bbbf454032f1874f5c09558a370bfa271fcf6"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/source/DysonNetwork.Sphere__Startup__ServiceCollectionExtensions.cs",
+      "bytes": 15995,
+      "sha256": "884574e61431db3e40720b7611665f79d783b04bd42780ab128efb2656cfca79"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/source/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/sphere/nodeinfo/source/manifest.json",
+      "bytes": 2867,
+      "sha256": "40f4b243785b67251649fa5fb1ef4fcc072511f3e5def6e9c9f53f310aa7bad5"
+    },
+    {
       "path": "ports/sphere/parity.json",
       "bytes": 77563,
       "sha256": "4060e1790bb4fc3cccddb2efa2a5fd345468f1c594f439ad8fab4c7b5821dada"
@@ -697,8 +3481,8 @@
     },
     {
       "path": "ports/wallet/exchangecatalog/PROVENANCE.md",
-      "bytes": 6473,
-      "sha256": "f45e55b92f1407849ba6dcc83fa84517a1cc31cae74a7cf3da8b857dc987c7ae"
+      "bytes": 6604,
+      "sha256": "23b784459a2f8bbdff4ce4d410823ac10830061f16bed2c6d9093e65fdc74f73"
     },
     {
       "path": "ports/wallet/exchangecatalog/casing.go",
@@ -722,8 +3506,18 @@
     },
     {
       "path": "ports/wallet/exchangecatalog/config.go",
-      "bytes": 5665,
-      "sha256": "6afaf91ab97510f7c5b0ca213d05cf3abae71160aa0b91e3b3fa63b75d62d978"
+      "bytes": 6232,
+      "sha256": "85e55ace5d6e973c91fecbb2bd50af655b98bc9585d98db73c395d68ecba6df1"
+    },
+    {
+      "path": "ports/wallet/exchangecatalog/config_regression_test.go",
+      "bytes": 945,
+      "sha256": "ed9ee450f9ab973e46e6ece504de36213140ad9128537b70f51986e341731da9"
+    },
+    {
+      "path": "ports/wallet/exchangecatalog/configuration.go",
+      "bytes": 2576,
+      "sha256": "c692fccbc3295e9289ee8b8972b9258921527d3c960f0855ccb3cebedbc3b60c"
     },
     {
       "path": "ports/wallet/exchangecatalog/decimal.go",
@@ -761,19 +3555,159 @@
       "sha256": "66b05f979b09fd732cebf07b24e830836fd46a38980f45c7019dbd1d69562030"
     },
     {
+      "path": "ports/wallet/productcatalog/PROVENANCE.md",
+      "bytes": 5556,
+      "sha256": "7a32ec2aa75ac770abaa3ea3a11f2f938ad854571e2418662416ccc64ec11ded"
+    },
+    {
+      "path": "ports/wallet/productcatalog/catalog.go",
+      "bytes": 3929,
+      "sha256": "45cebe066ae999e85271c00eb53f97438fcc35da80006d15c509f5fff90e3d75"
+    },
+    {
+      "path": "ports/wallet/productcatalog/catalog_test.go",
+      "bytes": 4764,
+      "sha256": "913940947dba15a69facd29bc8ab5d1f0eceba566d464c301e185560a7a33437"
+    },
+    {
+      "path": "ports/wallet/productcatalog/decimal.go",
+      "bytes": 2695,
+      "sha256": "3af171e3406ef56f4f7a7e734ece7c6a048b20b305c3f8d183b5a01d55c120b6"
+    },
+    {
+      "path": "ports/wallet/productcatalog/http.go",
+      "bytes": 1847,
+      "sha256": "6997ede4bf71a39a546c818dda9043eb9a5445d3883abfd04b00724e3bd3abd3"
+    },
+    {
+      "path": "ports/wallet/productcatalog/http_test.go",
+      "bytes": 1802,
+      "sha256": "18d746c1be66ad394a22b6288e063680689b3c13f3043c3f81a6e16bdd862fb0"
+    },
+    {
+      "path": "ports/wallet/productcatalog/naming-bmp.json",
+      "bytes": 127904,
+      "sha256": "db429532e7acc74831dcadcc06c080e1a7cfb58d4d28c1ed4cfca15de6a80581"
+    },
+    {
+      "path": "ports/wallet/productcatalog/naming.go",
+      "bytes": 1982,
+      "sha256": "8da9be6429ea432be3e2a0352d4ce3f590d749e644c1d1925caa4266ab06afa8"
+    },
+    {
+      "path": "ports/wallet/productcatalog/source/DysonNetwork.Wallet__Models__WalletProductOptions.cs",
+      "bytes": 544,
+      "sha256": "e4cc20e37aeafcf7d7b6da79d0b3ffa0e481353c17176a3e57403aff3d2c824f"
+    },
+    {
+      "path": "ports/wallet/productcatalog/source/DysonNetwork.Wallet__Payment__WalletProductController.cs",
+      "bytes": 5195,
+      "sha256": "134f855426bdeeb02e3da2e6a29a924557c91105ff8fcb0d2e47bfabaf247599"
+    },
+    {
+      "path": "ports/wallet/productcatalog/source/DysonNetwork.Wallet__Payment__WalletProductService.cs",
+      "bytes": 12663,
+      "sha256": "632aabaecaf2893241ff958e50d40c5cdff29b38f5e55d866c2ca85fc1fb1085"
+    },
+    {
+      "path": "ports/wallet/productcatalog/source/DysonNetwork.Wallet__Startup__ServiceCollectionExtensions.cs",
+      "bytes": 10897,
+      "sha256": "4ef4b702e307b06d44a42bb3bd994ec7c16d7ca36c4728a5fe3d83908e0ddcc7"
+    },
+    {
+      "path": "ports/wallet/productcatalog/source/JsonSeparatorNamingPolicy.cs",
+      "bytes": 7128,
+      "sha256": "45f63b9b970644a3645445606f20cbd4894e153cbdc949635c7ce037007e2049"
+    },
+    {
+      "path": "ports/wallet/productcatalog/source/LICENSE-MIT.txt",
+      "bytes": 1117,
+      "sha256": "cbff440b0d8166de75b5dae0e18498c869b3521974b37df7c7093a349e560b3a"
+    },
+    {
+      "path": "ports/wallet/productcatalog/source/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/wallet/productcatalog/source/docs__MULTI_WALLET.md",
+      "bytes": 6866,
+      "sha256": "ef207ff184c568677e52e349863f5e5e62958d5598aeba2f3b184629f6c34512"
+    },
+    {
+      "path": "ports/wallet/productcatalog/source/docs__WALLET_FUNDS.md",
+      "bytes": 11835,
+      "sha256": "8ac6b6530c3ad9731312711c5b3f8c99b6bac366c291905cdeaf41edbe0564cf"
+    },
+    {
+      "path": "ports/wallet/productcatalog/source/docs__WALLET_PROVIDER_PURCHASE_APIS.md",
+      "bytes": 6649,
+      "sha256": "f0e2f7b7f6a9276bd0a1f2cfb90a4c6e408a4b346b4be64217c638026e25c354"
+    },
+    {
+      "path": "ports/wallet/productcatalog/source/manifest.json",
+      "bytes": 5347,
+      "sha256": "f52b6b4527be44b0b53e816be733f7affefaee975c356a57806e23b711707aa8"
+    },
+    {
       "path": "scripts/check-integration-results.py",
-      "bytes": 1861,
-      "sha256": "805c6b578d6daf440a1718cfb95c4e48d579ae39c7a484308e1e71d63156e4da"
+      "bytes": 2732,
+      "sha256": "121361ecc04c9c6dddd13e37ba99af65b0d5cf2bcb53933e161d16964a21b4d5"
+    },
+    {
+      "path": "scripts/check-source-evidence.py",
+      "bytes": 4959,
+      "sha256": "0be854ba65949435f3af965d07ec459bc0d0572f0cce7b5c8c923ff2e75915a1"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 2131,
-      "sha256": "860e397c6d92919e48bad98539963f47acc89df3044c6f9f9238a1adc1f092a2"
+      "bytes": 3176,
+      "sha256": "2ca15110946e9f08557ee7278f75833cc27b90818102973b7685acdc1c16a257"
+    },
+    {
+      "path": "scripts/test-coverage-format.py",
+      "bytes": 1115,
+      "sha256": "2d40a9bbe5116c82abe1361c01ed3db376ef0aedb7f0e668f50190dda606ef14"
+    },
+    {
+      "path": "scripts/test-integration-guard.py",
+      "bytes": 1233,
+      "sha256": "18344017b0dedb2e862d9a5bd64a1eea569db3791201516c7226bf7312474a8f"
+    },
+    {
+      "path": "scripts/test-source-evidence.py",
+      "bytes": 2411,
+      "sha256": "7c628fbb2219039c328984a8a67795af5c85dab3bc8f86ea244822cac989583a"
+    },
+    {
+      "path": "scripts/verify-candidate-http.py",
+      "bytes": 5433,
+      "sha256": "0eb9c164e2f46475f5d15208513b1012a6abf515e7ffe500d3c8ed38a6fecb7d"
+    },
+    {
+      "path": "scripts/verify-catalog-http.py",
+      "bytes": 5099,
+      "sha256": "65fad7b10a0b36dfad5cf964ff7d96e63fba39d2b1a5903aa400a420d704874b"
+    },
+    {
+      "path": "scripts/verify-coverage-plan.py",
+      "bytes": 615,
+      "sha256": "4bda4dc43fdaefb31aba10d99a0a083dac6f55f2082dacc99bc806fec47a8bd6"
+    },
+    {
+      "path": "scripts/verify-develop-http.py",
+      "bytes": 4539,
+      "sha256": "a08332880f4dc6592e21e4d6af895c2a79df271f44f69cf8517637e9e44eae3e"
+    },
+    {
+      "path": "scripts/verify-dotnet-oracles.sh",
+      "bytes": 1467,
+      "sha256": "71ccdba85757e0935c86c2d47fc0300d552ebba7e885700872ece5fa6b4e6483"
     },
     {
       "path": "scripts/verify.sh",
-      "bytes": 980,
-      "sha256": "29d0a3f13c3342f72664ed63c11587b4ed36dec9a24360a515b4dc8f8e20dd05"
+      "bytes": 1183,
+      "sha256": "315217f0cf09793063b9f27891f46623a78965835e21ed245c998c434cd18429"
     },
     {
       "path": "tests/contract/badges-oracle/ApiError.cs",
@@ -906,6 +3840,111 @@
       "sha256": "576f6a4aa3ae37b257bd7822e9706cfe6380ec4c3817db20d3950feaa459b6dc"
     },
     {
+      "path": "tests/contract/recovery-regression-oracle/NuGet.Config",
+      "bytes": 113,
+      "sha256": "2142cfb2dfa2c7feefbe40fabcc68b0dfecadafa99a1db9b70239d977cf2a7ef"
+    },
+    {
+      "path": "tests/contract/recovery-regression-oracle/Program.cs",
+      "bytes": 2391,
+      "sha256": "009e40d32c09ae587c70e9f329a7871899bcf4abaf06163e46a5aa1923dd197d"
+    },
+    {
+      "path": "tests/contract/recovery-regression-oracle/README.md",
+      "bytes": 1923,
+      "sha256": "49f3aabd6b0a80e47e81aea73da7574ab7fe4f514b8fb2df3c24d1c29bc3e581"
+    },
+    {
+      "path": "tests/contract/recovery-regression-oracle/RegressionOracle.csproj",
+      "bytes": 501,
+      "sha256": "f29b0d200cd0ab63b8445debd23a0d5a60d52f0f2424769ed0363662e8f54567"
+    },
+    {
+      "path": "tests/contract/recovery-regression-oracle/cases.json",
+      "bytes": 1403,
+      "sha256": "5e388671219d7a0b7e4c1393a58dd34287f2bec0a469aafe30c38a1970355133"
+    },
+    {
+      "path": "tests/contract/recovery-regression-oracle/expected.json",
+      "bytes": 1078,
+      "sha256": "da8c3ba61ff41c6f5b36d866b8003eb9c25ea01a034a1cc3849053ad9d3422e8"
+    },
+    {
+      "path": "tests/contract/recovery-regression-oracle/regression_test.go",
+      "bytes": 2055,
+      "sha256": "b052d360cf91351d64675f0ffc14121ee7e2fad138c0ec084546626355bfc57f"
+    },
+    {
+      "path": "tests/contract/recovery-regression-oracle/validation.json",
+      "bytes": 1259,
+      "sha256": "a760329bec5e214cd3647e3b0257e15ec80031a95845a5ee92133f2c11036aec"
+    },
+    {
+      "path": "tests/contract/recovery-regression-oracle/verify.sh",
+      "bytes": 978,
+      "sha256": "b8fd94a1a293b45f5498d867f0a3c29f695dd31d6c4954c60b97d38364615750"
+    },
+    {
+      "path": "tests/contract/wallet-product-oracle/NuGet.Config",
+      "bytes": 113,
+      "sha256": "2142cfb2dfa2c7feefbe40fabcc68b0dfecadafa99a1db9b70239d977cf2a7ef"
+    },
+    {
+      "path": "tests/contract/wallet-product-oracle/OwnedProjection.cs",
+      "bytes": 2088,
+      "sha256": "d3f6fa435cf1aa5366db6f5701c92389a904b905ce30a3a6b9eebc697a993c4e"
+    },
+    {
+      "path": "tests/contract/wallet-product-oracle/Program.cs",
+      "bytes": 3563,
+      "sha256": "ffaed5d1f241777876b36e559b6d5263ec7c1c14258401fcb7295ae6cdc331b5"
+    },
+    {
+      "path": "tests/contract/wallet-product-oracle/README.md",
+      "bytes": 6887,
+      "sha256": "ac29c428e272e539e50b83c4aa0a7ecd22636bf33f6414b2f16e09d5dc0fa05c"
+    },
+    {
+      "path": "tests/contract/wallet-product-oracle/WalletProductOracle.csproj",
+      "bytes": 298,
+      "sha256": "21eaca2ae8287016e834a9522edd57d2d8ab4cfb7c1a4581e823ed378758be3b"
+    },
+    {
+      "path": "tests/contract/wallet-product-oracle/cases.json",
+      "bytes": 167527,
+      "sha256": "2ae5d184e7e769c10130ad34f7033e23dbae3ac2461793c15a4213fdb8714cad"
+    },
+    {
+      "path": "tests/contract/wallet-product-oracle/expected.json",
+      "bytes": 185717,
+      "sha256": "c24736afdd038db5a1b12b0cda20c223117c2e8e15bfce163f9c4f4e724dd29d"
+    },
+    {
+      "path": "tests/contract/wallet-product-oracle/naming-bmp.json",
+      "bytes": 127904,
+      "sha256": "db429532e7acc74831dcadcc06c080e1a7cfb58d4d28c1ed4cfca15de6a80581"
+    },
+    {
+      "path": "tests/contract/wallet-product-oracle/review-cases.json",
+      "bytes": 1364,
+      "sha256": "c2044ac0f60d2a64a1de8615cefb2326d142884455c57d21520558648c658064"
+    },
+    {
+      "path": "tests/contract/wallet-product-oracle/review-expected.json",
+      "bytes": 2205,
+      "sha256": "78dc147c1b5f39cb386170214421a3cf0f70a4ee75b3d88781afe2d12ec6f576"
+    },
+    {
+      "path": "tests/contract/wallet-product-oracle/validation.json",
+      "bytes": 3731,
+      "sha256": "6ea511747937424f265d463ffa05922411eada148d2fd2cf3bcd197669e9fa0e"
+    },
+    {
+      "path": "tests/contract/wallet-product-oracle/verify.sh",
+      "bytes": 1867,
+      "sha256": "258774d11b5d946a902987276fdc1222c67878c702f4b6f55ce35ce16ebbc46f"
+    },
+    {
       "path": "tests/contract/watch_http_binding_test.go",
       "bytes": 5088,
       "sha256": "c72b94795b1008c92ea4a39c1915bcecb94b0eae64a2c347d8b5184faa778efe"
@@ -919,6 +3958,26 @@
       "path": "tests/integration/board_test.go",
       "bytes": 14630,
       "sha256": "2ff297223b03d00c6c4dbc280cec462701e92b7e0b56ccf18b635649fcdba7cd"
+    },
+    {
+      "path": "tests/integration/develop_bot_commands_test.go",
+      "bytes": 7763,
+      "sha256": "494aebbc8729f4122b4a22e6a69b883ea1e8c732a96ffd96a54510a8d70d944c"
+    },
+    {
+      "path": "tests/integration/develop_packages_test.go",
+      "bytes": 11323,
+      "sha256": "56fff4ab9812a105bcb983556a1e543aa442679ff09afc725544fa2bd101255f"
+    },
+    {
+      "path": "tests/integration/develop_test.go",
+      "bytes": 9740,
+      "sha256": "11a54f0806dbfb2c065e4aad08da246e180645ca78885cc0d6df24ea897811c8"
+    },
+    {
+      "path": "tests/integration/nodeinfo_test.go",
+      "bytes": 10460,
+      "sha256": "91c81e09d76cdd70a4ab1024e05ccaf43b201ab2280e67bd851608f724e6a27f"
     },
     {
       "path": "tests/integration/schema.sql",
@@ -935,5 +3994,6 @@
       "bytes": 8617,
       "sha256": "be466d5ef4cfe6608c095c7fc72b49583e468018d4314a63c14165d9026e607f"
     }
-  ]
+  ],
+  "publication_safety": "Five credential-shaped deployment config snapshots excluded; see docs/publication-safety-review.json. Immutable local historical commits are not uploaded."
 }

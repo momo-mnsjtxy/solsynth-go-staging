@@ -1,0 +1,233 @@
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Proto;
+using DysonNetwork.Shared.Registry;
+using Grpc.Core;
+using Microsoft.EntityFrameworkCore;
+using NodaTime.Serialization.Protobuf;
+
+namespace DysonNetwork.Develop.Identity;
+
+public class BotAccountService(
+    AppDatabase db,
+    DyBotAccountReceiverService.DyBotAccountReceiverServiceClient accountReceiver,
+    RemoteAccountService remoteAccounts
+)
+{
+    public async Task<SnBotAccount?> GetBotByIdAsync(Guid id)
+    {
+        return await db.BotAccounts
+            .Include(b => b.Project)
+            .FirstOrDefaultAsync(b => b.Id == id);
+    }
+
+    public async Task<List<SnBotAccount>> GetBotsByProjectAsync(Guid projectId)
+    {
+        return await db.BotAccounts
+            .Where(b => b.ProjectId == projectId)
+            .ToListAsync();
+    }
+
+    public async Task<SnBotAccount> CreateBotAsync(
+        SnDevProject project,
+        string slug,
+        DyAccount account,
+        string? pictureId,
+        string? backgroundId
+    )
+    {
+        var existingBot = await db.BotAccounts
+            .FirstOrDefaultAsync(b => b.ProjectId == project.Id && b.Slug.ToLower() == slug.ToLowerInvariant());
+
+        if (existingBot != null)
+            throw new InvalidOperationException("A bot with this slug already exists in this project.");
+
+        try
+        {
+            var automatedId = Guid.NewGuid();
+            var createRequest = new DyCreateBotAccountRequest
+            {
+                AutomatedId = automatedId.ToString(),
+                Account = account,
+                PictureId = pictureId,
+                BackgroundId = backgroundId
+            };
+
+            var createResponse = await accountReceiver.CreateBotAccountAsync(createRequest);
+            var botAccount = createResponse.Bot;
+
+            var bot = new SnBotAccount
+            {
+                Id = automatedId,
+                Slug = slug,
+                ProjectId = project.Id,
+                Project = project,
+                IsActive = botAccount.IsActive,
+                CreatedAt = botAccount.CreatedAt.ToInstant(),
+                UpdatedAt = botAccount.UpdatedAt.ToInstant()
+            };
+
+            db.BotAccounts.Add(bot);
+            await db.SaveChangesAsync();
+
+            return bot;
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.AlreadyExists)
+        {
+            throw new InvalidOperationException(
+                "A bot account with this ID already exists in the authentication service.", ex);
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.InvalidArgument)
+        {
+            throw new ArgumentException($"Invalid bot account data: {ex.Status.Detail}", ex);
+        }
+        catch (RpcException ex)
+        {
+            throw new Exception($"Failed to create bot account: {ex.Status.Detail}", ex);
+        }
+    }
+
+    public async Task<SnBotAccount> UpdateBotAsync(
+        SnBotAccount bot,
+        DyAccount account,
+        string? pictureId,
+        string? backgroundId
+    )
+    {
+        db.Update(bot);
+        await db.SaveChangesAsync();
+
+        try
+        {
+            var updateRequest = new DyUpdateBotAccountRequest
+            {
+                AutomatedId = bot.Id.ToString(),
+                Account = account
+            };
+
+            if (pictureId is not null)
+                updateRequest.PictureId = pictureId;
+            else
+                updateRequest.ClearPictureId();
+
+            if (backgroundId is not null)
+                updateRequest.BackgroundId = backgroundId;
+            else
+                updateRequest.ClearBackgroundId();
+
+            var updateResponse = await accountReceiver.UpdateBotAccountAsync(updateRequest);
+            var updatedBot = updateResponse.Bot;
+
+            bot.UpdatedAt = updatedBot.UpdatedAt.ToInstant();
+            bot.IsActive = updatedBot.IsActive;
+            await db.SaveChangesAsync();
+
+
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+        {
+            throw new Exception("Bot account not found in the authentication service", ex);
+        }
+        catch (RpcException ex)
+        {
+            throw new Exception($"Failed to update bot account: {ex.Status.Detail}", ex);
+        }
+
+        return bot;
+    }
+
+    public async Task DeleteBotAsync(SnBotAccount bot)
+    {
+        try
+        {
+            // Delete the bot account from the Pass service
+            var deleteRequest = new DyDeleteBotAccountRequest
+            {
+                AutomatedId = bot.Id.ToString(),
+                Force = false
+            };
+
+            await accountReceiver.DeleteBotAccountAsync(deleteRequest);
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+        {
+            // Account not found in Pass service, continue with local deletion
+        }
+
+        // Delete the local bot account
+        db.BotAccounts.Remove(bot);
+        await db.SaveChangesAsync();
+    }
+
+    public async Task<SnBotAccount?> LoadBotAccountAsync(SnBotAccount bot) =>
+        (await LoadBotsAccountAsync([bot])).FirstOrDefault();
+
+    public async Task<List<SnBotAccount>> LoadBotsAccountAsync(List<SnBotAccount> bots)
+    {
+        var automatedIds = bots.Select(b => b.Id).ToList();
+        var data = await remoteAccounts.GetBotAccountBatch(automatedIds);
+
+        foreach (var bot in bots)
+        {
+            bot.Account = data
+                .Select(SnAccount.FromProtoValue)
+                .FirstOrDefault(e => e.AutomatedId == bot.Id);
+        }
+
+        return bots;
+    }
+
+    // --- Bot Chat Config ---
+
+    public async Task<SnBotChatConfig> GetChatConfigAsync(Guid botId)
+    {
+        var config = await db.BotChatConfigs
+            .FirstOrDefaultAsync(c => c.Id == botId);
+
+        if (config is null)
+        {
+            // Return a default config if none exists yet
+            config = new SnBotChatConfig
+            {
+                Id = botId,
+                CreatedAt = NodaTime.SystemClock.Instance.GetCurrentInstant(),
+                UpdatedAt = NodaTime.SystemClock.Instance.GetCurrentInstant()
+            };
+            db.BotChatConfigs.Add(config);
+            await db.SaveChangesAsync();
+        }
+
+        return config;
+    }
+
+    public async Task<SnBotChatConfig> UpdateChatConfigAsync(Guid botId, SnBotChatConfig updatedConfig)
+    {
+        var config = await db.BotChatConfigs
+            .FirstOrDefaultAsync(c => c.Id == botId);
+
+        if (config is null)
+        {
+            config = new SnBotChatConfig
+            {
+                Id = botId,
+                CreatedAt = NodaTime.SystemClock.Instance.GetCurrentInstant()
+            };
+            db.BotChatConfigs.Add(config);
+        }
+
+        config.Commands = updatedConfig.Commands;
+        config.AutoApproveDm = updatedConfig.AutoApproveDm;
+        config.AutoApproveGroupChat = updatedConfig.AutoApproveGroupChat;
+        config.SupportChat = updatedConfig.SupportChat;
+        config.SubscribedEvents = updatedConfig.SubscribedEvents;
+        config.UpdatedAt = NodaTime.SystemClock.Instance.GetCurrentInstant();
+
+        await db.SaveChangesAsync();
+        return config;
+    }
+
+    public async Task<SnBotChatConfig?> GetChatConfigOrNullAsync(Guid botId)
+    {
+        return await db.BotChatConfigs
+            .FirstOrDefaultAsync(c => c.Id == botId);
+    }
+}

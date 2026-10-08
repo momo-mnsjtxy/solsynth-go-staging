@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "source_policy": "Independently published official authored web documentation is eligible for factual observation. The Suki repository has no established reuse permission and was not read. No complete unlicensed page was saved. Live pages have no verified source commit; displayed dates are not deployment attestations.",
+  "pages": [
+    {
+      "id": "permissions",
+      "url": "https://kb.solsynth.dev/solar-network/developers/permissions/",
+      "title": "Permission System",
+      "checked_on": "2026-10-08",
+      "displayed_update_date": "2026-07-25",
+      "published_revision": null,
+      "retrieval_status": "read_after_web_cache_miss",
+      "retrieval_method": "dot cloud browser, visible rendered article",
+      "summary": "Narrative explains authentication, OAuth scope matching, superuser handling, permission nodes/groups and punishment restrictions. Remote middleware delegates to a permission RPC. Its public discovery path lists keys.",
+      "remaining_gap": "No arbitrary-principal HTTP decision contract, RPC wire layout, full failure mapping or current cache freshness semantics is established.",
+      "retained_content": "Factual summary and provenance only; no complete prose, HTML, code examples, schema export or screenshot retained."
+    },
+    {
+      "id": "tag-api",
+      "url": "https://kb.solsynth.dev/solar-network/developers/tag-ownership/",
+      "title": "Tag Ownership API",
+      "checked_on": "2026-10-08",
+      "displayed_update_date": "2026-07-25",
+      "published_revision": null,
+      "retrieval_status": "read_after_web_cache_miss",
+      "retrieval_method": "dot cloud browser, visible rendered article",
+      "summary": "Documents eight tag fields (id, slug, name, description, owner_publisher_id, is_protected, is_event, event_ends_at), ownership/protection/event operations and protected-tag quota.",
+      "remaining_gap": "Pinned list code also populates Usage. Inherited fields, complete serialized relationships and quota wrapper are not specified; documented admin policy differs from pinned action attributes.",
+      "retained_content": "Factual summary and provenance only; no complete prose, HTML, code examples, schema export or screenshot retained."
+    },
+    {
+      "id": "oauth",
+      "url": "https://kb.solsynth.dev/solar-network/developers/oauth/",
+      "title": "OAuth Authentication",
+      "checked_on": "2026-10-08",
+      "displayed_update_date": "2026-07-25",
+      "published_revision": null,
+      "retrieval_status": "read",
+      "retrieval_method": "web reader",
+      "summary": "Authored form-based authorization/device/refresh flows, token/userinfo response examples, scopes, PKCE and polling/error behavior are available.",
+      "remaining_gap": "Examples use /padlock while current authored Solian callers use /stargate. This is not a global authority decision or deployed endpoint verification.",
+      "retained_content": "Factual summary and provenance only; no complete prose, HTML, code examples, schema export or screenshot retained."
+    },
+    {
+      "id": "login",
+      "url": "https://kb.solsynth.dev/solar-network/multi-factor-login/",
+      "title": "Multi-Factor Login",
+      "checked_on": "2026-10-08",
+      "displayed_update_date": "2026-07-25",
+      "published_revision": null,
+      "retrieval_status": "read_after_web_cache_miss",
+      "retrieval_method": "dot cloud browser, visible rendered article",
+      "summary": "Explains cross-device approval, child sessions and authentication challenge events; describes RS256 tokens, token lifetime and a revocation-key concept.",
+      "remaining_gap": "Does not specify complete session JSON, current epoch/version validation, cache failure rules or per-request permission transport.",
+      "retained_content": "Factual summary and provenance only; no complete prose, HTML, code examples, schema export or screenshot retained."
+    },
+    {
+      "id": "routing",
+      "url": "https://kb.solsynth.dev/solar-network/developers/routing/",
+      "title": "Routing and Gateway",
+      "checked_on": "2026-10-08",
+      "displayed_update_date": "2026-07-25",
+      "published_revision": null,
+      "retrieval_status": "read_after_web_cache_miss",
+      "retrieval_method": "dot cloud browser, visible rendered article",
+      "summary": "Describes service-prefixed URLs, direct /ws entry and bearer/query-token transport.",
+      "remaining_gap": "Service-responsibility text is dated and differs from pinned Messager/Passport/Blade ownership. Exact aliases and precedence must follow current eligible evidence.",
+      "retained_content": "Factual summary and provenance only; no complete prose, HTML, code examples, schema export or screenshot retained."
+    },
+    {
+      "id": "developers",
+      "url": "https://kb.solsynth.dev/solar-network/developers/",
+      "title": "Developer Services",
+      "checked_on": "2026-10-08",
+      "displayed_update_date": "2026-07-25",
+      "published_revision": null,
+      "retrieval_status": "read_after_web_cache_miss",
+      "retrieval_method": "dot cloud browser, visible rendered article",
+      "summary": "The overview explicitly treats its narrative topics as selective rather than exhaustive and directs readers to API Reference.",
+      "remaining_gap": "No complete app-product or bot entity contract in this overview; recommendations to contact another assistant were not followed.",
+      "retained_content": "Factual summary and provenance only; no complete prose, HTML, code examples, schema export or screenshot retained."
+    },
+    {
+      "id": "realm",
+      "url": "https://kb.solsynth.dev/solar-network/realm-permissions/",
+      "title": "Realm Permissions",
+      "checked_on": "2026-10-08",
+      "displayed_update_date": "2026-07-25",
+      "published_revision": null,
+      "retrieval_status": "read_after_web_cache_miss",
+      "retrieval_method": "dot cloud browser, visible rendered article",
+      "summary": "Describes role levels, member-specific overrides and null fallback to role policy.",
+      "remaining_gap": "Realm membership permissions are distinct from global account permission evaluation; deployed policy and complete response model remain unverified.",
+      "retained_content": "Factual summary and provenance only; no complete prose, HTML, code examples, schema export or screenshot retained."
+    },
+    {
+      "id": "posts",
+      "url": "https://kb.solsynth.dev/solar-network/posts/",
+      "title": "Posts, Publishing & Discovery",
+      "checked_on": "2026-10-08",
+      "displayed_update_date": "2026-07-25",
+      "published_revision": null,
+      "retrieval_status": "read",
+      "retrieval_method": "web reader",
+      "summary": "Contains user-facing taxonomy, feed and publishing-setting behavior.",
+      "remaining_gap": "Does not provide an exhaustive category/tag response schema.",
+      "retained_content": "Factual summary and provenance only; no complete prose, HTML, code examples, schema export or screenshot retained."
+    },
+    {
+      "id": "factors",
+      "url": "https://kb.solsynth.dev/solar-network/solarpass-factors/",
+      "title": "Authentication Methods",
+      "checked_on": "2026-10-08",
+      "displayed_update_date": "2026-07-25",
+      "published_revision": null,
+      "retrieval_status": "search_result_read",
+      "retrieval_method": "official-domain web search result",
+      "summary": "Official search result contains user-facing factor and setup descriptions.",
+      "remaining_gap": "Direct web open failed; no backend transport or complete security model inferred.",
+      "retained_content": "Factual summary and provenance only; no complete prose, HTML, code examples, schema export or screenshot retained."
+    },
+    {
+      "id": "api-reference",
+      "url": "https://kb.solsynth.dev/solar-network/apis/",
+      "title": "Swagger Documentation",
+      "checked_on": "2026-10-08",
+      "displayed_update_date": "2026-07-25",
+      "published_revision": null,
+      "retrieval_status": "landing_only",
+      "retrieval_method": "web reader",
+      "summary": "Landing identifies the service references as auto-generated.",
+      "remaining_gap": "Embedded generator provenance and any excluded-source contribution are unresolved; iframe/schema targets were not opened or used.",
+      "retained_content": "Factual summary and provenance only; no complete prose, HTML, code examples, schema export or screenshot retained."
+    },
+    {
+      "id": "develop-api-reference",
+      "url": "https://kb.solsynth.dev/solar-network/apis/develop/",
+      "title": "Develop API",
+      "checked_on": "2026-10-08",
+      "displayed_update_date": "2026-07-06",
+      "published_revision": null,
+      "retrieval_status": "landing_only",
+      "retrieval_method": "web reader",
+      "summary": "Only the introductory text was inspected; it identifies the following reference as generated.",
+      "remaining_gap": "No embedded schema or model export used.",
+      "retained_content": "Factual summary and provenance only; no complete prose, HTML, code examples, schema export or screenshot retained."
+    },
+    {
+      "id": "padlock-api-reference",
+      "url": "https://kb.solsynth.dev/solar-network/apis/padlock/",
+      "title": "Padlock API",
+      "checked_on": "2026-10-08",
+      "displayed_update_date": "2026-07-25",
+      "published_revision": null,
+      "retrieval_status": "landing_only",
+      "retrieval_method": "web reader",
+      "summary": "Only introductory text and an iframe link were observed.",
+      "remaining_gap": "The iframe and any generated definitions were not retrieved.",
+      "retained_content": "Factual summary and provenance only; no complete prose, HTML, code examples, schema export or screenshot retained."
+    }
+  ],
+  "failed_entrypoints": [
+    {
+      "url": "https://api.solsynth.dev",
+      "status": "web reader reported inaccessible; not proof site or docs absent",
+      "further_action": "No guessed route, Swagger discovery or generated schema request."
+    },
+    {
+      "url": "https://solian.app/swagger",
+      "status": "web reader reported inaccessible; not proof site or docs absent",
+      "further_action": "No guessed route, schema request or live API probe."
+    }
+  ],
+  "navigation_checks": [
+    {
+      "url": "https://kb.solsynth.dev/",
+      "method": "web reader",
+      "result": "Official navigation exposes authored OAuth, permissions, routing and tag API pages, separately from API Reference."
+    },
+    {
+      "url": "https://kb.solsynth.dev/zh/solar-network/",
+      "method": "cloud-browser DOM navigation inspection; redirected from verified README link without trailing slash",
+      "result": "Chinese developer/API navigation corresponds to English topic set; no separate product/bot guide link observed. This is navigation coverage, not an exhaustive site crawl."
+    }
+  ]
+}

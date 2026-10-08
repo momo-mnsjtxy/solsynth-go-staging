@@ -1,6 +1,6 @@
 # Exchange catalog: source and contract
 
-This package implements the complete documented anonymous **GET /api/wallets/exchange catalog**, from configuration snapshots through domain parsing to the HTTP response. It does not implement POST currency exchange, wallet operations, authentication or any other Wallet endpoint.
+This package implements the controller-local, explicitly anonymous **GET /api/wallets/exchange catalog**, from configuration snapshots through domain parsing to the HTTP response. Its differential checks cover that algorithm and framework MVC behavior, not the complete production middleware pipeline. It does not implement POST currency exchange, wallet operations, authentication or any other Wallet endpoint.
 
 ## Licensed application sources
 

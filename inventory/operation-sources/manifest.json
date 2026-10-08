@@ -1,0 +1,1231 @@
+{
+  "schema_version": 1,
+  "repository": "Solsynth/DysonNetwork",
+  "baseline": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "source_policy": "Licensed root-repository files only; no Shared submodule, Spec schemas, descriptors, generated bindings, appsettings or production secrets. Fortune corpus snapshot is deliberately omitted.",
+  "files": [
+    {
+      "file": "DysonNetwork.Develop/AppDatabase.cs",
+      "blob": "5270c76ee976169d82347f77c38d827b922967b7",
+      "sha256": "33763d2ceffb40401d5e467611f20282bc985ebe19641c1c181c3752ffae4ee7",
+      "bytes": 3047,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/AppDatabase.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Develop/Identity/AppProductController.cs",
+      "blob": "a1c2e16cef2cfa4e9c5cd593e66d7f56f7583521",
+      "sha256": "72ad83b26523cd52c78b4c6f50b8e55a9f01588ab1d48c46a30dc618fed2a78c",
+      "bytes": 11199,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Identity/AppProductController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Develop/Identity/BoardPublicController.cs",
+      "blob": "80a9dce9ce4b1f10cd20d658bdf919862c2adb0b",
+      "sha256": "bac6ba46e90db498c76b3d38ea3f655f896f33bd575bdf21c07be011a696d695",
+      "bytes": 4571,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Identity/BoardPublicController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Develop/Identity/BotAccountController.cs",
+      "blob": "a6095069043325ca9e2226f5c8d878dab54b3e71",
+      "sha256": "fb0e1938f1d238d19f668c03ee8ee16336b9c275e641003ceb73dc0086bea9a7",
+      "bytes": 28631,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Identity/BotAccountController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Develop/Identity/BotAccountPublicController.cs",
+      "blob": "51ec572f1e42bb5cf988c21624bcf6c3c67fed6a",
+      "sha256": "1176c4758f09c92abbbf7233df835d5089f4667e2388dd2a4441afa1027dec06",
+      "bytes": 3095,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Identity/BotAccountPublicController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Develop/Identity/CustomAppController.cs",
+      "blob": "6d8c005d5c90a93c394df012382a98fd49799d1d",
+      "sha256": "6ae6dbccb103875225109b5babd7c08ec90a8f8de922f12721b7b005970438ce",
+      "bytes": 37254,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Identity/CustomAppController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Develop/Identity/CustomAppPublicController.cs",
+      "blob": "c917743c516e6237c6965ec25b487e978ca5dcd5",
+      "sha256": "a19a0143e3d7f854178da56b913c82f9f5135525ccdcc9bcaed4af6ff676a96c",
+      "bytes": 2889,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Identity/CustomAppPublicController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Develop/Identity/CustomAppServiceGrpc.cs",
+      "blob": "d2c65b32d74209fb3987ee6bf6c31233b9aec5f4",
+      "sha256": "0b6877ee09a41a121f505a27c2025521174eef1e78bbd26e5b50e5b4de189ed9",
+      "bytes": 9256,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Identity/CustomAppServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Develop/Identity/DevelopQuotaController.cs",
+      "blob": "b95feeaa845c087971a51282738fbe1774399980",
+      "sha256": "40ee8df2a7ce7cd8ba02838921da318773cae5de53ba659a7e94785a565266ad",
+      "bytes": 1071,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Identity/DevelopQuotaController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Develop/Identity/DeveloperController.cs",
+      "blob": "6e43f3a40fb0488c601bc4fedadb260459a1352c",
+      "sha256": "3b1fc0afa746078b9e45468aec2d86e630933b4a1ae12cd3238efbc0525e8c33",
+      "bytes": 4985,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Identity/DeveloperController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Develop/MiniApp/MiniAppController.cs",
+      "blob": "2f60539dba4ded617efd90f0b4417b926f6ddfa4",
+      "sha256": "332f0b605ed9bdd1aba0574fcb314be4f0a7a35760f1d91d9cb6442651192493",
+      "bytes": 14082,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/MiniApp/MiniAppController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Develop/MiniApp/MiniAppPublicController.cs",
+      "blob": "269da397f764d828ce50e95d31a5eacb9003584c",
+      "sha256": "a1c12172fa27bf9040b4ffcf9a8140724c732d9175e9f3e5fc5f259aea231abe",
+      "bytes": 3108,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/MiniApp/MiniAppPublicController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Develop/Project/DevProjectController.cs",
+      "blob": "6b1bc7048817ed6237560ecd053efd562e51264c",
+      "sha256": "f9b96952d3bb7667f6319dc14f3a71daa8b4abe9f7435f709c3507cf8a21075a",
+      "bytes": 5437,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Project/DevProjectController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Messager/AppDatabase.cs",
+      "blob": "b7246f208ff15c3f24ec261960b7298a5f46a5b4",
+      "sha256": "d129b490f865cd28e83a60dc38659228d35ed8aed8b4183cab06b5094d4aa3e5",
+      "bytes": 12070,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/AppDatabase.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Messager/Chat/ChatController.cs",
+      "blob": "29e748e8c585ed766c9e20dddfc2eae65509f9a2",
+      "sha256": "22d8a19becdab64fefa234d0213591f49ab3d08458c186b4900609bb02d38c98",
+      "bytes": 82984,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Messager/Chat/ChatRoomController.cs",
+      "blob": "373efa01d468a76ba5085bf5c2b59bede71bd7ec",
+      "sha256": "fbf9898e12c73cb47568035a168203243cab6dbcdd7545cf02861967d6d1d41e",
+      "bytes": 95014,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Messager/Chat/PlaceholderExpirationJob.cs",
+      "blob": "fb1cfe8d8cc6b56c4236b75d93eeb1de61d228fc",
+      "sha256": "8daefba5b4e840d8ebc4d86051bdd52fd5501fb7d880e6e8e900a0c7f1993d59",
+      "bytes": 458,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/PlaceholderExpirationJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Messager/Chat/RealmChatController.cs",
+      "blob": "b89f39a81abe2fbe09fa2c7b768eedce62b23307",
+      "sha256": "943a2e41499cbe9677368a21d1631b9bff6574d60f5c1914ebf690346062379e",
+      "bytes": 1357,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/RealmChatController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Messager/Chat/RealtimeCallController.cs",
+      "blob": "6115c8788b3faea80d18d7a1f4168e93ec062232",
+      "sha256": "dc23491a63fd7f6a16eadb404218ca59f95a444120c98baa32f61acaa970d204",
+      "bytes": 26465,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/RealtimeCallController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Messager/Chat/Voice/ChatVoiceCleanupJob.cs",
+      "blob": "42482a40dc13a83154f094716f833e1486029177",
+      "sha256": "f9b2a6a88aa740acc38c9dff5abe0b6f67f135e6ac09424203d1c644ca73315d",
+      "bytes": 470,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/Voice/ChatVoiceCleanupJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Messager/Rewind/MessagerRewindServiceGrpc.cs",
+      "blob": "f9b66568b5b1cfa48fd666d14759f73131d2992e",
+      "sha256": "90f91259677292613eae2747463dc15d3ea03033e702aee77f43694812d4611d",
+      "bytes": 6615,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Rewind/MessagerRewindServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Messager/Startup/ScheduledJobsConfiguration.cs",
+      "blob": "ae17400b8908d419bbd3bf4f0c36acdc4f1ed442",
+      "sha256": "23e319fbc23f63f8ad9f8143d0cb978d856899df7d711c243d75d3fc4243903e",
+      "bytes": 1581,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Startup/ScheduledJobsConfiguration.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/AccountAdminController.cs",
+      "blob": "ce1c3465960fcb9f92dff30b648df0d3af96419d",
+      "sha256": "744864a688167eceb954e4232265eb1362c1556dc87898fd446bc62de7c4eeda",
+      "bytes": 26714,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/AccountController.cs",
+      "blob": "693d62314815feb900644b972b93b16f366ea16f",
+      "sha256": "658ade643635667bb81918381025070fc74b68d79df440d3f1e3effece230f76",
+      "bytes": 16234,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/AccountCurrentController.cs",
+      "blob": "543ccc2f9b06ea81da6561622b6eafccd2c826de",
+      "sha256": "9dac86470690c7258315de060d6803d640173b12bbcf0917fdffbf384072a563",
+      "bytes": 10747,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountCurrentController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/AccountEventController.cs",
+      "blob": "54133c31c974e78120b9aa9b503f9bdfd29862f5",
+      "sha256": "05221730282ef34ed6c5a4687b3270b55946dee23d8b2c47c3c71bbcc7cbba86",
+      "bytes": 31837,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountEventController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/AccountPublicController.cs",
+      "blob": "6c3f3712356f5543ba0be6846637d2b62c649c5a",
+      "sha256": "1d017b4285058eb99ecdd6f1d65fcb5f601676e9ff2fd4b032af07d87f10149d",
+      "bytes": 2269,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountPublicController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/AccountServiceGrpc.cs",
+      "blob": "30ad07f7ba2a9bb6d5bcfdcfe6bc1a1a7f8e3700",
+      "sha256": "ab679d62508368c7a60507fd2bd653abc6b821d6a82db8b64fb9afa0db7c4461",
+      "bytes": 34905,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/AccountStatsAdminController.cs",
+      "blob": "7db7e71996c1a90c88d3c0a9da7d3f2215f01323",
+      "sha256": "0bedb66156eb1c1a4f2dbf23ca90584d3ead9c96303b0a74b60e2a2324a46b5d",
+      "bytes": 1794,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountStatsAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/FriendsController.cs",
+      "blob": "ea1b00027cce94342ac274164c01c71055b1a3a8",
+      "sha256": "994d87a726ef08913b7964c54f22e5dde216c684ddd3672f5237bae5b18ba9fe",
+      "bytes": 3149,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/FriendsController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/NightOwlReminderJob.cs",
+      "blob": "538fb4c82d4c1497cf0c4dff52e9086d94c0a196",
+      "sha256": "066663bb2c8e39f49420acbacc95ff0c8b69403c72472c24bde0a1815f611330",
+      "bytes": 3702,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/NightOwlReminderJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/NotableDaysController.cs",
+      "blob": "13fcf84a879f9e7c6f7a60d733cfa63c8059e89e",
+      "sha256": "bb119af627bec1fafa15428b24ea110901a28bdfa1c7347ff605f62939b666ca",
+      "bytes": 7262,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/NotableDaysController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/PassKitController.cs",
+      "blob": "91417afd6bc5d0b42b7d4b6b86c50d7806c36893",
+      "sha256": "9f5ede691b9ac04aaeb1714ae607cd0137e920180e6fa8171a5e7ea9a59028b5",
+      "bytes": 6665,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/PassKitController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/PresenceActivityController.cs",
+      "blob": "2f502003c925e32c7e59e19d44cd592be099755b",
+      "sha256": "3d77cba195578757cc799c24f8fac8a1125845ed327d8ad551cba79c54701a78",
+      "bytes": 27829,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/PresenceActivityController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/PresenceArtworkCleanupJob.cs",
+      "blob": "1cf2bd0ccc4e148999823845dcfe6969622ac895",
+      "sha256": "3283a422c63f2c3cba8d5828b481559c46a2de976e7e5a255ca48c40096331d6",
+      "bytes": 502,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/PresenceArtworkCleanupJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/PresenceArtworkController.cs",
+      "blob": "362669dba7e1ecc0b10e125947ffdef846c3d701",
+      "sha256": "6be9f47724b05d20cd60a5cc2adb247101a81fadb65838e19c2781aec973f0c2",
+      "bytes": 3552,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/PresenceArtworkController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/PresenceServiceGrpc.cs",
+      "blob": "f345b98923abaf041fc8fe469993216669dd6c87",
+      "sha256": "c360462b62825cd4d6a4f14f4c01a38f3b5b75d35b519308ac0ec87752597dbb",
+      "bytes": 2460,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/PresenceServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/Presences/PresenceUpdateJob.cs",
+      "blob": "8403cb459c286996664cb2808c4fb1fa05a3c941",
+      "sha256": "64c9a7eca247285f2dc1001c47a84629094b82cccdab5b1e7842350a7fcfc65f",
+      "bytes": 3631,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/Presences/PresenceUpdateJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Account/RelationshipExpiryJob.cs",
+      "blob": "55b63316294b81528b41872acd2d2dd5fc8fe13b",
+      "sha256": "a7baaf6468c8cfb20336a422b995ef90c68f50331fd7f101844f9fe76a990a4b",
+      "bytes": 513,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/RelationshipExpiryJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Affiliation/AffiliationSpellController.cs",
+      "blob": "1bef81235162ce0ba592c3033ea431098f0122d8",
+      "sha256": "8510db1cf5c1d8a35d728dd624f2db236ea2d41afef6e9f1bb57a8947a5f576a",
+      "bytes": 9465,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Affiliation/AffiliationSpellController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/AppDatabase.cs",
+      "blob": "8f6490605000f29d0059a58622b193b9a2f56a4f",
+      "sha256": "fc268cd596a7d2d28ddee476a8294b84e70626f6b9ee80b969c358da95a2aa7f",
+      "bytes": 18632,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/AppDatabase.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Credit/SocialCreditServiceGrpc.cs",
+      "blob": "506579ac7d45b713303c6c6c2c3bd381118d1cfa",
+      "sha256": "4f47351f2f4628bf88568fd88357a4b1a5dccf8014cac58e6ba134b9b26d6b68",
+      "bytes": 1083,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Credit/SocialCreditServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Credit/SocialCreditValidationJob.cs",
+      "blob": "333214d5535a14b0720230144226e86728976765",
+      "sha256": "49ca8a4c3eef34331415df2badcd3744f54ef523eea898e1ee0b68476408746a",
+      "bytes": 3165,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Credit/SocialCreditValidationJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/DomainTrust/DomainTrustController.cs",
+      "blob": "5e96194d31f4225be566e6a6d3b622a2b58f875a",
+      "sha256": "2129a38f3db8ef8af0e266afd0d290654e230c690eefa4a0678190bf0563ae2f",
+      "bytes": 7877,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/DomainTrust/DomainTrustController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/DomainTrust/DomainTrustServiceGrpc.cs",
+      "blob": "dba507aab3f17586452ec8f2d4ae3fb5e330aebf",
+      "sha256": "5b54e5d72c177047c33fb3e1d3b7afe4849973a326d8794b20a48a6802a759a0",
+      "bytes": 1376,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/DomainTrust/DomainTrustServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Examination/TestAdminController.cs",
+      "blob": "bcd87bf5056863bd4d1700ee301b8959c93fca50",
+      "sha256": "1ba9a850d2c680fa4fde68637457f25d20ccab88ccd400d2cc509cb4c1ccf5f9",
+      "bytes": 13622,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Examination/TestController.cs",
+      "blob": "4d98f0c8cc6b8994498d366da8ace9d298f2c179",
+      "sha256": "c3b5ba0842e60988c5b95b095f62d84cea015cda4db35a63c76e90053782afbb",
+      "bytes": 8654,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Examination/TestQuestionAdminController.cs",
+      "blob": "ee24882f1e1bf62fbf2c651dd539c886382d8645",
+      "sha256": "fd6799c5b098fc989a879cad06281edf060a59c3796f2f358fe71ec2646c0d4c",
+      "bytes": 10795,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestQuestionAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Examination/TestQuestionGroupAdminController.cs",
+      "blob": "add4eba04f333378b499919921351a6aab7333b3",
+      "sha256": "b68c6c479c46d4a1b8749c8d7d66bc43ad90fef387971c2f0bf93d3402dc27a6",
+      "bytes": 4329,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestQuestionGroupAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Examination/TestTrialAdminController.cs",
+      "blob": "270eb266f18118f568f96e8ab94807d99e8672a5",
+      "sha256": "4551489dfdc89c76367b51c14e68d900bce3d623092928dd318ee6c674f6c96f",
+      "bytes": 3850,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestTrialAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Examination/TestTrialController.cs",
+      "blob": "78f10333fe85dfdd1894da85003173381e35e2a4",
+      "sha256": "cc0ffa4548666324fc6ed5662aeba22fa0ca64b104dcdba4d9591c3801cfca2c",
+      "bytes": 1860,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestTrialController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/IpCheckController.cs",
+      "blob": "f70b161ecb51097cd5aa334515bb9bb9e7e80188",
+      "sha256": "7ae6dcd106bb285c88e0154fecf536d3e08717d7aa8a4267e05e774175b838f5",
+      "bytes": 4037,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/IpCheckController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Leveling/ExperienceServiceGrpc.cs",
+      "blob": "389269fc4c162ae7620d9b4ebf0571b0d5cdd00b",
+      "sha256": "22f1b9e4254a3c8b33a4599b3ef8efa379faa35fcd68abf5f06aac190b4eff33",
+      "bytes": 609,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Leveling/ExperienceServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Meet/LocationPinController.cs",
+      "blob": "a3827a8182fc65ab1411a838b3587d233b41d086",
+      "sha256": "6d7b70b18076919b26c7a9f3c8aa19fae0480ca31d3804c60afd6c57b04e289a",
+      "bytes": 11684,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Meet/LocationPinController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Meet/MeetController.cs",
+      "blob": "f77d6f394b82f968011d3750d3a63d054f86c114",
+      "sha256": "77893abae4bb20495e323262c13d9733c996fcd0f23358624ab9615b29dce701",
+      "bytes": 19503,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Meet/MeetController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/NameChangeCard/NameChangeCardController.cs",
+      "blob": "bc535968ac619e0f6dbd16d9edf8e4ea1185419e",
+      "sha256": "5240da83125b27be04a44c3f21ee9ebbaa9403c1e444906a7ae823fd7d791f36",
+      "bytes": 3120,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/NameChangeCard/NameChangeCardController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Nearby/NearbyController.cs",
+      "blob": "f29c3fab5bcfde05e83c4b9f009d132de9344b44",
+      "sha256": "f2979b5321dc2c4189332725510bf0f00ce982b3bb5852e9cb725e43927c8457",
+      "bytes": 5237,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Nearby/NearbyController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Nfc/NfcAdminController.cs",
+      "blob": "4a26a030cc9b460b4f072b1af0b7cb1ed1b9c6ea",
+      "sha256": "167d7e4040865f4c46af55c710d4f77e79c7ee776abf7263a916fd76308d8b7a",
+      "bytes": 5359,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Nfc/NfcAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Nfc/NfcController.cs",
+      "blob": "2a3d0b6d68c883ad149aa0c5993ac97efff87618",
+      "sha256": "961fd9deb2b1894034330d8d65749cd544c00e4eacf5628d39836606743b03c8",
+      "bytes": 22144,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Nfc/NfcController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Nfc/NfcServiceGrpc.cs",
+      "blob": "1ac822d2b4bba938312f98ccd423e8fb9d107e5c",
+      "sha256": "78d4005811e005bb281068c4c9e04039f5005f529e75c4ef0dd949d0c15e74d3",
+      "bytes": 9356,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Nfc/NfcServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Progression/BadgesDiscoveryController.cs",
+      "blob": "93b25670b93c75927e8f50e5c59d5e8026962779",
+      "sha256": "b7d0d659f6567958da64a182a02f7c641454ed43887d0dc1ec9925a1fe0e430d",
+      "bytes": 8138,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Progression/BadgesDiscoveryController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Progression/ProgressionAdminController.cs",
+      "blob": "f23caf795d2789003ba14102568dc396af7565fa",
+      "sha256": "470ad8d553d02cc4bc4d12d4a277b0f22f347ec49ef7c76cecef4e59d90e4ccb",
+      "bytes": 9243,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Progression/ProgressionAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Progression/ProgressionController.cs",
+      "blob": "b1053abd2a250c3163a3e3f69754aab682b5ad6a",
+      "sha256": "bd50ac221c69983998156d1c086ba924a5a5f2b47d312a317db1ffd5ecd47cd1",
+      "bytes": 3031,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Progression/ProgressionController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Realm/RealmAdminController.cs",
+      "blob": "1033f1b89726bc822e83227f3ec98e3d61d72725",
+      "sha256": "069cf0197a0774e7fba4d3263645cd8884b423926a38c72e98704f06fc6690d6",
+      "bytes": 17376,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Realm/RealmController.cs",
+      "blob": "70ba45891ecb476e5d41c54beca1bfbd40777f10",
+      "sha256": "b325fdea25d5d4f191fc465e7dff36a9c6289c57d8909046a1c6a63806e9bc74",
+      "bytes": 58324,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Realm/RealmPublicController.cs",
+      "blob": "e9262ce79e8b1191f4de47b1062c520673053982",
+      "sha256": "168eca901d0ab985fa1c2f252ab75f708acc64c6cd77d6d91cbdfc7357a51bc3",
+      "bytes": 1271,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmPublicController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Realm/RealmServiceGrpc.cs",
+      "blob": "f79788559fdedcc6f635695f8f03f68e2c32044e",
+      "sha256": "69a79d9732361ba103be19ee95ab2ccc8aa7478c9d9ae5ae693ea1fff0491a05",
+      "bytes": 9778,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Rewind/AccountRewindController.cs",
+      "blob": "afd567c5c532dafd0471928bdc9086ec0c9ede01",
+      "sha256": "d4b178f1778cafe4ac62531108f93b93ea77846e4b37e73533d7a933c4b1658a",
+      "bytes": 2868,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Rewind/AccountRewindController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Startup/ScheduledJobsConfiguration.cs",
+      "blob": "f2aee269ca2c827bff78436924806f53616d6e5e",
+      "sha256": "7c9bb2481afcb78fe8e2b312b7a3bf9f5ba12fc36ca5a51278e29cf0b19522e9",
+      "bytes": 4370,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Startup/ScheduledJobsConfiguration.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Ticket/TicketController.cs",
+      "blob": "a01879f5d3f73b24905c6acc3165f94e33098a4e",
+      "sha256": "a262d121c12c329e6a327bc9c762d27ac35532f6da102d11fd44c1b20400d7b0",
+      "bytes": 29266,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Ticket/TicketController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Passport/Ticket/TicketOnCallAdminController.cs",
+      "blob": "8a244d4480ebe2c800ce567ad7631026d3743cab",
+      "sha256": "ec161f7bfdf4b5cdf7743d20ef0bd2c980bf49b9102c8d1f3b84b467745bc90f",
+      "bytes": 2021,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Ticket/TicketOnCallAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Account/AccountSettingsController.cs",
+      "blob": "a61c5e30d44f2eb379b82cc6107bfbedb6a825d5",
+      "sha256": "e0918ad9b859c6733e25edb45d2140f7e58224a10b00528a8ff0a428f6b8eb80",
+      "bytes": 5228,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Account/AccountSettingsController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/ActivityPubController.cs",
+      "blob": "79c9de7e85216a99689311f036da27e4c92d9a6d",
+      "sha256": "db52059524c21b87d272e8f349a01f5103733b9735f97e08957c77c678814888",
+      "bytes": 29354,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/ActivityPubController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/ActivityPubFollowController.cs",
+      "blob": "2e136824e2de392de94b490ac96b6020993c57b1",
+      "sha256": "c4911f75f87d88658d7cad1f46bb7fca3712d604d1702251dfaf6f0caf7fd525",
+      "bytes": 16870,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/ActivityPubFollowController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/ActivityPubRealmController.cs",
+      "blob": "6cc345d3e0361f93541c65a85a698662531336ee",
+      "sha256": "f39aeb04ab1c4c48bcc2a6c4762866a94f0866d8d78678db15bf3bc52166209e",
+      "bytes": 14650,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/ActivityPubRealmController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/FediverseActorController.cs",
+      "blob": "67af5f12a2ee25542835643d79e9336c8256bb30",
+      "sha256": "e773afbf94fce176d3218d68483fc2b77b5b67a0164c5ccf6ab4b0104107b64d",
+      "bytes": 46363,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/FediverseActorController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/FediverseKeyAdminController.cs",
+      "blob": "3d9d340f6a64e721a1f3765481b9bcb4ba43fc15",
+      "sha256": "8cedf8bbf7a33d279c718e730efc3cc13bd196837e64a2359ad6f544239722d8",
+      "bytes": 5270,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/FediverseKeyAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/FediverseKeyController.cs",
+      "blob": "75c976538badda49b55747b29b2e4e306f8b193d",
+      "sha256": "fc20bba411bd4fae973fde99ed4d47907f85496d93534394f34a70fbc5559686",
+      "bytes": 2421,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/FediverseKeyController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/FediverseModerationController.cs",
+      "blob": "75fbdad603bec715eecbf7c99919cf36416afac4",
+      "sha256": "3ac4684f4b4e711a617e3f537c89d8511c6da956d1537c6cb021125a0871bd33",
+      "bytes": 12775,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/FediverseModerationController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/NodeInfoController.cs",
+      "blob": "68cad116049a5424092b66c5e4311a4eebb946c9",
+      "sha256": "929548e856f256ed9da58c4337884aa20681636fa34d4b43487ca9bd2f2235c2",
+      "bytes": 5061,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/NodeInfoController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/QuoteAuthorizationController.cs",
+      "blob": "99e10787cba64895cfa336f46278dd1a911cbcd8",
+      "sha256": "d644a1eee31f64d83373cfbffa2b6ccadd0cf5216bc0f934afee4d3bf4078778",
+      "bytes": 5046,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/QuoteAuthorizationController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/ServerActorController.cs",
+      "blob": "416b42f1d04929ce486f113aa7242b1b931c9d30",
+      "sha256": "58e598f9ed22b5c085859223887e73f359d6860685d6888960b4ba76d2381417",
+      "bytes": 4886,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/ServerActorController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/Services/DeliveryRetryJob.cs",
+      "blob": "0d234ff24a967ac36bb992471ea4877424525fce",
+      "sha256": "25efae4319b93ab2f56ea80ec1480a1c00a973570b4e8b4add15cd2117c748c5",
+      "bytes": 9977,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/Services/DeliveryRetryJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/Services/FediverseActorCleanupJob.cs",
+      "blob": "252ceefef15270f7e8158775d1de6509c9333fc4",
+      "sha256": "f10181fa904de82965b7290081c1b52ab9ac762dcbf0e84d608c5546c901f2aa",
+      "bytes": 5898,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/Services/FediverseActorCleanupJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/Services/OutboxBackfillJob.cs",
+      "blob": "2507e8820cdb5d5b0fdab5ea92e883458eeecef9",
+      "sha256": "5396b906a87416fe9dc472ef9804c8f76b9f5a977baee64bf26b2342f6f6c87a",
+      "bytes": 1721,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/Services/OutboxBackfillJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/ActivityPub/WebFingerController.cs",
+      "blob": "fe9093a431ccfc20f5dc9a63e68ab12340b7a46b",
+      "sha256": "9388351edf1995ddf18725d490c8193db2de6488e2c0a6582b221459e3fb042a",
+      "bytes": 4661,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/ActivityPub/WebFingerController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/AppDatabase.cs",
+      "blob": "ed1f491d6ead8ee4eb80962cd875f2a67a5e70eb",
+      "sha256": "0ffbb6ccf96e4fcbf35dc2d05eb3f166eccfa45a4e990c67930386099d67d89f",
+      "bytes": 17092,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/AppDatabase.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Autocompletion/AutocompletionController.cs",
+      "blob": "a3757d8d3fe536b956ee6dcdae68dd7a709bef24",
+      "sha256": "7d946b7f804e7c9c7645f3f252c2f57a3ba0574b7da2515227f844d9b652ff45",
+      "bytes": 895,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Autocompletion/AutocompletionController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Autocompletion/AutocompletionServiceGrpc.cs",
+      "blob": "336f543d3a57b644c3677d26a1679dd954bbc579",
+      "sha256": "deb11c0211dad90b6092fbd1739b649405bd71d76a86bde298bdcdf04a4ca81e",
+      "bytes": 1120,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Autocompletion/AutocompletionServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Automod/AutomodController.cs",
+      "blob": "f47f3ad40560c4b4be713151d88083c3532533fc",
+      "sha256": "c251ff7a4e9ee5c26175037f6c9367820a1a774e97cd9a3f18f301b52f3a998d",
+      "bytes": 10009,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Automod/AutomodController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Live/LiveStreamController.cs",
+      "blob": "55691c4e30718f980b24ff92956c130d9a6da2b2",
+      "sha256": "18aaf9343d105a03e38b76db3555eb91dc9d34eb9fcc93e93547228f4b6c2a50",
+      "bytes": 37118,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Live/LiveStreamController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Live/LiveStreamIngressCleanupJob.cs",
+      "blob": "84ae2db2bf45df90845a34bfa591941795456401",
+      "sha256": "fb02eac3705c8bcc1074e2830f9cdd3019b94c1f7c11eb58384fd0f3e48c7188",
+      "bytes": 3955,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Live/LiveStreamIngressCleanupJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/AdsController.cs",
+      "blob": "489251204fcd795e4beb6ec91d844b9481bc6ff3",
+      "sha256": "efa0e80a4d6c53f5e4555003bcf8757afa310bff64e93f05bddf36b3aaaf26bb",
+      "bytes": 1056,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/AdsController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "sha256": "aa30f0451fdd8d6575f7e756f1fc597673c5e415914c58b5dd0440a93c68f285",
+      "bytes": 89250,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostAdminController.cs",
+      "blob": "d664113d6adc6095aed877fa0658a1c6a259eb03",
+      "sha256": "69c7069506352436518a19e404328924d46cf9c7ecdded40caad809b8b6985a7",
+      "bytes": 12636,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostCategoryAdminController.cs",
+      "blob": "3d95541881da097b3f47c384202e7ca8f3941746",
+      "sha256": "8cfaf893015b872f5b28e06000300a5589f7a66dbcb91ab6013cd4472e44f76a",
+      "bytes": 8056,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostCategoryAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostCategoryController.cs",
+      "blob": "b3dc42848792b1f4ffc9a6113be56c25c7ab510e",
+      "sha256": "2610949761b9e2d95eb2ea407735a2b56763d98ac8d93a757537a9905bb8f86e",
+      "bytes": 11609,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostCategoryController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostCategorySubController.cs",
+      "blob": "ad5afa5e04f8a1ae47b41b3acf1084187cc3ccb6",
+      "sha256": "b41739f477d3d2e4edf3ce53785ecb9a182dae630f83800e87e89b111f8f1cb3",
+      "bytes": 1750,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostCategorySubController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostCollectionAdminController.cs",
+      "blob": "77715dbd384344915a7e3f3f7589497af4ae5ccf",
+      "sha256": "04a32768cab9d475995191fe384080fc58fb3927513ed169951ed7ddcf593b2f",
+      "bytes": 6387,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostCollectionAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostCollectionController.cs",
+      "blob": "a6c11a5b40849986ea250546c7eb6d1e98849b86",
+      "sha256": "4e7e65ad975d7e6a69999b6be70d88ef433a28d08275651c7295b38b60376a49",
+      "bytes": 22024,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostCollectionController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostController.cs",
+      "blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "sha256": "d61b58a6c60f3bbecbdabfc7f9e0cad131605c3a5238097203d69bd978a16145",
+      "bytes": 91386,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostIndexBackfillJob.cs",
+      "blob": "7a7ed80b7736d0835ba6e36790ca6ceab81f77db",
+      "sha256": "7b1c0190013338560bc52b28040e131b9735449a285da8ac6df962a75599fb40",
+      "bytes": 689,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostIndexBackfillJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostServiceGrpc.cs",
+      "blob": "dd263b9b60f4269987b4dba95257d9720062c599",
+      "sha256": "ef63af27cbc8b92c83cedfc422cb5782d2ed0750ac639e12d3b92c08fe3a79bf",
+      "bytes": 12868,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostSponsorAuctionJob.cs",
+      "blob": "a1dcdeb5af5fda8425d3c7dd2864bdef0439e111",
+      "sha256": "6f638f3cd8e0bb40c1d9e17075c74aa4de8497de8488e81b107a4f23903b952b",
+      "bytes": 449,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostSponsorAuctionJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostStatsAdminController.cs",
+      "blob": "18b418db3b1ab3e37a4d7ef488f914549488c439",
+      "sha256": "fde432f336af4554eb21279db5ed5a5f2087eb253f28a1d247c46af5ea12c486",
+      "bytes": 2416,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostStatsAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostTagController.cs",
+      "blob": "9231eaa2275d4855584c737ba01a75fba6b3e6c9",
+      "sha256": "e6ef23a79ab7a88125599885a2a27609fcfd1aa6367e091e60f760220419c5e1",
+      "bytes": 22026,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostTagController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Post/PostWatchController.cs",
+      "blob": "49d865ead26cf66123b24bcd4765bbe06507132e",
+      "sha256": "c684c0f9cb664cd92a87c2b139647d7ce2757ad6ce780d0063e8619a3da6b86f",
+      "bytes": 3695,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostWatchController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Publisher/PublisherAdminController.cs",
+      "blob": "850f993fe2bab27eff9f5a397125841892eb7796",
+      "sha256": "95794f2a42c41c36db671604bb9a053912eb7760973fd0bf2dcd6445404dc58b",
+      "bytes": 13146,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Publisher/PublisherAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Publisher/PublisherController.cs",
+      "blob": "0095ae0f7cbc5702659301ab48c0129b411450ba",
+      "sha256": "27f586249fd911cbe552e788f3e19016a5e206b28ea386e0aa1f8bf826358ed9",
+      "bytes": 55901,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Publisher/PublisherController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Publisher/PublisherFollowRequestCleanupJob.cs",
+      "blob": "07353ce3b4e0a8c4dc81321794802e12843c2d63",
+      "sha256": "f2dd79b4f95c84b2a8ca425640b071626e3cff2aeee2e70f38c50a3baf9de952",
+      "bytes": 840,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Publisher/PublisherFollowRequestCleanupJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Publisher/PublisherPublicController.cs",
+      "blob": "fe731e3e6925475efa214135b519f7c6819f19dc",
+      "sha256": "229ec0f8504e58b5210b8c9390a7f714c95d8f873be49f859948b9d025029eac",
+      "bytes": 7601,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Publisher/PublisherPublicController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Publisher/PublisherRatingServiceGrpc.cs",
+      "blob": "968b65cac43efc7e4792909b7f4f31aadcf2c346",
+      "sha256": "3aa04f6320450678631af519b5d4f501364ac37bbdaec22f255feaa50c0d5288",
+      "bytes": 1421,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Publisher/PublisherRatingServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Publisher/PublisherServiceGrpc.cs",
+      "blob": "a94e884ce85f774aa0fd6bfed5e2271a755f5ddb",
+      "sha256": "ae63950d550efa598c62528234adb6e622ae512c2f433bb04d3c229c58310a8e",
+      "bytes": 6961,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Publisher/PublisherServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Publisher/PublisherSettlementJob.cs",
+      "blob": "52f57a7e1be2901a5e8d3b256926ffd1b33ec6d5",
+      "sha256": "bef32c4d457c4cb27e1c7889735a6c6cd29bb4d8e6b07003114ec26fb0a8b028",
+      "bytes": 361,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Publisher/PublisherSettlementJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Publisher/PublisherSubscriptionController.cs",
+      "blob": "9a993973bb0556dde47d939aeccf2cad6f82aec5",
+      "sha256": "33ba320c185caef6be6c12a608cdfd3e29a7573c45fa1dc02e6b05f325703ade",
+      "bytes": 42996,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Publisher/PublisherSubscriptionController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Reader/WebReaderController.cs",
+      "blob": "1bc029048a0aff222778b7bf249a75cb96c0e6fd",
+      "sha256": "c3bcd62fa33a5835f362f3afccb932d457403dc39ba9edd7e1cddfd1a82db254",
+      "bytes": 2827,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Reader/WebReaderController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Reader/WebReaderGrpcService.cs",
+      "blob": "be869dbacf7be5b7d35073c3aa9f17f159984941",
+      "sha256": "2221c31b283f62290b1e4e452b27f88b0d284287c864d357da538ab74a3fef06",
+      "bytes": 1770,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Reader/WebReaderGrpcService.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Rewind/SphereRewindServiceGrpc.cs",
+      "blob": "3108d07227c9b0f1f20f25b1cddc9daacc4033b8",
+      "sha256": "e04c46d1ad80ce2d24c55cc1b0f27003eda9eccadb6410893629d44918a66025",
+      "bytes": 5956,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Rewind/SphereRewindServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Startup/ScheduledJobsConfiguration.cs",
+      "blob": "c26765e1adaab49d1503b6972300d5143bc0d22f",
+      "sha256": "b2e20e54ca3588ef85e332aa99fc50a46619ed1738b0b446b2cdf1ac373c74d7",
+      "bytes": 5344,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Startup/ScheduledJobsConfiguration.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Sticker/StickerController.cs",
+      "blob": "9f29bfa505deb81d6e0bcf1247f53608cdcbc914",
+      "sha256": "21df777b263dabf9e0b6124a165d0a8f18b9436361aef50b95095bb8871bd14e",
+      "bytes": 26302,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Sticker/StickerController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Sticker/StickerServiceGrpc.cs",
+      "blob": "faddb548ca8442b75ddf9152d3cf81ddd2b6ba38",
+      "sha256": "eb5c69dfb68fbfe3004fab9a24b5cc7a413fe24ab82274c8a9206187923c25b3",
+      "bytes": 781,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Sticker/StickerServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Survey/SurveyController.cs",
+      "blob": "856e6696b21738dc5e9997bea450ed144f30ece8",
+      "sha256": "f5fe91f7285c5646d6a164f01d2e20223600112e83087b078f4a4de680611d8d",
+      "bytes": 34548,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Survey/SurveyController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Survey/SurveyServiceGrpc.cs",
+      "blob": "aa50160cadb1a946cb9e50faa2a35073c3a7ca9d",
+      "sha256": "f3feb999f49d20e80afb3b117567fd9ab9fcdde45c2eaf23210069ffc5c4817c",
+      "bytes": 5735,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Survey/SurveyServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Timeline/TimelineController.cs",
+      "blob": "0469ca27061f60af4447355193f6a369dd7972b0",
+      "sha256": "40eab60e13603cf2b8604c10890d77ff63c6fc009bf35e841fba2efec2cfc4d4",
+      "bytes": 4016,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Timeline/TimelineController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Timeline/TimelineDiscoveryController.cs",
+      "blob": "7e08c3f212fea489e44927a2d3f8999a51117aed",
+      "sha256": "576ff7f7f56b2f85c8a644e88b4650d8cbc4a27598620923b3cd34ff1e07cf16",
+      "bytes": 7041,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Timeline/TimelineDiscoveryController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Sphere/Translation/TranslationController.cs",
+      "blob": "a2c783e2d36cec39e75573f5c596188d6f7e4d73",
+      "sha256": "027f1864f0e3d98f0ad1411b82f2d9412e1510e5ae21ec3a27bd8003af9a4136",
+      "bytes": 2076,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Translation/TranslationController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/AppDatabase.cs",
+      "blob": "68c8671d52442c1f3c6f0c0a3f4dcc230a28499a",
+      "sha256": "bd10f1eda22281e29eadc998898c56b7001dacb094a1e14ab404d5ecaf072a9e",
+      "bytes": 6568,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/AppDatabase.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Models/WalletProductOptions.cs",
+      "blob": "c9ddef8ea10178625e12a4b69e2cc309beb89452",
+      "sha256": "e4cc20e37aeafcf7d7b6da79d0b3ffa0e481353c17176a3e57403aff3d2c824f",
+      "bytes": 544,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Models/WalletProductOptions.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/AppSettlementJob.cs",
+      "blob": "ac59a4ad6945d7f9a8e656e671623a53f9fc221d",
+      "sha256": "56591ce8fc4616c3739c617f02ad20dd15a7924a8fd4c18e80e47544bcf63380",
+      "bytes": 2018,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/AppSettlementJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/FundExpirationJob.cs",
+      "blob": "1583df485cce965815bad280a6dfb69308109622",
+      "sha256": "066f6c0bea84e77fd3e0391023a4285e6374c5ff19afd362942af8c9fed28bc1",
+      "bytes": 596,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/FundExpirationJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/FundRaisingDeadlineJob.cs",
+      "blob": "4f057e02f78b4fe83a203daa2205011df23389b3",
+      "sha256": "c9337186b6502e7b415d33ae9767459dc7e991f40e622304df16fa585f225ffa",
+      "bytes": 635,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/FundRaisingDeadlineJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/GiftCleanupJob.cs",
+      "blob": "4e53247aeb1f175b32eaa4a96c5ff3466add9c3f",
+      "sha256": "c050be289b34b594ccf57196f81ed890f7d4192da307f130579c7983285a5623",
+      "bytes": 1239,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/GiftCleanupJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/MerchantController.cs",
+      "blob": "b73ef4254b4b20a75811ea3b9e4b46a6b041fa93",
+      "sha256": "44e46d2abd418922db70d78004df87236eb7b105d3bb7e64e8f7de4cc6f5de2e",
+      "bytes": 20182,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/MerchantController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/MerchantServiceGrpc.cs",
+      "blob": "4b96c0ac576d689998af902a7bd192dc36dfddf2",
+      "sha256": "6868614a2c6bf8b9ca358d273e36bd7c589197b4bcc2ebbbebcf057ae9226c5a",
+      "bytes": 4543,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/MerchantServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/OrderController.cs",
+      "blob": "5364a452799ed87f3891bac5462824a183322710",
+      "sha256": "1a9da5a44048115061ce11af92f726dd67ba4fdf1f33645baa27e1c443291117",
+      "bytes": 33420,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/OrderController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/PaymentAdminController.cs",
+      "blob": "d0cc6d8e08a2bcd1dc69ce26d5bc196326961322",
+      "sha256": "c049e7ed2e67f3e2e5b775e8ea9b55227dcede38e612c6d7abd7861b2d478cd5",
+      "bytes": 14040,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/PaymentAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/PaymentServiceGrpc.cs",
+      "blob": "0140c62a622889135bbcc12fd7eae2f9e05d19b6",
+      "sha256": "09ff21208119e5ffe2d347df7bb161ef8e2a12b61675e927a6a5a7a0f64b8889",
+      "bytes": 8600,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/PaymentServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/SubscriptionAdminController.cs",
+      "blob": "40b5a7738e308eea5702bfeea648f1ec2378bba9",
+      "sha256": "a1801452d70417c603ada9cc4c1ecd7f79d823deb8c44fd0b6a97e36795106c9",
+      "bytes": 7496,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/SubscriptionAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/SubscriptionCatalogServiceGrpc.cs",
+      "blob": "a8526453ed69b7f666ed2c3bc8f78954ba268c99",
+      "sha256": "f120679ceed26ab4b8e0fb6940369d625e01f200b8b8776173a1b79c8a49fa37",
+      "bytes": 4742,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/SubscriptionCatalogServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/SubscriptionController.cs",
+      "blob": "cf34663c8e7d84c8e27475d12abcc2d09c407479",
+      "sha256": "6fd81429fb791e3df571af9065b252860ace406a5702e6fb4553476ddcced086",
+      "bytes": 32353,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/SubscriptionController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/SubscriptionGiftController.cs",
+      "blob": "a033744c7dee3995e045791d43c9cfc7da642f43",
+      "sha256": "db1138da6a1fc62b44b834856576ec61fcad70d0a6311a5e1b57306defaa7c88",
+      "bytes": 11735,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/SubscriptionGiftController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/SubscriptionRenewalJob.cs",
+      "blob": "a1057fd3d9a830c210a74922739409868501e2e3",
+      "sha256": "eb0e0c2c89251e58a940c145bd1aa8fc4055a0a6eb550f12606b31290466ed05",
+      "bytes": 7124,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/SubscriptionRenewalJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/SubscriptionServiceGrpc.cs",
+      "blob": "2a2537d1c8b388bd38549fc28511ddc31eed82d6",
+      "sha256": "4a505f9d848b59047fdd7a5983e3005de342012f1cc567061ac9755c480f1d91",
+      "bytes": 3155,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/SubscriptionServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/TransactionExpirationJob.cs",
+      "blob": "1f26b4b9a54062a778656a9aae3436432c5a51f3",
+      "sha256": "b376f350b52d88b971753307291cf08094e81f1a35cc0f06b0c3b9ae617ebaf9",
+      "bytes": 638,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/TransactionExpirationJob.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/WalletController.cs",
+      "blob": "10650f1a12912532d70f6ea422a69557a508a224",
+      "sha256": "66b05f979b09fd732cebf07b24e830836fd46a38980f45c7019dbd1d69562030",
+      "bytes": 61958,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/WalletController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/WalletProductAdminController.cs",
+      "blob": "854f3390e7346e3c359286ebb265c6fca0e0afb8",
+      "sha256": "cc42800ab234e08d8c1f4e65ba558dfeb5c572ce33d92dd8e19bc48a96dd5fe3",
+      "bytes": 2253,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/WalletProductAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/WalletProductController.cs",
+      "blob": "4f99c6318440ef8245b1b7210d3fce03cf299804",
+      "sha256": "134f855426bdeeb02e3da2e6a29a924557c91105ff8fcb0d2e47bfabaf247599",
+      "bytes": 5195,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/WalletProductController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/WalletProductService.cs",
+      "blob": "7dfc62726a8d63a8d4de69c2c0d962f6e08da2b1",
+      "sha256": "632aabaecaf2893241ff958e50d40c5cdff29b38f5e55d866c2ca85fc1fb1085",
+      "bytes": 12663,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/WalletProductService.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/WalletServiceGrpc.cs",
+      "blob": "76d3177048d7cd9547715211aa253ebd511d9c1b",
+      "sha256": "f7f2ec7ec61ad31b2fc6ead2b61cafb3f6932af17dd25e29da3bc8cf0f38d314",
+      "bytes": 2168,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/WalletServiceGrpc.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Payment/WalletStatsAdminController.cs",
+      "blob": "535993e7931c19ebf5dbaca03a33cf57602bc023",
+      "sha256": "39ea6759d68b917dce0e78735a87ea69a377d2a1c47904ae5e58e5de31e8c390",
+      "bytes": 2803,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/WalletStatsAdminController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "DysonNetwork.Wallet/Startup/ScheduledJobsConfiguration.cs",
+      "blob": "0f6c9c89ae959908bac7e868fc0e08bcd643cd60",
+      "sha256": "ee89b2bd44ec5506cdaf268688ed9a4066a097f6b2f7fa881ee6fe49f0f3a884",
+      "bytes": 2846,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Startup/ScheduledJobsConfiguration.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    },
+    {
+      "file": "LICENSE.txt",
+      "blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/LICENSE.txt",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review"
+    }
+  ],
+  "omitted_sources": [
+    {
+      "file": "DysonNetwork.Passport/Account/FortuneSayingController.cs",
+      "blob": "d6c781f30374ca3baae39da819b609faa7d91a11",
+      "reason": "Embedded quotation corpus permission unresolved; operation metadata retained without quotations."
+    }
+  ]
+}

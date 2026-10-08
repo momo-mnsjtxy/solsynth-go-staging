@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "checked_on": "2026-10-08",
+  "scope": "Source/operation-plan integrity only; no implementation runtime validation",
+  "status": "passed",
+  "checks": {
+    "retained_source_hashes": 152,
+    "unique_static_http_records": 818,
+    "controller_classes": 99,
+    "families": 32,
+    "all_family_memberships_reconcile": true,
+    "gate_references_resolve": true,
+    "literal_scheduled_job_registrations": 34,
+    "rpc_override_declarations": 99,
+    "local_operation_status_records": 13,
+    "synthetic_candidate_status_records": 8,
+    "full_fortune_corpus_absent": true,
+    "duplicate_static_method_route_pairs": 0
+  },
+  "output_sha256": {
+    "docs/operation-coverage-plan.json": "561bfe45b6baa513a495cb78a9e224a2538137d686f7154e1540c6771fb6f368",
+    "docs/operation-coverage-plan.md": "b1cf683e6a79827a9b949a023bd42acfa406164b2248738a14b1701a8a31605b"
+  },
+  "errors": []
+}

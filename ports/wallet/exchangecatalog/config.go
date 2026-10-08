@@ -243,6 +243,16 @@ func cleanJSON(raw []byte) ([]byte, error) {
 				j++
 			}
 			if j < len(out) && (out[j] == '}' || out[j] == ']') {
+				// A trailing comma follows a complete value, never an empty
+				// container, missing value, or another comma. Removing those
+				// invalid commas would turn malformed input into valid JSON.
+				previous := i - 1
+				for previous >= 0 && (out[previous] == ' ' || out[previous] == '\t' || out[previous] == '\r' || out[previous] == '\n') {
+					previous--
+				}
+				if previous < 0 || out[previous] == '{' || out[previous] == '[' || out[previous] == ':' || out[previous] == ',' {
+					return nil, errors.New("trailing comma without a preceding JSON value")
+				}
 				out[i] = ' '
 			}
 		}

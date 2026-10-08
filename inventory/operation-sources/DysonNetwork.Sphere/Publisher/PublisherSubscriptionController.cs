@@ -1,0 +1,1033 @@
+using DysonNetwork.Shared.Auth;
+using DysonNetwork.Shared.Capabilities;
+using DysonNetwork.Shared.Localization;
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Networking;
+using DysonNetwork.Shared.Proto;
+using DysonNetwork.Shared.Registry;
+using DysonNetwork.Sphere.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using NodaTime;
+
+namespace DysonNetwork.Sphere.Publisher;
+
+[ApiController]
+[Route("/api/publishers")]
+[ApiFeature("publishers.subscriptions", Revision = 1)]
+public class PublisherSubscriptionController(
+    PublisherSubscriptionService subs,
+    PublisherService pub,
+    RemoteRingService ring,
+    RemoteAccountService accounts,
+    ILocalizationService localization,
+    AppDatabase db,
+    ILogger<PublisherSubscriptionController> logger
+) : ControllerBase
+{
+    public class SubscribeRequest { }
+
+    public class UpdateSubscriptionReadStateRequest
+    {
+        public Instant? LastReadAt { get; set; }
+    }
+
+    public class MarkAllSubscriptionsReadResponse
+    {
+        public int UpdatedCount { get; set; }
+    }
+
+    public class SubscriptionStatusResponse
+    {
+        public SnPublisherSubscription? Subscription { get; set; }
+        public SnPublisherSubscription? FollowRequest { get; set; }
+        public bool RequiresApproval { get; set; }
+        public string Status { get; set; } = "none";
+        public string Message { get; set; } = string.Empty;
+        public bool IsPending { get; set; }
+        public bool IsActive { get; set; }
+        public bool Notify { get; set; } = true;
+    }
+
+    [HttpGet("{name}/subscription")]
+    [Authorize]
+    public async Task<ActionResult<SubscriptionStatusResponse>> CheckSubscriptionStatus(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        var requiresApproval = await pub.HasFollowRequiresApprovalFlag(publisher.Id);
+
+        var response = new SubscriptionStatusResponse { RequiresApproval = requiresApproval };
+
+        if (requiresApproval)
+        {
+            var followRequest = await pub.GetFollowRequest(publisher.Id, accountId);
+            response.FollowRequest = followRequest;
+
+            if (followRequest != null)
+            {
+                var followSubscription = await subs.GetSubscriptionIncludingEndedAsync(
+                    accountId,
+                    publisher.Id
+                );
+                response.Subscription = followSubscription;
+                response.Notify = followSubscription?.Notify ?? true;
+                response.IsActive =
+                    followRequest.State == PublisherSubscriptionState.Accepted
+                    && (followSubscription?.IsActive ?? false);
+                response.IsPending = followRequest.State == PublisherSubscriptionState.Pending;
+                response.Status = followRequest.State switch
+                {
+                    PublisherSubscriptionState.Pending => "pending",
+                    PublisherSubscriptionState.Accepted => response.IsActive ? "following" : "ended",
+                    PublisherSubscriptionState.Rejected => "rejected",
+                    _ => "none",
+                };
+                response.Message = response.Status switch
+                {
+                    "pending" => "Follow request is pending approval",
+                    "following" => "You are following this publisher",
+                    "ended" => "Your follow has ended",
+                    "rejected" => "Follow request was rejected",
+                    _ => string.Empty,
+                };
+                return Ok(response);
+            }
+        }
+
+        var subscription = await subs.GetSubscriptionIncludingEndedAsync(accountId, publisher.Id);
+        if (subscription != null)
+        {
+            response.Subscription = subscription;
+            response.IsActive = subscription.IsActive;
+            response.Notify = subscription.Notify;
+            response.Status = subscription.IsActive ? "subscribed" : "ended";
+            response.Message = subscription.IsActive
+                ? "You are subscribed to this publisher"
+                : "Your subscription has ended";
+        }
+
+        return Ok(response);
+    }
+
+    [HttpGet("{name}/subscription/read-status")]
+    [Authorize]
+    public async Task<
+        ActionResult<PublisherSubscriptionService.SubscriptionReadStatus>
+    > GetSubscriptionReadStatus(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var status = await subs.GetSubscriptionReadStatusAsync(
+            Guid.Parse(currentUser.Id),
+            publisher.Id
+        );
+        if (status is null)
+            return NotFound(new ApiError { Code = "PUBLISHER_SUBSCRIPTION_NOT_FOUND", Message = "Subscription not found", Status = 404 });
+
+        return Ok(status);
+    }
+
+    [HttpPost("{name}/subscribe")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<ActionResult<SubscriptionStatusResponse>> Subscribe(
+        string name,
+        [FromBody] SubscribeRequest? request = null
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        var requiresApproval = await pub.HasFollowRequiresApprovalFlag(publisher.Id);
+
+        if (requiresApproval)
+        {
+            var existingRequest = await pub.GetFollowRequest(publisher.Id, accountId);
+            if (existingRequest != null)
+            {
+                return existingRequest.State switch
+                {
+                    PublisherSubscriptionState.Pending => BadRequest(
+                        new SubscriptionStatusResponse
+                        {
+                            Status = "pending",
+                            Message = "Follow request already pending",
+                            RequiresApproval = true,
+                            FollowRequest = existingRequest,
+                        }
+                    ),
+                    PublisherSubscriptionState.Accepted => Ok(
+                        new SubscriptionStatusResponse
+                        {
+                            Status = "following",
+                            Message = "Already following",
+                            RequiresApproval = true,
+                            FollowRequest = existingRequest,
+                        }
+                    ),
+                    PublisherSubscriptionState.Rejected => BadRequest(
+                        new SubscriptionStatusResponse
+                        {
+                            Status = "rejected",
+                            Message = "Follow request was rejected. Please contact the publisher.",
+                            RequiresApproval = true,
+                            FollowRequest = existingRequest,
+                        }
+                    ),
+                    _ => BadRequest(new ApiError { Code = "PUBLISHER_FOLLOW_INVALID_STATE", Message = "Invalid follow request state", Status = 400 }),
+                };
+            }
+
+            var followRequest = await pub.CreateFollowRequest(publisher.Id, accountId);
+
+            var title = localization.Get(
+                "followRequestReceivedTitle",
+                currentUser.Language,
+                new { user = currentUser.Nick, publisher = publisher.Nick }
+            );
+            var body = localization.Get(
+                "followRequestReceivedBody",
+                currentUser.Language,
+                new { user = currentUser.Nick, publisher = publisher.Nick }
+            );
+
+            var managerMembers = await pub.GetPublisherMembers(publisher.Id);
+            foreach (
+                var manager in managerMembers.Where(m => m.Role >= PublisherMemberRole.Manager)
+            )
+            {
+                var managerAccount = await accounts.GetAccount(manager.AccountId);
+                if (managerAccount != null)
+                {
+                    await ring.SendPushNotificationToUser(
+                        manager.AccountId.ToString(),
+                        "follow_request",
+                        title,
+                        null,
+                        body,
+                        isSavable: true
+                    );
+                }
+            }
+
+            return Ok(
+                new SubscriptionStatusResponse
+                {
+                    Status = "pending",
+                    Message = "Follow request submitted and pending approval",
+                    RequiresApproval = true,
+                    FollowRequest = followRequest,
+                }
+            );
+        }
+        else
+        {
+            var existingSubscription = await subs.GetSubscriptionAsync(accountId, publisher.Id);
+            if (existingSubscription != null)
+                return Conflict(
+                    new SubscriptionStatusResponse
+                    {
+                        Status = "subscribed",
+                        Message = "Already subscribed to this publisher",
+                        Subscription = existingSubscription,
+                    }
+                );
+
+            try
+            {
+                var subscription = await subs.CreateSubscriptionAsync(accountId, publisher.Id);
+                return Ok(
+                    new SubscriptionStatusResponse
+                    {
+                        Status = "subscribed",
+                        Message = "Successfully subscribed",
+                        Subscription = subscription,
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error subscribing to publisher {PublisherName}", name);
+                return StatusCode(500, ApiError.Conflict("Failed to create subscription", code: "PUBLISHER_SUBSCRIPTION_ERROR"));
+            }
+        }
+    }
+
+    [HttpPost("{name}/unsubscribe")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<ActionResult<SubscriptionStatusResponse>> Unsubscribe(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(e => e.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        var requiresApproval = await pub.HasFollowRequiresApprovalFlag(publisher.Id);
+
+        if (requiresApproval)
+        {
+            var existingRequest = await pub.GetFollowRequest(publisher.Id, accountId);
+            if (existingRequest != null)
+            {
+                await pub.CancelFollowRequest(publisher.Id, accountId);
+                await subs.CancelSubscriptionAsync(accountId, publisher.Id);
+                return Ok(
+                    new SubscriptionStatusResponse
+                    {
+                        Status = "none",
+                        Message = "Follow request cancelled",
+                        RequiresApproval = true,
+                        FollowRequest = null,
+                        IsActive = false,
+                        IsPending = false,
+                    }
+                );
+            }
+            return NotFound(
+                new SubscriptionStatusResponse
+                {
+                    Status = "none",
+                    Message = "No follow request found",
+                    RequiresApproval = true,
+                }
+            );
+        }
+        else
+        {
+            var success = await subs.CancelSubscriptionAsync(accountId, publisher.Id);
+            if (success)
+                return Ok(
+                    new SubscriptionStatusResponse
+                    {
+                        Status = "none",
+                        Message = "Subscription cancelled successfully",
+                        IsActive = false,
+                    }
+                );
+
+            return NotFound(
+                new SubscriptionStatusResponse
+                {
+                    Status = "none",
+                    Message = "No subscription found",
+                }
+            );
+        }
+    }
+
+    /// <summary>
+    /// Get all subscriptions for the current user
+    /// </summary>
+    /// <returns>List of active subscriptions with IsLive flag</returns>
+    [HttpGet("subscriptions")]
+    [Authorize]
+    public async Task<ActionResult<List<SubscriptionWithLiveStatus>>> GetCurrentSubscriptions(
+        [FromQuery] int offset = 0,
+        [FromQuery] int take = 20,
+        [FromQuery(Name = "order")] string? order = null
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var subscriptionsQuery = db
+            .PublisherSubscriptions.Include(ps => ps.Publisher)
+            .Where(ps => ps.AccountId == accountId
+                && ps.EndedAt == null
+                && ps.State == PublisherSubscriptionState.Accepted
+                && !ps.IsBlocking);
+
+        switch (order?.Trim().ToLowerInvariant())
+        {
+            case null:
+            case "":
+            case "created_at":
+                subscriptionsQuery = subscriptionsQuery.OrderByDescending(ps => ps.CreatedAt);
+                break;
+            case "latest_posted_at":
+                var latestPosts = db.Posts
+                    .Where(post =>
+                        post.RepliedPostId == null
+                        && post.Visibility == Shared.Models.PostVisibility.Public
+                    )
+                    .GroupBy(post => post.PublisherId)
+                    .Select(group => new
+                    {
+                        PublisherId = group.Key,
+                        LatestPostedAt = group.Max(post => post.PublishedAt ?? post.CreatedAt),
+                    });
+                subscriptionsQuery =
+                    from subscription in subscriptionsQuery
+                    join latestPost in latestPosts on subscription.PublisherId equals latestPost.PublisherId into latestPostsGroup
+                    from latestPost in latestPostsGroup.DefaultIfEmpty()
+                    orderby latestPost.LatestPostedAt descending, subscription.CreatedAt descending
+                    select subscription;
+                break;
+            default:
+                return BadRequest(new ApiError
+                {
+                    Code = "INVALID_ORDER",
+                    Message = "Supported order values are created_at and latest_posted_at.",
+                    Status = 400,
+                });
+        }
+
+        var subscriptions = await subscriptionsQuery
+            .Skip(offset)
+            .Take(take)
+            .ToListAsync();
+
+        var totalCount = await db.PublisherSubscriptions.CountAsync(ps =>
+            ps.AccountId == accountId
+            && ps.EndedAt == null
+            && ps.State == PublisherSubscriptionState.Accepted
+            && !ps.IsBlocking
+        );
+
+        var publisherIds = subscriptions.Select(s => s.PublisherId).ToList();
+
+        var livePublisherIds = await db
+            .LiveStreams.Where(ls =>
+                publisherIds.Contains(ls.PublisherId ?? Guid.Empty)
+                && ls.Status == LiveStreamStatus.Active
+            )
+            .Select(ls => ls.PublisherId)
+            .Distinct()
+            .ToListAsync();
+
+        var latestContentAt = await subs.GetLatestContentAtForPublishersAsync(publisherIds);
+
+        var result = subscriptions
+            .Select(ps => new SubscriptionWithLiveStatus
+            {
+                Subscription = ps,
+                IsLive = livePublisherIds.Contains(ps.PublisherId),
+                LatestContentAt = latestContentAt.GetValueOrDefault(ps.PublisherId),
+                HasNewContent =
+                    latestContentAt.TryGetValue(ps.PublisherId, out var publisherLatestContentAt)
+                    && publisherLatestContentAt != null
+                    && (ps.LastReadAt == null || publisherLatestContentAt > ps.LastReadAt),
+            })
+            .ToList();
+
+        Response.Headers["X-Total"] = totalCount.ToString();
+
+        return Ok(result);
+    }
+
+    public class SubscriptionWithLiveStatus
+    {
+        public SnPublisherSubscription Subscription { get; set; } = null!;
+        public bool IsLive { get; set; }
+        public Instant? LatestContentAt { get; set; }
+        public bool HasNewContent { get; set; }
+    }
+
+    public class SubscriberResponse
+    {
+        public SnPublisherSubscription Subscription { get; set; } = null!;
+        public SnAccount? Account { get; set; }
+    }
+
+    public class UpdateNotifyRequest
+    {
+        public bool Notify { get; set; }
+    }
+
+    [HttpGet("{name}/subscribers")]
+    [Authorize]
+    public async Task<ActionResult<List<SubscriberResponse>>> ListSubscribers(
+        string name,
+        [FromQuery] int offset = 0,
+        [FromQuery] int take = 20
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        if (!await pub.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Manager))
+            return StatusCode(403, ApiError.Unauthorized("You need to be a manager of this publisher to list subscribers.", forbidden: true));
+
+        var query = db
+            .PublisherSubscriptions.Where(s => s.PublisherId == publisher.Id)
+            .Where(s => s.EndedAt == null && s.State == PublisherSubscriptionState.Accepted && !s.IsBlocking);
+
+        var total = await query.CountAsync();
+        Response.Headers["X-Total"] = total.ToString();
+
+        var subscriptions = await query
+            .Include(s => s.FollowerPublisher)
+            .OrderBy(s => s.CreatedAt)
+            .Skip(offset)
+            .Take(take)
+            .ToListAsync();
+
+        var accountIds = subscriptions
+            .Where(s => s.AccountId.HasValue)
+            .Select(s => s.AccountId!.Value)
+            .Distinct()
+            .ToList();
+        var accountDict = new Dictionary<Guid, SnAccount>();
+        foreach (var id in accountIds)
+        {
+            var account = await accounts.TryGetAccount(id);
+            if (account != null)
+                accountDict[id] = SnAccount.FromProtoValue(account);
+        }
+
+        var result = subscriptions
+            .Select(s => new SubscriberResponse
+            {
+                Subscription = s,
+                Account = s.AccountId is { } id ? accountDict.GetValueOrDefault(id) : null,
+            })
+            .ToList();
+
+        return Ok(result);
+    }
+
+    [HttpPost("{name}/subscribers/{accountId:guid}")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<ActionResult<SubscriberResponse>> AddSubscriber(string name, Guid accountId)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var managerAccountId = Guid.Parse(currentUser.Id);
+        if (
+            !await pub.IsMemberWithRole(publisher.Id, managerAccountId, PublisherMemberRole.Manager)
+        )
+            return StatusCode(403, ApiError.Unauthorized("You need to be a manager of this publisher to add subscribers.", forbidden: true));
+
+        try
+        {
+            var subscription = await subs.AddSubscriberAsync(accountId, publisher.Id);
+
+            var account = await accounts.TryGetAccount(accountId);
+            if (account != null)
+            {
+                var title = localization.Get(
+                    "subscriberAddedTitle",
+                    account.Language,
+                    new { publisher = publisher.Nick }
+                );
+                var body = localization.Get(
+                    "subscriberAddedBody",
+                    account.Language,
+                    new { publisher = publisher.Nick }
+                );
+
+                await ring.SendPushNotificationToUser(
+                    accountId.ToString(),
+                    "subscriber_added",
+                    title,
+                    null,
+                    body,
+                    isSavable: true
+                );
+            }
+
+            return Ok(
+                new SubscriberResponse
+                {
+                    Subscription = subscription,
+                    Account = account != null ? SnAccount.FromProtoValue(account) : null,
+                }
+            );
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiError { Code = "PUBLISHER_SUBSCRIBER_ADD_FAILED", Message = ex.Message, Status = 400 });
+        }
+    }
+
+    [HttpDelete("{name}/subscribers/{accountId:guid}")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<ActionResult> RemoveSubscriber(string name, Guid accountId)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var managerAccountId = Guid.Parse(currentUser.Id);
+        if (
+            !await pub.IsMemberWithRole(publisher.Id, managerAccountId, PublisherMemberRole.Manager)
+        )
+            return StatusCode(403, ApiError.Unauthorized("You need to be a manager of this publisher to remove subscribers.", forbidden: true));
+
+        var success = await subs.RemoveSubscriberAsync(accountId, publisher.Id, managerAccountId);
+        if (!success)
+            return NotFound(new ApiError { Code = "PUBLISHER_SUBSCRIBER_NOT_FOUND", Message = "Subscriber not found", Status = 404 });
+
+        return NoContent();
+    }
+
+    [HttpPatch("{name}/subscription/me/notify")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<ActionResult<SnPublisherSubscription>> UpdateMySubscriptionNotify(
+        string name,
+        [FromBody] UpdateNotifyRequest request
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var subscription = await subs.UpdateSubscriberNotifyAsync(
+            accountId,
+            publisher.Id,
+            request.Notify
+        );
+        if (subscription == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_SUBSCRIPTION_NOT_FOUND", Message = "Subscription not found", Status = 404 });
+
+        return Ok(subscription);
+    }
+
+    [HttpPut("{name}/subscription/read-status")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<
+        ActionResult<PublisherSubscriptionService.SubscriptionReadStatus>
+    > UpdateSubscriptionReadStatus(
+        string name,
+        [FromBody] UpdateSubscriptionReadStateRequest request
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var subscription = await subs.UpdateLastReadAtAsync(
+            Guid.Parse(currentUser.Id),
+            publisher.Id,
+            request.LastReadAt
+        );
+        if (subscription is null)
+            return NotFound(new ApiError { Code = "PUBLISHER_SUBSCRIPTION_NOT_FOUND", Message = "Subscription not found", Status = 404 });
+
+        var status = await subs.GetSubscriptionReadStatusAsync(
+            Guid.Parse(currentUser.Id),
+            publisher.Id
+        );
+        if (status is null)
+            return NotFound(new ApiError { Code = "PUBLISHER_SUBSCRIPTION_NOT_FOUND", Message = "Subscription not found", Status = 404 });
+
+        return Ok(status);
+    }
+
+    [HttpPut("subscriptions/read-status")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<ActionResult<MarkAllSubscriptionsReadResponse>> MarkAllSubscriptionsRead()
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var updatedCount = await subs.MarkAllSubscriptionsReadAsync(Guid.Parse(currentUser.Id));
+        return Ok(new MarkAllSubscriptionsReadResponse { UpdatedCount = updatedCount });
+    }
+
+    /// <summary>
+    /// Get active live streams from publishers the current user is subscribed to
+    /// </summary>
+    /// <returns>List of active live streams from subscribed publishers</returns>
+    [HttpGet("subscriptions/live")]
+    [Authorize]
+    public async Task<ActionResult<List<SnLiveStream>>> GetSubscribedPublisherLiveStreams(
+        [FromQuery] int offset = 0,
+        [FromQuery] int take = 20
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var subscribedPublisherIds = await db
+            .PublisherSubscriptions.Where(ps => ps.AccountId == accountId
+                && ps.EndedAt == null
+                && ps.State == PublisherSubscriptionState.Accepted)
+            .Select(ps => ps.PublisherId)
+            .ToListAsync();
+
+        if (!subscribedPublisherIds.Any())
+        {
+            return Ok(new List<SnLiveStream>());
+        }
+
+        var liveStreams = await db
+            .LiveStreams.Include(ls => ls.Publisher)
+            .Where(ls =>
+                subscribedPublisherIds.Contains(ls.PublisherId ?? Guid.Empty)
+                && ls.Status == LiveStreamStatus.Active
+                && ls.Visibility == LiveStreamVisibility.Public
+            )
+            .OrderByDescending(ls => ls.StartedAt)
+            .Skip(offset)
+            .Take(take)
+            .ToListAsync();
+
+        return Ok(liveStreams);
+    }
+
+    public class RejectFollowRequestBody
+    {
+        public string? Reason { get; set; }
+    }
+
+    [HttpGet("{name}/subscription/requests")]
+    [Authorize]
+    public async Task<ActionResult<List<SnPublisherSubscription>>> GetPendingFollowRequests(
+        string name
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        if (!await pub.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Manager))
+            return StatusCode(403, ApiError.Unauthorized("You need to be a manager of this publisher to view follow requests.", forbidden: true));
+
+        var requests = await pub.GetPendingFollowRequests(publisher.Id);
+
+        var accountIds = requests
+            .Where(r => r.AccountId.HasValue)
+            .Select(r => r.AccountId!.Value)
+            .Distinct()
+            .ToList();
+        var accountDict = new Dictionary<Guid, DyAccount>();
+        foreach (var id in accountIds)
+        {
+            var account = await accounts.TryGetAccount(id);
+            if (account != null)
+                accountDict[id] = account;
+        }
+
+        foreach (var request in requests)
+        {
+            if (request.AccountId is { } requesterId && accountDict.TryGetValue(requesterId, out var requesterAccount))
+                request.Account = SnAccount.FromProtoValue(requesterAccount);
+        }
+
+        return Ok(requests);
+    }
+
+    [HttpPost("{name}/subscription/requests/{requestId}/approve")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<ActionResult<SnPublisherSubscription>> ApproveFollowRequest(
+        string name,
+        Guid requestId
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        if (!await pub.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Manager))
+            return StatusCode(403, ApiError.Unauthorized("You need to be a manager of this publisher to approve follow requests.", forbidden: true));
+
+        try
+        {
+            var request = await pub.ApproveFollowRequest(requestId, accountId);
+
+            if (request.AccountId is { } requesterId)
+            {
+                var requesterAccount = await accounts.TryGetAccount(requesterId);
+                if (requesterAccount != null)
+                {
+                    var title = localization.Get(
+                        "followRequestApprovedTitle",
+                        requesterAccount.Language
+                    );
+                    var body = localization.Get(
+                        "followRequestApprovedBody",
+                        requesterAccount.Language,
+                        new { publisher = publisher.Nick }
+                    );
+
+                    await ring.SendPushNotificationToUser(
+                        requesterId.ToString(),
+                        "follow_approved",
+                        title,
+                        null,
+                        body,
+                        isSavable: true
+                    );
+                }
+            }
+
+            return Ok(request);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiError { Code = "PUBLISHER_FOLLOW_APPROVE_FAILED", Message = ex.Message, Status = 400 });
+        }
+    }
+
+    [HttpPost("{name}/subscription/requests/{requestId}/reject")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<ActionResult<SnPublisherSubscription>> RejectFollowRequest(
+        string name,
+        Guid requestId,
+        [FromBody] RejectFollowRequestBody body
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        if (!await pub.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Manager))
+            return StatusCode(403, ApiError.Unauthorized("You need to be a manager of this publisher to reject follow requests.", forbidden: true));
+
+        try
+        {
+            var request = await pub.RejectFollowRequest(requestId, accountId, body.Reason);
+
+            if (request.AccountId is { } requesterId)
+            {
+                var requesterAccount = await accounts.TryGetAccount(requesterId);
+                if (requesterAccount != null)
+                {
+                    var title = localization.Get(
+                        "followRequestRejectedTitle",
+                        requesterAccount.Language
+                    );
+                    var notificationBody = localization.Get(
+                        "followRequestRejectedBody",
+                        requesterAccount.Language,
+                        new { publisher = publisher.Nick }
+                    );
+
+                    await ring.SendPushNotificationToUser(
+                        requesterId.ToString(),
+                        "follow_rejected",
+                        title,
+                        null,
+                        notificationBody,
+                        isSavable: true
+                    );
+                }
+            }
+
+            return Ok(request);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiError { Code = "PUBLISHER_FOLLOW_REJECT_FAILED", Message = ex.Message, Status = 400 });
+        }
+    }
+
+    public class PublisherRelationshipResponse
+    {
+        public SnPublisherSubscription? Subscription { get; set; }
+        public bool IsBlocking { get; set; }
+        public bool IsMuting { get; set; }
+        public bool IsSubscribed { get; set; }
+    }
+
+    [HttpGet("blocked")]
+    [Authorize]
+    public async Task<ActionResult<List<SnPublisherSubscription>>> GetBlockedPublishers()
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var blocked = await subs.GetBlockedPublishersAsync(Guid.Parse(currentUser.Id));
+        return Ok(blocked);
+    }
+
+    [HttpGet("muted")]
+    [Authorize]
+    public async Task<ActionResult<List<SnPublisherSubscription>>> GetMutedPublishers()
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var muted = await subs.GetMutedPublishersAsync(Guid.Parse(currentUser.Id));
+        return Ok(muted);
+    }
+
+    [HttpGet("{name}/relationship")]
+    [Authorize]
+    public async Task<ActionResult<PublisherRelationshipResponse>> GetPublisherRelationship(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        var subscription = await subs.GetSubscriptionIncludingEndedAsync(accountId, publisher.Id);
+        var active = await subs.GetSubscriptionAsync(accountId, publisher.Id);
+
+        return Ok(new PublisherRelationshipResponse
+        {
+            Subscription = subscription,
+            IsBlocking = subscription?.IsBlocking ?? false,
+            IsMuting = subscription?.IsMuting ?? false,
+            IsSubscribed = active != null,
+        });
+    }
+
+    [HttpPost("{name}/block")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<ActionResult<PublisherRelationshipResponse>> BlockPublisher(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        var subscription = await subs.SetPublisherBlockingAsync(accountId, publisher.Id, true);
+        var active = await subs.GetSubscriptionAsync(accountId, publisher.Id);
+
+        return Ok(new PublisherRelationshipResponse
+        {
+            Subscription = subscription,
+            IsBlocking = true,
+            IsMuting = subscription.IsMuting,
+            IsSubscribed = active != null,
+        });
+    }
+
+    [HttpDelete("{name}/block")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<ActionResult<PublisherRelationshipResponse>> UnblockPublisher(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        var subscription = await subs.SetPublisherBlockingAsync(accountId, publisher.Id, false);
+        var active = await subs.GetSubscriptionAsync(accountId, publisher.Id);
+
+        return Ok(new PublisherRelationshipResponse
+        {
+            Subscription = subscription,
+            IsBlocking = false,
+            IsMuting = subscription.IsMuting,
+            IsSubscribed = active != null,
+        });
+    }
+
+    [HttpPost("{name}/mute")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<ActionResult<PublisherRelationshipResponse>> MutePublisher(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        var subscription = await subs.SetPublisherMutingAsync(accountId, publisher.Id, true);
+        var active = await subs.GetSubscriptionAsync(accountId, publisher.Id);
+
+        return Ok(new PublisherRelationshipResponse
+        {
+            Subscription = subscription,
+            IsBlocking = subscription?.IsBlocking ?? false,
+            IsMuting = true,
+            IsSubscribed = active != null,
+        });
+    }
+
+    [HttpDelete("{name}/mute")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersSubscriptionsManage)]
+    public async Task<ActionResult<PublisherRelationshipResponse>> UnmutePublisher(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == name.ToLowerInvariant());
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        var subscription = await subs.SetPublisherMutingAsync(accountId, publisher.Id, false);
+        var active = await subs.GetSubscriptionAsync(accountId, publisher.Id);
+
+        return Ok(new PublisherRelationshipResponse
+        {
+            Subscription = subscription,
+            IsBlocking = subscription?.IsBlocking ?? false,
+            IsMuting = false,
+            IsSubscribed = active != null,
+        });
+    }
+}

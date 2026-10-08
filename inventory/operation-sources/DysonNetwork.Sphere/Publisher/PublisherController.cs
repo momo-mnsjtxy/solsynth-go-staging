@@ -1,0 +1,1400 @@
+using System.ComponentModel.DataAnnotations;
+using DysonNetwork.Shared.Auth;
+using DysonNetwork.Shared.Capabilities;
+using DysonNetwork.Shared.Extensions;
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Networking;
+using DysonNetwork.Shared.Proto;
+using DysonNetwork.Shared.Registry;
+using DysonNetwork.Sphere.ActivityPub;
+using DysonNetwork.Sphere.Models;
+using DysonNetwork.Sphere.Post;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using NodaTime;
+using PublisherMemberRole = DysonNetwork.Shared.Models.PublisherMemberRole;
+
+namespace DysonNetwork.Sphere.Publisher;
+
+[ApiController]
+[Route("/api/publishers")]
+[ApiFeature("publishers", Revision = 1)]
+[ApiFeature("publishers.members", Revision = 1)]
+[ApiFeature("publishers.features", Revision = 1)]
+[ApiFeature("publishers.rewards", Revision = 1)]
+[ApiFeature("publishers.fediverse", Revision = 1)]
+[ApiFeature("publishers.domains", Revision = 1)]
+[ApiFeature("publishers.ads", Revision = 1)]
+public class PublisherController(
+    AppDatabase db,
+    PublisherService ps,
+    PublisherQuotaService quotaService,
+    PublisherRatingService ratingService,
+    DyAccountService.DyAccountServiceClient accounts,
+    DyFileService.DyFileServiceClient files,
+    RemoteActionLogService als,
+    RemoteRealmService remoteRealmService,
+    IServiceScopeFactory factory,
+    RemoteAccountService remoteAccounts,
+    SponsorService sponsorService
+) : ControllerBase
+{
+    [HttpGet("quota")]
+    [Authorize]
+    public async Task<ActionResult<ResourceQuotaResponse<PublisherQuotaRecord>>> GetQuota()
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var account = SnAccount.FromProtoValue(
+            await remoteAccounts.GetAccount(Guid.Parse(currentUser.Id))
+        );
+        return Ok(await quotaService.GetQuotaAsync(account));
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<List<SnPublisher>>> ListManagedPublishers()
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+        var defaultPublisherId = await db.PublishingSettings
+            .Where(s => s.AccountId == accountId)
+            .Select(s => s.DefaultPostingPublisherId)
+            .FirstOrDefaultAsync();
+
+        var members = await db
+            .PublisherMembers.Where(m => m.AccountId == accountId)
+            .Where(m => m.JoinedAt != null)
+            .Include(e => e.Publisher)
+            .ToListAsync();
+
+        var publishers = members.Select(m => m.Publisher).ToList();
+        publishers = await ps.HydratePublisherRealm(publishers);
+
+        if (defaultPublisherId is Guid defaultId)
+        {
+            var defaultPublisher = publishers.FirstOrDefault(p => p.Id == defaultId);
+            if (defaultPublisher != null)
+            {
+                publishers.Remove(defaultPublisher);
+                publishers.Insert(0, defaultPublisher);
+            }
+        }
+
+        return publishers;
+    }
+
+    [HttpGet("invites")]
+    [Authorize]
+    public async Task<ActionResult<List<SnPublisherMember>>> ListInvites()
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var members = await db.PublisherMembers
+            .Where(m => m.AccountId == accountId)
+            .Where(m => m.JoinedAt == null)
+            .Include(e => e.Publisher)
+            .ToListAsync();
+
+        var result = await ps.LoadMemberAccounts(members);
+        result = await ps.HydrateMemberPublisherRealms(result);
+        return result;
+    }
+
+    public class PublisherMemberRequest
+    {
+        [Required]
+        public Guid RelatedUserId { get; set; }
+
+        [Required]
+        public PublisherMemberRole Role { get; set; }
+    }
+
+    [HttpPost("invites/{name}")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersInvitesManage)]
+    public async Task<ActionResult<SnPublisherMember>> InviteMember(
+        string name,
+        [FromBody] PublisherMemberRequest request
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var relatedUser = await accounts.GetAccountAsync(
+            new DyGetAccountRequest { Id = request.RelatedUserId.ToString() }
+        );
+        if (relatedUser == null)
+            return BadRequest(new ApiError { Code = "PUBLISHER_RELATED_USER_NOT_FOUND", Message = "Related user was not found", Status = 400 });
+
+        var lowerName = name.ToLowerInvariant();
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == lowerName).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        if (!await ps.IsMemberWithRole(publisher.Id, accountId, request.Role))
+            return StatusCode(403, ApiError.Unauthorized("You cannot invite member has higher permission than yours.", forbidden: true));
+
+        var newMember = new SnPublisherMember
+        {
+            AccountId = Guid.Parse(relatedUser.Id),
+            PublisherId = publisher.Id,
+            Role = request.Role,
+        };
+
+        db.PublisherMembers.Add(newMember);
+        await db.SaveChangesAsync();
+
+        als.CreateActionLog(
+            Guid.Parse(currentUser.Id),
+            "publishers.members.invite",
+            new Dictionary<string, object>
+            {
+                { "publisher_id", publisher.Id.ToString() },
+                { "account_id", relatedUser.Id.ToString() },
+            },
+            userAgent: Request.Headers.UserAgent,
+            ipAddress: Request.GetClientIpAddress()
+        );
+
+        return Ok(newMember);
+    }
+
+    [HttpPost("invites/{name}/accept")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersInvitesManage)]
+    public async Task<ActionResult<SnPublisher>> AcceptMemberInvite(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var lowerName = name.ToLowerInvariant();
+        var member = await db
+            .PublisherMembers.Where(m => m.AccountId == accountId)
+            .Where(m => m.Publisher.Name.ToLower() == lowerName)
+            .Where(m => m.JoinedAt == null)
+            .FirstOrDefaultAsync();
+        if (member is null)
+            return NotFound();
+
+        member.JoinedAt = Instant.FromDateTimeUtc(DateTime.UtcNow);
+        db.Update(member);
+        await db.SaveChangesAsync();
+
+        als.CreateActionLog(
+            Guid.Parse(currentUser.Id),
+            "publishers.members.join",
+            new Dictionary<string, object>
+            {
+                { "publisher_id", member.PublisherId.ToString() },
+                { "account_id", member.AccountId.ToString() },
+            },
+            userAgent: Request.Headers.UserAgent,
+            ipAddress: Request.GetClientIpAddress()
+        );
+
+        var publisher = await ps.HydratePublisherRealm([member.Publisher]);
+        return Ok(publisher.First());
+    }
+
+    [HttpPost("invites/{name}/decline")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersInvitesManage)]
+    public async Task<ActionResult> DeclineMemberInvite(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var lowerName = name.ToLowerInvariant();
+        var member = await db
+            .PublisherMembers.Where(m => m.AccountId == accountId)
+            .Where(m => m.Publisher.Name.ToLower() == lowerName)
+            .Where(m => m.JoinedAt == null)
+            .FirstOrDefaultAsync();
+        if (member is null)
+            return NotFound();
+
+        db.PublisherMembers.Remove(member);
+        await db.SaveChangesAsync();
+
+        als.CreateActionLog(
+            Guid.Parse(currentUser.Id),
+            "publishers.members.decline",
+            new Dictionary<string, object>
+            {
+                { "publisher_id", member.PublisherId.ToString() },
+                { "account_id", member.AccountId.ToString() },
+            },
+            userAgent: Request.Headers.UserAgent,
+            ipAddress: Request.GetClientIpAddress()
+        );
+
+        return NoContent();
+    }
+
+    [HttpDelete("{name}/members/{memberId:guid}")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersMembersManage)]
+    public async Task<ActionResult> RemoveMember(string name, Guid memberId)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var member = await db
+            .PublisherMembers.Where(m => m.AccountId == memberId)
+            .Where(m => m.PublisherId == publisher.Id)
+            .FirstOrDefaultAsync();
+        var accountId = Guid.Parse(currentUser.Id);
+        if (member is null)
+            return NotFound(new ApiError { Code = "PUBLISHER_MEMBER_NOT_FOUND", Message = "Member was not found", Status = 404 });
+        if (member.AccountId == accountId && member.Role >= PublisherMemberRole.Owner)
+            return BadRequest(new ApiError { Code = "PUBLISHER_CANNOT_REMOVE_OWNER", Message = "You cannot remove yourself as the publisher owner.", Status = 400 });
+        if (!await ps.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Manager))
+            return StatusCode(
+                403,
+                ApiError.Unauthorized("You need at least be a manager to remove members from this publisher.", forbidden: true)
+            );
+
+        db.PublisherMembers.Remove(member);
+        await db.SaveChangesAsync();
+
+        als.CreateActionLog(
+            Guid.Parse(currentUser.Id),
+            "publishers.members.kick",
+            new Dictionary<string, object>
+            {
+                { "publisher_id", publisher.Id.ToString() },
+                { "account_id", memberId.ToString() },
+                { "kicked_by", currentUser.Id },
+            },
+            userAgent: Request.Headers.UserAgent,
+            ipAddress: Request.GetClientIpAddress()
+        );
+
+        return NoContent();
+    }
+
+    [HttpDelete("{name}/members/me")]
+    [Authorize]
+    public async Task<ActionResult> LeavePublisher(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var member = await db
+            .PublisherMembers.Where(m => m.AccountId == accountId)
+            .Where(m => m.PublisherId == publisher.Id)
+            .Where(m => m.JoinedAt != null)
+            .FirstOrDefaultAsync();
+        if (member is null)
+            return NotFound();
+        if (member.Role >= PublisherMemberRole.Owner)
+            return BadRequest(new ApiError { Code = "PUBLISHER_CANNOT_LEAVE_OWNER", Message = "You cannot leave your own publisher.", Status = 400 });
+
+        db.PublisherMembers.Remove(member);
+        await db.SaveChangesAsync();
+
+        als.CreateActionLog(
+            accountId,
+            "publishers.members.leave",
+            new Dictionary<string, object>
+            {
+                { "publisher_id", publisher.Id.ToString() },
+                { "account_id", accountId.ToString() },
+            },
+            userAgent: Request.Headers.UserAgent,
+            ipAddress: Request.GetClientIpAddress()
+        );
+
+        return NoContent();
+    }
+
+    [HttpPatch("{name}/members/{memberId:guid}/role")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersMembersManage)]
+    public async Task<ActionResult<SnPublisherMember>> UpdateMemberRole(
+        string name,
+        Guid memberId,
+        [FromBody] int newRole
+    )
+    {
+        if (newRole >= (int)PublisherMemberRole.Owner)
+            return BadRequest(new ApiError { Code = "PUBLISHER_ROLE_INVALID", Message = "Unable to set publisher member to owner or greater role.", Status = 400 });
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var member = await db
+            .PublisherMembers.Where(m =>
+                m.AccountId == memberId && m.PublisherId == publisher.Id && m.JoinedAt != null
+            )
+            .FirstOrDefaultAsync();
+        if (member is null)
+            return NotFound();
+
+        var requiredRole = Math.Max(
+            (int)PublisherMemberRole.Manager,
+            Math.Max((int)member.Role, newRole)
+        );
+        if (
+            !await ps.IsMemberWithRole(
+                publisher.Id,
+                Guid.Parse(currentUser.Id),
+                (PublisherMemberRole)requiredRole
+            )
+        )
+            return StatusCode(
+                403,
+                ApiError.Unauthorized("You do not have permission to update member roles in this publisher.", forbidden: true)
+            );
+
+        member.Role = (PublisherMemberRole)newRole;
+        db.PublisherMembers.Update(member);
+        await db.SaveChangesAsync();
+
+        als.CreateActionLog(
+            Guid.Parse(currentUser.Id),
+            "publishers.members.role_update",
+            new Dictionary<string, object>
+            {
+                { "publisher_id", publisher.Id.ToString() },
+                { "account_id", memberId.ToString() },
+                { "new_role", newRole },
+                { "updater_id", currentUser.Id },
+            },
+            userAgent: Request.Headers.UserAgent,
+            ipAddress: Request.GetClientIpAddress()
+        );
+
+        return Ok(member);
+    }
+
+    public class PublisherRequest
+    {
+        [RegularExpression(
+            @"^[a-zA-Z0-9](?:[a-zA-Z0-9\-_\.]*[a-zA-Z0-9])?$",
+            ErrorMessage = "Name must be URL-safe (alphanumeric, hyphens, underscores, or periods) and cannot start/end with special characters."
+        )]
+        [MaxLength(256)]
+        public string? Name { get; set; }
+
+        [MaxLength(256)]
+        public string? Nick { get; set; }
+
+        [MaxLength(4096)]
+        public string? Bio { get; set; }
+
+        public string? PictureId { get; set; }
+        public string? BackgroundId { get; set; }
+        public List<string>? DefaultPostTags { get; set; }
+        public List<string>? DefaultPostCategories { get; set; }
+        public Guid? PayoutWalletId { get; set; }
+    }
+
+    [HttpPost("individual")]
+    [Authorize]
+    [AskPermission("publishers.create")]
+    public async Task<ActionResult<SnPublisher>> CreatePublisherIndividual(
+        [FromBody] PublisherRequest request
+    )
+    {
+        if (string.IsNullOrEmpty(request.Name) || string.IsNullOrEmpty(request.Nick))
+            return BadRequest(new ApiError { Code = "PUBLISHER_NAME_NICK_REQUIRED", Message = "Name and Nick are required.", Status = 400 });
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var hydratedAccount = SnAccount.FromProtoValue(
+            await remoteAccounts.GetAccount(Guid.Parse(currentUser.Id))
+        );
+        var quota = await quotaService.GetQuotaAsync(hydratedAccount);
+        if (quota.Used >= quota.Total)
+            return StatusCode(403, ApiError.Unauthorized($"Publisher quota exceeded ({quota.Used}/{quota.Total}).", forbidden: true));
+
+        var takenName = request.Name ?? currentUser.Name;
+        var lowerTakenName = takenName.ToLowerInvariant();
+        var duplicateNameCount = await db.Publishers.Where(p => p.Name.ToLower() == lowerTakenName).CountAsync();
+        if (duplicateNameCount > 0)
+            return BadRequest(
+                new ApiError
+                {
+                    Code = "PUBLISHER_NAME_TAKEN",
+                    Message = "The name you requested has already be taken, "
+                        + "if it is your account name, "
+                        + "you can request a taken down to the publisher which created with "
+                        + "your name firstly to get your name back.",
+                    Status = 400
+                }
+            );
+
+        SnCloudFileReferenceObject? picture = null,
+            background = null;
+        if (request.PictureId is not null)
+        {
+            var queryResult = await files.GetFileAsync(
+                new DyGetFileRequest { Id = request.PictureId }
+            );
+            if (queryResult is null)
+                throw new InvalidOperationException(
+                    "Invalid picture id, unable to find the file on cloud."
+                );
+            picture = SnCloudFileReferenceObject.FromProtoValue(queryResult);
+        }
+
+        if (request.BackgroundId is not null)
+        {
+            var queryResult = await files.GetFileAsync(
+                new DyGetFileRequest { Id = request.BackgroundId }
+            );
+            if (queryResult is null)
+                throw new InvalidOperationException(
+                    "Invalid background id, unable to find the file on cloud."
+                );
+            background = SnCloudFileReferenceObject.FromProtoValue(queryResult);
+        }
+
+        var publisher = await ps.CreateIndividualPublisher(
+            currentUser,
+            request.Name,
+            request.Nick,
+            request.Bio,
+            picture,
+            background
+        );
+
+        als.CreateActionLog(
+            Guid.Parse(currentUser.Id),
+            "publishers.create",
+            new Dictionary<string, object>
+            {
+                { "publisher_id", publisher.Id.ToString() },
+                { "publisher_name", publisher.Name },
+                { "publisher_type", "Individual" },
+            },
+            userAgent: Request.Headers.UserAgent,
+            ipAddress: Request.GetClientIpAddress()
+        );
+
+        publisher = (await ps.HydratePublisherRealm([publisher])).First();
+
+        return Ok(publisher);
+    }
+
+    [HttpPost("organization/{realmSlug}")]
+    [Authorize]
+    [AskPermission("publishers.create")]
+    public async Task<ActionResult<SnPublisher>> CreatePublisherOrganization(
+        string realmSlug,
+        [FromBody] PublisherRequest request
+    )
+    {
+        if (string.IsNullOrEmpty(request.Name) || string.IsNullOrEmpty(request.Nick))
+            return BadRequest(new ApiError { Code = "PUBLISHER_NAME_NICK_REQUIRED", Message = "Name and Nick are required.", Status = 400 });
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var hydratedAccount = SnAccount.FromProtoValue(
+            await remoteAccounts.GetAccount(Guid.Parse(currentUser.Id))
+        );
+        var quota = await quotaService.GetQuotaAsync(hydratedAccount);
+        if (quota.Used >= quota.Total)
+            return StatusCode(403, ApiError.Unauthorized($"Publisher quota exceeded ({quota.Used}/{quota.Total}).", forbidden: true));
+
+        var realm = await remoteRealmService.GetRealmBySlug(realmSlug);
+        if (realm == null)
+            return NotFound(new ApiError { Code = "REALM_NOT_FOUND", Message = "Realm not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        var isAdmin = await remoteRealmService.IsMemberWithRole(
+            realm.Id,
+            accountId,
+            [RealmMemberRole.Moderator]
+        );
+        if (!isAdmin)
+            return StatusCode(
+                403,
+                ApiError.Unauthorized("You need to be a moderator of the realm to create an organization publisher", forbidden: true)
+            );
+
+        var takenName = request.Name ?? realm.Slug;
+        var lowerTakenName = takenName.ToLowerInvariant();
+        var duplicateNameCount = await db.Publishers.Where(p => p.Name.ToLower() == lowerTakenName).CountAsync();
+        if (duplicateNameCount > 0)
+            return BadRequest(new ApiError { Code = "PUBLISHER_NAME_TAKEN", Message = "The name you requested has already been taken", Status = 400 });
+
+        SnCloudFileReferenceObject? picture = null,
+            background = null;
+        if (request.PictureId is not null)
+        {
+            var queryResult = await files.GetFileAsync(
+                new DyGetFileRequest { Id = request.PictureId }
+            );
+            if (queryResult is null)
+                throw new InvalidOperationException(
+                    "Invalid picture id, unable to find the file on cloud."
+                );
+            picture = SnCloudFileReferenceObject.FromProtoValue(queryResult);
+        }
+
+        if (request.BackgroundId is not null)
+        {
+            var queryResult = await files.GetFileAsync(
+                new DyGetFileRequest { Id = request.BackgroundId }
+            );
+            if (queryResult is null)
+                throw new InvalidOperationException(
+                    "Invalid background id, unable to find the file on cloud."
+                );
+            background = SnCloudFileReferenceObject.FromProtoValue(queryResult);
+        }
+
+        var publisher = await ps.CreateOrganizationPublisher(
+            realm,
+            currentUser,
+            request.Name,
+            request.Nick,
+            request.Bio,
+            picture,
+            background
+        );
+
+        als.CreateActionLog(
+            Guid.Parse(currentUser.Id),
+            "publishers.create",
+            new Dictionary<string, object>
+            {
+                { "publisher_id", publisher.Id.ToString() },
+                { "publisher_name", publisher.Name },
+                { "publisher_type", "Organization" },
+                { "realm_slug", realm.Slug },
+            },
+            userAgent: Request.Headers.UserAgent,
+            ipAddress: Request.GetClientIpAddress()
+        );
+
+        publisher.Realm = realm;
+        return Ok(publisher);
+    }
+
+    [HttpPatch("{name}")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersUpdate)]
+    public async Task<ActionResult<SnPublisher>> UpdatePublisher(
+        string name,
+        PublisherRequest request
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var member = await db
+            .PublisherMembers.Where(m => m.AccountId == accountId)
+            .Where(m => m.PublisherId == publisher.Id)
+            .FirstOrDefaultAsync();
+        if (member is null)
+            return StatusCode(403, ApiError.Unauthorized("You are not even a member of the targeted publisher.", forbidden: true));
+        if (member.Role < PublisherMemberRole.Manager)
+            return StatusCode(
+                403,
+                ApiError.Unauthorized("You need at least be the manager to update the publisher profile.", forbidden: true)
+            );
+
+        if (request.Nick is not null)
+            publisher.Nick = request.Nick;
+        if (request.Bio is not null)
+            publisher.Bio = request.Bio;
+        if (request.PictureId is not null)
+        {
+            var queryResult = await files.GetFileAsync(
+                new DyGetFileRequest { Id = request.PictureId }
+            );
+            if (queryResult is null)
+                throw new InvalidOperationException(
+                    "Invalid picture id, unable to find the file on cloud."
+                );
+            var picture = SnCloudFileReferenceObject.FromProtoValue(queryResult);
+
+            publisher.Picture = picture;
+        }
+
+        if (request.BackgroundId is not null)
+        {
+            var queryResult = await files.GetFileAsync(
+                new DyGetFileRequest { Id = request.BackgroundId }
+            );
+            if (queryResult is null)
+                throw new InvalidOperationException(
+                    "Invalid background id, unable to find the file on cloud."
+                );
+            var background = SnCloudFileReferenceObject.FromProtoValue(queryResult);
+
+            publisher.Background = background;
+        }
+
+        if (request.DefaultPostTags is not null || request.DefaultPostCategories is not null)
+        {
+            publisher.Meta ??= new Dictionary<string, object>();
+
+            if (request.DefaultPostTags is not null)
+                publisher.Meta["default_post_tags"] = request
+                    .DefaultPostTags.Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Select(x => x.Trim().ToLowerInvariant())
+                    .Distinct()
+                    .ToList();
+
+            if (request.DefaultPostCategories is not null)
+                publisher.Meta["default_post_categories"] = request
+                    .DefaultPostCategories.Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Select(x => x.Trim().ToLowerInvariant())
+                    .Distinct()
+                    .ToList();
+        }
+
+        if (request.PayoutWalletId.HasValue && member.Role >= PublisherMemberRole.Owner)
+            publisher.PayoutWalletId = request.PayoutWalletId;
+
+        db.Update(publisher);
+        await db.SaveChangesAsync();
+
+        // Notify Wallet of merchant update via gRPC
+        if (request.PayoutWalletId.HasValue)
+        {
+            _ = Task.Run(async () =>
+            {
+                using var scope = factory.CreateScope();
+                var merchantRpc = scope.ServiceProvider.GetRequiredService<RemoteMerchantService>();
+                try
+                {
+                    await merchantRpc.UpsertMerchantAsync(
+                        publisherId: publisher.Id.ToString(),
+                        paymentWalletId: publisher.PayoutWalletId?.ToString(),
+                        name: publisher.Name);
+                }
+                catch (Exception ex)
+                {
+                    var errLogger = scope.ServiceProvider.GetRequiredService<ILogger<PublisherController>>();
+                    errLogger.LogError(ex, "Failed to upsert merchant for publisher {Id}", publisher.Id);
+                }
+            });
+        }
+
+        als.CreateActionLog(
+            Guid.Parse(currentUser.Id),
+            "publishers.update",
+            new Dictionary<string, object>
+            {
+                { "publisher_id", publisher.Id.ToString() },
+                { "name_updated", !string.IsNullOrEmpty(request.Name) },
+                { "nick_updated", !string.IsNullOrEmpty(request.Nick) },
+                { "bio_updated", !string.IsNullOrEmpty(request.Bio) },
+                { "picture_updated", request.PictureId != null },
+                { "background_updated", request.BackgroundId != null },
+            },
+            userAgent: Request.Headers.UserAgent,
+            ipAddress: Request.GetClientIpAddress()
+        );
+
+        // Send ActivityPub Update activity if actor exists
+        var actor = await db.FediverseActors.FirstOrDefaultAsync(a =>
+            a.Id == publisher.Id
+        );
+
+        if (actor != null)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var scope = factory.CreateScope();
+                    var deliveryService =
+                        scope.ServiceProvider.GetRequiredService<ActivityPubDeliveryService>();
+                    await deliveryService.SendUpdateActorActivityAsync(actor);
+                }
+                catch (Exception ex)
+                {
+                    using var errorScope = factory.CreateScope();
+                    var errorLogger = errorScope.ServiceProvider.GetRequiredService<
+                        ILogger<ActivityPubDeliveryService>
+                    >();
+                    errorLogger.LogError(
+                        ex,
+                        "Error sending ActivityPub Update actor activity for publisher {PublisherId}",
+                        publisher.Id
+                    );
+                }
+            });
+        }
+
+        publisher = (await ps.HydratePublisherRealm([publisher])).First();
+        return Ok(publisher);
+    }
+
+    [HttpDelete("{name}")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersDelete)]
+    public async Task<ActionResult<SnPublisher>> DeletePublisher(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var member = await db
+            .PublisherMembers.Where(m => m.AccountId == accountId)
+            .Where(m => m.PublisherId == publisher.Id)
+            .FirstOrDefaultAsync();
+        if (member is null)
+            return StatusCode(403, ApiError.Unauthorized("You are not even a member of the targeted publisher.", forbidden: true));
+        if (member.Role < PublisherMemberRole.Owner)
+            return StatusCode(403, ApiError.Unauthorized("You need to be the owner to delete the publisher.", forbidden: true));
+
+        var publisherResourceId = $"publisher:{publisher.Id}";
+
+        db.Publishers.Remove(publisher);
+        await db.SaveChangesAsync();
+
+        als.CreateActionLog(
+            Guid.Parse(currentUser.Id),
+            "publishers.delete",
+            new Dictionary<string, object>
+            {
+                { "publisher_id", publisher.Id.ToString() },
+                { "publisher_name", publisher.Name },
+                { "publisher_type", publisher.Type.ToString() },
+            },
+            userAgent: Request.Headers.UserAgent,
+            ipAddress: Request.GetClientIpAddress()
+        );
+
+        return NoContent();
+    }
+
+    [HttpGet("{name}/members")]
+    public async Task<ActionResult<List<SnPublisherMember>>> ListMembers(
+        string name,
+        [FromQuery] int offset = 0,
+        [FromQuery] int take = 20
+    )
+    {
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var query = db
+            .PublisherMembers.Where(m => m.PublisherId == publisher.Id)
+            .Where(m => m.JoinedAt != null);
+
+        var total = await query.CountAsync();
+        Response.Headers["X-Total"] = total.ToString();
+
+        var members = await query.OrderBy(m => m.CreatedAt).Skip(offset).Take(take).ToListAsync();
+        members = await ps.LoadMemberAccounts(members);
+        members = await ps.HydrateMemberPublisherRealms(members);
+
+        return Ok(members.Where(m => m.Account is not null).ToList());
+    }
+
+    [HttpGet("{name}/members/me")]
+    [Authorize]
+    public async Task<ActionResult<SnPublisherMember>> GetCurrentIdentity(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var member = await db
+            .PublisherMembers.Where(m => m.AccountId == accountId)
+            .Where(m => m.PublisherId == publisher.Id)
+            .FirstOrDefaultAsync();
+
+        if (member is null)
+            return NotFound();
+
+        var result = await ps.LoadMemberAccount(member);
+        await ps.HydrateMemberPublisherRealms([result]);
+        return Ok(result);
+    }
+
+    [HttpGet("{name}/features")]
+    [Authorize]
+    public async Task<ActionResult<Dictionary<string, bool>>> ListPublisherFeatures(string name)
+    {
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var dict = new Dictionary<string, bool>
+        {
+            [PublisherFeatureFlag.FollowRequiresApproval] = publisher.IsModerateSubscription,
+            [PublisherFeatureFlag.PostsRequireFollow] = publisher.IsGatekept,
+        };
+
+        return Ok(dict);
+    }
+
+    [HttpGet("{name}/rewards")]
+    [Authorize]
+    public async Task<
+        ActionResult<PublisherService.PublisherRewardPreview>
+    > GetPublisherExpectedReward(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        if (!await ps.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Viewer))
+            return StatusCode(403, ApiError.Unauthorized("You are not allowed to view stats data of this publisher.", forbidden: true));
+
+        var result = await ps.GetPublisherExpectedReward(publisher.Id);
+        return Ok(result);
+    }
+
+    [HttpGet("{name}/rating/history")]
+    public async Task<ActionResult> GetPublisherRatingHistory(
+        string name,
+        [FromQuery] int take = 20,
+        [FromQuery] int offset = 0
+    )
+    {
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        HttpContext.Items.TryGetValue("CurrentUser", out var user);
+        var isMember = user is DyAccount u && await ps.IsMemberWithRole(
+            publisher.Id,
+            Guid.Parse(u.Id),
+            PublisherMemberRole.Viewer
+        );
+
+        var total = await ratingService.GetRatingHistoryCount(publisher.Id);
+        HttpContext.Response.Headers["X-Total"] = total.ToString();
+
+        var records = await ratingService.GetRatingHistory(publisher.Id, take, offset);
+        return Ok(new { isMember, records });
+    }
+
+    public class PublisherFeatureRequest
+    {
+        [Required]
+        public string Flag { get; set; } = null!;
+        public Instant? ExpiredAt { get; set; }
+    }
+
+    public class UpdateFediverseActorRequest
+    {
+        /// <summary>ActivityPub actor type: Person, Service, Group, Organization or Application.</summary>
+        [MaxLength(64)]
+        public string? ActorType { get; set; }
+
+        /// <summary>Maps to ActivityPub <c>manuallyApprovesFollowers</c>: new followers need approval.</summary>
+        public bool? IsLocked { get; set; }
+
+        /// <summary>Maps to ActivityPub <c>discoverable</c>.</summary>
+        public bool? IsDiscoverable { get; set; }
+    }
+
+    [HttpPost("{name}/features")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersFeaturesManage)]
+    public async Task<ActionResult<SnPublisherFeature>> AddPublisherFeature(
+        string name,
+        [FromBody] PublisherFeatureRequest request
+    )
+    {
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        if (PublisherFeatureFlag.SystemOnlyFlags.Contains(request.Flag))
+            return BadRequest(
+                new ApiError { Code = "PUBLISHER_FLAG_SYSTEM_ONLY", Message = $"Flag '{request.Flag}' is a system flag and cannot be enabled manually", Status = 400 }
+            );
+
+        if (request.Flag == PublisherFeatureFlag.FollowRequiresApproval)
+        {
+            if (publisher.AccountId.HasValue)
+            {
+                var publisherAccount = await remoteAccounts.GetAccount(publisher.AccountId.Value);
+                if (
+                    publisherAccount != null
+                    && publisherAccount.PerkLevel < PublisherFeatureFlag.MinimumPerkLevel
+                )
+                    return StatusCode(
+                        403,
+                        ApiError.Unauthorized($"This feature requires PerkLevel >= {PublisherFeatureFlag.MinimumPerkLevel}", forbidden: true)
+                    );
+            }
+            publisher.ModerateSubscription = true;
+            db.Publishers.Update(publisher);
+            await db.SaveChangesAsync();
+            return Ok(new SnPublisherFeature { PublisherId = publisher.Id, Flag = request.Flag });
+        }
+
+        if (request.Flag == PublisherFeatureFlag.PostsRequireFollow)
+        {
+            if (publisher.AccountId.HasValue)
+            {
+                var publisherAccount = await remoteAccounts.GetAccount(publisher.AccountId.Value);
+                if (
+                    publisherAccount != null
+                    && publisherAccount.PerkLevel < PublisherFeatureFlag.MinimumPerkLevel
+                )
+                    return StatusCode(
+                        403,
+                        ApiError.Unauthorized($"This feature requires PerkLevel >= {PublisherFeatureFlag.MinimumPerkLevel}", forbidden: true)
+                    );
+            }
+            publisher.GatekeptFollows = true;
+            db.Publishers.Update(publisher);
+            await db.SaveChangesAsync();
+            return Ok(new SnPublisherFeature { PublisherId = publisher.Id, Flag = request.Flag });
+        }
+
+        var feature = new SnPublisherFeature
+        {
+            PublisherId = publisher.Id,
+            Flag = request.Flag,
+            ExpiredAt = request.ExpiredAt,
+        };
+
+        db.PublisherFeatures.Add(feature);
+        await db.SaveChangesAsync();
+
+        return Ok(feature);
+    }
+
+    [HttpDelete("{name}/features")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersFeaturesManage)]
+    public async Task<ActionResult> RemovePublisherFeature(
+        string name,
+        [FromQuery(Name = "flag")] string? flag
+    )
+    {
+        if (string.IsNullOrEmpty(flag))
+            return BadRequest(new ApiError { Code = "PUBLISHER_FLAG_REQUIRED", Message = "Flag is required", Status = 400 });
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        if (flag == PublisherFeatureFlag.FollowRequiresApproval)
+        {
+            publisher.ModerateSubscription = null;
+            db.Publishers.Update(publisher);
+            await db.SaveChangesAsync();
+            return NoContent();
+        }
+
+        if (flag == PublisherFeatureFlag.PostsRequireFollow)
+        {
+            publisher.GatekeptFollows = null;
+            db.Publishers.Update(publisher);
+            await db.SaveChangesAsync();
+            return NoContent();
+        }
+
+        var feature = await db
+            .PublisherFeatures.Where(f => f.PublisherId == publisher.Id)
+            .Where(f => f.Flag == flag)
+            .FirstOrDefaultAsync();
+        if (feature is null)
+            return NotFound();
+
+        db.PublisherFeatures.Remove(feature);
+        await db.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpPost("rewards/settle")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersRewardsSettle)]
+    public async Task<IActionResult> SettlePublisherAward()
+    {
+        await ps.SettlePublisherRewards();
+        await ps.SettlePostAwardsAsync();
+        return Ok();
+    }
+
+    [HttpPost("awards/settle")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersRewardsSettle)]
+    public async Task<IActionResult> SettlePostAwards()
+    {
+        await ps.SettlePostAwardsAsync();
+        return Ok();
+    }
+
+    public class AggressiveResettleRequest
+    {
+        public Instant DateFrom { get; set; }
+        public Instant DateTo { get; set; }
+        public Guid? PublisherId { get; set; }
+    }
+
+    [HttpPost("rewards/resettle")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersRewardsSettle)]
+    public async Task<IActionResult> AggressiveResettle([FromBody] AggressiveResettleRequest request)
+    {
+        var results = await ps.AggressiveResettle(
+            request.DateFrom,
+            request.DateTo,
+            request.PublisherId
+        );
+
+        return Ok(new
+        {
+            processed = results.Count,
+            publishers = results.Select(r => new { publisherId = r.Key, delta = r.Value }).ToList()
+        });
+    }
+
+    [HttpGet("{name}/fediverse")]
+    [Authorize]
+    public async Task<ActionResult<FediverseStatus>> GetFediverseStatus(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var status = await ps.GetFediverseStatusAsync(publisher.Id, Guid.Parse(currentUser.Id));
+        return Ok(status);
+    }
+
+    [HttpPost("{name}/fediverse")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersFediverseManage)]
+    public async Task<ActionResult<FediverseStatus>> EnableFediverse(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        if (!await ps.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Manager))
+            return StatusCode(
+                403,
+                ApiError.Unauthorized("You need at least be manager to enable fediverse for this publisher.", forbidden: true)
+            );
+
+        try
+        {
+            var actor = await ps.EnableFediverseAsync(publisher.Id, accountId);
+            var status = await ps.GetFediverseStatusAsync(publisher.Id);
+            return Ok(status);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiError { Code = "PUBLISHER_FEDIVERSE_ENABLE_FAILED", Message = ex.Message, Status = 400 });
+        }
+    }
+
+    [HttpPatch("{name}/fediverse")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersFediverseManage)]
+    public async Task<ActionResult<FediverseStatus>> UpdateFediverseActor(
+        string name,
+        [FromBody] UpdateFediverseActorRequest request
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        if (!await ps.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Manager))
+            return StatusCode(
+                403,
+                ApiError.Unauthorized("You need at least be manager to change fediverse settings for this publisher.", forbidden: true)
+            );
+
+        try
+        {
+            await ps.UpdateFediverseActorAsync(
+                publisher.Id,
+                accountId,
+                new FediverseActorSettings
+                {
+                    ActorType = request.ActorType,
+                    IsLocked = request.IsLocked,
+                    IsDiscoverable = request.IsDiscoverable,
+                }
+            );
+
+            var status = await ps.GetFediverseStatusAsync(publisher.Id);
+
+            // Let remote instances pick up the new actor type / approval settings.
+            var updated = await ps.GetLocalActorAsync(publisher.Id);
+            if (updated?.Uri != null)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        using var scope = factory.CreateScope();
+                        var deliveryService = scope.ServiceProvider.GetRequiredService<ActivityPubDeliveryService>();
+                        await deliveryService.SendUpdateActorActivityAsync(updated);
+                    }
+                    catch (Exception ex)
+                    {
+                        using var errorScope = factory.CreateScope();
+                        var errorLogger = errorScope.ServiceProvider.GetRequiredService<ILogger<ActivityPubDeliveryService>>();
+                        errorLogger.LogError(ex, "Error sending ActivityPub Update actor activity for publisher {PublisherId}", publisher.Id);
+                    }
+                });
+            }
+
+            return Ok(status);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiError { Code = "PUBLISHER_FEDIVERSE_UPDATE_FAILED", Message = ex.Message, Status = 400 });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, ApiError.Unauthorized(ex.Message, forbidden: true));
+        }
+    }
+
+    [HttpDelete("{name}/fediverse")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersFediverseManage)]
+    public async Task<ActionResult> DisableFediverse(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        if (!await ps.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Manager))
+            return StatusCode(
+                403,
+                ApiError.Unauthorized("You need at least be manager to disable fediverse for this publisher.", forbidden: true)
+            );
+
+        try
+        {
+            await ps.DisableFediverseAsync(publisher.Id, accountId);
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, ApiError.Unauthorized(ex.Message, forbidden: true));
+        }
+    }
+
+    public class AddDomainRequest
+    {
+        [MaxLength(512)] public string Domain { get; set; } = string.Empty;
+    }
+
+    [HttpGet("{name}/domains")]
+    [Authorize]
+    public async Task<ActionResult<List<SnPublisherVerifiedDomain>>> ListDomains(string name)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var accountId = Guid.Parse(currentUser.Id);
+        if (!await ps.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Editor))
+            return StatusCode(403, ApiError.Unauthorized("You need at least be an editor to view domains.", forbidden: true));
+
+        var domains = await db.PublisherVerifiedDomains
+            .Where(d => d.PublisherId == publisher.Id)
+            .OrderBy(d => d.Domain)
+            .ToListAsync();
+
+        return Ok(domains);
+    }
+
+    [HttpPost("{name}/domains")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersDomainsManage)]
+    public async Task<ActionResult<SnPublisherVerifiedDomain>> AddDomain(
+        string name,
+        [FromBody] AddDomainRequest request
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var accountId = Guid.Parse(currentUser.Id);
+        if (!await ps.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Manager))
+            return StatusCode(403, ApiError.Unauthorized("You need at least be a manager to add domains.", forbidden: true));
+
+        var domain = request.Domain.Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(domain))
+            return BadRequest(new ApiError { Code = "PUBLISHER_DOMAIN_REQUIRED", Message = "Domain is required.", Status = 400 });
+
+        var existing = await db.PublisherVerifiedDomains
+            .FirstOrDefaultAsync(d => d.PublisherId == publisher.Id && d.Domain == domain);
+        if (existing is not null)
+            return Conflict(ApiError.Conflict("This domain already exists for this publisher.", code: "PUBLISHER_DOMAIN_CONFLICT"));
+
+        var record = new SnPublisherVerifiedDomain
+        {
+            PublisherId = publisher.Id,
+            Domain = domain,
+            Status = DomainVerificationStatus.Pending
+        };
+        db.PublisherVerifiedDomains.Add(record);
+        await db.SaveChangesAsync();
+
+        // Trigger verification in background
+        using (var scope = factory.CreateScope())
+        {
+            var verificationService = scope.ServiceProvider.GetRequiredService<DomainVerificationService>();
+            _ = Task.Run(async () => await verificationService.VerifyDomainAsync(publisher.Id, domain));
+        }
+
+        return Ok(record);
+    }
+
+    [HttpDelete("{name}/domains/{domainId:guid}")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersDomainsManage)]
+    public async Task<ActionResult> RemoveDomain(string name, Guid domainId)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var accountId = Guid.Parse(currentUser.Id);
+        if (!await ps.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Manager))
+            return StatusCode(403, ApiError.Unauthorized("You need at least be a manager to remove domains.", forbidden: true));
+
+        var domain = await db.PublisherVerifiedDomains
+            .FirstOrDefaultAsync(d => d.Id == domainId && d.PublisherId == publisher.Id);
+        if (domain is null)
+            return NotFound();
+
+        db.PublisherVerifiedDomains.Remove(domain);
+        await db.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpPost("{name}/domains/{domainId:guid}/recheck")]
+    [Authorize]
+    [AskPermission(PermissionKeys.PublishersDomainsManage)]
+    public async Task<ActionResult<SnPublisherVerifiedDomain>> RecheckDomain(string name, Guid domainId)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var accountId = Guid.Parse(currentUser.Id);
+        if (!await ps.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Manager))
+            return StatusCode(403, ApiError.Unauthorized("You need at least be a manager to recheck domains.", forbidden: true));
+
+        var domain = await db.PublisherVerifiedDomains
+            .FirstOrDefaultAsync(d => d.Id == domainId && d.PublisherId == publisher.Id);
+        if (domain is null)
+            return NotFound();
+
+        domain.Status = DomainVerificationStatus.Pending;
+        await db.SaveChangesAsync();
+
+        using var scope = factory.CreateScope();
+        var verificationService = scope.ServiceProvider.GetRequiredService<DomainVerificationService>();
+        await verificationService.VerifyDomainAsync(publisher.Id, domain.Domain);
+
+        // Reload to get updated status
+        await db.Entry(domain).ReloadAsync();
+        return Ok(domain);
+    }
+
+    [HttpGet("{name}/ads")]
+    [Authorize]
+    public async Task<ActionResult<List<AdvertisingPostStats>>> ListAdvertisingPosts(
+        string name,
+        [FromQuery] int offset = 0,
+        [FromQuery] int take = 20
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db.Publishers.Where(p => p.Name.ToLower() == name.ToLowerInvariant()).FirstOrDefaultAsync();
+        if (publisher is null)
+            return NotFound();
+
+        var accountId = Guid.Parse(currentUser.Id);
+        if (!await ps.IsMemberWithRole(publisher.Id, accountId, PublisherMemberRole.Viewer))
+            return StatusCode(403, ApiError.Unauthorized("You need at least be a viewer to view advertising data for this publisher.", forbidden: true));
+
+        var allStats = await sponsorService.ListAdvertisingPostsAsync(publisher.Id);
+        var totalCount = allStats.Count;
+        var pagedStats = allStats.Skip(offset).Take(take).ToList();
+
+        Response.Headers["X-Total"] = totalCount.ToString();
+        return Ok(pagedStats);
+    }
+}

@@ -1,6 +1,6 @@
 {
-  "checkpoint": "livestream-chat-publisher-aliases-isolated-fixtures",
-  "scope": "376 before/51 restart candidate; full local verification and focused corrected fixtures passed; actual PostgreSQL pending",
+  "checkpoint": "alias376-authority-fixture",
+  "scope": "Isolated bounded correction; actual PostgreSQL CI pending; exact changed files establish runtime or fixture scope",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
@@ -8656,8 +8656,8 @@
     },
     {
       "path": "tests/integration/timeline_locks_test.go",
-      "bytes": 12956,
-      "sha256": "e58620de503cca248e10ebb45d766d577d032d6e35dd5259529ffdcb39590e9a"
+      "bytes": 13779,
+      "sha256": "c279adcbb0cec29e5e1e724309bfe9082eec1eff319b8b81e96468e922f5cee0"
     },
     {
       "path": "tests/integration/timeline_test.go",

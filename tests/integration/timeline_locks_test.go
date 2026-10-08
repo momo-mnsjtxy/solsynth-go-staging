@@ -206,8 +206,13 @@ func TestPGTimelinePrelocksRecheckSourceAndTarget(t *testing.T) {
 	root := createPost(t, fixturePosts, a, ap.Name, "ancestry retained", posts.Public, false)
 	target := createPost(t, fixturePosts, b, bp.Name, "target becomes private", posts.Public, false)
 	w, wc, probe := timelineGuardedWriter(t, ctx, a)
-	// A selector observed before waiting must still identify the locked source.
+	// A retired selector retains the same publisher identity, but current
+	// writer authority must still be rechecked after waiting for its lock.
 	blocker := timelinePublisherBlock(t, ctx, db, ap.ID)
+	var originalRole int
+	if e := blocker.QueryRowContext(ctx, `SELECT role FROM owned_publisher_members WHERE publisher_id=$1::uuid AND account_id=$2::uuid`, ap.ID, a).Scan(&originalRole); e != nil {
+		t.Fatal(e)
+	}
 	done := make(chan error, 1)
 	go func() {
 		_, e := w.Create(wc, a, ap.Name, posts.Patch{Content: postString("stale selector")})
@@ -217,12 +222,20 @@ func TestPGTimelinePrelocksRecheckSourceAndTarget(t *testing.T) {
 	if _, e := blocker.ExecContext(ctx, `UPDATE owned_publishers SET name=$2 WHERE id=$1`, ap.ID, ap.Name+"-renamed"); e != nil {
 		t.Fatal(e)
 	}
+	if _, e := blocker.ExecContext(ctx, `UPDATE owned_publisher_members SET role=0 WHERE publisher_id=$1::uuid AND account_id=$2::uuid`, ap.ID, a); e != nil {
+		t.Fatal(e)
+	}
 	if e := blocker.Commit(); e != nil {
 		t.Fatal(e)
 	}
-	if e := <-done; !errors.Is(e, accounts.ErrNotFound) {
-		t.Fatal("stale source selector accepted", e)
+	if e := <-done; !errors.Is(e, accounts.ErrForbidden) {
+		t.Fatal("retired selector bypassed current writer authority", e)
 	}
+	alias, e := accountpg.NewForCompatibilityTests(db).LookupPublisher(ctx, ap.Name)
+	if e != nil || alias.ID != ap.ID || alias.Name != ap.Name+"-renamed" {
+		t.Fatal("retired selector changed identity", alias, e)
+	}
+	query(t, db, `UPDATE owned_publisher_members SET role=$3 WHERE publisher_id=$1::uuid AND account_id=$2::uuid`, ap.ID, a, originalRole)
 	// Canonical APIs never reparent posts; a guarded fixture change while the
 	// source lock is pending proves the locked projection is still checked.
 	blocker = timelinePublisherBlock(t, ctx, db, ap.ID)
@@ -258,7 +271,7 @@ func TestPGTimelinePrelocksRecheckSourceAndTarget(t *testing.T) {
 	}
 	var content string
 	var writes, relations int
-	e := db.QueryRowContext(ctx, `SELECT content,(SELECT count(*) FROM owned_text_post_audit WHERE actor_id=$2::uuid),(SELECT count(*) FROM owned_post_relations l JOIN owned_text_posts p ON p.id=l.post_id WHERE p.publisher_id IN($3::uuid,$4::uuid)) FROM owned_text_posts WHERE id=$1::uuid`, root.ID, a, ap.ID, bp.ID).Scan(&content, &writes, &relations)
+	e = db.QueryRowContext(ctx, `SELECT content,(SELECT count(*) FROM owned_text_post_audit WHERE actor_id=$2::uuid),(SELECT count(*) FROM owned_post_relations l JOIN owned_text_posts p ON p.id=l.post_id WHERE p.publisher_id IN($3::uuid,$4::uuid)) FROM owned_text_posts WHERE id=$1::uuid`, root.ID, a, ap.ID, bp.ID).Scan(&content, &writes, &relations)
 	if e != nil || content != "ancestry retained" || writes != 1 || relations != 0 {
 		t.Fatal("failed prelock recheck left mutation state", content, writes, relations, e)
 	}

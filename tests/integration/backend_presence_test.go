@@ -3,9 +3,13 @@ package integration_test
 
 import (
 	"context"
+	"fmt"
 	"solsynth.local/go-migration/internal/authoritypg"
+	"solsynth.local/go-migration/internal/notificationpg"
 	"solsynth.local/go-migration/ports/authority"
+	profiles "solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/sphere/locations"
+	"strings"
 	"testing"
 )
 
@@ -26,9 +30,27 @@ func TestPGBackendPresenceProgressionLocationComposition(t *testing.T) {
 	backendCall(t, f.app, "GET", "/api/meets/"+meet.ID, f.otherToken, "", 404)
 	backendCall(t, f.app, "GET", "/passport/meets/"+meet.ID, f.token, "", 200)
 	backendCall(t, f.app, "GET", "/api/accounts/me/progression/achievements", f.token, "", 200)
+	query(t, f.db, `INSERT INTO owned_publisher_quota(account_id,total,starts_at)VALUES($1,2,now())`, f.actor)
+	pub := backendDecode[profiles.Publisher](t, backendCall(t, f.app, "POST", "/sphere/publishers/individual", f.token, fmt.Sprintf(`{"name":%q,"nick":"Progression source"}`, "progress_"+strings.ReplaceAll(f.actor, "-", "")), 200))
+	backendCall(t, f.app, "POST", "/api/posts?pub="+pub.Name, f.token, `{"content":"Canonical progression source","visibility":0}`, 200)
 	if _, e := f.app.ProcessDue(context.Background(), 1000); e != nil {
 		t.Fatal("canonical scheduled work", e)
 	}
+	var first int
+	if e := f.db.QueryRow(`SELECT count(*) FROM notification_v1.outbox WHERE account_id=$1 AND source_key LIKE 'progression:%'`, f.actor).Scan(&first); e != nil || first < 1 {
+		t.Fatal("progression inbox missing", first, e)
+	}
+	if _, e := f.app.ProcessDue(context.Background(), 1000); e != nil {
+		t.Fatal(e)
+	}
+	var second int
+	if e := f.db.QueryRow(`SELECT count(*) FROM notification_v1.outbox WHERE account_id=$1 AND source_key LIKE 'progression:%'`, f.actor).Scan(&second); e != nil || second != first {
+		t.Fatal("progression duplicate inbox", first, second, e)
+	}
+	if _, e := notificationpg.New(f.db, nil, "dev.solsynth.solian").ProcessPending(context.Background(), 1000); e != nil {
+		t.Fatal(e)
+	}
+	backendCall(t, f.app, "GET", "/api/notifications", f.token, "", 200)
 	if e := authoritypg.New(f.db).ReplacePolicy(context.Background(), f.actor, []authority.Rule{}, nil); e != nil {
 		t.Fatal(e)
 	}

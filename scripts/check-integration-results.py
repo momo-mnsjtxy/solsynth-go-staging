@@ -5,6 +5,10 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGTimelineOppositePublisherRepliesAndRollback",
+        "TestPGTimelinePrelocksRecheckSourceAndTarget",
+        "TestPGTimelinePublisherUUIDSelectorCollision",
+
         "TestPGBackendPresenceProgressionLocationComposition",
         "TestPGPresencePrivacyLeasesAndAuthority",
         "TestPGPresenceFriendsBlocksInvisibleAndExpiry",
@@ -22,6 +26,21 @@ EXPECTED = {
         "TestPGLocationsPinMutationRollbackAndRevokedProof",
         "TestPGLocationsHTTPStreamCompletionAndRevocation",
         "TestPGLocationsRestartPersistence",
+        "TestPGCallsLifecycleAuthorityAndReplay",
+        "TestPGCallsRemovalFailureBanAndRetry",
+        "TestPGCallsConcurrentStartJoinAndRestart",
+        "TestPGCallsCanonicalRemovalSessionRevocationAndExpiry",
+        "TestPGCallsProviderPreparationRecoveryAndHTTPBoundaries",
+        "TestPGCallsWaiterObservesCommittedMembershipAndSessionRevocation",
+        "TestPGFederationCanonicalPublicHTTP",
+        "TestPGFederationInboxReplayAndTargetIsolation",
+        "TestPGFederationRemoteObjectsAndFollowControl",
+        "TestPGFederationDurableDeliveryAndPrivacy",
+        "TestPGFederationFreshAuthorityAndAtomicRollback",
+        "TestPGFederationSignedLoopbackDelivery",
+        "TestPGFederationRestartPersistence",
+        "TestPGBackendCallsFederationComposition",
+        "TestPGBackendCallsFederationRestartPersistence",
 
         "TestPGMediaUsageDirectAtomicMetadata",
         "TestPGMediaUsageResumableAndPostProjection",
@@ -213,6 +232,8 @@ EXPECTED = {
         "TestPGPresenceProgressionRestartPersistence",
 
         "TestPGLocationsRestartPersistence",
+        "TestPGFederationRestartPersistence",
+        "TestPGBackendCallsFederationRestartPersistence",
 
         "TestPGMediaUsageRestartPersistence",
 

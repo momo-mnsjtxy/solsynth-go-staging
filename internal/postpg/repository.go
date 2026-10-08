@@ -165,7 +165,7 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 		if e := r.validatePatch(v, true, now); e != nil {
 			return e
 		}
-		pub, e := r.publishers.ResolveForPost(ctx, tx, actor, selector)
+		pub, e := r.createPublisher(ctx, tx, actor, selector, v)
 		if e != nil {
 			return e
 		}
@@ -193,13 +193,18 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 	}
 	return p, nil
 }
-func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string) (posts.Post, error) {
+func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v posts.Patch) (posts.Post, error) {
 	if !authority.ValidID(id) {
 		return posts.Post{}, posts.ErrNotFound
 	}
 	var publisher string
 	if e := tx.QueryRowContext(ctx, `SELECT publisher_id::text FROM owned_text_posts WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&publisher); e != nil {
 		return posts.Post{}, mapped(e)
+	}
+	if locker, ok := r.associations.(AssociationPrelocker); ok {
+		if e := locker.Prelock(ctx, tx, actor, publisher, v, false); e != nil {
+			return posts.Post{}, e
+		}
 	}
 	pub, e := r.publishers.RequirePostEditor(ctx, tx, actor, publisher)
 	if e != nil {
@@ -211,6 +216,9 @@ func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string) (
 	p, e := scan(tx.QueryRowContext(ctx, `SELECT `+columns+base+` AND p.id=$1 FOR UPDATE OF p`, id))
 	if e != nil {
 		return posts.Post{}, e
+	}
+	if p.PublisherID != publisher {
+		return posts.Post{}, posts.ErrConflict
 	}
 	if p.LockedAt != nil {
 		return posts.Post{}, posts.ErrLocked
@@ -234,7 +242,7 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 			}
 		}
 		var e error
-		p, e = r.locked(ctx, tx, actor, id)
+		p, e = r.locked(ctx, tx, actor, id, v)
 		if e != nil {
 			return e
 		}

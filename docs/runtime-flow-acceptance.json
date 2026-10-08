@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "based on82afbbd with authenticated timeline SQL fix and presence/progression/location",
+  "local_source_checkpoint": "audited211 snapshot based on5149232",
   "last_fully_passed_ci": {
     "commit": "d4ee9b826ae65138ba53d460ff5874d4181384fa",
     "run": 37737268425,
@@ -10,13 +10,12 @@
     "after_restart": 20
   },
   "latest_candidate": {
-    "commit": "d17bdfc3cfe6cc2399bc4ec60a25871c78cc08ff",
-    "required_before": 177,
-    "required_after_restart": 27,
-    "status": "CI running; preceding content CI failed three shared authenticated timeline SQL cases; fix included locally"
+    "commit": "90cbf69b39de596b45ae087d366fc3e464bd5754",
+    "run": 37743194567,
+    "status": "Failed193 before phase; SQL/nullability/rollback and independently reviewed publisher lock corrections included here"
   },
-  "local_required_before": 193,
-  "local_required_after_restart": 29,
+  "local_required_before": 211,
+  "local_required_after_restart": 31,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -158,11 +157,23 @@
     },
     {
       "source_family": "messager.calls",
-      "local_status": "in_progress",
-      "supported_flows": [],
-      "guarded_pg_cases": [],
+      "local_status": "partial",
+      "supported_flows": [
+        "Canonical room call admission, moderation, cleanup and notification events",
+        "Explicit LiveKit Cloud-capable adapter; synthetic transport tests only"
+      ],
+      "guarded_pg_cases": [
+        "TestPGCallsLifecycleAuthorityAndReplay",
+        "TestPGCallsRemovalFailureBanAndRetry",
+        "TestPGCallsConcurrentStartJoinAndRestart",
+        "TestPGCallsCanonicalRemovalSessionRevocationAndExpiry",
+        "TestPGCallsProviderPreparationRecoveryAndHTTPBoundaries",
+        "TestPGCallsWaiterObservesCommittedMembershipAndSessionRevocation",
+        "TestPGBackendCallsFederationComposition",
+        "TestPGBackendCallsFederationRestartPersistence"
+      ],
       "unsupported_or_remaining": [
-        "Call signaling/provider slice awaiting integration and actual CI"
+        "Media-plane validation, legacy packet/system-message/VoIP-push compatibility and configured live provider"
       ]
     },
     {
@@ -319,11 +330,24 @@
     },
     {
       "source_family": "sphere.federation",
-      "local_status": "awaiting_integration",
-      "supported_flows": [],
-      "guarded_pg_cases": [],
+      "local_status": "partial",
+      "supported_flows": [
+        "Explicitly configured actor/object/WebFinger/inbox/outbox endpoints",
+        "Canonical public-post reconciliation and durable signed delivery with explicit peers/transport"
+      ],
+      "guarded_pg_cases": [
+        "TestPGFederationCanonicalPublicHTTP",
+        "TestPGFederationInboxReplayAndTargetIsolation",
+        "TestPGFederationRemoteObjectsAndFollowControl",
+        "TestPGFederationDurableDeliveryAndPrivacy",
+        "TestPGFederationFreshAuthorityAndAtomicRollback",
+        "TestPGFederationSignedLoopbackDelivery",
+        "TestPGFederationRestartPersistence",
+        "TestPGBackendCallsFederationComposition",
+        "TestPGBackendCallsFederationRestartPersistence"
+      ],
       "unsupported_or_remaining": [
-        "Delivered signed federation subset needs host/schema/CI integration; remote discovery/private/media federation unsupported"
+        "Remote discovery, client-to-server activity, private/realm/media federation and broader activity types"
       ]
     },
     {

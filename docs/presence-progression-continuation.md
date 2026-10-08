@@ -202,3 +202,5 @@ activation, automatic chat/social projection, re-friending deduplication,
 deterministic lock-wait revocation, and persisted restart state. They open no
 HTTP listeners. Local PostgreSQL execution was intentionally left to the parent
 CI harness; compiled tests are not claimed as a PostgreSQL runtime pass.
+
+Unified-host integration additionally dispatches earned completion records into the existing durable account inbox with the stable progression event ID as its idempotency key. The configured notification worker materializes inbox/replay events; external delivery remains disabled. A composed test checks canonical post creation, earned projection, duplicate-safe queueing and inbox processing.

@@ -14,10 +14,10 @@ import (
 // request value is interpolated. The host installs this optional provider only
 // after explicitly installing the social schema.
 func (r *Repository) PostBlockedSQL() string {
-	return `EXISTS(SELECT 1 FROM owned_social_relationships sr WHERE sr.status=-100 AND ((sr.account_id=u.account_id AND sr.related_id=NULLIF($1,'')::uuid) OR(sr.related_id=u.account_id AND sr.account_id=NULLIF($1,'')::uuid)))`
+	return `EXISTS(SELECT 1 FROM owned_social_relationships sr WHERE sr.status=-100 AND ((sr.account_id=u.account_id AND sr.related_id=NULLIF($1::text,'')::uuid) OR(sr.related_id=u.account_id AND sr.account_id=NULLIF($1::text,'')::uuid)))`
 }
 func (r *Repository) PostVisibilitySQL() string {
-	return `(u.type=0 AND u.account_id IS NOT NULL AND p.visibility IN(1,4) AND EXISTS(SELECT 1 FROM owned_social_relationships owner_rel WHERE owner_rel.account_id=u.account_id AND owner_rel.related_id=NULLIF($1,'')::uuid AND owner_rel.status>=CASE WHEN p.visibility=4 THEN 200 ELSE 100 END) AND EXISTS(SELECT 1 FROM owned_social_relationships viewer_rel WHERE viewer_rel.account_id=NULLIF($1,'')::uuid AND viewer_rel.related_id=u.account_id AND viewer_rel.status>=100) AND NOT ` + r.PostBlockedSQL() + `)`
+	return `(u.type=0 AND u.account_id IS NOT NULL AND p.visibility IN(1,4) AND EXISTS(SELECT 1 FROM owned_social_relationships owner_rel WHERE owner_rel.account_id=u.account_id AND owner_rel.related_id=NULLIF($1::text,'')::uuid AND owner_rel.status>=CASE WHEN p.visibility=4 THEN 200 ELSE 100 END) AND EXISTS(SELECT 1 FROM owned_social_relationships viewer_rel WHERE viewer_rel.account_id=NULLIF($1::text,'')::uuid AND viewer_rel.related_id=u.account_id AND viewer_rel.status>=100) AND NOT ` + r.PostBlockedSQL() + `)`
 }
 func (r *Repository) IsBlockedInTransaction(ctx context.Context, tx *sql.Tx, a, b string) (bool, error) {
 	if tx == nil {

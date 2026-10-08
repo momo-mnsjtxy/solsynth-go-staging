@@ -56,6 +56,7 @@ func run(args []string, out io.Writer) error {
 	mentions := fs.String("messager-notify-mentions", "", "explicit mentions-only notification mode")
 	noNotify := fs.String("messager-notify-none", "", "explicit no-notifications mode")
 	verificationSettings := verificationFlags(fs)
+	externalSettings := externalFlags(fs)
 	factorIssuer := fs.String("factor-issuer-label", "SoSYS", "human-readable TOTP issuer label")
 	enableSignin := fs.Bool("enable-signin", false, "explicitly enable owned first-party issuer and factor protocol")
 	signingFile := fs.String("issuer-private-key-file", "", "explicit RSA issuer key PEM")
@@ -196,6 +197,10 @@ func run(args []string, out io.Writer) error {
 		}
 		catalogProviders = []exchangecatalog.Provider{provider}
 	}
+	appConfig := application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig}
+	if err = externalSettings.apply(&appConfig); err != nil {
+		return err
+	}
 	if !*serve {
 		_, err = fmt.Fprintln(out, "Backend configuration validated. No database connection, schema, account, key, grant, listener or transfer was created.")
 		return err
@@ -208,7 +213,7 @@ func run(args []string, out io.Writer) error {
 	db.SetMaxOpenConns(30)
 	db.SetMaxIdleConns(5)
 	db.SetConnMaxLifetime(30 * time.Minute)
-	backend, err := application.NewPostgres(db, nil, application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig})
+	backend, err := application.NewPostgres(db, nil, appConfig)
 	if err != nil {
 		return errors.New("backend configuration unavailable")
 	}
@@ -231,6 +236,27 @@ func run(args []string, out io.Writer) error {
 	go func() {
 		_ = backend.RunNotifications(ctx, func(code string) { fmt.Fprintln(out, "Notification worker:", code) })
 	}()
+	// Revocation and federation delivery have a separate bounded cadence so a
+	// slow settlement batch cannot postpone canonical call cleanup indefinitely.
+	if *externalSettings.calls || *externalSettings.federation {
+		go func() {
+			ticker := time.NewTicker(*externalSettings.maintenance)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case <-ticker.C:
+					job, cancel := context.WithTimeout(ctx, 20*time.Second)
+					_, err := backend.ProcessExternalDue(job, 100)
+					cancel()
+					if err != nil {
+						fmt.Fprintln(out, "Call/federation maintenance batch failed; recovery state remains durable.")
+					}
+				}
+			}
+		}()
+	}
 	server := &http.Server{Handler: backend, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 20 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 32768}
 	go func() {
 		ticker := time.NewTicker(*settlement)
@@ -244,7 +270,7 @@ func run(args []string, out io.Writer) error {
 				_, err := backend.ProcessDue(job, 100)
 				cancel()
 				if err != nil {
-					fmt.Fprintln(out, "Wallet lifecycle batch failed; committed state remains durable.")
+					fmt.Fprintln(out, "Lifecycle/projection batch failed; committed state remains durable.")
 				}
 				cleanupCtx, cleanupCancel := context.WithTimeout(ctx, 20*time.Second)
 				_, cleanupErr := backend.CleanupMedia(cleanupCtx, 100)

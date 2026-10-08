@@ -430,7 +430,7 @@ func (r *Repository) Expire(ctx context.Context, limit int) (int64, error) {
 	if e != nil {
 		return 0, e
 	}
-	res, e = tx.ExecContext(ctx, `WITH due AS (SELECT id FROM owned_location_pins WHERE deleted_at IS NULL AND ((status=0 AND last_heartbeat_at<=$1-interval '5 minutes') OR(status=1 AND expires_at<=$1)) ORDER BY last_heartbeat_at,id LIMIT $2 FOR UPDATE SKIP LOCKED) UPDATE owned_location_pins SET status=CASE WHEN status=1 OR NOT keep_on_disconnect OR last_heartbeat_at<=$1-interval '24 hours 5 minutes' THEN 2 ELSE 1 END,expires_at=CASE WHEN status=0 AND keep_on_disconnect THEN last_heartbeat_at+interval '24 hours 5 minutes' ELSE expires_at END,updated_at=$1 WHERE id IN(SELECT id FROM due)`, now, limit)
+	res, e = tx.ExecContext(ctx, `WITH due AS (SELECT id FROM owned_location_pins WHERE deleted_at IS NULL AND ((status=0 AND last_heartbeat_at<=$1::timestamptz-interval '5 minutes') OR(status=1 AND expires_at<=$1)) ORDER BY last_heartbeat_at,id LIMIT $2 FOR UPDATE SKIP LOCKED) UPDATE owned_location_pins SET status=CASE WHEN status=1 OR NOT keep_on_disconnect OR last_heartbeat_at<=$1::timestamptz-interval '24 hours 5 minutes' THEN 2 ELSE 1 END,expires_at=CASE WHEN status=0 AND keep_on_disconnect THEN last_heartbeat_at+interval '24 hours 5 minutes' ELSE expires_at END,updated_at=$1 WHERE id IN(SELECT id FROM due)`, now, limit)
 	if e != nil {
 		return 0, e
 	}

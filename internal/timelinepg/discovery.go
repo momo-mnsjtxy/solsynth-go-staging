@@ -74,7 +74,7 @@ func (r *Repository) reference(ctx context.Context, tx *sql.Tx, actor, kind, ref
 	case "account":
 		e = tx.QueryRowContext(ctx, `SELECT nick FROM owned_authority_accounts a WHERE id=$2 AND NOT disabled AND NOT EXISTS(SELECT 1 FROM owned_social_relationships s WHERE s.status=-100 AND((s.account_id=$1 AND s.related_id=a.id)OR(s.related_id=$1 AND s.account_id=a.id)))`, actor, ref).Scan(&label)
 	case "realm":
-		e = tx.QueryRowContext(ctx, `SELECT name FROM owned_realms r JOIN owned_authority_accounts a ON a.id=r.account_id WHERE r.id=$2 AND r.deleted_at IS NULL AND NOT a.disabled AND(r.is_public OR EXISTS(SELECT 1 FROM owned_realm_members m WHERE m.realm_id=r.id AND m.account_id=$1 AND m.joined_at IS NOT NULL AND m.leave_at IS NULL))`, actor, ref).Scan(&label)
+		e = tx.QueryRowContext(ctx, `SELECT r.name FROM owned_realms r JOIN owned_authority_accounts a ON a.id=r.account_id WHERE r.id=$2 AND r.deleted_at IS NULL AND NOT a.disabled AND(r.is_public OR EXISTS(SELECT 1 FROM owned_realm_members m WHERE m.realm_id=r.id AND m.account_id=$1 AND m.joined_at IS NOT NULL AND m.leave_at IS NULL))`, actor, ref).Scan(&label)
 	default:
 		return "", timeline.ErrInvalid
 	}

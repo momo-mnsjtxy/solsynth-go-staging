@@ -309,6 +309,43 @@ func TestPGTimelineDiscoveryFeedbackAndAuditRollback(t *testing.T) {
 	if other, e := r.Discovery(ctx, owner); e != nil || len(other.Interests) != 0 {
 		t.Fatal("account interest leakage", other, e)
 	}
+	// Realm preferences share discovery's reference resolver. Both joined
+	// tables have a name column; use a real realm to exercise its SQL projection,
+	// explicit quota, current signed authority and private membership filter.
+	query(t, db, `INSERT INTO owned_realm_quota(account_id,total,starts_at) VALUES($1,2,CURRENT_TIMESTAMP)`, owner)
+	realms := socialpg.New(db)
+	publicRealm, e := realms.CreateRealm(ctx, owner, social.RealmPatch{Slug: postString("timeline-realm-public-3030"), Name: postString("Public discovery realm"), IsPublic: boolean(true)})
+	if e != nil {
+		t.Fatal(e)
+	}
+	privateRealm, e := realms.CreateRealm(ctx, owner, social.RealmPatch{Slug: postString("timeline-realm-private-3030"), Name: postString("Private discovery realm")})
+	if e != nil {
+		t.Fatal(e)
+	}
+	_, realmVerifier, realmGuard, realmToken := interactionAuthority(t, db, viewer)
+	if e = authoritypg.New(db).ReplacePolicy(ctx, viewer, []authority.Rule{{Pattern: "timelines.feedback"}}, nil); e != nil {
+		t.Fatal(e)
+	}
+	proof, e := realmVerifier.Authenticate(ctx, realmToken)
+	if e != nil {
+		t.Fatal(e)
+	}
+	protected := timelinepg.NewWithAuthority(db, realmGuard).WithVisibility(realms)
+	proofCtx := realmGuard.Bind(ctx, proof)
+	preference, e := protected.Suppress(proofCtx, viewer, timeline.PreferenceRequest{Kind: "realm", ReferenceID: publicRealm.ID})
+	if e != nil || preference.Kind != "realm" || preference.ReferenceID != publicRealm.ID {
+		t.Fatal("public realm preference", preference, e)
+	}
+	realmProfile, e := protected.Discovery(proofCtx, viewer)
+	if e != nil || len(realmProfile.Suppressed) != 1 || realmProfile.Suppressed[0].ReferenceID != publicRealm.ID {
+		t.Fatal("realm discovery projection", realmProfile, e)
+	}
+	if _, e = protected.Suppress(proofCtx, viewer, timeline.PreferenceRequest{Kind: "realm", ReferenceID: privateRealm.ID}); !errors.Is(e, posts.ErrNotFound) {
+		t.Fatal("private realm preference exposed", e)
+	}
+	if e = protected.Unsuppress(proofCtx, viewer, "realm", publicRealm.ID); e != nil {
+		t.Fatal(e)
+	}
 	feedback, e = r.Feedback(ctx, viewer, timeline.FeedbackRequest{Kind: "publisher", ReferenceID: pub.ID, Feedback: "negative", Suppress: true})
 	if e != nil || feedback.Preference == nil {
 		t.Fatal(feedback, e)
@@ -323,7 +360,7 @@ func TestPGTimelineDiscoveryFeedbackAndAuditRollback(t *testing.T) {
 	if e = r.Unsuppress(ctx, viewer, "publisher", pub.ID); e != nil {
 		t.Fatal(e)
 	}
-	query(t, db, `ALTER TABLE owned_timeline_audit ADD CONSTRAINT timeline_synthetic_failure CHECK(actor_id<>'d5100000-0000-4000-8000-000000003031'::uuid)`)
+	query(t, db, `ALTER TABLE owned_timeline_audit ADD CONSTRAINT timeline_synthetic_failure CHECK(actor_id<>'d5100000-0000-4000-8000-000000003031'::uuid) NOT VALID`)
 	t.Cleanup(func() {
 		query(t, db, `ALTER TABLE owned_timeline_audit DROP CONSTRAINT IF EXISTS timeline_synthetic_failure`)
 	})

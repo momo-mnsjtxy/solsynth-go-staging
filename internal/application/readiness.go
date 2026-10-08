@@ -40,7 +40,7 @@ func (b *Backend) Ready(ctx context.Context) error {
 			return errors.New("media storage unavailable")
 		}
 	}
-	return nil
+	return b.external.ready(ctx, b.db)
 }
 func (b *Backend) readinessHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {

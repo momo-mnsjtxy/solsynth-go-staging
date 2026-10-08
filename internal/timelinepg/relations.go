@@ -18,7 +18,8 @@ const maxDepth = 50
 func (r *Repository) SupportsPostRelations() {}
 
 // Apply is called only inside the canonical post transaction, after proof,
-// actor, publisher-editor and post locks. Relations are immutable after creation.
+// actor, ordered publisher prelocks, publisher-editor and post locks. Relations
+// are immutable after creation.
 func (r *Repository) Apply(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post, v posts.Patch, create bool) error {
 	if tx == nil || p == nil || !authority.ValidID(actor) {
 		return posts.ErrInvalid

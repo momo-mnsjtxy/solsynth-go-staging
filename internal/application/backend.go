@@ -69,18 +69,22 @@ type Config struct {
 	NotificationApp               string
 	CommerceProviders             map[string]commerce.Provider
 	Signin                        *signin.Config
+	Calls                         *CallConfig
+	Federation                    *FederationConfig
 }
 type Backend struct {
-	handler            http.Handler
-	verifier           *authority.Verifier
-	db, authorityDB    *sql.DB
-	wallet             *walletpg.Repository
-	media              *mediapg.Repository
-	notificationWorker *notificationpg.Worker
-	commerce           *commercepg.Repository
-	locations          *locationpg.Repository
-	progression        *progressionpg.Repository
-	signinEnabled      bool
+	handler                  http.Handler
+	verifier                 *authority.Verifier
+	db, authorityDB          *sql.DB
+	wallet                   *walletpg.Repository
+	media                    *mediapg.Repository
+	notificationWorker       *notificationpg.Worker
+	commerce                 *commercepg.Repository
+	locations                *locationpg.Repository
+	progression              *progressionpg.Repository
+	progressionNotifications progressionNotifications
+	signinEnabled            bool
+	external                 externalModules
 }
 
 func (b *Backend) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -111,6 +115,10 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	guard := authoritypg.NewTransactionGuard(aStore, v)
 	if authorityDB != db && c.AllowNonAtomicAuthorityWrites {
 		guard = nil
+	}
+	external, err := externalModulesFor(db, authorityDB, c, v, guard)
+	if err != nil {
+		return nil, err
 	}
 	accountRepo := accountpg.NewWithAuthority(db, guard)
 	accountHTTP := bindIdentity(v, bindTransactionAuthority(guard, (&profiles.Service{Repository: accountRepo, Authority: proofIdentity{identity}}).Handler()))
@@ -228,8 +236,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	h := router{modules{calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	return &Backend{external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 }
 
 type accountLookup interface {
@@ -248,18 +256,24 @@ func (a accountResolver) Resolve(ctx context.Context, reference string) (board.A
 	return board.Account{ID: account.ID, Name: account.Name}, nil
 }
 
-// ProcessDue applies bounded, durable wallet expiry/settlement transitions. A
-// scheduler is owned by the executable, never started by construction.
+// ProcessDue advances configured lifecycle/projection workers in bounded batches.
+// Construction starts no scheduler; cancellation leaves recoverable work durable.
 func (b *Backend) ProcessDue(ctx context.Context, limit int) (int, error) {
 	if b == nil || b.wallet == nil {
 		return 0, errors.New("backend: wallet unavailable")
 	}
-	n, e := b.wallet.ProcessDue(ctx, limit)
-	if b.commerce == nil {
-		return n, e
+	if limit < 1 || limit > 1000 {
+		return 0, errors.New("lifecycle batch size must be between 1 and 1000")
 	}
-	m, ce := b.commerce.ProcessDue(ctx, limit)
+	n, e := b.wallet.ProcessDue(ctx, limit)
+	if b.commerce != nil {
+		m, x := b.commerce.ProcessDue(ctx, limit)
+		n += m
+		e = errors.Join(e, x)
+	}
 	l, le := b.locations.Expire(ctx, limit)
 	p, pe := b.progression.ProcessDue(ctx, limit)
-	return n + m + int(l) + p, errors.Join(e, ce, le, pe)
+	d, de := b.progression.DispatchCompletions(ctx, limit, b.progressionNotifications)
+	m, x := b.external.processDue(ctx, min(limit, 100))
+	return n + int(l) + p + d + m, errors.Join(e, le, pe, de, x)
 }

@@ -142,7 +142,7 @@ func (r *Repository) CreateMeet(ctx context.Context, actor string, v locations.C
 		return locations.Meet{}, e
 	}
 	var id string
-	e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_meets WHERE host_id=$1 AND status=0 AND deleted_at IS NULL AND expires_at>$2 AND created_at>=$2-interval '5 minutes' AND visibility=$3 AND notes IS NOT DISTINCT FROM $4 AND location_name IS NOT DISTINCT FROM $5 AND location_address IS NOT DISTINCT FROM $6 AND longitude IS NOT DISTINCT FROM $7 AND latitude IS NOT DISTINCT FROM $8 AND metadata=$9::jsonb ORDER BY created_at DESC,id LIMIT 1 FOR UPDATE`, actor, now, vis, v.Notes, v.LocationName, v.LocationAddress, lon, lat, raw).Scan(&id)
+	e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_meets WHERE host_id=$1 AND status=0 AND deleted_at IS NULL AND expires_at>$2 AND created_at>=$2::timestamptz-interval '5 minutes' AND visibility=$3 AND notes IS NOT DISTINCT FROM $4 AND location_name IS NOT DISTINCT FROM $5 AND location_address IS NOT DISTINCT FROM $6 AND longitude IS NOT DISTINCT FROM $7 AND latitude IS NOT DISTINCT FROM $8 AND metadata=$9::jsonb ORDER BY created_at DESC,id LIMIT 1 FOR UPDATE`, actor, now, vis, v.Notes, v.LocationName, v.LocationAddress, lon, lat, raw).Scan(&id)
 	if e == nil {
 		m, e := r.loadMeet(ctx, tx, id, false)
 		if e != nil {

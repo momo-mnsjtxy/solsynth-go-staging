@@ -163,7 +163,9 @@ func (r *Repository) Disconnect(ctx context.Context, actor string) error {
 const statusColumns = `id::text,account_id::text,attitude,type,label,symbol,app_identifier,is_automated,meta,cleared_at,created_at,updated_at`
 
 func scanStatus(row *sql.Row) (v presence.Status, e error) {
-	e = row.Scan(&v.ID, &v.AccountID, &v.Attitude, &v.Type, &v.Label, &v.Symbol, &v.AppIdentifier, &v.IsAutomated, &v.Meta, &v.ClearedAt, &v.CreatedAt, &v.UpdatedAt)
+	var meta []byte
+	e = row.Scan(&v.ID, &v.AccountID, &v.Attitude, &v.Type, &v.Label, &v.Symbol, &v.AppIdentifier, &v.IsAutomated, &meta, &v.ClearedAt, &v.CreatedAt, &v.UpdatedAt)
+	v.Meta = json.RawMessage(meta)
 	v.IsCustomized = e == nil
 	if len(v.Meta) == 0 {
 		v.Meta = json.RawMessage(`null`)

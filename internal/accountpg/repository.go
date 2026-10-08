@@ -232,7 +232,13 @@ func lookupPublisher(ctx context.Context, q querier, ref string, lock bool) (acc
 	if lock {
 		suffix = " FOR UPDATE OF p"
 	}
-	return scanPublisher(q.QueryRowContext(ctx, `SELECT `+publisherColumns+` FROM owned_publishers p WHERE p.deleted_at IS NULL AND (p.id::text=$1 OR lower(p.name)=lower($1)) AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled))`+suffix, ref))
+	match := `lower(p.name)=lower($1)`
+	if authority.ValidID(ref) {
+		// Like account selectors, UUIDs identify only canonical IDs. A name that
+		// resembles another publisher's UUID must not acquire an unrelated lock.
+		match = `p.id=$1::uuid`
+	}
+	return scanPublisher(q.QueryRowContext(ctx, `SELECT `+publisherColumns+` FROM owned_publishers p WHERE p.deleted_at IS NULL AND `+match+` AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled))`+suffix, ref))
 }
 func hydrate(ctx context.Context, q querier, p *accounts.Publisher) error {
 	if p.AccountID != nil {

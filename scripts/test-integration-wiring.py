@@ -8,6 +8,8 @@ REQUIRED_SCHEMAS = {
  "internal/presencepg/schema.sql",
  "internal/progressionpg/schema.sql",
  "internal/locationpg/schema.sql",
+    "internal/callpg/schema.sql",
+    "internal/federationpg/schema.sql",
  "internal/mediapg/usage_schema.sql",
  "internal/surveypg/schema.sql",
  "internal/stickerpg/schema.sql",
@@ -76,6 +78,10 @@ def check(runner, read_schema=None):
         raise ValueError("resumable media requires base schema")
     if any(schemas.index("internal/commercepg/schema.sql") <= schemas.index(name) for name in ("internal/apppg/schema.sql","internal/walletpg/schema.sql")):
         raise ValueError("commerce requires canonical apps and wallet first")
+    if any(schemas.index("internal/callpg/schema.sql") <= schemas.index(name) for name in ("internal/authoritypg/schema.sql", "internal/chatpg/schema.sql", "internal/notificationpg/schema.sql")):
+        raise ValueError("calls require canonical authority/chat/notification schemas")
+    if any(schemas.index("internal/federationpg/schema.sql") <= schemas.index(name) for name in ("internal/authoritypg/schema.sql", "internal/accountpg/schema.sql", "internal/postpg/schema.sql")):
+        raise ValueError("federation requires canonical authority/accounts/posts schemas")
     tables = {}
     for name in schemas:
         source = read_schema(name)

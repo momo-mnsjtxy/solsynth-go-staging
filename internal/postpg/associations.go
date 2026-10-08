@@ -18,6 +18,16 @@ type AssociationStore interface {
 	Load(context.Context, *sql.Tx, string, *posts.Post) error
 }
 
+// AssociationPrelocker optionally acquires all publisher locks needed by an
+// association before the lifecycle takes the source publisher's editor lock.
+// The actor/proof is already locked. publisher is an observed canonical ID,
+// never authorization; the lifecycle rechecks the selector or post ancestry and
+// editor permission after this call. Implementations must include the source
+// publisher in a globally sorted lock set and retain those locks until commit.
+type AssociationPrelocker interface {
+	Prelock(context.Context, *sql.Tx, string, string, posts.Patch, bool) error
+}
+
 func NewWithAssociations(db *sql.DB, a AssociationStore) *Repository {
 	r := New(db)
 	return r.WithAssociations(a)

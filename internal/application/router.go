@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"solsynth.local/go-migration/internal/federationhttp"
 	"solsynth.local/go-migration/ports/passport/presence"
 	"solsynth.local/go-migration/ports/passport/progression"
 	"solsynth.local/go-migration/ports/sphere/timeline"
@@ -13,7 +14,10 @@ import (
 
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
-type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps, commerce, signin, timeline, surveys, stickers, locations, presence, progression http.Handler }
+type modules struct {
+	calls, federationPublic, federationPrivate                                                                                                                                                                       http.Handler
+	board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps, commerce, signin, timeline, surveys, stickers, locations, presence, progression http.Handler
+}
 type router struct{ modules }
 
 func under(p, base string) bool { return p == base || strings.HasPrefix(p, base+"/") }
@@ -26,6 +30,16 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// between services. Neither a service-name prefix nor traversal is authority.
 	if p == "" || p[0] != '/' || path.Clean(p) != p || strings.Contains(p, "\\") || strings.Contains(p, "//") || r.URL.RawPath != "" && r.URL.EscapedPath() != p {
 		problem(w, 400, "INVALID_ROUTE_PATH")
+		return
+	}
+	// Federation signatures cover the original canonical target. These public
+	// routes bypass bearer middleware and gateway path rewriting.
+	if h.federationPublic != nil && federationhttp.IsPublicRoute(p) {
+		h.federationPublic.ServeHTTP(w, r)
+		return
+	}
+	if h.federationPrivate != nil && federationhttp.IsPrivateRoute(p) {
+		h.federationPrivate.ServeHTTP(w, r)
 		return
 	}
 	if h.signin != nil && signinRoute(r.Method, p) {
@@ -218,6 +232,9 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if timeline.Handles(probe) {
 			target = h.timeline
 		}
+	}
+	if h.calls != nil && (service == "api" || service == "messager") && under(canonical, "/api/chat/realtime") {
+		target = h.calls
 	}
 	if target == nil {
 		http.NotFound(w, r)

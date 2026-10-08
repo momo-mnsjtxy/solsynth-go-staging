@@ -14,6 +14,7 @@ import (
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/media"
+	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/sphere/posts"
 	"solsynth.local/go-migration/ports/sphere/stickers"
 	"solsynth.local/go-migration/ports/sphere/surveys"
@@ -168,9 +169,14 @@ func (r *Repository) pack(ctx context.Context, tx *sql.Tx, actor, selector strin
 	if edit {
 		lock = " FOR UPDATE OF s"
 	}
-	e = tx.QueryRowContext(ctx, `SELECT s.id::text,s.publisher_id::text,s.name,s.description,s.prefix,s.icon_id::text,s.created_at,s.updated_at,p.id::text,p.name,p.nick,p.bio,p.type,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at FROM owned_sticker_packs s JOIN owned_publishers p ON p.id=s.publisher_id WHERE s.id=$1 AND s.deleted_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled))`+lock, id).Scan(&x.p.ID, &x.p.PublisherID, &x.p.Name, &x.p.Description, &x.p.Prefix, &x.icon, &x.p.CreatedAt, &x.p.UpdatedAt, &x.p.Publisher.ID, &x.p.Publisher.Name, &x.p.Publisher.Nick, &x.p.Publisher.Bio, &x.p.Publisher.Type, &x.p.Publisher.AccountID, &x.p.Publisher.RealmID, &x.p.Publisher.CreatedAt, &x.p.Publisher.UpdatedAt)
+	var verification []byte
+	e = tx.QueryRowContext(ctx, `SELECT s.id::text,s.publisher_id::text,s.name,s.description,s.prefix,s.icon_id::text,s.created_at,s.updated_at,p.id::text,p.name,p.nick,p.bio,p.type,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at,p.verification FROM owned_sticker_packs s JOIN owned_publishers p ON p.id=s.publisher_id WHERE s.id=$1 AND s.deleted_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled))`+lock, id).Scan(&x.p.ID, &x.p.PublisherID, &x.p.Name, &x.p.Description, &x.p.Prefix, &x.icon, &x.p.CreatedAt, &x.p.UpdatedAt, &x.p.Publisher.ID, &x.p.Publisher.Name, &x.p.Publisher.Nick, &x.p.Publisher.Bio, &x.p.Publisher.Type, &x.p.Publisher.AccountID, &x.p.Publisher.RealmID, &x.p.Publisher.CreatedAt, &x.p.Publisher.UpdatedAt, &verification)
 	if e != nil {
 		return x, mapped(e)
+	}
+	x.p.Publisher.Verification, e = accounts.DecodeVerification(verification)
+	if e != nil {
+		return x, e
 	}
 	if x.p.PublisherID != pub {
 		return x, stickers.ErrConflict

@@ -80,16 +80,17 @@ type RelationshipChange struct {
 	Alias  *string
 }
 type Realm struct {
-	ID          string    `json:"id"`
-	Slug        string    `json:"slug"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	AccountID   string    `json:"account_id"`
-	IsPublic    bool      `json:"is_public"`
-	IsCommunity bool      `json:"is_community"`
-	BoostLevel  int       `json:"boost_level"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	Verification *accounts.VerificationMark `json:"verification,omitempty"`
+	ID           string                     `json:"id"`
+	Slug         string                     `json:"slug"`
+	Name         string                     `json:"name"`
+	Description  string                     `json:"description"`
+	AccountID    string                     `json:"account_id"`
+	IsPublic     bool                       `json:"is_public"`
+	IsCommunity  bool                       `json:"is_community"`
+	BoostLevel   int                        `json:"boost_level"`
+	CreatedAt    time.Time                  `json:"created_at"`
+	UpdatedAt    time.Time                  `json:"updated_at"`
 }
 type RealmPatch struct {
 	Slug         *string `json:"slug"`

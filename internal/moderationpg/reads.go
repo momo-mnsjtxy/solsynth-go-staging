@@ -100,6 +100,9 @@ func (r *Repository) List(ctx context.Context, actor string, kind c.Kind, q c.Qu
 	default:
 		return nil, 0, c.ErrInvalid
 	}
+	if kind != c.PostKind && q.Verified != nil {
+		f.add(`(v.verification IS NOT NULL)=$%d::boolean`, *q.Verified)
+	}
 	if kind != c.RealmKind {
 		if q.Banned != nil {
 			f.add(`(v.shadowbanned_at IS NOT NULL)=$%d::boolean`, *q.Banned)
@@ -174,6 +177,8 @@ func (r *Repository) Members(ctx context.Context, actor, ref string, q c.Query) 
 	}
 	if q.Pending != nil && *q.Pending {
 		f.where = append(f.where, `m.joined_at IS NULL`)
+	} else {
+		f.where = append(f.where, `m.joined_at IS NOT NULL`)
 	}
 	if q.Text != "" {
 		f.add(`EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=m.account_id AND strpos(lower(a.name),lower($%d::text))>0)`, q.Text)

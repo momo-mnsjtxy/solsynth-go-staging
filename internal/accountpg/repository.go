@@ -88,21 +88,25 @@ func newID() (string, error) {
 	return s[:8] + "-" + s[8:12] + "-" + s[12:16] + "-" + s[16:20] + "-" + s[20:], nil
 }
 
-const accountColumns = `a.id::text,a.name,a.nick,a.language,a.region,a.created_at,p.id::text,p.bio,p.pronouns,p.location,p.time_zone,p.links,p.updated_at,p.first_name,p.middle_name,p.last_name,p.gender`
+const accountColumns = `a.id::text,a.name,a.nick,a.language,a.region,a.created_at,p.id::text,p.bio,p.pronouns,p.location,p.time_zone,p.links,p.updated_at,p.first_name,p.middle_name,p.last_name,p.gender,p.verification`
 
 func scanAccount(s scanner) (accounts.Account, error) {
 	var a accounts.Account
 	var id, bio, pronouns, location, zone sql.NullString
-	var links []byte
+	var links, verification []byte
 	var updated sql.NullTime
 	var first, middle, last, gender sql.NullString
-	e := s.Scan(&a.ID, &a.Name, &a.Nick, &a.Language, &a.Region, &a.CreatedAt, &id, &bio, &pronouns, &location, &zone, &links, &updated, &first, &middle, &last, &gender)
+	e := s.Scan(&a.ID, &a.Name, &a.Nick, &a.Language, &a.Region, &a.CreatedAt, &id, &bio, &pronouns, &location, &zone, &links, &updated, &first, &middle, &last, &gender, &verification)
 	if e != nil {
 		return a, mapped(e)
 	}
 	if id.Valid {
 		a.Profile = &accounts.Profile{ID: id.String, Bio: bio.String, Pronouns: pronouns.String, Location: location.String, TimeZone: zone.String}
 		a.Profile.FirstName, a.Profile.MiddleName, a.Profile.LastName, a.Profile.Gender = first.String, middle.String, last.String, gender.String
+		a.Profile.Verification, e = accounts.DecodeVerification(verification)
+		if e != nil {
+			return accounts.Account{}, e
+		}
 		if e = json.Unmarshal(links, &a.Profile.Links); e != nil {
 			return accounts.Account{}, e
 		}
@@ -281,11 +285,15 @@ func (r *Repository) UpdateProfile(ctx context.Context, actor string, p accounts
 	return a, e
 }
 
-const publisherColumns = `p.id::text,p.type,p.name,p.nick,p.bio,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at`
+const publisherColumns = `p.id::text,p.type,p.name,p.nick,p.bio,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at,p.verification`
 
 func scanPublisher(s scanner) (accounts.Publisher, error) {
 	var p accounts.Publisher
-	e := s.Scan(&p.ID, &p.Type, &p.Name, &p.Nick, &p.Bio, &p.AccountID, &p.RealmID, &p.CreatedAt, &p.UpdatedAt)
+	var verification []byte
+	e := s.Scan(&p.ID, &p.Type, &p.Name, &p.Nick, &p.Bio, &p.AccountID, &p.RealmID, &p.CreatedAt, &p.UpdatedAt, &verification)
+	if e == nil {
+		p.Verification, e = accounts.DecodeVerification(verification)
+	}
 	return p, mapped(e)
 }
 func lookupPublisher(ctx context.Context, q querier, ref string, lock bool) (accounts.Publisher, error) {

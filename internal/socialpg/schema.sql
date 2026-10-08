@@ -25,3 +25,5 @@ CREATE TABLE IF NOT EXISTS owned_realm_members (
 CREATE UNIQUE INDEX IF NOT EXISTS owned_realm_owner ON owned_realm_members(realm_id) WHERE role=100 AND leave_at IS NULL;
 CREATE TABLE IF NOT EXISTS owned_realm_quota(account_id uuid PRIMARY KEY REFERENCES owned_authority_accounts(id),total bigint NOT NULL CHECK(total>=0),starts_at timestamptz NOT NULL,expires_at timestamptz);
 CREATE TABLE IF NOT EXISTS owned_social_audit(id bigserial PRIMARY KEY,actor_id uuid NOT NULL REFERENCES owned_authority_accounts(id),action text NOT NULL,target_id uuid NOT NULL,occurred_at timestamptz NOT NULL);
+
+ALTER TABLE owned_realms ADD COLUMN IF NOT EXISTS verification jsonb CHECK(verification IS NULL OR(jsonb_typeof(verification)='object' AND octet_length(verification::text)<=65536));

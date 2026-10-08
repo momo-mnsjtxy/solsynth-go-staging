@@ -15,6 +15,7 @@ import (
 	"solsynth.local/go-migration/internal/accountpg"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/sphere/posts"
 )
 
@@ -80,7 +81,7 @@ func optional(s *string) *string {
 	return &v
 }
 
-const columns = `p.id::text,p.publisher_id::text,p.title,p.description,p.slug,p.content,p.visibility,p.type,p.language,p.drafted_at,p.published_at,p.created_at,p.updated_at,p.deleted_at,p.locked_at,p.realm_id::text,u.id::text,u.name,u.nick,u.bio,u.type,u.account_id::text,u.realm_id::text,u.created_at,u.updated_at`
+const columns = `p.id::text,p.publisher_id::text,p.title,p.description,p.slug,p.content,p.visibility,p.type,p.language,p.drafted_at,p.published_at,p.created_at,p.updated_at,p.deleted_at,p.locked_at,p.realm_id::text,u.id::text,u.name,u.nick,u.bio,u.type,u.account_id::text,u.realm_id::text,u.created_at,u.updated_at,u.verification`
 const base = ` FROM owned_text_posts p JOIN owned_publishers u ON u.id=p.publisher_id WHERE p.deleted_at IS NULL AND u.deleted_at IS NULL AND (u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=u.account_id AND NOT owner.disabled))`
 
 // The owned privacy rule is editor-only access for private/draft posts. This is
@@ -89,8 +90,12 @@ const editor = `EXISTS(SELECT 1 FROM owned_publisher_members m JOIN owned_author
 
 func scan(s scanner) (posts.Post, error) {
 	var p posts.Post
+	var verification []byte
 	e := s.Scan(&p.ID, &p.PublisherID, &p.Title, &p.Description, &p.Slug, &p.Content, &p.Visibility, &p.Type, &p.Language, &p.DraftedAt, &p.PublishedAt, &p.CreatedAt, &p.UpdatedAt, &p.DeletedAt, &p.LockedAt, &p.RealmID,
-		&p.Publisher.ID, &p.Publisher.Name, &p.Publisher.Nick, &p.Publisher.Bio, &p.Publisher.Type, &p.Publisher.AccountID, &p.Publisher.RealmID, &p.Publisher.CreatedAt, &p.Publisher.UpdatedAt)
+		&p.Publisher.ID, &p.Publisher.Name, &p.Publisher.Nick, &p.Publisher.Bio, &p.Publisher.Type, &p.Publisher.AccountID, &p.Publisher.RealmID, &p.Publisher.CreatedAt, &p.Publisher.UpdatedAt, &verification)
+	if e == nil {
+		p.Publisher.Verification, e = accounts.DecodeVerification(verification)
+	}
 	return p, mapped(e)
 }
 func (r *Repository) write(ctx context.Context, actor, permission string, fn func(*sql.Tx, time.Time) error) error {

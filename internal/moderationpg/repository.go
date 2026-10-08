@@ -157,18 +157,26 @@ func selector(alias, column, ref string) string {
 func validRef(s string) bool { return s != "" && len(s) <= 256 && strings.TrimSpace(s) == s }
 func (r *Repository) publisher(ctx context.Context, tx *sql.Tx, ref string) (c.Publisher, error) {
 	var p c.Publisher
+	var verification []byte
 	if !validRef(ref) {
 		return p, c.ErrInvalid
 	}
-	e := tx.QueryRowContext(ctx, `SELECT p.id::text,p.type,p.name,p.nick,p.bio,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at,COALESCE(p.shadowban_reason,'none'),p.shadowbanned_at FROM owned_publishers p WHERE p.deleted_at IS NULL AND `+selector("p", "name", ref), ref).Scan(&p.ID, &p.Type, &p.Name, &p.Nick, &p.Bio, &p.AccountID, &p.RealmID, &p.CreatedAt, &p.UpdatedAt, &p.ShadowbanReason, &p.ShadowbannedAt)
+	e := tx.QueryRowContext(ctx, `SELECT p.id::text,p.type,p.name,p.nick,p.bio,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at,COALESCE(p.shadowban_reason,'none'),p.shadowbanned_at,p.verification FROM owned_publishers p WHERE p.deleted_at IS NULL AND `+selector("p", "name", ref), ref).Scan(&p.ID, &p.Type, &p.Name, &p.Nick, &p.Bio, &p.AccountID, &p.RealmID, &p.CreatedAt, &p.UpdatedAt, &p.ShadowbanReason, &p.ShadowbannedAt, &verification)
+	if e == nil {
+		p.Verification, e = accounts.DecodeVerification(verification)
+	}
 	return p, mapped(e)
 }
 func (r *Repository) realm(ctx context.Context, tx *sql.Tx, ref string) (social.Realm, error) {
 	var v social.Realm
+	var verification []byte
 	if !validRef(ref) {
 		return v, c.ErrInvalid
 	}
-	e := tx.QueryRowContext(ctx, `SELECT r.id::text,r.slug,r.name,r.description,r.account_id::text,r.is_public,r.is_community,r.boost_level,r.created_at,r.updated_at FROM owned_realms r WHERE r.deleted_at IS NULL AND `+selector("r", "slug", ref), ref).Scan(&v.ID, &v.Slug, &v.Name, &v.Description, &v.AccountID, &v.IsPublic, &v.IsCommunity, &v.BoostLevel, &v.CreatedAt, &v.UpdatedAt)
+	e := tx.QueryRowContext(ctx, `SELECT r.id::text,r.slug,r.name,r.description,r.account_id::text,r.is_public,r.is_community,r.boost_level,r.created_at,r.updated_at,r.verification FROM owned_realms r WHERE r.deleted_at IS NULL AND `+selector("r", "slug", ref), ref).Scan(&v.ID, &v.Slug, &v.Name, &v.Description, &v.AccountID, &v.IsPublic, &v.IsCommunity, &v.BoostLevel, &v.CreatedAt, &v.UpdatedAt, &verification)
+	if e == nil {
+		v.Verification, e = accounts.DecodeVerification(verification)
+	}
 	return v, mapped(e)
 }
 func (r *Repository) post(ctx context.Context, tx *sql.Tx, id string) (c.Post, error) {

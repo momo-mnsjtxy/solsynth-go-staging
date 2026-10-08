@@ -5,6 +5,18 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGAdminVerificationLifecycleAndPrivacy",
+        "TestPGAdminVerificationAuthorityAndRollback",
+        "TestPGAdminVerificationCurrentTargetAfterWait",
+        "TestPGAdminStatisticsCanonicalCounts",
+        "TestPGAdminStatisticsPermissionAndCurrentProof",
+        "TestPGAutomodRulesLifecycleAndExplicitEvaluation",
+        "TestPGAutomodBulkAtomicityAndConcurrency",
+        "TestPGAutomodRuleMutationRevocation",
+        "TestPGAdminVerificationNestedPublisherProjection",
+        "TestPGAdminExtensionsRestartPersistence",
+        "TestPGBackendAdminExtensionsComposition",
+
         "TestPGLiveStreamLifecycleTokensAndPrivateVisibility",
         "TestPGLiveStreamIngressUncertainCreateAndDurableCleanup",
         "TestPGLiveStreamCapturedPermissionAndPublisherRevocation",
@@ -380,6 +392,8 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGAdminExtensionsRestartPersistence",
+
         "TestPGLiveStreamCleanupRestartPersistence",
 
         "TestPGContentModerationRestartPersistence",

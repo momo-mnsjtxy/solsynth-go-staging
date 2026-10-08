@@ -12,19 +12,24 @@ import (
 	"solsynth.local/go-migration/internal/accountpg"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/sphere/interactions"
 	"solsynth.local/go-migration/ports/sphere/posts"
 	"solsynth.local/go-migration/ports/sphere/taxonomy"
 )
 
-const collectionColumns = `c.id::text,c.publisher_id::text,c.slug,c.name,c.description,c.created_at,c.updated_at,c.deleted_at,u.id::text,u.name,u.nick,u.bio,u.type,u.account_id::text,u.realm_id::text,u.created_at,u.updated_at`
+const collectionColumns = `c.id::text,c.publisher_id::text,c.slug,c.name,c.description,c.created_at,c.updated_at,c.deleted_at,u.id::text,u.name,u.nick,u.bio,u.type,u.account_id::text,u.realm_id::text,u.created_at,u.updated_at,u.verification`
 const collectionFrom = ` FROM owned_post_collections c JOIN owned_publishers u ON u.id=c.publisher_id WHERE c.deleted_at IS NULL AND u.deleted_at IS NULL AND u.type=0 AND (u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=u.account_id AND NOT a.disabled))`
 
 func scanCollection(s interface{ Scan(...any) error }) (posts.Collection, error) {
 	var c posts.Collection
-	e := s.Scan(&c.ID, &c.PublisherID, &c.Slug, &c.Name, &c.Description, &c.CreatedAt, &c.UpdatedAt, &c.DeletedAt, &c.Publisher.ID, &c.Publisher.Name, &c.Publisher.Nick, &c.Publisher.Bio, &c.Publisher.Type, &c.Publisher.AccountID, &c.Publisher.RealmID, &c.Publisher.CreatedAt, &c.Publisher.UpdatedAt)
+	var verification []byte
+	e := s.Scan(&c.ID, &c.PublisherID, &c.Slug, &c.Name, &c.Description, &c.CreatedAt, &c.UpdatedAt, &c.DeletedAt, &c.Publisher.ID, &c.Publisher.Name, &c.Publisher.Nick, &c.Publisher.Bio, &c.Publisher.Type, &c.Publisher.AccountID, &c.Publisher.RealmID, &c.Publisher.CreatedAt, &c.Publisher.UpdatedAt, &verification)
 	if errors.Is(e, sql.ErrNoRows) {
 		e = interactions.ErrCollectionNotFound
+	}
+	if e == nil {
+		c.Publisher.Verification, e = accounts.DecodeVerification(verification)
 	}
 	return c, e
 }

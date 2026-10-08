@@ -32,3 +32,7 @@ CREATE TABLE IF NOT EXISTS owned_publisher_entitlements(publisher_id uuid PRIMAR
 CREATE TABLE IF NOT EXISTS owned_accounts_audit(id bigserial PRIMARY KEY,actor_id uuid NOT NULL REFERENCES owned_authority_accounts(id),action text NOT NULL,target_id uuid NOT NULL,occurred_at timestamptz NOT NULL);
 ALTER TABLE owned_publishers ADD COLUMN IF NOT EXISTS shadowban_reason text;
 ALTER TABLE owned_publishers ADD COLUMN IF NOT EXISTS shadowbanned_at timestamptz;
+
+ALTER TABLE owned_accounts_profiles ADD COLUMN IF NOT EXISTS verification jsonb CHECK(verification IS NULL OR(jsonb_typeof(verification)='object' AND octet_length(verification::text)<=65536));
+
+ALTER TABLE owned_publishers ADD COLUMN IF NOT EXISTS verification jsonb CHECK(verification IS NULL OR(jsonb_typeof(verification)='object' AND octet_length(verification::text)<=65536));

@@ -63,16 +63,17 @@ type Account struct {
 	Contacts  []signin.Contact `json:"contacts,omitempty"`
 }
 type Profile struct {
-	ID         string `json:"id"`
-	Bio        string `json:"bio"`
-	Pronouns   string `json:"pronouns"`
-	Location   string `json:"location"`
-	TimeZone   string `json:"time_zone"`
-	Links      []Link `json:"links"`
-	FirstName  string `json:"first_name"`
-	MiddleName string `json:"middle_name"`
-	LastName   string `json:"last_name"`
-	Gender     string `json:"gender"`
+	Verification *VerificationMark `json:"verification,omitempty"`
+	ID           string            `json:"id"`
+	Bio          string            `json:"bio"`
+	Pronouns     string            `json:"pronouns"`
+	Location     string            `json:"location"`
+	TimeZone     string            `json:"time_zone"`
+	Links        []Link            `json:"links"`
+	FirstName    string            `json:"first_name"`
+	MiddleName   string            `json:"middle_name"`
+	LastName     string            `json:"last_name"`
+	Gender       string            `json:"gender"`
 	// Populated only through the authenticated self projection.
 	Birthday *time.Time `json:"birthday,omitempty"`
 }
@@ -114,16 +115,17 @@ const (
 func (r Role) Valid() bool { return r == Viewer || r == Editor || r == Manager || r == Owner }
 
 type Publisher struct {
-	ID        string    `json:"id"`
-	Type      int       `json:"type"`
-	Name      string    `json:"name"`
-	Nick      string    `json:"nick"`
-	Bio       string    `json:"bio"`
-	AccountID *string   `json:"account_id,omitempty"`
-	RealmID   *string   `json:"realm_id,omitempty"`
-	Account   *Account  `json:"account,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Verification *VerificationMark `json:"verification,omitempty"`
+	ID           string            `json:"id"`
+	Type         int               `json:"type"`
+	Name         string            `json:"name"`
+	Nick         string            `json:"nick"`
+	Bio          string            `json:"bio"`
+	AccountID    *string           `json:"account_id,omitempty"`
+	RealmID      *string           `json:"realm_id,omitempty"`
+	Account      *Account          `json:"account,omitempty"`
+	CreatedAt    time.Time         `json:"created_at"`
+	UpdatedAt    time.Time         `json:"updated_at"`
 }
 type Member struct {
 	ID          string     `json:"id"`

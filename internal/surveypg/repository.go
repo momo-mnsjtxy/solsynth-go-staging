@@ -165,9 +165,14 @@ func (r *Repository) loadWithPost(ctx context.Context, tx *sql.Tx, actor, id str
 		lock = " FOR UPDATE OF s"
 	}
 	var questions, attachments []byte
-	e = tx.QueryRowContext(ctx, `SELECT s.id::text,s.publisher_id::text,s.post_id::text,s.title,s.description,s.ended_at,s.is_anonymous,s.hide_results,s.status,s.questions,s.attachment_ids,s.created_at,s.updated_at,s.published_at,p.id::text,p.name,p.nick,p.bio,p.type,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at FROM owned_surveys s JOIN owned_publishers p ON p.id=s.publisher_id WHERE s.id=$1 AND s.deleted_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled))`+lock, id).Scan(&x.s.ID, &x.s.PublisherID, &x.s.PostID, &x.s.Title, &x.s.Description, &x.s.EndedAt, &x.s.Anonymous, &x.s.HideResults, &x.s.Status, &questions, &attachments, &x.s.CreatedAt, &x.s.UpdatedAt, &x.s.PublishedAt, &x.s.Publisher.ID, &x.s.Publisher.Name, &x.s.Publisher.Nick, &x.s.Publisher.Bio, &x.s.Publisher.Type, &x.s.Publisher.AccountID, &x.s.Publisher.RealmID, &x.s.Publisher.CreatedAt, &x.s.Publisher.UpdatedAt)
+	var verification []byte
+	e = tx.QueryRowContext(ctx, `SELECT s.id::text,s.publisher_id::text,s.post_id::text,s.title,s.description,s.ended_at,s.is_anonymous,s.hide_results,s.status,s.questions,s.attachment_ids,s.created_at,s.updated_at,s.published_at,p.id::text,p.name,p.nick,p.bio,p.type,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at,p.verification FROM owned_surveys s JOIN owned_publishers p ON p.id=s.publisher_id WHERE s.id=$1 AND s.deleted_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled))`+lock, id).Scan(&x.s.ID, &x.s.PublisherID, &x.s.PostID, &x.s.Title, &x.s.Description, &x.s.EndedAt, &x.s.Anonymous, &x.s.HideResults, &x.s.Status, &questions, &attachments, &x.s.CreatedAt, &x.s.UpdatedAt, &x.s.PublishedAt, &x.s.Publisher.ID, &x.s.Publisher.Name, &x.s.Publisher.Nick, &x.s.Publisher.Bio, &x.s.Publisher.Type, &x.s.Publisher.AccountID, &x.s.Publisher.RealmID, &x.s.Publisher.CreatedAt, &x.s.Publisher.UpdatedAt, &verification)
 	if e != nil {
 		return x, mapped(e)
+	}
+	x.s.Publisher.Verification, e = accounts.DecodeVerification(verification)
+	if e != nil {
+		return x, e
 	}
 	if x.s.PublisherID != pub || !postpg.SameOptionalID(x.s.PostID, oldPost) {
 		return x, surveys.ErrConflict

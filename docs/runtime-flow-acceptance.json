@@ -2,22 +2,22 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Configured livestream lifecycle composed with canonical moderation and account extras",
+  "local_source_checkpoint": "Admin verification/statistics/explicit automod composed locally; livestream runtime/fixture correction in progress",
   "last_fully_passed_ci": {
-    "commit": "ee2340ce8bde9ce9db4c55e148fe65f7e3de9c95",
-    "run": 37782048798,
-    "before": 327,
-    "after_restart": 46
+    "commit": "b8f8890bd57b5650e604da81df8ab5e13eed3295",
+    "run": 37783103970,
+    "before": 338,
+    "after_restart": 47
   },
   "latest_candidate": {
-    "commit": "b8f8890bd57b5650e604da81df8ab5e13eed3295",
-    "required_before": 338,
-    "required_after_restart": 47,
-    "status": "Published; actual PostgreSQL running",
-    "run": 37783103970
+    "commit": "a8a85cd06553333f1d38adfb1d2663551bb243e9",
+    "required_before": 348,
+    "required_after_restart": 48,
+    "status": "Failed before restart: redundant media schema fixture installation plus separate composed Start503; corrections pending",
+    "run": 37784162310
   },
-  "local_required_before": 348,
-  "local_required_after_restart": 48,
+  "local_required_before": 359,
+  "local_required_after_restart": 49,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -816,7 +816,7 @@
     },
     {
       "source_family": "admin.content_moderation",
-      "local_status": "implemented and composed; actual PG candidate pending",
+      "local_status": "fully validated in b8f8890b,338/47",
       "supported_flows": [
         "Current Superuser plus named-permission post/publisher/realm administration",
         "Shadowban propagation through ordinary reads, public metadata, nested/media/survey projections and federation withdrawal",
@@ -870,6 +870,34 @@
         "Subscriber notifications/provider webhooks",
         "Unobservable ingress creates require operator/provider reconciliation; never blind retry"
       ]
+    },
+    {
+      "source_family": "admin.verification_statistics_automod",
+      "local_status": "implemented and composed; actual PG candidate pending",
+      "supported_flows": [
+        "Canonical account/publisher/realm verification metadata with current privacy gates",
+        "Explicit Passport/Sphere/Wallet aggregate service stats routes and qualified aliases",
+        "Bounded atomic rule CRUD/bulk and explicit synthetic/local RE2 test evaluation"
+      ],
+      "guarded_pg_cases": [
+        "TestPGAdminVerificationLifecycleAndPrivacy",
+        "TestPGAdminVerificationAuthorityAndRollback",
+        "TestPGAdminVerificationCurrentTargetAfterWait",
+        "TestPGAdminStatisticsCanonicalCounts",
+        "TestPGAdminStatisticsPermissionAndCurrentProof",
+        "TestPGAutomodRulesLifecycleAndExplicitEvaluation",
+        "TestPGAutomodBulkAtomicityAndConcurrency",
+        "TestPGAutomodRuleMutationRevocation",
+        "TestPGAdminVerificationNestedPublisherProjection",
+        "TestPGAdminExtensionsRestartPersistence",
+        "TestPGBackendAdminExtensionsComposition"
+      ],
+      "unsupported_or_remaining": [
+        "Unknown verification enum string-to-number aliases",
+        "Automatic post enforcement/deranking remains separate",
+        "Excluded original RPC/model semantics",
+        "Original .NET regex features outside RE2 intentionally rejected"
+      ]
     }
   ],
   "additional_cross_service_flows": [
@@ -905,9 +933,9 @@
     }
   ],
   "global_remaining": [
-    "Remaining groups below are explicit uncompleted functionality, not a claim that contracts are unavailable",
-    "Live streams, administrative moderation and paid name-card/rewind implementation active",
-    "Configured providers and production deployment require separate authorization; no live transmissions performed"
+    "Remaining groups are explicit uncompleted functionality, not evidence that their contracts are unavailable",
+    "Core moderation and paid name-card/rewind validated; livestream ingress/lifecycle candidate published; follow-up chat, actor aliases and admin extensions active",
+    "Live provider transmissions and production deployment require separate authorization; configured adapter code and synthetic tests proceed independently"
   ],
   "remaining_acceptance_groups": [
     {
@@ -937,9 +965,10 @@
     },
     {
       "group": "live and commercial content",
-      "state": "not implemented; contracts not exhaustively researched",
+      "state": "Livestream ingress/lifecycle composed candidate348/48; remaining contracts partially researched",
       "remaining": [
-        "Live ingress/lifecycle, ads/sponsorship, publisher subscriptions and ratings"
+        "Livestream chat, egress/HLS access-controlled output/playback, awards and subscriber delivery",
+        "Ads/sponsorship, publisher subscriptions and ratings"
       ],
       "source_controllers": [
         "LiveStreamController",
@@ -950,18 +979,16 @@
     },
     {
       "group": "account extensions",
-      "state": "Profiles/contacts/preferences fully validated315/44; paid name/rewind active",
+      "state": "Profiles/contacts/preferences and IP checks validated; paid names/rewind fully validated327/46",
       "remaining": [
-        "PassKit, affiliation spells, domain trust, IP checks, paid name cards, rewind and artwork",
-        "Remaining admin contacts/statistics, media/security modes and original SDK preference encoding"
+        "PassKit, affiliation spells, domain trust and presence artwork",
+        "Remaining admin contacts/statistics, media/security modes and original SDK preference encoding",
+        "Rewind optional action-telemetry/tokenizer providers and original DTO compatibility gaps"
       ],
       "source_controllers": [
         "PassKitController",
         "AffiliationSpellController",
         "DomainTrustController",
-        "IpCheckController",
-        "NameChangeCardController",
-        "AccountRewindController",
         "PresenceArtworkController",
         "AccountSettingsController",
         "AccountAdminController",
@@ -970,9 +997,10 @@
     },
     {
       "group": "administration and moderation",
-      "state": "partial; explicit workflows still require implementation",
+      "state": "Global post/publisher/realm moderation and scoped realm removal fully validated338/47",
       "remaining": [
-        "Automatic/manual content moderation, global post/collection/publisher/realm administration and aggregate statistics"
+        "Verification marks, aggregate service statistics and automod rule CRUD/test in active next slice",
+        "Automatic moderation enforcement, post collection administration and custom realm permission overrides"
       ],
       "source_controllers": [
         "AutomodController",

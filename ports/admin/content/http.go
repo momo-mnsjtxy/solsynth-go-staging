@@ -238,7 +238,14 @@ func query(r *http.Request, k Kind, members bool) (Query, error) {
 				}
 				p.Pending = &b
 			}
-		case "verified", "gatekept":
+		case "verified":
+			if k == PostKind {
+				return p, ErrInvalid
+			}
+			b, x := strconv.ParseBool(s)
+			e = x
+			p.Verified = &b
+		case "gatekept":
 			return p, ErrUnsupported
 		default:
 			return p, ErrInvalid

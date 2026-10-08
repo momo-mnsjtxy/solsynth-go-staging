@@ -35,6 +35,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 			return e
 		}
 	}
+	if b.admin.repo != nil {
+		if e := b.admin.repo.Ready(ctx); e != nil {
+			return e
+		}
+	}
 	if b.accountSettings != nil {
 		if err := b.accountSettings.Ready(ctx); err != nil {
 			return err

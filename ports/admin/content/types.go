@@ -107,11 +107,11 @@ type RealmDetail struct {
 	PendingInviteCount int64        `json:"pending_invite_count"`
 }
 type Query struct {
-	Text, PublisherID, RealmID, AccountID               string
-	Visibility, Type, Role                              *int
-	Reason                                              *string
-	Banned, Locked, Drafted, Public, Community, Pending *bool
-	Take, Offset                                        int
+	Text, PublisherID, RealmID, AccountID                         string
+	Visibility, Type, Role                                        *int
+	Reason                                                        *string
+	Banned, Locked, Drafted, Public, Community, Pending, Verified *bool
+	Take, Offset                                                  int
 }
 type PublisherPatch struct {
 	Name                 *string `json:"name"`

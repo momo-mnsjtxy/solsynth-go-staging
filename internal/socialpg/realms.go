@@ -6,15 +6,20 @@ import (
 	"database/sql"
 	"errors"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/social"
 	"time"
 )
 
-const realmColumns = `r.id::text,r.slug,r.name,r.description,r.account_id::text,r.is_public,r.is_community,r.boost_level,r.created_at,r.updated_at`
+const realmColumns = `r.id::text,r.slug,r.name,r.description,r.account_id::text,r.is_public,r.is_community,r.boost_level,r.created_at,r.updated_at,r.verification`
 const memberColumns = `m.id::text,m.realm_id::text,m.account_id::text,m.role,m.joined_at,m.leave_at,m.created_at,m.updated_at`
 
 func scanRealm(s scanner) (v social.Realm, e error) {
-	e = s.Scan(&v.ID, &v.Slug, &v.Name, &v.Description, &v.AccountID, &v.IsPublic, &v.IsCommunity, &v.BoostLevel, &v.CreatedAt, &v.UpdatedAt)
+	var verification []byte
+	e = s.Scan(&v.ID, &v.Slug, &v.Name, &v.Description, &v.AccountID, &v.IsPublic, &v.IsCommunity, &v.BoostLevel, &v.CreatedAt, &v.UpdatedAt, &verification)
+	if e == nil {
+		v.Verification, e = accounts.DecodeVerification(verification)
+	}
 	return v, mapped(e)
 }
 func realm(ctx context.Context, q querier, ref string, lock bool) (social.Realm, error) {

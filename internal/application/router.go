@@ -25,6 +25,7 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	admin                                                                                                                                                                                                                                                adminModules
 	livestreams                                                                                                                                                                                                                                          http.Handler
 	moderation                                                                                                                                                                                                                                           http.Handler
 	namecards, rewind                                                                                                                                                                                                                                    http.Handler
@@ -265,6 +266,9 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if h.livestreams != nil && (service == "api" || service == "sphere") && livestreams.RouteMatches(canonical) {
 		target = h.livestreams
+	}
+	if admin := h.admin.route(service, canonical); admin != nil {
+		target = admin
 	}
 	if h.ipcheck != nil && (service == "api" || service == "passport") && ipcheck.Route(canonical) {
 		target = h.ipcheck

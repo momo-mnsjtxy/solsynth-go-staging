@@ -47,10 +47,13 @@ func TestPGBackendPresenceProgressionLocationComposition(t *testing.T) {
 	if e := f.db.QueryRow(`SELECT count(*) FROM notification_v1.outbox WHERE account_id=$1 AND source_key LIKE 'progression:%'`, f.actor).Scan(&second); e != nil || second != first {
 		t.Fatal("progression duplicate inbox", first, second, e)
 	}
-	if _, e := notificationpg.New(f.db, nil, "dev.solsynth.solian").ProcessPending(context.Background(), 1000); e != nil {
+	if _, e := notificationpg.New(f.db, nil, "dev.solsynth.solian").ProcessPending(context.Background(), 100); e != nil {
 		t.Fatal(e)
 	}
-	backendCall(t, f.app, "GET", "/api/notifications", f.token, "", 200)
+	inbox := backendCall(t, f.app, "GET", "/api/notifications", f.token, "", 200)
+	if !strings.Contains(inbox.Body.String(), "progression") {
+		t.Fatal("progression not materialized into inbox", inbox.Body.String())
+	}
 	if e := authoritypg.New(f.db).ReplacePolicy(context.Background(), f.actor, []authority.Rule{}, nil); e != nil {
 		t.Fatal(e)
 	}

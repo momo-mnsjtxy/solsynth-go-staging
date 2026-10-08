@@ -1,6 +1,6 @@
 {
-  "checkpoint": "audited-external-modules-and-publisher-lock-order",
-  "scope": "Bounded211/31 candidate: prior208 plus independent realm SQL and sorted publisher lock fixes; excludes later merchant/ticket work",
+  "checkpoint": "audited211-fixtures",
+  "scope": "Isolated211/31 audited candidate with fixture-only timestamp and bounded inbox processing corrections; actual CI pending",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
@@ -6561,8 +6561,8 @@
     },
     {
       "path": "tests/integration/backend_presence_test.go",
-      "bytes": 3349,
-      "sha256": "33b02ad7f3e77dda36157a2829eb26e1e3b1a16004af7a81ae29067401190758"
+      "bytes": 3494,
+      "sha256": "745d350145eb35185e463984fe5464b537c4e03dfb415d58f0c6f7ea18a66e61"
     },
     {
       "path": "tests/integration/backend_signin_test.go",
@@ -6626,8 +6626,8 @@
     },
     {
       "path": "tests/integration/federation_test.go",
-      "bytes": 25110,
-      "sha256": "9ae2183df2896683f8296743d968823daa078a81133b6a147bc71d6fbf7d3303"
+      "bytes": 25162,
+      "sha256": "914de17cbff8e0c5c5eb9c50be9d1c7e3b01b6ddd691427f3632e0336f2de2e1"
     },
     {
       "path": "tests/integration/identity_guard_review_test.go",

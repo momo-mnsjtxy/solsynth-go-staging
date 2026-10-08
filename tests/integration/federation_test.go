@@ -196,7 +196,7 @@ func (x *federationFixture) makePost(t *testing.T, body string, visibility int, 
 	// explicitly frozen. Align synthetic post fixture timestamps instead of
 	// assuming key generation and SQL calls finish within a one-second offset.
 	at := x.config.Clock().UTC().Truncate(time.Microsecond)
-	query(t, x.db, `UPDATE owned_text_posts SET created_at=$2,updated_at=$2,published_at=CASE WHEN drafted_at IS NULL THEN $2 ELSE NULL END,drafted_at=CASE WHEN drafted_at IS NOT NULL THEN $2 ELSE NULL END WHERE id=$1`, v.ID, at)
+	query(t, x.db, `UPDATE owned_text_posts SET created_at=$2::timestamptz,updated_at=$2::timestamptz,published_at=CASE WHEN drafted_at IS NULL THEN $2::timestamptz ELSE NULL END,drafted_at=CASE WHEN drafted_at IS NOT NULL THEN $2::timestamptz ELSE NULL END WHERE id=$1`, v.ID, at)
 	query(t, x.db, `UPDATE owned_text_post_audit SET occurred_at=$2 WHERE post_id=$1`, v.ID, at)
 	v.CreatedAt = at
 	v.UpdatedAt = at

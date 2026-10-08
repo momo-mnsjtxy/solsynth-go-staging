@@ -238,12 +238,12 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 		where += ` AND EXISTS(SELECT 1 FROM owned_post_collection_items ci WHERE ci.post_id=p.id AND ci.collection_id=` + add(cid) + `::uuid)`
 	}
 	if actor != "" {
-		where += ` AND NOT EXISTS(SELECT 1 FROM owned_timeline_preferences x WHERE x.account_id=$1 AND ((x.kind='publisher' AND x.reference_id=p.publisher_id) OR(x.kind='account' AND x.reference_id=u.account_id)))`
+		where += ` AND NOT EXISTS(SELECT 1 FROM owned_timeline_preferences x WHERE x.account_id=$1::uuid AND ((x.kind='publisher' AND x.reference_id=p.publisher_id) OR(x.kind='account' AND x.reference_id=u.account_id)))`
 		if o.Filter == "subscriptions" {
-			where += ` AND EXISTS(SELECT 1 FROM owned_publisher_follows f WHERE f.account_id=$1 AND f.publisher_id=p.publisher_id AND f.state='accepted' AND f.ended_at IS NULL)`
+			where += ` AND EXISTS(SELECT 1 FROM owned_publisher_follows f WHERE f.account_id=$1::uuid AND f.publisher_id=p.publisher_id AND f.state='accepted' AND f.ended_at IS NULL)`
 		}
 		if o.Filter == "friends" {
-			where += ` AND EXISTS(SELECT 1 FROM owned_social_relationships a WHERE a.account_id=$1 AND a.related_id=u.account_id AND a.status>=100) AND EXISTS(SELECT 1 FROM owned_social_relationships b WHERE b.account_id=u.account_id AND b.related_id=$1 AND b.status>=100)`
+			where += ` AND EXISTS(SELECT 1 FROM owned_social_relationships a WHERE a.account_id=$1::uuid AND a.related_id=u.account_id AND a.status>=100) AND EXISTS(SELECT 1 FROM owned_social_relationships b WHERE b.account_id=u.account_id AND b.related_id=$1::uuid AND b.status>=100)`
 		}
 	}
 	// Rank a complete chronological page. The cursor represents its last scanned

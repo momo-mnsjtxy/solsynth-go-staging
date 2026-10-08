@@ -1,0 +1,76 @@
+{
+  "dyson_ref": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "solian_ref": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+  "sources": [
+    {
+      "upstream_path": "DysonNetwork.Passport/Account/AccountEventService.cs",
+      "git_blob_sha": "1f9891d9bfc97ffbc7306213e0d7f5a10d63b4ce",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountEventService.cs",
+      "license": "AGPL-3.0; repository root LICENSE.txt",
+      "content_kind": "licensed authored source; no excluded submodules, generated definitions, or fortune corpus"
+    },
+    {
+      "upstream_path": "DysonNetwork.Passport/Progression/ProgressionService.cs",
+      "git_blob_sha": "f5d14791c18cc8f22399be11d83e2905d2e32148",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Progression/ProgressionService.cs",
+      "license": "AGPL-3.0; repository root LICENSE.txt",
+      "content_kind": "licensed authored source; no excluded submodules, generated definitions, or fortune corpus"
+    },
+    {
+      "upstream_path": "DysonNetwork.Passport/Leveling/ExperienceService.cs",
+      "git_blob_sha": "8d77db99386905087bff95831833fedc0337f635",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Leveling/ExperienceService.cs",
+      "license": "AGPL-3.0; repository root LICENSE.txt",
+      "content_kind": "licensed authored source; no excluded submodules, generated definitions, or fortune corpus"
+    },
+    {
+      "upstream_path": "DysonNetwork.Passport/Progression/ProgressionContracts.cs",
+      "git_blob_sha": "f2b3c2d855f527d0ae0a35ab5b046ddd7fa3d624",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Progression/ProgressionContracts.cs",
+      "license": "AGPL-3.0; repository root LICENSE.txt",
+      "content_kind": "licensed authored source; no excluded submodules, generated definitions, or fortune corpus"
+    },
+    {
+      "upstream_path": "DysonNetwork.Passport/Progression/ProgressionSeedService.cs",
+      "git_blob_sha": "9e016bb743c85c63f242dd0c578c88ea592f9fe2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Progression/ProgressionSeedService.cs",
+      "license": "AGPL-3.0; repository root LICENSE.txt",
+      "content_kind": "licensed authored source; no excluded submodules, generated definitions, or fortune corpus"
+    },
+    {
+      "upstream_path": "DysonNetwork.Passport/Progression/ProgressionCatalogDefaults.cs",
+      "git_blob_sha": "4e00b6a6eaf907c4a4cd2374bc8606e7f4d81c9c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Progression/ProgressionCatalogDefaults.cs",
+      "license": "AGPL-3.0; repository root LICENSE.txt",
+      "content_kind": "licensed authored source; no excluded submodules, generated definitions, or fortune corpus"
+    },
+    {
+      "upstream_path": "DysonNetwork.Passport/Account/AccountService.cs",
+      "git_blob_sha": "270436f5665cf8a2539c32719ed55580139ddfb9",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountService.cs",
+      "license": "AGPL-3.0; repository root LICENSE.txt",
+      "content_kind": "licensed authored source; no excluded submodules, generated definitions, or fortune corpus"
+    },
+    {
+      "upstream_path": "lib/accounts/check_in.dart",
+      "git_blob_sha": "9e91177b311e96fa42dbd63ee594eda2c89e13e2",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/check_in.dart",
+      "license": "AGPL-3.0; repository root LICENSE.txt",
+      "content_kind": "licensed authored source; no excluded submodules, generated definitions, or fortune corpus"
+    },
+    {
+      "upstream_path": "lib/accounts/badge.dart",
+      "git_blob_sha": "52a4e1759012cc9272df1d9c228fdb109186c202",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/badge.dart",
+      "license": "AGPL-3.0; repository root LICENSE.txt",
+      "content_kind": "licensed authored source; no excluded submodules, generated definitions, or fortune corpus"
+    },
+    {
+      "upstream_path": "lib/accounts/progression_ws.dart",
+      "git_blob_sha": "631d406c4ecaed8713c4bf2cbc8bed273081869a",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/progression_ws.dart",
+      "license": "AGPL-3.0; repository root LICENSE.txt",
+      "content_kind": "licensed authored source; no excluded submodules, generated definitions, or fortune corpus"
+    }
+  ]
+}

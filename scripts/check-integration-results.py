@@ -5,6 +5,24 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGBackendPresenceProgressionLocationComposition",
+        "TestPGPresencePrivacyLeasesAndAuthority",
+        "TestPGPresenceFriendsBlocksInvisibleAndExpiry",
+        "TestPGProgressionConcurrentCheckInAndIsolation",
+        "TestPGProgressionCanonicalProjectorRollbackAndEarnedBadges",
+        "TestPGPresenceProgressionRevocationWhileBlocked",
+        "TestPGPresenceProgressionRestartPersistence",
+        "TestPGProgressionChatSocialProjection",
+
+        "TestPGLocationsMeetLifecycleAndPrivacy",
+        "TestPGLocationsMeetDeduplicationAndAuditRollback",
+        "TestPGLocationsPinsSessionPrivacyRateAndExpiry",
+        "TestPGLocationsMeetPinPrivacyAndBlock",
+        "TestPGLocationsNFCOwnershipAndResolution",
+        "TestPGLocationsPinMutationRollbackAndRevokedProof",
+        "TestPGLocationsHTTPStreamCompletionAndRevocation",
+        "TestPGLocationsRestartPersistence",
+
         "TestPGMediaUsageDirectAtomicMetadata",
         "TestPGMediaUsageResumableAndPostProjection",
         "TestPGMediaUsageRestartPersistence",
@@ -192,6 +210,10 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGPresenceProgressionRestartPersistence",
+
+        "TestPGLocationsRestartPersistence",
+
         "TestPGMediaUsageRestartPersistence",
 
         "TestPGSurveysStickersRestartPersistence",

@@ -15,11 +15,14 @@ import (
 	"solsynth.local/go-migration/internal/chatpg"
 	"solsynth.local/go-migration/internal/commercepg"
 	"solsynth.local/go-migration/internal/interactionpg"
+	"solsynth.local/go-migration/internal/locationpg"
 	"solsynth.local/go-migration/internal/mediapg"
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/internal/notificationpg"
 	"solsynth.local/go-migration/internal/postmediapg"
 	"solsynth.local/go-migration/internal/postpg"
+	"solsynth.local/go-migration/internal/presencepg"
+	"solsynth.local/go-migration/internal/progressionpg"
 	"solsynth.local/go-migration/internal/realtime"
 	"solsynth.local/go-migration/internal/signinpg"
 	"solsynth.local/go-migration/internal/socialpg"
@@ -36,8 +39,11 @@ import (
 	"solsynth.local/go-migration/ports/notifications"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/board"
+	"solsynth.local/go-migration/ports/passport/presence"
+	"solsynth.local/go-migration/ports/passport/progression"
 	"solsynth.local/go-migration/ports/passport/social"
 	"solsynth.local/go-migration/ports/sphere/interactions"
+	"solsynth.local/go-migration/ports/sphere/locations"
 	"solsynth.local/go-migration/ports/sphere/posts"
 	"solsynth.local/go-migration/ports/sphere/stickers"
 	"solsynth.local/go-migration/ports/sphere/surveys"
@@ -72,6 +78,8 @@ type Backend struct {
 	media              *mediapg.Repository
 	notificationWorker *notificationpg.Worker
 	commerce           *commercepg.Repository
+	locations          *locationpg.Repository
+	progression        *progressionpg.Repository
 	signinEnabled      bool
 }
 
@@ -131,6 +139,16 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	}
 	mh := (&rooms.Service{Repository: cr, Authority: proofIdentity{identity}, Reader: mr}).Handler()
 	th := taxonomy.NewAuthorityHandler(taxonomypg.NewWithAuthority(db, *c.PublicVisibility, guard), taxonomyIdentity{identity, publisherRepository{accountRepo}}, time.Now)
+	presenceRepo := presencepg.NewWithAuthority(db, guard)
+	progressionRepo := progressionpg.NewWithAuthority(db, guard)
+	var bindProof func(context.Context, authority.Principal) context.Context
+	if guard != nil {
+		bindProof = guard.Bind
+	}
+	presenceHTTP := (&presence.Service{Repository: presenceRepo, Authority: v, Bind: bindProof}).Handler()
+	progressionHTTP := (&progression.Service{Repository: progressionRepo, Authority: v, Bind: bindProof}).Handler()
+	locationRepo := locationpg.NewWithAuthority(db, guard)
+	locationHTTP := locations.NewHandler(locationRepo, postIdentity{identity})
 	socialRepo := socialpg.NewWithAuthority(db, guard)
 	socialHTTP := (&social.Service{Repository: socialRepo, Authority: proofIdentity{identity}}).Handler()
 	interactionRepo := interactionpg.NewWithAuthority(db, guard).WithVisibility(socialRepo)
@@ -210,8 +228,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	h := router{modules{presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	return &Backend{handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 }
 
 type accountLookup interface {
@@ -241,5 +259,7 @@ func (b *Backend) ProcessDue(ctx context.Context, limit int) (int, error) {
 		return n, e
 	}
 	m, ce := b.commerce.ProcessDue(ctx, limit)
-	return n + m, errors.Join(e, ce)
+	l, le := b.locations.Expire(ctx, limit)
+	p, pe := b.progression.ProcessDue(ctx, limit)
+	return n + m + int(l) + p, errors.Join(e, ce, le, pe)
 }

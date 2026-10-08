@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "based on d3b65e2bdc6cee756a5f759b6ed0e6172b307d0d with content composition",
+  "local_source_checkpoint": "based on82afbbd with authenticated timeline SQL fix and presence/progression/location",
   "last_fully_passed_ci": {
     "commit": "d4ee9b826ae65138ba53d460ff5874d4181384fa",
     "run": 37737268425,
@@ -10,13 +10,13 @@
     "after_restart": 20
   },
   "latest_candidate": {
-    "commit": "49f896b5369b5f77745c599fd71d60cb5f5b4bb9",
-    "required_before": 147,
-    "required_after_restart": 23,
-    "status": "CI pending; prior single process-test frozen-clock fixture failure corrected with HTTP revocation"
+    "commit": "d17bdfc3cfe6cc2399bc4ec60a25871c78cc08ff",
+    "required_before": 177,
+    "required_after_restart": 27,
+    "status": "CI running; preceding content CI failed three shared authenticated timeline SQL cases; fix included locally"
   },
-  "local_required_before": 177,
-  "local_required_after_restart": 27,
+  "local_required_before": 193,
+  "local_required_after_restart": 29,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -189,7 +189,8 @@
       "source_family": "passport.accounts_presence",
       "local_status": "partial",
       "supported_flows": [
-        "Canonical profiles/publishers; first-party password/TOTP/recovery and session flows"
+        "Canonical profiles/publishers; first-party password/TOTP/recovery and session flows",
+        "Verified-session presence leases, status and privacy settings"
       ],
       "guarded_pg_cases": [
         "TestPGAccountsAtomicRollbackAndQuotaRace",
@@ -205,7 +206,10 @@
         "TestPGSigninLifecycle",
         "TestPGSigninRateConcurrency",
         "TestPGSigninRestartPersistence",
-        "TestPGSigninTOTPAndRecovery"
+        "TestPGSigninTOTPAndRecovery",
+        "TestPGPresencePrivacyLeasesAndAuthority",
+        "TestPGPresenceFriendsBlocksInvisibleAndExpiry",
+        "TestPGBackendPresenceProgressionLocationComposition"
       ],
       "unsupported_or_remaining": [
         "Presence/status, contacts, paid rename, external identity providers"
@@ -213,11 +217,22 @@
     },
     {
       "source_family": "passport.progression",
-      "local_status": "not_implemented",
-      "supported_flows": [],
-      "guarded_pg_cases": [],
+      "local_status": "partial",
+      "supported_flows": [
+        "UTC100-XP daily check-in, earned badges, achievements and quests",
+        "Idempotent automatic canonical event projection and reward outbox"
+      ],
+      "guarded_pg_cases": [
+        "TestPGPresencePrivacyLeasesAndAuthority",
+        "TestPGPresenceFriendsBlocksInvisibleAndExpiry",
+        "TestPGProgressionConcurrentCheckInAndIsolation",
+        "TestPGProgressionCanonicalProjectorRollbackAndEarnedBadges",
+        "TestPGPresenceProgressionRevocationWhileBlocked",
+        "TestPGPresenceProgressionRestartPersistence",
+        "TestPGProgressionChatSocialProjection"
+      ],
       "unsupported_or_remaining": [
-        "Experience, achievements and progression mutation flows"
+        "Source-point payout provider, explicit level threshold policy values, unsupported legacy event categories"
       ]
     },
     {
@@ -249,11 +264,23 @@
     },
     {
       "source_family": "passport.location_nfc",
-      "local_status": "not_implemented",
-      "supported_flows": [],
-      "guarded_pg_cases": [],
+      "local_status": "partial",
+      "supported_flows": [
+        "Private meets, explicit WKT locations, nearby discovery and session-owned pins",
+        "Plain NFC ownership/metadata with privacy-filtered account resolution"
+      ],
+      "guarded_pg_cases": [
+        "TestPGLocationsMeetLifecycleAndPrivacy",
+        "TestPGLocationsMeetDeduplicationAndAuditRollback",
+        "TestPGLocationsPinsSessionPrivacyRateAndExpiry",
+        "TestPGLocationsMeetPinPrivacyAndBlock",
+        "TestPGLocationsNFCOwnershipAndResolution",
+        "TestPGLocationsPinMutationRollbackAndRevokedProof",
+        "TestPGLocationsHTTPStreamCompletionAndRevocation",
+        "TestPGLocationsRestartPersistence"
+      ],
       "unsupported_or_remaining": [
-        "Location/meet/NFC lifecycle"
+        "Hardware/encrypted NFC, provider geocoding, image attachments, durable stream replay"
       ]
     },
     {

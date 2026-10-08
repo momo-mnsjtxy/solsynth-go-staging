@@ -1,0 +1,492 @@
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using DysonNetwork.Shared.Auth;
+using DysonNetwork.Shared.Capabilities;
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Networking;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO;
+using Grpc.Core;
+using NodaTime;
+
+namespace DysonNetwork.Passport.Meet;
+
+[ApiController]
+[Route("/api/meets")]
+[ApiFeature("meets", Revision = 1)]
+public class MeetController(
+    MeetService meetService,
+    LocationPinService locationPinService,
+    MeetSubscriptionHub subscriptions,
+    IOptions<JsonOptions> jsonOptions
+) : ControllerBase
+{
+    public class CreateMeetRequest
+    {
+        public LocationVisibility Visibility { get; set; } = LocationVisibility.Private;
+        [MaxLength(8192)] public string? Notes { get; set; }
+        [MaxLength(512)] public string? ImageId { get; set; }
+        [MaxLength(256)] public string? LocationName { get; set; }
+        [MaxLength(1024)] public string? LocationAddress { get; set; }
+        public string? LocationWkt { get; set; }
+        public Dictionary<string, object>? Metadata { get; set; }
+        [Range(60, 86400)] public int? ExpiresInSeconds { get; set; }
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<ActionResult<SnMeet>> CreateMeet([FromBody] CreateMeetRequest request, CancellationToken cancellationToken)
+    {
+        if (HttpContext.Items["CurrentUser"] is not SnAccount currentUser) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        try
+        {
+            Geometry? location = null;
+            if (!string.IsNullOrWhiteSpace(request.LocationWkt))
+            {
+                try
+                {
+                    location = new WKTReader().Read(request.LocationWkt);
+                    location.SRID = 4326;
+                }
+                catch (Exception)
+                {
+                    return BadRequest(ApiError.Validation(new Dictionary<string, string[]>
+                    {
+                        [nameof(request.LocationWkt)] = ["Invalid WKT geometry."]
+                    }, traceId: HttpContext.TraceIdentifier));
+                }
+            }
+
+            var meet = await meetService.CreateMeetAsync(
+                currentUser.Id,
+                request.Visibility,
+                request.Notes,
+                request.ImageId,
+                request.LocationName,
+                request.LocationAddress,
+                location,
+                request.Metadata,
+                request.ExpiresInSeconds.HasValue ? Duration.FromSeconds(request.ExpiresInSeconds.Value) : null,
+                cancellationToken
+            );
+
+            return Ok(meet);
+        }
+        catch (RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.NotFound)
+        {
+            return BadRequest(ApiError.Validation(new Dictionary<string, string[]>
+            {
+                [nameof(CreateMeetRequest.ImageId)] = ["Image was not found."]
+            }, traceId: HttpContext.TraceIdentifier));
+        }
+    }
+
+    [HttpGet("nearby")]
+    [Authorize]
+    public async Task<ActionResult<List<SnMeet>>> ListNearbyMeets(
+        [FromQuery] string locationWkt,
+        [FromQuery] double distanceMeters = 1000,
+        [FromQuery] MeetStatus? status = null,
+        [FromQuery] int offset = 0,
+        [FromQuery] int take = 20,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not SnAccount currentUser) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        if (string.IsNullOrWhiteSpace(locationWkt))
+        {
+            return BadRequest(ApiError.Validation(new Dictionary<string, string[]>
+            {
+                [nameof(locationWkt)] = ["Location WKT is required."]
+            }, traceId: HttpContext.TraceIdentifier));
+        }
+
+        if (distanceMeters <= 0)
+        {
+            return BadRequest(ApiError.Validation(new Dictionary<string, string[]>
+            {
+                [nameof(distanceMeters)] = ["Distance must be greater than zero."]
+            }, traceId: HttpContext.TraceIdentifier));
+        }
+
+        Geometry location;
+        try
+        {
+            location = new WKTReader().Read(locationWkt);
+            location.SRID = 4326;
+        }
+        catch (Exception)
+        {
+            return BadRequest(ApiError.Validation(new Dictionary<string, string[]>
+            {
+                [nameof(locationWkt)] = ["Invalid WKT geometry."]
+            }, traceId: HttpContext.TraceIdentifier));
+        }
+
+        var meets = await meetService.ListNearbyMeetsAsync(
+            currentUser.Id,
+            location,
+            distanceMeters,
+            status,
+            offset,
+            take,
+            cancellationToken
+        );
+
+        return Ok(meets);
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<List<SnMeet>>> ListMeets(
+        [FromQuery] MeetStatus? status = null,
+        [FromQuery] bool hostOnly = false,
+        [FromQuery] int offset = 0,
+        [FromQuery] int take = 20,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not SnAccount currentUser) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var meets = await meetService.ListMeetsAsync(currentUser.Id, status, hostOnly, offset, take, cancellationToken);
+        return Ok(meets);
+    }
+
+    [HttpGet("{id:guid}")]
+    [Authorize]
+    public async Task<ActionResult<SnMeet>> GetMeet(Guid id, [FromQuery] string? locationWkt = null, CancellationToken cancellationToken = default)
+    {
+        if (HttpContext.Items["CurrentUser"] is not SnAccount currentUser) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        Geometry? userLocation = null;
+        if (!string.IsNullOrWhiteSpace(locationWkt))
+        {
+            try
+            {
+                userLocation = new WKTReader().Read(locationWkt);
+                userLocation.SRID = 4326;
+            }
+            catch (Exception)
+            {
+                return BadRequest(ApiError.Validation(new Dictionary<string, string[]>
+                {
+                    [nameof(locationWkt)] = ["Invalid WKT geometry."]
+                }, traceId: HttpContext.TraceIdentifier));
+            }
+        }
+
+        var meet = await meetService.GetMeetAsync(id, currentUser.Id, userLocation, cancellationToken);
+        if (meet is null)
+            return NotFound(ApiError.NotFound(id.ToString(), traceId: HttpContext.TraceIdentifier));
+
+        return Ok(meet);
+    }
+
+    [HttpPost("{id:guid}/complete")]
+    [Authorize]
+    [AskPermission(PermissionKeys.MeetComplete)]
+    public async Task<ActionResult<SnMeet>> CompleteMeet(Guid id, CancellationToken cancellationToken)
+    {
+        if (HttpContext.Items["CurrentUser"] is not SnAccount currentUser) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        try
+        {
+            var meet = await meetService.CompleteMeetAsync(id, currentUser.Id, cancellationToken);
+            return Ok(meet);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(ApiError.NotFound(id.ToString(), traceId: HttpContext.TraceIdentifier));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, ApiError.Unauthorized(ex.Message, forbidden: true, traceId: HttpContext.TraceIdentifier));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiError
+            {
+                Code = "MEET_NOT_ACTIVE",
+                Message = ex.Message,
+                Status = StatusCodes.Status400BadRequest,
+                TraceId = HttpContext.TraceIdentifier
+            });
+        }
+    }
+
+    [HttpDelete("{id:guid}")]
+    [Authorize]
+    [AskPermission(PermissionKeys.MeetDelete)]
+    public async Task<ActionResult> DeleteMeet(Guid id, CancellationToken cancellationToken)
+    {
+        if (HttpContext.Items["CurrentUser"] is not SnAccount currentUser) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        try
+        {
+            await meetService.DeleteMeetAsync(id, currentUser.Id, cancellationToken);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(ApiError.NotFound(id.ToString(), traceId: HttpContext.TraceIdentifier));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, ApiError.Unauthorized(ex.Message, forbidden: true, traceId: HttpContext.TraceIdentifier));
+        }
+    }
+
+    public class UpdateVisibilityRequest
+    {
+        [Required] public LocationVisibility Visibility { get; set; }
+    }
+
+    [HttpPatch("{id:guid}/visibility")]
+    [Authorize]
+    [AskPermission(PermissionKeys.MeetVisibilityUpdate)]
+    public async Task<ActionResult<SnMeet>> UpdateVisibility(Guid id, [FromBody] UpdateVisibilityRequest request, CancellationToken cancellationToken)
+    {
+        if (HttpContext.Items["CurrentUser"] is not SnAccount currentUser) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ApiError.Validation(new Dictionary<string, string[]>
+            {
+                [nameof(request.Visibility)] = ["Visibility is required."]
+            }, traceId: HttpContext.TraceIdentifier));
+        }
+
+        try
+        {
+            var meet = await meetService.UpdateVisibilityAsync(id, currentUser.Id, request.Visibility, cancellationToken);
+            return Ok(meet);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(ApiError.NotFound(id.ToString(), traceId: HttpContext.TraceIdentifier));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, ApiError.Unauthorized(ex.Message, forbidden: true, traceId: HttpContext.TraceIdentifier));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiError
+            {
+                Code = "MEET_NOT_ACTIVE",
+                Message = ex.Message,
+                Status = StatusCodes.Status400BadRequest,
+                TraceId = HttpContext.TraceIdentifier
+            });
+        }
+    }
+
+    [HttpPost("{id:guid}/join")]
+    [Authorize]
+    [AskPermission(PermissionKeys.MeetJoin)]
+    public async Task JoinMeet(Guid id, CancellationToken cancellationToken)
+    {
+        if (HttpContext.Items["CurrentUser"] is not SnAccount currentUser)
+        {
+            Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return;
+        }
+
+        try
+        {
+            var subscriptionId = Guid.NewGuid();
+            var reader = subscriptions.Subscribe(id, subscriptionId);
+
+            try
+            {
+                var meet = await meetService.JoinMeetAsync(id, currentUser.Id, cancellationToken);
+
+                Response.StatusCode = StatusCodes.Status200OK;
+                Response.Headers.ContentType = "text/event-stream";
+                Response.Headers.CacheControl = "no-cache";
+                Response.Headers.Connection = "keep-alive";
+
+                await WriteEventAsync("snapshot", new MeetStreamEvent
+                {
+                    Type = "snapshot",
+                    SentAt = SystemClock.Instance.GetCurrentInstant(),
+                    Meet = meet
+                }, cancellationToken);
+
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    var hasData = await reader.WaitToReadAsync(cancellationToken);
+                    if (!hasData) break;
+
+                    while (reader.TryRead(out var evt))
+                    {
+                        await WriteEventAsync(evt.Type, evt, cancellationToken);
+                        if (evt.Meet.IsFinal)
+                            return;
+                    }
+                }
+            }
+            finally
+            {
+                subscriptions.Unsubscribe(id, subscriptionId);
+            }
+        }
+        catch (KeyNotFoundException)
+        {
+            Response.StatusCode = StatusCodes.Status404NotFound;
+            await WriteJsonBodyAsync(ApiError.NotFound(id.ToString(), traceId: HttpContext.TraceIdentifier), cancellationToken);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+            await WriteJsonBodyAsync(ApiError.Unauthorized(ex.Message, forbidden: true, traceId: HttpContext.TraceIdentifier), cancellationToken);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Response.StatusCode = StatusCodes.Status400BadRequest;
+            await WriteJsonBodyAsync(new ApiError
+            {
+                Code = "MEET_NOT_ACTIVE",
+                Message = ex.Message,
+                Status = StatusCodes.Status400BadRequest,
+                TraceId = HttpContext.TraceIdentifier
+            }, cancellationToken);
+        }
+    }
+
+    private async Task WriteEventAsync(string eventName, MeetStreamEvent evt, CancellationToken cancellationToken)
+    {
+        var payload = JsonSerializer.Serialize(evt, jsonOptions.Value.JsonSerializerOptions);
+        await Response.WriteAsync($"event: {eventName}\n", cancellationToken);
+        await Response.WriteAsync($"data: {payload}\n\n", cancellationToken);
+        await Response.Body.FlushAsync(cancellationToken);
+    }
+
+    private async Task WriteJsonBodyAsync(object payload, CancellationToken cancellationToken)
+    {
+        Response.Headers.ContentType = "application/json";
+        await JsonSerializer.SerializeAsync(Response.Body, payload, jsonOptions.Value.JsonSerializerOptions, cancellationToken);
+    }
+
+    public class CreateOrUpdatePinRequest
+    {
+        public LocationVisibility Visibility { get; set; } = LocationVisibility.Private;
+        [MaxLength(256)] public string? LocationName { get; set; }
+        [MaxLength(1024)] public string? LocationAddress { get; set; }
+        public string? LocationWkt { get; set; }
+        public Dictionary<string, object>? Metadata { get; set; }
+        public bool KeepOnDisconnect { get; set; } = true;
+    }
+
+    [HttpPost("{id:guid}/pin")]
+    [Authorize]
+    [AskPermission(PermissionKeys.MeetPinManage)]
+    public async Task<ActionResult<SnLocationPin>> CreateOrUpdatePin(
+        Guid id,
+        [FromBody] CreateOrUpdatePinRequest request,
+        CancellationToken cancellationToken
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not SnAccount currentUser ||
+            HttpContext.Items["CurrentSession"] is not SnAuthSession currentSession) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var meet = await meetService.GetMeetAsync(id, currentUser.Id, null, cancellationToken);
+        if (meet is null)
+            return NotFound(ApiError.NotFound(id.ToString(), traceId: HttpContext.TraceIdentifier));
+
+        if (!await CanAccessMeetForPinAsync(meet, currentUser.Id))
+            return StatusCode(StatusCodes.Status403Forbidden, ApiError.Unauthorized("You do not have access to this meet's pin.", forbidden: true, traceId: HttpContext.TraceIdentifier));
+
+        Geometry? location = null;
+        if (!string.IsNullOrWhiteSpace(request.LocationWkt))
+        {
+            try
+            {
+                location = new WKTReader().Read(request.LocationWkt);
+                location.SRID = 4326;
+            }
+            catch (Exception)
+            {
+                return BadRequest(ApiError.Validation(new Dictionary<string, string[]>
+                {
+                    [nameof(request.LocationWkt)] = ["Invalid WKT geometry."]
+                }, traceId: HttpContext.TraceIdentifier));
+            }
+        }
+
+        var pin = await locationPinService.CreatePinAsync(
+            currentUser.Id,
+            currentSession.Id.ToString(),
+            request.Visibility,
+            request.LocationName,
+            request.LocationAddress,
+            location,
+            request.KeepOnDisconnect,
+            request.Metadata,
+            id,
+            cancellationToken
+        );
+
+        pin.Account = currentUser;
+        return Ok(pin);
+    }
+
+    [HttpDelete("{id:guid}/pin")]
+    [Authorize]
+    [AskPermission(PermissionKeys.MeetPinManage)]
+    public async Task<ActionResult> RemovePin(
+        Guid id,
+        CancellationToken cancellationToken
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not SnAccount currentUser ||
+            HttpContext.Items["CurrentSession"] is not SnAuthSession currentSession) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var meet = await meetService.GetMeetAsync(id, currentUser.Id, null, cancellationToken);
+        if (meet is null)
+            return NotFound(ApiError.NotFound(id.ToString(), traceId: HttpContext.TraceIdentifier));
+
+        if (!await CanAccessMeetForPinAsync(meet, currentUser.Id))
+            return StatusCode(StatusCodes.Status403Forbidden, ApiError.Unauthorized("You do not have access to this meet's pin.", forbidden: true, traceId: HttpContext.TraceIdentifier));
+
+        var removed = await locationPinService.RemovePinAsync(currentUser.Id, currentSession.Id.ToString(), id, cancellationToken);
+        if (!removed)
+            return NotFound(ApiError.NotFound("Pin not found.", traceId: HttpContext.TraceIdentifier));
+
+        return NoContent();
+    }
+
+    [HttpGet("{id:guid}/pins")]
+    [Authorize]
+    public async Task<ActionResult<List<SnLocationPin>>> GetTrailPins(
+        Guid id,
+        [FromQuery] int offset = 0,
+        [FromQuery] int take = 50,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not SnAccount currentUser) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var meet = await meetService.GetMeetAsync(id, currentUser.Id, null, cancellationToken);
+        if (meet is null)
+            return NotFound(ApiError.NotFound(id.ToString(), traceId: HttpContext.TraceIdentifier));
+
+        if (!await CanAccessMeetForPinAsync(meet, currentUser.Id))
+            return StatusCode(StatusCodes.Status403Forbidden, ApiError.Unauthorized("You do not have access to this meet's pins.", forbidden: true, traceId: HttpContext.TraceIdentifier));
+
+        var pins = await locationPinService.ListMeetTrailPinsAsync(id, currentUser.Id, offset, take, cancellationToken);
+        return Ok(pins);
+    }
+
+    private async Task<bool> CanAccessMeetForPinAsync(SnMeet meet, Guid accountId)
+    {
+        if (meet.HostId == accountId) return true;
+        if (meet.Participants.Any(p => p.AccountId == accountId)) return true;
+        return false;
+    }
+}

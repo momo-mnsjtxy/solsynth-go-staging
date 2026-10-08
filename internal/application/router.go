@@ -5,13 +5,15 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"solsynth.local/go-migration/ports/passport/presence"
+	"solsynth.local/go-migration/ports/passport/progression"
 	"solsynth.local/go-migration/ports/sphere/timeline"
 	"strings"
 )
 
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
-type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps, commerce, signin, timeline, surveys, stickers http.Handler }
+type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps, commerce, signin, timeline, surveys, stickers, locations, presence, progression http.Handler }
 type router struct{ modules }
 
 func under(p, base string) bool { return p == base || strings.HasPrefix(p, base+"/") }
@@ -46,6 +48,45 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		problem(w, 200, "BACKEND_ALIVE")
 		return
+	}
+	{
+		canonical := p
+		for _, prefix := range []string{"/passport/", "/stargate/"} {
+			if strings.HasPrefix(p, prefix) {
+				canonical = "/api/" + strings.TrimPrefix(p, prefix)
+			}
+		}
+		var handler http.Handler
+		if presence.RouteMatches(canonical) {
+			handler = h.presence
+		}
+		if progression.RouteMatches(canonical) {
+			handler = h.progression
+		}
+		if handler != nil {
+			copy := r.Clone(r.Context())
+			u := *r.URL
+			u.Path = canonical
+			copy.URL = &u
+			handler.ServeHTTP(w, copy)
+			return
+		}
+	}
+	if h.locations != nil {
+		canonical := p
+		for _, prefix := range []string{"/passport/", "/sphere/"} {
+			if strings.HasPrefix(p, prefix) {
+				canonical = "/api/" + strings.TrimPrefix(p, prefix)
+			}
+		}
+		if under(canonical, "/api/meets") || under(canonical, "/api/pins") || under(canonical, "/api/nfc") {
+			copy := r.Clone(r.Context())
+			u := *r.URL
+			u.Path = canonical
+			copy.URL = &u
+			h.locations.ServeHTTP(w, copy)
+			return
+		}
 	}
 	service, rest, found := strings.Cut(strings.TrimPrefix(p, "/"), "/")
 	var target http.Handler

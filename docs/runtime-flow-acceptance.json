@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "organization realm publishers, canonical bots/miniapps, calendar and exam reward retry",
+  "local_source_checkpoint": "Reviewed OAuth/OIDC, post-level realm links and optional fortune host composition; actual PostgreSQL pending",
   "last_fully_passed_ci": {
     "commit": "df782ccb6eeafb3c27429fe5ae4a3cb76641075d",
     "run": 37752979316,
@@ -10,13 +10,14 @@
     "after_restart": 33
   },
   "latest_candidate": {
-    "commit": null,
+    "commit": "3533fd08ec3a8554f6a63612a881cb407f09e4be",
+    "run": 37761349240,
     "required_before": 251,
     "required_after_restart": 36,
-    "status": "Local build/vet/race passed; actual PostgreSQL and restart validation pending publication"
+    "status": "Isolated realm fixture corrections published; CI running"
   },
-  "local_required_before": 251,
-  "local_required_after_restart": 36,
+  "local_required_before": 279,
+  "local_required_after_restart": 39,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -192,20 +193,34 @@
       "source_family": "passport.badges",
       "local_status": "partial",
       "supported_flows": [
-        "Licensed public badge manifest and icon routes"
+        "Licensed public badge manifest/icons and canonical earned progression badges"
       ],
-      "guarded_pg_cases": [],
+      "guarded_pg_cases": [
+        "TestPGProgressionCanonicalProjectorRollbackAndEarnedBadges"
+      ],
       "unsupported_or_remaining": [
-        "Earned badge assignment/progression integration"
+        "Legacy badge import and original external earning providers"
       ]
     },
     {
       "source_family": "passport.fortunes",
-      "local_status": "not_implemented",
-      "supported_flows": [],
-      "guarded_pg_cases": [],
+      "local_status": "partial",
+      "supported_flows": [
+        "Configured language-filtered sayings and random catalogue",
+        "Durable version2 check-in report generation with bounded configured corpus/provider and private Today/history/calendar projection"
+      ],
+      "guarded_pg_cases": [
+        "TestPGFortuneConfiguredCatalogueAndDailyIsolation",
+        "TestPGFortuneEnqueueAtomicityAndFreshAuthority",
+        "TestPGFortuneRetryLeaseRecoveryAndImmutableCompletion",
+        "TestPGFortuneWorkerRevocationAndStaleLease",
+        "TestPGFortuneConcurrentCheckInAndProfileSnapshot",
+        "TestPGFortuneRestartPersistence",
+        "TestPGBackendFortuneComposition"
+      ],
       "unsupported_or_remaining": [
-        "Daily fortune flow and licensed corpus; excluded/unlicensed corpus not imported"
+        "Original sayings/tips/fallback corpus excluded pending provenance",
+        "Birthday/backdated rules and unsupported enrichment; original personality RPC not imported"
       ]
     },
     {
@@ -521,7 +536,8 @@
       "supported_flows": [
         "Text lifecycle, visibility, reactions/bookmarks/collections and taxonomy links",
         "Ordered canonical media attachments, attachment-only posts and dynamic private download visibility",
-        "Replies/reposts and canonical timeline hydration; realm-publisher privacy gates"
+        "Replies/reposts and canonical timeline hydration; realm-publisher privacy gates",
+        "Post-level realm associations, current membership/visibility, explicit detach and federation withdrawal"
       ],
       "guarded_pg_cases": [
         "TestPGPostInteractionsAuditRollback",
@@ -547,10 +563,18 @@
         "TestPGPostMediaAuthorityAndFileLockOrdering",
         "TestPGPostMediaIndependentPoolRaceAndMissingBytes",
         "TestPGPostMediaRestartPersistence",
-        "TestPGBackendContentComposition"
+        "TestPGBackendContentComposition",
+        "TestPGPostRealmAssociationLifecycleAndFeeds",
+        "TestPGPostRealmMediaSurveyInteractionPrivacy",
+        "TestPGPostRealmRevokeAndDeleteOrdering",
+        "TestPGPostRealmMoveReferenceRace",
+        "TestPGPostRealmOppositeMovesAndRollback",
+        "TestPGPostRealmFederationWithdrawal",
+        "TestPGPostRealmRestartPersistence",
+        "TestPGBackendPostRealmComposition"
       ],
       "unsupported_or_remaining": [
-        "Post-level realm association queued separately; attachment publication, Blog, scheduling/moderation and remaining source operations"
+        "Blog, scheduling/moderation and remaining original admin/statistics operations"
       ]
     },
     {
@@ -657,6 +681,34 @@
       "unsupported_or_remaining": [
         "Global financial administration and provider settlement reports"
       ]
+    },
+    {
+      "source_family": "owned.oauth_oidc",
+      "local_status": "partial",
+      "supported_flows": [
+        "Canonical authorization code/S256 PKCE/consent, exact redirects, RS256 ID token and scoped userinfo",
+        "Bounded one-use code/refresh lifecycle and canonical parent/app/consent revocation"
+      ],
+      "guarded_pg_cases": [
+        "TestPGOAuthAuthorizationCodePKCEConsentAndUserInfo",
+        "TestPGOAuthRedirectStateNonceAndParentBindings",
+        "TestPGOAuthConcurrentCodeAndRefreshReuse",
+        "TestPGOAuthAppOwnerConsentAndSecretRevocation",
+        "TestPGOAuthParentRevocationAndTokenExpiry",
+        "TestPGOAuthAtomicRollbackAndCanonicalProof",
+        "TestPGOAuthOwnerDisableDuringLockWait",
+        "TestPGOAuthOpposingOwnersAndRetryableGuardBoundary",
+        "TestPGOAuthScopeMinimizationAndBoundedCleanup",
+        "TestPGOAuthRestartPersistence",
+        "TestPGBackendOAuthComposition",
+        "TestPGOAuthPreviewRechecksRegistrationAndOwnerVersion",
+        "TestPGOAuthConfidentialPurposeScopeWithdrawal"
+      ],
+      "unsupported_or_remaining": [
+        "Production consent UI deployment",
+        "Resource API delegation pending concrete route/scope mapping",
+        "External providers, device flow, dynamic registration, introspection and legacy authorized-app routes"
+      ]
     }
   ],
   "additional_cross_service_flows": [
@@ -692,8 +744,123 @@
     }
   ],
   "global_remaining": [
-    "Full original external contracts and migration/rollback validation",
-    "OAuth/OIDC, post-level realm links and fortune jobs are isolated work in progress",
-    "Configured providers, secrets and production deployment require separate authorization; no live transmissions performed"
+    "Remaining groups below are explicit uncompleted functionality, not a claim that contracts are unavailable",
+    "Reviewed OAuth, post-realm and fortune actual PostgreSQL/restart validation remains pending",
+    "Configured providers and production deployment require separate authorization; no live transmissions performed"
+  ],
+  "remaining_acceptance_groups": [
+    {
+      "group": "messaging",
+      "state": "implementation active",
+      "remaining": [
+        "Direct conversation request/confirm/block and realm-linked room lifecycle",
+        "E2EE/media message types, reactions and original system-message compatibility"
+      ],
+      "source_controllers": [
+        "ChatController",
+        "ChatRoomController",
+        "RealmChatController"
+      ]
+    },
+    {
+      "group": "content utilities",
+      "state": "licensed contract research active",
+      "remaining": [
+        "Link preview/cache controls, translation and autocompletion"
+      ],
+      "source_controllers": [
+        "WebReaderController",
+        "TranslationController",
+        "AutocompletionController"
+      ]
+    },
+    {
+      "group": "live and commercial content",
+      "state": "not implemented; contracts not exhaustively researched",
+      "remaining": [
+        "Live ingress/lifecycle, ads/sponsorship, publisher subscriptions and ratings"
+      ],
+      "source_controllers": [
+        "LiveStreamController",
+        "AdsController",
+        "PublisherSubscriptionController",
+        "PublisherPublicController"
+      ]
+    },
+    {
+      "group": "account extensions",
+      "state": "not implemented or partial; contracts not exhaustively researched",
+      "remaining": [
+        "PassKit, affiliation spells, domain trust, IP checks, paid name cards, rewind and artwork",
+        "Remaining account settings, contact/profile fields and admin statistics"
+      ],
+      "source_controllers": [
+        "PassKitController",
+        "AffiliationSpellController",
+        "DomainTrustController",
+        "IpCheckController",
+        "NameChangeCardController",
+        "AccountRewindController",
+        "PresenceArtworkController",
+        "AccountSettingsController",
+        "AccountAdminController",
+        "AccountStatsAdminController"
+      ]
+    },
+    {
+      "group": "administration and moderation",
+      "state": "partial; explicit workflows still require implementation",
+      "remaining": [
+        "Automatic/manual content moderation, global post/collection/publisher/realm administration and aggregate statistics"
+      ],
+      "source_controllers": [
+        "AutomodController",
+        "PostAdminController",
+        "PostStatsAdminController",
+        "PostCollectionAdminController",
+        "PublisherAdminController",
+        "RealmAdminController"
+      ]
+    },
+    {
+      "group": "federation",
+      "state": "partial",
+      "remaining": [
+        "Broader actor/realm/quote/follow/moderation/key-management and remote discovery contracts; media plane"
+      ],
+      "source_controllers": [
+        "ActivityPubRealmController",
+        "ActivityPubFollowController",
+        "FediverseModerationController",
+        "FediverseKeyController",
+        "FediverseKeyAdminController",
+        "QuoteAuthorizationController",
+        "ServerActorController",
+        "WebFingerController"
+      ]
+    },
+    {
+      "group": "wallet and providers",
+      "state": "partial",
+      "remaining": [
+        "PIN enrollment, remaining product/payment administration, coupons/addresses/fulfillment/payouts/provider settlement",
+        "Provider-specific recurring fulfillment and production adapter configuration"
+      ],
+      "source_controllers": [
+        "WalletController",
+        "PaymentAdminController",
+        "WalletProductAdminController",
+        "WalletStatsAdminController",
+        "SubscriptionController"
+      ]
+    },
+    {
+      "group": "migration and deployment",
+      "state": "not validated",
+      "remaining": [
+        "Original data migration/rollback, original external contracts, configured provider end-to-end and production operational acceptance"
+      ],
+      "source_controllers": []
+    }
   ]
 }

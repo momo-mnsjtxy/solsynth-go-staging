@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
 	"solsynth.local/go-migration/ports/authority"
 	"strconv"
 	"strings"
@@ -146,6 +147,24 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if path == "/api/accounts/me/check-in" {
+		values, parseErr := url.ParseQuery(r.URL.RawQuery)
+		if parseErr != nil {
+			failure(w, ErrInvalid)
+			return
+		}
+		for key, list := range values {
+			if len(list) != 1 || (key != "version" && !(key == "backdated" && r.Method == "POST")) {
+				failure(w, ErrInvalid)
+				return
+			}
+		}
+		if values.Has("version") {
+			version, err := strconv.Atoi(values.Get("version"))
+			if err != nil || version < 1 || version > 2 {
+				failure(w, ErrInvalid)
+				return
+			}
+		}
 		switch r.Method {
 		case "GET":
 			v, e := s.Repository.Today(ctx, actor)

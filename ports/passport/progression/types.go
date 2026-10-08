@@ -174,6 +174,7 @@ type CheckIn struct {
 	Level            int        `json:"level"`
 	Tips             []any      `json:"tips"`
 	FortuneReport    any        `json:"fortune_report"`
+	FortuneStatus    any        `json:"fortune_status,omitempty"`
 	RewardExperience int64      `json:"reward_experience"`
 	RewardPoints     *int64     `json:"reward_points"`
 	BackdatedFrom    *time.Time `json:"backdated_from"`

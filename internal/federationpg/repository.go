@@ -134,7 +134,7 @@ func (r *Repository) note(ctx context.Context, q queryer, id string) (f.Note, st
 	if !authority.ValidID(id) {
 		return n, "", updated, f.ErrNotFound
 	}
-	e := q.QueryRowContext(ctx, `SELECT p.publisher_id::text,p.content,p.published_at,p.updated_at FROM owned_text_posts p WHERE p.id=$1 AND p.deleted_at IS NULL AND p.drafted_at IS NULL AND p.visibility=0 AND p.published_at<= $2`, id, r.config.Clock()).Scan(&pid, &content, &n.Published, &updated)
+	e := q.QueryRowContext(ctx, `SELECT p.publisher_id::text,p.content,p.published_at,p.updated_at FROM owned_text_posts p WHERE p.id=$1 AND p.deleted_at IS NULL AND p.drafted_at IS NULL AND p.realm_id IS NULL AND p.visibility=0 AND p.published_at<= $2`, id, r.config.Clock()).Scan(&pid, &content, &n.Published, &updated)
 	if e != nil {
 		return n, "", updated, mapped(e)
 	}
@@ -184,7 +184,7 @@ func (r *Repository) Outbox(ctx context.Context, name string, offset, take int) 
 	}
 	defer tx.Rollback()
 	var total int64
-	where := ` FROM owned_text_posts WHERE publisher_id=$1 AND visibility=0 AND drafted_at IS NULL AND deleted_at IS NULL AND published_at<=$2`
+	where := ` FROM owned_text_posts WHERE publisher_id=$1 AND realm_id IS NULL AND visibility=0 AND drafted_at IS NULL AND deleted_at IS NULL AND published_at<=$2`
 	if e = tx.QueryRowContext(ctx, `SELECT count(*)`+where, p.id, r.config.Clock()).Scan(&total); e != nil {
 		return f.Collection{}, e
 	}

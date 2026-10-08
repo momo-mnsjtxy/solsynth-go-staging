@@ -28,11 +28,20 @@ func (r *Repository) PublisherMembershipSQL(alias, actor string) string {
 }
 
 func (r *Repository) PrelockPublisherRealms(ctx context.Context, tx *sql.Tx, ids []string) (map[string]string, error) {
+	return r.PrelockPublishingScopes(ctx, tx, ids, nil, false)
+}
+func (r *Repository) PrelockPublishingScopes(ctx context.Context, tx *sql.Tx, ids, explicit []string, allowDeleted bool) (map[string]string, error) {
 	if tx == nil {
 		return nil, accounts.ErrUnavailable
 	}
 	expected := make(map[string]string, len(ids))
 	realms := map[string]bool{}
+	for _, id := range explicit {
+		if !authority.ValidID(id) {
+			return nil, accounts.ErrNotFound
+		}
+		realms[id] = !allowDeleted
+	}
 	for _, id := range ids {
 		if !authority.ValidID(id) {
 			return nil, accounts.ErrNotFound
@@ -56,7 +65,11 @@ func (r *Repository) PrelockPublisherRealms(ctx context.Context, tx *sql.Tx, ids
 	sort.Strings(ordered)
 	for _, id := range ordered {
 		var held string
-		e := tx.QueryRowContext(ctx, `SELECT r.id::text FROM owned_realms r JOIN owned_authority_accounts a ON a.id=r.account_id WHERE r.id=$1 AND r.deleted_at IS NULL AND NOT a.disabled FOR SHARE OF r`, id).Scan(&held)
+		q := `SELECT r.id::text FROM owned_realms r WHERE r.id=$1`
+		if realms[id] {
+			q += ` AND r.deleted_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=r.account_id AND NOT a.disabled)`
+		}
+		e := tx.QueryRowContext(ctx, q+` FOR SHARE OF r`, id).Scan(&held)
 		if e == sql.ErrNoRows {
 			return nil, accounts.ErrNotFound
 		}

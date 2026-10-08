@@ -122,10 +122,11 @@ func (r *Repository) lockPost(ctx context.Context, tx *sql.Tx, actor, id string)
 		return posts.Post{}, posts.ErrNotFound
 	}
 	var pub string
-	if e := tx.QueryRowContext(ctx, `SELECT publisher_id::text FROM owned_text_posts WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&pub); e != nil {
+	var realm *string
+	if e := tx.QueryRowContext(ctx, `SELECT publisher_id::text,realm_id::text FROM owned_text_posts WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&pub, &realm); e != nil {
 		return posts.Post{}, missing(e)
 	}
-	scopes, e := postpg.PrelockPublisherRealms(ctx, tx, r.visibility, []string{pub})
+	scopes, e := postpg.PrelockPublishingScopes(ctx, tx, r.visibility, []string{pub}, postpg.RealmIDs(realm), false)
 	if e != nil {
 		return posts.Post{}, e
 	}
@@ -143,7 +144,7 @@ func (r *Repository) lockPost(ctx context.Context, tx *sql.Tx, actor, id string)
 	if e != nil {
 		return p, e
 	}
-	if p.PublisherID != pub {
+	if p.PublisherID != pub || !postpg.SameOptionalID(p.RealmID, realm) {
 		return posts.Post{}, posts.ErrConflict
 	}
 	if p.DraftedAt != nil {

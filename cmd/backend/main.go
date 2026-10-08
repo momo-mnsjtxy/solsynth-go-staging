@@ -14,6 +14,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
@@ -58,7 +59,10 @@ func run(args []string, out io.Writer) error {
 	verificationSettings := verificationFlags(fs)
 	externalSettings := externalFlags(fs)
 	ticketSettings := ticketFlags(fs)
+	fortuneSettings := fortuneFlags(fs)
 	factorIssuer := fs.String("factor-issuer-label", "SoSYS", "human-readable TOTP issuer label")
+	enableOAuth := fs.Bool("enable-oauth", false, "enable owned OAuth authorization-code and OIDC userinfo flows")
+	consentURL := fs.String("oauth-consent-url", "", "deployed HTTPS consent UI calling the owned authorization API")
 	enableSignin := fs.Bool("enable-signin", false, "explicitly enable owned first-party issuer and factor protocol")
 	signingFile := fs.String("issuer-private-key-file", "", "explicit RSA issuer key PEM")
 	refreshEnv := fs.String("issuer-refresh-hash-env", "", "explicit base64 refresh-hash key variable")
@@ -97,7 +101,7 @@ func run(args []string, out io.Writer) error {
 		return errors.New("invalid authority verification configuration")
 	}
 	var signinConfig *signin.Config
-	if *enableSignin {
+	if *enableSignin || *enableOAuth {
 		config.SigningKeyID = *kid
 		config.SigningKey, err = issuerKey(*signingFile)
 		if err != nil {
@@ -111,28 +115,35 @@ func run(args []string, out io.Writer) error {
 		if err != nil {
 			return err
 		}
-		seal, e := issuerSecret(*signinEnv)
-		if e != nil {
-			return e
-		}
-		if base64.StdEncoding.EncodeToString(seal) == base64.StdEncoding.EncodeToString(config.RefreshHashKey) || base64.StdEncoding.EncodeToString(seal) == base64.StdEncoding.EncodeToString(config.ReplaySealKey) {
-			return errors.New("factor seal key must be independent")
+		if *enableSignin {
+			seal, e := issuerSecret(*signinEnv)
+			if e != nil {
+				return e
+			}
+			if base64.StdEncoding.EncodeToString(seal) == base64.StdEncoding.EncodeToString(config.RefreshHashKey) || base64.StdEncoding.EncodeToString(seal) == base64.StdEncoding.EncodeToString(config.ReplaySealKey) {
+				return errors.New("factor seal key must be independent")
+			}
+			if _, err = authority.New(authoritypg.New(nil), config); err != nil {
+				return errors.New("invalid explicit issuer configuration")
+			}
+			signinConfig = &signin.Config{SealKey: seal, Issuer: *factorIssuer}
+			if *memberGrants != "" {
+				for _, permission := range strings.Split(*memberGrants, ",") {
+					permission = strings.TrimSpace(permission)
+					if !authority.ValidPermissionPattern(permission) || strings.Contains(permission, "*") {
+						return errors.New("initial permissions must be concrete keys")
+					}
+					signinConfig.InitialMemberPermissions = append(signinConfig.InitialMemberPermissions, permission)
+				}
+			}
+		} else if *signinEnv != "" || *memberGrants != "" {
+			return errors.New("factor settings require enable-signin")
 		}
 		if _, err = authority.New(authoritypg.New(nil), config); err != nil {
 			return errors.New("invalid explicit issuer configuration")
 		}
-		signinConfig = &signin.Config{SealKey: seal, Issuer: *factorIssuer}
-		if *memberGrants != "" {
-			for _, permission := range strings.Split(*memberGrants, ",") {
-				permission = strings.TrimSpace(permission)
-				if !authority.ValidPermissionPattern(permission) || strings.Contains(permission, "*") {
-					return errors.New("initial permissions must be concrete keys")
-				}
-				signinConfig.InitialMemberPermissions = append(signinConfig.InitialMemberPermissions, permission)
-			}
-		}
 	} else if *signingFile != "" || *refreshEnv != "" || *replayEnv != "" || *signinEnv != "" || *memberGrants != "" {
-		return errors.New("issuer configuration requires explicit enable-signin")
+		return errors.New("issuer configuration requires explicit enable-signin or enable-oauth")
 	}
 	ticketConfig, err := ticketSettings.config()
 	if err != nil {
@@ -203,9 +214,24 @@ func run(args []string, out io.Writer) error {
 		catalogProviders = []exchangecatalog.Provider{provider}
 	}
 	appConfig := application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
+	if *enableOAuth {
+		u, e := url.Parse(*consentURL)
+		if e != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" {
+			return errors.New("explicit HTTPS OAuth consent UI required")
+		}
+		appConfig.OAuthEnabled = true
+		appConfig.OAuthConsentURL = *consentURL
+	} else if *consentURL != "" {
+		return errors.New("OAuth consent UI requires explicit enablement")
+	}
 	if err = externalSettings.apply(&appConfig); err != nil {
 		return err
 	}
+	fortuneConfig, fortuneCorpus, err := fortuneSettings.config()
+	if err != nil {
+		return err
+	}
+	appConfig.Fortunes = fortuneConfig
 	if !*serve {
 		_, err = fmt.Fprintln(out, "Backend configuration validated. No database connection, schema, account, key, grant, listener or transfer was created.")
 		return err
@@ -232,6 +258,14 @@ func run(args []string, out io.Writer) error {
 	cancel()
 	if err != nil {
 		return errors.New("required database/schema unavailable; startup performs no migrations")
+	}
+	if fortuneCorpus != nil {
+		install, cancel := context.WithTimeout(ctx, 10*time.Second)
+		err = backend.InstallFortuneCorpus(install, *fortuneCorpus)
+		cancel()
+		if err != nil {
+			return errors.New("explicit fortune corpus configuration failed")
+		}
 	}
 	listener, err := net.Listen("tcp", *listen)
 	if err != nil {
@@ -262,6 +296,7 @@ func run(args []string, out io.Writer) error {
 			}
 		}()
 	}
+	fortuneSettings.start(ctx, backend, out)
 	server := &http.Server{Handler: backend, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 20 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 32768}
 	go func() {
 		ticker := time.NewTicker(*settlement)

@@ -352,7 +352,7 @@ func (r *Repository) Apps(ctx context.Context, s apps.Scope, p *apps.AppPatch, a
 			}
 		}
 		if action == "delete" {
-			if _, e = tx.ExecContext(ctx, `UPDATE owned_custom_apps SET deleted_at=$2,updated_at=$2 WHERE id=$1`, a.ID, now); e != nil {
+			if _, e = tx.ExecContext(ctx, `UPDATE owned_custom_apps SET deleted_at=$2,updated_at=$2,oauth_epoch=oauth_epoch+1 WHERE id=$1`, a.ID, now); e != nil {
 				return e
 			}
 			if _, e = tx.ExecContext(ctx, `UPDATE owned_app_secrets SET revoked_at=$2,updated_at=$2 WHERE app_id=$1 AND revoked_at IS NULL`, a.ID, now); e != nil {
@@ -381,7 +381,7 @@ func (r *Repository) Apps(ctx context.Context, s apps.Scope, p *apps.AppPatch, a
 			if action == "create" {
 				_, e = tx.ExecContext(ctx, `INSERT INTO owned_custom_apps(id,project_id,slug,name,description,status,links,oauth_config,created_at,updated_at)VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9,$9)`, a.ID, a.ProjectID, a.Slug, a.Name, a.Description, a.Status, encoded(a.Links), encoded(a.OAuthConfig), now)
 			} else {
-				_, e = tx.ExecContext(ctx, `UPDATE owned_custom_apps SET slug=$2,name=$3,description=$4,status=$5,links=$6::jsonb,oauth_config=$7::jsonb,updated_at=$8 WHERE id=$1`, a.ID, a.Slug, a.Name, a.Description, a.Status, encoded(a.Links), encoded(a.OAuthConfig), now)
+				_, e = tx.ExecContext(ctx, `UPDATE owned_custom_apps SET slug=$2,name=$3,description=$4,status=$5,links=$6::jsonb,oauth_config=$7::jsonb,updated_at=$8,oauth_epoch=oauth_epoch+CASE WHEN slug IS DISTINCT FROM $2 OR status IS DISTINCT FROM $5 OR oauth_config IS DISTINCT FROM $7::jsonb THEN 1 ELSE 0 END WHERE id=$1`, a.ID, a.Slug, a.Name, a.Description, a.Status, encoded(a.Links), encoded(a.OAuthConfig), now)
 			}
 			if e != nil {
 				return e

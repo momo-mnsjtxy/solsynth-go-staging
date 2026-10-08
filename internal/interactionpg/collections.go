@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"solsynth.local/go-migration/internal/accountpg"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/sphere/interactions"
@@ -207,8 +208,38 @@ func (r *Repository) AddCollectionPosts(ctx context.Context, actor, publisher, s
 		return interactions.ErrInvalid
 	}
 	return r.write(ctx, actor, "post.collections.posts.manage", func(tx *sql.Tx, now time.Time) error {
+		pubID, e := r.publishers.ObservePostPublisherID(ctx, tx, actor, publisher)
+		if e != nil {
+			return e
+		}
+		observed, e := postpg.ObservePostScopes(ctx, tx, ids)
+		if e != nil {
+			return e
+		}
+		for _, s := range observed {
+			if s.PublisherID != pubID {
+				return interactions.ErrUnsupported
+			}
+		}
+		scopes, e := postpg.PrelockPublishingScopes(ctx, tx, r.visibility, []string{pubID}, postpg.ObservedRealmIDs(observed), false)
+		if e != nil {
+			return e
+		}
+		var held string
+		if e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_publishers WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, pubID).Scan(&held); e != nil {
+			return missing(e)
+		}
+		if e = accountpg.VerifyPublisherRealms(ctx, tx, scopes); e != nil {
+			return e
+		}
 		c, e := r.lockedCollection(ctx, tx, actor, publisher, slug)
 		if e != nil {
+			return e
+		}
+		if c.PublisherID != pubID {
+			return posts.ErrConflict
+		}
+		if e = postpg.VerifyPostScopes(ctx, tx, observed); e != nil {
 			return e
 		}
 		for _, id := range ids {

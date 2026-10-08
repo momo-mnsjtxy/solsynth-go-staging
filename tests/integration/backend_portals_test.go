@@ -7,6 +7,8 @@ import (
 	"solsynth.local/go-migration/ports/develop/bots"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/notabledays"
+	"solsynth.local/go-migration/ports/passport/social"
+	"solsynth.local/go-migration/ports/sphere/posts"
 	"strings"
 	"testing"
 )
@@ -50,4 +52,24 @@ func TestPGBackendCalendarComposition(t *testing.T) {
 	backendCall(t, f.app, "GET", "/api/notable-days?year=2026&region=CN", "", "", 200)
 	backendCall(t, f.app, "DELETE", "/api/accounts/me/calendar/events/"+event.ID, f.token, "", 204)
 	backendCall(t, f.app, "GET", "/api/accounts/unknown/calendar/events/"+event.ID, "", "", 404)
+}
+
+func TestPGBackendPostRealmComposition(t *testing.T) {
+	f := newBackendFixture(t)
+	suffix := strings.ReplaceAll(f.actor, "-", "")
+	query(t, f.db, `INSERT INTO owned_publisher_quota(account_id,total,starts_at) VALUES($1,2,now())`, f.actor)
+	query(t, f.db, `INSERT INTO owned_realm_quota(account_id,total,starts_at) VALUES($1,2,now())`, f.actor)
+	pub := backendDecode[profiles.Publisher](t, backendCall(t, f.app, "POST", "/sphere/publishers/individual", f.token, fmt.Sprintf(`{"name":%q,"nick":"Realm author"}`, "realm_author_"+suffix), 200))
+	realm := backendDecode[social.Realm](t, backendCall(t, f.app, "POST", "/passport/realms", f.token, fmt.Sprintf(`{"slug":%q,"name":"Private scope","is_public":false}`, "private_"+suffix), 200))
+	post := backendDecode[posts.Post](t, backendCall(t, f.app, "POST", "/sphere/posts?pub="+pub.Name, f.token, fmt.Sprintf(`{"content":"Composed scoped post","visibility":0,"realm_id":%q}`, realm.ID), 200))
+	if post.RealmID == nil || *post.RealmID != realm.ID {
+		t.Fatal("realm projection missing")
+	}
+	backendCall(t, f.app, "GET", "/sphere/posts/"+post.ID, "", "", 404)
+	backendCall(t, f.app, "GET", "/sphere/posts/"+post.ID, f.otherToken, "", 404)
+	backendCall(t, f.app, "GET", "/sphere/posts/"+post.ID, f.token, "", 200)
+	backendCall(t, f.app, "PATCH", "/sphere/posts/"+post.ID, f.token, `{"title":"Preserved scope"}`, 200)
+	backendCall(t, f.app, "GET", "/sphere/posts/"+post.ID, "", "", 404)
+	backendCall(t, f.app, "PATCH", "/sphere/posts/"+post.ID, f.token, `{"realm_id":null}`, 200)
+	backendCall(t, f.app, "GET", "/sphere/posts/"+post.ID, "", "", 200)
 }

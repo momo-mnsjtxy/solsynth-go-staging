@@ -1,0 +1,138 @@
+--- a/internal/progressionpg/repository.go
++++ b/internal/progressionpg/repository.go
+@@ -23,13 +23,25 @@
+ 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
+ }
+ type Repository struct {
+-	db    *sql.DB
+-	guard TransactionGuard
++	db      *sql.DB
++	guard   TransactionGuard
++	reports CheckInReports
++}
++
++// CheckInReports shares the canonical transaction. Implementations must not
++// create another check-in/XP authority or contact a provider inside these hooks.
++type CheckInReports interface {
++	EnqueueCheckIn(context.Context, *sql.Tx, progression.CheckIn, time.Time) error
++	HydrateCheckIn(context.Context, *sql.Tx, *progression.CheckIn) error
+ }
+ 
+ func New(db *sql.DB) *Repository { return &Repository{db: db} }
+ func NewWithAuthority(db *sql.DB, g TransactionGuard) *Repository {
+ 	return &Repository{db: db, guard: g}
++}
++
++func NewWithCheckInReports(db *sql.DB, g TransactionGuard, reports CheckInReports) *Repository {
++	return &Repository{db: db, guard: g, reports: reports}
+ }
+ 
+ var _ progression.Repository = (*Repository)(nil)
+--- a/internal/progressionpg/badges_checkins.go
++++ b/internal/progressionpg/badges_checkins.go
+@@ -124,6 +124,9 @@
+ 	e = r.within(ctx, actor, nil, func(tx *sql.Tx, now time.Time) error {
+ 		var e error
+ 		v, e = scanCheckin(tx.QueryRowContext(ctx, `SELECT `+checkinColumns+` FROM owned_progression_checkins WHERE account_id=$1 AND day=$2`, actor, now.Format("2006-01-02")))
++		if e == nil && r.reports != nil {
++			e = r.reports.HydrateCheckIn(ctx, tx, &v)
++		}
+ 		return e
+ 	})
+ 	return
+@@ -137,6 +140,12 @@
+ 		var e error
+ 		v, e = scanCheckin(tx.QueryRowContext(ctx, `SELECT `+checkinColumns+` FROM owned_progression_checkins WHERE account_id=$1 AND day=$2`, actor, day))
+ 		if e == nil {
++			if r.reports != nil {
++				if e = r.reports.EnqueueCheckIn(ctx, tx, v, now); e != nil {
++					return e
++				}
++				return r.reports.HydrateCheckIn(ctx, tx, &v)
++			}
+ 			return nil
+ 		}
+ 		if !errors.Is(e, sql.ErrNoRows) {
+@@ -168,6 +177,14 @@
+ 		if e = insertXP(ctx, tx, actor, "check-in", "Check-in reward on "+now.Format("2006/01/02"), "check-in:"+actor+":"+day, 100, now); e != nil {
+ 			return e
+ 		}
++		if r.reports != nil {
++			if e = r.reports.EnqueueCheckIn(ctx, tx, v, now); e != nil {
++				return e
++			}
++			if e = r.reports.HydrateCheckIn(ctx, tx, &v); e != nil {
++				return e
++			}
++		}
+ 		return audit(ctx, tx, actor, "check-in", id, now)
+ 	})
+ 	return
+@@ -196,7 +213,18 @@
+ 			}
+ 			out = append(out, v)
+ 		}
+-		return rows.Err()
+-	})
+-	return
+-}
++		if e = rows.Err(); e != nil {
++			return e
++		}
++		rows.Close()
++		if r.reports != nil {
++			for i := range out {
++				if e = r.reports.HydrateCheckIn(ctx, tx, &out[i]); e != nil {
++					return e
++				}
++			}
++		}
++		return nil
++	})
++	return
++}
+--- a/ports/passport/progression/types.go
++++ b/ports/passport/progression/types.go
+@@ -174,6 +174,7 @@
+ 	Level            int        `json:"level"`
+ 	Tips             []any      `json:"tips"`
+ 	FortuneReport    any        `json:"fortune_report"`
++	FortuneStatus    any        `json:"fortune_status,omitempty"`
+ 	RewardExperience int64      `json:"reward_experience"`
+ 	RewardPoints     *int64     `json:"reward_points"`
+ 	BackdatedFrom    *time.Time `json:"backdated_from"`
+--- a/ports/passport/progression/http.go
++++ b/ports/passport/progression/http.go
+@@ -8,6 +8,7 @@
+ 	"errors"
+ 	"io"
+ 	"net/http"
++	"net/url"
+ 	"solsynth.local/go-migration/ports/authority"
+ 	"strconv"
+ 	"strings"
+@@ -146,6 +147,24 @@
+ 		return
+ 	}
+ 	if path == "/api/accounts/me/check-in" {
++		values, parseErr := url.ParseQuery(r.URL.RawQuery)
++		if parseErr != nil {
++			failure(w, ErrInvalid)
++			return
++		}
++		for key, list := range values {
++			if len(list) != 1 || (key != "version" && !(key == "backdated" && r.Method == "POST")) {
++				failure(w, ErrInvalid)
++				return
++			}
++		}
++		if values.Has("version") {
++			version, err := strconv.Atoi(values.Get("version"))
++			if err != nil || version < 1 || version > 2 {
++				failure(w, ErrInvalid)
++				return
++			}
++		}
+ 		switch r.Method {
+ 		case "GET":
+ 			v, e := s.Repository.Today(ctx, actor)

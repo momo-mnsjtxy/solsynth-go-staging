@@ -79,6 +79,29 @@ func TestHTTPRejectsUnsupportedAndAmbiguousInputBeforeRepository(t *testing.T) {
 		t.Fatal(w.Code, w.Body.String(), r)
 	}
 }
+
+func TestHTTPRealmPatchDistinguishesOmittedNullAndID(t *testing.T) {
+	r := &fakeRepo{}
+	h := NewHandler(r, &fakeAuth{actor: testActor})
+	realmID := testActor
+	for _, tc := range []struct {
+		body  string
+		clear bool
+		realm *string
+	}{{`{"title":"preserve"}`, false, nil}, {`{"realm_id":null}`, true, nil}, {`{"realm_id":"` + testActor + `"}`, false, &realmID}} {
+		w := request(h, "PATCH", "/api/posts/"+testActor, tc.body)
+		if w.Code != 200 || r.patch.ClearRealm != tc.clear || (r.patch.RealmID == nil) != (tc.realm == nil) || tc.realm != nil && *r.patch.RealmID != *tc.realm {
+			t.Fatal("realm patch intent lost", tc.body, w.Code, r.patch)
+		}
+	}
+	for _, body := range []string{`{"realm_id":""}`, `{"realm_id":42}`, `{"realm_id":null,"realm_id":"` + testActor + `"}`} {
+		before := r.calls
+		w := request(h, "PATCH", "/api/posts/"+testActor, body)
+		if w.Code != 400 || r.calls != before {
+			t.Fatal("invalid realm patch reached storage", body, w.Code)
+		}
+	}
+}
 func TestHTTPAuthenticationAndPermissionsFailClosed(t *testing.T) {
 	for _, tc := range []struct {
 		auth   *fakeAuth

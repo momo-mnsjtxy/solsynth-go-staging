@@ -11,20 +11,20 @@ import (
 )
 
 type Options struct {
-	Take                          int
-	Cursor                        string
-	Mode                          sphere.Mode
-	Filter, Publisher, Collection string
-	Aggressive                    bool
+	Take                                 int
+	Cursor                               string
+	Mode                                 sphere.Mode
+	Filter, Publisher, Collection, Realm string
+	Aggressive                           bool
 }
 type SearchOptions struct {
-	Offset, Take            int
-	Publisher, Query, Order string
-	Type                    *int
-	Replies                 *bool
-	Tags, Categories        []string
-	Start, End              *time.Time
-	Ascending               bool
+	Offset, Take                   int
+	Publisher, Query, Order, Realm string
+	Type                           *int
+	Replies                        *bool
+	Tags, Categories               []string
+	Start, End                     *time.Time
+	Ascending                      bool
 }
 type Event struct {
 	ID                 string      `json:"id"`

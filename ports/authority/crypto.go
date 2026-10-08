@@ -227,7 +227,11 @@ func (s *Service) sign(a Account, se Session, now time.Time) (string, error) {
 	if se.ExpiresAt.Before(exp) {
 		exp = se.ExpiresAt
 	}
-	c := claims{s.cfg.Issuer, s.cfg.Audience, a.ID, se.ID, se.ID, "user", a.Version, se.Epoch, exp.Unix(), now.Unix(), now.Unix()}
+	use := "user"
+	if se.Type == 1 && se.Category == OAuthSessionCategory {
+		use = OAuthSessionCategory
+	}
+	c := claims{s.cfg.Issuer, s.cfg.Audience, a.ID, se.ID, se.ID, use, a.Version, se.Epoch, exp.Unix(), now.Unix(), now.Unix()}
 	p, _ := json.Marshal(c)
 	b := base64.RawURLEncoding
 	raw := b.EncodeToString(h) + "." + b.EncodeToString(p)
@@ -239,6 +243,9 @@ func (s *Service) sign(a Account, se Session, now time.Time) (string, error) {
 	return raw + "." + b.EncodeToString(sig), nil
 }
 func (s *Service) verify(token string) (claims, error) {
+	return s.verifyUse(token, "user")
+}
+func (s *Service) verifyUse(token, use string) (claims, error) {
 	var c claims
 	if len(token) > 8192 {
 		return c, ErrInvalid
@@ -282,7 +289,7 @@ func (s *Service) verify(token string) (claims, error) {
 	if e != nil || decodeStrict(payload, &c) != nil {
 		return c, ErrInvalid
 	}
-	if c.Issuer != s.cfg.Issuer || c.Audience != s.cfg.Audience || !ValidID(c.Subject) || !ValidID(c.SessionID) || c.ID != c.SessionID || c.Use != "user" || c.Version < 1 || c.Epoch < 1 || c.Issued <= 0 || c.NotBefore < c.Issued || c.Expires <= c.NotBefore || c.Expires-c.Issued > int64(s.cfg.AccessTTL/time.Second) {
+	if c.Issuer != s.cfg.Issuer || c.Audience != s.cfg.Audience || !ValidID(c.Subject) || !ValidID(c.SessionID) || c.ID != c.SessionID || c.Use != use || c.Version < 1 || c.Epoch < 1 || c.Issued <= 0 || c.NotBefore < c.Issued || c.Expires <= c.NotBefore || c.Expires-c.Issued > int64(s.cfg.AccessTTL/time.Second) {
 		return c, ErrInvalid
 	}
 	return c, nil

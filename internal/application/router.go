@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"path"
 	"solsynth.local/go-migration/internal/federationhttp"
+	"solsynth.local/go-migration/ports/authority/oauth"
 	"solsynth.local/go-migration/ports/develop/bots"
 	"solsynth.local/go-migration/ports/passport/presence"
 	"solsynth.local/go-migration/ports/passport/progression"
@@ -16,6 +17,8 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	oauth                                                                                                                                                                                                                                                http.Handler
+	fortunes                                                                                                                                                                                                                                             http.Handler
 	calls, federationPublic, federationPrivate                                                                                                                                                                                                           http.Handler
 	board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps, commerce, signin, timeline, surveys, stickers, locations, presence, progression, merchants, tickets, bots, calendar http.Handler
 }
@@ -41,6 +44,10 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if h.federationPrivate != nil && federationhttp.IsPrivateRoute(p) {
 		h.federationPrivate.ServeHTTP(w, r)
+		return
+	}
+	if h.oauth != nil && oauth.RouteMatches(p) {
+		h.oauth.ServeHTTP(w, r)
 		return
 	}
 	if h.signin != nil && signinRoute(r.Method, p) {
@@ -100,6 +107,20 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			u.Path = canonical
 			copy.URL = &u
 			h.locations.ServeHTTP(w, copy)
+			return
+		}
+	}
+	if h.fortunes != nil {
+		canonical := p
+		if strings.HasPrefix(p, "/passport/") {
+			canonical = "/api/" + strings.TrimPrefix(p, "/passport/")
+		}
+		if canonical == "/api/fortune" || canonical == "/api/fortune/random" {
+			copy := r.Clone(r.Context())
+			u := *r.URL
+			u.Path = canonical
+			copy.URL = &u
+			h.fortunes.ServeHTTP(w, copy)
 			return
 		}
 	}

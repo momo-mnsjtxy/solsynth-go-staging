@@ -80,7 +80,7 @@ func optional(s *string) *string {
 	return &v
 }
 
-const columns = `p.id::text,p.publisher_id::text,p.title,p.description,p.slug,p.content,p.visibility,p.type,p.language,p.drafted_at,p.published_at,p.created_at,p.updated_at,p.deleted_at,p.locked_at,u.id::text,u.name,u.nick,u.bio,u.type,u.account_id::text,u.realm_id::text,u.created_at,u.updated_at`
+const columns = `p.id::text,p.publisher_id::text,p.title,p.description,p.slug,p.content,p.visibility,p.type,p.language,p.drafted_at,p.published_at,p.created_at,p.updated_at,p.deleted_at,p.locked_at,p.realm_id::text,u.id::text,u.name,u.nick,u.bio,u.type,u.account_id::text,u.realm_id::text,u.created_at,u.updated_at`
 const base = ` FROM owned_text_posts p JOIN owned_publishers u ON u.id=p.publisher_id WHERE p.deleted_at IS NULL AND u.deleted_at IS NULL AND (u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=u.account_id AND NOT owner.disabled))`
 
 // The owned privacy rule is editor-only access for private/draft posts. This is
@@ -89,7 +89,7 @@ const editor = `EXISTS(SELECT 1 FROM owned_publisher_members m JOIN owned_author
 
 func scan(s scanner) (posts.Post, error) {
 	var p posts.Post
-	e := s.Scan(&p.ID, &p.PublisherID, &p.Title, &p.Description, &p.Slug, &p.Content, &p.Visibility, &p.Type, &p.Language, &p.DraftedAt, &p.PublishedAt, &p.CreatedAt, &p.UpdatedAt, &p.DeletedAt, &p.LockedAt,
+	e := s.Scan(&p.ID, &p.PublisherID, &p.Title, &p.Description, &p.Slug, &p.Content, &p.Visibility, &p.Type, &p.Language, &p.DraftedAt, &p.PublishedAt, &p.CreatedAt, &p.UpdatedAt, &p.DeletedAt, &p.LockedAt, &p.RealmID,
 		&p.Publisher.ID, &p.Publisher.Name, &p.Publisher.Nick, &p.Publisher.Bio, &p.Publisher.Type, &p.Publisher.AccountID, &p.Publisher.RealmID, &p.Publisher.CreatedAt, &p.Publisher.UpdatedAt)
 	return p, mapped(e)
 }
@@ -127,6 +127,12 @@ func audit(ctx context.Context, tx *sql.Tx, actor, id, action string, now time.T
 	return e
 }
 func apply(p *posts.Post, v posts.Patch) {
+	if v.ClearRealm {
+		p.RealmID = nil
+	} else if v.RealmID != nil {
+		id := *v.RealmID
+		p.RealmID = &id
+	}
 	if v.Title != nil {
 		p.Title = optional(v.Title)
 	}
@@ -175,13 +181,16 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 		if pub.Type == 1 && v.Visibility != nil && (*v.Visibility == posts.Friends || *v.Visibility == posts.CloseFriends) {
 			return posts.ErrUnsupported
 		}
+		if e = r.authorizeRealms(ctx, tx, actor, pub.Type, nil, v, false); e != nil {
+			return e
+		}
 		id, e := newID()
 		if e != nil {
 			return e
 		}
 		p = posts.Post{ID: id, PublisherID: pub.ID, Publisher: pub, CreatedAt: now, UpdatedAt: now, PublishedAt: &now}
 		apply(&p, v)
-		_, e = tx.ExecContext(ctx, `INSERT INTO owned_text_posts(id,publisher_id,title,description,slug,content,visibility,type,language,drafted_at,published_at,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12)`, p.ID, p.PublisherID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, now)
+		_, e = tx.ExecContext(ctx, `INSERT INTO owned_text_posts(id,publisher_id,title,description,slug,content,visibility,type,language,drafted_at,published_at,created_at,updated_at,realm_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12,$13)`, p.ID, p.PublisherID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, now, p.RealmID)
 		if e != nil {
 			return e
 		}
@@ -195,18 +204,17 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 	}
 	return p, nil
 }
-func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v posts.Patch) (posts.Post, error) {
+func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v posts.Patch, deleting bool) (posts.Post, error) {
 	if !authority.ValidID(id) {
 		return posts.Post{}, posts.ErrNotFound
 	}
 	var publisher string
-	if e := tx.QueryRowContext(ctx, `SELECT publisher_id::text FROM owned_text_posts WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&publisher); e != nil {
+	var realm *string
+	if e := tx.QueryRowContext(ctx, `SELECT publisher_id::text,realm_id::text FROM owned_text_posts WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&publisher, &realm); e != nil {
 		return posts.Post{}, mapped(e)
 	}
-	if locker, ok := r.associations.(AssociationPrelocker); ok {
-		if e := locker.Prelock(ctx, tx, actor, publisher, v, false); e != nil {
-			return posts.Post{}, e
-		}
+	if e := r.prelock(ctx, tx, actor, MutationScope{PublisherID: publisher, PostID: id, RealmID: realm, Deleting: deleting}, v, false); e != nil {
+		return posts.Post{}, e
 	}
 	pub, e := r.publishers.RequirePostEditor(ctx, tx, actor, publisher)
 	if e != nil {
@@ -219,8 +227,11 @@ func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v
 	if e != nil {
 		return posts.Post{}, e
 	}
-	if p.PublisherID != publisher {
+	if p.PublisherID != publisher || !SameOptionalID(p.RealmID, realm) {
 		return posts.Post{}, posts.ErrConflict
+	}
+	if e = r.authorizeRealms(ctx, tx, actor, p.Publisher.Type, realm, v, deleting); e != nil {
+		return posts.Post{}, e
 	}
 	if p.LockedAt != nil {
 		return posts.Post{}, posts.ErrLocked
@@ -228,7 +239,7 @@ func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v
 	return p, nil
 }
 func save(ctx context.Context, tx *sql.Tx, p posts.Post) error {
-	_, e := tx.ExecContext(ctx, `UPDATE owned_text_posts SET title=$2,description=$3,slug=$4,content=$5,visibility=$6,type=$7,language=$8,drafted_at=$9,published_at=$10,updated_at=$11,deleted_at=$12 WHERE id=$1`, p.ID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, p.UpdatedAt, p.DeletedAt)
+	_, e := tx.ExecContext(ctx, `UPDATE owned_text_posts SET title=$2,description=$3,slug=$4,content=$5,visibility=$6,type=$7,language=$8,drafted_at=$9,published_at=$10,updated_at=$11,deleted_at=$12,realm_id=$13 WHERE id=$1`, p.ID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, p.UpdatedAt, p.DeletedAt, p.RealmID)
 	return e
 }
 func (r *Repository) mutate(ctx context.Context, actor, id, action string, v posts.Patch) (posts.Post, error) {
@@ -244,7 +255,7 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 			}
 		}
 		var e error
-		p, e = r.locked(ctx, tx, actor, id, v)
+		p, e = r.locked(ctx, tx, actor, id, v, action == "delete")
 		if e != nil {
 			return e
 		}
@@ -348,7 +359,7 @@ func (r *Repository) GetSlug(ctx context.Context, actor, publisher, slug string)
 	return r.detail(ctx, actor, `lower(u.name)=lower($2) AND lower(p.slug)=lower($3)`, publisher, slug)
 }
 func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions) ([]posts.Post, int64, error) {
-	if o.Offset < 0 || o.Take < 1 || o.Take > 100 || len(o.Publisher) > 256 {
+	if o.Offset < 0 || o.Take < 1 || o.Take > 100 || len(o.Publisher) > 256 || len(o.Realm) > 256 {
 		return nil, 0, posts.ErrInvalid
 	}
 	if o.Type != nil && *o.Type != posts.Moment && *o.Type != posts.Article {
@@ -386,7 +397,12 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 			}
 		}
 	}
-	where := base + ` AND ` + PublisherPredicate(r.visibility) + ` AND ($2='' OR u.id::text=$2 OR lower(u.name)=lower($2)) AND ($3::integer IS NULL OR p.type=$3)`
+	where := base + ` AND ` + PublisherPredicate(r.visibility) + ` AND ` + RealmPredicate(r.visibility, false) + ` AND ($2='' OR u.id::text=$2 OR lower(u.name)=lower($2)) AND ($3::integer IS NULL OR p.type=$3)`
+	realm, e := ResolveRealmFilter(ctx, tx, r.visibility, actor, o.Realm)
+	if e != nil {
+		return nil, 0, e
+	}
+	where += ` AND ($4::text='' OR p.realm_id=NULLIF($4::text,'')::uuid)`
 	order := `p.published_at`
 	if o.Drafts {
 		where += ` AND p.drafted_at IS NOT NULL AND ` + EditorPredicateWithVisibility(r.visibility)
@@ -397,7 +413,7 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	} else {
 		where += ` AND ` + ListingPredicate(r.visibility)
 	}
-	args := []any{actor, o.Publisher, o.Type}
+	args := []any{actor, o.Publisher, o.Type, realm}
 	var total int64
 	if e = tx.QueryRowContext(ctx, `SELECT count(*)`+where, args...).Scan(&total); e != nil {
 		return nil, 0, e
@@ -406,7 +422,7 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	if o.Ascending {
 		direction = " ASC"
 	}
-	rows, e := tx.QueryContext(ctx, `SELECT `+columns+where+` ORDER BY `+order+direction+`,p.id`+direction+` OFFSET $4 LIMIT $5`, append(args, o.Offset, o.Take)...)
+	rows, e := tx.QueryContext(ctx, `SELECT `+columns+where+` ORDER BY `+order+direction+`,p.id`+direction+` OFFSET $5 LIMIT $6`, append(args, o.Offset, o.Take)...)
 	if e != nil {
 		return nil, 0, e
 	}

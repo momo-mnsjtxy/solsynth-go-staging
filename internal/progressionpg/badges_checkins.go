@@ -124,6 +124,9 @@ func (r *Repository) Today(ctx context.Context, actor string) (v progression.Che
 	e = r.within(ctx, actor, nil, func(tx *sql.Tx, now time.Time) error {
 		var e error
 		v, e = scanCheckin(tx.QueryRowContext(ctx, `SELECT `+checkinColumns+` FROM owned_progression_checkins WHERE account_id=$1 AND day=$2`, actor, now.Format("2006-01-02")))
+		if e == nil && r.reports != nil {
+			e = r.reports.HydrateCheckIn(ctx, tx, &v)
+		}
 		return e
 	})
 	return
@@ -137,6 +140,12 @@ func (r *Repository) CheckIn(ctx context.Context, actor string) (v progression.C
 		var e error
 		v, e = scanCheckin(tx.QueryRowContext(ctx, `SELECT `+checkinColumns+` FROM owned_progression_checkins WHERE account_id=$1 AND day=$2`, actor, day))
 		if e == nil {
+			if r.reports != nil {
+				if e = r.reports.EnqueueCheckIn(ctx, tx, v, now); e != nil {
+					return e
+				}
+				return r.reports.HydrateCheckIn(ctx, tx, &v)
+			}
 			return nil
 		}
 		if !errors.Is(e, sql.ErrNoRows) {
@@ -168,6 +177,14 @@ func (r *Repository) CheckIn(ctx context.Context, actor string) (v progression.C
 		if e = insertXP(ctx, tx, actor, "check-in", "Check-in reward on "+now.Format("2006/01/02"), "check-in:"+actor+":"+day, 100, now); e != nil {
 			return e
 		}
+		if r.reports != nil {
+			if e = r.reports.EnqueueCheckIn(ctx, tx, v, now); e != nil {
+				return e
+			}
+			if e = r.reports.HydrateCheckIn(ctx, tx, &v); e != nil {
+				return e
+			}
+		}
 		return audit(ctx, tx, actor, "check-in", id, now)
 	})
 	return
@@ -196,7 +213,18 @@ func (r *Repository) CheckInHistory(ctx context.Context, actor string, offset, t
 			}
 			out = append(out, v)
 		}
-		return rows.Err()
+		if e = rows.Err(); e != nil {
+			return e
+		}
+		rows.Close()
+		if r.reports != nil {
+			for i := range out {
+				if e = r.reports.HydrateCheckIn(ctx, tx, &out[i]); e != nil {
+					return e
+				}
+			}
+		}
+		return nil
 	})
 	return
 }

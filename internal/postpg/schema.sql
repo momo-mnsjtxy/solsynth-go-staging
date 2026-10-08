@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS owned_text_posts (
  id uuid PRIMARY KEY,
  publisher_id uuid NOT NULL REFERENCES owned_publishers(id),
+ realm_id uuid,
  title text CHECK(length(title)<=1024),description text CHECK(length(description)<=4096),
  slug text CHECK(length(slug)<=1024),content text NOT NULL CONSTRAINT owned_text_posts_content_check CHECK(length(content)<=1048576),
  visibility integer NOT NULL CHECK(visibility IN(0,1,2,3,4)),type integer NOT NULL CHECK(type IN(0,1)),language text CHECK(length(language)<=16),
@@ -25,3 +26,6 @@ CREATE TABLE IF NOT EXISTS owned_text_post_audit (
 -- against active authorized attachments inside the canonical post transaction.
 ALTER TABLE owned_text_posts DROP CONSTRAINT IF EXISTS owned_text_posts_content_check;
 ALTER TABLE owned_text_posts ADD CONSTRAINT owned_text_posts_content_check CHECK(length(content)<=1048576);
+-- Nullable projection also exists for standalone hosts without a realm provider.
+-- The canonical foreign key is installed by realm_schema.sql after socialpg.
+ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS realm_id uuid;

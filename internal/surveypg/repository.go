@@ -17,7 +17,6 @@ import (
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/media"
 	"solsynth.local/go-migration/ports/passport/accounts"
-	"solsynth.local/go-migration/ports/sphere/posts"
 	"solsynth.local/go-migration/ports/sphere/surveys"
 	"sort"
 	"strings"
@@ -140,29 +139,25 @@ func legacyStats(v surveys.Results) map[string]map[string]int64 {
 }
 
 func (r *Repository) load(ctx context.Context, tx *sql.Tx, actor, id string, edit bool, mutation ...bool) (record, error) {
+	return r.loadWithPost(ctx, tx, actor, id, nil, edit, mutation...)
+}
+func (r *Repository) loadWithPost(ctx context.Context, tx *sql.Tx, actor, id string, newPost *string, edit bool, mutation ...bool) (record, error) {
 	var x record
 	if !authority.ValidID(id) {
 		return x, surveys.ErrNotFound
 	}
 	var pub string
-	if e := tx.QueryRowContext(ctx, `SELECT publisher_id::text FROM owned_surveys WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&pub); e != nil {
-		return x, mapped(e)
+	var oldPost *string
+	if e := tx.QueryRowContext(ctx, `SELECT publisher_id::text,post_id::text FROM owned_surveys WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&pub, &oldPost); e != nil {
+		return record{}, mapped(e)
 	}
-	scopes, e := postpg.PrelockPublisherRealms(ctx, tx, r.visibility, []string{pub})
+	_, e := r.lockPostScopes(ctx, tx, pub, edit, oldPost, newPost)
 	if e != nil {
-		if errors.Is(e, posts.ErrNotFound) {
-			return x, surveys.ErrNotFound
-		}
-		return x, e
+		return record{}, e
 	}
 	if edit {
-		if _, e := r.publishers.RequirePostEditor(ctx, tx, actor, pub); e != nil {
-			return x, e
-		}
-	} else {
-		var v string
-		if e := tx.QueryRowContext(ctx, `SELECT id::text FROM owned_publishers WHERE id=$1 AND deleted_at IS NULL FOR SHARE`, pub).Scan(&v); e != nil {
-			return x, mapped(e)
+		if _, e = r.publishers.RequirePostEditor(ctx, tx, actor, pub); e != nil {
+			return record{}, e
 		}
 	}
 	lock := " FOR SHARE OF s"
@@ -174,11 +169,8 @@ func (r *Repository) load(ctx context.Context, tx *sql.Tx, actor, id string, edi
 	if e != nil {
 		return x, mapped(e)
 	}
-	if x.s.PublisherID != pub {
+	if x.s.PublisherID != pub || !postpg.SameOptionalID(x.s.PostID, oldPost) {
 		return x, surveys.ErrConflict
-	}
-	if e = accountpg.VerifyPublisherRealms(ctx, tx, scopes); e != nil {
-		return x, e
 	}
 	visible, e := postpg.CanViewPublisher(ctx, tx, actor, pub, r.visibility)
 	if e != nil {
@@ -211,7 +203,7 @@ func (r *Repository) load(ctx context.Context, tx *sql.Tx, actor, id string, edi
 			return x, surveys.ErrNotFound
 		}
 	}
-	if x.s.PostID != nil && !edit {
+	if x.s.PostID != nil {
 		p, e := postpg.ReadWithVisibility(ctx, tx, actor, *x.s.PostID, r.visibility)
 		if e != nil {
 			return x, surveys.ErrNotFound
@@ -372,7 +364,21 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, p surve
 		return surveys.Survey{}, e
 	}
 	defer tx.Rollback()
-	pub, e := r.publishers.ResolveForPost(ctx, tx, actor, selector)
+	pubID, e := r.publishers.ObservePostPublisherID(ctx, tx, actor, selector)
+	if e != nil {
+		return surveys.Survey{}, e
+	}
+	if _, e = r.lockPostScopes(ctx, tx, pubID, true, p.PostID); e != nil {
+		return surveys.Survey{}, e
+	}
+	actual, e := r.publishers.ObservePostPublisherID(ctx, tx, actor, selector)
+	if e != nil {
+		return surveys.Survey{}, e
+	}
+	if actual != pubID {
+		return surveys.Survey{}, surveys.ErrConflict
+	}
+	pub, e := r.publishers.RequirePostEditor(ctx, tx, actor, pubID)
 	if e != nil {
 		return surveys.Survey{}, e
 	}
@@ -405,7 +411,7 @@ func (r *Repository) Update(ctx context.Context, actor, id string, p surveys.Pat
 		return surveys.Survey{}, e
 	}
 	defer tx.Rollback()
-	x, e := r.load(ctx, tx, actor, id, true)
+	x, e := r.loadWithPost(ctx, tx, actor, id, p.PostID, true)
 	if e != nil {
 		return surveys.Survey{}, e
 	}

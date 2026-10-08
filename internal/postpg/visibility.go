@@ -45,7 +45,7 @@ func PublisherMemberPredicate(v VisibilityProvider) string {
 	return `u.type=0`
 }
 func EditorPredicateWithVisibility(v VisibilityProvider) string {
-	return `(` + editor + ` AND ` + PublisherMemberPredicate(v) + `)`
+	return `(` + editor + ` AND ` + PublisherMemberPredicate(v) + ` AND ` + RealmPredicate(v, true) + `)`
 }
 
 // PrelockPublisherRealms runs before any publisher lock. It returns observed
@@ -84,7 +84,7 @@ func DetailPredicate(v VisibilityProvider) string {
 		visible += ` OR (` + v.PostVisibilitySQL() + `)`
 		blocked = ` AND NOT (` + v.PostBlockedSQL() + `)`
 	}
-	return PublisherPredicate(v) + ` AND ((p.drafted_at IS NULL AND p.published_at<=CURRENT_TIMESTAMP AND (` + visible + `)) OR ` + EditorPredicateWithVisibility(v) + `)` + blocked
+	return PublisherPredicate(v) + ` AND ` + RealmPredicate(v, false) + ` AND ((p.drafted_at IS NULL AND p.published_at<=CURRENT_TIMESTAMP AND (` + visible + `)) OR ` + EditorPredicateWithVisibility(v) + `)` + blocked
 }
 func ListingPredicate(v VisibilityProvider) string {
 	visible := `p.visibility=0 OR ` + EditorPredicateWithVisibility(v)
@@ -93,7 +93,7 @@ func ListingPredicate(v VisibilityProvider) string {
 		visible += ` OR (` + v.PostVisibilitySQL() + `)`
 		blocked = ` AND NOT (` + v.PostBlockedSQL() + `)`
 	}
-	return PublisherPredicate(v) + ` AND p.drafted_at IS NULL AND p.published_at<=CURRENT_TIMESTAMP AND (` + visible + `)` + blocked
+	return PublisherPredicate(v) + ` AND ` + RealmPredicate(v, false) + ` AND p.drafted_at IS NULL AND p.published_at<=CURRENT_TIMESTAMP AND (` + visible + `)` + blocked
 }
 func ReadWithVisibility(ctx context.Context, tx *sql.Tx, actor, id string, v VisibilityProvider) (posts.Post, error) {
 	if tx == nil {

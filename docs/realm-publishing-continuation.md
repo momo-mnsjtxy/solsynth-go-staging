@@ -1,5 +1,7 @@
 # Organization publishers and canonical realm privacy
 
+The separate individual post association is added by the later [post realm continuation](post-realm-association-continuation.md). That delta replaces only the independent post `realm_id` gap described below.
+
 This slice extends verified base `726485cc2668b3ad9e2b5aff9e715ec9c182c5a0`. It adds the organization publisher flow over existing canonical publisher and realm tables. It does not add a second identity store or require a schema migration.
 
 ## Supported flow

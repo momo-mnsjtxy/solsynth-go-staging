@@ -49,7 +49,7 @@ func encodeCursor(p posts.Post) string {
 	return "v1." + base64.RawURLEncoding.EncodeToString([]byte(p.PublishedAt.UTC().Format(time.RFC3339Nano)+"|"+p.ID))
 }
 func validateSearch(o timeline.SearchOptions) error {
-	if o.Offset < 0 || o.Offset > 1000000 || o.Take < 1 || o.Take > 100 || len(o.Publisher) > 256 || len(o.Query) > 1024 || !utf8.ValidString(o.Query) || strings.ContainsRune(o.Query, 0) {
+	if o.Offset < 0 || o.Offset > 1000000 || o.Take < 1 || o.Take > 100 || len(o.Realm) > 256 || len(o.Publisher) > 256 || len(o.Query) > 1024 || !utf8.ValidString(o.Query) || strings.ContainsRune(o.Query, 0) {
 		return timeline.ErrInvalid
 	}
 	if o.Type != nil && *o.Type != posts.Moment && *o.Type != posts.Article {
@@ -77,6 +77,13 @@ func (r *Repository) searchWhere(ctx context.Context, tx *sql.Tx, actor string, 
 	where := r.base()
 	args := []any{actor}
 	add := func(v any) string { args = append(args, v); return fmt.Sprintf("$%d", len(args)) }
+	if o.Realm != "" {
+		id, e := postpg.ResolveRealmFilter(ctx, tx, r.visibility, actor, o.Realm)
+		if e != nil {
+			return "", nil, e
+		}
+		where += ` AND p.realm_id=` + add(id) + `::uuid`
+	}
 	if o.Publisher != "" {
 		pid, _, e := r.publisher(ctx, tx, actor, o.Publisher, false)
 		if e != nil {
@@ -191,7 +198,7 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 	if o.Mode != sphere.Personalized && o.Mode != sphere.Latest && o.Mode != sphere.Top {
 		return page, timeline.ErrMode
 	}
-	if o.Take < 1 || o.Take > 100 || len(o.Publisher) > 256 || len(o.Collection) > 128 {
+	if o.Take < 1 || o.Take > 100 || len(o.Realm) > 256 || len(o.Publisher) > 256 || len(o.Collection) > 128 {
 		return page, timeline.ErrInvalid
 	}
 	if o.Collection != "" && o.Publisher == "" {
@@ -212,7 +219,7 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 		return page, e
 	}
 	defer tx.Rollback()
-	where, args, e := r.searchWhere(ctx, tx, actor, timeline.SearchOptions{Publisher: o.Publisher})
+	where, args, e := r.searchWhere(ctx, tx, actor, timeline.SearchOptions{Publisher: o.Publisher, Realm: o.Realm})
 	if e != nil {
 		return page, e
 	}

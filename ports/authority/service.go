@@ -95,6 +95,20 @@ func (s *Service) check(tx Transaction, c claims, now time.Time) (Principal, err
 	if now.Unix() >= c.Expires {
 		return Principal{}, ErrExpired
 	}
+	if se.Type == 1 {
+		if se.Category != OAuthSessionCategory || c.Use != OAuthSessionCategory {
+			return Principal{}, ErrInvalid
+		}
+		binding, ok := tx.(SessionBindingTransaction)
+		if !ok {
+			return Principal{}, ErrInvalid
+		}
+		if e = binding.CheckSessionBinding(se, now); e != nil {
+			return Principal{}, e
+		}
+	} else if se.Type != 0 || c.Use != "user" {
+		return Principal{}, ErrInvalid
+	}
 	return Principal{Account: a, Session: se}, nil
 }
 func (s *Service) with(ctx context.Context, token string, fn func(Transaction, Principal, time.Time) error) (Principal, error) {
@@ -251,6 +265,9 @@ func (s *Service) mint(a Account, se *Session, now time.Time) (Pair, error) {
 // login or synthetic test fixture. There is deliberately no HTTP issue route.
 func (s *Service) IssueSession(ctx context.Context, account string, o SessionOptions) (Pair, error) {
 	var p Pair
+	if o.Type != 0 || o.ClientID != "" {
+		return p, ErrInvalid
+	}
 	e := s.store.WithinAccount(ctx, account, func(tx Transaction) error {
 		_, pair, e := s.newSession(tx, o, s.cfg.Now().UTC())
 		p = pair
@@ -334,6 +351,10 @@ func (s *Service) Refresh(ctx context.Context, raw string, lane int, client stri
 		}
 		now := s.cfg.Now().UTC()
 		if se.Type != lane || se.ClientID != client || lane != 0 && lane != 1 {
+			return ErrRefresh
+		}
+		// OAuth refresh is exclusively app/grant-bound in the owned OAuth adapter.
+		if se.Type != 0 {
 			return ErrRefresh
 		}
 		if e = s.accountAllowed(tx, now, true); e != nil {

@@ -23,13 +23,25 @@ type TransactionGuard interface {
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
 }
 type Repository struct {
-	db    *sql.DB
-	guard TransactionGuard
+	db      *sql.DB
+	guard   TransactionGuard
+	reports CheckInReports
+}
+
+// CheckInReports shares the canonical transaction. Implementations must not
+// create another check-in/XP authority or contact a provider inside these hooks.
+type CheckInReports interface {
+	EnqueueCheckIn(context.Context, *sql.Tx, progression.CheckIn, time.Time) error
+	HydrateCheckIn(context.Context, *sql.Tx, *progression.CheckIn) error
 }
 
 func New(db *sql.DB) *Repository { return &Repository{db: db} }
 func NewWithAuthority(db *sql.DB, g TransactionGuard) *Repository {
 	return &Repository{db: db, guard: g}
+}
+
+func NewWithCheckInReports(db *sql.DB, g TransactionGuard, reports CheckInReports) *Repository {
+	return &Repository{db: db, guard: g, reports: reports}
 }
 
 var _ progression.Repository = (*Repository)(nil)

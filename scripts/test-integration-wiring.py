@@ -5,7 +5,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/postpg/realm_schema.sql",
  "internal/notabledaypg/schema.sql",
+ "internal/oauthpg/schema.sql",
+ "internal/fortunepg/schema.sql",
  "internal/botpg/schema.sql",
  "internal/ticketpg/schema.sql",
  "internal/merchantpg/schema.sql",
@@ -72,6 +75,8 @@ def check(runner, read_schema=None):
     for name in ("walletpg", "application", "postpg"):
         if schemas.index("internal/accountpg/schema.sql") >= schemas.index(f"internal/{name}/schema.sql"):
             raise ValueError("owned dependent schema must follow accounts: " + name)
+    if schemas.index("internal/postpg/realm_schema.sql") <= max(schemas.index("internal/postpg/schema.sql"), schemas.index("internal/socialpg/schema.sql")):
+        raise ValueError("post realm foreign key requires canonical posts and realms first")
     if schemas.index("internal/chatpg/schema.sql") <= schemas.index("internal/messagerpg/testdata/schema.sql"):
         raise ValueError("chat write extension requires canonical read schema first")
     if schemas.index("internal/postpg/schema.sql") >= schemas.index("internal/application/schema.sql"):

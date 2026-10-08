@@ -160,7 +160,7 @@ func (r *Repository) Consent(ctx context.Context, actor, slug string, req *apps.
 		}
 		out.AppID = a.ID
 		if revoke {
-			_, e = tx.ExecContext(ctx, `UPDATE owned_app_consents SET revoked_at=$3,updated_at=$3 WHERE account_id=$1 AND app_id=$2 AND revoked_at IS NULL`, actor, a.ID, now)
+			_, e = tx.ExecContext(ctx, `UPDATE owned_app_consents SET revoked_at=$3,updated_at=$3,version=version+1 WHERE account_id=$1 AND app_id=$2 AND revoked_at IS NULL`, actor, a.ID, now)
 		} else {
 			if !boardCapable(a) || len(req.Scopes) != 1 || req.Scopes[0] != apps.BoardScope {
 				return apps.ErrForbidden
@@ -171,7 +171,7 @@ func (r *Repository) Consent(ctx context.Context, actor, slug string, req *apps.
 			}
 			out.Scopes = req.Scopes
 			out.ExpiresAt = now.Add(ttl)
-			_, e = tx.ExecContext(ctx, `INSERT INTO owned_app_consents(account_id,app_id,scopes,expires_at,created_at,updated_at)VALUES($1,$2,$3::jsonb,$4,$5,$5) ON CONFLICT(account_id,app_id)DO UPDATE SET scopes=EXCLUDED.scopes,expires_at=EXCLUDED.expires_at,updated_at=EXCLUDED.updated_at,revoked_at=NULL`, actor, a.ID, encoded(out.Scopes), out.ExpiresAt, now)
+			_, e = tx.ExecContext(ctx, `INSERT INTO owned_app_consents(account_id,app_id,scopes,expires_at,created_at,updated_at)VALUES($1,$2,$3::jsonb,$4,$5,$5) ON CONFLICT(account_id,app_id)DO UPDATE SET scopes=EXCLUDED.scopes,expires_at=EXCLUDED.expires_at,updated_at=EXCLUDED.updated_at,revoked_at=NULL,version=owned_app_consents.version+1`, actor, a.ID, encoded(out.Scopes), out.ExpiresAt, now)
 		}
 		if e != nil {
 			return e

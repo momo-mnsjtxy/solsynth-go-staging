@@ -429,25 +429,12 @@ func TestAuthorityHTTPClientContractsAndOAuthLane(t *testing.T) {
 	if w.Code != 200 || pair["token"] == nil || pair["access_token"] != nil || pair["expires_in"] == nil || w.Header().Get("Cache-Control") != "no-store" {
 		t.Fatal(w.Code, w.Body.String())
 	}
-	oauth, e := s.IssueSession(context.Background(), accountB, SessionOptions{Type: 1, ClientID: "synthetic-solian", Scopes: []string{"*"}})
-	if e != nil {
-		t.Fatal(e)
-	}
-	form := url.Values{"grant_type": {"refresh_token"}, "refresh_token": {oauth.RefreshToken}, "client_id": {"synthetic-solian"}}
-	w = request(s, "POST", "/stargate/auth/open/token", form.Encode(), "", "application/x-www-form-urlencoded")
-	pair = map[string]any{}
-	_ = json.Unmarshal(w.Body.Bytes(), &pair)
-	if w.Code != 200 || pair["access_token"] == nil || pair["token"] != nil {
-		t.Fatal(w.Code, w.Body.String())
-	}
-	w = request(s, "POST", "/stargate/auth/token", fmt.Sprintf(`{"grant_type":"refresh_token","refresh_token":%q}`, oauth.RefreshToken), "", "application/json")
-	if w.Code != 401 {
-		t.Fatal("OAuth crossed first-party lane")
-	}
-	form.Set("client_id", "wrong-client")
+	_, e := s.IssueSession(context.Background(), accountB, SessionOptions{Type: 1, ClientID: "synthetic-solian", Scopes: []string{"*"}})
+	want(t, e, ErrInvalid)
+	form := url.Values{"grant_type": {"refresh_token"}, "refresh_token": {p.RefreshToken}, "client_id": {"synthetic-solian"}}
 	w = request(s, "POST", "/stargate/auth/open/token", form.Encode(), "", "application/x-www-form-urlencoded")
 	if w.Code != 400 || !strings.Contains(w.Body.String(), "invalid_grant") {
-		t.Fatal(w.Code, w.Body.String())
+		t.Fatal("unbound OAuth lane accepted a first-party refresh", w.Code, w.Body.String())
 	}
 	w = request(s, "GET", "/stargate/accounts/me?tk="+p.Token, "", "", "")
 	if w.Code != 401 {
@@ -462,7 +449,7 @@ func TestAuthorityHTTPClientContractsAndOAuthLane(t *testing.T) {
 		t.Fatal("untrusted identity")
 	}
 	now.Add(600)
-	w = request(s, "GET", "/stargate/accounts/me", "", pairString(pair, "access_token"), "")
+	w = request(s, "GET", "/stargate/accounts/me", "", pairString(pair, "token"), "")
 	if w.Code != 401 || !strings.Contains(w.Body.String(), "TOKEN_EXPIRED") {
 		t.Fatal(w.Code, w.Body.String())
 	}

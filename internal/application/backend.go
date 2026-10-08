@@ -15,6 +15,7 @@ import (
 	"solsynth.local/go-migration/internal/botpg"
 	"solsynth.local/go-migration/internal/chatpg"
 	"solsynth.local/go-migration/internal/commercepg"
+	"solsynth.local/go-migration/internal/fortunepg"
 	"solsynth.local/go-migration/internal/interactionpg"
 	"solsynth.local/go-migration/internal/locationpg"
 	"solsynth.local/go-migration/internal/mediapg"
@@ -22,6 +23,7 @@ import (
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/internal/notabledaypg"
 	"solsynth.local/go-migration/internal/notificationpg"
+	"solsynth.local/go-migration/internal/oauthpg"
 	"solsynth.local/go-migration/internal/postmediapg"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/internal/presencepg"
@@ -36,6 +38,7 @@ import (
 	"solsynth.local/go-migration/internal/timelinepg"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/authority/oauth"
 	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/develop/apps"
 	"solsynth.local/go-migration/ports/develop/bots"
@@ -44,6 +47,7 @@ import (
 	"solsynth.local/go-migration/ports/notifications"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/board"
+	"solsynth.local/go-migration/ports/passport/fortunes"
 	"solsynth.local/go-migration/ports/passport/notabledays"
 	"solsynth.local/go-migration/ports/passport/presence"
 	"solsynth.local/go-migration/ports/passport/progression"
@@ -64,6 +68,9 @@ import (
 // Config is injected by the embedding application. Enum values are mandatory
 // explicit database-policy decisions; zero is never silently treated as public.
 type Config struct {
+	OAuthEnabled                  bool
+	OAuthConsentURL               string
+	Fortunes                      *fortunepg.Config
 	Authority                     authority.Config
 	PublicVisibility              *int32
 	MessagerPolicy                *messagerpg.IndependentPolicy
@@ -82,6 +89,8 @@ type Config struct {
 	Federation                    *FederationConfig
 }
 type Backend struct {
+	oauth                    *oauthpg.Repository
+	fortunes                 *fortunepg.Repository
 	handler                  http.Handler
 	verifier                 *authority.Verifier
 	db, authorityDB          *sql.DB
@@ -162,7 +171,19 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	mh := (&rooms.Service{Repository: cr, Authority: proofIdentity{identity}, Reader: mr}).Handler()
 	th := taxonomy.NewAuthorityHandler(taxonomypg.NewWithAuthority(db, *c.PublicVisibility, guard), taxonomyIdentity{identity, publisherRepository{accountRepo}}, time.Now)
 	presenceRepo := presencepg.NewWithAuthority(db, guard)
+	var fortuneRepo *fortunepg.Repository
+	var fortuneHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "FORTUNE_UNCONFIGURED") })
+	if c.Fortunes != nil {
+		fortuneRepo, err = fortunepg.New(db, guard, *c.Fortunes)
+		if err != nil {
+			return nil, err
+		}
+		fortuneHTTP = (&fortunes.Service{Repository: fortuneRepo, Authority: v, AllowAnonymousCatalogue: c.Fortunes.AllowAnonymousCatalogue}).Handler()
+	}
 	progressionRepo := progressionpg.NewWithAuthority(db, guard)
+	if fortuneRepo != nil {
+		progressionRepo = progressionpg.NewWithCheckInReports(db, guard, fortuneRepo)
+	}
 	var bindProof func(context.Context, authority.Principal) context.Context
 	if guard != nil {
 		bindProof = guard.Bind
@@ -220,6 +241,24 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		}
 		signinHTTP = signinService.Handler()
 	}
+	var oauthRepo *oauthpg.Repository
+	var oauthHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "OAUTH_UNCONFIGURED") })
+	if c.OAuthEnabled {
+		if authorityDB != db || guard == nil {
+			return nil, errors.New("OAuth requires canonical same-pool authority")
+		}
+		if c.SessionService == nil {
+			c.SessionService, err = authority.New(aStore, c.Authority)
+			if err != nil {
+				return nil, err
+			}
+		}
+		oauthRepo, err = oauthpg.NewWithAuthority(db, aStore, c.SessionService, guard, appRepo)
+		if err != nil {
+			return nil, err
+		}
+		oauthHTTP = (&oauth.Service{Repository: oauthRepo, Verifier: v, Metadata: c.SessionService, Bind: guard.Bind, AuthorizationEndpoint: c.OAuthConsentURL}).Handler()
+	}
 	session := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 501, "AUTHORITY_ISSUER_ROLE_REQUIRED") })
 	var sessionHTTP http.Handler = session
 	if c.SessionService != nil {
@@ -247,7 +286,11 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	var calendarRepo *notabledaypg.Repository
 	var calendarHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "CALENDAR_AUTHORITY_UNAVAILABLE") })
 	if guard != nil {
-		calendarRepo, err = notabledaypg.New(db, guard, notabledaypg.Config{Activity: notabledaypg.CanonicalActivityOverlay{}})
+		var activity notabledaypg.ActivityOverlay = notabledaypg.CanonicalActivityOverlay{}
+		if fortuneRepo != nil {
+			activity = fortunepg.CalendarOverlay{Base: activity, Reports: fortuneRepo}
+		}
+		calendarRepo, err = notabledaypg.New(db, guard, notabledaypg.Config{Activity: activity})
 		if err != nil {
 			return nil, err
 		}
@@ -285,8 +328,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	h := router{modules{oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	return &Backend{oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 }
 
 type accountLookup interface {
@@ -315,6 +358,11 @@ func (b *Backend) ProcessDue(ctx context.Context, limit int) (int, error) {
 		return 0, errors.New("lifecycle batch size must be between 1 and 1000")
 	}
 	n, e := b.wallet.ProcessDue(ctx, limit)
+	if b.oauth != nil {
+		m, x := b.oauth.ProcessDue(ctx, min(limit, 100))
+		n += m
+		e = errors.Join(e, x)
+	}
 	if b.commerce != nil {
 		m, x := b.commerce.ProcessDue(ctx, limit)
 		n += m
@@ -330,4 +378,20 @@ func (b *Backend) ProcessDue(ctx context.Context, limit int) (int, error) {
 	}
 	m, x := b.external.processDue(ctx, min(limit, 100))
 	return n + int(l) + p + d + m, errors.Join(e, le, pe, de, x)
+}
+
+// InstallFortuneCorpus installs only explicitly provided operator configuration.
+func (b *Backend) InstallFortuneCorpus(ctx context.Context, c fortunes.Corpus) error {
+	if b == nil || b.fortunes == nil {
+		return fortunes.ErrUnavailable
+	}
+	return b.fortunes.InstallCorpus(ctx, c)
+}
+
+// ProcessFortune advances one durable request; constructors never start work.
+func (b *Backend) ProcessFortune(ctx context.Context) (bool, error) {
+	if b == nil || b.fortunes == nil {
+		return false, fortunes.ErrUnavailable
+	}
+	return b.fortunes.ProcessOne(ctx)
 }

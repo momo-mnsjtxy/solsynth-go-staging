@@ -82,6 +82,9 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 		}
 		var target any
 		switch k {
+		case "realm_id":
+			p.ClearRealm = bytes.Equal(bytes.TrimSpace(b), []byte("null"))
+			target = &p.RealmID
 		case "replied_post_id":
 			target = &p.RepliedPostID
 		case "forwarded_post_id":
@@ -140,7 +143,7 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 			if v != nil && *v {
 				return p, ErrUnsupported
 			}
-		case "embed_view", "realm_id", "survey_id", "fund_id", "meet_id", "live_stream_id", "notable_day_id", "calendar_event_id", "location_name", "location_address", "location_wkt", "thumbnail_id":
+		case "embed_view", "survey_id", "fund_id", "meet_id", "live_stream_id", "notable_day_id", "calendar_event_id", "location_name", "location_address", "location_wkt", "thumbnail_id":
 			if !bytes.Equal(bytes.TrimSpace(b), []byte("null")) {
 				return p, ErrUnsupported
 			}
@@ -157,7 +160,7 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 	if _, e = d.Token(); e != io.EOF {
 		return p, ErrInvalid
 	}
-	if e := ValidatePatch(Patch{Tags: p.Tags, Categories: p.Categories, CollectionIDs: p.CollectionIDs, Attachments: p.Attachments}, false, time.Time{}); e != nil {
+	if e := ValidatePatch(Patch{RealmID: p.RealmID, ClearRealm: p.ClearRealm, Tags: p.Tags, Categories: p.Categories, CollectionIDs: p.CollectionIDs, Attachments: p.Attachments}, false, time.Time{}); e != nil {
 		return p, e
 	}
 	return p, nil
@@ -185,14 +188,14 @@ func listOptions(r *http.Request, drafts bool) (ListOptions, error) {
 	if e != nil {
 		return ListOptions{}, ErrInvalid
 	}
-	allowed := []string{"offset", "take", "pub"}
+	allowed := []string{"offset", "take", "pub", "realm"}
 	if !drafts {
 		allowed = append(allowed, "type", "order", "orderDesc")
 	}
 	if e = query(q, allowed...); e != nil {
 		return ListOptions{}, e
 	}
-	o := ListOptions{Take: 20, Publisher: q.Get("pub"), Drafts: drafts}
+	o := ListOptions{Take: 20, Publisher: q.Get("pub"), Realm: strings.TrimSpace(q.Get("realm")), Drafts: drafts}
 	if strings.Contains(o.Publisher, ",") {
 		return o, ErrUnsupported
 	}

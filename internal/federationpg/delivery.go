@@ -24,7 +24,7 @@ func (r *Repository) ReconcilePosts(ctx context.Context, limit int) (int, error)
 	if r.keys == nil {
 		return 0, f.ErrUnavailable
 	}
-	rows, e := r.db.QueryContext(ctx, `SELECT p.id::text FROM owned_text_posts p JOIN owned_federation_publishers f ON f.publisher_id=p.publisher_id AND f.enabled JOIN owned_publishers pub ON pub.id=p.publisher_id AND pub.deleted_at IS NULL JOIN owned_authority_accounts a ON a.id=pub.account_id AND NOT a.disabled LEFT JOIN owned_federation_post_state s ON s.post_id=p.id WHERE (s.post_id IS NULL AND p.visibility=0 AND p.deleted_at IS NULL AND p.drafted_at IS NULL AND p.published_at<=$1) OR (s.post_id IS NOT NULL AND (s.source_updated_at<>p.updated_at OR s.source_audit_id<>COALESCE((SELECT max(audit.id) FROM owned_text_post_audit audit WHERE audit.post_id=p.id),0) OR s.public<>(p.visibility=0 AND p.deleted_at IS NULL AND p.drafted_at IS NULL AND COALESCE(p.published_at<=$1,false)))) ORDER BY p.updated_at,p.id LIMIT $2`, r.config.Clock(), limit)
+	rows, e := r.db.QueryContext(ctx, `SELECT p.id::text FROM owned_text_posts p JOIN owned_federation_publishers f ON f.publisher_id=p.publisher_id AND f.enabled JOIN owned_publishers pub ON pub.id=p.publisher_id AND pub.deleted_at IS NULL JOIN owned_authority_accounts a ON a.id=pub.account_id AND NOT a.disabled LEFT JOIN owned_federation_post_state s ON s.post_id=p.id WHERE (s.post_id IS NULL AND p.realm_id IS NULL AND p.visibility=0 AND p.deleted_at IS NULL AND p.drafted_at IS NULL AND p.published_at<=$1) OR (s.post_id IS NOT NULL AND (s.source_updated_at<>p.updated_at OR s.source_audit_id<>COALESCE((SELECT max(audit.id) FROM owned_text_post_audit audit WHERE audit.post_id=p.id),0) OR s.public<>(p.realm_id IS NULL AND p.visibility=0 AND p.deleted_at IS NULL AND p.drafted_at IS NULL AND COALESCE(p.published_at<=$1,false)))) ORDER BY p.updated_at,p.id LIMIT $2`, r.config.Clock(), limit)
 	if e != nil {
 		return 0, e
 	}
@@ -81,7 +81,7 @@ func (r *Repository) reconcilePost(ctx context.Context, id string) (bool, error)
 	var updated time.Time
 	var sourceAudit int64
 	var visible bool
-	e = tx.QueryRowContext(ctx, `SELECT updated_at,visibility=0 AND deleted_at IS NULL AND drafted_at IS NULL AND COALESCE(published_at<=$2,false),COALESCE((SELECT max(a.id) FROM owned_text_post_audit a WHERE a.post_id=owned_text_posts.id),0) FROM owned_text_posts WHERE id=$1 FOR UPDATE`, id, r.config.Clock()).Scan(&updated, &visible, &sourceAudit)
+	e = tx.QueryRowContext(ctx, `SELECT updated_at,realm_id IS NULL AND visibility=0 AND deleted_at IS NULL AND drafted_at IS NULL AND COALESCE(published_at<=$2,false),COALESCE((SELECT max(a.id) FROM owned_text_post_audit a WHERE a.post_id=owned_text_posts.id),0) FROM owned_text_posts WHERE id=$1 FOR UPDATE`, id, r.config.Clock()).Scan(&updated, &visible, &sourceAudit)
 	if e != nil {
 		return false, e
 	}
@@ -274,7 +274,7 @@ func (r *Repository) deliver(ctx context.Context, transport f.Transport, d deliv
 		var updated time.Time
 		var audit int64
 		var visible bool
-		e = tx.QueryRowContext(ctx, `SELECT updated_at,visibility=0 AND deleted_at IS NULL AND drafted_at IS NULL AND COALESCE(published_at<=$2,false),COALESCE((SELECT max(a.id) FROM owned_text_post_audit a WHERE a.post_id=owned_text_posts.id),0) FROM owned_text_posts WHERE id=$1 FOR UPDATE`, d.post.String, r.config.Clock()).Scan(&updated, &visible, &audit)
+		e = tx.QueryRowContext(ctx, `SELECT updated_at,realm_id IS NULL AND visibility=0 AND deleted_at IS NULL AND drafted_at IS NULL AND COALESCE(published_at<=$2,false),COALESCE((SELECT max(a.id) FROM owned_text_post_audit a WHERE a.post_id=owned_text_posts.id),0) FROM owned_text_posts WHERE id=$1 FOR UPDATE`, d.post.String, r.config.Clock()).Scan(&updated, &visible, &audit)
 		if e != nil {
 			return e
 		}

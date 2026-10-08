@@ -19,6 +19,7 @@ import (
 )
 
 const BoardScope = "accounts.profile.board"
+const OAuthClientAuthScope = "oauth.client.authenticate"
 
 // Client identifies an authenticated app, never an account principal.
 type Client struct {
@@ -28,7 +29,7 @@ type Client struct {
 
 func SupportedClientScope(scope string) bool {
 	switch scope {
-	case BoardScope, "orders.create", "orders.status.manage", "orders.metrics.read":
+	case BoardScope, "orders.create", "orders.status.manage", "orders.metrics.read", OAuthClientAuthScope:
 		return true
 	}
 	return false
@@ -237,7 +238,7 @@ func ValidateApp(p AppPatch, create bool) error {
 			return ErrInvalid
 		}
 		for _, s := range p.OAuthConfig.AllowedScopes {
-			if !SupportedClientScope(s) && s != "openid" && s != "profile" && s != "email" {
+			if !SupportedClientScope(s) && !authority.OAuthScope(s) {
 				return ErrInvalid
 			}
 		}

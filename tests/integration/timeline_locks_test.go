@@ -29,7 +29,7 @@ type timelineLockProbe struct {
 
 var _ postpg.AssociationPrelocker = (*timelineLockProbe)(nil)
 
-func (p *timelineLockProbe) Prelock(ctx context.Context, tx *sql.Tx, actor, publisher string, v posts.Patch, create bool) error {
+func (p *timelineLockProbe) Prelock(ctx context.Context, tx *sql.Tx, actor string, scope postpg.MutationScope, v posts.Patch, create bool) error {
 	var pid int
 	if e := tx.QueryRowContext(ctx, `SELECT pg_backend_pid()`).Scan(&pid); e != nil {
 		return e
@@ -39,7 +39,7 @@ func (p *timelineLockProbe) Prelock(ctx context.Context, tx *sql.Tx, actor, publ
 	case <-ctx.Done():
 		return ctx.Err()
 	}
-	return p.Repository.Prelock(ctx, tx, actor, publisher, v, create)
+	return p.Repository.Prelock(ctx, tx, actor, scope, v, create)
 }
 
 func timelineGuardedWriter(t *testing.T, ctx context.Context, actor string) (*postpg.Repository, context.Context, *timelineLockProbe) {

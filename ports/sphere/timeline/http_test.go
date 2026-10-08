@@ -82,7 +82,15 @@ func TestHTTPSourceRoutesAndAuth(t *testing.T) {
 	if w.Code != 200 || w.Header().Get("X-Total") != "7" || len(repo.search.Tags) != 2 || repo.search.Replies == nil || *repo.search.Replies || !repo.search.Ascending {
 		t.Fatal(w.Code, w.Body.String(), repo.search)
 	}
-	for _, path := range []string{"/api/posts?take=0", "/api/posts?take=2&take=3", "/api/posts?shuffle=true", "/api/posts?media=true", "/api/posts?searchEngine=semantic", "/api/posts?realm=unknown"} {
+	w = call(h, "GET", "/api/posts?realm=private-realm&take=5", "")
+	if w.Code != 200 || repo.search.Realm != "private-realm" {
+		t.Fatal("realm filter dropped", w.Code, repo.search)
+	}
+	w = call(h, "GET", "/api/timeline?realm=private-realm&mode=latest", "")
+	if w.Code != 200 || repo.options.Realm != "private-realm" {
+		t.Fatal("realm feed filter dropped", w.Code, repo.options)
+	}
+	for _, path := range []string{"/api/posts?take=0", "/api/posts?take=2&take=3", "/api/posts?shuffle=true", "/api/posts?media=true", "/api/posts?searchEngine=semantic", "/api/posts?realm=one&realm=two"} {
 		w = call(h, "GET", path, "")
 		if w.Code != 400 && w.Code != 501 {
 			t.Fatal(path, w.Code)

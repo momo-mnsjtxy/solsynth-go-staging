@@ -23,6 +23,20 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err != nil || !ready {
 		return errors.New("domain schema unavailable")
 	}
+	err = b.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='owned_text_posts'::regclass AND conname='owned_text_posts_realm_fk' AND convalidated)`).Scan(&ready)
+	if err != nil || !ready {
+		return errors.New("post realm schema unavailable")
+	}
+	if b.oauth != nil {
+		if err := b.oauth.Ready(ctx); err != nil {
+			return err
+		}
+	}
+	if b.fortunes != nil {
+		if err := b.fortunes.Ready(ctx); err != nil {
+			return err
+		}
+	}
 	if b.calendar != nil {
 		if err := b.calendar.Ready(ctx); err != nil {
 			return err

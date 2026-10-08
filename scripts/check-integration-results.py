@@ -5,6 +5,37 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGOAuthPreviewRechecksRegistrationAndOwnerVersion",
+        "TestPGOAuthConfidentialPurposeScopeWithdrawal",
+        "TestPGBackendOAuthComposition",
+        "TestPGBackendFortuneComposition",
+        "TestPGOAuthAuthorizationCodePKCEConsentAndUserInfo",
+        "TestPGOAuthRedirectStateNonceAndParentBindings",
+        "TestPGOAuthConcurrentCodeAndRefreshReuse",
+        "TestPGOAuthAppOwnerConsentAndSecretRevocation",
+        "TestPGOAuthParentRevocationAndTokenExpiry",
+        "TestPGOAuthAtomicRollbackAndCanonicalProof",
+        "TestPGOAuthOwnerDisableDuringLockWait",
+        "TestPGOAuthOpposingOwnersAndRetryableGuardBoundary",
+        "TestPGOAuthScopeMinimizationAndBoundedCleanup",
+        "TestPGOAuthRestartPersistence",
+
+        "TestPGFortuneConfiguredCatalogueAndDailyIsolation",
+        "TestPGFortuneEnqueueAtomicityAndFreshAuthority",
+        "TestPGFortuneRetryLeaseRecoveryAndImmutableCompletion",
+        "TestPGFortuneWorkerRevocationAndStaleLease",
+        "TestPGFortuneConcurrentCheckInAndProfileSnapshot",
+        "TestPGFortuneRestartPersistence",
+
+        "TestPGBackendPostRealmComposition",
+        "TestPGPostRealmAssociationLifecycleAndFeeds",
+        "TestPGPostRealmMediaSurveyInteractionPrivacy",
+        "TestPGPostRealmRevokeAndDeleteOrdering",
+        "TestPGPostRealmMoveReferenceRace",
+        "TestPGPostRealmOppositeMovesAndRollback",
+        "TestPGPostRealmFederationWithdrawal",
+        "TestPGPostRealmRestartPersistence",
+
         "TestPGBackendBotMiniappComposition",
         "TestPGBackendCalendarComposition",
         "TestPGBotsCanonicalLifecycleAndCommands",
@@ -273,6 +304,12 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGOAuthRestartPersistence",
+
+        "TestPGFortuneRestartPersistence",
+
+        "TestPGPostRealmRestartPersistence",
+
         "TestPGBotsRestartPersistence",
         "TestPGCalendarRestartPersistence",
 

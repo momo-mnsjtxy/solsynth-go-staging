@@ -94,6 +94,7 @@ type Post struct {
 	Type                 int                           `json:"type"`
 	Language             *string                       `json:"language"`
 	PublisherID          string                        `json:"publisher_id"`
+	RealmID              *string                       `json:"realm_id,omitempty"`
 	Publisher            accounts.Publisher            `json:"publisher"`
 	DraftedAt            *time.Time                    `json:"drafted_at"`
 	PublishedAt          *time.Time                    `json:"published_at"`
@@ -103,6 +104,8 @@ type Post struct {
 	LockedAt             *time.Time                    `json:"locked_at"`
 }
 type Patch struct {
+	RealmID         *string    `json:"realm_id,omitempty"`
+	ClearRealm      bool       `json:"-"`
 	Attachments     *[]string  `json:"attachments"`
 	RepliedPostID   *string    `json:"replied_post_id"`
 	ForwardedPostID *string    `json:"forwarded_post_id"`
@@ -123,6 +126,7 @@ type Patch struct {
 type ListOptions struct {
 	Offset, Take int
 	Publisher    string
+	Realm        string
 	Type         *int
 	Drafts       bool
 	Ascending    bool
@@ -146,6 +150,9 @@ type Auth interface {
 }
 
 func ValidatePatch(p Patch, create bool, now time.Time) error {
+	if p.ClearRealm && p.RealmID != nil || p.RealmID != nil && !authority.ValidID(*p.RealmID) {
+		return ErrInvalid
+	}
 	if p.Attachments != nil {
 		if _, ok := postmedia.NormalizeIDs(*p.Attachments); !ok {
 			return ErrInvalid

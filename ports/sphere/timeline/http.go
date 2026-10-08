@@ -183,7 +183,7 @@ func searchOptions(r *http.Request, related bool) (SearchOptions, error) {
 	if e != nil {
 		return SearchOptions{}, e
 	}
-	o := SearchOptions{Publisher: strings.TrimSpace(q.Get("pub")), Query: q.Get("query"), Order: strings.ToLower(strings.TrimSpace(q.Get("order"))), Tags: q["tags"], Categories: q["categories"]}
+	o := SearchOptions{Publisher: strings.TrimSpace(q.Get("pub")), Realm: strings.TrimSpace(q.Get("realm")), Query: q.Get("query"), Order: strings.ToLower(strings.TrimSpace(q.Get("order"))), Tags: q["tags"], Categories: q["categories"]}
 	o.Offset, e = integer(q, "offset", 0)
 	if e != nil {
 		return o, e
@@ -241,7 +241,7 @@ func searchOptions(r *http.Request, related bool) (SearchOptions, error) {
 			}
 		}
 	}
-	if q.Get("realm") != "" || q.Get("mentioned") != "" {
+	if q.Get("mentioned") != "" {
 		return o, posts.ErrUnsupported
 	}
 	switch strings.ToLower(q.Get("searchEngine")) {
@@ -276,7 +276,7 @@ func NewHandler(repo Repository, auth posts.Auth) http.Handler {
 		if !ok {
 			return
 		}
-		q, e := query(r, "cursor", "filter", "pub", "collection", "take", "mode", "aggressive")
+		q, e := query(r, "cursor", "filter", "pub", "collection", "realm", "take", "mode", "aggressive")
 		if e != nil {
 			failure(w, e)
 			return
@@ -291,7 +291,7 @@ func NewHandler(repo Repository, auth posts.Auth) http.Handler {
 			failure(w, e)
 			return
 		}
-		out, e := repo.Feed(r.Context(), actor, Options{Take: take, Cursor: q.Get("cursor"), Mode: sphere.Mode(strings.ToLower(strings.TrimSpace(q.Get("mode")))), Filter: strings.ToLower(strings.TrimSpace(q.Get("filter"))), Publisher: strings.TrimSpace(q.Get("pub")), Collection: strings.TrimSpace(q.Get("collection")), Aggressive: agg})
+		out, e := repo.Feed(r.Context(), actor, Options{Take: take, Cursor: q.Get("cursor"), Mode: sphere.Mode(strings.ToLower(strings.TrimSpace(q.Get("mode")))), Filter: strings.ToLower(strings.TrimSpace(q.Get("filter"))), Publisher: strings.TrimSpace(q.Get("pub")), Collection: strings.TrimSpace(q.Get("collection")), Realm: strings.TrimSpace(q.Get("realm")), Aggressive: agg})
 		if e != nil {
 			failure(w, e)
 			return

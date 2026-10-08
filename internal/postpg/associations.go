@@ -20,12 +20,22 @@ type AssociationStore interface {
 
 // AssociationPrelocker optionally acquires all publisher locks needed by an
 // association before the lifecycle takes the source publisher's editor lock.
-// The actor/proof is already locked. publisher is an observed canonical ID,
+// The actor/proof is already locked. scope contains observed canonical IDs,
 // never authorization; the lifecycle rechecks the selector or post ancestry and
 // editor permission after this call. Implementations must include the source
-// publisher in a globally sorted lock set and retain those locks until commit.
+// publisher in a globally sorted lock set after all required realm locks and
+// retain those locks until commit.
 type AssociationPrelocker interface {
-	Prelock(context.Context, *sql.Tx, string, string, posts.Patch, bool) error
+	Prelock(context.Context, *sql.Tx, string, MutationScope, posts.Patch, bool) error
+}
+
+// MutationScope is an observation for planning the complete lock set, never an
+// authorization decision. The lifecycle rechecks it against the locked source.
+type MutationScope struct {
+	PublisherID string
+	PostID      string
+	RealmID     *string
+	Deleting    bool
 }
 
 func NewWithAssociations(db *sql.DB, a AssociationStore) *Repository {

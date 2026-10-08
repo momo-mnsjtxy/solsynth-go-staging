@@ -65,6 +65,10 @@ func TestPGBackendPostRealmComposition(t *testing.T) {
 	if post.RealmID == nil || *post.RealmID != realm.ID {
 		t.Fatal("realm projection missing")
 	}
+	var publicRows int
+	if e := f.db.QueryRow(`SELECT count(*) FROM owned_taxonomy.posts WHERE id=$1::uuid`, post.ID).Scan(&publicRows); e != nil || publicRows != 0 {
+		t.Fatal("realm post leaked into public taxonomy metadata", publicRows, e)
+	}
 	backendCall(t, f.app, "GET", "/sphere/posts/"+post.ID, "", "", 404)
 	backendCall(t, f.app, "GET", "/sphere/posts/"+post.ID, f.otherToken, "", 404)
 	backendCall(t, f.app, "GET", "/sphere/posts/"+post.ID, f.token, "", 200)
@@ -72,4 +76,7 @@ func TestPGBackendPostRealmComposition(t *testing.T) {
 	backendCall(t, f.app, "GET", "/sphere/posts/"+post.ID, "", "", 404)
 	backendCall(t, f.app, "PATCH", "/sphere/posts/"+post.ID, f.token, `{"realm_id":null}`, 200)
 	backendCall(t, f.app, "GET", "/sphere/posts/"+post.ID, "", "", 200)
+	if e := f.db.QueryRow(`SELECT count(*) FROM owned_taxonomy.posts WHERE id=$1::uuid`, post.ID).Scan(&publicRows); e != nil || publicRows != 1 {
+		t.Fatal("detached public post missing from taxonomy metadata", publicRows, e)
+	}
 }

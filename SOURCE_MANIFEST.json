@@ -1,6 +1,6 @@
 {
-  "checkpoint": "account-utilities-composition",
-  "scope": "315 before/44 restart candidate; full local build/vet/race passed, actual PostgreSQL pending",
+  "checkpoint": "taxonomy-realm-projection",
+  "scope": "Isolated bounded correction; actual PostgreSQL CI pending; exact changed files establish runtime or fixture scope",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
@@ -1536,8 +1536,8 @@
     },
     {
       "path": "internal/application/schema.sql",
-      "bytes": 2846,
-      "sha256": "3ec3ceea410a2a5c83698e7c28c3fb649c97bfea2cb546f574b9918d8f5fda3c"
+      "bytes": 2869,
+      "sha256": "35d5c97dae937188002169176715aac045d2c18a4f1f0946a779d42f85b15b98"
     },
     {
       "path": "internal/application/stream_tickets.go",
@@ -7651,8 +7651,8 @@
     },
     {
       "path": "tests/integration/backend_portals_test.go",
-      "bytes": 5648,
-      "sha256": "565c62a0d2443034922252c89ba662375c0e638269d79f7ada7140425d4c9a96"
+      "bytes": 6118,
+      "sha256": "75c3803ddfa732714abea2f2d8a4e234be29effc68be4debb011bc4c2f8982b9"
     },
     {
       "path": "tests/integration/backend_presence_test.go",

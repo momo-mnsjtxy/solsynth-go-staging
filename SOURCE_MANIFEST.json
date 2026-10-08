@@ -1,5 +1,5 @@
 {
-  "checkpoint": "developer-apps-notifications-realtime-2026-10-08",
+  "checkpoint": "developer-enrollment-fixture-correction-2026-10-08",
   "scope": "Canonical developer apps/app identity and durable inbox/realtime/browser ticket transport added; incomplete original-platform parity",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
@@ -5466,8 +5466,8 @@
     },
     {
       "path": "tests/integration/backend_test.go",
-      "bytes": 22844,
-      "sha256": "0e848fe8875f467fe2cc7a37adbb25d48504dc6dfe8c7e2226f2f755978e58a4"
+      "bytes": 22850,
+      "sha256": "ca3afe58e1aec67010b0d07aac53f32cf75c0c43a56efa948515d00a6c98389f"
     },
     {
       "path": "tests/integration/board_http_test.go",

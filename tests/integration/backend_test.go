@@ -146,9 +146,9 @@ func TestPGBackendDomainComposition(t *testing.T) {
 	if pub.ID == "" || pub.ID == f.actor {
 		t.Fatal("publisher identity collapsed into account")
 	}
-	backendCall(t, f.app, "POST", "/develop/developers/"+pub.ID+"/enroll", f.token, "", 200)
-	project := backendDecode[apps.Project](t, backendCall(t, f.app, "POST", "/develop/private/projects?dev="+pub.ID, f.token, `{"slug":"composed","name":"Composed project"}`, 201))
-	appQuery := "?dev=" + pub.ID + "&proj=" + project.ID
+	backendCall(t, f.app, "POST", "/develop/developers/"+pub.Name+"/enroll", f.token, "", 200)
+	project := backendDecode[apps.Project](t, backendCall(t, f.app, "POST", "/develop/private/projects?dev="+pub.Name, f.token, `{"slug":"composed","name":"Composed project"}`, 201))
+	appQuery := "?dev=" + pub.Name + "&proj=" + project.ID
 	customApp := backendDecode[apps.App](t, backendCall(t, f.app, "POST", "/develop/private/apps"+appQuery, f.token, fmt.Sprintf(`{"slug":%q,"name":"Composed app","status":1,"oauth_config":{"allowed_scopes":["accounts.profile.board"]}}`, "app-"+project.ID), 201))
 	appRoot := "/develop/private/apps/" + customApp.ID
 	backendCall(t, f.app, "GET", "/develop/apps/"+customApp.Slug, "", "", 200)

@@ -10,7 +10,8 @@
     "local_http_operations": 2,
     "controller_files_enumerated": 98,
     "partial_board_services": 1,
-    "additional_policy_modules": 5
+    "additional_policy_modules": 5,
+    "synthetic_candidate_http_operations": 1
   },
   "ports": [
     {
@@ -127,5 +128,25 @@
     ],
     "status": "Executable bounded domain policies, not endpoints; see module provenance for unresolved dependencies",
     "additional_completed_http_operations": 0
+  },
+  "develop_discovery_candidate": {
+    "operation": "GET /api/apps",
+    "implementation": [
+      "ports/develop",
+      "internal/developpg",
+      "cmd/develop-discovery"
+    ],
+    "persistence": "real PostgreSQL read-only repeatable-read count/page, no in-memory fallback or startup DDL",
+    "default": "handler and repository disabled, command denies without opening a database",
+    "opt_in": "explicit synthetic production status and loopback command; unknown status mapping not guessed",
+    "http_contract": "six-field JSON array, nullable description, X-Total; candidate validation/error differences documented",
+    "tests": "four required actual-PG cases plus restart and real process HTTP smoke added; see CI for executed outcome",
+    "production_gaps": [
+      "Production numeric status mapping",
+      "ApplySoftDeleteFilters semantics",
+      "Global authentication and permission policy",
+      "PaginationValidationFilter and ApiError details",
+      "Migration/rollback and existing-client differential verification"
+    ]
   }
 }

@@ -20,8 +20,12 @@ EXPECTED = {
         "TestPGBoardTransactionConcurrency",
         "TestPGBoardPolicyAndErrors",
         "TestPGBoardRestartPersistence",
+        "TestPGDevelopDiscoveryPagingAndCounts",
+        "TestPGDevelopDiscoverySearch",
+        "TestPGDevelopDiscoveryPolicyAndReadOnly",
+        "TestPGDevelopDiscoveryRestartPersistence",
     },
-    "after": {"TestPGRestartPersistence", "TestPGBoardRestartPersistence"},
+    "after": {"TestPGRestartPersistence", "TestPGBoardRestartPersistence", "TestPGDevelopDiscoveryRestartPersistence"},
 }
 
 

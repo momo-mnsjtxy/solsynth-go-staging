@@ -74,3 +74,22 @@ placeholder state transitions, notification body construction and publisher/real
 discovery selection. These are executable functions over explicit projections, not
 new HTTP routes or completed production services. See each module’s provenance and
 `docs/policy-followup.md` for validation and remaining dependencies.
+
+## Develop discovery continuation
+
+A new candidate now connects a real PostgreSQL reader, six-field discovery HTTP
+handler and loopback command. Default construction and startup remain disabled;
+synthetic mode requires an explicit fixture status and database environment name.
+The scoped route reads persisted records, without remote hydration, state-writing
+fallbacks or fake response data. Four mandatory database tests, a restart sentinel,
+and actual HTTP subprocess checks extend CI to nineteen database cases and three
+restart assertions. Exact production status/filter/pagination/auth rules remain
+unverified; `ports/develop/PROVENANCE.md` records every candidate difference.
+
+The Library recovery archive remains unmaterialized in this consumer. Exact helper
+error was `library file transfer failed: download failed` (exit 1) on the supported
+attempt and one refreshed retry. Preparation succeeded with a transfer; the error
+provided neither HTTP status nor permission/path reason. It is not evidence of a
+confirmed permission denial, nor evidence the bytes were accessible. No retry or
+alternative route has occurred since the instruction to stop. The saved anonymous
+exchange catalog and badge increments are still outside this checkout.

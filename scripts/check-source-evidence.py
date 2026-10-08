@@ -11,7 +11,7 @@ from pathlib import Path
 
 def check(root):
     count = 0
-    for directory in ("ports/messager/source", "ports/messager/contract-evidence"):
+    for directory in ("ports/messager/source", "ports/messager/contract-evidence", "ports/develop/source"):
         base = root / directory
         for entry in json.loads((base / "manifest.json").read_text()):
             data = (base / entry["file"]).read_bytes()

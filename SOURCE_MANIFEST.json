@@ -1,11 +1,11 @@
 {
-  "checkpoint": "five-domain-policies-2026-10-07",
-  "scope": "Executable bounded domain policy additions; full service parity remains unimplemented; recovery archive unavailable in consumer environment",
+  "checkpoint": "develop-http-postgresql-candidate-2026-10-08",
+  "scope": "Real persistent PostgreSQL app-discovery candidate and loopback HTTP process; production policy and recovery increments remain blocked",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
-      "bytes": 1759,
-      "sha256": "91c1a20903ad5d05d611f4942abdc8ca3d4e05f5d918082a318daa7ece6dfe10"
+      "bytes": 1801,
+      "sha256": "b34e73f70f6894628e72c94efef2ddb91ce8a29239912e6e3233b9d6555feb6b"
     },
     {
       "path": ".gitignore",
@@ -24,8 +24,18 @@
     },
     {
       "path": "README.md",
-      "bytes": 11011,
-      "sha256": "0d98ef30d45011a3c71b07af836f048e754c2dbbfcf54456d012531e8249d414"
+      "bytes": 12762,
+      "sha256": "1495bde94c0ca111f9daecaa95c2eed34b72d8cfc7304c8425a41508b6695533"
+    },
+    {
+      "path": "cmd/develop-discovery/main.go",
+      "bytes": 5896,
+      "sha256": "7be107455838c2fe930416a2a30bdb9b9bd333f2add77a819a23a7f3bc482589"
+    },
+    {
+      "path": "cmd/develop-discovery/main_test.go",
+      "bytes": 5848,
+      "sha256": "29b7edde968e12f96a59a32277104bd0d74edf55579a4256310ae80e66335d34"
     },
     {
       "path": "cmd/solsynth-go/main.go",
@@ -44,8 +54,8 @@
     },
     {
       "path": "docs/checkpoint.md",
-      "bytes": 6378,
-      "sha256": "9e8d39b15a6dd32a6e679553ef32ad736a31adbb9d41d07b6b9a70241bb69840"
+      "bytes": 7626,
+      "sha256": "3087e8bd6702b71fc8a44560abdebca81b01eacacc130d582150addec3d74d9e"
     },
     {
       "path": "docs/ci-postgres-validation.md",
@@ -74,8 +84,8 @@
     },
     {
       "path": "docs/parity-matrix.json",
-      "bytes": 6353,
-      "sha256": "de338944c6c15ff4c88041b7b99e62e4f6ff8a225f38e355e58cb9902c2583f1"
+      "bytes": 7450,
+      "sha256": "a0ca25f81a6c663bc62e648609df41adfea2eca358d5484ef36585c0c9fb61f1"
     },
     {
       "path": "docs/policy-followup.md",
@@ -156,6 +166,21 @@
       "path": "internal/boardpg/testdata/schema.sql",
       "bytes": 1035,
       "sha256": "fe722ef809077a8ac7a9a5bc5c7b19285ebd1fa988baaf7fe0a5a7bfd3dc9618"
+    },
+    {
+      "path": "internal/developpg/repository.go",
+      "bytes": 3842,
+      "sha256": "f11fbeb46c876c360d8d106c8f065b719531217cd4022eb32ef4f2805af25230"
+    },
+    {
+      "path": "internal/developpg/repository_test.go",
+      "bytes": 1348,
+      "sha256": "a1a0e55736b1269153047d28fcb8512c0f6ff1dacfff7918da00e2fc61f724a8"
+    },
+    {
+      "path": "internal/developpg/testdata/schema.sql",
+      "bytes": 934,
+      "sha256": "244c6cabd5868d0b64a99adf7c0167b812fc73c228a838c8948d47014921c18b"
     },
     {
       "path": "internal/watchpg/README.md",
@@ -246,6 +271,101 @@
       "path": "inventory/sosys-repositories.json",
       "bytes": 4735,
       "sha256": "9e701925fe42cc825c37191c104312a0a91d8f6b3cca700d2ae6572ba4dc8898"
+    },
+    {
+      "path": "ports/develop/PROVENANCE.md",
+      "bytes": 8985,
+      "sha256": "539dbb5657ecdfe0a91378d7d2061f2e517dd22ac3b290fd647a11428a2f9038"
+    },
+    {
+      "path": "ports/develop/discovery.go",
+      "bytes": 1186,
+      "sha256": "85b5329fdf6dd556b656a41e0f5b32f1117a632cfd277d243778b012e0a1af64"
+    },
+    {
+      "path": "ports/develop/discovery_http.go",
+      "bytes": 3478,
+      "sha256": "102feabaa1023c15024f3ad52d450318eba781febe6a2265d8c63e25dda68909"
+    },
+    {
+      "path": "ports/develop/discovery_http_test.go",
+      "bytes": 6809,
+      "sha256": "0b6695f362d666e040eb3c096e27f7069f9560b45b5da9f5ced144abffeb2501"
+    },
+    {
+      "path": "ports/develop/discovery_test.go",
+      "bytes": 456,
+      "sha256": "03100c49dc14bd95c969eb6c9d1ce8a6478b4fd9a50c0c0ce11ac79d2fe4d1ff"
+    },
+    {
+      "path": "ports/develop/source/DYSON-LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__AppDatabase.cs",
+      "bytes": 3047,
+      "sha256": "33763d2ceffb40401d5e467611f20282bc985ebe19641c1c181c3752ffae4ee7"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Identity__BoardPublicController.cs",
+      "bytes": 4571,
+      "sha256": "bac6ba46e90db498c76b3d38ea3f655f896f33bd575bdf21c07be011a696d695"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Identity__BotAccountPublicController.cs",
+      "bytes": 3095,
+      "sha256": "1176c4758f09c92abbbf7233df835d5089f4667e2388dd2a4441afa1027dec06"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Identity__CustomAppPublicController.cs",
+      "bytes": 2889,
+      "sha256": "a19a0143e3d7f854178da56b913c82f9f5135525ccdcc9bcaed4af6ff676a96c"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Identity__CustomAppService.cs",
+      "bytes": 19007,
+      "sha256": "025883b599df33148927b5bc740802179d92584727aabf65a750f81d526f8bb0"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Migrations__AppDatabaseModelSnapshot.cs",
+      "bytes": 30647,
+      "sha256": "dab8948a3da3026491fa4fdc9c9204fdd850ee174051c9c56f61d604d99c2f2a"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__MiniApp__MiniAppPublicController.cs",
+      "bytes": 3108,
+      "sha256": "a1c12172fa27bf9040b4ffcf9a8140724c732d9175e9f3e5fc5f259aea231abe"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Program.cs",
+      "bytes": 1059,
+      "sha256": "e7d5349148aa0bd028ca85b9cfb898633d4525857a55f2abcd17c46632861268"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Startup__ApplicationConfiguration.cs",
+      "bytes": 717,
+      "sha256": "aa683eb1b6ae067ef6ef5d286b0f8850f690172e7ded9bbb27ffad874675048e"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Startup__ServiceCollectionExtensions.cs",
+      "bytes": 2870,
+      "sha256": "11366bab721723dad14dd18a86aade6fcda8b584ec56198107952b78725589a2"
+    },
+    {
+      "path": "ports/develop/source/SOLIAN-LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/develop/source/Solian__custom_app.dart",
+      "bytes": 2153,
+      "sha256": "2b2f3024e22b6d37e423020cd2b298b7cbbf12fd37fdb84a38d2b721ddcb76ae"
+    },
+    {
+      "path": "ports/develop/source/manifest.json",
+      "bytes": 4809,
+      "sha256": "170f65467e6577b740ddd2fc84ae8496f01a03a76b840789d8874601c120df2c"
     },
     {
       "path": "ports/messager/PARITY.md",
@@ -629,18 +749,23 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 1861,
-      "sha256": "805c6b578d6daf440a1718cfb95c4e48d579ae39c7a484308e1e71d63156e4da"
+      "bytes": 2097,
+      "sha256": "80fa83a7536231a684f3ef7738c9d607fc26e13e0c31a3eed55db728b65e9431"
     },
     {
       "path": "scripts/check-source-evidence.py",
-      "bytes": 1573,
-      "sha256": "6a6dc0d3fc62df9acab9ec0106357912e15db37c79ffc53e88fc8283cb674a29"
+      "bytes": 1597,
+      "sha256": "8751d61a9600405e2a7a93a2a190a45afa3f12bb6d5598de40bb9d3dfe11c917"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 2131,
-      "sha256": "860e397c6d92919e48bad98539963f47acc89df3044c6f9f9238a1adc1f092a2"
+      "bytes": 2459,
+      "sha256": "8ad06bcb7366812b40853f3a4d27523e6afdb5393570c4ac983f4d6d3ee86305"
+    },
+    {
+      "path": "scripts/verify-develop-http.py",
+      "bytes": 4539,
+      "sha256": "a08332880f4dc6592e21e4d6af895c2a79df271f44f69cf8517637e9e44eae3e"
     },
     {
       "path": "scripts/verify.sh",
@@ -666,6 +791,11 @@
       "path": "tests/integration/board_test.go",
       "bytes": 14630,
       "sha256": "2ff297223b03d00c6c4dbc280cec462701e92b7e0b56ccf18b635649fcdba7cd"
+    },
+    {
+      "path": "tests/integration/develop_test.go",
+      "bytes": 9740,
+      "sha256": "11a54f0806dbfb2c065e4aad08da246e180645ca78885cc0d6df24ea897811c8"
     },
     {
       "path": "tests/integration/schema.sql",

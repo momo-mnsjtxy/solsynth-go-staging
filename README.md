@@ -90,6 +90,36 @@ aggregation, placeholder state transitions, notification body construction and
 publisher/realm discovery selection. They use the retained licensed snapshots and
 explicit pre-resolved inputs; they add no HTTP routes or production adapters.
 Their tests exercise real computations, including time, Unicode, state-transition
-and selection-order boundaries. `scripts/verify.sh` now also verifies 30 retained
+and selection-order boundaries. `scripts/verify.sh` now also verifies 43 retained
 source/license snapshots against their original manifests. See
 `docs/policy-followup.md` and the per-module provenance files.
+
+## Develop discovery: real SQL and HTTP compatibility slice
+
+`cmd/develop-discovery` serves only the candidate `GET /api/apps` projection.
+Its default mode returns 503 without opening a database. The enabled synthetic
+mode reads PostgreSQL persistently; it has no success-data fallback or RPC stubs.
+Startup never creates tables or modifies data. The source projection is six fields
+with nullable description and X-Total; search/paging and related counts execute in
+real SQL. No app creation/update endpoint is claimed.
+
+Enable only against disposable synthetic data, explicitly selecting the fixture's
+status number (42 is used in tests, **not an upstream Production mapping**):
+
+```sh
+go run ./cmd/develop-discovery --listen 127.0.0.1:8081   --synthetic-production-status=42 --postgres-dsn-env=PG_TEST_DSN
+```
+
+`internal/developpg/testdata/schema.sql` is a minimal test projection, not a full
+schema or migration. The complete supported verification command is
+`scripts/integration-postgres.sh` in an environment with Go and PostgreSQL 16.
+It creates a marked private-socket database, inserts synthetic rows through
+integration tests, validates nineteen required database cases and three restart
+assertions, and launches real HTTP processes before/after the database restart.
+The smoke script also restarts the application and checks default-deny behavior.
+
+Production status mapping, shared global filters, pagination middleware and global
+auth behavior remain unresolved. Synthetic soft-delete filtering, local pagination
+bounds and stronger count/page snapshot consistency are explicit candidates, not
+complete parity. See `ports/develop/PROVENANCE.md` for evidence and differences.
+The original PostWatch host and its protection are unchanged.

@@ -5,6 +5,9 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGBoardDiscoveryCurrentVisibilityAndDTO",
+        "TestPGBackendBoardDiscoveryComposition",
+        "TestPGBoardDiscoveryRestartPersistence",
         "TestPGRefreshContinuityMigrationPreservesStaleCaptures",
         "TestPGRefreshContinuityConcurrentRotationAndScopeRollback",
         "TestPGBackendRefreshContinuesBroadcastChatThenLogoutRevokes",
@@ -455,6 +458,7 @@ EXPECTED = {
         "TestPGPaymentPINAssuranceExpiryDuringPolicyWait",
     },
     "after": {
+        "TestPGBoardDiscoveryRestartPersistence",
         "TestPGRefreshContinuityRestartPersistence",
         "TestPGDomainTrustRestartPersistence",
 

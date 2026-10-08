@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Separate token rotation from durable authorization generation; refresh keeps eligible chat/broadcast/call admissions while revocation remains current",
+  "local_source_checkpoint": "Canonical public board discovery composed on the bounded renewal-fixture correction",
   "last_fully_passed_ci": {
     "commit": "bff7fdada24a41395e94e6c1cfdf83a39601df9b",
     "run": 37803956613,
@@ -10,13 +10,13 @@
     "after_restart": 53
   },
   "latest_candidate": {
-    "commit": "ef3586f7cb9cf13ba23115c20e8d59f5c9843880",
-    "required_before": 410,
-    "required_after_restart": 54,
-    "status": "Published compatible PIN; actual CI running"
+    "commit": "b3f7497fa996ef16a16d263ec6b07dc79f61845d",
+    "required_before": 418,
+    "required_after_restart": 55,
+    "status": "Published fixture-only expiry consistency correction after PIN/continuity runs failed one renewal wait; rerun pending"
   },
-  "local_required_before": 418,
-  "local_required_after_restart": 55,
+  "local_required_before": 421,
+  "local_required_after_restart": 56,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -88,7 +88,8 @@
       "source_family": "develop.boards",
       "local_status": "implemented",
       "supported_flows": [
-        "Widget manifests, consent and app-authenticated board payload writes"
+        "Widget manifests, consent and app-authenticated board payload writes",
+        "Public /api/apps/board and /develop/apps/board current canonical widget discovery"
       ],
       "guarded_pg_cases": [
         "TestPGBoardHTTPFamily",
@@ -98,11 +99,12 @@
         "TestPGDeveloperAppsConcurrentRevocation",
         "TestPGDeveloperAppsIsolationAndRevocation",
         "TestPGDeveloperAppsLifecycle",
-        "TestPGDeveloperAppsRestartPersistence"
+        "TestPGDeveloperAppsRestartPersistence",
+        "TestPGBoardDiscoveryCurrentVisibilityAndDTO",
+        "TestPGBackendBoardDiscoveryComposition",
+        "TestPGBoardDiscoveryRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Public /api/apps/board discovery"
-      ]
+      "unsupported_or_remaining": []
     },
     {
       "source_family": "develop.miniapps",

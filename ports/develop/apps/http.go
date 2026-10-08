@@ -439,6 +439,10 @@ func (s *Service) public(w http.ResponseWriter, r *http.Request, p []string, q u
 		method(w, "GET")
 		return
 	}
+	if len(p) == 3 && p[2] == "board" {
+		s.discoverBoard(w, r, q)
+		return
+	}
 	if len(p) == 2 {
 		query := develop.Query{Take: 20}
 		for _, a := range []struct {

@@ -1,15 +1,15 @@
 {
-  "checkpoint": "renewal-fixture418",
-  "scope": "Only synchronize a synthetic translation entitlement expiry across SQL and serialized document. Runtime and renewal assertions unchanged; actual CI pending.",
+  "checkpoint": "board-discovery421",
+  "scope": "Canonical public board widget discovery with current public-state checks and authored DTOs; full local build/vet/test/race passed; actual PostgreSQL pending.",
   "inputs": {
-    "remote_parent": "af6ea8b2abddd8c89d7c5dbc19e39677b9cc8ed8"
+    "remote_parent": "b3f7497fa996ef16a16d263ec6b07dc79f61845d"
   },
   "verification": "docs/published-domain-collections-ci.json",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
       "bytes": 2097,
-      "sha256": "16aeec8dde3fa411801fc0c2fc0264d0b2fb69bb3e53211f9518d4b625658688"
+      "sha256": "3b85f08c91b6c9dfc130abd0a1199f5638d2f47c94c8e0870ddf12fa3b07163a"
     },
     {
       "path": ".github/workflows/recover-source-5e695228.yml",
@@ -360,6 +360,11 @@
       "path": "docs/badges-live-smoke-result.json",
       "bytes": 472,
       "sha256": "53738cb9760f47460dd696dba491a27904534fd1d1e53a386fa2be00e602131d"
+    },
+    {
+      "path": "docs/board-discovery-continuation.md",
+      "bytes": 2143,
+      "sha256": "eb8b42e83d739cd2c9222f9cf29007d8e9a5d77da4dca9eef5c47eb8ff9c1bd7"
     },
     {
       "path": "docs/bots-miniapps-continuation.md",
@@ -1518,8 +1523,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 50692,
-      "sha256": "2bfb1b6a60b54ea49754bd57562e843be40343847c041fcb7bff3c1fec62bf0a"
+      "bytes": 50898,
+      "sha256": "5109ab22ed5f64348f525b0b01c665bc1c7265b7a247d0f84ff54a31f4230bd0"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -1850,6 +1855,11 @@
       "path": "internal/application/wallet.go",
       "bytes": 2791,
       "sha256": "94b72ab287686c608b21521561002d0a236cd22591f607b7fe1524edd509773b"
+    },
+    {
+      "path": "internal/apppg/board_discovery.go",
+      "bytes": 2713,
+      "sha256": "c96f79ed7d8bd9f029e9142921803db4585cd96aede1decb0e38cbfb2c9f4c2c"
     },
     {
       "path": "internal/apppg/commerce.go",
@@ -5267,9 +5277,19 @@
       "sha256": "0f66ecb47f9f82f0786fba59672b3e415271cdb69ff3464ef553704b0b1be95b"
     },
     {
+      "path": "ports/develop/apps/board_discovery.go",
+      "bytes": 2293,
+      "sha256": "4074eb57a9d75939b8a3569ee23eaa85be08f8782111cbde2542947a59ebeecd"
+    },
+    {
+      "path": "ports/develop/apps/board_discovery_test.go",
+      "bytes": 1284,
+      "sha256": "d3114891ee25c565687fd215809e944c81f3cdfbd4b9530818e5fddf764a4a5a"
+    },
+    {
       "path": "ports/develop/apps/http.go",
-      "bytes": 12904,
-      "sha256": "be5f2d483c11cd188a4dd279898f932bff1fa0dc1c86fbabe769c80c1fa4c310"
+      "bytes": 12980,
+      "sha256": "f0af95c29581494d466e898c79fe1e5c952511877ec6891316d7044c123e0e61"
     },
     {
       "path": "ports/develop/apps/http_test.go",
@@ -8273,8 +8293,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 27575,
-      "sha256": "60127613efa85620a07da3258eba86c91da1764c9f691d2f95357b4fae2394d3"
+      "bytes": 27780,
+      "sha256": "3fc08ad506b9a8081726f8749f8d57bb400dc11c291cfb5b3fcbe183b5dc788e"
     },
     {
       "path": "scripts/check-source-evidence.py",
@@ -8715,6 +8735,11 @@
       "path": "tests/integration/backend_utilities_test.go",
       "bytes": 3427,
       "sha256": "86565936e40094e10b45cbe3158aa3e80265a3679ff61bd8e4d88b723dee6b95"
+    },
+    {
+      "path": "tests/integration/board_discovery_test.go",
+      "bytes": 6509,
+      "sha256": "41e31fd84c620d19d60560cce0dec7f29e08d6c818416df1a47ae7824535be0f"
     },
     {
       "path": "tests/integration/board_http_test.go",

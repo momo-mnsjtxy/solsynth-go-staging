@@ -69,3 +69,7 @@ func (c canonicalRealmWrites) AuthorizeRealmWrite(ctx context.Context, tx *sql.T
 	}
 	return nil
 }
+
+func (a proofIdentity) Require(ctx context.Context, keys ...string) (authority.Principal, error) {
+	return a.require(ctx, keys...)
+}

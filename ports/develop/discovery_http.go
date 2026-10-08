@@ -14,6 +14,7 @@ import (
 type discoveryHandler struct {
 	reader    Reader
 	candidate bool
+	owned     bool
 }
 
 // NewHandler refuses every request without querying storage. The retained
@@ -51,7 +52,7 @@ func (h discoveryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for key := range r.Header {
-		if strings.EqualFold(key, "Authorization") || strings.EqualFold(key, "Cookie") || strings.EqualFold(key, "X-Test-Account") {
+		if strings.EqualFold(key, "X-Test-Account") || !h.owned && (strings.EqualFold(key, "Authorization") || strings.EqualFold(key, "Cookie")) {
 			fail(http.StatusForbidden, "discovery_identity_unsupported")
 			return
 		}

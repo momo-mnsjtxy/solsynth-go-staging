@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"github.com/gorilla/websocket"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -24,6 +25,7 @@ import (
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/develop/apps"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/board"
 	"solsynth.local/go-migration/ports/sphere/posts"
@@ -144,6 +146,26 @@ func TestPGBackendDomainComposition(t *testing.T) {
 	if pub.ID == "" || pub.ID == f.actor {
 		t.Fatal("publisher identity collapsed into account")
 	}
+	backendCall(t, f.app, "POST", "/develop/developers/"+pub.ID+"/enroll", f.token, "", 200)
+	project := backendDecode[apps.Project](t, backendCall(t, f.app, "POST", "/develop/private/projects?dev="+pub.ID, f.token, `{"slug":"composed","name":"Composed project"}`, 201))
+	appQuery := "?dev=" + pub.ID + "&proj=" + project.ID
+	customApp := backendDecode[apps.App](t, backendCall(t, f.app, "POST", "/develop/private/apps"+appQuery, f.token, fmt.Sprintf(`{"slug":%q,"name":"Composed app","status":1,"oauth_config":{"allowed_scopes":["accounts.profile.board"]}}`, "app-"+project.ID), 201))
+	appRoot := "/develop/private/apps/" + customApp.ID
+	backendCall(t, f.app, "GET", "/develop/apps/"+customApp.Slug, "", "", 200)
+	backendCall(t, f.app, "POST", appRoot+"/board"+appQuery, f.token, `{"key":"weather","name":"Weather","is_enabled":true,"payload_type":"object","renderer_type":"data","required_fields":["temperature"],"field_types":[{"name":"temperature","type":"number"}],"max_payload_bytes":200}`, 200)
+	appSecret := backendDecode[apps.Secret](t, backendCall(t, f.app, "POST", appRoot+"/secrets"+appQuery, f.token, `{"expires_in":"01:00:00"}`, 201))
+	if appSecret.Secret == nil {
+		t.Fatal("no one-time app secret")
+	}
+	backendCall(t, f.app, "GET", appRoot+"/board/widgets", *appSecret.Secret, "", 200)
+	backendCall(t, f.app, "GET", appRoot+"/board/widgets", f.token, "", 401)
+	backendCall(t, f.app, "PUT", "/passport/accounts/me/board", f.otherToken, fmt.Sprintf(`[{"kind":1,"custom_app_id":%q,"custom_app_widget_key":"weather","is_enabled":true}]`, customApp.ID), 200)
+	backendCall(t, f.app, "PUT", "/develop/apps/"+customApp.Slug+"/consent", f.otherToken, `{"scopes":["accounts.profile.board"],"expires_in":"01:00:00"}`, 200)
+	backendCall(t, f.app, "POST", appRoot+"/board/payload", *appSecret.Secret, fmt.Sprintf(`{"account_id":%q,"widget_key":"weather","payload":{"temperature":{"value":18,"label":"Temperature"}}}`, f.other), 200)
+	widgetRows := backendCall(t, f.app, "GET", "/passport/accounts/me/board", f.otherToken, "", 200)
+	if !bytes.Contains(widgetRows.Body.Bytes(), []byte("Temperature")) {
+		t.Fatal("app update not visible through shared board cache")
+	}
 	tagName := "tag_" + strings.ReplaceAll(f.actor, "-", "")
 	tag := backendCall(t, f.app, "POST", "/sphere/posts/tags?pub="+pub.ID, f.token, fmt.Sprintf(`{"slug":%q,"name":"Composed tag"}`, tagName), 201)
 	if tag.Header().Get("Location") != "/sphere/posts/tags/"+tagName {
@@ -203,7 +225,7 @@ func TestPGBackendDomainComposition(t *testing.T) {
 	backendCall(t, f.app, "POST", "/messager/chat/"+room+"/sync", f.token, `{"last_sync_timestamp":0}`, 200)
 	backendCall(t, f.app, "POST", "/api/chat/"+room+"/sync", f.otherToken, `{"last_sync_timestamp":0}`, 403)
 	backendCall(t, f.app, "POST", "/api/chat/"+room+"/sync", "", `{"last_sync_timestamp":0}`, 401)
-	backendCall(t, f.app, "POST", "/develop/private/apps/"+authorityUUID(t)+"/board/payload", f.token, `{}`, 501)
+	backendCall(t, f.app, "POST", "/develop/private/apps/"+authorityUUID(t)+"/board/payload", f.token, `{}`, 401)
 	backendCall(t, f.app, "POST", "/stargate/auth/token", "", `{}`, 501)
 }
 
@@ -315,6 +337,51 @@ func TestPGBackendHTTPProcessRestart(t *testing.T) {
 		t.Fatal("chat message lost across process restart")
 	}
 	p.call(t, "GET", "/messager/chat/"+savedRoom.ID+"/messages", "", 403, map[string]string{"Authorization": "Bearer " + f.otherToken})
+	ticketRaw, _ := p.call(t, "POST", "/api/realtime/tickets", "", 200, headers)
+	var streamTicket struct {
+		Ticket string `json:"ticket"`
+	}
+	if err := json.Unmarshal(ticketRaw, &streamTicket); err != nil || streamTicket.Ticket == "" {
+		t.Fatal("stream ticket response", err)
+	}
+	dialer := websocket.Dialer{HandshakeTimeout: 5 * time.Second}
+	streamURL := "ws" + strings.TrimPrefix(p.base, "http") + "/ws?namespace=dev.solsynth.solian&ticket=" + url.QueryEscape(streamTicket.Ticket)
+	conn, response, err := dialer.Dial(streamURL, http.Header{"Origin": []string{p.base}})
+	if err != nil {
+		if response != nil {
+			t.Fatalf("stream upgrade status %d", response.StatusCode)
+		}
+		t.Fatal("stream upgrade failed")
+	}
+	_ = conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+	if err = conn.WriteJSON(map[string]string{"type": "ping"}); err != nil {
+		t.Fatal(err)
+	}
+	pong := false
+	for range 16 {
+		var packet struct {
+			Type string `json:"type"`
+		}
+		if err = conn.ReadJSON(&packet); err != nil {
+			t.Fatal("stream ping response", err)
+		}
+		if packet.Type == "pong" {
+			pong = true
+			break
+		}
+	}
+	_ = conn.Close()
+	if !pong {
+		t.Fatal("no stream pong")
+	}
+	again, reused, err := dialer.Dial(streamURL, nil)
+	if again != nil {
+		_ = again.Close()
+	}
+	if err == nil || reused == nil || reused.StatusCode != 401 {
+		t.Fatal("stream ticket reused")
+	}
+	_ = reused.Body.Close()
 	profileRaw, _ := p.call(t, "GET", "/api/accounts/"+f.actor, "", 200, nil)
 	if !bytes.Contains(profileRaw, []byte("process-profile-restart")) {
 		t.Fatal("profile lost across process restart")

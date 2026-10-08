@@ -5,6 +5,19 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGNotificationsInboxOutboxIsolation",
+        "TestPGNotificationsDeliveryRetryAndLeaseRecovery",
+        "TestPGNotificationsConcurrentIdempotency",
+        "TestPGNotificationsProjectionRollbackAndDisabledAccount",
+        "TestPGNotificationsWalletInboxProjected",
+        "TestPGNotificationsWalletAndChatProjection",
+        "TestPGNotificationsWebSocketReplayAndRevocation",
+        "TestPGNotificationsRestartPersistence",
+        "TestPGDeveloperAppsLifecycle",
+        "TestPGDeveloperAppsIsolationAndRevocation",
+        "TestPGDeveloperAppsRestartPersistence",
+        "TestPGDeveloperAppsConcurrentRevocation",
+
         "TestPGMediaLifecycleAndIsolation",
         "TestPGMediaQuotaAndIdempotencyConcurrency",
         "TestPGMediaRollbackCleanupAndRecovery",
@@ -119,6 +132,9 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGNotificationsRestartPersistence",
+        "TestPGDeveloperAppsRestartPersistence",
+
         "TestPGMediaRestartPersistence",
         "TestPGSocialRestartPersistence",
         "TestPGPostInteractionsRestartPersistence",

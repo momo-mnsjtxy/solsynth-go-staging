@@ -28,7 +28,10 @@ def events_for(names):
 
 found = set()
 for path in (ROOT / "tests/integration").glob("*_test.go"):
-    found.update(re.findall(r"^func (TestPG\w+)\(", path.read_text(), re.M))
+    source = path.read_text()
+    found.update(re.findall(r"^func (TestPG\w+)\(", source, re.M))
+    for prefix in re.findall(r'SeedSynthetic\([^;\n]*?,\s*"([^"]+)"\s*\+', source):
+        assert prefix.startswith("synthetic_"), f"{path.name}: synthetic account helper rejects this fixture prefix"
 assert found == guard.EXPECTED["before"], (
     "required PG cases differ from source declarations; missing="
     + str(sorted(found - guard.EXPECTED["before"]))

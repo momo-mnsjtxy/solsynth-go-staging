@@ -10,7 +10,7 @@ import (
 
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
-type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media http.Handler }
+type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps http.Handler }
 type router struct{ modules }
 
 func under(p, base string) bool { return p == base || strings.HasPrefix(p, base+"/") }
@@ -23,6 +23,10 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// between services. Neither a service-name prefix nor traversal is authority.
 	if p == "" || p[0] != '/' || path.Clean(p) != p || strings.Contains(p, "\\") || strings.Contains(p, "//") || r.URL.RawPath != "" && r.URL.EscapedPath() != p {
 		problem(w, 400, "INVALID_ROUTE_PATH")
+		return
+	}
+	if h.realtime != nil && (p == "/ws" || under(p, "/api/realtime")) {
+		h.realtime.ServeHTTP(w, r)
 		return
 	}
 	if h.public != nil && publicCatalogRoute(p) {
@@ -127,6 +131,9 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.accounts != nil && (under(canonical, "/api/publishers") || under(canonical, "/api/accounts") && !boardRoute(canonical) && canonical != "/api/accounts/me/pin-status") && (service == "sphere" || service == "passport" || service == "api") {
 		target = h.accounts
 	}
+	if h.notifications != nil && (under(canonical, "/api/notifications") || under(canonical, "/metoer/notifications")) && (service == "api" || service == "metoer") {
+		target = h.notifications
+	}
 	if h.media != nil && (under(canonical, "/api/media") || under(canonical, "/api/files")) && (service == "drive" || service == "api") {
 		target = h.media
 	}
@@ -139,7 +146,10 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.public != nil && publicCatalogRoute(canonical) && (service == "wallet" || service == "passport" || service == "api") {
 		target = h.public
 	}
-	if under(canonical, "/api/private/apps") {
+	if h.apps != nil && appRoute(canonical) && (service == "develop" || service == "api") {
+		target = h.apps
+	}
+	if under(canonical, "/api/private/apps") && (h.apps == nil || (service != "develop" && service != "api")) {
 		problem(w, 501, "APP_IDENTITY_UNSUPPORTED")
 		return
 	}
@@ -206,4 +216,8 @@ func interactionRoute(p string) bool {
 }
 func socialRoute(p string) bool {
 	return under(p, "/api/relationships") || under(p, "/stargate/relationships") || under(p, "/api/realms")
+}
+
+func appRoute(p string) bool {
+	return under(p, "/api/developers") || under(p, "/api/private/projects") || under(p, "/api/private/apps") || under(p, "/api/apps")
 }

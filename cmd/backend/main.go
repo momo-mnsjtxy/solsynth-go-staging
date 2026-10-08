@@ -53,6 +53,7 @@ func run(args []string, out io.Writer) error {
 	all := fs.String("messager-notify-all", "", "explicit all-notifications mode stored in database")
 	mentions := fs.String("messager-notify-mentions", "", "explicit mentions-only notification mode")
 	noNotify := fs.String("messager-notify-none", "", "explicit no-notifications mode")
+	notificationApp := fs.String("notification-app", "dev.solsynth.solian", "explicit first-party inbox and stream namespace")
 	mediaRoot := fs.String("media-root", "", "explicit preprovisioned private filesystem media directory")
 	mediaMax := fs.Int64("media-max-bytes", 20<<20, "maximum streamed media object bytes")
 	catalogFile := fs.String("catalog-config", "", "optional explicit catalog JSON snapshot")
@@ -156,7 +157,7 @@ func run(args []string, out io.Writer) error {
 	db.SetMaxOpenConns(30)
 	db.SetMaxIdleConns(5)
 	db.SetConnMaxLifetime(30 * time.Minute)
-	backend, err := application.NewPostgres(db, nil, application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax})
+	backend, err := application.NewPostgres(db, nil, application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp})
 	if err != nil {
 		return errors.New("backend configuration unavailable")
 	}
@@ -176,6 +177,9 @@ func run(args []string, out io.Writer) error {
 		return errors.New("backend listener unavailable")
 	}
 	defer listener.Close()
+	go func() {
+		_ = backend.RunNotifications(ctx, func(code string) { fmt.Fprintln(out, "Notification worker:", code) })
+	}()
 	server := &http.Server{Handler: backend, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 20 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 32768}
 	go func() {
 		ticker := time.NewTicker(*settlement)

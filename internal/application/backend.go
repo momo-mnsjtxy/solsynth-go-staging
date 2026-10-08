@@ -9,19 +9,24 @@ import (
 	"time"
 
 	"solsynth.local/go-migration/internal/accountpg"
+	"solsynth.local/go-migration/internal/apppg"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/boardpg"
 	"solsynth.local/go-migration/internal/chatpg"
 	"solsynth.local/go-migration/internal/interactionpg"
 	"solsynth.local/go-migration/internal/mediapg"
 	"solsynth.local/go-migration/internal/messagerpg"
+	"solsynth.local/go-migration/internal/notificationpg"
 	"solsynth.local/go-migration/internal/postpg"
+	"solsynth.local/go-migration/internal/realtime"
 	"solsynth.local/go-migration/internal/socialpg"
 	"solsynth.local/go-migration/internal/taxonomypg"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/develop/apps"
 	"solsynth.local/go-migration/ports/media"
 	"solsynth.local/go-migration/ports/messager/rooms"
+	"solsynth.local/go-migration/ports/notifications"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/board"
 	"solsynth.local/go-migration/ports/passport/social"
@@ -44,13 +49,15 @@ type Config struct {
 	BadgeIconsPath                string
 	MediaStore                    media.ObjectStore
 	MaxMediaBytes                 int64
+	NotificationApp               string
 }
 type Backend struct {
-	handler         http.Handler
-	verifier        *authority.Verifier
-	db, authorityDB *sql.DB
-	wallet          *walletpg.Repository
-	media           *mediapg.Repository
+	handler            http.Handler
+	verifier           *authority.Verifier
+	db, authorityDB    *sql.DB
+	wallet             *walletpg.Repository
+	media              *mediapg.Repository
+	notificationWorker *notificationpg.Worker
 }
 
 func (b *Backend) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -85,8 +92,18 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	accountRepo := accountpg.New(db)
 	accountHTTP := bindIdentity(v, (&profiles.Service{Repository: accountRepo, Authority: proofIdentity{identity}}).Handler())
 	cache := board.NewGroupCache()
+	appRepo := apppg.NewWithAuthority(db, guard).WithBoardCache(cache)
+	appService := &apps.Service{Repository: appRepo, Authority: proofIdentity{identity}}
+	appNormal := bindIdentity(v, bindTransactionAuthority(guard, appService.Handler()))
+	appHTTP := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if apps.IsAppCredentialRoute(r) {
+			appService.AppHandler().ServeHTTP(w, r)
+			return
+		}
+		appNormal.ServeHTTP(w, r)
+	})
 	bRepo := boardpg.NewWithIndependentPolicy(db, nil)
-	bh := board.NewHTTPHandler(board.HTTPOptions{Service: board.Service{Repository: bRepo, Normalizer: board.DocumentedEnvelope{}, Cache: cache}, Authority: boardIdentity{identity}, Accounts: accountResolver{aStore}, AccountCache: cache, Delete: bRepo})
+	bh := board.NewHTTPHandler(board.HTTPOptions{Service: board.Service{Repository: bRepo, Catalog: appRepo, Normalizer: board.DocumentedEnvelope{}, Cache: cache}, Authority: boardIdentity{identity}, Accounts: accountResolver{aStore}, AccountCache: cache, Delete: bRepo})
 	mr, err := messagerpg.NewWithIndependentPolicy(db, *c.MessagerPolicy)
 	if err != nil {
 		return nil, err
@@ -125,12 +142,23 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		}
 		mediaHTTP = (&media.Service{Repository: mediaRepo, Authority: proofIdentity{identity}, MaxFileBytes: c.MaxMediaBytes}).Handler()
 	}
+	if c.NotificationApp == "" {
+		c.NotificationApp = "dev.solsynth.solian"
+	}
+	notificationRepo := notificationpg.New(db, guard, c.NotificationApp)
+	notificationIdentity := notificationIdentity{identity}
+	notificationHTTP := (notifications.HTTP{Repository: notificationRepo, Identity: notificationIdentity, App: c.NotificationApp}).Handler()
+	realtimeHTTP, err := realtime.New(notificationRepo, notificationIdentity, realtime.Config{App: c.NotificationApp})
+	if err != nil {
+		return nil, err
+	}
+	notificationWorker := &notificationpg.Worker{Repository: notificationRepo, Wallet: true, Chat: true, ChatNoneEncryptionMode: int(c.MessagerPolicy.NoneEncryptionMode)}
 	catalogs, err := publicCatalogs(c)
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bh), taxonomy: bindIdentity(v, th), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, mh), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{handler: h, verifier: v, wallet: wallet, media: mediaRepo, db: db, authorityDB: authorityDB}, nil
+	h := router{modules{apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bh), taxonomy: bindIdentity(v, th), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, mh), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	return &Backend{handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, db: db, authorityDB: authorityDB}, nil
 }
 
 type accountLookup interface {

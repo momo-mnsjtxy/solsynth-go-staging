@@ -9,8 +9,8 @@ PostgreSQL cluster. It does not connect to an existing database.
 ## Required evidence
 
 `scripts/check-integration-results.py` is the explicit test inventory. The
-before phase requires **110 top-level PostgreSQL cases**; the after phase requires
-**18 database-restart persistence cases**. The source-declaration check rejects an
+before phase requires **122 top-level PostgreSQL cases**; the after phase requires
+**20 database-restart persistence cases**. The source-declaration check rejects an
 added or removed `TestPG...` test unless the required inventory is also reviewed.
 Both Go test selectors are generated from that inventory.
 
@@ -129,3 +129,5 @@ Chat lifecycle adds six required cases and one restart assertion; transaction-bo
 Social/realm providers add five cases and one restart assertion; reactions/bookmarks/collections/associations add ten cases and one restart assertion. Canonical taxonomy now reads a view of owned posts; post schema precedes taxonomy. Unified-host tests include friendship visibility, canonical realm wallets, catalogs and persisted bookmarks.
 
 Filesystem media adds eight guarded PostgreSQL cases and one restart assertion. Backend process checks stream a private upload into an explicit temporary root and read unchanged bytes after process restart, including anonymous denial.
+
+Developer apps add four cases and one restart assertion; notifications/realtime add eight cases and one restart assertion. The backend process test redeems a one-use browser stream ticket, completes a real WebSocket ping/pong and rejects ticket reuse. Canonical app identity, consent and board-cache updates are checked through composed HTTP.

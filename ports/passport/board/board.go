@@ -4,8 +4,8 @@
 // ffd0838e5f04cb40bea311a39118ebeedad210c1 JSON projections; see README.md.
 //
 // Package board is a source-derived, transport-independent Passport board port.
-// No HTTP handler, permission evaluator, protobuf adapter or database driver is
-// included. See README.md for compatibility boundaries and licensed provenance.
+// HTTP and persistence adapters are supplied by adjacent packages. See README.md
+// for compatibility boundaries and licensed provenance.
 package board
 
 import (

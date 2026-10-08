@@ -1,6 +1,6 @@
 {
-  "checkpoint": "realm-bot-calendar-composition",
-  "scope": "251/36 required candidate; local build/vet/race passed, actual PostgreSQL pending",
+  "checkpoint": "realm251-fixtures",
+  "scope": "Isolated validated checkpoint with fixture-only corrections; actual PostgreSQL CI pending",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
@@ -1188,6 +1188,11 @@
       "path": "docs/published-owned-backend-ci.json",
       "bytes": 584,
       "sha256": "6084463a66a43535d09306de617601d5b8219079508c7a8d87bd0d81ae512524"
+    },
+    {
+      "path": "docs/realm-publishing-ci-corrections.md",
+      "bytes": 1743,
+      "sha256": "e8dba61779164e9841a5db4d0095a38c4decdf8cf917f2bae448ad27b4eb9b8c"
     },
     {
       "path": "docs/realm-publishing-continuation.md",
@@ -7216,8 +7221,8 @@
     },
     {
       "path": "tests/integration/realm_publishing_test.go",
-      "bytes": 36311,
-      "sha256": "2224526c111635d3799ea1ca71d5eec679d9ee5ad67a9e428ec50e172b8e8a04"
+      "bytes": 36676,
+      "sha256": "18e337b1ab623e0bc4852df7e8ff0b6599e4a33cb1bdfd5d3816f9ef24075fb7"
     },
     {
       "path": "tests/integration/schema.sql",
@@ -7251,8 +7256,8 @@
     },
     {
       "path": "tests/integration/timeline_locks_test.go",
-      "bytes": 12880,
-      "sha256": "7f8612d80a6055bb96624a86d2cb4760caf3f4604caf4626ce5b0d488825a4ea"
+      "bytes": 12943,
+      "sha256": "c7c0a7c73d0c6d3ed12e4a4a8d96d69e48e1fe863fd62af7e8a56774ca9e5633"
     },
     {
       "path": "tests/integration/timeline_test.go",

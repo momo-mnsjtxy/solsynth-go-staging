@@ -27,6 +27,8 @@ type timelineLockProbe struct {
 	entered chan int
 }
 
+var _ postpg.AssociationPrelocker = (*timelineLockProbe)(nil)
+
 func (p *timelineLockProbe) Prelock(ctx context.Context, tx *sql.Tx, actor, publisher string, v posts.Patch, create bool) error {
 	var pid int
 	if e := tx.QueryRowContext(ctx, `SELECT pg_backend_pid()`).Scan(&pid); e != nil {

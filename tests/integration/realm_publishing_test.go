@@ -387,8 +387,13 @@ func TestPGRealmPublisherMediaSurveyStickerAndFederationPrivacy(t *testing.T) {
 		if _, e = f.surveys.Get(actor.ctx, actor.id, s.ID); !errors.Is(e, surveys.ErrNotFound) {
 			t.Fatal("realm survey intro leak", e)
 		}
-		if _, e = f.surveys.Results(actor.ctx, actor.id, s.ID); !errors.Is(e, surveys.ErrNotFound) {
-			t.Fatal("realm survey results leak", e)
+		want := surveys.ErrNotFound
+		if actor.id == "" {
+			want = surveys.ErrUnauthenticated
+		}
+		result, resultErr := f.surveys.Results(actor.ctx, actor.id, s.ID)
+		if !errors.Is(resultErr, want) || result.Total != 0 || len(result.Questions) != 0 {
+			t.Fatal("realm survey results leak", result, resultErr)
 		}
 	}
 	if _, e = f.surveys.Answer(f.otherCtx, f.other, s.ID, surveyAnswers(s)); e != nil {
@@ -492,7 +497,12 @@ func realmPublishingBlock(t *testing.T, ctx context.Context, db *sql.DB, realm s
 	}
 	return tx
 }
-func realmPublishingProbe(f *realmPublishingFixture, db *sql.DB) (*postpg.Repository, *timelineLockProbe) {
+
+// Every concurrent transaction uses the exact pool bound to f.guard and the
+// existing signed contexts. Separate BeginTx calls still reserve independent
+// connections; accepting another pool would fail closed before the lock probe.
+func realmPublishingProbe(f *realmPublishingFixture) (*postpg.Repository, *timelineLockProbe) {
+	db := f.db
 	v := socialpg.New(db)
 	probe := &timelineLockProbe{Repository: timelinepg.New(db).WithVisibility(v).WithAssociations(interactionpg.New(db).WithVisibility(v)), entered: make(chan int, 1)}
 	return postpg.NewWithAuthority(db, f.guard).WithVisibility(v).WithAssociations(probe), probe
@@ -504,7 +514,7 @@ func TestPGRealmPublisherLockWaitRechecks(t *testing.T) {
 	root := f.post(t, f.privatePub, "realm membership retained content", posts.Public)
 	ctx, cancel := context.WithTimeout(f.otherCtx, 20*time.Second)
 	defer cancel()
-	w, probe := realmPublishingProbe(f, database(t))
+	w, probe := realmPublishingProbe(f)
 	block := realmPublishingBlock(t, ctx, f.db, f.private.ID)
 	done := make(chan error, 1)
 	go func() {
@@ -601,8 +611,8 @@ func TestPGRealmPublisherOppositeRepliesAndRollback(t *testing.T) {
 	defer cancelA()
 	bc, cancelB := context.WithTimeout(f.otherCtx, 20*time.Second)
 	defer cancelB()
-	aw, aprobe := realmPublishingProbe(f, database(t))
-	bw, bprobe := realmPublishingProbe(f, database(t))
+	aw, aprobe := realmPublishingProbe(f)
+	bw, bprobe := realmPublishingProbe(f)
 	low, high := f.public.ID, second.ID
 	if low > high {
 		low, high = high, low

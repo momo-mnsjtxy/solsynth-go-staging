@@ -1,18 +1,18 @@
 {
-  "checkpoint": "audited211-fixtures",
-  "scope": "Isolated211/31 audited candidate with fixture-only timestamp and bounded inbox processing corrections; actual CI pending",
+  "checkpoint": "canonical-merchant-ticket-exam-composition",
+  "scope": "228/33 candidate with prior audit fixes and configured canonical group/XP effects; local build/vet/race passed, actual PG pending",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
     "recovery_blobs": 187
   },
-  "remote_publication": "Parent90cbf69b failed193 before-phase cases; all identified SQL/nullability/rollback and cross-publisher lock corrections included",
+  "remote_publication": "Audited211/31 correction7a303070 queued; last fully green remainsd4ee9b8(122/20)",
   "verification": "docs/published-apps-notifications-ci.json",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
       "bytes": 2098,
-      "sha256": "2d14d22a0ec6860662017ab93fa9d8cdbf8d8744a2c62283750ca12bb08a068a"
+      "sha256": "aac15214a30fca7903672b229ea338276e3a089f65901c038e544303ac84eb4b"
     },
     {
       "path": ".gitignore",
@@ -86,8 +86,18 @@
     },
     {
       "path": "cmd/backend/main.go",
-      "bytes": 12293,
-      "sha256": "55a2cc46fb34138dbc5354bf7aec1f1e848bdb19ecf5173eed360540224d5094"
+      "bytes": 12430,
+      "sha256": "66d44675d6ef90bea70b2cfe25a95cc803e74b8b0f4fffd979aca311695410e3"
+    },
+    {
+      "path": "cmd/backend/ticket_config.go",
+      "bytes": 2403,
+      "sha256": "04d88dc96f022bb85bd02167054dc057cf6b3a19613f07a5a53d32cc11edb783"
+    },
+    {
+      "path": "cmd/backend/ticket_config_test.go",
+      "bytes": 941,
+      "sha256": "50bdd0560d4cef3ed049972fe0e1d53d2031252920500937f2927ab2f21e6ed8"
     },
     {
       "path": "cmd/backend/verification_config.go",
@@ -383,6 +393,11 @@
       "path": "docs/media-usage-continuation.md",
       "bytes": 3899,
       "sha256": "72c4f197c777bd9491ede7b5243999fe0a98ea012a15b0b2cb4206eb49a836b0"
+    },
+    {
+      "path": "docs/merchants-continuation.md",
+      "bytes": 8707,
+      "sha256": "0c5c622d56bd57b6cd051d6eec5d58c7e30cbdec0fed8149c9abbb3607cb309b"
     },
     {
       "path": "docs/messager-continuation.md",
@@ -1171,8 +1186,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 24632,
-      "sha256": "445e315c3334309a9da58252be22a98bb7d492e3812d9f85414f42c86cc97ae7"
+      "bytes": 25952,
+      "sha256": "16794f2d7300c8dada27743aebd4ec799ccb5168137a9e0afe57b4c43bf6f616"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -1193,6 +1208,11 @@
       "path": "docs/taxonomy-continuation.md",
       "bytes": 14402,
       "sha256": "09724e648a7ea6fd98acf24aac2598b4543633fba3b38b039f5c1424f8ab6177"
+    },
+    {
+      "path": "docs/tickets-exams-continuation.md",
+      "bytes": 11115,
+      "sha256": "a3feca0eb4d139bca4164f729582e25afa955d10f4eedba8077888b5ff3be2b0"
     },
     {
       "path": "docs/timeline-continuation.md",
@@ -1256,8 +1276,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 14465,
-      "sha256": "f4050e159e274a45eda389de6f2ec404abb72f39c98c507e62b3475778d556a8"
+      "bytes": 15604,
+      "sha256": "bdebd651a8f7ec667a251e17b8e0ed0a2b86d2d2b33747a9de5d10bfbfd09633"
     },
     {
       "path": "internal/application/commerce.go",
@@ -1321,13 +1341,13 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 5023,
-      "sha256": "964ed5c158978c1be529a0c793fdcbf8dffcdbee944b79807975645674a34139"
+      "bytes": 5151,
+      "sha256": "014e2a82a8de31486955919b2e8eecc4c781ffaf9bd2347f948899c20ab7cc04"
     },
     {
       "path": "internal/application/router.go",
-      "bytes": 10501,
-      "sha256": "aa9a95ae62e7ed1b85d79baf26871479ebfc9b03cd3976547393d0f3ce9902f3"
+      "bytes": 11151,
+      "sha256": "b521a65a3322fee6ce05f98578b8d7f03150824a441957967f8d17ee80a6ae53"
     },
     {
       "path": "internal/application/router_test.go",
@@ -1575,6 +1595,11 @@
       "sha256": "859a11f5ec79c25dde67b9c1fc661013aaf7ec8ecfce0402918e81228192cbb7"
     },
     {
+      "path": "internal/commercepg/catalog_scope.go",
+      "bytes": 3042,
+      "sha256": "3e5c313328a0ca4dee00478a10b65feb801ed4198818e2a0aae3feea4d5007e0"
+    },
+    {
       "path": "internal/commercepg/checkout.go",
       "bytes": 3425,
       "sha256": "9d9874cf0730370a931c50d9c7a30b6cbad94afd0fae6cfee63d512ef1d95e94"
@@ -1591,8 +1616,8 @@
     },
     {
       "path": "internal/commercepg/lifecycle.go",
-      "bytes": 16280,
-      "sha256": "63f9a91ec59c2f7cbd29ca0f0c34580d549c00f63252d9f3cb4f044d11b71937"
+      "bytes": 16955,
+      "sha256": "a719bc6b6569140fd628f7b5be5713786849cbf91e6ac525be1d3e33b89149a4"
     },
     {
       "path": "internal/commercepg/maintenance.go",
@@ -1830,6 +1855,26 @@
       "sha256": "ea69459d7c129178c2237c7f888c32dab7b7a418b192312f841668a403ac7207"
     },
     {
+      "path": "internal/merchantpg/catalog.go",
+      "bytes": 5439,
+      "sha256": "b7b5271151dbff343c0186f7555e002e21ccefa8f42b278bab2526f53d1c481f"
+    },
+    {
+      "path": "internal/merchantpg/reporting.go",
+      "bytes": 5154,
+      "sha256": "0bcddf9cbdf27157266f1ca8c923086f8cc5afb448a9a80931147a5ea421b429"
+    },
+    {
+      "path": "internal/merchantpg/repository.go",
+      "bytes": 9206,
+      "sha256": "eeabf10ab707002e51a0ed75d5c7db0a42a443530bcc1933f8519b52b50057e9"
+    },
+    {
+      "path": "internal/merchantpg/schema.sql",
+      "bytes": 418,
+      "sha256": "5bbfd7f2cc21adeea45ad5bb88943834a93a1abd97f5d18a51e537423a2d3621"
+    },
+    {
       "path": "internal/messagerpg/evidence_test.go",
       "bytes": 1496,
       "sha256": "cfd0048eef0bb0aa1f78720ddd557083de4b21142346528cd05d214cdf61c379"
@@ -2000,6 +2045,11 @@
       "sha256": "59385af56f3af08573035777f7971ff5b7779b49640a61ebff95773141b8fc7b"
     },
     {
+      "path": "internal/progressionpg/exam_rewards.go",
+      "bytes": 2147,
+      "sha256": "0415f4807e14bbe18b1c757a725c4517e22ce13c12231b3310a95bc4e0078005"
+    },
+    {
       "path": "internal/progressionpg/projector.go",
       "bytes": 6949,
       "sha256": "0658f5d912f2399aa1c4410c56740871ca9772d919c41ba20847fda3fab70a71"
@@ -2143,6 +2193,41 @@
       "path": "internal/taxonomypg/transaction_guard_test.go",
       "bytes": 1856,
       "sha256": "544ab9e2169f45fcd48c78227d2f620abb396d400494bdcb5c45f90e95a1b417"
+    },
+    {
+      "path": "internal/ticketpg/attempts.go",
+      "bytes": 20946,
+      "sha256": "7b7a91305e4d1a0ecca77de47270d6a6ece32d608e177e7223b2b1a1f8025c79"
+    },
+    {
+      "path": "internal/ticketpg/bank.go",
+      "bytes": 22713,
+      "sha256": "7377af2ae8160060e8ccf62bbb057e12a4c130233a0c7d269d356adaf223ba2d"
+    },
+    {
+      "path": "internal/ticketpg/grading.go",
+      "bytes": 9554,
+      "sha256": "986543a0ddb0e26081d298ff64f6087bd55da91ac403f967a89a3ff3e32f9979"
+    },
+    {
+      "path": "internal/ticketpg/grading_test.go",
+      "bytes": 4318,
+      "sha256": "a168bc5c3b96a6c440bc38392dc4b976554abf44c33cfb85fd9264d74d66139a"
+    },
+    {
+      "path": "internal/ticketpg/repository.go",
+      "bytes": 8942,
+      "sha256": "ec814d1e050acaf484ba75b63d8708a4a8b2443f7c1c0de27ae497f8a834726c"
+    },
+    {
+      "path": "internal/ticketpg/schema.sql",
+      "bytes": 5947,
+      "sha256": "dbb14099003b1fedcdd375d737bd724d85ddb79a4f900c009d4f9106e57aafd2"
+    },
+    {
+      "path": "internal/ticketpg/support.go",
+      "bytes": 12866,
+      "sha256": "fd034bafb88f46a1d7e014286727a49ab8ecd636b7c5ced341611bae5ebf9ccc"
     },
     {
       "path": "internal/timelinepg/discovery.go",
@@ -5085,6 +5170,76 @@
       "sha256": "374bfaab2d6ce7661445a8394471247c7ef804375814afac1075e6505c61cd1c"
     },
     {
+      "path": "ports/passport/tickets/http.go",
+      "bytes": 16294,
+      "sha256": "f4cfa9b0edb73d2f69166d03cfabb152f66666e0b5c0b84657be41b6e0f24ad4"
+    },
+    {
+      "path": "ports/passport/tickets/http_test.go",
+      "bytes": 3872,
+      "sha256": "fd8077ceeb9c667231084ecc933a419e02a056116e61a2eac1832a075a613597"
+    },
+    {
+      "path": "ports/passport/tickets/source/DYSON-LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/passport/tickets/source/PASSPORT_TESTS_AND_ACTIVATION.md",
+      "bytes": 10056,
+      "sha256": "9a0155f4f71ffc6e28309dd12a3622064a9ecec43a59adb27f9c11acce9ec343"
+    },
+    {
+      "path": "ports/passport/tickets/source/SOLIAN-LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/passport/tickets/source/SnTest.cs",
+      "bytes": 5490,
+      "sha256": "5f012104638b4d70fd8da8083f0bdaef59244fbc745658b4cb62e0391e9b4325"
+    },
+    {
+      "path": "ports/passport/tickets/source/Solian_abuse_report_service.dart",
+      "bytes": 3555,
+      "sha256": "c795527910acc5f1457a7ce37e840d3b82b1f4e41c7199abf459c8cafd98e6e7"
+    },
+    {
+      "path": "ports/passport/tickets/source/Solian_ticket_detail.dart",
+      "bytes": 37472,
+      "sha256": "be704163d9c2e3d2a02c55854a3528525b75cbce4188c6ab129907d2e4e2ecdb"
+    },
+    {
+      "path": "ports/passport/tickets/source/TestService.cs",
+      "bytes": 21687,
+      "sha256": "708a44537478dfab5ce3d073ad3cb4d81065521d33d35ea5ee6bd42045b718f4"
+    },
+    {
+      "path": "ports/passport/tickets/source/TicketOnCallService.cs",
+      "bytes": 1683,
+      "sha256": "5d936a5324b08631392c8ddfcae37d4eaac85704b40f1282d3c7d498637f664b"
+    },
+    {
+      "path": "ports/passport/tickets/source/TicketService.cs",
+      "bytes": 8215,
+      "sha256": "dafb11fd756600094ad0cddee67f7e578895e5cd73154d0b47289bb592711ff0"
+    },
+    {
+      "path": "ports/passport/tickets/source/manifest.json",
+      "bytes": 9665,
+      "sha256": "20dab42f073b7b6517241b5efc751f5ecaa0d89b4c32192fdd98e33aec6cc0e6"
+    },
+    {
+      "path": "ports/passport/tickets/types.go",
+      "bytes": 13593,
+      "sha256": "10920224d0cfbf5075683246a68cf018365a44ed613734110f63fe6091ca80b0"
+    },
+    {
+      "path": "ports/passport/tickets/validation.go",
+      "bytes": 4257,
+      "sha256": "38e14834e01d22f036731274ffaafa2b820976bb26b51dc4050eaaf8f8b1097e"
+    },
+    {
       "path": "ports/passport/username/ARCHITECTURE.md",
       "bytes": 6148,
       "sha256": "f1284cb8ba4e56634d1abbd7f5ba59adeabe8c6919d8e561f6f2f737ea9c65d1"
@@ -6021,8 +6176,8 @@
     },
     {
       "path": "ports/wallet/commerce/model.go",
-      "bytes": 12897,
-      "sha256": "4994eedfaa4fe952d4a5c3339293fa90ffc0d6a26b0b33f3802676ec5fa7b880"
+      "bytes": 12979,
+      "sha256": "4e8b462907e9c160c65812acad1fa667127756170901827b122f9cc9f3449da5"
     },
     {
       "path": "ports/wallet/commerce/provenance_test.go",
@@ -6130,6 +6285,71 @@
       "sha256": "66b05f979b09fd732cebf07b24e830836fd46a38980f45c7019dbd1d69562030"
     },
     {
+      "path": "ports/wallet/merchants/authority.go",
+      "bytes": 2352,
+      "sha256": "c070b0511866e9dcf62ffc2e0a52c895b6476479876fd70628b4aa15036174f8"
+    },
+    {
+      "path": "ports/wallet/merchants/http.go",
+      "bytes": 2935,
+      "sha256": "f419b0fe39941e67a9f783f6090b2b04666a0b0301295eb83038d2d77531814b"
+    },
+    {
+      "path": "ports/wallet/merchants/routes.go",
+      "bytes": 4811,
+      "sha256": "32a55a1ad7584ae35be787ad82bba09974321e29b00822a6ee56d344fe683b9d"
+    },
+    {
+      "path": "ports/wallet/merchants/source/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/wallet/merchants/source/MERCHANT_SETTLEMENT.md",
+      "bytes": 10843,
+      "sha256": "0a74b397e6bbc95ad6844283ee21f55306edc14662aa1b80c4b2c60a5b182d71"
+    },
+    {
+      "path": "ports/wallet/merchants/source/MerchantController.cs",
+      "bytes": 20182,
+      "sha256": "44e46d2abd418922db70d78004df87236eb7b105d3bb7e64e8f7de4cc6f5de2e"
+    },
+    {
+      "path": "ports/wallet/merchants/source/SubscriptionAdminController.cs",
+      "bytes": 7496,
+      "sha256": "a1801452d70417c603ada9cc4c1ecd7f79d823deb8c44fd0b6a97e36795106c9"
+    },
+    {
+      "path": "ports/wallet/merchants/source/SubscriptionCatalogService.cs",
+      "bytes": 22570,
+      "sha256": "b6fdb489a6103062c5f83b9a4e152483851792be1d470c31a2a77c153ab3b87a"
+    },
+    {
+      "path": "ports/wallet/merchants/source/WALLET_ADMIN_API.md",
+      "bytes": 7935,
+      "sha256": "911ca1ce402329d0bbc729a2e9ad7c2a39d4b578f47dada0d0327f37ebdd9524"
+    },
+    {
+      "path": "ports/wallet/merchants/source/manifest.json",
+      "bytes": 2405,
+      "sha256": "2c2ec1b4e7b985087d2dcba9a72df95fc379c8654aae68a897eed14e782b897f"
+    },
+    {
+      "path": "ports/wallet/merchants/types.go",
+      "bytes": 6030,
+      "sha256": "88ac9371c08555eef91d6789e6149f810e55db5b207d856a2486a7f614d6b50f"
+    },
+    {
+      "path": "ports/wallet/merchants/validation.go",
+      "bytes": 4161,
+      "sha256": "e76228e3e11174df00e82b75976c1ae1dd3b5f5675e0ee5609a197e104aa819f"
+    },
+    {
+      "path": "ports/wallet/merchants/validation_test.go",
+      "bytes": 1250,
+      "sha256": "44431b4df672ee4ee8f1957cb74f4040dd5bf77ee9ae2384ad4db9ac1ae7ba4b"
+    },
+    {
       "path": "ports/wallet/productcatalog/PROVENANCE.md",
       "bytes": 5556,
       "sha256": "7a32ec2aa75ac770abaa3ea3a11f2f938ad854571e2418662416ccc64ec11ded"
@@ -6226,8 +6446,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 14606,
-      "sha256": "7c25d6ca04abdf1f965b0d1a5ca4f7687d0dc2ff7ec22a991adf336539dacfd3"
+      "bytes": 15625,
+      "sha256": "51e83e4917866dfb3c869ca65b4af195aadc94cfe91b03134763b8614cda354b"
     },
     {
       "path": "scripts/check-source-evidence.py",
@@ -6236,8 +6456,8 @@
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 5806,
-      "sha256": "33dc492e68ba8521a88c766f939c9c280f380e6216593154f8b742a401612c6c"
+      "bytes": 5970,
+      "sha256": "3dc21ff305b26766e29e8150fdb5d7e33c2e37e1e224bbe0b1244c32478448e7"
     },
     {
       "path": "scripts/test-coverage-format.py",
@@ -6246,13 +6466,13 @@
     },
     {
       "path": "scripts/test-integration-guard.py",
-      "bytes": 3399,
-      "sha256": "5e9b524173ab30127744eb2304c90a8fffa15b2928a19c2d86e8d9a9a70faa2e"
+      "bytes": 3580,
+      "sha256": "6c6783602a4b3e82fac1b5cdf4b056a57f601a4a0e60876f199e930ff91dff8d"
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 10330,
-      "sha256": "4a57ecdd80599d8b526a703b6bec470b564c95133c9176ac5740978100f06a22"
+      "bytes": 10398,
+      "sha256": "a644847ba6c90a841c4cc884248395db957d6490a1aa49fdc19d5aba082f714e"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -6560,6 +6780,11 @@
       "sha256": "7cbd2737afea877114a09de6743baf513ca3c7f40cfa2a77e0c9d2b55a68bcca"
     },
     {
+      "path": "tests/integration/backend_merchant_test.go",
+      "bytes": 1597,
+      "sha256": "a934f59b70a8b6a143abeae578ed14b44ba43ba5ae2d4c406d4829da6bc470ae"
+    },
+    {
       "path": "tests/integration/backend_presence_test.go",
       "bytes": 3494,
       "sha256": "745d350145eb35185e463984fe5464b537c4e03dfb415d58f0c6f7ea18a66e61"
@@ -6573,6 +6798,11 @@
       "path": "tests/integration/backend_test.go",
       "bytes": 22937,
       "sha256": "b1623551d29a5ab376ff78ab32951c1ff9227e61240e58773e7a5e7c337e8a94"
+    },
+    {
+      "path": "tests/integration/backend_ticket_test.go",
+      "bytes": 2165,
+      "sha256": "42ba3069b4af054ed0218700395672cfd719582d8162e38206406a217d1f4b71"
     },
     {
       "path": "tests/integration/board_http_test.go",
@@ -6655,6 +6885,11 @@
       "sha256": "ddfe3ae8459f196377814750ce46a09da5dd18f8a550b105b47ef8c8b57fc6df"
     },
     {
+      "path": "tests/integration/merchants_test.go",
+      "bytes": 16916,
+      "sha256": "2e83f0f5c11191e962677fcb911b9131bb3829342c03b0e966ae68165b7f5954"
+    },
+    {
       "path": "tests/integration/messager_test.go",
       "bytes": 20627,
       "sha256": "f29c0f5083b552b092c29cbdb7d8311371786653942a58e5795fbeef28a7fb10"
@@ -6713,6 +6948,11 @@
       "path": "tests/integration/taxonomy_test.go",
       "bytes": 23147,
       "sha256": "da72ed3cb38decccb85b8b304bfb58f249c867abf583f0af953e6cdb24de352d"
+    },
+    {
+      "path": "tests/integration/tickets_test.go",
+      "bytes": 27924,
+      "sha256": "5c345c9d1ed4a7c9ea157ba6ac497d75cea10593f685460040e4b3bd749e35ee"
     },
     {
       "path": "tests/integration/timeline_locks_test.go",

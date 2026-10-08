@@ -30,6 +30,8 @@ found = set()
 for path in (ROOT / "tests/integration").glob("*_test.go"):
     source = path.read_text()
     found.update(re.findall(r"^func (TestPG\w+)\(", source, re.M))
+    for batch in re.findall(r"\.ProcessPending\([^;\n]*?,\s*(\d+)\s*\)", source):
+        assert 1 <= int(batch) <= 100, f"{path.name}: notification processing batch must be1..100"
     for prefix in re.findall(r'SeedSynthetic\([^;\n]*?,\s*"([^"]+)"\s*\+', source):
         assert prefix.startswith("synthetic_"), f"{path.name}: synthetic account helper rejects this fixture prefix"
 assert found == guard.EXPECTED["before"], (

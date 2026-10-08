@@ -47,6 +47,9 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		return o, e
 	}
 	if peek.Status == c.Unpaid {
+		if e = lockOrderDefinition(ctx, tx, idv); e != nil {
+			return o, e
+		}
 		if e = lockOrderApp(ctx, tx, peek); e != nil {
 			return o, e
 		}
@@ -199,14 +202,32 @@ func (r *Repository) UpdateOrder(ctx context.Context, idv string, req c.UpdateSt
 func definition(ctx context.Context, tx *sql.Tx, identifier string) (c.Definition, error) {
 	var d c.Definition
 	var b []byte
+	// Inspect the optional immutable scope before taking the definition lock.
+	if e := tx.QueryRowContext(ctx, `SELECT document FROM commerce_v1.definitions WHERE identifier=$1 AND enabled`, identifier).Scan(&b); e != nil {
+		return d, notFound(e)
+	}
+	if e := json.Unmarshal(b, &d); e != nil {
+		return d, e
+	}
+	initialApp := d.AppIdentifier
+	if e := lockDefinitionApp(ctx, tx, initialApp); e != nil {
+		return d, e
+	}
 	e := tx.QueryRowContext(ctx, `SELECT document,payee_wallet_id::text FROM commerce_v1.definitions WHERE identifier=$1 AND enabled FOR SHARE`, identifier).Scan(&b, &d.PayeeWalletID)
 	if e != nil {
 		return d, notFound(e)
 	}
 	payee := d.PayeeWalletID
+	d = c.Definition{}
 	e = json.Unmarshal(b, &d)
 	d.PayeeWalletID = payee
 	if e != nil {
+		return d, e
+	}
+	if !sameDefinitionApp(initialApp, d.AppIdentifier) {
+		return d, c.ErrConflict
+	}
+	if e = lockDefinitionApp(ctx, tx, d.AppIdentifier); e != nil {
 		return d, e
 	}
 	if d.Identifier != identifier || d.BasePrice.Sign() <= 0 || d.CycleDurationDays < 1 || d.CycleDurationDays > 366 || d.Currency == "" {

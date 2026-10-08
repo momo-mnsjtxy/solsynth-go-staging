@@ -116,6 +116,7 @@ type PaymentDetails struct {
 	PayerWalletID *string `json:"payer_wallet_id,omitempty"`
 }
 type Definition struct {
+	AppIdentifier              *string             `json:"app_identifier,omitempty"`
 	Identifier                 string              `json:"identifier"`
 	GroupIdentifier            string              `json:"group_identifier"`
 	DisplayName                string              `json:"display_name"`

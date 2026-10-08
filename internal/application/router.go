@@ -15,8 +15,8 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
-	calls, federationPublic, federationPrivate                                                                                                                                                                       http.Handler
-	board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps, commerce, signin, timeline, surveys, stickers, locations, presence, progression http.Handler
+	calls, federationPublic, federationPrivate                                                                                                                                                                                           http.Handler
+	board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps, commerce, signin, timeline, surveys, stickers, locations, presence, progression, merchants, tickets http.Handler
 }
 type router struct{ modules }
 
@@ -206,6 +206,12 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.public != nil && publicCatalogRoute(canonical) && (service == "wallet" || service == "passport" || service == "api") {
 		target = h.public
 	}
+	if h.tickets != nil && (service == "api" || service == "passport") && ticketRoute(canonical) {
+		target = h.tickets
+	}
+	if h.merchants != nil && (service == "api" || service == "wallet") && (under(canonical, "/api/merchants") || under(canonical, "/api/admin/subscriptions/catalog")) {
+		target = h.merchants
+	}
 	if h.commerce != nil && (under(canonical, "/api/orders") || under(canonical, "/api/subscriptions")) && (service == "wallet" || service == "api") {
 		target = h.commerce
 	}
@@ -309,4 +315,13 @@ func appRoute(p string) bool {
 // their bearer input must reach that verifier, rather than the domain adapter.
 func signinRoute(method, p string) bool {
 	return method == "POST" && p == "/stargate/accounts" || p == "/stargate/accounts/verify" || p == "/stargate/accounts/verification" || under(p, "/stargate/auth/challenge") || under(p, "/stargate/factors") || p == "/stargate/accounts/me/password" || p == "/passport/accounts/recovery/password"
+}
+
+func ticketRoute(p string) bool {
+	for _, base := range []string{"/api/tickets", "/api/tests", "/api/admin/tickets/on-call", "/api/admin/tests", "/api/admin/test-question-groups", "/api/admin/test-questions", "/api/admin/test-trials"} {
+		if under(p, base) {
+			return true
+		}
+	}
+	return false
 }

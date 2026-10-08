@@ -9,6 +9,25 @@ EXPECTED = {
         "TestPGTimelinePrelocksRecheckSourceAndTarget",
         "TestPGTimelinePublisherUUIDSelectorCollision",
 
+        "TestPGBackendTicketsExamProgressionComposition",
+        "TestPGTicketsPrivateSupportLifecycle",
+        "TestPGExamsSnapshotsClaimsAndPrivateAnswers",
+        "TestPGExamsManualReviewTrialsAndLimits",
+        "TestPGExamsIndependentPoolIdempotencyAndAtomicClaims",
+        "TestPGExamsFreshAuthorityAndDisabledIsolation",
+        "TestPGTicketsExamsRestartPersistence",
+        "TestPGExamsRewardSinkAtomicAndIdempotent",
+
+        "TestPGBackendMerchantCatalogComposition",
+        "TestPGMerchantsBindingOwnershipAndCanonicalCheckout",
+        "TestPGMerchantsCatalogRoundTripAndDisable",
+        "TestPGMerchantsReportsExactAndIsolated",
+        "TestPGMerchantsCatalogConcurrentUpsertAndRollback",
+        "TestPGMerchantsScopedCatalogRejectsDeadAncestry",
+        "TestPGMerchantsAdminWaitRevocationAndHTTP",
+        "TestPGMerchantsAdminScopeRecheckedAfterWait",
+        "TestPGMerchantsRestartPersistence",
+
         "TestPGBackendPresenceProgressionLocationComposition",
         "TestPGPresencePrivacyLeasesAndAuthority",
         "TestPGPresenceFriendsBlocksInvisibleAndExpiry",
@@ -229,6 +248,10 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGTicketsExamsRestartPersistence",
+
+        "TestPGMerchantsRestartPersistence",
+
         "TestPGPresenceProgressionRestartPersistence",
 
         "TestPGLocationsRestartPersistence",

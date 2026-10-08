@@ -57,6 +57,7 @@ func run(args []string, out io.Writer) error {
 	noNotify := fs.String("messager-notify-none", "", "explicit no-notifications mode")
 	verificationSettings := verificationFlags(fs)
 	externalSettings := externalFlags(fs)
+	ticketSettings := ticketFlags(fs)
 	factorIssuer := fs.String("factor-issuer-label", "SoSYS", "human-readable TOTP issuer label")
 	enableSignin := fs.Bool("enable-signin", false, "explicitly enable owned first-party issuer and factor protocol")
 	signingFile := fs.String("issuer-private-key-file", "", "explicit RSA issuer key PEM")
@@ -133,6 +134,10 @@ func run(args []string, out io.Writer) error {
 	} else if *signingFile != "" || *refreshEnv != "" || *replayEnv != "" || *signinEnv != "" || *memberGrants != "" {
 		return errors.New("issuer configuration requires explicit enable-signin")
 	}
+	ticketConfig, err := ticketSettings.config()
+	if err != nil {
+		return err
+	}
 	if err = verificationSettings.apply(signinConfig); err != nil {
 		return err
 	}
@@ -197,7 +202,7 @@ func run(args []string, out io.Writer) error {
 		}
 		catalogProviders = []exchangecatalog.Provider{provider}
 	}
-	appConfig := application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig}
+	appConfig := application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
 	if err = externalSettings.apply(&appConfig); err != nil {
 		return err
 	}

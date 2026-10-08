@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "audited211 snapshot based on5149232",
+  "local_source_checkpoint": "audited211 plus canonical merchant controls and ticket/exam composition",
   "last_fully_passed_ci": {
     "commit": "d4ee9b826ae65138ba53d460ff5874d4181384fa",
     "run": 37737268425,
@@ -10,12 +10,13 @@
     "after_restart": 20
   },
   "latest_candidate": {
-    "commit": "90cbf69b39de596b45ae087d366fc3e464bd5754",
-    "run": 37743194567,
-    "status": "Failed193 before phase; SQL/nullability/rollback and independently reviewed publisher lock corrections included here"
+    "commit": "7a303070429a5a37e02599c77407e501a7ec56a0",
+    "required_before": 211,
+    "required_after_restart": 31,
+    "status": "CI pending; previous211 failed3fixture cases; actual restart phase still pending"
   },
-  "local_required_before": 211,
-  "local_required_after_restart": 31,
+  "local_required_before": 228,
+  "local_required_after_restart": 33,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -296,11 +297,26 @@
     },
     {
       "source_family": "passport.tickets_exams",
-      "local_status": "not_implemented",
-      "supported_flows": [],
-      "guarded_pg_cases": [],
+      "local_status": "partial",
+      "supported_flows": [
+        "Private support cases/messages/assignment and on-call",
+        "Exam bank, immutable attempts, automatic/manual grading, trials",
+        "Explicit canonical group mappings and once-per-test canonical XP reward"
+      ],
+      "guarded_pg_cases": [
+        "TestPGTicketsPrivateSupportLifecycle",
+        "TestPGExamsSnapshotsClaimsAndPrivateAnswers",
+        "TestPGExamsManualReviewTrialsAndLimits",
+        "TestPGExamsIndependentPoolIdempotencyAndAtomicClaims",
+        "TestPGExamsFreshAuthorityAndDisabledIsolation",
+        "TestPGTicketsExamsRestartPersistence",
+        "TestPGExamsRewardSinkAtomicAndIdempotent",
+        "TestPGBackendTicketsExamProgressionComposition"
+      ],
       "unsupported_or_remaining": [
-        "Support tickets, on-call and examinations"
+        "Ticket attachments/newer unmapped status values",
+        "Activation requests remain pending until an authority activation policy exists",
+        "External provider delivery"
       ]
     },
     {
@@ -578,27 +594,36 @@
       "source_family": "wallet.merchants",
       "local_status": "partial",
       "supported_flows": [
-        "Trusted canonical payout binding and app credential checks"
+        "Canonical app-to-wallet binding and administrator subscription definitions",
+        "App ancestry rechecked for catalog checkout"
       ],
       "guarded_pg_cases": [
-        "TestPGCommerceConcurrentPaymentStockAndRollback",
-        "TestPGCommerceExpiryAndAuthorityOrdering",
-        "TestPGCommerceHTTPPaymentAndUnavailableProvider",
-        "TestPGCommerceOrderSettlementAndIsolation",
-        "TestPGCommerceRestartPersistence",
-        "TestPGCommerceSubscriptionRenewCancelAndGiftRedeem"
+        "TestPGMerchantsBindingOwnershipAndCanonicalCheckout",
+        "TestPGMerchantsCatalogRoundTripAndDisable",
+        "TestPGMerchantsReportsExactAndIsolated",
+        "TestPGMerchantsCatalogConcurrentUpsertAndRollback",
+        "TestPGMerchantsScopedCatalogRejectsDeadAncestry",
+        "TestPGMerchantsAdminWaitRevocationAndHTTP",
+        "TestPGMerchantsAdminScopeRecheckedAfterWait",
+        "TestPGMerchantsRestartPersistence",
+        "TestPGBackendMerchantCatalogComposition"
       ],
       "unsupported_or_remaining": [
-        "Merchant management/payout endpoints"
+        "Legacy publisher-wide settlement state and payouts"
       ]
     },
     {
       "source_family": "wallet.reporting",
-      "local_status": "not_implemented",
-      "supported_flows": [],
-      "guarded_pg_cases": [],
+      "local_status": "partial",
+      "supported_flows": [
+        "Private publisher/buyer order history and exact currency-separated totals with UTC date buckets"
+      ],
+      "guarded_pg_cases": [
+        "TestPGMerchantsReportsExactAndIsolated",
+        "TestPGBackendMerchantCatalogComposition"
+      ],
       "unsupported_or_remaining": [
-        "Wallet/admin aggregate reporting"
+        "Global financial administration and provider settlement reports"
       ]
     }
   ],

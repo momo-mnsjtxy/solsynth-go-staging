@@ -17,6 +17,7 @@ import (
 	"solsynth.local/go-migration/internal/interactionpg"
 	"solsynth.local/go-migration/internal/locationpg"
 	"solsynth.local/go-migration/internal/mediapg"
+	"solsynth.local/go-migration/internal/merchantpg"
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/internal/notificationpg"
 	"solsynth.local/go-migration/internal/postmediapg"
@@ -29,6 +30,7 @@ import (
 	"solsynth.local/go-migration/internal/stickerpg"
 	"solsynth.local/go-migration/internal/surveypg"
 	"solsynth.local/go-migration/internal/taxonomypg"
+	"solsynth.local/go-migration/internal/ticketpg"
 	"solsynth.local/go-migration/internal/timelinepg"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/authority"
@@ -42,6 +44,7 @@ import (
 	"solsynth.local/go-migration/ports/passport/presence"
 	"solsynth.local/go-migration/ports/passport/progression"
 	"solsynth.local/go-migration/ports/passport/social"
+	"solsynth.local/go-migration/ports/passport/tickets"
 	"solsynth.local/go-migration/ports/sphere/interactions"
 	"solsynth.local/go-migration/ports/sphere/locations"
 	"solsynth.local/go-migration/ports/sphere/posts"
@@ -51,6 +54,7 @@ import (
 	"solsynth.local/go-migration/ports/sphere/timeline"
 	"solsynth.local/go-migration/ports/wallet/commerce"
 	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
+	"solsynth.local/go-migration/ports/wallet/merchants"
 )
 
 // Config is injected by the embedding application. Enum values are mandatory
@@ -69,6 +73,7 @@ type Config struct {
 	NotificationApp               string
 	CommerceProviders             map[string]commerce.Provider
 	Signin                        *signin.Config
+	Tickets                       *ticketpg.Config
 	Calls                         *CallConfig
 	Federation                    *FederationConfig
 }
@@ -83,6 +88,7 @@ type Backend struct {
 	locations                *locationpg.Repository
 	progression              *progressionpg.Repository
 	progressionNotifications progressionNotifications
+	tickets                  *ticketpg.Repository
 	signinEnabled            bool
 	external                 externalModules
 }
@@ -125,6 +131,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	cache := board.NewGroupCache()
 	appRepo := apppg.NewWithAuthority(db, guard).WithBoardCache(cache)
 	appService := &apps.Service{Repository: appRepo, Authority: proofIdentity{identity}}
+	merchantRepo := merchantpg.New(db, guard)
+	merchantHTTP := merchants.NewHandler(merchantRepo, postIdentity{identity})
 	commerceRepo := commercepg.New(db, guard, commercepg.AppAdapters(appRepo))
 	commerceHTTP := (&commerce.Service{Store: commerceRepo, Identity: commerceIdentity{identity}, Payments: walletpg.NewPINVerifier(db, c.PINPeppers), Providers: c.CommerceProviders}).Handler()
 	appNormal := bindIdentity(v, bindTransactionAuthority(guard, appService.Handler()))
@@ -155,6 +163,22 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	}
 	presenceHTTP := (&presence.Service{Repository: presenceRepo, Authority: v, Bind: bindProof}).Handler()
 	progressionHTTP := (&progression.Service{Repository: progressionRepo, Authority: v, Bind: bindProof}).Handler()
+	var ticketRepo *ticketpg.Repository
+	var ticketHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "TICKETS_AUTHORITY_UNAVAILABLE") })
+	if guard != nil {
+		ticketConfig := ticketpg.Config{}
+		if c.Tickets != nil {
+			ticketConfig = *c.Tickets
+		}
+		if ticketConfig.Rewards == nil {
+			ticketConfig.Rewards = progressionRepo
+		}
+		ticketRepo, err = ticketpg.New(db, guard, ticketConfig)
+		if err != nil {
+			return nil, err
+		}
+		ticketHTTP = bindIdentity(v, (&tickets.Service{Repository: ticketRepo, Authority: proofIdentity{identity}}).Handler())
+	}
 	locationRepo := locationpg.NewWithAuthority(db, guard)
 	locationHTTP := locations.NewHandler(locationRepo, postIdentity{identity})
 	socialRepo := socialpg.NewWithAuthority(db, guard)
@@ -236,8 +260,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	h := router{modules{tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	return &Backend{external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 }
 
 type accountLookup interface {

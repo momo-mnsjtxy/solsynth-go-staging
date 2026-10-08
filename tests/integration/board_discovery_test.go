@@ -49,11 +49,11 @@ func TestPGBoardDiscoveryCurrentVisibilityAndDTO(t *testing.T) {
 		t.Fatal("disabled owner public")
 	}
 	query(t, f.db, `UPDATE owned_authority_accounts SET disabled=false WHERE id=$1::uuid`, f.actor)
-	query(t, f.db, `UPDATE owned_publishers SET shadowbanned_at=clock_timestamp() WHERE name=$1::text`, f.dev)
+	query(t, f.db, `UPDATE owned_publishers SET shadowbanned_at=clock_timestamp(),shadowban_reason='spam' WHERE name=$1::text`, f.dev)
 	if len(boardDiscover(t, f, a.Slug)) != 0 {
 		t.Fatal("shadowbanned publisher public")
 	}
-	query(t, f.db, `UPDATE owned_publishers SET shadowbanned_at=NULL WHERE name=$1::text`, f.dev)
+	query(t, f.db, `UPDATE owned_publishers SET shadowbanned_at=NULL,shadowban_reason=NULL WHERE name=$1::text`, f.dev)
 	backendJSONCall(t, f.handler, "PATCH", root+q, f.token, map[string]any{"oauth_config": map[string]any{"allowed_scopes": []string{"orders.create"}}}, 200)
 	if len(boardDiscover(t, f, a.Slug)) != 0 {
 		t.Fatal("scope removal not current")

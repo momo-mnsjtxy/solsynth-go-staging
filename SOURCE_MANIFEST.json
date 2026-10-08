@@ -1,8 +1,8 @@
 {
-  "checkpoint": "board-discovery421",
-  "scope": "Canonical public board widget discovery with current public-state checks and authored DTOs; full local build/vet/test/race passed; actual PostgreSQL pending.",
+  "checkpoint": "board-fixture421",
+  "scope": "Fixture-only paired shadowban timestamp/reason updates satisfy existing canonical constraint; runtime unchanged. Integration race compilation passed; actual PostgreSQL pending.",
   "inputs": {
-    "remote_parent": "b3f7497fa996ef16a16d263ec6b07dc79f61845d"
+    "remote_parent": "f8183591642e39a1b76cd48771b57a2ff6ca9931"
   },
   "verification": "docs/published-domain-collections-ci.json",
   "files": [
@@ -8738,8 +8738,8 @@
     },
     {
       "path": "tests/integration/board_discovery_test.go",
-      "bytes": 6509,
-      "sha256": "41e31fd84c620d19d60560cce0dec7f29e08d6c818416df1a47ae7824535be0f"
+      "bytes": 6555,
+      "sha256": "f61fc5fcabdd8a7671fc8f643128aed5faefb67427d0a21713c4dcbe0b2403cb"
     },
     {
       "path": "tests/integration/board_http_test.go",

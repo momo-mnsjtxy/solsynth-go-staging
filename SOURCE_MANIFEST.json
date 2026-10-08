@@ -1,8 +1,8 @@
 {
-  "checkpoint": "relationship-expiry580",
-  "scope": "Timed relationship and request expiry with immediate effective visibility, revision-bound atomic maintenance and saved restart fixtures. Full combined offline build/vet/unit/race/SQL16/arity/source checks passed; actual580/76 PG/restart pending. Clarified PassKit current-root versus recent-credential assurance.",
+  "checkpoint": "fixture-boundary-corrections580",
+  "scope": "Only composed fixture corrections and current evidence: omit plaintext content in opaque MLS request with offline positive/negative validation; preserve required realm member timestamps; establish reciprocal comment admission while retaining ordered lock/rollback assertions. Runtime unchanged. Full offline verification passed; actual PG pending.",
   "inputs": {
-    "remote_parent": "b40df6589ec1e5facef8026f43f6eaea67d65a65"
+    "remote_parent": "8b656f0626ce065ca745bf4918b58d412a5391fc"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -1715,8 +1715,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 98532,
-      "sha256": "5285219b642e8ff371e5db88c09438e0c6819b62caac62b1b7b7ae0f0b9762af"
+      "bytes": 98741,
+      "sha256": "528f5b8446e409cab645014964e9130f21b3f5500d4f4f86cd956cd98ffaf605"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -10050,8 +10050,8 @@
     },
     {
       "path": "tests/integration/chat_mls_test.go",
-      "bytes": 21087,
-      "sha256": "c83448be8d081dd0770210e8c96d02e976bc5af1a295e71c99f8349a1598b516"
+      "bytes": 22175,
+      "sha256": "75d4fd887477a2611f66a5c3b237d37cd748d5c5fdfd8753e4a2bb28b37cdc77"
     },
     {
       "path": "tests/integration/chat_preflight_test.go",
@@ -10335,8 +10335,8 @@
     },
     {
       "path": "tests/integration/realm_permissions_membership_review_test.go",
-      "bytes": 2040,
-      "sha256": "b755fd9a5c01f114466837b2e2da4f495ff112ec1c7ca3e29c40d2b79598319e"
+      "bytes": 2068,
+      "sha256": "c1e7b2e134f5a8e98ac108d9056d7bcd6117bacd87f9d29587ceaff96ca84930"
     },
     {
       "path": "tests/integration/realm_permissions_mls_review_test.go",
@@ -10350,8 +10350,8 @@
     },
     {
       "path": "tests/integration/realm_publishing_test.go",
-      "bytes": 37259,
-      "sha256": "662acbbd9b12c86e41871a5d502831df5c5f49a92cae6e73667f256ccd7b67ee"
+      "bytes": 37751,
+      "sha256": "3796c8a0bace44780f579db1c9b17e078e3fa964e2af91c11dd2639397c6047c"
     },
     {
       "path": "tests/integration/recurring_expiry_test.go",

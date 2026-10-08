@@ -365,10 +365,43 @@ func TestPGMLSBackendAuthorityAndGatewayComposition(t *testing.T) {
 	call("POST", "/stargate/e2ee/mls/groups/"+*enabled.MLSGroupID+"/bootstrap", f.token, device, string(body), 200)
 	body, _ = json.Marshal(rooms.MLSRequest{MLSDeviceID: device, Epoch: mlsInt(0)})
 	call("POST", "/messager/chat/"+dm.ID+"/devices/me/joined", f.token, "", string(body), 200)
-	body, _ = json.Marshal(rooms.TextRequest{EncryptionMeta: &rooms.EncryptionMeta{Scheme: "chat.mls.v2", Epoch: 0, Ciphertext: mlsBytes("backend-message"), Header: mlsBytes("header")}})
+	body = fixtureMLSMessageBody(t, rooms.EncryptionMeta{Scheme: "chat.mls.v2", Epoch: 0, Ciphertext: mlsBytes("backend-message"), Header: mlsBytes("header")})
 	call("POST", "/messager/chat/"+dm.ID+"/messages", f.token, "", string(body), 200)
 	backendCall(t, app, "POST", "/messager/chat/"+dm.ID+"/block", f.otherToken, "", 204)
 	call("GET", "/e2ee/mls/groups/"+*enabled.MLSGroupID+"/groupinfo", f.token, device, "", 403)
 	query(t, f.db, `UPDATE owned_authority_accounts SET disabled=true WHERE id=$1`, f.actor)
 	call("GET", "/e2ee/mls/kp/status", f.token, device, "", 423)
+}
+
+// The authored encrypted transport omits content entirely. TextRequest is also
+// the plain-text request DTO and deliberately serializes its content field.
+func fixtureMLSMessageBody(t *testing.T, meta rooms.EncryptionMeta) []byte {
+	t.Helper()
+	body, e := json.Marshal(struct {
+		Encryption rooms.EncryptionMeta `json:"encryption_meta"`
+	}{meta})
+	if e != nil {
+		t.Fatal(e)
+	}
+	return body
+}
+func TestMLSEncryptedFixtureRequestShape(t *testing.T) {
+	meta := rooms.EncryptionMeta{Scheme: "chat.mls.v2", Epoch: 0, Ciphertext: mlsBytes("synthetic-message"), Header: mlsBytes("header")}
+	var request rooms.TextRequest
+	if e := json.Unmarshal(fixtureMLSMessageBody(t, meta), &request); e != nil {
+		t.Fatal(e)
+	}
+	if _, e := rooms.ValidateText(request, false); e != nil {
+		t.Fatal("authored encrypted fixture rejected", e)
+	}
+	wrong, e := json.Marshal(rooms.TextRequest{EncryptionMeta: &meta})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = json.Unmarshal(wrong, &request); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = rooms.ValidateText(request, false); e == nil {
+		t.Fatal("plaintext field in encrypted fixture accepted")
+	}
 }

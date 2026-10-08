@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Timed relationship/request expiry with immediate current-time visibility and durable cleanup, on reviewed PassKit/quote candidate; actual PG pending.",
+  "local_source_checkpoint": "Bounded fixture corrections: encryption-only MLS JSON shape with offline negative control; complete recreated realm-member timestamps; reciprocal realm comment admission and explicit diagnostic errors. Runtime policy and lock assertions unchanged.",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,11 +12,11 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "b40df6589ec1e5facef8026f43f6eaea67d65a65",
-    "run": 37848978938,
-    "required_before": 573,
-    "required_after_restart": 75,
-    "status": "Running; preceding corrected560/73 also remains in progress. No new full pass claimed."
+    "commit": "8b656f0626ce065ca745bf4918b58d412a5391fc",
+    "required_before": 580,
+    "required_after_restart": 76,
+    "status": "Running. Preceding560/73 ran all560 before cases:557pass,3fail,0skip; restart not reached. Three fixture corrections are now under local validation.",
+    "run": 37850061137
   },
   "local_required_before": 580,
   "local_required_after_restart": 76,
@@ -2134,7 +2134,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last full green455/60. Candidates560/73 and573/75 are running. New580/76 expiry integration pending validation."
+    "verification_note": "Last full green455/60.560/73 failed3 before cases (557 passed), no restart.573/75 and580/76 remain pending. Fixture corrections do not constitute a new PG pass."
   },
   "global_remaining": [
     "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",

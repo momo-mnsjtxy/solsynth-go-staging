@@ -610,6 +610,15 @@ func TestPGRealmPublisherOppositeRepliesAndRollback(t *testing.T) {
 		t.Fatal(e)
 	}
 	secondPub := f.createOrganization(t, f.otherCtx, f.other, second, "opposite")
+	// Both actors need current CanComment admission in the other's realm. This
+	// test exercises ordered locks and rollback, not outsider comment admission.
+	if _, e = f.social.ChangeMember(f.otherCtx, f.other, second.ID, social.MemberChange{Action: social.Invite, AccountID: f.actor}); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.social.ChangeMember(f.ctx, f.actor, second.ID, social.MemberChange{Action: social.Accept}); e != nil {
+		t.Fatal(e)
+	}
+
 	a := f.post(t, f.publicPub, "realm opposite root A", posts.Public)
 	b, e := f.posts.Create(f.otherCtx, f.other, secondPub.ID, posts.Patch{Content: postString("realm opposite root B")})
 	if e != nil {
@@ -681,7 +690,7 @@ func TestPGRealmPublisherOppositeRepliesAndRollback(t *testing.T) {
 				parent = a.ID
 			}
 			if got.err != nil || got.post.RepliedPostID == nil || *got.post.RepliedPostID != parent {
-				t.Fatal("opposite realm reply", got)
+				t.Fatalf("opposite realm reply actor %d: error=%v post=%+v", i, got.err, got.post)
 			}
 		}
 	}

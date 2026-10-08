@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"solsynth.local/go-migration/ports/messager"
+	"solsynth.local/go-migration/ports/messager/rooms"
 )
 
 var (
@@ -26,12 +27,16 @@ var (
 // connection and never creates schema. Active-row semantics and enum values
 // remain explicit synthetic choices; production construction is always denied.
 type Repository struct {
+	owned              bool
+	roomAccess         rooms.AccessPolicy
 	unreadPolicy       *SyntheticUnreadPolicy
 	db                 *sql.DB
 	synthetic          bool
 	noneEncryptionMode int32
 	now                func() time.Time
 }
+
+func (r *Repository) WithRoomAccess(p rooms.AccessPolicy) *Repository { r.roomAccess = p; return r }
 
 func New(db *sql.DB) *Repository { return &Repository{db: db} }
 func NewSyntheticProjectionRepository(db *sql.DB, noneEncryptionMode int32) *Repository {
@@ -58,12 +63,30 @@ func (r *Repository) transaction(ctx context.Context) (*sql.Tx, error) {
 func (r *Repository) requireRoom(ctx context.Context, tx *sql.Tx, room, account string) error {
 	var public bool
 	var encryption int32
-	err := tx.QueryRowContext(ctx, `SELECT is_public, encryption_mode FROM chat_rooms WHERE id=$1 AND deleted_at IS NULL`, room).Scan(&public, &encryption)
+	var guarded bool
+	var err error
+	if r.owned {
+		err = tx.QueryRowContext(ctx, `SELECT is_public,encryption_mode,owned_relation_guard FROM chat_rooms WHERE id=$1 AND deleted_at IS NULL`, room).Scan(&public, &encryption, &guarded)
+	} else {
+		err = tx.QueryRowContext(ctx, `SELECT is_public, encryption_mode FROM chat_rooms WHERE id=$1 AND deleted_at IS NULL`, room).Scan(&public, &encryption)
+	}
 	if errors.Is(err, sql.ErrNoRows) {
 		return messager.ErrSyncRoomNotFound
 	}
 	if err != nil {
 		return err
+	}
+	if guarded {
+		if r.roomAccess == nil {
+			return messager.ErrSyncForbidden
+		}
+		allowed, e := r.roomAccess.CanReadInTransaction(ctx, tx, account, room)
+		if e != nil {
+			return e
+		}
+		if !allowed {
+			return messager.ErrSyncForbidden
+		}
 	}
 	if public && encryption == r.noneEncryptionMode {
 		return nil
@@ -388,6 +411,14 @@ func (r *Repository) Unread(ctx context.Context, account string) (map[string]mes
 		return nil, err
 	}
 	defer tx.Rollback()
+	filter := ""
+	if r.owned {
+		gate := `NOT r.owned_relation_guard`
+		if r.roomAccess != nil {
+			gate = r.roomAccess.ReadSQL("r.id", "$1")
+		}
+		filter = ` AND NOT member.owned_banned AND EXISTS(SELECT 1 FROM chat_rooms r WHERE r.id=member.chat_room_id AND r.deleted_at IS NULL AND ` + gate + `)`
+	}
 	rows, err := tx.QueryContext(ctx, `SELECT member.chat_room_id::text,
  count(msg.id) FILTER (WHERE member.notify=$2 OR
  (member.notify=$3 AND msg.members_mentioned @> jsonb_build_array($1::text))),
@@ -399,7 +430,7 @@ func (r *Repository) Unread(ctx context.Context, account string) (map[string]mes
  AND msg.deleted_at IS NULL
  WHERE member.account_id=$1::uuid AND member.joined_at IS NOT NULL
  AND member.leave_at IS NULL AND member.deleted_at IS NULL
- GROUP BY member.chat_room_id`, strings.ToLower(account), r.unreadPolicy.All, r.unreadPolicy.Mentions)
+	`+filter+` GROUP BY member.chat_room_id`, strings.ToLower(account), r.unreadPolicy.All, r.unreadPolicy.Mentions)
 	if err != nil {
 		return nil, err
 	}

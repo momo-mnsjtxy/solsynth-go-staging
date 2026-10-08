@@ -88,10 +88,13 @@ func (r *Repository) Join(ctx context.Context, actor, rid, tool string) (calls.J
 			return out, e
 		}
 	}
+	if _, e = r.auth(ctx, tx, actor, ""); e != nil {
+		return out, e
+	}
 	if e = tx.Commit(); e != nil {
 		return out, e
 	}
-	return calls.JoinResponse{Provider: r.provider.Name(), Endpoint: r.provider.Endpoint(), Token: token, CallID: c.ID, RoomName: c.SessionID, RoomTitle: v.Name, IsAdmin: v.AccountID == actor, Participants: participants, ExpiresAt: expiry}, nil
+	return calls.JoinResponse{Provider: r.provider.Name(), Endpoint: r.provider.Endpoint(), Token: token, CallID: c.ID, RoomName: c.SessionID, RoomTitle: v.Name, IsAdmin: v.AccountID == actor || v.Type == 1, Participants: participants, ExpiresAt: expiry}, nil
 }
 func (r *Repository) participants(ctx context.Context, tx *sql.Tx, c calls.Call) ([]calls.Participant, error) {
 	if e := r.checkProvider(c); e != nil {
@@ -190,7 +193,7 @@ func (r *Repository) Kick(ctx context.Context, actor, rid, target string, k call
 		return e
 	}
 	defer tx.Rollback()
-	if actor != v.AccountID || target == v.AccountID {
+	if (actor != v.AccountID && v.Type != 1) || target == actor || target == v.AccountID {
 		return calls.ErrForbidden
 	}
 	targetMember, e := member(ctx, tx, rid, target)
@@ -300,7 +303,7 @@ func (r *Repository) Mute(ctx context.Context, actor, rid, target string, muted 
 		return e
 	}
 	defer tx.Rollback()
-	if actor != v.AccountID {
+	if actor != v.AccountID && v.Type != 1 {
 		return calls.ErrForbidden
 	}
 	if _, e = member(ctx, tx, rid, target); e != nil {

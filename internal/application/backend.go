@@ -92,6 +92,7 @@ type Config struct {
 	Federation                    *FederationConfig
 }
 type Backend struct {
+	chat                     *chatpg.Repository
 	reader                   *readerpg.Repository
 	oauth                    *oauthpg.Repository
 	fortunes                 *fortunepg.Repository
@@ -229,6 +230,11 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	locationRepo := locationpg.NewWithAuthority(db, guard)
 	locationHTTP := locations.NewHandler(locationRepo, postIdentity{identity})
 	socialRepo := socialpg.NewWithAuthority(db, guard)
+	cr.WithSocial(socialRepo)
+	mr.WithRoomAccess(cr)
+	if external.calls != nil {
+		external.calls.WithRoomAccess(cr)
+	}
 	accountRepo.WithRealms(socialRepo)
 	socialHTTP := (&social.Service{Repository: socialRepo, Authority: proofIdentity{identity}}).Handler()
 	interactionRepo := interactionpg.NewWithAuthority(db, guard).WithVisibility(socialRepo)
@@ -336,7 +342,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if c.NotificationApp == "" {
 		c.NotificationApp = "dev.solsynth.solian"
 	}
-	notificationRepo := notificationpg.New(db, guard, c.NotificationApp)
+	notificationRepo := notificationpg.New(db, guard, c.NotificationApp).WithRoomAccess(cr)
 	notificationIdentity := notificationIdentity{identity}
 	notificationHTTP := (notifications.HTTP{Repository: notificationRepo, Identity: notificationIdentity, App: c.NotificationApp}).Handler()
 	realtimeHTTP, err := realtime.New(notificationRepo, notificationIdentity, realtime.Config{App: c.NotificationApp})
@@ -349,7 +355,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		return nil, err
 	}
 	h := router{modules{reader: readerHTTP, oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	return &Backend{chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 }
 
 type accountLookup interface {

@@ -226,6 +226,12 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.social != nil && socialRoute(canonical) && (service == "passport" || service == "stargate" || service == "api") {
 		target = h.social
 	}
+	if h.messager != nil && (service == "api" || service == "messager") {
+		parts := strings.Split(strings.Trim(canonical, "/"), "/")
+		if len(parts) == 4 && parts[0] == "api" && parts[1] == "realms" && parts[2] != "" && parts[3] == "chat" {
+			target = h.messager
+		}
+	}
 	if h.public != nil && publicCatalogRoute(canonical) && (service == "wallet" || service == "passport" || service == "api") {
 		target = h.public
 	}

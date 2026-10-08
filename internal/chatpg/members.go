@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"errors"
 	"solsynth.local/go-migration/ports/messager/rooms"
+	"solsynth.local/go-migration/ports/passport/social"
 )
 
 func (r *Repository) Members(ctx context.Context, actor, rid string, take, offset int) ([]rooms.Member, error) {
@@ -27,6 +28,9 @@ func (r *Repository) Members(ctx context.Context, actor, rid string, take, offse
 	// Membership lists require active membership even for public rooms. Public
 	// message access does not grant access to pending invitations or read receipts.
 	if _, e = requireMember(ctx, tx, rid, actor); e != nil {
+		return nil, e
+	}
+	if e = r.readable(ctx, tx, v, actor); e != nil {
 		return nil, e
 	}
 	rows, e := tx.QueryContext(ctx, `SELECT `+memberColumns+` FROM chat_members WHERE chat_room_id=$1 AND leave_at IS NULL AND deleted_at IS NULL AND NOT owned_banned AND (joined_at IS NOT NULL OR $2) ORDER BY joined_at NULLS LAST,id LIMIT $3 OFFSET $4`, rid, v.AccountID == actor, take, offset)
@@ -61,7 +65,12 @@ func (r *Repository) Me(ctx context.Context, actor, rid string) (rooms.Member, e
 		return rooms.Member{}, e
 	}
 	defer tx.Rollback()
-	if _, e = r.room(ctx, tx, rid, false); e != nil {
+	v, x := r.room(ctx, tx, rid, false)
+	if x != nil {
+		e = x
+		return rooms.Member{}, e
+	}
+	if e = r.readable(ctx, tx, v, actor); e != nil {
 		return rooms.Member{}, e
 	}
 	m, e := requireMember(ctx, tx, rid, actor)
@@ -82,7 +91,7 @@ func (r *Repository) Invites(ctx context.Context, actor string, take, offset int
 		return nil, e
 	}
 	defer tx.Rollback()
-	rows, e := tx.QueryContext(ctx, `SELECT `+memberColumns+` FROM chat_members WHERE account_id=$1 AND joined_at IS NULL AND leave_at IS NULL AND deleted_at IS NULL AND NOT owned_banned AND EXISTS(SELECT 1 FROM chat_rooms r WHERE r.id=chat_room_id AND r.deleted_at IS NULL AND r.owned_owner_id IS NOT NULL AND r.encryption_mode=$2) ORDER BY owned_updated_at DESC,id LIMIT $3 OFFSET $4`, actor, r.policy.NoneEncryptionMode, take, offset)
+	rows, e := tx.QueryContext(ctx, `SELECT `+memberColumns+` FROM chat_members WHERE account_id=$1 AND joined_at IS NULL AND leave_at IS NULL AND deleted_at IS NULL AND NOT owned_banned AND EXISTS(SELECT 1 FROM chat_rooms r WHERE r.id=chat_room_id AND r.deleted_at IS NULL AND r.owned_owner_id IS NOT NULL AND r.encryption_mode=$2) AND `+r.ReadSQL("chat_members.chat_room_id", "$1")+` ORDER BY owned_updated_at DESC,id LIMIT $3 OFFSET $4`, actor, r.policy.NoneEncryptionMode, take, offset)
 	if e != nil {
 		return nil, e
 	}
@@ -125,7 +134,7 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, rid string, action
 	if e != nil {
 		return rooms.Member{}, e
 	}
-	tx, e := r.beginWrite(ctx, actor, permission)
+	tx, e := r.beginRoomWrite(ctx, actor, rid, permission, "", target)
 	if e != nil {
 		return rooms.Member{}, e
 	}
@@ -137,12 +146,47 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, rid string, action
 	if e = account(ctx, tx, actor); e != nil {
 		return rooms.Member{}, e
 	}
-	if action == rooms.Invite || action == rooms.Remove {
-		if v.AccountID != actor || target == actor {
+	if v.Type == 1 && action != rooms.Leave {
+		return rooms.Member{}, rooms.ErrUnsupported
+	}
+	if v.RealmID != nil && action != rooms.Leave && action != rooms.Decline {
+		if _, e = r.social.RealmRoleForWriteInTransaction(ctx, tx, actor, *v.RealmID); e != nil {
 			return rooms.Member{}, rooms.ErrForbidden
 		}
-		if _, e = requireMember(ctx, tx, rid, actor); e != nil {
+		if action == rooms.Invite {
+			if _, e = r.social.RealmRoleInTransaction(ctx, tx, target, *v.RealmID); e != nil {
+				return rooms.Member{}, rooms.ErrForbidden
+			}
+		}
+	}
+	if action == rooms.Invite || action == rooms.Remove {
+		if target == actor {
+			return rooms.Member{}, rooms.ErrForbidden
+		}
+		if e = r.manage(ctx, tx, v, actor); e != nil {
 			return rooms.Member{}, e
+		}
+		if r.social != nil && action == rooms.Invite {
+			blocked, x := r.social.IsBlockedInTransaction(ctx, tx, actor, target)
+			if x != nil {
+				return rooms.Member{}, x
+			}
+			if blocked {
+				return rooms.Member{}, rooms.ErrForbidden
+			}
+		}
+		if v.RealmID != nil && action == rooms.Remove {
+			a, x := r.social.RealmRoleInTransaction(ctx, tx, actor, *v.RealmID)
+			b, y := r.social.RealmRoleInTransaction(ctx, tx, target, *v.RealmID)
+			if x != nil {
+				return rooms.Member{}, rooms.ErrForbidden
+			}
+			if y == nil && b >= a {
+				return rooms.Member{}, rooms.ErrForbidden
+			}
+			if y != nil && !errors.Is(y, social.ErrForbidden) && !errors.Is(y, social.ErrNotFound) {
+				return rooms.Member{}, y
+			}
 		}
 	}
 	m, e := member(ctx, tx, rid, target, false)
@@ -188,7 +232,7 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, rid string, action
 			return m, rooms.ErrForbidden
 		}
 		if exists && m.JoinedAt != nil && m.LeaveAt == nil {
-			return m, tx.Commit()
+			return m, r.commit(ctx, tx, actor, permission)
 		}
 		if !exists {
 			mid, e := id()
@@ -218,7 +262,7 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, rid string, action
 			return m, e
 		}
 	case rooms.Leave, rooms.Remove:
-		if target == v.AccountID {
+		if target == v.AccountID && v.RealmID == nil {
 			return m, rooms.ErrForbidden
 		}
 		if !exists || m.LeaveAt != nil || action == rooms.Leave && m.JoinedAt == nil {
@@ -238,7 +282,7 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, rid string, action
 	if _, e = tx.ExecContext(ctx, `UPDATE chat_rooms SET owned_updated_at=$2 WHERE id=$1`, rid, now); e != nil {
 		return m, e
 	}
-	return m, tx.Commit()
+	return m, r.commit(ctx, tx, actor, permission)
 }
 func (r *Repository) SetNotify(ctx context.Context, actor, rid string, n int32) (rooms.Member, error) {
 	if e := valid(actor, rid); e != nil {
@@ -247,13 +291,20 @@ func (r *Repository) SetNotify(ctx context.Context, actor, rid string, n int32) 
 	if !r.policy.ValidNotify(n) {
 		return rooms.Member{}, rooms.ErrInvalid
 	}
-	tx, e := r.beginWrite(ctx, actor, "")
+	tx, e := r.beginRoomWrite(ctx, actor, rid, "", "")
 	if e != nil {
 		return rooms.Member{}, e
 	}
 	defer tx.Rollback()
 	if _, e = r.room(ctx, tx, rid, true); e != nil {
 		return rooms.Member{}, e
+	}
+	allowed, x := r.CanReadInTransaction(ctx, tx, actor, rid)
+	if x != nil {
+		return rooms.Member{}, x
+	}
+	if !allowed {
+		return rooms.Member{}, rooms.ErrForbidden
 	}
 	m, e := requireMember(ctx, tx, rid, actor)
 	if e != nil {
@@ -263,7 +314,7 @@ func (r *Repository) SetNotify(ctx context.Context, actor, rid string, n int32) 
 	if e != nil {
 		return m, e
 	}
-	return m, tx.Commit()
+	return m, r.commit(ctx, tx, actor, "")
 }
 
 // MarkRead advances only to the timestamp of a visible text message actually in
@@ -272,13 +323,20 @@ func (r *Repository) MarkRead(ctx context.Context, actor, rid, messageID string)
 	if e := valid(actor, rid, messageID); e != nil {
 		return rooms.Member{}, e
 	}
-	tx, e := r.beginWrite(ctx, actor, "")
+	tx, e := r.beginRoomWrite(ctx, actor, rid, "", "")
 	if e != nil {
 		return rooms.Member{}, e
 	}
 	defer tx.Rollback()
 	if _, e = r.room(ctx, tx, rid, true); e != nil {
 		return rooms.Member{}, e
+	}
+	allowed, x := r.CanReadInTransaction(ctx, tx, actor, rid)
+	if x != nil {
+		return rooms.Member{}, x
+	}
+	if !allowed {
+		return rooms.Member{}, rooms.ErrForbidden
 	}
 	m, e := requireMember(ctx, tx, rid, actor)
 	if e != nil {
@@ -296,7 +354,7 @@ func (r *Repository) MarkRead(ctx context.Context, actor, rid, messageID string)
 	if e != nil {
 		return m, e
 	}
-	return m, tx.Commit()
+	return m, r.commit(ctx, tx, actor, "")
 }
 
 // Permissions match the owned HTTP routes; accepting, declining, joining and

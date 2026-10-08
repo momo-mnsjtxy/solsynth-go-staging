@@ -77,7 +77,7 @@ func (r *Repository) projectOne(ctx context.Context, source string, mode int) (b
 	}
 	var rows *sql.Rows
 	if source == "chat" {
-		rows, e = tx.QueryContext(ctx, `SELECT DISTINCT m.account_id::text FROM chat_members m JOIN chat_rooms r ON r.id=m.chat_room_id WHERE m.chat_room_id=$1 AND m.joined_at IS NOT NULL AND m.joined_at<=$2 AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned AND r.deleted_at IS NULL ORDER BY m.account_id::text`, aggregate, at)
+		rows, e = tx.QueryContext(ctx, `SELECT DISTINCT m.account_id::text FROM chat_members m JOIN chat_rooms r ON r.id=m.chat_room_id WHERE m.chat_room_id=$1 AND m.joined_at IS NOT NULL AND m.joined_at<=$2 AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned AND r.deleted_at IS NULL AND `+r.chatFilter("r.id", "m.account_id")+` ORDER BY m.account_id::text`, aggregate, at)
 	} else if strings.HasPrefix(kind, "wallet.transaction.") {
 		rows, e = tx.QueryContext(ctx, `SELECT DISTINCT w.account_id::text FROM wallet_v1.transactions t JOIN wallet_v1.wallets w ON w.id IN(t.payer_wallet_id,t.payee_wallet_id) WHERE t.id=$1 AND w.account_id IS NOT NULL AND w.deleted_at IS NULL ORDER BY w.account_id::text`, aggregate)
 	} else {

@@ -26,10 +26,11 @@ type Config struct {
 	NotificationApp    string
 }
 type Repository struct {
-	db       *sql.DB
-	guard    *authoritypg.TransactionGuard
-	provider calls.Provider
-	cfg      Config
+	roomAccess rooms.AccessPolicy
+	db         *sql.DB
+	guard      *authoritypg.TransactionGuard
+	provider   calls.Provider
+	cfg        Config
 }
 
 var _ calls.Repository = (*Repository)(nil)
@@ -41,7 +42,17 @@ func New(db *sql.DB, guard *authoritypg.TransactionGuard, p calls.Provider, c Co
 	if p != nil && (!p.StrictRevocation() || p.Name() == "" || p.Endpoint() == "") {
 		return nil, calls.ErrUnconfigured
 	}
-	return &Repository{db, guard, p, c}, nil
+	return &Repository{db: db, guard: guard, provider: p, cfg: c}, nil
+}
+func (r *Repository) WithRoomAccess(p rooms.AccessPolicy) *Repository { r.roomAccess = p; return r }
+func (r *Repository) roomGate(room, actor string, call bool) string {
+	if r.roomAccess != nil {
+		if call {
+			return r.roomAccess.CallSQL(room, actor)
+		}
+		return r.roomAccess.ReadSQL(room, actor)
+	}
+	return `NOT EXISTS(SELECT 1 FROM chat_rooms gated_room WHERE gated_room.id=` + room + ` AND gated_room.owned_relation_guard)`
 }
 func uuid() (string, error) {
 	var b [16]byte
@@ -85,7 +96,7 @@ func dbnow(ctx context.Context, tx *sql.Tx) (time.Time, error) {
 }
 func room(ctx context.Context, tx *sql.Tx, rid string, mode int32) (rooms.Room, error) {
 	var v rooms.Room
-	e := tx.QueryRowContext(ctx, `SELECT id::text,owned_owner_id::text,owned_name,owned_description,is_public,owned_is_community,encryption_mode,owned_created_at,owned_updated_at,deleted_at FROM chat_rooms WHERE id=$1 AND owned_owner_id IS NOT NULL FOR UPDATE`, rid).Scan(&v.ID, &v.AccountID, &v.Name, &v.Description, &v.IsPublic, &v.IsCommunity, &v.EncryptionMode, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt)
+	e := tx.QueryRowContext(ctx, `SELECT id::text,owned_owner_id::text,owned_name,owned_description,is_public,owned_is_community,encryption_mode,owned_created_at,owned_updated_at,deleted_at,owned_type,owned_relation_guard FROM chat_rooms WHERE id=$1 AND owned_owner_id IS NOT NULL FOR UPDATE`, rid).Scan(&v.ID, &v.AccountID, &v.Name, &v.Description, &v.IsPublic, &v.IsCommunity, &v.EncryptionMode, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt, &v.Type, &v.RelationGuard)
 	if errors.Is(e, sql.ErrNoRows) || e == nil && v.DeletedAt != nil {
 		return v, calls.ErrNotFound
 	}
@@ -96,7 +107,7 @@ func room(ctx context.Context, tx *sql.Tx, rid string, mode int32) (rooms.Room, 
 }
 func member(ctx context.Context, tx *sql.Tx, rid, actor string) (rooms.Member, error) {
 	var m rooms.Member
-	e := tx.QueryRowContext(ctx, `SELECT id::text,chat_room_id::text,account_id::text,notify,joined_at,leave_at FROM chat_members WHERE chat_room_id=$1 AND account_id=$2 AND joined_at IS NOT NULL AND leave_at IS NULL AND deleted_at IS NULL AND NOT owned_banned`, rid, actor).Scan(&m.ID, &m.ChatRoomID, &m.AccountID, &m.Notify, &m.JoinedAt, &m.LeaveAt)
+	e := tx.QueryRowContext(ctx, `SELECT id::text,chat_room_id::text,account_id::text,notify,joined_at,leave_at FROM chat_members WHERE chat_room_id=$1 AND account_id=$2 AND joined_at IS NOT NULL AND leave_at IS NULL AND deleted_at IS NULL AND NOT owned_banned AND(owned_timeout_until IS NULL OR owned_timeout_until<=clock_timestamp())`, rid, actor).Scan(&m.ID, &m.ChatRoomID, &m.AccountID, &m.Notify, &m.JoinedAt, &m.LeaveAt)
 	if errors.Is(e, sql.ErrNoRows) {
 		e = calls.ErrForbidden
 	}
@@ -145,11 +156,26 @@ func (r *Repository) locked(ctx context.Context, actor, rid, permission string) 
 	p, e := r.auth(ctx, tx, actor, permission)
 	var v rooms.Room
 	var m rooms.Member
+	if e == nil && r.roomAccess != nil {
+		e = r.roomAccess.LockForAction(ctx, tx, actor, rid)
+	}
 	if e == nil {
 		v, e = room(ctx, tx, rid, r.cfg.NoneEncryptionMode)
 	}
 	if e == nil {
 		m, e = member(ctx, tx, rid, actor)
+	}
+	if e == nil && r.roomAccess != nil {
+		var allowed bool
+		e = tx.QueryRowContext(ctx, `SELECT `+r.roomGate("$1", "$2", true), rid, actor).Scan(&allowed)
+		if e == nil && !allowed {
+			e = calls.ErrForbidden
+		}
+	} else if e == nil && v.RelationGuard {
+		e = calls.ErrForbidden
+	}
+	if e == nil {
+		p, e = r.auth(ctx, tx, actor, permission)
 	}
 	if e != nil {
 		_ = tx.Rollback()
@@ -205,6 +231,9 @@ func (r *Repository) ensure(ctx context.Context, actor, rid string, enforceBan b
 		if e = hydrate(ctx, tx, &c, v); e != nil {
 			return c, e
 		}
+		if _, e = r.auth(ctx, tx, actor, ""); e != nil {
+			return c, e
+		}
 		return c, tx.Commit()
 	}
 	// Record intent before the external room create so a crash cannot lose its name.
@@ -246,6 +275,9 @@ func (r *Repository) ensure(ctx context.Context, actor, rid string, enforceBan b
 		}
 	}
 	if e = hydrate(ctx, tx, &c, v); e != nil {
+		return c, e
+	}
+	if _, e = r.auth(ctx, tx, actor, ""); e != nil {
 		return c, e
 	}
 	return c, tx.Commit()

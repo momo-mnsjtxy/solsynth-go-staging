@@ -13,6 +13,7 @@ import (
 
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/messager/rooms"
 	"solsynth.local/go-migration/ports/notifications"
 )
 
@@ -20,9 +21,18 @@ import (
 var Schema string
 
 type Repository struct {
-	db    *sql.DB
-	guard *authoritypg.TransactionGuard
-	app   string
+	roomAccess rooms.AccessPolicy
+	db         *sql.DB
+	guard      *authoritypg.TransactionGuard
+	app        string
+}
+
+func (r *Repository) WithRoomAccess(p rooms.AccessPolicy) *Repository { r.roomAccess = p; return r }
+func (r *Repository) chatFilter(room, actor string) string {
+	if r.roomAccess != nil {
+		return r.roomAccess.ReadSQL(room, actor)
+	}
+	return `NOT r.owned_relation_guard`
 }
 
 // New never permits request reads or writes without the same-pool authority
@@ -232,7 +242,7 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 			e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM notification_v1.inbox WHERE id=$1 AND account_id=$2 AND app_id=$3 AND dismissed_at IS NULL)`, v.id, actor, app).Scan(&visible)
 		}
 		if v.audience == "chat" {
-			e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM chat_members m JOIN chat_rooms r ON r.id=m.chat_room_id WHERE m.account_id=$1 AND r.id=$2 AND m.joined_at IS NOT NULL AND m.joined_at<=$3 AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned AND r.deleted_at IS NULL)`, actor, v.id, v.event.CreatedAt).Scan(&visible)
+			e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM chat_members m JOIN chat_rooms r ON r.id=m.chat_room_id WHERE m.account_id=$1 AND r.id=$2 AND m.joined_at IS NOT NULL AND m.joined_at<=$3 AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned AND r.deleted_at IS NULL AND `+r.chatFilter("r.id", "$1")+`)`, actor, v.id, v.event.CreatedAt).Scan(&visible)
 		}
 		if e != nil {
 			return p, e

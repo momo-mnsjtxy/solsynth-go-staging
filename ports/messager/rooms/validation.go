@@ -22,11 +22,20 @@ func validText(s string, max int) bool {
 	return true
 }
 func ValidateRoom(p RoomPatch, create bool, policy Policy) error {
+	if p.RealmID != nil && !ValidID(*p.RealmID) {
+		return ErrInvalid
+	}
 	if create && p.Name == nil || p.Name != nil && (!validText(*p.Name, 1024) || strings.TrimSpace(*p.Name) == "") || p.Description != nil && !validText(*p.Description, 4096) {
 		return ErrInvalid
 	}
 	if p.EncryptionMode != nil && *p.EncryptionMode != policy.NoneEncryptionMode {
 		return ErrUnsupported
+	}
+	return nil
+}
+func ValidateTimeout(p *TimeoutRequest) error {
+	if p != nil && (p.TimeoutUntil.IsZero() || p.Reason != nil && !validText(*p.Reason, 4096)) {
+		return ErrInvalid
 	}
 	return nil
 }

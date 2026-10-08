@@ -5,6 +5,16 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGChatAuthorityPreflightSameTransactionAndNoLocks",
+        "TestPGBackendChatRelationsComposition",
+        "TestPGChatDirectLifecycleAndCrossPathPrivacy",
+        "TestPGChatDirectConcurrentPairAndRollback",
+        "TestPGChatRealmModerationAndRevocationAcrossReaders",
+        "TestPGChatTimeoutAndCallAdmissionRecovery",
+        "TestPGChatRealmTransferAndMissingCallPolicy",
+        "TestPGChatRelationsDisableAndProofDuringLockWait",
+        "TestPGChatRelationsDeletionAndRestartPersistence",
+
         "TestPGBackendReaderComposition",
         "TestPGReaderCacheLifecycleAndIsolation",
         "TestPGReaderInvalidationFencesInflightFetch",
@@ -311,6 +321,8 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGChatRelationsDeletionAndRestartPersistence",
+
         "TestPGReaderRestartPersistence",
 
         "TestPGOAuthRestartPersistence",

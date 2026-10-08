@@ -38,14 +38,23 @@ func (g *TransactionGuard) Bind(ctx context.Context, p authority.Principal) cont
 }
 
 func (g *TransactionGuard) Authenticate(ctx context.Context, db *sql.DB, tx *sql.Tx, actor string) (authority.Principal, error) {
-	return g.check(ctx, db, tx, actor, false, nil)
+	return g.check(ctx, db, tx, actor, false, nil, true)
 }
 
 func (g *TransactionGuard) Authorize(ctx context.Context, db *sql.DB, tx *sql.Tx, actor string, permissions ...string) (authority.Principal, error) {
-	return g.check(ctx, db, tx, actor, true, permissions)
+	return g.check(ctx, db, tx, actor, true, permissions, true)
 }
 
-func (g *TransactionGuard) check(ctx context.Context, db *sql.DB, tx *sql.Tx, actor string, authorize bool, permissions []string) (authority.Principal, error) {
+// Preflight checks only canonical authority state in the caller's transaction,
+// before domain observations or a sorted multi-account lock set. It acquires no
+// account lock and cannot authorize a mutation on its own: the caller MUST run
+// Authenticate/Authorize again after its planned locks and before committing.
+// The original proof, verifier ownership, pool and isolation checks are shared.
+func (g *TransactionGuard) Preflight(ctx context.Context, db *sql.DB, tx *sql.Tx, actor string, permissions ...string) (authority.Principal, error) {
+	return g.check(ctx, db, tx, actor, len(permissions) > 0, permissions, false)
+}
+
+func (g *TransactionGuard) check(ctx context.Context, db *sql.DB, tx *sql.Tx, actor string, authorize bool, permissions []string, lock bool) (authority.Principal, error) {
 	if g == nil || g.db == nil || g.db != db || g.verifier == nil || tx == nil {
 		return authority.Principal{}, authority.ErrUnavailable
 	}
@@ -58,7 +67,11 @@ func (g *TransactionGuard) check(ctx context.Context, db *sql.DB, tx *sql.Tx, ac
 		return authority.Principal{}, authority.ErrUnavailable
 	}
 	var a authority.Account
-	err := tx.QueryRowContext(ctx, `SELECT id::text,name,nick,language,region,is_superuser,disabled,version,created_at FROM owned_authority_accounts WHERE id=$1 FOR UPDATE`, envelope.proof.Account.ID).Scan(&a.ID, &a.Name, &a.Nick, &a.Language, &a.Region, &a.Superuser, &a.Disabled, &a.Version, &a.CreatedAt)
+	query := `SELECT id::text,name,nick,language,region,is_superuser,disabled,version,created_at FROM owned_authority_accounts WHERE id=$1`
+	if lock {
+		query += ` FOR UPDATE`
+	}
+	err := tx.QueryRowContext(ctx, query, envelope.proof.Account.ID).Scan(&a.ID, &a.Name, &a.Nick, &a.Language, &a.Region, &a.Superuser, &a.Disabled, &a.Version, &a.CreatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return authority.Principal{}, authority.ErrInvalid
 	}

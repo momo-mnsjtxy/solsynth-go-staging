@@ -57,6 +57,15 @@ func (r *Repository) RealmRoleInTransaction(ctx context.Context, tx *sql.Tx, act
 	m, e := requireRole(ctx, tx, v.ID, actor, social.Normal)
 	return m.Role, e
 }
+
+// RealmInTransaction projects the canonical realm in the caller's snapshot.
+// Callers separately enforce visibility or role before exposing its fields.
+func (r *Repository) RealmInTransaction(ctx context.Context, tx *sql.Tx, id string) (social.Realm, error) {
+	if tx == nil {
+		return social.Realm{}, social.ErrUnavailable
+	}
+	return realm(ctx, tx, id, false)
+}
 func (r *Repository) CanChatInTransaction(ctx context.Context, tx *sql.Tx, actor, id string) (bool, error) {
 	_, e := r.RealmRoleInTransaction(ctx, tx, actor, id)
 	if errors.Is(e, social.ErrForbidden) || errors.Is(e, social.ErrNotFound) {

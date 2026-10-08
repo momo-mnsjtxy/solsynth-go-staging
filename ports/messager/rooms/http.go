@@ -3,6 +3,7 @@ package rooms
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -22,6 +23,7 @@ type Service struct {
 	Repository Repository
 	Authority  Authority
 	Reader     messager.SyncReader
+	Bind       func(context.Context, authority.Principal) context.Context
 }
 
 func (s *Service) Handler() http.Handler { return http.HandlerFunc(s.serveHTTP) }
@@ -135,6 +137,10 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if strings.HasPrefix(r.URL.Path, "/api/realms/") {
+		s.serveRealm(w, r)
+		return
+	}
 	if r.URL.Path != "/api/chat" && !strings.HasPrefix(r.URL.Path, "/api/chat/") {
 		http.NotFound(w, r)
 		return
@@ -160,6 +166,10 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case len(p) == 0 && r.Method == "POST":
 		permission = "chat.create"
+	case len(p) == 1 && p[0] == "direct" && r.Method == "POST":
+		permission = "chat.create"
+	case len(p) == 4 && p[1] == "members" && p[3] == "timeout":
+		permission = "chat.members.timeout"
 	case len(p) == 1 && r.Method == "PATCH":
 		permission = "chat.update"
 	case len(p) == 1 && r.Method == "DELETE":
@@ -216,9 +226,30 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
+	if s.Bind != nil {
+		ctx = s.Bind(ctx, principal)
+	}
 	var result any
 	status := 200
 	switch {
+	case len(p) >= 1 && p[0] == "direct":
+		relations, ok := s.Repository.(RelationRepository)
+		if !ok {
+			failure(w, ErrUnsupported)
+			return
+		}
+		if len(p) == 1 && r.Method == "POST" {
+			var req DirectRequest
+			e = decode(w, r, &req, "related_user_id", "encryption_mode")
+			if e == nil {
+				result, e = relations.CreateDirect(ctx, actor, req)
+			}
+		} else if len(p) == 2 && r.Method == "GET" && ValidID(p[1]) {
+			result, e = relations.GetDirect(ctx, actor, p[1])
+		} else {
+			method(w, "GET, POST")
+			return
+		}
 	case len(p) == 0:
 		switch r.Method {
 		case "GET":
@@ -227,7 +258,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			result = map[string]any{"rooms": list}
 		case "POST":
 			var req RoomPatch
-			e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode")
+			e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode", "realm_id")
 			if e == nil {
 				result, e = s.Repository.Create(ctx, actor, req)
 			}
@@ -253,8 +284,12 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		if len(p) == 2 {
 			var req struct {
 				RelatedUserID string `json:"related_user_id"`
+				Role          *int   `json:"role"`
 			}
-			e = decode(w, r, &req, "related_user_id")
+			e = decode(w, r, &req, "related_user_id", "role")
+			if e == nil && req.Role != nil && *req.Role != 0 {
+				e = ErrUnsupported
+			}
 			if e == nil {
 				result, e = s.Repository.ChangeMember(ctx, actor, p[1], Invite, req.RelatedUserID)
 			}
@@ -272,13 +307,63 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	case len(p) > 0 && ValidID(p[0]):
 		rid := p[0]
 		switch {
+		case len(p) == 2 && (p[1] == "confirm" || p[1] == "block"):
+			relations, ok := s.Repository.(RelationRepository)
+			if !ok {
+				failure(w, ErrUnsupported)
+				return
+			}
+			action := p[1]
+			if p[1] == "block" && r.Method == "DELETE" {
+				action = "unblock"
+			} else if r.Method != "POST" {
+				method(w, "POST, DELETE")
+				return
+			}
+			e = empty(w, r)
+			if e == nil {
+				var room Room
+				room, e = relations.ChangeDirect(ctx, actor, rid, action)
+				result = room
+				if action == "block" {
+					status = 204
+				}
+				if action == "unblock" && e == nil {
+					for _, member := range room.Members {
+						if member.AccountID == actor {
+							result = member
+							break
+						}
+					}
+				}
+			}
+		case len(p) == 4 && p[1] == "members" && ValidID(p[2]) && p[3] == "timeout":
+			relations, ok := s.Repository.(RelationRepository)
+			if !ok {
+				failure(w, ErrUnsupported)
+				return
+			}
+			var req *TimeoutRequest
+			if r.Method == "POST" {
+				req = &TimeoutRequest{}
+				e = decode(w, r, req, "reason", "timeout_until")
+			} else if r.Method == "DELETE" {
+				e = empty(w, r)
+			} else {
+				method(w, "POST, DELETE")
+				return
+			}
+			if e == nil {
+				e = relations.Timeout(ctx, actor, rid, p[2], req)
+			}
+			status = 204
 		case len(p) == 1:
 			switch r.Method {
 			case "GET":
 				result, e = s.Repository.Get(ctx, actor, rid)
 			case "PATCH":
 				var req RoomPatch
-				e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode")
+				e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode", "realm_id")
 				if e == nil {
 					result, e = s.Repository.Update(ctx, actor, rid, req)
 				}

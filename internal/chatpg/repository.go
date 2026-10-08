@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/messager/rooms"
+	"solsynth.local/go-migration/ports/passport/social"
 	"time"
 )
 
@@ -23,7 +24,10 @@ type Repository struct {
 	policy  rooms.Policy
 	guard   TransactionGuard
 	fixture bool
+	social  rooms.SocialProvider
 }
+
+func (r *Repository) WithSocial(p rooms.SocialProvider) *Repository { r.social = p; return r }
 
 type TransactionGuard interface {
 	Authenticate(context.Context, *sql.DB, *sql.Tx, string) (authority.Principal, error)
@@ -124,13 +128,13 @@ func account(ctx context.Context, tx *sql.Tx, actor string) error {
 	return nil
 }
 
-const roomColumns = `id::text,owned_owner_id::text,owned_name,owned_description,is_public,owned_is_community,encryption_mode,owned_created_at,owned_updated_at,deleted_at`
+const roomColumns = `id::text,owned_owner_id::text,owned_name,owned_description,is_public,owned_is_community,encryption_mode,owned_created_at,owned_updated_at,deleted_at,owned_type,owned_relation_guard`
 
 type scanner interface{ Scan(...any) error }
 
 func scanRoom(s scanner) (rooms.Room, error) {
 	var v rooms.Room
-	e := s.Scan(&v.ID, &v.AccountID, &v.Name, &v.Description, &v.IsPublic, &v.IsCommunity, &v.EncryptionMode, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt)
+	e := s.Scan(&v.ID, &v.AccountID, &v.Name, &v.Description, &v.IsPublic, &v.IsCommunity, &v.EncryptionMode, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt, &v.Type, &v.RelationGuard)
 	if errors.Is(e, sql.ErrNoRows) {
 		e = rooms.ErrNotFound
 	}
@@ -145,14 +149,30 @@ func (r *Repository) room(ctx context.Context, tx *sql.Tx, rid string, lock bool
 	if e == nil && v.EncryptionMode != r.policy.NoneEncryptionMode {
 		e = rooms.ErrUnsupported
 	}
+	if e == nil && v.RelationGuard {
+		if r.social == nil {
+			return v, rooms.ErrUnavailable
+		}
+		if e = r.decorateRoom(ctx, tx, &v, ""); e != nil {
+			return v, e
+		}
+	}
 	return v, e
 }
 
-const memberColumns = `id::text,chat_room_id::text,account_id::text,notify,joined_at,leave_at,last_read_at`
+const memberColumns = `id::text,chat_room_id::text,account_id::text,notify,joined_at,leave_at,last_read_at,owned_confirmed_at,owned_timeout_until,owned_timeout_reason,owned_timeout_sender::text,owned_timeout_since`
 
 func scanMember(s scanner) (rooms.Member, error) {
 	var v rooms.Member
-	e := s.Scan(&v.ID, &v.ChatRoomID, &v.AccountID, &v.Notify, &v.JoinedAt, &v.LeaveAt, &v.LastReadAt)
+	var reason, sender sql.NullString
+	var since sql.NullTime
+	e := s.Scan(&v.ID, &v.ChatRoomID, &v.AccountID, &v.Notify, &v.JoinedAt, &v.LeaveAt, &v.LastReadAt, &v.ConfirmedAt, &v.TimeoutUntil, &reason, &sender, &since)
+	if sender.Valid && since.Valid {
+		v.TimeoutCause = &rooms.TimeoutCause{SenderID: sender.String, Since: since.Time}
+		if reason.Valid {
+			v.TimeoutCause.Reason = &reason.String
+		}
+	}
 	if errors.Is(e, sql.ErrNoRows) {
 		e = rooms.ErrNotFound
 	}
@@ -196,11 +216,21 @@ func (r *Repository) Create(ctx context.Context, actor string, p rooms.RoomPatch
 	if e := rooms.ValidateRoom(p, true, r.policy); e != nil {
 		return rooms.Room{}, e
 	}
-	tx, e := r.beginWrite(ctx, actor, "chat.create")
+	newRealm := ""
+	if p.RealmID != nil {
+		newRealm = *p.RealmID
+	}
+	tx, e := r.beginRoomWrite(ctx, actor, "", "chat.create", newRealm)
 	if e != nil {
 		return rooms.Room{}, e
 	}
 	defer tx.Rollback()
+	if p.RealmID != nil {
+		role, x := r.social.RealmRoleForWriteInTransaction(ctx, tx, actor, *p.RealmID)
+		if x != nil || role < social.Moderator {
+			return rooms.Room{}, rooms.ErrForbidden
+		}
+	}
 	if e = account(ctx, tx, actor); e != nil {
 		return rooms.Room{}, e
 	}
@@ -234,7 +264,19 @@ func (r *Repository) Create(ctx context.Context, actor string, p rooms.RoomPatch
 	if e != nil {
 		return v, e
 	}
-	e = tx.Commit()
+	if p.RealmID != nil {
+		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_chat_realm_links(room_id,realm_id)VALUES($1,$2)`, rid, *p.RealmID); e != nil {
+			return v, e
+		}
+		if _, e = tx.ExecContext(ctx, `UPDATE chat_rooms SET owned_relation_guard=true WHERE id=$1`, rid); e != nil {
+			return v, e
+		}
+		v.RelationGuard = true
+		if e = r.decorateRoom(ctx, tx, &v, actor); e != nil {
+			return v, e
+		}
+	}
+	e = r.commit(ctx, tx, actor, "chat.create")
 	return v, e
 }
 func (r *Repository) Get(ctx context.Context, actor, rid string) (rooms.Room, error) {
@@ -253,10 +295,13 @@ func (r *Repository) Get(ctx context.Context, actor, rid string) (rooms.Room, er
 	defer tx.Rollback()
 	v, e := r.room(ctx, tx, rid, false)
 	if e == nil {
-		e = readable(ctx, tx, v, actor)
+		e = r.readable(ctx, tx, v, actor)
 	}
 	if e != nil {
 		return rooms.Room{}, e
+	}
+	if e = r.decorateRoom(ctx, tx, &v, actor); e != nil {
+		return v, e
 	}
 	return v, tx.Commit()
 }
@@ -272,7 +317,7 @@ func (r *Repository) List(ctx context.Context, actor string, take, offset int) (
 		return nil, e
 	}
 	defer tx.Rollback()
-	rows, e := tx.QueryContext(ctx, `SELECT `+roomColumns+` FROM chat_rooms WHERE owned_owner_id IS NOT NULL AND deleted_at IS NULL AND encryption_mode=$2 AND EXISTS(SELECT 1 FROM chat_members m WHERE m.chat_room_id=chat_rooms.id AND m.account_id=$1 AND m.joined_at IS NOT NULL AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned) ORDER BY owned_updated_at DESC,id LIMIT $3 OFFSET $4`, actor, r.policy.NoneEncryptionMode, take, offset)
+	rows, e := tx.QueryContext(ctx, `SELECT `+roomColumns+` FROM chat_rooms WHERE owned_owner_id IS NOT NULL AND deleted_at IS NULL AND encryption_mode=$2 AND EXISTS(SELECT 1 FROM chat_members m WHERE m.chat_room_id=chat_rooms.id AND m.account_id=$1 AND m.joined_at IS NOT NULL AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned) AND `+r.ReadSQL("chat_rooms.id", "$1")+` ORDER BY owned_updated_at DESC,id LIMIT $3 OFFSET $4`, actor, r.policy.NoneEncryptionMode, take, offset)
 	if e != nil {
 		return nil, e
 	}
@@ -290,6 +335,11 @@ func (r *Repository) List(ctx context.Context, actor string, take, offset int) (
 	if e != nil {
 		return nil, e
 	}
+	for i := range out {
+		if e = r.decorateRoom(ctx, tx, &out[i], actor); e != nil {
+			return nil, e
+		}
+	}
 	return out, tx.Commit()
 }
 func (r *Repository) Update(ctx context.Context, actor, rid string, p rooms.RoomPatch) (rooms.Room, error) {
@@ -299,7 +349,11 @@ func (r *Repository) Update(ctx context.Context, actor, rid string, p rooms.Room
 	if e := rooms.ValidateRoom(p, false, r.policy); e != nil {
 		return rooms.Room{}, e
 	}
-	tx, e := r.beginWrite(ctx, actor, "chat.update")
+	newRealm := ""
+	if p.RealmID != nil {
+		newRealm = *p.RealmID
+	}
+	tx, e := r.beginRoomWrite(ctx, actor, rid, "chat.update", newRealm)
 	if e != nil {
 		return rooms.Room{}, e
 	}
@@ -308,11 +362,28 @@ func (r *Repository) Update(ctx context.Context, actor, rid string, p rooms.Room
 	if e != nil {
 		return v, e
 	}
-	if v.AccountID != actor {
-		return rooms.Room{}, rooms.ErrForbidden
-	}
-	if _, e = requireMember(ctx, tx, rid, actor); e != nil {
+	if e = r.manage(ctx, tx, v, actor); e != nil {
 		return rooms.Room{}, e
+	}
+	if v.Type == 1 {
+		if e = r.readable(ctx, tx, v, actor); e != nil {
+			return v, e
+		}
+	}
+	if v.Type == 1 && (p.RealmID != nil || p.IsPublic != nil && *p.IsPublic || p.IsCommunity != nil && *p.IsCommunity) {
+		return v, rooms.ErrForbidden
+	}
+	if p.RealmID != nil {
+		role, x := r.social.RealmRoleForWriteInTransaction(ctx, tx, actor, *p.RealmID)
+		if x != nil || role < social.Moderator {
+			return v, rooms.ErrForbidden
+		}
+		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_chat_realm_links(room_id,realm_id)VALUES($1,$2)ON CONFLICT(room_id)DO UPDATE SET realm_id=EXCLUDED.realm_id`, rid, *p.RealmID); e != nil {
+			return v, e
+		}
+		if _, e = tx.ExecContext(ctx, `UPDATE chat_rooms SET owned_relation_guard=true WHERE id=$1`, rid); e != nil {
+			return v, e
+		}
 	}
 	if p.Name != nil {
 		v.Name = *p.Name
@@ -333,13 +404,16 @@ func (r *Repository) Update(ctx context.Context, actor, rid string, p rooms.Room
 	if e != nil {
 		return v, e
 	}
-	return v, tx.Commit()
+	if e = r.decorateRoom(ctx, tx, &v, actor); e != nil {
+		return v, e
+	}
+	return v, r.commit(ctx, tx, actor, "chat.update")
 }
 func (r *Repository) Delete(ctx context.Context, actor, rid string) error {
 	if e := valid(actor, rid); e != nil {
 		return e
 	}
-	tx, e := r.beginWrite(ctx, actor, "chat.delete")
+	tx, e := r.beginRoomWrite(ctx, actor, rid, "chat.delete", "")
 	if e != nil {
 		return e
 	}
@@ -348,10 +422,7 @@ func (r *Repository) Delete(ctx context.Context, actor, rid string) error {
 	if e != nil {
 		return e
 	}
-	if v.AccountID != actor {
-		return rooms.ErrForbidden
-	}
-	if _, e = requireMember(ctx, tx, rid, actor); e != nil {
+	if e = r.manage(ctx, tx, v, actor); e != nil {
 		return e
 	}
 	for _, q := range []string{`UPDATE chat_messages SET deleted_at=clock_timestamp(),updated_at=clock_timestamp() WHERE chat_room_id=$1 AND deleted_at IS NULL`, `UPDATE chat_members SET deleted_at=clock_timestamp(),owned_updated_at=clock_timestamp() WHERE chat_room_id=$1 AND deleted_at IS NULL`, `UPDATE chat_rooms SET deleted_at=clock_timestamp(),owned_updated_at=clock_timestamp() WHERE id=$1`} {
@@ -359,7 +430,7 @@ func (r *Repository) Delete(ctx context.Context, actor, rid string) error {
 			return e
 		}
 	}
-	return tx.Commit()
+	return r.commit(ctx, tx, actor, "chat.delete")
 }
 
 // timestamp uses the DB clock after acquiring the room lock, so a blocked send

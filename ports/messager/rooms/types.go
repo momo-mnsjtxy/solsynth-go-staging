@@ -4,9 +4,12 @@ package rooms
 
 import (
 	"context"
+	"database/sql"
 	"net/http"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/messager"
+	"solsynth.local/go-migration/ports/passport/accounts"
+	"solsynth.local/go-migration/ports/passport/social"
 	"time"
 )
 
@@ -43,33 +46,81 @@ func (p Policy) ValidNotify(n int32) bool {
 
 // Room and Member are explicitly versioned projections, not full legacy DTOs.
 type Room struct {
-	ID             string     `json:"id"`
-	AccountID      string     `json:"account_id"`
-	Name           string     `json:"name"`
-	Description    string     `json:"description"`
-	IsPublic       bool       `json:"is_public"`
-	IsCommunity    bool       `json:"is_community"`
-	EncryptionMode int32      `json:"encryption_mode"`
-	CreatedAt      time.Time  `json:"created_at"`
-	UpdatedAt      time.Time  `json:"updated_at"`
-	DeletedAt      *time.Time `json:"deleted_at"`
+	Type           int           `json:"type"`
+	RealmID        *string       `json:"realm_id,omitempty"`
+	Realm          *social.Realm `json:"realm,omitempty"`
+	DirectMembers  []Member      `json:"direct_members,omitempty"`
+	Members        []Member      `json:"members,omitempty"`
+	RelationGuard  bool          `json:"-"`
+	ID             string        `json:"id"`
+	AccountID      string        `json:"account_id"`
+	Name           string        `json:"name"`
+	Description    string        `json:"description"`
+	IsPublic       bool          `json:"is_public"`
+	IsCommunity    bool          `json:"is_community"`
+	EncryptionMode int32         `json:"encryption_mode"`
+	CreatedAt      time.Time     `json:"created_at"`
+	UpdatedAt      time.Time     `json:"updated_at"`
+	DeletedAt      *time.Time    `json:"deleted_at"`
 }
 type Member struct {
-	ID         string     `json:"id"`
-	ChatRoomID string     `json:"chat_room_id"`
-	AccountID  string     `json:"account_id"`
-	Notify     int32      `json:"notify"`
-	JoinedAt   *time.Time `json:"joined_at"`
-	LeaveAt    *time.Time `json:"leave_at"`
-	LastReadAt *time.Time `json:"last_read_at"`
-	Room       *Room      `json:"chat_room,omitempty"`
+	ConfirmedAt  *time.Time        `json:"confirmed_at"`
+	TimeoutUntil *time.Time        `json:"timeout_until"`
+	TimeoutCause *TimeoutCause     `json:"timeout_cause"`
+	Account      *accounts.Account `json:"account,omitempty"`
+	ID           string            `json:"id"`
+	ChatRoomID   string            `json:"chat_room_id"`
+	AccountID    string            `json:"account_id"`
+	Notify       int32             `json:"notify"`
+	JoinedAt     *time.Time        `json:"joined_at"`
+	LeaveAt      *time.Time        `json:"leave_at"`
+	LastReadAt   *time.Time        `json:"last_read_at"`
+	Room         *Room             `json:"chat_room,omitempty"`
 }
 type RoomPatch struct {
+	RealmID        *string `json:"realm_id"`
 	Name           *string `json:"name"`
 	Description    *string `json:"description"`
 	IsPublic       *bool   `json:"is_public"`
 	IsCommunity    *bool   `json:"is_community"`
 	EncryptionMode *int32  `json:"encryption_mode"`
+}
+
+type TimeoutCause struct {
+	Reason   *string   `json:"reason"`
+	SenderID string    `json:"sender_id"`
+	Since    time.Time `json:"since"`
+}
+type TimeoutRequest struct {
+	Reason       *string   `json:"reason"`
+	TimeoutUntil time.Time `json:"timeout_until"`
+}
+type DirectRequest struct {
+	RelatedUserID  string `json:"related_user_id"`
+	EncryptionMode *int32 `json:"encryption_mode"`
+}
+type RelationRepository interface {
+	CreateDirect(context.Context, string, DirectRequest) (Room, error)
+	GetDirect(context.Context, string, string) (Room, error)
+	ChangeDirect(context.Context, string, string, string) (Room, error)
+	RealmRooms(context.Context, string, string, int, int) ([]Room, error)
+	Timeout(context.Context, string, string, string, *TimeoutRequest) error
+}
+
+// Consumers use the same additional visibility gate for owned linked rooms.
+// Expressions passed to SQL methods are fixed internal aliases/placeholders.
+type AccessPolicy interface {
+	LockForAction(context.Context, *sql.Tx, string, string) error
+	CanReadInTransaction(context.Context, *sql.Tx, string, string) (bool, error)
+	ReadSQL(string, string) string
+	SendSQL(string, string) string
+	CallSQL(string, string) string
+}
+type SocialProvider interface {
+	IsBlockedInTransaction(context.Context, *sql.Tx, string, string) (bool, error)
+	RealmRoleInTransaction(context.Context, *sql.Tx, string, string) (social.Role, error)
+	RealmRoleForWriteInTransaction(context.Context, *sql.Tx, string, string) (social.Role, error)
+	RealmInTransaction(context.Context, *sql.Tx, string) (social.Realm, error)
 }
 type TextRequest struct {
 	Content          string  `json:"content"`

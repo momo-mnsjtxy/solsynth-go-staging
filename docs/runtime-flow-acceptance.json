@@ -2,28 +2,29 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Optional bounded reader cache/outbound adapter and shared typed JSON fixture helpers",
+  "local_source_checkpoint": "Canonical direct and realm chat with shared read/send/call/realtime gates and corrected authority preflight",
   "last_fully_passed_ci": {
-    "commit": "df782ccb6eeafb3c27429fe5ae4a3cb76641075d",
-    "run": 37752979316,
-    "before": 228,
-    "after_restart": 33
+    "commit": "64798b9fd837bc503d6b99fd5e935466b8393145",
+    "run": 37765633373,
+    "before": 285,
+    "after_restart": 40
   },
   "latest_candidate": {
-    "commit": "7911a4bbabbf9540b8a44fa1b12bb0b3dfb7af60",
-    "run": 37764765732,
-    "required_before": 279,
-    "required_after_restart": 39,
-    "status": "Narrow JSON request construction corrections published; CI running. Previous279 run passed277 before cases and withheld restart."
+    "commit": "64798b9fd837bc503d6b99fd5e935466b8393145",
+    "required_before": 285,
+    "required_after_restart": 40,
+    "status": "Fully passed285 actual PG and40 real restart cases; no skips",
+    "run": 37765633373
   },
-  "local_required_before": 285,
-  "local_required_after_restart": 40,
+  "local_required_before": 294,
+  "local_required_after_restart": 41,
   "families": [
     {
       "source_family": "develop.apps_products",
       "local_status": "implemented",
       "supported_flows": [
-        "Canonical app/product CRUD, scoped app keys and public app reads"
+        "Canonical app/product CRUD, scoped app keys and public app reads",
+        "Owned OAuth/OIDC execution is tracked separately below; resource API delegation remains restricted"
       ],
       "guarded_pg_cases": [
         "TestPGDeveloperAppsConcurrentRevocation",
@@ -32,7 +33,7 @@
         "TestPGDeveloperAppsRestartPersistence"
       ],
       "unsupported_or_remaining": [
-        "OAuth/OIDC integration in progress; recurring app fulfillment"
+        "Recurring app fulfillment and remaining legacy app-management contracts"
       ]
     },
     {
@@ -129,7 +130,8 @@
       "source_family": "messager.messages",
       "local_status": "partial",
       "supported_flows": [
-        "Canonical text send/edit/delete, read/sync/unread and sequences"
+        "Canonical text send/edit/delete, read/sync/unread and sequences",
+        "Current DM/realm restrictions consistently apply to message reads, sync, unread, sends and notification replay"
       ],
       "guarded_pg_cases": [
         "TestPGChatAuthorityAndUnsupportedBoundaries",
@@ -154,7 +156,8 @@
       "source_family": "messager.rooms",
       "local_status": "partial",
       "supported_flows": [
-        "Group/community rooms, invitations, members and read markers"
+        "Group/community rooms, invitations, members and read markers",
+        "Direct pair create/confirm/block/unblock; realm-linked rooms and current moderator timeout policy"
       ],
       "guarded_pg_cases": [
         "TestPGChatAuthorityAndUnsupportedBoundaries",
@@ -162,10 +165,19 @@
         "TestPGChatConcurrentSequencesAndRollback",
         "TestPGChatMembershipPrivacyAndPolicy",
         "TestPGChatRestartPersistence",
-        "TestPGChatRoomTextLifecycle"
+        "TestPGChatRoomTextLifecycle",
+        "TestPGChatDirectLifecycleAndCrossPathPrivacy",
+        "TestPGChatDirectConcurrentPairAndRollback",
+        "TestPGChatRealmModerationAndRevocationAcrossReaders",
+        "TestPGChatTimeoutAndCallAdmissionRecovery",
+        "TestPGChatRealmTransferAndMissingCallPolicy",
+        "TestPGChatRelationsDisableAndProofDuringLockWait",
+        "TestPGChatRelationsDeletionAndRestartPersistence",
+        "TestPGChatAuthorityPreflightSameTransactionAndNoLocks",
+        "TestPGBackendChatRelationsComposition"
       ],
       "unsupported_or_remaining": [
-        "Direct-message and realm-room creation; custom roles"
+        "Fine-grained custom roles, media/profile customization, bots, MLS/E2EE and legacy system-message envelopes"
       ]
     },
     {
@@ -756,16 +768,16 @@
   ],
   "global_remaining": [
     "Remaining groups below are explicit uncompleted functionality, not a claim that contracts are unavailable",
-    "Reviewed OAuth, post-realm and fortune actual PostgreSQL/restart validation remains pending",
+    "Chat relation294/41 runtime validation pending; account/contact extensions, live streams and translation/autocomplete implementation active",
     "Configured providers and production deployment require separate authorization; no live transmissions performed"
   ],
   "remaining_acceptance_groups": [
     {
       "group": "messaging",
-      "state": "implementation active",
+      "state": "Direct/realm lifecycle locally integrated;294/41 CI pending",
       "remaining": [
-        "Direct conversation request/confirm/block and realm-linked room lifecycle",
-        "E2EE/media message types, reactions and original system-message compatibility"
+        "E2EE/media message types, reactions and original system-message compatibility",
+        "Custom fine-grained roles and bot automatic confirmation/execution"
       ],
       "source_controllers": [
         "ChatController",
@@ -775,10 +787,9 @@
     },
     {
       "group": "content utilities",
-      "state": "Reader locally integrated; translation/autocomplete implementation active",
+      "state": "Reader285/40 checkpoint fully validated; translation/autocomplete implementation active",
       "remaining": [
-        "Translation and source-supported autocomplete",
-        "Reader actual PostgreSQL/host validation pending"
+        "Translation and source-supported autocomplete"
       ],
       "source_controllers": [
         "WebReaderController",

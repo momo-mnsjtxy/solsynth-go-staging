@@ -18,5 +18,5 @@ func NewWithIndependentPolicy(db *sql.DB, p IndependentPolicy) (*Repository, err
 	if p.NotifyAll == p.NotifyMentions || p.NotifyAll == p.NotifyNone || p.NotifyMentions == p.NotifyNone {
 		return nil, messager.ErrSyncInvalidRequest
 	}
-	return &Repository{db: db, synthetic: true, noneEncryptionMode: p.NoneEncryptionMode, now: time.Now, unreadPolicy: &SyntheticUnreadPolicy{All: p.NotifyAll, Mentions: p.NotifyMentions, None: p.NotifyNone}}, nil
+	return &Repository{db: db, synthetic: true, owned: true, noneEncryptionMode: p.NoneEncryptionMode, now: time.Now, unreadPolicy: &SyntheticUnreadPolicy{All: p.NotifyAll, Mentions: p.NotifyMentions, None: p.NotifyNone}}, nil
 }

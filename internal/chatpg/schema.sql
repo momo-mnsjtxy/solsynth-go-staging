@@ -58,8 +58,15 @@ ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_is_community boolean NOT N
 ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_next_sequence bigint NOT NULL DEFAULT 0 CHECK(owned_next_sequence>=0);
+ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_relation_guard boolean NOT NULL DEFAULT false;
+ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_type integer NOT NULL DEFAULT 0 CHECK(owned_type IN(0,1));
 ALTER TABLE chat_members ADD COLUMN IF NOT EXISTS owned_banned boolean NOT NULL DEFAULT false;
 ALTER TABLE chat_members ADD COLUMN IF NOT EXISTS owned_updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE chat_members ADD COLUMN IF NOT EXISTS owned_confirmed_at timestamptz;
+ALTER TABLE chat_members ADD COLUMN IF NOT EXISTS owned_timeout_until timestamptz;
+ALTER TABLE chat_members ADD COLUMN IF NOT EXISTS owned_timeout_reason text CHECK(length(owned_timeout_reason)<=4096);
+ALTER TABLE chat_members ADD COLUMN IF NOT EXISTS owned_timeout_sender uuid REFERENCES chat_members(id);
+ALTER TABLE chat_members ADD COLUMN IF NOT EXISTS owned_timeout_since timestamptz;
 ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS owned_request_hash bytea;
 CREATE UNIQUE INDEX IF NOT EXISTS owned_chat_text_idempotency ON chat_messages(chat_room_id,sender_id,client_message_id)
  WHERE type='text' AND client_message_id IS NOT NULL AND owned_request_hash IS NOT NULL;

@@ -34,7 +34,27 @@ func (r *Repository) writable(ctx context.Context, tx *sql.Tx, actor, rid string
 	if e := account(ctx, tx, actor); e != nil {
 		return rooms.Member{}, e
 	}
-	return requireMember(ctx, tx, rid, actor)
+	m, e := requireMember(ctx, tx, rid, actor)
+	if e != nil {
+		return m, e
+	}
+	now, e := timestamp(ctx, tx)
+	if e != nil {
+		return m, e
+	}
+	if m.TimeoutUntil != nil && m.TimeoutUntil.After(now) {
+		return m, rooms.ErrForbidden
+	}
+	if r.social != nil {
+		var allowed bool
+		if e = tx.QueryRowContext(ctx, `SELECT `+r.SendSQL("$1", "$2"), rid, actor).Scan(&allowed); e != nil {
+			return m, e
+		}
+		if !allowed {
+			return m, rooms.ErrForbidden
+		}
+	}
+	return m, nil
 }
 
 // All owned room writes take its row lock first. Sequence allocation, original
@@ -67,7 +87,7 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
-	tx, e := r.beginWrite(ctx, actor, "chat.messages.create")
+	tx, e := r.beginRoomWrite(ctx, actor, rid, "chat.messages.create", "")
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
@@ -96,7 +116,7 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 			if v.DeletedAt != nil {
 				return messager.MessageProjection{}, rooms.ErrConflict
 			}
-			return v, tx.Commit()
+			return v, r.commit(ctx, tx, actor, "chat.messages.create")
 		}
 		if !errors.Is(e, sql.ErrNoRows) {
 			return messager.MessageProjection{}, e
@@ -116,7 +136,7 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 	if e != nil {
 		return v, e
 	}
-	return v, tx.Commit()
+	return v, r.commit(ctx, tx, actor, "chat.messages.create")
 }
 func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.TextRequest) (messager.MessageProjection, error) {
 	if e := valid(actor, rid, mid); e != nil {
@@ -126,7 +146,7 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
-	tx, e := r.beginWrite(ctx, actor, "chat.messages.update")
+	tx, e := r.beginRoomWrite(ctx, actor, rid, "chat.messages.update", "")
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
@@ -146,7 +166,7 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 		return messager.MessageProjection{}, rooms.ErrUnsupported
 	}
 	if v.Content != nil && *v.Content == p.Content {
-		return v, tx.Commit()
+		return v, r.commit(ctx, tx, actor, "chat.messages.update")
 	}
 	meta, _ := json.Marshal(map[string]string{"message_id": v.ID})
 	event, e := appendMessage(ctx, tx, rid, m.ID, "messages.update", &p.Content, nil, v.RepliedMessageID, meta, nil, nil)
@@ -160,13 +180,13 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 	if _, e = tx.ExecContext(ctx, `UPDATE chat_messages SET edited_at=$2 WHERE id=$1`, event.ID, event.CreatedAt); e != nil {
 		return v, e
 	}
-	return v, tx.Commit()
+	return v, r.commit(ctx, tx, actor, "chat.messages.update")
 }
 func (r *Repository) DeleteMessage(ctx context.Context, actor, rid, mid string) error {
 	if e := valid(actor, rid, mid); e != nil {
 		return e
 	}
-	tx, e := r.beginWrite(ctx, actor, "chat.messages.delete")
+	tx, e := r.beginRoomWrite(ctx, actor, rid, "chat.messages.delete", "")
 	if e != nil {
 		return e
 	}
@@ -186,7 +206,7 @@ func (r *Repository) DeleteMessage(ctx context.Context, actor, rid, mid string) 
 		return rooms.ErrUnsupported
 	}
 	if v.DeletedAt != nil {
-		return tx.Commit()
+		return r.commit(ctx, tx, actor, "chat.messages.delete")
 	}
 	meta, _ := json.Marshal(map[string]string{"message_id": v.ID})
 	event, e := appendMessage(ctx, tx, rid, m.ID, "messages.delete", nil, nil, nil, meta, nil, nil)
@@ -199,5 +219,5 @@ func (r *Repository) DeleteMessage(ctx context.Context, actor, rid, mid string) 
 	if e != nil {
 		return e
 	}
-	return tx.Commit()
+	return r.commit(ctx, tx, actor, "chat.messages.delete")
 }

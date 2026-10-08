@@ -1,0 +1,719 @@
+using DysonNetwork.Shared.Cache;
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Proto;
+using DysonNetwork.Shared.Registry;
+using Grpc.Core;
+using Microsoft.EntityFrameworkCore;
+using NodaTime;
+
+namespace DysonNetwork.Messager.Chat;
+
+public class ChatRoomService(
+    AppDatabase db,
+    ICacheService cache,
+    RemoteAccountService remoteAccounts,
+    RemoteRealmService remoteRealms,
+    ILogger<ChatRoomService> logger
+)
+{
+    public sealed class DeviceSubscriptionEntry
+    {
+        public string DeviceToken { get; set; } = string.Empty;
+        public Instant ExpiresAt { get; set; }
+    }
+
+    public sealed class RoomSubscriptionEntry
+    {
+        public Guid RoomId { get; set; }
+        public Guid MemberId { get; set; }
+        public Guid AccountId { get; set; }
+        public SnChatMember Member { get; set; } = null!;
+        public List<DeviceSubscriptionEntry> Devices { get; set; } = [];
+    }
+
+    public sealed class AccountSubscriptionEntry
+    {
+        public Guid RoomId { get; set; }
+        public Guid MemberId { get; set; }
+        public SnChatRoom Room { get; set; } = null!;
+        public List<DeviceSubscriptionEntry> Devices { get; set; } = [];
+    }
+
+    private const string ChatRoomGroupPrefix = "chatroom:";
+    private const string RoomMembersCacheKeyPrefix = "chatroom:members:";
+    private const string ChatMemberCacheKey = "chatroom:{0}:member:{1}";
+    private const string AccountMissingCacheKeyPrefix = "chataccount:missing:{0}";
+    private static readonly TimeSpan AccountMissingCacheTtl = TimeSpan.FromMinutes(10);
+
+    public async Task<List<SnChatMember>> ListRoomMembers(Guid roomId)
+    {
+        var cacheKey = RoomMembersCacheKeyPrefix + roomId;
+        var cachedMembers = await cache.GetAsync<List<SnChatMember>>(cacheKey);
+        if (cachedMembers is not null)
+        {
+            // Older cache entries may contain members whose account was
+            // deleted after the entry was written. Do not serve them.
+            if (cachedMembers.All(m => m.Account is not null))
+                return cachedMembers;
+
+            await cache.RemoveAsync(cacheKey);
+        }
+
+        var members = await db.ChatMembers
+            .Where(m => m.ChatRoomId == roomId)
+            .Where(m => m.JoinedAt != null)
+            .Where(m => m.LeaveAt == null)
+            .ToListAsync();
+        members = (await LoadMemberAccounts(members))
+            .Where(m => m.Account is not null)
+            .ToList();
+
+        // Deleted accounts can leave stale chat-member rows behind. They are
+        // not valid recipients and must not be cached or returned as members.
+        // A profile is optional, though: empty/bare profiles remain valid
+        // accounts and are returned without an extra repair read.
+
+        var chatRoomGroup = ChatRoomGroupPrefix + roomId;
+        await cache.SetWithGroupsAsync(cacheKey, members,
+            [chatRoomGroup],
+            TimeSpan.FromMinutes(5));
+
+        return members;
+    }
+
+    public async Task<SnChatMember?> GetRoomMember(Guid accountId, Guid chatRoomId)
+    {
+        var cacheKey = string.Format(ChatMemberCacheKey, accountId, chatRoomId);
+        var member = await cache.GetAsync<SnChatMember?>(cacheKey);
+        if (member?.Account is not null) return member;
+        if (member is not null)
+            await cache.RemoveAsync(cacheKey);
+
+        member = await db.ChatMembers
+            .Where(m => m.AccountId == accountId && m.ChatRoomId == chatRoomId && m.JoinedAt != null &&
+                        m.LeaveAt == null)
+            .Include(m => m.ChatRoom)
+            .FirstOrDefaultAsync();
+
+        if (member == null) return member;
+
+        member = await LoadMemberAccount(member);
+        if (member.Account is null)
+            return null;
+
+        var chatRoomGroup = ChatRoomGroupPrefix + chatRoomId;
+        await cache.SetWithGroupsAsync(cacheKey, member,
+            [chatRoomGroup],
+            TimeSpan.FromMinutes(5));
+
+        return member;
+    }
+
+    public async Task PurgeRoomMembersCache(Guid roomId)
+    {
+        var chatRoomGroup = ChatRoomGroupPrefix + roomId;
+        await cache.RemoveGroupAsync(chatRoomGroup);
+    }
+
+    public async Task<List<SnChatRoom>> SortChatRoomByLastMessage(List<SnChatRoom> rooms)
+    {
+        var roomIds = rooms.Select(r => r.Id).ToList();
+        var lastMessages = await db.ChatMessages
+            .Where(m => roomIds.Contains(m.ChatRoomId))
+            .GroupBy(m => m.ChatRoomId)
+            .Select(g => new { RoomId = g.Key, CreatedAt = g.Max(m => m.CreatedAt) })
+            .ToDictionaryAsync(g => g.RoomId, m => m.CreatedAt);
+
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var sortedRooms = rooms
+            .OrderByDescending(r => lastMessages.TryGetValue(r.Id, out var time) ? time : now)
+            .ToList();
+
+        return sortedRooms;
+    }
+
+    public async Task<List<SnChatRoom>> LoadChatRealms(List<SnChatRoom> rooms)
+    {
+        var realmIds = rooms.Where(r => r.RealmId.HasValue).Select(r => r.RealmId!.Value.ToString()).Distinct().ToList();
+
+        var realms = await remoteRealms.GetRealmBatch(realmIds);
+        var realmDict = realms.ToDictionary(r => r.Id, r => r);
+
+        foreach (var room in rooms)
+            if (room.RealmId.HasValue && realmDict.TryGetValue(room.RealmId.Value, out var realm))
+                room.Realm = realm;
+
+        return rooms;
+    }
+
+    public async Task<SnChatRoom> LoadChatRealms(SnChatRoom room)
+    {
+        var result = await LoadChatRealms(new List<SnChatRoom> { room });
+        return result[0];
+    }
+
+    public async Task<List<SnChatRoom>> LoadDirectMessageMembers(List<SnChatRoom> rooms, Guid userId)
+    {
+        var directRoomsId = rooms
+            .Where(r => r.Type == ChatRoomType.DirectMessage)
+            .Select(r => r.Id)
+            .ToList();
+        if (directRoomsId.Count == 0) return rooms;
+
+        var members = directRoomsId.Count != 0
+            ? await db.ChatMembers
+                .Where(m => directRoomsId.Contains(m.ChatRoomId))
+                .Where(m => m.AccountId != userId)
+                .ToListAsync()
+            : [];
+        members = (await LoadMemberAccounts(members))
+            .Where(m => m.Account is not null)
+            .ToList();
+
+        Dictionary<Guid, List<SnChatMember>> directMembers = new();
+        foreach (var member in members)
+        {
+            if (!directMembers.ContainsKey(member.ChatRoomId))
+                directMembers[member.ChatRoomId] = [];
+            directMembers[member.ChatRoomId].Add(member);
+        }
+
+        return rooms.Select(r =>
+        {
+            if (r.Type == ChatRoomType.DirectMessage && directMembers.TryGetValue(r.Id, out var otherMembers))
+                r.DirectMembers = otherMembers.Select(ChatMemberTransmissionObject.FromEntity).ToList();
+            return r;
+        }).ToList();
+    }
+
+    public async Task<SnChatRoom> LoadDirectMessageMembers(SnChatRoom room, Guid userId)
+    {
+        if (room.Type != ChatRoomType.DirectMessage) return room;
+        var members = await db.ChatMembers
+            .Where(m => m.ChatRoomId == room.Id && m.AccountId != userId)
+            .ToListAsync();
+
+        if (members.Count <= 0) return room;
+
+        members = (await LoadMemberAccounts(members))
+            .Where(m => m.Account is not null)
+            .ToList();
+        room.DirectMembers = members.Select(ChatMemberTransmissionObject.FromEntity).ToList();
+
+        return room;
+    }
+
+    public async Task<bool> IsChatMember(Guid roomId, Guid accountId)
+    {
+        return await db.ChatMembers
+            .Where(m => m.ChatRoomId == roomId && m.AccountId == accountId && m.JoinedAt != null && m.LeaveAt == null)
+            .AnyAsync();
+    }
+
+    /// <summary>
+    /// A slug is unique per realm for realm rooms, per owner account for non-realm rooms.
+    /// </summary>
+    public async Task<bool> IsChatRoomSlugAvailable(string slug, Guid ownerAccountId, Guid? realmId, Guid? excludeRoomId = null)
+    {
+        var query = db.ChatRooms.Where(r => r.Slug == slug);
+        if (realmId.HasValue)
+            query = query.Where(r => r.RealmId == realmId.Value);
+        else
+            query = query.Where(r => r.AccountId == ownerAccountId && r.RealmId == null);
+        if (excludeRoomId.HasValue)
+            query = query.Where(r => r.Id != excludeRoomId.Value);
+        return !await query.AnyAsync();
+    }
+
+    /// <summary>
+    /// Resolves "&lt;account name|realm slug&gt;/&lt;chat slug&gt;". Account scope is tried first,
+    /// then realm scope.
+    /// </summary>
+    public async Task<SnChatRoom?> FindChatRoomBySlug(string scope, string chatSlug)
+    {
+        var normalizedChatSlug = chatSlug.Trim().ToLowerInvariant();
+
+        var account = await remoteAccounts.TryGetAccountByName(scope);
+        if (account is not null)
+        {
+            var accountRoom = await db.ChatRooms
+                .Where(r => r.AccountId == Guid.Parse(account.Id) && r.RealmId == null && r.Slug == normalizedChatSlug)
+                .FirstOrDefaultAsync();
+            if (accountRoom is not null)
+                return accountRoom;
+        }
+
+        try
+        {
+            var realm = await remoteRealms.GetRealmBySlug(scope);
+            var realmRoom = await db.ChatRooms
+                .Where(r => r.RealmId == realm.Id && r.Slug == normalizedChatSlug)
+                .FirstOrDefaultAsync();
+            if (realmRoom is not null)
+                return realmRoom;
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+        {
+        }
+
+        return null;
+    }
+
+    public async Task<SnChatMember> LoadMemberAccount(SnChatMember member)
+    {
+        var account = await remoteAccounts.TryGetAccount(member.AccountId);
+        member.Account = account is null ? null : SnAccount.FromProtoValue(account);
+        if (member.Account is not null)
+            await ApplyRealmIdentity([member]);
+        ChatProfileDiagnostics.LogIncompleteProfile(logger, member.Account, "LoadMemberAccount");
+        return member;
+    }
+
+    public async Task<SnChatMember> HydrateRealmIdentity(SnChatMember member)
+    {
+        await HydrateRealmIdentity(member, member.ChatRoomId);
+        return member;
+    }
+
+    public async Task<SnChatMember> HydrateRealmIdentity(SnChatMember member, Guid chatRoomId)
+    {
+        var roomRealmId = await db.ChatRooms
+            .Where(r => r.Id == chatRoomId)
+            .Where(r => r.RealmId != null)
+            .Select(r => r.RealmId)
+            .FirstOrDefaultAsync();
+        if (!roomRealmId.HasValue)
+            return member;
+
+        var realmMembers = await remoteRealms.LoadMemberAccounts(
+            [
+                new SnRealmMember
+                {
+                    RealmId = roomRealmId.Value,
+                    AccountId = member.AccountId
+                }
+            ]
+        );
+        var realmMember = realmMembers.FirstOrDefault();
+        if (realmMember is null)
+            return member;
+
+        member.RealmNick = realmMember.Nick;
+        member.RealmBio = realmMember.Bio;
+        member.RealmExperience = realmMember.Experience;
+        member.RealmLevel = realmMember.Level;
+        member.RealmLevelingProgress = realmMember.LevelingProgress;
+        member.RealmLabel = realmMember.Label;
+
+        return member;
+    }
+
+    public async Task<List<SnChatMember>> LoadMemberAccounts(ICollection<SnChatMember> members)
+    {
+        var memberList = members.ToList();
+        if (memberList.Count == 0) return memberList;
+
+        var accountIds = memberList.Select(m => m.AccountId).Distinct().ToList();
+        var missingIds = new List<Guid>();
+        var accounts = new Dictionary<Guid, DyAccount>();
+
+        // Fire all missing-account cache lookups concurrently. A serialized
+        // per-member round trip is the dominant cold-path cost for large rooms.
+        var checkTasks = accountIds
+            .Select(async accountId =>
+                (AccountId: accountId, Result: await cache.GetAsyncWithStatus<bool>(
+                    string.Format(AccountMissingCacheKeyPrefix, accountId))))
+            .ToList();
+        foreach (var check in await Task.WhenAll(checkTasks))
+        {
+            if (check.Result.found && check.Result.value)
+                continue;
+
+            missingIds.Add(check.AccountId);
+        }
+
+        if (missingIds.Count > 0)
+        {
+            var fetched = await remoteAccounts.GetAccountBatch(missingIds);
+            foreach (var account in fetched)
+            {
+                var id = Guid.Parse(account.Id);
+                accounts[id] = account;
+            }
+
+            var fetchedIds = fetched.Select(a => Guid.Parse(a.Id)).ToHashSet();
+            foreach (var accountId in missingIds)
+            {
+                if (fetchedIds.Contains(accountId)) continue;
+
+                await cache.SetAsync(
+                    string.Format(AccountMissingCacheKeyPrefix, accountId),
+                    true,
+                    AccountMissingCacheTtl
+                );
+            }
+        }
+
+        List<SnChatMember> loadedMembers =
+        [
+            .. memberList.Select(m =>
+            {
+                m.Account = accounts.TryGetValue(m.AccountId, out var account)
+                    ? SnAccount.FromProtoValue(account)
+                    : null;
+                ChatProfileDiagnostics.LogIncompleteProfile(logger, m.Account, "LoadMemberAccounts");
+                return m;
+            })
+        ];
+
+        await ApplyRealmIdentity(loadedMembers.Where(m => m.Account is not null).ToList());
+        return loadedMembers;
+    }
+
+    public async Task<List<SnChatMember>> HydrateRealmIdentity(ICollection<SnChatMember> members)
+    {
+        var hydratedMembers = members.ToList();
+        await ApplyRealmIdentity(hydratedMembers);
+        return hydratedMembers;
+    }
+
+    public async Task<List<SnChatMember>> HydrateRealmIdentity(ICollection<SnChatMember> members, Guid chatRoomId)
+    {
+        var hydratedMembers = members.ToList();
+        if (hydratedMembers.Count == 0)
+            return hydratedMembers;
+
+        var roomRealmId = await db.ChatRooms
+            .Where(r => r.Id == chatRoomId)
+            .Where(r => r.RealmId != null)
+            .Select(r => r.RealmId)
+            .FirstOrDefaultAsync();
+        if (!roomRealmId.HasValue)
+            return hydratedMembers;
+
+        var placeholders = hydratedMembers
+            .Select(m => new SnRealmMember
+            {
+                RealmId = roomRealmId.Value,
+                AccountId = m.AccountId
+            })
+            .DistinctBy(m => m.AccountId)
+            .ToList();
+        var realmMembers = await remoteRealms.LoadMemberAccounts(placeholders);
+        var realmMap = realmMembers
+            .GroupBy(m => m.AccountId)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        foreach (var member in hydratedMembers)
+        {
+            if (!realmMap.TryGetValue(member.AccountId, out var realmMember)) continue;
+
+            member.RealmNick = realmMember.Nick;
+            member.RealmBio = realmMember.Bio;
+            member.RealmExperience = realmMember.Experience;
+            member.RealmLevel = realmMember.Level;
+            member.RealmLevelingProgress = realmMember.LevelingProgress;
+            member.RealmLabel = realmMember.Label;
+        }
+
+        return hydratedMembers;
+    }
+
+    private async Task ApplyRealmIdentity(ICollection<SnChatMember> members)
+    {
+        var memberList = members.ToList();
+        if (memberList.Count == 0) return;
+
+        var roomIds = memberList.Select(m => m.ChatRoomId).Distinct().ToList();
+        var roomRealmIds = await db.ChatRooms
+            .Where(r => roomIds.Contains(r.Id) && r.RealmId != null)
+            .ToDictionaryAsync(r => r.Id, r => r.RealmId!.Value);
+
+        var placeholders = memberList
+            .Where(m => roomRealmIds.ContainsKey(m.ChatRoomId))
+            .Select(m => new SnRealmMember
+            {
+                RealmId = roomRealmIds[m.ChatRoomId],
+                AccountId = m.AccountId
+            })
+            .DistinctBy(m => (m.RealmId, m.AccountId))
+            .ToList();
+        if (placeholders.Count == 0) return;
+
+        var realmMembers = await remoteRealms.LoadMemberAccounts(placeholders);
+        var realmMap = realmMembers
+            .GroupBy(m => (m.RealmId, m.AccountId))
+            .ToDictionary(g => g.Key, g => g.First());
+
+        foreach (var member in memberList)
+        {
+            if (!roomRealmIds.TryGetValue(member.ChatRoomId, out var realmId)) continue;
+            if (!realmMap.TryGetValue((realmId, member.AccountId), out var realmMember)) continue;
+
+            member.RealmNick = realmMember.Nick;
+            member.RealmBio = realmMember.Bio;
+            member.RealmExperience = realmMember.Experience;
+            member.RealmLevel = realmMember.Level;
+            member.RealmLevelingProgress = realmMember.LevelingProgress;
+            member.RealmLabel = realmMember.Label;
+        }
+    }
+
+    private const string ChatRoomSubscribeKeyPrefix = "chatroom:subscribe:";
+    private const string ChatRoomSubscribersGroupPrefix = "chatroom:subscribers:";
+    private const string ChatAccountSubscriptionsGroupPrefix = "chatroom:account-subscribers:";
+    private const string ChatRoomSubscriptionLockPrefix = "chatroom:subscribe-lock:";
+    private const string CacheGlobalKeyPrefix = "dyson:";
+    private static readonly Duration ChatRoomSubscriptionDuration = Duration.FromMinutes(5);
+    private static readonly TimeSpan ChatRoomSubscriptionLockTtl = TimeSpan.FromSeconds(5);
+
+    private static string GetChatRoomSubscriptionKey(Guid roomId, Guid memberId) =>
+        $"{ChatRoomSubscribeKeyPrefix}{roomId}:{memberId}";
+
+    private static string GetChatRoomSubscribersGroup(Guid roomId) =>
+        $"{ChatRoomSubscribersGroupPrefix}{roomId}";
+
+    private static string GetChatAccountSubscriptionsGroup(Guid accountId) =>
+        $"{ChatAccountSubscriptionsGroupPrefix}{accountId}";
+
+    private static string GetChatRoomSubscriptionLockKey(Guid roomId, Guid memberId) =>
+        $"{ChatRoomSubscriptionLockPrefix}{roomId}:{memberId}";
+
+    private static string GetRawCacheKey(string key) =>
+        key.StartsWith(CacheGlobalKeyPrefix, StringComparison.Ordinal)
+            ? key[CacheGlobalKeyPrefix.Length..]
+            : key;
+
+    private static bool TryParseSubscriptionKey(string key, out Guid roomId, out Guid memberId)
+    {
+        roomId = Guid.Empty;
+        memberId = Guid.Empty;
+
+        var rawKey = GetRawCacheKey(key);
+        var parts = rawKey.Split(':');
+        if (parts.Length < 4) return false;
+
+        return Guid.TryParse(parts[^2], out roomId) && Guid.TryParse(parts[^1], out memberId);
+    }
+
+    private static TimeSpan GetCacheExpiry(List<DeviceSubscriptionEntry> devices, Instant now)
+    {
+        var maxDuration = devices.Max(d => d.ExpiresAt - now);
+        return maxDuration.ToTimeSpan();
+    }
+
+    private async Task<List<DeviceSubscriptionEntry>> GetActiveSubscriptionDevices(string cacheKey)
+    {
+        var devices = await cache.GetAsync<List<DeviceSubscriptionEntry>>(cacheKey) ?? [];
+        if (devices.Count == 0) return [];
+
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var activeDevices = devices
+            .Where(d => d.ExpiresAt > now)
+            .GroupBy(d => d.DeviceToken)
+            .Select(g => g.OrderByDescending(d => d.ExpiresAt).First())
+            .ToList();
+
+        if (activeDevices.Count == devices.Count) return activeDevices;
+
+        if (activeDevices.Count == 0)
+        {
+            await cache.RemoveAsync(cacheKey);
+            return [];
+        }
+
+        await cache.SetAsync(cacheKey, activeDevices, GetCacheExpiry(activeDevices, now));
+        return activeDevices;
+    }
+
+    private async Task<List<string>> GetActiveSubscriptionKeys(string group)
+    {
+        var keys = (await cache.GetGroupKeysAsync(group)).Distinct().ToList();
+        if (keys.Count == 0) return [];
+
+        var activeKeys = await Task.WhenAll(keys.Select(async key =>
+        {
+            var rawKey = GetRawCacheKey(key);
+            var (found, _) = await cache.GetAsyncWithStatus<List<DeviceSubscriptionEntry>>(rawKey);
+            if (!found)
+            {
+                await cache.RemoveAsync(rawKey);
+                return null;
+            }
+
+            var devices = await GetActiveSubscriptionDevices(rawKey);
+            if (devices.Count > 0)
+                return key;
+
+            await cache.RemoveAsync(rawKey);
+            return null;
+        }));
+
+        return activeKeys.OfType<string>().ToList();
+    }
+
+    public async Task SubscribeChatRoom(SnChatMember member, string deviceId)
+    {
+        var cacheKey = GetChatRoomSubscriptionKey(member.ChatRoomId, member.Id);
+        var group = GetChatRoomSubscribersGroup(member.ChatRoomId);
+        var accountGroup = GetChatAccountSubscriptionsGroup(member.AccountId);
+        var lockKey = GetChatRoomSubscriptionLockKey(member.ChatRoomId, member.Id);
+
+        await cache.ExecuteWithLockAsync(lockKey, async () =>
+        {
+            var now = SystemClock.Instance.GetCurrentInstant();
+            var devices = await GetActiveSubscriptionDevices(cacheKey);
+            var expiresAt = now + ChatRoomSubscriptionDuration;
+            var existingDevice = devices.FirstOrDefault(d => d.DeviceToken == deviceId);
+            if (existingDevice is null)
+            {
+                devices.Add(new DeviceSubscriptionEntry
+                {
+                    DeviceToken = deviceId,
+                    ExpiresAt = expiresAt
+                });
+            }
+            else
+            {
+                existingDevice.ExpiresAt = expiresAt;
+            }
+
+            await cache.SetWithGroupsAsync(cacheKey, devices, [group, accountGroup], GetCacheExpiry(devices, now));
+        }, ChatRoomSubscriptionLockTtl);
+    }
+
+    public async Task UnsubscribeChatRoom(SnChatMember member, string deviceId)
+    {
+        var cacheKey = GetChatRoomSubscriptionKey(member.ChatRoomId, member.Id);
+        var lockKey = GetChatRoomSubscriptionLockKey(member.ChatRoomId, member.Id);
+
+        await cache.ExecuteWithLockAsync(lockKey, async () =>
+        {
+            var now = SystemClock.Instance.GetCurrentInstant();
+            var devices = await GetActiveSubscriptionDevices(cacheKey);
+            devices.RemoveAll(device => device.DeviceToken == deviceId);
+
+            if (devices.Count == 0)
+            {
+                await cache.RemoveAsync(cacheKey);
+                return;
+            }
+
+            await cache.SetAsync(cacheKey, devices, GetCacheExpiry(devices, now));
+        }, ChatRoomSubscriptionLockTtl);
+    }
+
+    public async Task<bool> IsSubscribedChatRoom(Guid roomId, Guid memberId)
+    {
+        var cacheKey = GetChatRoomSubscriptionKey(roomId, memberId);
+        var devices = await GetActiveSubscriptionDevices(cacheKey);
+        return devices.Count > 0;
+    }
+
+    public async Task<List<Guid>> GetSubscribedMembers(Guid roomId)
+    {
+        var group = GetChatRoomSubscribersGroup(roomId);
+        var keys = await GetActiveSubscriptionKeys(group);
+        var memberIds = new HashSet<Guid>();
+        foreach (var key in keys)
+        {
+            if (TryParseSubscriptionKey(key, out _, out var memberId))
+            {
+                memberIds.Add(memberId);
+            }
+        }
+
+        return memberIds.ToList();
+    }
+
+    public async Task<List<RoomSubscriptionEntry>> GetRoomSubscriptions(Guid roomId)
+    {
+        var group = GetChatRoomSubscribersGroup(roomId);
+        var keys = await GetActiveSubscriptionKeys(group);
+        if (keys.Count == 0) return [];
+
+        var roomMembers = await ListRoomMembers(roomId);
+        var memberMap = roomMembers.ToDictionary(m => m.Id, m => m);
+        var result = new List<RoomSubscriptionEntry>(keys.Count);
+
+        foreach (var key in keys)
+        {
+            if (!TryParseSubscriptionKey(key, out _, out var memberId)) continue;
+            if (!memberMap.TryGetValue(memberId, out var member)) continue;
+
+            var devices = await GetActiveSubscriptionDevices(GetRawCacheKey(key));
+            if (devices.Count == 0) continue;
+
+            result.Add(new RoomSubscriptionEntry
+            {
+                RoomId = roomId,
+                MemberId = member.Id,
+                AccountId = member.AccountId,
+                Member = member,
+                Devices = devices
+            });
+        }
+
+        return result;
+    }
+
+    public async Task<List<AccountSubscriptionEntry>> GetAccountSubscriptions(Guid accountId)
+    {
+        var group = GetChatAccountSubscriptionsGroup(accountId);
+        var keys = await GetActiveSubscriptionKeys(group);
+        if (keys.Count == 0) return [];
+
+        var subscriptions = new List<(Guid RoomId, Guid MemberId, List<DeviceSubscriptionEntry> Devices)>(keys.Count);
+        foreach (var key in keys)
+        {
+            if (!TryParseSubscriptionKey(key, out var roomId, out var memberId)) continue;
+
+            var devices = await GetActiveSubscriptionDevices(GetRawCacheKey(key));
+            if (devices.Count == 0) continue;
+
+            subscriptions.Add((roomId, memberId, devices));
+        }
+
+        var roomIds = subscriptions.Select(s => s.RoomId).Distinct().ToList();
+        var rooms = await db.ChatRooms
+            .Where(r => roomIds.Contains(r.Id))
+            .ToListAsync();
+        rooms = await LoadChatRealms(rooms);
+        rooms = await LoadDirectMessageMembers(rooms, accountId);
+
+        var roomMap = rooms.ToDictionary(r => r.Id, r => r);
+        var result = new List<AccountSubscriptionEntry>(subscriptions.Count);
+        foreach (var subscription in subscriptions)
+        {
+            if (!roomMap.TryGetValue(subscription.RoomId, out var room)) continue;
+
+            result.Add(new AccountSubscriptionEntry
+            {
+                RoomId = subscription.RoomId,
+                MemberId = subscription.MemberId,
+                Room = room,
+                Devices = subscription.Devices
+            });
+        }
+
+        return result;
+    }
+
+    public async Task<List<SnAccount>> GetTopActiveMembers(Guid roomId, Instant startDate, Instant endDate)
+    {
+        var topMembers = await db.ChatMessages
+            .Where(m => m.ChatRoomId == roomId && m.CreatedAt >= startDate && m.CreatedAt < endDate)
+            .GroupBy(m => m.Sender.AccountId)
+            .Select(g => new { AccountId = g.Key, MessageCount = g.Count() })
+            .OrderByDescending(g => g.MessageCount)
+            .Take(3)
+            .ToListAsync();
+
+        var accountIds = topMembers.Select(t => t.AccountId).ToList();
+        var accounts = await remoteAccounts.GetAccountBatch(accountIds);
+        var result = accounts.Select(SnAccount.FromProtoValue).ToList();
+        foreach (var account in result)
+            ChatProfileDiagnostics.LogIncompleteProfile(logger, account, "RoomTopMembers");
+        return result;
+    }
+}

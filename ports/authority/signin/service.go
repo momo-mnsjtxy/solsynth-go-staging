@@ -416,7 +416,7 @@ func (s *Service) ChallengeFactors(ctx context.Context, raw string) ([]Factor, e
 			return e
 		}
 		for _, f := range fs {
-			if f.EnabledAt != nil && (f.Type == 0 || c.RequireSecond) {
+			if f.EnabledAt != nil && (f.Type == 0 || c.RequireSecond && (f.Type == 3 || f.Type == 5)) {
 				out = append(out, cleanFactor(f))
 			}
 		}
@@ -434,7 +434,7 @@ func (s *Service) PrepareFactor(ctx context.Context, raw, fid string) error {
 			return e
 		}
 		for _, f := range fs {
-			if f.ID == fid && f.EnabledAt != nil {
+			if f.ID == fid && f.EnabledAt != nil && (f.Type == 0 || f.Type == 3 || f.Type == 5) {
 				return nil
 			}
 		}
@@ -485,6 +485,7 @@ func (s *Service) VerifyFactor(ctx context.Context, raw, fid, password, peer str
 				return ErrInvalid
 			}
 			c.PasswordOK = true
+			c.AuthMethods = append(c.AuthMethods, "pwd")
 		case 3:
 			if c.SecondOK || !c.RequireSecond {
 				return ErrInvalid
@@ -502,6 +503,7 @@ func (s *Service) VerifyFactor(ctx context.Context, raw, fid, password, peer str
 				return e
 			}
 			c.SecondOK = true
+			c.AuthMethods = append(c.AuthMethods, "otp")
 		case 5:
 			if c.SecondOK || !c.RequireSecond || !validToken(password) || subtle.ConstantTimeCompare(f.Secret, digest(password)) != 1 {
 				return ErrInvalid
@@ -510,6 +512,7 @@ func (s *Service) VerifyFactor(ctx context.Context, raw, fid, password, peer str
 				return e
 			}
 			c.SecondOK = true
+			c.AuthMethods = append(c.AuthMethods, "recovery")
 		default:
 			return ErrUnsupported
 		}
@@ -517,7 +520,14 @@ func (s *Service) VerifyFactor(ctx context.Context, raw, fid, password, peer str
 		c.BlacklistFactors = append(c.BlacklistFactors, f.ID)
 		out = state(c, raw)
 		if out.StepRemain == 0 {
-			if e = s.authority.CreateLoginCodeTransaction(ctx, tx.Authority(), raw, c.DeviceName, []string{"*"}); e != nil {
+			if authority.ValidCredentialMethods(c.AuthMethods) {
+				e = s.authority.CreateVerifiedLoginCodeTransaction(ctx, tx.Authority(), raw, c.DeviceName, []string{"*"}, c.AuthMethods, s.now())
+			} else {
+				// A pre-upgrade partially verified challenge may lack method
+				// metadata. Preserve its normal login without inventing assurance.
+				e = s.authority.CreateLoginCodeTransaction(ctx, tx.Authority(), raw, c.DeviceName, []string{"*"})
+			}
+			if e != nil {
 				return e
 			}
 			c.Completed = true
@@ -609,6 +619,9 @@ func (s *Service) ChangePassword(ctx context.Context, token, old, password strin
 	})
 }
 func (s *Service) CreateFactor(ctx context.Context, token string, typ int, secret string) (Factor, error) {
+	if typ == 4 {
+		return s.mutatePaymentPIN(ctx, token, "create", "", secret)
+	}
 	var out Factor
 	if typ != 3 && typ != 5 {
 		return out, ErrUnsupported
@@ -670,6 +683,11 @@ func (s *Service) CreateFactor(ctx context.Context, token string, typ int, secre
 	return out, nil
 }
 func (s *Service) EnableFactor(ctx context.Context, token, fid, code string) (Factor, error) {
+	if yes, e := s.isPaymentPIN(ctx, token, fid); e != nil {
+		return Factor{}, e
+	} else if yes {
+		return s.mutatePaymentPIN(ctx, token, "enable", fid, code)
+	}
 	var out Factor
 	e := s.authenticated(ctx, token, true, func(tx Transaction, p authority.Principal) error {
 		fs, e := tx.Factors()
@@ -709,6 +727,12 @@ func (s *Service) EnableFactor(ctx context.Context, token, fid, code string) (Fa
 	return out, e
 }
 func (s *Service) DeleteFactor(ctx context.Context, token, fid string) error {
+	if yes, e := s.isPaymentPIN(ctx, token, fid); e != nil {
+		return e
+	} else if yes {
+		_, e = s.mutatePaymentPIN(ctx, token, "delete", fid, "")
+		return e
+	}
 	return s.authenticated(ctx, token, true, func(tx Transaction, p authority.Principal) error {
 		fs, e := tx.Factors()
 		if e != nil {
@@ -734,6 +758,12 @@ func (s *Service) DeleteFactor(ctx context.Context, token, fid string) error {
 }
 
 func (s *Service) DisableFactor(ctx context.Context, token, fid string) error {
+	if yes, e := s.isPaymentPIN(ctx, token, fid); e != nil {
+		return e
+	} else if yes {
+		_, e = s.mutatePaymentPIN(ctx, token, "disable", fid, "")
+		return e
+	}
 	return s.authenticated(ctx, token, true, func(tx Transaction, p authority.Principal) error {
 		fs, e := tx.Factors()
 		if e != nil {

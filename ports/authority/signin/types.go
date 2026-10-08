@@ -20,6 +20,9 @@ var (
 	ErrUnsupported = &authority.Failure{Code: "FACTOR_UNSUPPORTED", Message: "This authentication factor is unavailable.", Status: 501}
 )
 
+// The current caller can sign in normally and retry without a new header.
+var ErrReauthentication = &authority.Failure{Code: "REAUTHENTICATION_REQUIRED", Message: "Sign in again with your password and required second factor, then retry this PIN action within five minutes.", Status: 403}
+
 type Credentials struct {
 	AccountID, Email string
 	VerifiedAt       *time.Time
@@ -61,6 +64,7 @@ type Challenge struct {
 	SecondOK         bool      `json:"-"`
 	RequireSecond    bool      `json:"-"`
 	Completed        bool      `json:"-"`
+	AuthMethods      []string  `json:"-"`
 }
 type RegisterRequest struct {
 	Name             string `json:"name"`

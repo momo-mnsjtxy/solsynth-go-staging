@@ -431,6 +431,19 @@ EXPECTED = {
         "TestPGTaxonomyRestartPersistence",
         "TestPGTaxonomySubscriptionsAndDeleteRollback",
         "TestPGTaxonomyTransactionalAudit",
+        "TestPGPaymentPINSourceLifecycleAndPrivateVerifier",
+        "TestPGPaymentPINCredentialAssuranceOriginExpiryAndRefresh",
+        "TestPGPaymentPINAssuranceRollbackAndConcurrentActions",
+        "TestPGPaymentPINVerifiedAuthenticationTimeMFAAndRollback",
+        "TestPGPaymentPINNoDelegatedAssuranceAndRevocation",
+        "TestPGPaymentPINPaymentProofOneUsePolicyAndPool",
+        "TestPGPaymentPINLockWaitExpiryAndDurableFailures",
+        "TestPGPaymentPINCommercePolicyVersionAndAtomicSettlement",
+        "TestPGPaymentPINMoneyRollbackAndPolicyLockOrdering",
+        "TestPGBackendPaymentPINSourceHTTPComposition",
+        "TestPGPaymentPINRestartPersistence",
+        "TestPGPaymentPINDisabledPolicyBlocksStandingRenewal",
+        "TestPGPaymentPINAssuranceExpiryDuringPolicyWait",
     },
     "after": {
         "TestPGDomainTrustRestartPersistence",
@@ -511,6 +524,7 @@ EXPECTED = {
         "TestPGRestartPersistence",
         "TestPGTaxonomyRestartPersistence",
         "TestPGWalletRestartPersistence",
+        "TestPGPaymentPINRestartPersistence",
     },
 }
 

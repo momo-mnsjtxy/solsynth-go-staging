@@ -328,9 +328,24 @@ func (s *Service) ExchangeCode(ctx context.Context, raw string) (Pair, error) {
 		if c.Used || c.AccountVersion != tx.Account().Version || !now.Before(c.ExpiresAt) {
 			return ErrInvalid
 		}
-		_, pair, e = s.newSession(tx, SessionOptions{Label: c.Label, Scopes: c.Scopes}, now)
+		var session Session
+		session, pair, e = s.newSession(tx, SessionOptions{Label: c.Label, Scopes: c.Scopes}, now)
 		if e != nil {
 			return e
+		}
+		if evidence, ok := tx.(CredentialAssuranceTransaction); ok {
+			verified, e := evidence.CodeEvidence(hash)
+			if e != nil {
+				return e
+			}
+			if verified != nil {
+				if !ValidCredentialMethods(verified.Methods) || verified.AuthTime.After(now) || now.Sub(verified.AuthTime) >= 5*time.Minute {
+					return ErrInvalid
+				}
+				if e = evidence.SaveSessionAssurance(session, hash, *verified, now); e != nil {
+					return e
+				}
+			}
 		}
 		c.Used = true
 		return tx.SaveCode(c)

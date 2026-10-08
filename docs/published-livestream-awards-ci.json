@@ -1,0 +1,10 @@
+{
+  "commit": "ce5aa8b63c71b11ee6a449a250e6dc1d12fadf80",
+  "run_id": 37803131549,
+  "job_id": 113400284867,
+  "conclusion": "success",
+  "postgres_before": 386,
+  "postgres_after_restart": 52,
+  "skips": 0,
+  "process_checks": "Existing real process HTTP and application/DB restart checks passed"
+}

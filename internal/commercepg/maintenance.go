@@ -89,6 +89,17 @@ func (r *Repository) dueOne(ctx context.Context, kind string) (bool, error) {
 	if e != nil {
 		return false, e
 	}
+	paymentAllowed := true
+	if r.payments != nil {
+		policy, ok := r.payments.(RenewalPaymentPolicy)
+		if !ok {
+			return false, c.ErrUnavailable
+		}
+		paymentAllowed, e = policy.AllowRenewal(ctx, r.db, tx, actor)
+		if e != nil {
+			return false, e
+		}
+	}
 	s, e := subscriptionRow(ctx, tx, sid, true)
 	if e != nil {
 		return false, e
@@ -106,7 +117,7 @@ func (r *Repository) dueOne(ctx context.Context, kind string) (bool, error) {
 	if e != nil && !errors.Is(e, c.ErrNotFound) {
 		return false, e
 	}
-	canRenew := e == nil && !disabled && renew && d.AllowInternalWalletRenewal && s.PaymentMethod == "solian.wallet" && s.PaymentDetails.PayerWalletID != nil && s.RenewalAt != nil && s.FinalPrice.Cmp(d.BasePrice) == 0 && s.PaymentDetails.Currency == d.Currency
+	canRenew := e == nil && !disabled && paymentAllowed && renew && d.AllowInternalWalletRenewal && s.PaymentMethod == "solian.wallet" && s.PaymentDetails.PayerWalletID != nil && s.RenewalAt != nil && s.FinalPrice.Cmp(d.BasePrice) == 0 && s.PaymentDetails.Currency == d.Currency
 	if canRenew {
 		old, e := order(ctx, tx, s.PaymentDetails.OrderID, false)
 		if e != nil {

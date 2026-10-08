@@ -16,7 +16,12 @@ import (
 // Schema is an explicit migration input. New and the server never execute it.
 //
 //go:embed schema.sql
-var Schema string
+var baseSchema string
+
+//go:embed assurance_schema.sql
+var AssuranceSchema string
+
+var Schema = baseSchema + "\n" + AssuranceSchema
 
 type Repository struct{ db *sql.DB }
 

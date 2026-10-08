@@ -54,6 +54,11 @@ type Access interface {
 type PaymentVerifier interface {
 	VerifyPayment(context.Context, Principal, string) error
 }
+
+// Canonical composition carries an opaque bounded proof into the money TX.
+type PaymentAuthorizer interface {
+	PreparePayment(context.Context, Principal, string, string, string) (context.Context, error)
+}
 type Owner struct {
 	AccountID string
 	RealmID   string

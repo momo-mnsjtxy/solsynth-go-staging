@@ -18,9 +18,13 @@ import (
 //go:embed schema.sql
 var SchemaSQL string
 
+//go:embed pin_schema.sql
+var PINSchemaSQL string
+
 // Repository implements the independent wallet_v1 policy. It does not load a
 // legacy database or create schema. Only cooperating writers are supported.
 type Repository struct {
+	payments    PaymentAuthorization
 	db          *sql.DB
 	now         func() time.Time
 	authority   *authoritypg.TransactionGuard

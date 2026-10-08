@@ -96,6 +96,7 @@ type Config struct {
 	PublicVisibility              *int32
 	MessagerPolicy                *messagerpg.IndependentPolicy
 	PINPeppers                    map[string][]byte
+	PINEnrollmentPepperID         string
 	SessionService                *authority.Service
 	AllowNonAtomicAuthorityWrites bool
 	CatalogProviders              []exchangecatalog.Provider
@@ -177,7 +178,11 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	signinRepo := signinpg.New(db, aStore, guard)
+	paymentPIN := walletpg.NewPINVerifier(db, c.PINPeppers).WithAuthority(guard).WithClock(c.Authority.Now).WithEnrollmentPepper(c.PINEnrollmentPepperID)
+	if c.PINEnrollmentPepperID != "" && (len(c.PINEnrollmentPepperID) > 64 || len(c.PINPeppers[c.PINEnrollmentPepperID]) < 32 || guard == nil || authorityDB != db || c.Signin == nil) {
+		return nil, errors.New("PIN enrollment requires explicit pepper and same-pool sign-in authority")
+	}
+	signinRepo := signinpg.New(db, aStore, guard).WithPaymentPIN(paymentPIN)
 	accountRepo := accountpg.NewWithAuthority(db, guard).WithPublicContacts(signinRepo)
 	accountHTTP := bindIdentity(v, bindTransactionAuthority(guard, (&profiles.Service{Repository: accountRepo, Authority: proofIdentity{identity}}).Handler()))
 	var readerRepo *readerpg.Repository
@@ -217,11 +222,11 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	appService := &apps.Service{Repository: appRepo, Authority: proofIdentity{identity}}
 	merchantRepo := merchantpg.New(db, guard)
 	merchantHTTP := merchants.NewHandler(merchantRepo, postIdentity{identity})
-	commerceRepo := commercepg.New(db, guard, commercepg.AppAdapters(appRepo))
+	commerceRepo := commercepg.New(db, guard, commercepg.AppAdapters(appRepo)).WithPaymentAuthorization(paymentPIN)
 	if c.Authority.Now != nil {
 		commerceRepo.WithClock(c.Authority.Now)
 	}
-	commerceHTTP := (&commerce.Service{Store: commerceRepo, Identity: commerceIdentity{identity}, Payments: walletpg.NewPINVerifier(db, c.PINPeppers), Providers: c.CommerceProviders}).Handler()
+	commerceHTTP := (&commerce.Service{Store: commerceRepo, Identity: commerceIdentity{identity}, Payments: paymentPIN.Atomic(), Providers: c.CommerceProviders}).Handler()
 	appNormal := bindIdentity(v, bindTransactionAuthority(guard, appService.Handler()))
 	appHTTP := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if apps.IsAppCredentialRoute(r) {
@@ -299,7 +304,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	timelineHTTP := timeline.NewHandler(timelineRepo, postIdentity{identity})
 	postRepository.WithAssociations(timelineRepo).WithVisibility(socialRepo)
 	ph := posts.NewHandler(postRepository, postIdentity{identity})
-	wh, wallet := walletHandler(db, identity, c.PINPeppers, guard, socialRepo)
+	wh, wallet := walletHandler(db, identity, paymentPIN, guard, socialRepo)
 	var signinHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "SIGNIN_ISSUER_UNCONFIGURED") })
 	var signinService *signin.Service
 	if c.Signin != nil {

@@ -42,6 +42,11 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		return o, e
 	}
 	defer tx.Rollback()
+	if r.payments != nil {
+		if e = r.payments.LockPayment(ctx, r.db, tx, actor, wallet.PaymentOrder, wallet.OrderPaymentBinding(idv, requested)); e != nil {
+			return o, e
+		}
+	}
 	// Canonical app ancestry precedes the order row, matching merchant status
 	// writers and app management; a disabled app cannot take a new payment.
 	peek, e := order(ctx, tx, idv, false)
@@ -71,6 +76,11 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		if o.PayerWalletID == nil {
 			return o, c.ErrConflict
 		}
+		if r.payments != nil {
+			if e = r.payments.CheckPayment(ctx, r.db, tx, actor, wallet.PaymentOrder, wallet.OrderPaymentBinding(idv, requested)); e != nil {
+				return o, e
+			}
+		}
 		return o, tx.Commit()
 	}
 	if o.Status != c.Unpaid {
@@ -85,6 +95,11 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		}
 		if e = event(ctx, tx, "order.expired", o.ID, o, now); e != nil {
 			return o, e
+		}
+		if r.payments != nil {
+			if e = r.payments.CheckPayment(ctx, r.db, tx, actor, wallet.PaymentOrder, wallet.OrderPaymentBinding(idv, requested)); e != nil {
+				return o, e
+			}
 		}
 		if e = tx.Commit(); e != nil {
 			return o, e
@@ -184,6 +199,11 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 	}
 	if e = event(ctx, tx, "order.paid", o.ID, o, now); e != nil {
 		return o, e
+	}
+	if r.payments != nil {
+		if e = r.payments.CheckPayment(ctx, r.db, tx, actor, wallet.PaymentOrder, wallet.OrderPaymentBinding(idv, requested)); e != nil {
+			return o, e
+		}
 	}
 	return o, tx.Commit()
 }

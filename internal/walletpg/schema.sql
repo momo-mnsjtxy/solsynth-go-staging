@@ -56,6 +56,7 @@ CREATE TABLE wallet_v1.outbox (
 -- this row. Missing, disabled or malformed policy fails closed.
 CREATE TABLE wallet_v1.payment_policies (
  account_id uuid PRIMARY KEY,pin_required boolean NOT NULL,
+ version bigint NOT NULL DEFAULT 1 CHECK(version>0),factor_id uuid UNIQUE,
  salt bytea,pin_mac bytea,iterations integer,pepper_id varchar(64),
  failed_attempts integer NOT NULL DEFAULT 0,locked_until timestamptz,
  disabled boolean NOT NULL DEFAULT false,updated_at timestamptz NOT NULL,

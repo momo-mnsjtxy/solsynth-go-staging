@@ -84,6 +84,7 @@ func run(args []string, out io.Writer) error {
 	badgeIcons := fs.String("badge-icons", "", "optional directory of licensed badge icons")
 	pepperEnv := fs.String("pin-pepper-env", "", "optional explicit environment variable with base64 PIN pepper")
 	pepperID := fs.String("pin-pepper-id", "", "key ID for that externally provisioned PIN policy")
+	enablePINEnrollment := fs.Bool("enable-pin-enrollment", false, "explicitly enable six-digit factor enrollment using the configured PIN pepper")
 	settlement := fs.Duration("settlement-interval", 15*time.Minute, "bounded durable wallet lifecycle interval")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -185,6 +186,9 @@ func run(args []string, out io.Writer) error {
 		return errors.New("notification enum values must be distinct")
 	}
 	peppers := map[string][]byte{}
+	if *enablePINEnrollment && (!*enableSignin || *pepperID == "") {
+		return errors.New("PIN enrollment requires sign-in and an explicit PIN pepper")
+	}
 	if (*pepperEnv == "") != (*pepperID == "") {
 		return errors.New("PIN pepper environment and ID must be supplied together")
 	}
@@ -222,6 +226,9 @@ func run(args []string, out io.Writer) error {
 		catalogProviders = []exchangecatalog.Provider{provider}
 	}
 	appConfig := application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
+	if *enablePINEnrollment {
+		appConfig.PINEnrollmentPepperID = *pepperID
+	}
 	if err = accountExtrasSettings.apply(&appConfig); err != nil {
 		return err
 	}

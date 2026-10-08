@@ -212,9 +212,6 @@ func (s *Service) Transfer(ctx context.Context, p Principal, r TransferRequest, 
 	if len(pin) > 256 {
 		return Transaction{}, ErrPIN
 	}
-	if e = s.Payments.VerifyPayment(ctx, p, pin); e != nil {
-		return Transaction{}, e
-	}
 	command := TransferCommand{ActorID: p.AccountID, IdempotencyKey: key, PayerWalletID: payer.ID, PayeeWalletID: payee.ID, PayerOwner: payer.Owner(), Currency: r.Currency, Amount: r.Amount, Remark: r.Remark, Freeze: r.Freeze, RequireConfirmation: r.RequireConfirmation}
 	// PIN and session credentials are deliberately excluded from persistence and hashes.
 	b, _ := json.Marshal(struct {
@@ -225,6 +222,14 @@ func (s *Service) Transfer(ctx context.Context, p Principal, r TransferRequest, 
 	}{payer.ID, payee.ID, r.Currency, r.Amount, r.Remark, r.Freeze, r.RequireConfirmation})
 	hash := sha256.Sum256(b)
 	command.Fingerprint = hex.EncodeToString(hash[:])
+	if payments, ok := s.Payments.(PaymentAuthorizer); ok {
+		ctx, e = payments.PreparePayment(ctx, p, pin, PaymentTransfer, command.Fingerprint)
+	} else {
+		e = s.Payments.VerifyPayment(ctx, p, pin)
+	}
+	if e != nil {
+		return Transaction{}, e
+	}
 	return s.Store.Transfer(ctx, command)
 }
 func (s *Service) GetTransaction(ctx context.Context, p Principal, id string) (Transaction, error) {

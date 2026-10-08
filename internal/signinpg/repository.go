@@ -18,9 +18,14 @@ import (
 // Schema is an explicit migration input; constructors never install it.
 //
 //go:embed schema.sql
-var Schema string
+var baseSchema string
+
+//go:embed payment_pin_schema.sql
+var PaymentPINSchema string
+var Schema = baseSchema + "\n" + PaymentPINSchema
 
 type Repository struct {
+	pin       PaymentPINStore
 	db        *sql.DB
 	authority *authoritypg.Repository
 	guard     *authoritypg.TransactionGuard
@@ -196,12 +201,15 @@ func (t *transaction) Factors() ([]signin.Factor, error) {
 		if e = rows.Scan(&f.ID, &f.Type, &f.CreatedAt, &f.EnabledAt, &f.Secret, &f.LastCounter, &f.PendingUntil); e != nil {
 			return nil, e
 		}
+		if f.Type == 4 {
+			f.Trustworthy = 0
+		}
 		out = append(out, f)
 	}
 	return out, rows.Err()
 }
 func (t *transaction) SaveFactor(f signin.Factor) error {
-	if !authority.ValidID(f.ID) || len(f.Secret) == 0 || f.Type != 0 && f.Type != 3 && f.Type != 5 {
+	if !authority.ValidID(f.ID) || (f.Type == 4 && len(f.Secret) != 0) || (f.Type != 4 && len(f.Secret) == 0) || f.Type != 0 && f.Type != 3 && f.Type != 4 && f.Type != 5 {
 		return authority.ErrInvalid
 	}
 	res, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_factors(id,account_id,type,created_at,enabled_at,secret,last_counter,pending_until) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(id) DO UPDATE SET enabled_at=EXCLUDED.enabled_at,secret=EXCLUDED.secret,last_counter=EXCLUDED.last_counter,pending_until=EXCLUDED.pending_until WHERE owned_authority_factors.account_id=EXCLUDED.account_id AND owned_authority_factors.type=EXCLUDED.type`, f.ID, t.canonical.Account().ID, f.Type, f.CreatedAt, f.EnabledAt, f.Secret, f.LastCounter, f.PendingUntil)
@@ -232,15 +240,18 @@ func (t *transaction) DeleteFactor(id string) error {
 }
 func (t *transaction) Challenge(hash []byte) (signin.Challenge, error) {
 	var c signin.Challenge
-	var blacklist []byte
+	var blacklist, methods []byte
 	var contact sql.NullString
-	e := t.tx.QueryRowContext(t.ctx, `SELECT hash,account_id::text,account_version,purpose,created_at,expires_at,device_name,platform,password_ok,second_ok,require_second,completed,blacklist,updated_at,device_id,ip_address,user_agent,failed_attempts,contact_id::text FROM owned_authority_challenges WHERE account_id=$1 AND hash=$2`, t.canonical.Account().ID, hash).Scan(&c.Hash, &c.AccountID, &c.Version, &c.Purpose, &c.CreatedAt, &c.ExpiredAt, &c.DeviceName, &c.Platform, &c.PasswordOK, &c.SecondOK, &c.RequireSecond, &c.Completed, &blacklist, &c.UpdatedAt, &c.DeviceID, &c.IPAddress, &c.UserAgent, &c.FailedAttempts, &contact)
+	e := t.tx.QueryRowContext(t.ctx, `SELECT hash,account_id::text,account_version,purpose,created_at,expires_at,device_name,platform,password_ok,second_ok,require_second,completed,blacklist,updated_at,device_id,ip_address,user_agent,failed_attempts,contact_id::text,auth_methods FROM owned_authority_challenges WHERE account_id=$1 AND hash=$2`, t.canonical.Account().ID, hash).Scan(&c.Hash, &c.AccountID, &c.Version, &c.Purpose, &c.CreatedAt, &c.ExpiredAt, &c.DeviceName, &c.Platform, &c.PasswordOK, &c.SecondOK, &c.RequireSecond, &c.Completed, &blacklist, &c.UpdatedAt, &c.DeviceID, &c.IPAddress, &c.UserAgent, &c.FailedAttempts, &contact, &methods)
 	c.ContactID = contact.String
 	if errors.Is(e, sql.ErrNoRows) {
 		e = authority.ErrNotFound
 	}
 	if e == nil {
 		e = json.Unmarshal(blacklist, &c.BlacklistFactors)
+		if e == nil {
+			e = json.Unmarshal(methods, &c.AuthMethods)
+		}
 	}
 	return c, e
 }
@@ -255,6 +266,13 @@ func (t *transaction) SaveChallenge(c signin.Challenge) error {
 	if e != nil {
 		return e
 	}
+	methods, e := json.Marshal(c.AuthMethods)
+	if e != nil {
+		return e
+	}
+	if c.AuthMethods == nil {
+		methods = []byte("[]")
+	}
 	var contact any
 	if c.ContactID != "" {
 		if !authority.ValidID(c.ContactID) || c.Purpose != "verify_contact" {
@@ -264,7 +282,7 @@ func (t *transaction) SaveChallenge(c signin.Challenge) error {
 	} else if c.Purpose == "verify_contact" {
 		return authority.ErrInvalid
 	}
-	r, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_challenges(hash,account_id,account_version,purpose,created_at,expires_at,device_name,platform,password_ok,second_ok,require_second,completed,blacklist,updated_at,device_id,ip_address,user_agent,failed_attempts,contact_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19::uuid) ON CONFLICT(hash) DO UPDATE SET password_ok=EXCLUDED.password_ok,second_ok=EXCLUDED.second_ok,completed=EXCLUDED.completed,blacklist=EXCLUDED.blacklist,updated_at=EXCLUDED.updated_at,failed_attempts=EXCLUDED.failed_attempts WHERE owned_authority_challenges.account_id=EXCLUDED.account_id AND owned_authority_challenges.account_version=EXCLUDED.account_version AND owned_authority_challenges.purpose=EXCLUDED.purpose AND owned_authority_challenges.contact_id IS NOT DISTINCT FROM EXCLUDED.contact_id AND (NOT owned_authority_challenges.completed OR EXCLUDED.completed)`, c.Hash, c.AccountID, c.Version, c.Purpose, c.CreatedAt, c.ExpiredAt, c.DeviceName, c.Platform, c.PasswordOK, c.SecondOK, c.RequireSecond, c.Completed, b, c.UpdatedAt, c.DeviceID, c.IPAddress, c.UserAgent, c.FailedAttempts, contact)
+	r, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_challenges(hash,account_id,account_version,purpose,created_at,expires_at,device_name,platform,password_ok,second_ok,require_second,completed,blacklist,updated_at,device_id,ip_address,user_agent,failed_attempts,contact_id,auth_methods) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19::uuid,$20::jsonb) ON CONFLICT(hash) DO UPDATE SET password_ok=EXCLUDED.password_ok,second_ok=EXCLUDED.second_ok,completed=EXCLUDED.completed,blacklist=EXCLUDED.blacklist,updated_at=EXCLUDED.updated_at,failed_attempts=EXCLUDED.failed_attempts,auth_methods=EXCLUDED.auth_methods WHERE owned_authority_challenges.account_id=EXCLUDED.account_id AND owned_authority_challenges.account_version=EXCLUDED.account_version AND owned_authority_challenges.purpose=EXCLUDED.purpose AND owned_authority_challenges.contact_id IS NOT DISTINCT FROM EXCLUDED.contact_id AND (NOT owned_authority_challenges.completed OR EXCLUDED.completed)`, c.Hash, c.AccountID, c.Version, c.Purpose, c.CreatedAt, c.ExpiredAt, c.DeviceName, c.Platform, c.PasswordOK, c.SecondOK, c.RequireSecond, c.Completed, b, c.UpdatedAt, c.DeviceID, c.IPAddress, c.UserAgent, c.FailedAttempts, contact, methods)
 	if e != nil {
 		return e
 	}

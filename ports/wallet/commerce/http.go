@@ -256,7 +256,12 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 		if q.PINCode != nil {
 			pin = *q.PINCode
 		}
-		if e = s.Payments.VerifyPayment(ctx, p, pin); e != nil {
+		if payments, ok := s.Payments.(wallet.PaymentAuthorizer); ok {
+			ctx, e = payments.PreparePayment(ctx, p, pin, wallet.PaymentOrder, wallet.OrderPaymentBinding(parts[1], q.PayerWalletID))
+		} else {
+			e = s.Payments.VerifyPayment(ctx, p, pin)
+		}
+		if e != nil {
 			problem(w, e, "WALLET_ORDER_PAY_FAILED")
 			return
 		}

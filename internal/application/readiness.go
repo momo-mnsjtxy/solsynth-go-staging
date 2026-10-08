@@ -96,7 +96,16 @@ func (b *Backend) Ready(ctx context.Context) error {
 			return err
 		}
 	}
+	if _, e := b.db.ExecContext(ctx, `SELECT code_hash,auth_time,methods FROM owned_authority_code_evidence LIMIT 0;SELECT session_id,session_epoch FROM owned_authority_credential_assurances LIMIT 0`); e != nil {
+		return errors.New("credential assurance schema unavailable")
+	}
+	if _, e := b.db.ExecContext(ctx, `SELECT version,factor_id FROM wallet_v1.payment_policies LIMIT 0;SELECT hash,policy_version FROM wallet_v1.payment_authorizations LIMIT 0`); e != nil {
+		return errors.New("payment authorization schema unavailable")
+	}
 	if b.signinEnabled {
+		if _, e := b.db.ExecContext(ctx, `SELECT auth_methods FROM owned_authority_challenges LIMIT 0;SELECT id FROM owned_authority_factor_audit LIMIT 0`); e != nil {
+			return errors.New("payment PIN factor schema unavailable")
+		}
 		var yes bool
 		err = b.db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name) IS NOT NULL) FROM (VALUES ('owned_authority_credentials'),('owned_authority_factors'),('owned_authority_challenges'),('owned_authority_attempts')) AS required(name)`).Scan(&yes)
 		if err != nil || !yes {

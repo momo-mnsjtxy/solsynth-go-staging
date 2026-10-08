@@ -39,15 +39,16 @@ func walletError(err error) error {
 	}
 	return accounts.ErrUnavailable
 }
-func walletHandler(db *sql.DB, id identity, peppers map[string][]byte, guard *authoritypg.TransactionGuard, realms *socialpg.Repository) (http.Handler, *walletpg.Repository) {
+func walletHandler(db *sql.DB, id identity, payments *walletpg.PINVerifier, guard *authoritypg.TransactionGuard, realms *socialpg.Repository) (http.Handler, *walletpg.Repository) {
 	repo := walletpg.NewWithAuthority(db, guard)
 	if guard == nil {
 		repo = walletpg.New(db) // Explicit separate-pool non-atomic opt-in.
 	}
 	repo.WithRealmWritePolicy(canonicalRealmWrites{realms})
+	repo.WithPaymentAuthorization(payments)
 	handler := accounts.NewAuthorityHandler(repo, proofIdentity{id}, func(p authority.Principal) accounts.Principal {
 		return accounts.Principal{AccountID: p.Account.ID, SessionID: p.Session.ID}
-	}, realms, walletpg.NewPINVerifier(db, peppers), walletError)
+	}, realms, payments.Atomic(), walletError)
 	return bindIdentity(id.verifier, bindTransactionAuthority(guard, handler)), repo
 }
 

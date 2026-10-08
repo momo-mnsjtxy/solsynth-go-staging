@@ -2,21 +2,21 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Domain trust rules/host-only metrics and collection metadata administration composed after recovered awards",
+  "local_source_checkpoint": "Compatible PIN credential assurance and canonical atomic payment proofs composed with awards and domain administration",
   "last_fully_passed_ci": {
-    "commit": "5e695228fab2e3c4eb956851731e09dcad15d04a",
-    "run": 37792619865,
-    "before": 376,
-    "after_restart": 51
+    "commit": "ce5aa8b63c71b11ee6a449a250e6dc1d12fadf80",
+    "run": 37803131549,
+    "before": 386,
+    "after_restart": 52
   },
   "latest_candidate": {
-    "commit": "ce5aa8b63c71b11ee6a449a250e6dc1d12fadf80",
-    "required_before": 386,
-    "required_after_restart": 52,
-    "status": "Published recovered awards; real PostgreSQL CI in progress"
+    "commit": "bff7fdada24a41395e94e6c1cfdf83a39601df9b",
+    "required_before": 397,
+    "required_after_restart": 53,
+    "status": "Published domain/collection composition; actual CI running"
   },
-  "local_required_before": 397,
-  "local_required_after_restart": 53,
+  "local_required_before": 410,
+  "local_required_after_restart": 54,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -981,6 +981,26 @@
       "unsupported_or_remaining": [
         "Metrics retention/purge operations",
         "Domain trust does not authorize network fetching"
+      ]
+    },
+    {
+      "source_family": "passport.payment_pin",
+      "local_status": "implemented, real PG pending",
+      "supported_flows": [
+        "Authored type-4 PIN bodies with five-minute one-use canonical password/MFA assurance",
+        "Atomic rate-limited PIN create/enable/disable/delete and payment-policy revocation",
+        "Bounded one-use transaction-bound wallet/order proofs and disabled standing-renewal denial"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBackendPaymentPINSourceHTTPComposition",
+        "TestPGPaymentPINRestartPersistence",
+        "TestPGPaymentPINMoneyRollbackAndPolicyLockOrdering"
+      ],
+      "unsupported_or_remaining": [
+        "Automatic frontend reauthentication prompt",
+        "Provider/passwordless assurance",
+        "Generic no-PIN opt-out or automatic PIN recovery",
+        "Uniform other-factor assurance policy remains under review"
       ]
     }
   ],

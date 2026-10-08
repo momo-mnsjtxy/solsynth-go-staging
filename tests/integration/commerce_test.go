@@ -278,7 +278,7 @@ func TestPGCommerceSubscriptionRenewCancelAndGiftRedeem(t *testing.T) {
 	}
 	// Advance only this fixture's durable subscription deadline, preserving the
 	// global maintenance clock so unrelated fixtures are never expired by a test.
-	past := time.Now().Add(-time.Second).UTC()
+	past := time.Unix(f.clock.Load(), 0).UTC().Add(-time.Second)
 	s.EndedAt = past
 	s.RenewalAt = &past
 	b, _ := json.Marshal(s)
@@ -440,7 +440,7 @@ func TestPGCommerceHTTPPaymentAndUnavailableProvider(t *testing.T) {
 func TestPGCommerceExpiryAndAuthorityOrdering(t *testing.T) {
 	f := newCommerceFixture(t)
 	expired := commerceOrder(t, f, "expired", false)
-	expired.ExpiredAt = time.Now().Add(-time.Minute).UTC()
+	expired.ExpiredAt = time.Unix(f.clock.Load(), 0).UTC().Add(-time.Minute)
 	b, _ := json.Marshal(expired)
 	query(t, f.db, `UPDATE commerce_v1.orders SET expires_at=$2,document=$3 WHERE id=$1`, expired.ID, expired.ExpiredAt, b)
 	if _, e := f.r.PayOrder(f.ctx, f.actor, expired.ID, &f.wallet.ID); !errors.Is(e, c.ErrConflict) {
@@ -464,7 +464,7 @@ func TestPGCommerceExpiryAndAuthorityOrdering(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	gift.ExpiresAt = time.Now().Add(-time.Minute).UTC()
+	gift.ExpiresAt = time.Unix(f.clock.Load(), 0).UTC().Add(-time.Minute)
 	b, _ = json.Marshal(gift)
 	query(t, f.db, `UPDATE commerce_v1.gifts SET expires_at=$2,document=$3 WHERE id=$1`, gift.ID, gift.ExpiresAt, b)
 	if _, e = f.r.ProcessDue(f.ctx, 1000); e != nil {

@@ -1,6 +1,6 @@
 {
-  "checkpoint": "content-composition-timeline-postmedia-surveys-stickers-usage",
-  "scope": "Owned content flows integrated and locally build/vet/race tested;177/27 actual PostgreSQL tests require exact-head CI",
+  "checkpoint": "content-composition-clock-stable-renewal-fixture",
+  "scope": "Content composition with deterministic deadlines relative to synthetic repository clock; actual PostgreSQL CI pending",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
@@ -6131,8 +6131,8 @@
     },
     {
       "path": "tests/integration/commerce_test.go",
-      "bytes": 25139,
-      "sha256": "00cfdc3423301c76333f4816de4cc7f7225bc3dbc22632787140c7931a2208fd"
+      "bytes": 25193,
+      "sha256": "3ebdbf57daa111cbf524d7ecbcde1789281ee99c70e75cbf1da3acf99e65716f"
     },
     {
       "path": "tests/integration/develop_bot_commands_test.go",

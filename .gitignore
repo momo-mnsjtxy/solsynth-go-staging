@@ -1,3 +1,7 @@
 .cache/
 coverage.out
 *.test
+/tests/contract/exchange-oracle/bin/
+/tests/contract/exchange-oracle/obj/
+/tests/contract/badges-oracle/bin/
+/tests/contract/badges-oracle/obj/

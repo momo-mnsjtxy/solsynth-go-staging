@@ -82,3 +82,24 @@ The unlicensed Solsynth protocol-definition repository is excluded from this wor
 `internal/boardpg` adds real SQL persistence for the existing transport-independent board service, grounded in licensed DysonNetwork-owned migrations and its pinned current EF snapshot. Account-scoped transactions now include the read used to preserve app-owned payloads, validation and replacement/save; cache invalidation occurs after commit. JSON decoding preserves large numbers, and failed replacements must roll back instead of discarding retained tombstones or changing the source indexes.
 
 Normal `boardpg.New(db)` construction is disabled. The isolated compatibility-test constructor explicitly selects a candidate active-row/audit policy because the excluded shared hooks remain unverified. No board HTTP endpoint, command wiring, authentication, permission adapter or permissive payload validator is added. Cooperating Go writers share the lock protocol; mixed legacy/Go writers are unsupported. The actual-PG workflow requires the five board cases alongside the previous ten cases and checks both preference and board state after a server restart.
+
+## Local anonymous exchange-catalog endpoint
+
+`ports/wallet/exchangecatalog` implements the documented anonymous `GET /api/wallets/exchange` operation from the pinned, licensed Wallet controller. It reads configured exchange options; it does not execute exchanges or move funds. Source parsing, ordered case-insensitive configuration providers, decimal precision/rounding/scale, complete-response configuration errors and MVC method/path behavior are covered by an independently executed .NET 10 reference suite. The reference imports no excluded Shared/protocol assembly.
+
+The local host accepts repeatable `--exchange-config` UTF-8 JSON files in low-to-high precedence order. Configuration is an explicit startup snapshot, not a claim to reproduce ASP.NET's complete host, environment-provider or hot-reload lifecycle. With no configuration the catalog is `[]`, matching the checked-in default. `--storage none` lets this stateless endpoint run while the persistence-backed watch endpoint remains unavailable. The host still binds loopback only, and the existing authenticated watch route remains fail-closed.
+
+```sh
+go run -buildvcs=false ./cmd/solsynth-go --storage none \
+  --exchange-config appsettings.json --exchange-config appsettings.local.json
+```
+
+The local oracle records 1,793 configuration/decimal fixtures and six actual MVC method/path cases; its independently collected scalar-casing map contains 1,475 mappings. See `tests/contract/exchange-oracle/validation.json` and its reproduction instructions for exact versions, hashes and boundaries. This local addition has not been pushed to the private staging repository. It does not establish whole-platform parity or implement the separate protected funds-exchange POST operation.
+
+## Local badge discovery family
+
+The anonymous badge manifest and SVG routes are integrated through `--badge-icons`, whose default is the upstream `./Resources/BadgeIcons`. To use the included art, pass `--badge-icons ./ports/passport/badgediscovery/assets`. A missing directory keeps the manifest available without icon URLs; configured files are read on each request. The host remains loopback-only and does not grant access to protected watch operations.
+
+The 23 badge definitions preserve the licensed controller's order and fields. Twelve included icons have verified Google Material Symbols Apache-2.0 provenance; `whatshot.svg` is newly authored replacement artwork with an intentionally different appearance. The unverified upstream image is excluded. See the asset provenance and original-art notice in the package.
+
+File access deliberately uses safe directory containment instead of reproducing the upstream lexical path-prefix check. This is documented hardening, not a claim that every unsafe path has identical behavior. This local family does not implement badge-awarding rules, progression state, or account-badge persistence.

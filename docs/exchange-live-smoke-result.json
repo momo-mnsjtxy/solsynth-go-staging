@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-07",
+  "scope": "Actual local loopback command process, synthetic UTF-8 JSON config only",
+  "checks": {
+    "repeatable_provider_override": "passed",
+    "anonymous_get_exact_decimal_json": "passed",
+    "route_case_and_trailing_slash": "passed",
+    "head_and_post_405_allow_get": "passed",
+    "disabled_watch_route_503": "passed",
+    "invalid_target_complete_response_500": "passed",
+    "graceful_shutdown": "passed"
+  },
+  "effects": "No database access, funds movement, external API calls or remote writes; temporary data removed and processes stopped",
+  "not_claimed": ["Whole-platform parity", "Authentication compatibility", "POST funds exchange", "ASP.NET full host configuration/reload lifecycle"]
+}

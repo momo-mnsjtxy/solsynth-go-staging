@@ -1,5 +1,5 @@
 {
-  "scope": "Checkpoint: local PostWatch HTTP/persistence slice plus PostgreSQL adapter (compiled, database integration blocked), three policy ports, and partial Passport board service; backend functional parity not established",
+  "scope": "Local PostWatch HTTP/persistence, source-backed policy ports, gated board/watcher SQL candidates, anonymous exchange catalog and badge discovery; whole backend parity remains incomplete",
   "baseline": "Solsynth/DysonNetwork@4ee2d0cebb9da8284a92483fee6dce795bf6947c",
   "license_policy": "Reuse requires verified applicable permission. The excluded unlicensed protocol repository, its schemas, descriptor exports and generated bindings must not be used even as interface-only evidence. Independently derived eligible licensed client/server evidence is separate; no strict clean-room claim follows source inspection.",
   "counts": {
@@ -7,7 +7,7 @@
     "production_services_completed": 0,
     "cross_platform_gates_pending": 9,
     "full_endpoint_count": null,
-    "local_http_operations": 2,
+    "local_http_operations": 5,
     "controller_files_enumerated": 98,
     "partial_board_services": 1
   },
@@ -91,12 +91,12 @@
     "auth": "Default deny; explicit synthetic fixture adapter only",
     "remaining": [
       "Production identity/permission adapters",
-      "PostgreSQL schema/migration/rollback",
-      "Multi-process transaction semantics",
-      "Exact upstream error serialization",
-      "Existing-client integration"
+      "Accepted migration/rollback and legacy-writer ownership",
+      "Exact remaining upstream middleware/errors",
+      "Existing-client integration",
+      "Shared global-filter/audit policy verification"
     ],
-    "postgres_adapter": "Implemented against licensed table fixture with transaction-scoped account locking; actual PG tests blocked by Unix-socket EPERM"
+    "postgres_adapter": "Preference SQL adapter and gated board/watcher candidates passed 15 required PostgreSQL16.15 cases plus 2 restart assertions at remote commit0735ebb3f1553d3658d944705c6d32eecf2dd541; current local anonymous additions have not been published"
   },
   "evidence_inventories": [
     "inventory/dyson-contract-files.json",
@@ -104,10 +104,11 @@
   ],
   "blockers": {
     "access_or_contract_unknown": [
-      "Gitea organization API denied; do not retry via alternate identity",
-      "Previously cancelled repository/clone reads remain cancelled",
-      "Shared submodule and missing-license repository contracts require separate authorized license/interface evidence",
-      "Actual disposable PostgreSQL validation blocked by AF_UNIX socket creation EPERM, including reviewed retry and bounded /tmp diagnosis; six real integration tests remain unrun"
+      "Gitea API denial and cancelled source requests remain respected",
+      "Unlicensed protocol definitions and generated bindings excluded",
+      "Auth docs resolve claims/permission key, but current-version composition, exact cache state and evaluator transport semantics remain unverified",
+      "Shared global-filter and audit behavior unknown; board/watcher candidates default disabled",
+      "Fortune quotation corpus provenance unverified"
     ],
     "independent_remaining_work": [
       "98 licensed controller files need per-operation mapping",
@@ -115,5 +116,30 @@
       "Remaining C# services and workflows are not implemented",
       "Production adapters and migration acceptance remain pending"
     ]
+  },
+  "anonymous_local_operations": [
+    {
+      "operations": [
+        "GET /api/wallets/exchange"
+      ],
+      "scope": "Immutable UTF-8 startup configuration snapshots; no funds POST",
+      "verification": "tests/contract/exchange-oracle/validation.json"
+    },
+    {
+      "operations": [
+        "GET /.well-known/badges",
+        "GET /.well-known/badges/icons/{iconName}"
+      ],
+      "scope": "23-entry manifest and configured SVG directory; original whatshot artwork and explicit containment hardening",
+      "verification": "tests/contract/badges-oracle/validation.json"
+    }
+  ],
+  "database_validation": {
+    "run": "https://github.com/momo-mnsjtxy/solsynth-go-staging/actions/runs/37632714563",
+    "head": "0735ebb3f1553d3658d944705c6d32eecf2dd541",
+    "required_before_restart": 15,
+    "required_after_restart": 2,
+    "passed": true,
+    "local_socket_limit": "AF_UNIX EPERM remains; ordinary local Go suite skips database cases"
   }
 }

@@ -1,0 +1,15 @@
+{
+  "scope": "local real loopback CLI badge family smoke",
+  "tests": [
+    "manifest 23 entries and cache 3600",
+    "all 12 referenced icon files served byte-exactly",
+    "HEAD/POST 405 empty body",
+    "missing icon documented404",
+    "watch unavailable without repository",
+    "exchange catalog unchanged"
+  ],
+  "passed": true,
+  "server_shutdown": true,
+  "remote_writes": false,
+  "asset_difference": "original whatshot.svg replaces unverified source artwork"
+}

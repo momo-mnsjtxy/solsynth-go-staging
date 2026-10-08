@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -18,7 +19,9 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"solsynth.local/go-migration/internal/watchpg"
 	"solsynth.local/go-migration/internal/watchstore"
+	"solsynth.local/go-migration/ports/passport/badgediscovery"
 	"solsynth.local/go-migration/ports/sphere"
+	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
 )
 
 // fixtureAuth is explicitly development-only and binds one synthetic account.
@@ -39,7 +42,10 @@ func (a fixtureAuth) CanManagePostSubscriptions(r *http.Request, id string) erro
 }
 func main() {
 	address := flag.String("listen", "127.0.0.1:8080", "loopback listen address")
-	storage := flag.String("storage", "file", "persistence adapter: file or postgres")
+	storage := flag.String("storage", "file", "watch persistence adapter: file, postgres, or none")
+	badgeIcons := flag.String("badge-icons", "./Resources/BadgeIcons", "badge SVG directory; upstream default, missing directory omits icon URLs")
+	var exchangeConfigs configFiles
+	flag.Var(&exchangeConfigs, "exchange-config", "appsettings-style JSON file for exchange catalog; repeat in low-to-high precedence order")
 	dsnEnv := flag.String("postgres-dsn-env", "SOLSYNTH_POSTGRES_DSN", "environment variable holding the PostgreSQL DSN; never logged")
 	data := flag.String("data", "./data/watch-preferences.json", "single-process local persistence file")
 	fixture := flag.String("fixture-account", "", "opt-in synthetic local-test identity; NOT production authentication")
@@ -52,8 +58,14 @@ func main() {
 	if ip == nil || !ip.IsLoopback() {
 		log.Fatal("development host must bind a loopback IP")
 	}
+	catalog, err := loadExchangeCatalog(exchangeConfigs)
+	if err != nil {
+		log.Fatal(err)
+	}
 	var repository sphere.WatchPreferenceRepository
 	switch *storage {
+	case "none":
+		// Disabled persistence-backed routes remain fail-closed; catalog is stateless.
 	case "file":
 		store, openErr := watchstore.Open(*data)
 		if openErr != nil {
@@ -81,10 +93,10 @@ func main() {
 		}
 		repository = watchpg.New(db)
 	default:
-		log.Fatal("storage must be file or postgres")
+		log.Fatal("storage must be file, postgres, or none")
 	}
 	service := &sphere.WatchService{Repository: repository}
-	server := &http.Server{Addr: *address, Handler: sphere.NewWatchHandler(service, fixtureAuth{account: *fixture}), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
+	server := &http.Server{Addr: *address, Handler: newAPIHandler(sphere.NewWatchHandler(service, fixtureAuth{account: *fixture}), catalog, badgediscovery.NewHandler(badgediscovery.Config{IconsPath: *badgeIcons})), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -96,12 +108,65 @@ func main() {
 		}
 	}()
 	if *fixture == "" {
-		log.Print("authentication is unconfigured: requests will be denied")
+		log.Print("authentication is unconfigured: protected watch requests will be denied")
 	} else {
 		log.Print("SYNTHETIC FIXTURE MODE: no production authentication; local development only")
 	}
-	log.Printf("PostWatch development service listening at %s", *address)
+	log.Printf("Solsynth development service listening at %s", *address)
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
+}
+
+// configFiles preserves provider precedence; configuration is a startup snapshot.
+type configFiles []string
+
+func (f *configFiles) String() string { return fmt.Sprint([]string(*f)) }
+func (f *configFiles) Set(value string) error {
+	if value == "" {
+		return errors.New("exchange configuration path cannot be empty")
+	}
+	*f = append(*f, value)
+	return nil
+}
+
+func loadExchangeCatalog(paths []string) (*exchangecatalog.Catalog, error) {
+	providers := make([]exchangecatalog.Provider, 0, len(paths))
+	for i, path := range paths {
+		file, err := os.Open(path)
+		if err != nil {
+			return nil, fmt.Errorf("exchange configuration provider %d cannot be opened", i+1)
+		}
+		provider, loadErr := exchangecatalog.LoadJSON(file)
+		closeErr := file.Close()
+		if loadErr != nil {
+			return nil, fmt.Errorf("exchange configuration provider %d is invalid", i+1)
+		}
+		if closeErr != nil {
+			return nil, fmt.Errorf("exchange configuration provider %d could not be closed", i+1)
+		}
+		providers = append(providers, provider)
+	}
+	return exchangecatalog.New(providers...)
+}
+
+// Exact routing is delegated to the catalog's verified MVC-style matcher.
+// Other requests retain the existing protected watch handler unchanged.
+func newAPIHandler(watch http.Handler, catalog *exchangecatalog.Catalog, badges ...http.Handler) http.Handler {
+	exchange := exchangecatalog.NewHandler(catalog)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if len(badges) > 0 && badges[0] != nil && badgediscovery.RouteMatches(r.URL.Path) {
+			badges[0].ServeHTTP(w, r)
+			return
+		}
+		if exchangecatalog.RouteMatches(r.URL.Path) {
+			exchange.ServeHTTP(w, r)
+			return
+		}
+		if r.URL.Path == "/api/posts/watch" {
+			watch.ServeHTTP(w, r)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	})
 }

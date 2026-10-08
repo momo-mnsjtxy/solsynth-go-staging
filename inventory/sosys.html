@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en-US" data-theme="github-auto">
+<head>
+	<meta http-equiv="Content-Security-Policy" content="default-src * data: blob:;script-src * &#39;nonce-0a5888f1e64ff263469baf4c68d24dcd&#39;;style-src * &#39;unsafe-inline&#39;;">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>SoSYS - Solsynth Forge</title>
+	<link rel="manifest" href="/assets/site-manifest.json">
+	<meta name="author" content="Gitea - Git with a cup of tea">
+	<meta name="description" content="Gitea (Git with a cup of tea) is a painless self-hosted Git service written in Go">
+	<meta name="keywords" content="go,git,self-hosted,gitea">
+	<meta name="referrer" content="same-origin">
+
+
+	<link rel="alternate" type="application/atom+xml" title="" href="/SoSYS.atom">
+	<link rel="alternate" type="application/rss+xml" title="" href="/SoSYS.rss">
+
+	<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+	<link rel="alternate icon" href="/assets/img/favicon.png" type="image/png">
+	
+	<meta property="og:title" content="SoSYS">
+	<meta property="og:type" content="profile">
+	<meta property="og:image" content="https://src.solsynth.dev/avatars/45f08cfe338ed01551c365411042e125">
+	<meta property="og:url" content="https://src.solsynth.dev/SoSYS">
+	
+
+<meta property="og:site_name" content="Solsynth Forge">
+
+	<link rel="stylesheet" href="/assets/css/index.DleUJaOD.css">
+<link rel="stylesheet" href="/assets/css/theme-github-auto.css">
+
+	
+<script nonce="0a5888f1e64ff263469baf4c68d24dcd">
+	
+	window.addEventListener('error', function(e) {window._globalHandlerErrors=window._globalHandlerErrors||[]; window._globalHandlerErrors.push(e);});
+	window.addEventListener('unhandledrejection', function(e) {window._globalHandlerErrors=window._globalHandlerErrors||[]; window._globalHandlerErrors.push(e);});
+	window.config = {
+		appUrl: 'https:\/\/src.solsynth.dev\/',
+		appSubUrl: '',
+		assetUrlPrefix: '\/assets',
+		runModeIsProd:  true ,
+		customEmojis: {"codeberg":":codeberg:","git":":git:","gitea":":gitea:","github":":github:","gitlab":":gitlab:","gogs":":gogs:"},
+		pageData: {},
+		notificationSettings: {"EventSourceUpdateTime":10000,"MaxTimeout":60000,"MinTimeout":10000,"TimeoutStep":10000}, 
+		enableTimeTracking:  true ,
+		mermaidMaxSourceCharacters:  50000 ,
+		sharedWorkerUri: '\/assets\/js\/eventsource.sharedworker.DV1Z2uJv.js',
+		
+		i18n: {
+			error_occurred: "An error occurred",
+			remove_label_str: "Remove item \"%s\"",
+			modal_confirm: "Confirm",
+			modal_cancel: "Cancel",
+			more_items: "More items",
+			copy_success: "Copied!",
+			copy_error: "Copy failed",
+		},
+	};
+	
+	window.config.pageData = window.config.pageData || {};
+</script>
+<script nonce="0a5888f1e64ff263469baf4c68d24dcd" src="/assets/js/iife.D2XhYhS2.js"></script>
+
+	
+</head>
+<body>
+	
+
+	<div class="full height">
+		<noscript>This website requires JavaScript.</noscript>
+
+		
+
+		
+			<nav id="navbar" aria-label="Navigation Bar">
+	<div class="navbar-left">
+		
+		<a class="item" id="navbar-logo" href="/" aria-label="Home">
+			<img width="30" height="30" src="/assets/img/logo.svg" alt="Logo" aria-hidden="true">
+		</a>
+
+		
+		<div class="ui secondary menu navbar-mobile-right only-mobile">
+			
+
+			<button class="item ui icon mini button tw-m-0" id="navbar-expand-toggle" aria-label="Navigation Menu"><svg viewBox="0 0 16 16" class="svg octicon-three-bars" aria-hidden="true" width="16" height="16"><path d="M1 2.75A.75.75 0 0 1 1.75 2h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 2.75m0 5A.75.75 0 0 1 1.75 7h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 7.75M1.75 12h12.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5"/></svg></button>
+		</div>
+
+		
+		
+			<a class="item" href="/explore/repos">Explore</a>
+		
+
+		
+
+		
+			<a class="item" target="_blank" href="https://docs.gitea.com">Help</a>
+		
+	</div>
+
+	
+	<div class="navbar-right">
+		
+			
+			<a class="item" rel="nofollow" href="/user/login">
+				<svg viewBox="0 0 16 16" class="svg octicon-sign-in" aria-hidden="true" width="16" height="16"><path d="M2 2.75C2 1.784 2.784 1 3.75 1h2.5a.75.75 0 0 1 0 1.5h-2.5a.25.25 0 0 0-.25.25v10.5c0 .138.112.25.25.25h2.5a.75.75 0 0 1 0 1.5h-2.5A1.75 1.75 0 0 1 2 13.25Zm6.56 4.5h5.69a.75.75 0 0 1 0 1.5H8.56l1.97 1.97a.749.749 0 0 1-.326 1.275.75.75 0 0 1-.734-.215L6.22 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.749.749 0 0 1 1.275.326.75.75 0 0 1-.215.734Z"/></svg>
+				<span class="tw-ml-1">Sign In</span>
+			</a>
+		
+	</div>
+
+	
+	
+</nav>
+
+
+
+
+		
+
+
+
+<div role="main" aria-label="SoSYS" class="page-content organization profile">
+	<div class="ui container flex-container">
+	<div><img loading="lazy" alt class="ui avatar tw-align-middle" src="/avatars/45f08cfe338ed01551c365411042e125?size=200" title="SoSYS" width="100" height="100"></div>
+	<div class="flex-relaxed-list tw-flex-1">
+		<div class="ui header flex-left-right tw-m-0">
+			<div class="flex-text-block">
+				<span class="tw-text-2xl">SoSYS</span>
+				
+				
+			</div>
+			<div class="flex-text-block">
+				
+					<a class="ui basic label button" href="/SoSYS.rss" data-tooltip-content="RSS Feed">
+						<svg viewBox="0 0 16 16" class="svg octicon-rss" aria-hidden="true" width="24" height="24"><path d="M2.002 2.725a.75.75 0 0 1 .797-.699C8.79 2.42 13.58 7.21 13.974 13.201a.75.75 0 0 1-1.497.098 10.5 10.5 0 0 0-9.776-9.776.747.747 0 0 1-.7-.798ZM2.84 7.05h-.002a7 7 0 0 1 6.113 6.111.75.75 0 0 1-1.49.178 5.5 5.5 0 0 0-4.8-4.8.75.75 0 0 1 .179-1.489M2 13a1 1 0 1 1 2 0 1 1 0 0 1-2 0"/></svg>
+					</a>
+				
+				
+			</div>
+		</div>
+		
+		<div>
+			
+			
+			
+		</div>
+	</div>
+</div>
+
+<div class="ui container">
+	<overflow-menu class="ui secondary pointing tabular borderless menu tw-mb-4">
+		<div class="overflow-menu-items">
+			
+			<a class="active item" href="/SoSYS">
+				<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="16" height="16"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg> Repositories
+				
+					<div class="ui small label">19</div>
+				
+			</a>
+			
+			<a class="item" href="/SoSYS/-/projects">
+				<svg viewBox="0 0 16 16" class="svg octicon-project-symlink" aria-hidden="true" width="16" height="16"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16h-8.5a.75.75 0 0 1 0-1.5h8.5a.25.25 0 0 0 .25-.25V6.5h-13v1.75a.75.75 0 0 1-1.5 0ZM6.5 5h8V1.75a.25.25 0 0 0-.25-.25H6.5Zm-5 0H5V1.5H1.75a.25.25 0 0 0-.25.25Z"/><path d="M1.5 13.737a2.25 2.25 0 0 1 2.262-2.25L4 11.49v1.938c0 .218.26.331.42.183l2.883-2.677a.25.25 0 0 0 0-.366L4.42 7.89a.25.25 0 0 0-.42.183V9.99l-.23-.001A3.75 3.75 0 0 0 0 13.738v1.012a.75.75 0 0 0 1.5 0z"/></svg> Projects
+				
+			</a>
+			
+			
+			<a class="item" href="/SoSYS/-/packages">
+				<svg viewBox="0 0 16 16" class="svg octicon-package" aria-hidden="true" width="16" height="16"><path d="m8.878.392 5.25 3.045c.54.314.872.89.872 1.514v6.098a1.75 1.75 0 0 1-.872 1.514l-5.25 3.045a1.75 1.75 0 0 1-1.756 0l-5.25-3.045A1.75 1.75 0 0 1 1 11.049V4.951c0-.624.332-1.201.872-1.514L7.122.392a1.75 1.75 0 0 1 1.756 0M7.875 1.69l-4.63 2.685L8 7.133l4.755-2.758-4.63-2.685a.25.25 0 0 0-.25 0M2.5 5.677v5.372c0 .09.047.171.125.216l4.625 2.683V8.432Zm6.25 8.271 4.625-2.683a.25.25 0 0 0 .125-.216V5.677L8.75 8.432Z"/></svg> Packages
+			</a>
+			
+			
+			
+			
+			
+			
+		</div>
+	</overflow-menu>
+</div>
+
+
+
+	<div class="ui container">
+		<div class="ui mobile reversed stackable grid">
+			<div class="ui  column">
+				
+				<div class="ui small secondary filter menu">
+	<form class="ui form ignore-dirty tw-w-full flex-text-block tw-flex-wrap" data-global-init="initRepositorySearch">
+		
+		
+		
+		
+		<div class="ui small fluid action input tw-flex-1">
+			
+
+
+<input type="search" name="q" maxlength="255" spellcheck="false" placeholder="Search repos…">
+
+			
+
+<button class="ui small icon button" aria-label="Search…" ><svg viewBox="0 0 16 16" class="svg octicon-search" aria-hidden="true" width="16" height="16"><path d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.75.75 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7"/></svg></button>
+
+		</div>
+		
+		<div class="item ui small dropdown">
+			<span>Filter</span>
+			<svg viewBox="0 0 16 16" class="dropdown icon svg octicon-triangle-down" aria-hidden="true" width="14" height="14"><path d="m4.427 7.427 3.396 3.396a.25.25 0 0 0 .354 0l3.396-3.396A.25.25 0 0 0 11.396 7H4.604a.25.25 0 0 0-.177.427"/></svg>
+			<div class="menu flex-items-menu">
+				<label class="item repo-search-filter-reset js-aria-clickable">Clear Filter</label>
+				<div class="divider"></div>
+				<label class="item"><input type="radio" name="archived"  value="1"> Archived</label>
+				<label class="item"><input type="radio" name="archived"  value="0"> Not Archived</label>
+				<div class="divider"></div>
+				<label class="item"><input type="radio" name="fork"  value="1"> Forked</label>
+				<label class="item"><input type="radio" name="fork"  value="0"> Not Forked</label>
+				<div class="divider"></div>
+				<label class="item"><input type="radio" name="mirror"  value="1"> Mirrored</label>
+				<label class="item"><input type="radio" name="mirror"  value="0"> Not Mirrored</label>
+				<div class="divider"></div>
+				<label class="item"><input type="radio" name="template"  value="1"> Template</label>
+				<label class="item"><input type="radio" name="template"  value="0"> Not Template</label>
+				<div class="divider"></div>
+				<label class="item"><input type="radio" name="private"  value="1"> Private</label>
+				<label class="item"><input type="radio" name="private"  value="0"> Public</label>
+			</div>
+		</div>
+		
+		<div class="item ui small dropdown">
+			<span>Sort</span>
+			<svg viewBox="0 0 16 16" class="dropdown icon svg octicon-triangle-down" aria-hidden="true" width="14" height="14"><path d="m4.427 7.427 3.396 3.396a.25.25 0 0 0 .354 0l3.396-3.396A.25.25 0 0 0 11.396 7H4.604a.25.25 0 0 0-.177.427"/></svg>
+			<div class="menu">
+				<label class="item"><input hidden type="radio" name="sort"  value="newest"> Newest</label>
+				<label class="item"><input hidden type="radio" name="sort"  value="oldest"> Oldest</label>
+				<label class="item"><input hidden type="radio" name="sort"  value="alphabetically"> Alphabetically</label>
+				<label class="item"><input hidden type="radio" name="sort"  value="reversealphabetically"> Reverse alphabetically</label>
+				<label class="active item"><input hidden type="radio" name="sort" checked value="recentupdate"> Most recently updated</label>
+				<label class="item"><input hidden type="radio" name="sort"  value="leastupdate"> Least recently updated</label>
+				
+					<label class="item"><input hidden type="radio" name="sort"  value="moststars"> Most stars</label>
+					<label class="item"><input hidden type="radio" name="sort"  value="feweststars"> Fewest stars</label>
+				
+				<label class="item"><input hidden type="radio" name="sort"  value="mostforks"> Most forks</label>
+				<label class="item"><input hidden type="radio" name="sort"  value="fewestforks"> Fewest forks</label>
+				<label class="item"><input hidden type="radio" name="sort"  value="size"> Smallest size</label>
+				<label class="item"><input hidden type="radio" name="sort"  value="reversesize"> Largest size</label>
+			</div>
+		</div>
+	</form>
+</div>
+
+
+				<div class="divider"></div>
+				
+					<div class="flex-divided-list items-with-main">
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/FloatLand">FloatLand</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=Vue">
+								<i class="color-icon" style="background-color: #41b883"></i>
+								Vue
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/FloatLand/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/FloatLand/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/FloatLand/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+					<div class="item-body">The Solar Network web app.</div>
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-07T10:03:56Z" data-tooltip-content data-tooltip-interactive="true">2026-10-07 10:03:56 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/Stargate">Stargate</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=Go">
+								<i class="color-icon" style="background-color: #00ADD8"></i>
+								Go
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/Stargate/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/Stargate/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/Stargate/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-07T09:55:14Z" data-tooltip-content data-tooltip-interactive="true">2026-10-07 09:55:14 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/SolWatt">SolWatt</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=Dart">
+								<i class="color-icon" style="background-color: #00B4AB"></i>
+								Dart
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/SolWatt/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/SolWatt/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/SolWatt/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+					<div class="item-body">The WattEngine&#39;s app</div>
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-07T07:28:18Z" data-tooltip-content data-tooltip-interactive="true">2026-10-07 07:28:18 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/Solian">Solian</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=Dart">
+								<i class="color-icon" style="background-color: #00B4AB"></i>
+								Dart
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/Solian/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/Solian/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/Solian/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+					<div class="item-body">Solian 的继任者</div>
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-07T05:01:05Z" data-tooltip-content data-tooltip-interactive="true">2026-10-07 05:01:05 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/DysonNetwork">DysonNetwork</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=C%23">
+								<i class="color-icon" style="background-color: #178600"></i>
+								C#
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/DysonNetwork/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/DysonNetwork/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/DysonNetwork/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-06T12:56:56Z" data-tooltip-content data-tooltip-interactive="true">2026-10-06 12:56:56 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/WattEngine">WattEngine</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=C%23">
+								<i class="color-icon" style="background-color: #178600"></i>
+								C#
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/WattEngine/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/WattEngine/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/WattEngine/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+					<div class="item-body">The Solar Network workspace server-side software (SolarWatt)</div>
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-06T04:40:26Z" data-tooltip-content data-tooltip-interactive="true">2026-10-06 04:40:26 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/Sokai">Sokai</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=JavaScript">
+								<i class="color-icon" style="background-color: #f1e05a"></i>
+								JavaScript
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/Sokai/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/Sokai/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/Sokai/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-05T14:50:32Z" data-tooltip-content data-tooltip-interactive="true">2026-10-05 14:50:32 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/Socommon">Socommon</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=Dart">
+								<i class="color-icon" style="background-color: #00B4AB"></i>
+								Dart
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/Socommon/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/Socommon/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/Socommon/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-05T11:47:25Z" data-tooltip-content data-tooltip-interactive="true">2026-10-05 11:47:25 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/Persona">Persona</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=Go">
+								<i class="color-icon" style="background-color: #00ADD8"></i>
+								Go
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/Persona/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/Persona/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/Persona/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+					<div class="item-body">Persona, the software backed the Solar Network AI and 咩酱</div>
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-05T11:03:52Z" data-tooltip-content data-tooltip-interactive="true">2026-10-05 11:03:52 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/Spec">Spec</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=Protocol%20Buffer">
+								<i class="color-icon" style="background-color: #cccccc"></i>
+								Protocol Buffer
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/Spec/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/Spec/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/Spec/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+					<div class="item-body">The protobuf that using to communicate between Solar Network services.</div>
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-05T09:47:48Z" data-tooltip-content data-tooltip-interactive="true">2026-10-05 09:47:48 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/Solwatch">Solwatch</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=Swift">
+								<i class="color-icon" style="background-color: #F05138"></i>
+								Swift
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/Solwatch/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/Solwatch/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/Solwatch/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-05T09:47:33Z" data-tooltip-content data-tooltip-interactive="true">2026-10-05 09:47:33 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/PhysicalPassportWriter">PhysicalPassportWriter</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=C%23">
+								<i class="color-icon" style="background-color: #178600"></i>
+								C#
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/PhysicalPassportWriter/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/PhysicalPassportWriter/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/PhysicalPassportWriter/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-05T09:47:07Z" data-tooltip-content data-tooltip-interactive="true">2026-10-05 09:47:07 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/NeTo">NeTo</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=C%23">
+								<i class="color-icon" style="background-color: #178600"></i>
+								C#
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/NeTo/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/NeTo/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/NeTo/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+					<div class="item-body">Solar Network server-side dotnet SDK</div>
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-05T09:46:43Z" data-tooltip-content data-tooltip-interactive="true">2026-10-05 09:46:43 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/Metoer">Metoer</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=Go">
+								<i class="color-icon" style="background-color: #00ADD8"></i>
+								Go
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/Metoer/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/Metoer/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/Metoer/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-05T09:46:31Z" data-tooltip-content data-tooltip-interactive="true">2026-10-05 09:46:31 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+		<div class="item">
+			<div class="item-leading">
+				
+					
+
+	<svg viewBox="0 0 16 16" class="svg octicon-repo" aria-hidden="true" width="24" height="24"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.25.25 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
+
+
+				
+			</div>
+			<div class="item-main">
+				<div class="item-header">
+					<div class="item-title">
+						
+						<a class="tw-text-primary name" href="/SoSYS/MinecraftPlugin">MinecraftPlugin</a>
+						<span class="label-list">
+							
+							
+								
+							
+							
+							
+						</span>
+					</div>
+					<div class="item-trailing muted-links">
+						
+							<a class="flex-text-block" href="?q=&sort=recentupdate&language=Kotlin">
+								<i class="color-icon" style="background-color: #A97BFF"></i>
+								Kotlin
+							</a>
+						
+						
+							<a class="flex-text-inline" href="/SoSYS/MinecraftPlugin/stars">
+								<span class="tw-contents" aria-label="Stars"><svg viewBox="0 0 16 16" class="svg octicon-star" aria-hidden="true" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25m0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41z"/></svg></span>
+								<span >0</span>
+							</a>
+						
+						<a class="flex-text-inline" href="/SoSYS/MinecraftPlugin/pulls">
+							<span class="tw-contents" aria-label="Pull Requests"><svg viewBox="0 0 16 16" class="svg octicon-git-pull-request" aria-hidden="true" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25m5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354M3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5m8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+						<a class="flex-text-inline" href="/SoSYS/MinecraftPlugin/forks">
+							<span class="tw-contents" aria-label="Forks"><svg viewBox="0 0 16 16" class="svg octicon-repo-forked" aria-hidden="true" width="16" height="16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0M5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0m6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5m-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0"/></svg></span>
+							<span >0</span>
+						</a>
+					</div>
+				</div>
+				
+				
+					<div class="item-body">The Solar Network Connect Minecraft Server Plugin</div>
+				
+				
+				<div class="item-body">Updated <relative-time prefix="" tense="past" datetime="2026-10-05T09:46:29Z" data-tooltip-content data-tooltip-interactive="true">2026-10-05 09:46:29 +00:00</relative-time></div>
+			</div>
+		</div>
+	
+</div>
+
+					
+
+
+
+	
+		
+		<div class="center page buttons">
+			<div class="ui borderless pagination menu">
+				
+				<a class="disabled item navigation" >
+					<svg viewBox="0 0 16 16" class="tw-mr-1 svg gitea-double-chevron-left" aria-hidden="true" width="16" height="16"><g fill-rule="evenodd"><path d="M7.91 12.77a.75.75 0 0 1-1.06 0L2.61 8.52a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 1.06L4.2 8l3.72 3.72a.75.75 0 0 1 0 1.06z"/><path d="M13.39 12.77a.75.75 0 0 1-1.06 0L8.08 8.52a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 1.06L9.67 8l3.72 3.72a.75.75 0 0 1 0 1.06z"/></g></svg>
+					<span class="navigation_label">First</span>
+				</a>
+				
+
+				<a class="disabled item navigation" >
+					<svg viewBox="0 0 16 16" class="tw-mr-1 svg octicon-chevron-left" aria-hidden="true" width="16" height="16"><path d="M9.78 12.78a.75.75 0 0 1-1.06 0L4.47 8.53a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.042.018.75.75 0 0 1 .018 1.042L6.06 8l3.72 3.72a.75.75 0 0 1 0 1.06"/></svg>
+					<span class="navigation_label">Previous</span>
+				</a>
+				
+				
+				
+					
+						
+						<a class="active item" >1</a>
+					
+				
+					
+						
+						<a class="item" href="/SoSYS?page=2">2</a>
+					
+				
+				<a class=" item navigation" href="/SoSYS?page=2">
+					<span class="navigation_label">Next</span>
+					<svg viewBox="0 0 16 16" class="tw-ml-1 svg octicon-chevron-right" aria-hidden="true" width="16" height="16"><path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.042-.018.75.75 0 0 1-.018-1.042L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06"/></svg>
+				</a>
+
+				
+				<a class=" item navigation" href="/SoSYS?page=2">
+					<span class="navigation_label">Last</span>
+					<svg viewBox="0 0 16 16" class="tw-ml-1 svg gitea-double-chevron-right" aria-hidden="true" width="16" height="16"><g fill-rule="evenodd"><path d="M8.09 3.23a.75.75 0 0 1 1.06 0l4.24 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.8 8 8.08 4.28a.75.75 0 0 1 0-1.06z"/><path d="M2.61 3.23a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L6.33 8 2.61 4.28a.75.75 0 0 1 0-1.06z"/></g></svg>
+				</a>
+				
+			</div>
+		</div>
+	
+
+
+				
+			</div>
+
+			
+		</div>
+	</div>
+</div>
+
+
+		
+	</div>
+	
+	<footer class="page-footer" role="group" aria-label="Footer">
+	<div class="left-links" role="contentinfo" aria-label="About Software">
+		
+			<a target="_blank" href="https://about.gitea.com">Powered by Gitea</a>
+		
+		
+			<span>
+			Version:
+			
+				1.27.3
+			
+			</span>
+		
+		
+			<span>
+				Page: <strong>42ms</strong>
+				Template: <strong>6ms</strong>
+			</span>
+		
+		
+	</div>
+	<div class="right-links" role="group" aria-label="Links">
+		<div class="ui dropdown custom" id="footer-theme-selector">
+			<span class="default-text"><div class="theme-menu-item" data-tooltip-content=""><svg viewBox="490 490 820 820" class="svg gitea-eclipse" aria-hidden="true" width="16" height="16"><path d="M866.7 582.1A321.3 321.3 0 0 0 738.6 623a317.3 317.3 0 0 0-109.1 108.5A418 418 0 0 0 609 772a335.3 335.3 0 0 0-19.6 71.5 205.2 205.2 0 0 0-2.8 45c0 25.8.2 29.3 2.8 45 4.1 25.4 9.9 46.4 19.6 71.5a314.2 314.2 0 0 0 111.6 137.3A306.8 306.8 0 0 0 893 1196a308.6 308.6 0 0 0 303.6-262.5c2.6-15.7 2.8-19.2 2.8-45s-.2-29.3-2.8-45A335.3 335.3 0 0 0 1177 772a314.2 314.2 0 0 0-111.6-137.3A308.3 308.3 0 0 0 918 582c-13-1.1-38.2-1.1-51.3.1M747 663.5l-2.4 16.7c-4 26.4-4.9 41.1-4.3 65.3a323.7 323.7 0 0 0 37.2 145c18.2 36 41.3 66.6 72 95.5a346.4 346.4 0 0 0 208.5 93.1l18 1.6 4.5.5-8.5 8a259.3 259.3 0 0 1-141.5 65.8 281 281 0 0 1-123.9-11.4 267.2 267.2 0 0 1-181.7-269.9c2-27.6 5.7-47.6 13.3-70.7a281.2 281.2 0 0 1 46.4-85c8-10.1 28-30.2 37.9-38.1 13.8-11.1 24.5-18.3 24.5-16.4"/></svg> GitHub Default Auto </div></span>
+			<div class="menu theme-menu"></div>
+		</div>
+		<div class="ui dropdown upward">
+			<span class="flex-text-inline"><svg viewBox="0 0 16 16" class="svg octicon-globe" aria-hidden="true" width="14" height="14"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0M5.78 8.75a9.64 9.64 0 0 0 1.363 4.177q.383.64.857 1.215c.245-.296.551-.705.857-1.215A9.64 9.64 0 0 0 10.22 8.75Zm4.44-1.5a9.64 9.64 0 0 0-1.363-4.177c-.307-.51-.612-.919-.857-1.215a10 10 0 0 0-.857 1.215A9.64 9.64 0 0 0 5.78 7.25Zm-5.944 1.5H1.543a6.51 6.51 0 0 0 4.666 5.5q-.184-.271-.352-.552c-.715-1.192-1.437-2.874-1.581-4.948m-2.733-1.5h2.733c.144-2.074.866-3.756 1.58-4.948q.18-.295.353-.552a6.51 6.51 0 0 0-4.666 5.5m10.181 1.5c-.144 2.074-.866 3.756-1.58 4.948q-.18.296-.353.552a6.51 6.51 0 0 0 4.666-5.5Zm2.733-1.5a6.51 6.51 0 0 0-4.666-5.5q.184.272.353.552c.714 1.192 1.436 2.874 1.58 4.948Z"/></svg> English</span>
+			<div class="menu language-menu">
+				<a lang="id-ID" data-url="/?lang=id-ID" class="item ">Bahasa Indonesia</a>
+				<a lang="de-DE" data-url="/?lang=de-DE" class="item ">Deutsch</a>
+				<a lang="en-US" data-url="/?lang=en-US" class="item selected">English</a>
+				<a lang="es-ES" data-url="/?lang=es-ES" class="item ">Español</a>
+				<a lang="fr-FR" data-url="/?lang=fr-FR" class="item ">Français</a>
+				<a lang="ga-IE" data-url="/?lang=ga-IE" class="item ">Gaeilge</a>
+				<a lang="it-IT" data-url="/?lang=it-IT" class="item ">Italiano</a>
+				<a lang="lv-LV" data-url="/?lang=lv-LV" class="item ">Latviešu</a>
+				<a lang="hu-HU" data-url="/?lang=hu-HU" class="item ">Magyar nyelv</a>
+				<a lang="nl-NL" data-url="/?lang=nl-NL" class="item ">Nederlands</a>
+				<a lang="pl-PL" data-url="/?lang=pl-PL" class="item ">Polski</a>
+				<a lang="pt-PT" data-url="/?lang=pt-PT" class="item ">Português de Portugal</a>
+				<a lang="pt-BR" data-url="/?lang=pt-BR" class="item ">Português do Brasil</a>
+				<a lang="fi-FI" data-url="/?lang=fi-FI" class="item ">Suomi</a>
+				<a lang="sv-SE" data-url="/?lang=sv-SE" class="item ">Svenska</a>
+				<a lang="tr-TR" data-url="/?lang=tr-TR" class="item ">Türkçe</a>
+				<a lang="cs-CZ" data-url="/?lang=cs-CZ" class="item ">Čeština</a>
+				<a lang="el-GR" data-url="/?lang=el-GR" class="item ">Ελληνικά</a>
+				<a lang="bg-BG" data-url="/?lang=bg-BG" class="item ">Български</a>
+				<a lang="ru-RU" data-url="/?lang=ru-RU" class="item ">Русский</a>
+				<a lang="uk-UA" data-url="/?lang=uk-UA" class="item ">Українська</a>
+				<a lang="fa-IR" data-url="/?lang=fa-IR" class="item ">فارسی</a>
+				<a lang="ml-IN" data-url="/?lang=ml-IN" class="item ">മലയാളം</a>
+				<a lang="ja-JP" data-url="/?lang=ja-JP" class="item ">日本語</a>
+				<a lang="zh-CN" data-url="/?lang=zh-CN" class="item ">简体中文</a>
+				<a lang="zh-TW" data-url="/?lang=zh-TW" class="item ">繁體中文（台灣）</a>
+				<a lang="zh-HK" data-url="/?lang=zh-HK" class="item ">繁體中文（香港）</a>
+				<a lang="ko-KR" data-url="/?lang=ko-KR" class="item ">한국어</a>
+				</div>
+		</div>
+		<a href="/assets/licenses.txt">Licenses</a>
+		<a href="/api/swagger">API</a>
+		<a class="item" target="_blank" rel="noopener noreferrer" href="https://solsynth.dev/zh/icp/202600000" target="_blank">羝 ICP 备 202600000 号</a>
+
+	</div>
+</footer>
+
+	<script nonce="0a5888f1e64ff263469baf4c68d24dcd" type="module" src="/assets/js/index.C6rrIx7F.js"></script>
+	
+	<script nonce="0a5888f1e64ff263469baf4c68d24dcd" type="module">
+	if (!window.config?.frontendInited && window.config?.runModeIsProd) alert("Frontend is not initialized, check console errors or asset files.");
+	</script>
+</body>
+</html>
+

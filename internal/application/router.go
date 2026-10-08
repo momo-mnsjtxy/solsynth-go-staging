@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"path"
 	"solsynth.local/go-migration/internal/federationhttp"
+	"solsynth.local/go-migration/ports/develop/bots"
 	"solsynth.local/go-migration/ports/passport/presence"
 	"solsynth.local/go-migration/ports/passport/progression"
 	"solsynth.local/go-migration/ports/sphere/timeline"
@@ -15,8 +16,8 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
-	calls, federationPublic, federationPrivate                                                                                                                                                                                           http.Handler
-	board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps, commerce, signin, timeline, surveys, stickers, locations, presence, progression, merchants, tickets http.Handler
+	calls, federationPublic, federationPrivate                                                                                                                                                                                                           http.Handler
+	board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps, commerce, signin, timeline, surveys, stickers, locations, presence, progression, merchants, tickets, bots, calendar http.Handler
 }
 type router struct{ modules }
 
@@ -206,6 +207,12 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.public != nil && publicCatalogRoute(canonical) && (service == "wallet" || service == "passport" || service == "api") {
 		target = h.public
 	}
+	if h.calendar != nil && (service == "api" || service == "passport") && calendarRoute(canonical) {
+		target = h.calendar
+	}
+	if h.bots != nil && (service == "api" || service == "develop") && bots.RouteMatches(canonical) {
+		target = h.bots
+	}
 	if h.tickets != nil && (service == "api" || service == "passport") && ticketRoute(canonical) {
 		target = h.tickets
 	}
@@ -324,4 +331,12 @@ func ticketRoute(p string) bool {
 		}
 	}
 	return false
+}
+
+func calendarRoute(p string) bool {
+	if under(p, "/api/notable-days") {
+		return true
+	}
+	v := strings.Split(strings.Trim(p, "/"), "/")
+	return len(v) >= 4 && v[0] == "api" && v[1] == "accounts" && v[3] == "calendar"
 }

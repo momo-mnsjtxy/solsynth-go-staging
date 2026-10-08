@@ -145,14 +145,13 @@ func (r *Repository) publisher(ctx context.Context, tx *sql.Tx, actor, selector 
 	if len(selector) == 0 || len(selector) > 256 {
 		return "", false, timeline.ErrPublisherNotFound
 	}
-	q := `SELECT u.id::text,COALESCE((SELECT requires_approval FROM owned_publisher_follow_policy f WHERE f.publisher_id=u.id),false) FROM owned_publishers u WHERE u.deleted_at IS NULL AND u.type=0 AND(u.id::text=$2 OR lower(u.name)=lower($2)) AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=u.account_id AND NOT a.disabled)`
+	match := `lower(u.name)=lower($2)`
+	if authority.ValidID(selector) {
+		match = `u.id=$2::uuid`
+	}
+	q := `SELECT u.id::text,COALESCE((SELECT requires_approval FROM owned_publisher_follow_policy f WHERE f.publisher_id=u.id),false) FROM owned_publishers u WHERE u.deleted_at IS NULL AND ` + match + ` AND (u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=u.account_id AND NOT a.disabled)) AND $1::text IS NOT NULL AND ` + postpg.PublisherPredicate(r.visibility)
 	if r.visibility != nil {
 		q += ` AND NOT (` + r.visibility.PostBlockedSQL() + `)`
-	} else {
-		q += ` AND ($1::text IS NOT NULL)`
-	}
-	if lock {
-		q += ` FOR UPDATE OF u`
 	}
 	var pid string
 	var approval bool
@@ -160,10 +159,38 @@ func (r *Repository) publisher(ctx context.Context, tx *sql.Tx, actor, selector 
 	if errors.Is(e, sql.ErrNoRows) {
 		return "", false, timeline.ErrPublisherNotFound
 	}
+	if e != nil || !lock {
+		return pid, approval, e
+	}
+	scopes, e := postpg.PrelockPublisherRealms(ctx, tx, r.visibility, []string{pid})
+	if e != nil {
+		return "", false, e
+	}
+	observed := pid
+	e = tx.QueryRowContext(ctx, q+` FOR UPDATE OF u`, actor, selector).Scan(&pid, &approval)
+	if errors.Is(e, sql.ErrNoRows) {
+		return "", false, timeline.ErrPublisherNotFound
+	}
+	if e != nil {
+		return "", false, e
+	}
+	if pid != observed {
+		return "", false, posts.ErrConflict
+	}
+	if e = accountpg.VerifyPublisherRealms(ctx, tx, scopes); e != nil {
+		return "", false, e
+	}
+	// The locking SELECT may have waited; realm membership/privacy must be
+	// evaluated again in a fresh ReadCommitted statement after that wait.
+	e = tx.QueryRowContext(ctx, q, actor, selector).Scan(&pid, &approval)
+	if errors.Is(e, sql.ErrNoRows) {
+		return "", false, timeline.ErrPublisherNotFound
+	}
 	return pid, approval, e
 }
-func requireManager(ctx context.Context, tx *sql.Tx, actor, publisher string) error {
-	if _, e := accountpg.New(nil).RequirePostEditor(ctx, tx, actor, publisher); e != nil {
+func (r *Repository) requireManager(ctx context.Context, tx *sql.Tx, actor, publisher string) error {
+	realms, _ := r.visibility.(accountpg.RealmProvider)
+	if _, e := accountpg.New(nil).WithRealms(realms).RequirePostEditor(ctx, tx, actor, publisher); e != nil {
 		return e
 	}
 	var allowed bool

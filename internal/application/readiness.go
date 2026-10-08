@@ -23,6 +23,16 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err != nil || !ready {
 		return errors.New("domain schema unavailable")
 	}
+	if b.calendar != nil {
+		if err := b.calendar.Ready(ctx); err != nil {
+			return err
+		}
+	}
+	if b.bots != nil {
+		if err := b.bots.Ready(ctx); err != nil {
+			return err
+		}
+	}
 	if b.tickets != nil {
 		if err := b.tickets.Ready(ctx); err != nil {
 			return err

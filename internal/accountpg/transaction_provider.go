@@ -17,11 +17,11 @@ func (r *Repository) RequirePostEditor(ctx context.Context, tx *sql.Tx, actor, p
 	if tx == nil || !authority.ValidID(actor) {
 		return accounts.Publisher{}, accounts.ErrForbidden
 	}
-	p, e := lookupPublisher(ctx, tx, publisher, true)
+	p, e := r.lockPublisher(ctx, tx, actor, publisher)
 	if e != nil {
 		return p, e
 	}
-	if e = require(ctx, tx, p.ID, actor, accounts.Editor); e != nil {
+	if e = r.require(ctx, tx, p.ID, actor, accounts.Editor); e != nil {
 		return accounts.Publisher{}, e
 	}
 	return p, nil
@@ -60,7 +60,7 @@ func (r *Repository) ListPostPublisherIDs(ctx context.Context, tx *sql.Tx, actor
 	if tx == nil || !authority.ValidID(actor) {
 		return nil, accounts.ErrForbidden
 	}
-	rows, e := tx.QueryContext(ctx, `SELECT p.id::text FROM owned_publishers p JOIN owned_publisher_members m ON m.publisher_id=p.id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE m.account_id=$1 AND NOT a.disabled AND m.role>=$2 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=p.account_id AND NOT owner.disabled)) ORDER BY p.created_at,p.id`, actor, accounts.Editor)
+	rows, e := tx.QueryContext(ctx, `SELECT p.id::text FROM owned_publishers p JOIN owned_publisher_members m ON m.publisher_id=p.id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE m.account_id=$1 AND NOT a.disabled AND m.role>=$2 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=p.account_id AND NOT owner.disabled)) AND `+r.publisherMember("p", "$1")+` ORDER BY p.created_at,p.id`, actor, accounts.Editor)
 	if e != nil {
 		return nil, e
 	}

@@ -552,6 +552,16 @@ func TestPGExamsRewardSinkAtomicAndIdempotent(t *testing.T) {
 		t.Fatal("partial sink write survived savepoint", n)
 	}
 	sink.fail = false
+	// Place only this synthetic receipt first so the bounded worker case cannot
+	// consume unrelated pending fixtures in this shared disposable database.
+	query(t, f.db, `UPDATE owned_exam_rewards SET created_at='2000-01-01T00:00:00Z' WHERE account_id=$1 AND test_id=$2`, f.actor, exam.ID)
+	if n, e := f.repo.RetryPendingRewards(f.ctx, 1); e != nil || n != 1 {
+		t.Fatal("durable reward retry", n, e)
+	}
+	recovered := ticketExec[tickets.Attempt](t, f, f.ctx, f.actor, tickets.Command{Operation: "attempt.get", ID: start.ID})
+	if recovered.RewardPending {
+		t.Fatal("successful retry left reward pending")
+	}
 	for i := 0; i < 2; i++ {
 		start = ticketExec[tickets.Attempt](t, f, f.ctx, f.actor, tickets.Command{Operation: "attempt.start", Key: exam.Key})
 		done = ticketExec[tickets.Attempt](t, f, f.ctx, f.actor, tickets.Command{Operation: "attempt.submit", ID: start.ID, Answers: []tickets.AnswerInput{correctInput(qs[0])}})

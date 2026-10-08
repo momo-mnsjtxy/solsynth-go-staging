@@ -191,6 +191,11 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Service) publisherRead(w http.ResponseWriter, r *http.Request, p []string) {
 	ctx := r.Context()
+	viewer, e := s.publisherViewer(r)
+	if e != nil {
+		failure(w, e)
+		return
+	}
 	switch {
 	case len(p) == 0:
 		actor, e := s.principal(r)
@@ -198,7 +203,7 @@ func (s *Service) publisherRead(w http.ResponseWriter, r *http.Request, p []stri
 			failure(w, e)
 			return
 		}
-		out, e := s.Repository.ListPublishers(ctx, actor.Account.ID)
+		out, e := s.listPublishers(ctx, actor.Account.ID, actor.Account.ID)
 		if e != nil {
 			failure(w, e)
 			return
@@ -217,14 +222,14 @@ func (s *Service) publisherRead(w http.ResponseWriter, r *http.Request, p []stri
 		}
 		send(w, 200, out)
 	case len(p) == 2 && p[0] == "of":
-		out, e := s.Repository.ListPublishers(ctx, p[1])
+		out, e := s.listPublishers(ctx, viewer, p[1])
 		if e != nil {
 			failure(w, e)
 			return
 		}
 		send(w, 200, out)
 	case len(p) == 1 && p[0] != "quota" && p[0] != "search" && p[0] != "leaderboard":
-		out, e := s.Repository.LookupPublisher(ctx, p[0])
+		out, e := s.lookupPublisher(ctx, viewer, p[0])
 		if e != nil {
 			failure(w, e)
 			return
@@ -245,7 +250,7 @@ func (s *Service) publisherRead(w http.ResponseWriter, r *http.Request, p []stri
 			failure(w, ErrInvalid)
 			return
 		}
-		out, total, e := s.Repository.ListMembers(ctx, p[0], off, take)
+		out, total, e := s.listPublisherMembers(ctx, viewer, p[0], off, take)
 		if e != nil {
 			failure(w, e)
 			return
@@ -258,7 +263,7 @@ func (s *Service) publisherRead(w http.ResponseWriter, r *http.Request, p []stri
 			failure(w, e)
 			return
 		}
-		pub, e := s.Repository.LookupPublisher(ctx, p[0])
+		pub, e := s.lookupPublisher(ctx, viewer, p[0])
 		if e != nil {
 			failure(w, e)
 			return
@@ -278,6 +283,9 @@ func (s *Service) publisherWrite(w http.ResponseWriter, r *http.Request, p []str
 	var change MemberChange
 	var operation string
 	switch {
+	case len(p) == 2 && p[0] == "organization" && r.Method == "POST":
+		permission = "publishers.create"
+		operation = "organization"
 	case len(p) == 1 && p[0] == "individual" && r.Method == "POST":
 		permission = "publishers.create"
 		operation = "create"
@@ -328,18 +336,25 @@ func (s *Service) publisherWrite(w http.ResponseWriter, r *http.Request, p []str
 	}
 	ctx := r.Context()
 	switch operation {
-	case "create", "update":
+	case "create", "organization", "update":
 		var patch PublisherPatch
 		if e = decode(w, r, &patch); e != nil {
 			failure(w, e)
 			return
 		}
-		if e = ValidatePublisher(patch, operation == "create"); e != nil {
+		if e = ValidatePublisher(patch, operation != "update"); e != nil {
 			failure(w, e)
 			return
 		}
 		var out Publisher
-		if operation == "create" {
+		if operation == "organization" {
+			organization, ok := s.Repository.(OrganizationPublisherRepository)
+			if !ok {
+				failure(w, ErrUnsupported)
+				return
+			}
+			out, e = organization.CreateOrganizationPublisher(ctx, actor.Account.ID, p[1], patch)
+		} else if operation == "create" {
 			out, e = s.Repository.CreatePublisher(ctx, actor.Account.ID, patch)
 		} else {
 			out, e = s.Repository.UpdatePublisher(ctx, actor.Account.ID, p[0], patch)
@@ -383,7 +398,7 @@ func (s *Service) publisherWrite(w http.ResponseWriter, r *http.Request, p []str
 		case DeclineInvite, RemoveMember, LeavePublisher:
 			w.WriteHeader(204)
 		case AcceptInvite:
-			pub, e := s.Repository.LookupPublisher(ctx, out.PublisherID)
+			pub, e := s.lookupPublisher(ctx, actor.Account.ID, out.PublisherID)
 			if e != nil {
 				failure(w, e)
 				return

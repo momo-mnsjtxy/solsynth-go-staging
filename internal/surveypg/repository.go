@@ -17,6 +17,7 @@ import (
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/media"
 	"solsynth.local/go-migration/ports/passport/accounts"
+	"solsynth.local/go-migration/ports/sphere/posts"
 	"solsynth.local/go-migration/ports/sphere/surveys"
 	"sort"
 	"strings"
@@ -48,6 +49,8 @@ func NewWithAuthority(db *sql.DB, g *authoritypg.TransactionGuard) *Repository {
 }
 func (r *Repository) WithVisibility(v postpg.VisibilityProvider) *Repository {
 	r.visibility = v
+	realms, _ := v.(accountpg.RealmProvider)
+	r.publishers.WithRealms(realms)
 	return r
 }
 func (r *Repository) WithMedia(m surveys.MediaResolver) *Repository { r.media = m; return r }
@@ -145,6 +148,13 @@ func (r *Repository) load(ctx context.Context, tx *sql.Tx, actor, id string, edi
 	if e := tx.QueryRowContext(ctx, `SELECT publisher_id::text FROM owned_surveys WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&pub); e != nil {
 		return x, mapped(e)
 	}
+	scopes, e := postpg.PrelockPublisherRealms(ctx, tx, r.visibility, []string{pub})
+	if e != nil {
+		if errors.Is(e, posts.ErrNotFound) {
+			return x, surveys.ErrNotFound
+		}
+		return x, e
+	}
 	if edit {
 		if _, e := r.publishers.RequirePostEditor(ctx, tx, actor, pub); e != nil {
 			return x, e
@@ -160,9 +170,22 @@ func (r *Repository) load(ctx context.Context, tx *sql.Tx, actor, id string, edi
 		lock = " FOR UPDATE OF s"
 	}
 	var questions, attachments []byte
-	e := tx.QueryRowContext(ctx, `SELECT s.id::text,s.publisher_id::text,s.post_id::text,s.title,s.description,s.ended_at,s.is_anonymous,s.hide_results,s.status,s.questions,s.attachment_ids,s.created_at,s.updated_at,s.published_at,p.id::text,p.name,p.nick,p.bio,p.type,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at FROM owned_surveys s JOIN owned_publishers p ON p.id=s.publisher_id WHERE s.id=$1 AND s.deleted_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled))`+lock, id).Scan(&x.s.ID, &x.s.PublisherID, &x.s.PostID, &x.s.Title, &x.s.Description, &x.s.EndedAt, &x.s.Anonymous, &x.s.HideResults, &x.s.Status, &questions, &attachments, &x.s.CreatedAt, &x.s.UpdatedAt, &x.s.PublishedAt, &x.s.Publisher.ID, &x.s.Publisher.Name, &x.s.Publisher.Nick, &x.s.Publisher.Bio, &x.s.Publisher.Type, &x.s.Publisher.AccountID, &x.s.Publisher.RealmID, &x.s.Publisher.CreatedAt, &x.s.Publisher.UpdatedAt)
+	e = tx.QueryRowContext(ctx, `SELECT s.id::text,s.publisher_id::text,s.post_id::text,s.title,s.description,s.ended_at,s.is_anonymous,s.hide_results,s.status,s.questions,s.attachment_ids,s.created_at,s.updated_at,s.published_at,p.id::text,p.name,p.nick,p.bio,p.type,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at FROM owned_surveys s JOIN owned_publishers p ON p.id=s.publisher_id WHERE s.id=$1 AND s.deleted_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled))`+lock, id).Scan(&x.s.ID, &x.s.PublisherID, &x.s.PostID, &x.s.Title, &x.s.Description, &x.s.EndedAt, &x.s.Anonymous, &x.s.HideResults, &x.s.Status, &questions, &attachments, &x.s.CreatedAt, &x.s.UpdatedAt, &x.s.PublishedAt, &x.s.Publisher.ID, &x.s.Publisher.Name, &x.s.Publisher.Nick, &x.s.Publisher.Bio, &x.s.Publisher.Type, &x.s.Publisher.AccountID, &x.s.Publisher.RealmID, &x.s.Publisher.CreatedAt, &x.s.Publisher.UpdatedAt)
 	if e != nil {
 		return x, mapped(e)
+	}
+	if x.s.PublisherID != pub {
+		return x, surveys.ErrConflict
+	}
+	if e = accountpg.VerifyPublisherRealms(ctx, tx, scopes); e != nil {
+		return x, e
+	}
+	visible, e := postpg.CanViewPublisher(ctx, tx, actor, pub, r.visibility)
+	if e != nil {
+		return x, e
+	}
+	if !visible {
+		return x, surveys.ErrNotFound
 	}
 	if e = json.Unmarshal(questions, &x.s.Questions); e != nil {
 		return x, e
@@ -219,7 +242,7 @@ func (r *Repository) role(ctx context.Context, tx *sql.Tx, actor, pub string, ro
 		return false, nil
 	}
 	var ok bool
-	e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=$1 AND NOT a.disabled AND (a.is_superuser OR EXISTS(SELECT 1 FROM owned_publisher_members m WHERE m.account_id=a.id AND m.publisher_id=$2 AND m.role>=$3 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL)))`, actor, pub, role).Scan(&ok)
+	e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=$1 AND NOT a.disabled AND (a.is_superuser OR EXISTS(SELECT 1 FROM owned_publisher_members m JOIN owned_publishers u ON u.id=m.publisher_id WHERE m.account_id=a.id AND m.publisher_id=$2 AND m.role>=$3 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND `+postpg.PublisherMemberPredicate(r.visibility)+`)))`, actor, pub, role).Scan(&ok)
 	return ok, e
 }
 func audit(ctx context.Context, tx *sql.Tx, actor, id, action string, now time.Time) error {
@@ -353,7 +376,7 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, p surve
 	if e != nil {
 		return surveys.Survey{}, e
 	}
-	if pub.Type != 0 {
+	if pub.Type != 0 && (pub.Type != 1 || pub.RealmID == nil) {
 		return surveys.Survey{}, surveys.ErrUnsupported
 	}
 	id, e := uid()

@@ -169,8 +169,10 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 		if e != nil {
 			return e
 		}
-		// Realm publishing needs a realm membership provider, even for plain text.
-		if pub.Type != 0 {
+		if pub.Type != 0 && (pub.Type != 1 || pub.RealmID == nil) {
+			return posts.ErrUnsupported
+		}
+		if pub.Type == 1 && v.Visibility != nil && (*v.Visibility == posts.Friends || *v.Visibility == posts.CloseFriends) {
 			return posts.ErrUnsupported
 		}
 		id, e := newID()
@@ -210,7 +212,7 @@ func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v
 	if e != nil {
 		return posts.Post{}, e
 	}
-	if pub.Type != 0 {
+	if pub.Type != 0 && (pub.Type != 1 || pub.RealmID == nil) {
 		return posts.Post{}, posts.ErrUnsupported
 	}
 	p, e := scan(tx.QueryRowContext(ctx, `SELECT `+columns+base+` AND p.id=$1 FOR UPDATE OF p`, id))
@@ -249,6 +251,9 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 		switch action {
 		case "update":
 			apply(&p, v)
+			if p.Publisher.Type == 1 && (p.Visibility == posts.Friends || p.Visibility == posts.CloseFriends) {
+				return posts.ErrUnsupported
+			}
 		case "publish":
 			if p.DraftedAt == nil {
 				return posts.ErrNotDraft
@@ -363,6 +368,13 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 		if e != nil {
 			return nil, 0, mapped(e)
 		}
+		visible, e := CanViewPublisher(ctx, tx, actor, id, r.visibility)
+		if e != nil {
+			return nil, 0, e
+		}
+		if !visible {
+			return nil, 0, posts.ErrNotFound
+		}
 		if o.Drafts {
 			var allowed bool
 			e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publisher_members WHERE publisher_id=$1 AND account_id=$2 AND joined_at IS NOT NULL AND revoked_at IS NULL AND role>=50)`, id, actor).Scan(&allowed)
@@ -374,10 +386,10 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 			}
 		}
 	}
-	where := base + ` AND u.type=0 AND ($2='' OR u.id::text=$2 OR lower(u.name)=lower($2)) AND ($3::integer IS NULL OR p.type=$3)`
+	where := base + ` AND ` + PublisherPredicate(r.visibility) + ` AND ($2='' OR u.id::text=$2 OR lower(u.name)=lower($2)) AND ($3::integer IS NULL OR p.type=$3)`
 	order := `p.published_at`
 	if o.Drafts {
-		where += ` AND p.drafted_at IS NOT NULL AND ` + editor
+		where += ` AND p.drafted_at IS NOT NULL AND ` + EditorPredicateWithVisibility(r.visibility)
 		if r.visibility != nil {
 			where += ` AND NOT (` + r.visibility.PostBlockedSQL() + `)`
 		}

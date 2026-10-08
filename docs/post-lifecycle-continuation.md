@@ -81,7 +81,7 @@ unavailable FilterWithVisibility implementation's exact behavior:
   and list totals are computed from the same visibility-filtered snapshot.
 - A revoked or pending membership gives no editor access. Disabled actors,
   disabled individual publisher owners, deleted publishers and deleted posts
-  cannot expose private data. Realm publishers are unsupported even for text.
+  cannot expose private data. Organization publishers are now supported through the later [realm publishing continuation](realm-publishing-continuation.md); independent post `realm_id` associations remain unsupported.
 - Relationship-dependent visibility (Friends, CloseFriends, QuietPublic),
   gatekept subscriptions, blocking and realm policy have no synthetic fallback.
   The owned publisher schema does not import those states. Legacy data must not

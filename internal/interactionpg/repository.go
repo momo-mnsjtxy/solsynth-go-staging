@@ -125,6 +125,10 @@ func (r *Repository) lockPost(ctx context.Context, tx *sql.Tx, actor, id string)
 	if e := tx.QueryRowContext(ctx, `SELECT publisher_id::text FROM owned_text_posts WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&pub); e != nil {
 		return posts.Post{}, missing(e)
 	}
+	scopes, e := postpg.PrelockPublisherRealms(ctx, tx, r.visibility, []string{pub})
+	if e != nil {
+		return posts.Post{}, e
+	}
 	var held string
 	if e := tx.QueryRowContext(ctx, `SELECT id::text FROM owned_publishers WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, pub).Scan(&held); e != nil {
 		return posts.Post{}, missing(e)
@@ -132,9 +136,15 @@ func (r *Repository) lockPost(ctx context.Context, tx *sql.Tx, actor, id string)
 	if e := tx.QueryRowContext(ctx, `SELECT id::text FROM owned_text_posts WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, id).Scan(&held); e != nil {
 		return posts.Post{}, missing(e)
 	}
+	if e = accountpg.VerifyPublisherRealms(ctx, tx, scopes); e != nil {
+		return posts.Post{}, e
+	}
 	p, e := postpg.ReadWithVisibility(ctx, tx, actor, id, r.visibility)
 	if e != nil {
 		return p, e
+	}
+	if p.PublisherID != pub {
+		return posts.Post{}, posts.ErrConflict
 	}
 	if p.DraftedAt != nil {
 		return posts.Post{}, posts.ErrNotFound
@@ -378,5 +388,7 @@ func (r *Repository) BindAuthority(ctx context.Context, p authority.Principal) c
 
 func (r *Repository) WithVisibility(v postpg.VisibilityProvider) *Repository {
 	r.visibility = v
+	realms, _ := v.(accountpg.RealmProvider)
+	r.publishers.WithRealms(realms)
 	return r
 }

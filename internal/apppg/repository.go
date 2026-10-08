@@ -103,7 +103,7 @@ func audit(ctx context.Context, tx *sql.Tx, actor, app, action, target string, n
 }
 func developer(ctx context.Context, q queryer, actor, name string, role int, lock bool) (apps.Developer, error) {
 	var d apps.Developer
-	s := `SELECT d.id::text,d.publisher_id::text,p.name,d.created_at FROM owned_developers d JOIN owned_publishers p ON p.id=d.publisher_id JOIN owned_publisher_members m ON m.publisher_id=p.id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE lower(p.name)=lower($1) AND p.deleted_at IS NULL AND m.account_id=$2 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND m.role>=$3 AND NOT a.disabled`
+	s := `SELECT d.id::text,d.publisher_id::text,p.name,d.created_at FROM owned_developers d JOIN owned_publishers p ON p.id=d.publisher_id JOIN owned_publisher_members m ON m.publisher_id=p.id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE lower(p.name)=lower($1) AND p.deleted_at IS NULL AND p.type=0 AND m.account_id=$2 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND m.role>=$3 AND NOT a.disabled`
 	if lock {
 		s += ` FOR UPDATE OF p,m`
 	}
@@ -147,7 +147,7 @@ func (r *Repository) Developers(ctx context.Context, actor, name string, enroll 
 	if enroll {
 		e := r.write(ctx, actor, "developers.create", func(tx *sql.Tx, now time.Time) error {
 			var pub string
-			if e := tx.QueryRowContext(ctx, `SELECT p.id::text FROM owned_publishers p JOIN owned_publisher_members m ON m.publisher_id=p.id WHERE lower(p.name)=lower($1) AND p.deleted_at IS NULL AND m.account_id=$2 AND m.role=200 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL FOR UPDATE OF p,m`, name, actor).Scan(&pub); e != nil {
+			if e := tx.QueryRowContext(ctx, `SELECT p.id::text FROM owned_publishers p JOIN owned_publisher_members m ON m.publisher_id=p.id WHERE lower(p.name)=lower($1) AND p.deleted_at IS NULL AND p.type=0 AND m.account_id=$2 AND m.role=200 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL FOR UPDATE OF p,m`, name, actor).Scan(&pub); e != nil {
 				return apps.ErrForbidden
 			}
 			uid, e := id()
@@ -163,7 +163,7 @@ func (r *Repository) Developers(ctx context.Context, actor, name string, enroll 
 		})
 		return out, e
 	}
-	query := `SELECT d.id::text,d.publisher_id::text,p.name,d.created_at FROM owned_developers d JOIN owned_publishers p ON p.id=d.publisher_id WHERE p.deleted_at IS NULL`
+	query := `SELECT d.id::text,d.publisher_id::text,p.name,d.created_at FROM owned_developers d JOIN owned_publishers p ON p.id=d.publisher_id WHERE p.deleted_at IS NULL AND p.type=0`
 	args := []any{}
 	if name != "" {
 		query += ` AND lower(p.name)=lower($1)`
@@ -282,7 +282,10 @@ func (r *Repository) Projects(ctx context.Context, s apps.Scope, projectID strin
 
 const appColumns = `a.id::text,a.project_id::text,d.publisher_id::text,a.slug,a.name,a.description,a.status,a.links,a.oauth_config,a.created_at,a.updated_at`
 const appJoins = ` FROM owned_custom_apps a JOIN owned_dev_projects p ON p.id=a.project_id JOIN owned_developers d ON d.id=p.developer_id JOIN owned_publishers pub ON pub.id=d.publisher_id `
-const activeApp = `a.deleted_at IS NULL AND p.deleted_at IS NULL AND pub.deleted_at IS NULL`
+
+// Organization developer/apps remain unsupported until their public projections
+// have a canonical realm policy. Never publish a private realm identity here.
+const activeApp = `a.deleted_at IS NULL AND p.deleted_at IS NULL AND pub.deleted_at IS NULL AND pub.type=0`
 
 func appScan(row scanner) (apps.App, error) {
 	var a apps.App

@@ -2,21 +2,21 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "audited211 plus canonical merchant controls and ticket/exam composition",
+  "local_source_checkpoint": "organization realm publishers, canonical bots/miniapps, calendar and exam reward retry",
   "last_fully_passed_ci": {
-    "commit": "d4ee9b826ae65138ba53d460ff5874d4181384fa",
-    "run": 37737268425,
-    "before": 122,
-    "after_restart": 20
+    "commit": "df782ccb6eeafb3c27429fe5ae4a3cb76641075d",
+    "run": 37752979316,
+    "before": 228,
+    "after_restart": 33
   },
   "latest_candidate": {
-    "commit": "7a303070429a5a37e02599c77407e501a7ec56a0",
-    "required_before": 211,
-    "required_after_restart": 31,
-    "status": "CI pending; previous211 failed3fixture cases; actual restart phase still pending"
+    "commit": null,
+    "required_before": 251,
+    "required_after_restart": 36,
+    "status": "Local build/vet/race passed; actual PostgreSQL and restart validation pending publication"
   },
-  "local_required_before": 228,
-  "local_required_after_restart": 33,
+  "local_required_before": 251,
+  "local_required_after_restart": 36,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -31,7 +31,7 @@
         "TestPGDeveloperAppsRestartPersistence"
       ],
       "unsupported_or_remaining": [
-        "External OAuth/OIDC, bot provisioning, recurring fulfillment"
+        "OAuth/OIDC integration in progress; recurring app fulfillment"
       ]
     },
     {
@@ -64,17 +64,23 @@
     },
     {
       "source_family": "develop.bots",
-      "local_status": "candidate_only",
+      "local_status": "partial",
       "supported_flows": [
-        "Retained standalone SQL command-read candidate"
+        "Canonical app-owned bot accounts, controlled lifecycle, command metadata and fresh authority checks"
       ],
       "guarded_pg_cases": [
-        "TestPGDevelopBotCommandsPayloads",
-        "TestPGDevelopBotCommandsPolicyAndErrors",
-        "TestPGDevelopBotCommandsRestartPersistence"
+        "TestPGBotsCanonicalLifecycleAndCommands",
+        "TestPGBotsScopeIsolationHTTPAndFreshAuthority",
+        "TestPGBotsQuotaConcurrencyAndAtomicRollback",
+        "TestPGBotsOpposingEditorsAndOwnerDisable",
+        "TestPGBotsRevocationAndControlledDeactivation",
+        "TestPGBotsPolicyTimeBoundariesAndPublisherRevocation",
+        "TestPGBotsMiniappCanonicalPackagesAndPrivacy",
+        "TestPGBotsRestartPersistence",
+        "TestPGBackendBotMiniappComposition"
       ],
       "unsupported_or_remaining": [
-        "Bot account provisioning, authorization and command execution"
+        "Command execution, bot credential enrollment, external webhooks and legacy migration"
       ]
     },
     {
@@ -99,18 +105,23 @@
     },
     {
       "source_family": "develop.miniapps",
-      "local_status": "candidate_only",
+      "local_status": "partial",
       "supported_flows": [
-        "Retained standalone package download/counter candidate"
+        "Private miniapp lifecycle, production metadata and authorized canonical media ZIP package publication/download"
       ],
       "guarded_pg_cases": [
-        "TestPGDevelopPackageAtomicCounter",
-        "TestPGDevelopPackageDownloadBranches",
-        "TestPGDevelopPackagePolicyAndFailures",
-        "TestPGDevelopPackageRestartPersistence"
+        "TestPGBotsCanonicalLifecycleAndCommands",
+        "TestPGBotsScopeIsolationHTTPAndFreshAuthority",
+        "TestPGBotsQuotaConcurrencyAndAtomicRollback",
+        "TestPGBotsOpposingEditorsAndOwnerDisable",
+        "TestPGBotsRevocationAndControlledDeactivation",
+        "TestPGBotsPolicyTimeBoundariesAndPublisherRevocation",
+        "TestPGBotsMiniappCanonicalPackagesAndPrivacy",
+        "TestPGBotsRestartPersistence",
+        "TestPGBackendBotMiniappComposition"
       ],
       "unsupported_or_remaining": [
-        "Miniapp CRUD, release publication, hosted execution"
+        "Hosted execution, legacy multipart/image contracts and legacy migration"
       ]
     },
     {
@@ -224,7 +235,7 @@
         "TestPGBackendPresenceProgressionLocationComposition"
       ],
       "unsupported_or_remaining": [
-        "Presence/status, contacts, paid rename, external identity providers"
+        "Contacts, paid rename and external identity providers"
       ]
     },
     {
@@ -271,7 +282,7 @@
         "TestPGSocialTransactionsAndHTTP"
       ],
       "unsupported_or_remaining": [
-        "Mute expiry, custom roles/permissions, boosts, organization publisher creation"
+        "Mute expiry, custom roles/permissions and boosts"
       ]
     },
     {
@@ -301,7 +312,8 @@
       "supported_flows": [
         "Private support cases/messages/assignment and on-call",
         "Exam bank, immutable attempts, automatic/manual grading, trials",
-        "Explicit canonical group mappings and once-per-test canonical XP reward"
+        "Explicit canonical group mappings and once-per-test canonical XP reward",
+        "Bounded durable reward retry worker applies canonical XP once without regrading"
       ],
       "guarded_pg_cases": [
         "TestPGTicketsPrivateSupportLifecycle",
@@ -321,11 +333,22 @@
     },
     {
       "source_family": "passport.notable_days",
-      "local_status": "not_implemented",
-      "supported_flows": [],
-      "guarded_pg_cases": [],
+      "local_status": "partial",
+      "supported_flows": [
+        "Regional notable-day CRUD, calendar recurrence/month/search/countdown and subscriptions",
+        "Canonical privacy-aware activity overlays; independently verified lunisolar calculation"
+      ],
+      "guarded_pg_cases": [
+        "TestPGNotableDayCatalogLunarAndStableLookup",
+        "TestPGCalendarPrivacySubscriptionsAndSearch",
+        "TestPGCalendarRecurrenceMutationAndHTTPBounds",
+        "TestPGCalendarCanonicalActivityOverlayPrivacy",
+        "TestPGCalendarAtomicityAndFreshAuthority",
+        "TestPGCalendarRestartPersistence",
+        "TestPGBackendCalendarComposition"
+      ],
       "unsupported_or_remaining": [
-        "Notable-day and calendar lifecycle"
+        "Regional seed corpus, icon/background media associations and unverified merged activity type codes"
       ]
     },
     {
@@ -402,7 +425,8 @@
       "source_family": "sphere.publishers",
       "local_status": "partial",
       "supported_flows": [
-        "Canonical publisher identity, memberships, defaults and quotas"
+        "Canonical publisher identity, memberships, defaults and quotas",
+        "Realm-moderator organization creation; current realm visibility/membership gates on publisher and nested content"
       ],
       "guarded_pg_cases": [
         "TestPGAccountsAtomicRollbackAndQuotaRace",
@@ -414,10 +438,17 @@
         "TestPGSocialRealms",
         "TestPGSocialRelationships",
         "TestPGSocialRestartPersistence",
-        "TestPGSocialTransactionsAndHTTP"
+        "TestPGSocialTransactionsAndHTTP",
+        "TestPGRealmPublisherCreationRolesQuotaAndMetadata",
+        "TestPGRealmPublisherPostTimelineNestedPrivacy",
+        "TestPGRealmPublisherMediaSurveyStickerAndFederationPrivacy",
+        "TestPGRealmPublisherLockWaitRechecks",
+        "TestPGRealmPublisherOppositeRepliesAndRollback",
+        "TestPGRealmPublisherRestartPersistence",
+        "TestPGRealmPublisherUnsupportedPublicIntegrations"
       ],
       "unsupported_or_remaining": [
-        "Publisher following awaiting timeline integration; ratings/settlement/subscription administration"
+        "Ratings/settlement/subscription administration; organization collections/sticker management/apps/taxonomy/federation remain unsupported"
       ]
     },
     {
@@ -489,7 +520,8 @@
       "local_status": "partial",
       "supported_flows": [
         "Text lifecycle, visibility, reactions/bookmarks/collections and taxonomy links",
-        "Ordered canonical media attachments, attachment-only posts and dynamic private download visibility"
+        "Ordered canonical media attachments, attachment-only posts and dynamic private download visibility",
+        "Replies/reposts and canonical timeline hydration; realm-publisher privacy gates"
       ],
       "guarded_pg_cases": [
         "TestPGPostInteractionsAuditRollback",
@@ -518,7 +550,7 @@
         "TestPGBackendContentComposition"
       ],
       "unsupported_or_remaining": [
-        "Replies/reposts awaiting timeline integration; attachment publication, Blog, scheduling/moderation and remaining source operations"
+        "Post-level realm association queued separately; attachment publication, Blog, scheduling/moderation and remaining source operations"
       ]
     },
     {
@@ -661,7 +693,7 @@
   ],
   "global_remaining": [
     "Full original external contracts and migration/rollback validation",
-    "Independent auth/transaction review fixes pending integration",
+    "OAuth/OIDC, post-level realm links and fortune jobs are isolated work in progress",
     "Configured providers, secrets and production deployment require separate authorization; no live transmissions performed"
   ]
 }

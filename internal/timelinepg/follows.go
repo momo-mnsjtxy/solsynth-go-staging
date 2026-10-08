@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/sphere/posts"
@@ -145,7 +146,7 @@ func (r *Repository) Subscriptions(ctx context.Context, actor string, offset, ta
 		return nil, 0, e
 	}
 	defer tx.Rollback()
-	where := ` FROM owned_publisher_follows f JOIN owned_publishers u ON u.id=f.publisher_id JOIN owned_authority_accounts a ON a.id=u.account_id WHERE f.account_id=$1 AND f.ended_at IS NULL AND f.state='accepted' AND u.deleted_at IS NULL AND NOT a.disabled`
+	where := ` FROM owned_publisher_follows f JOIN owned_publishers u ON u.id=f.publisher_id LEFT JOIN owned_authority_accounts a ON a.id=u.account_id WHERE f.account_id=$1 AND f.ended_at IS NULL AND f.state='accepted' AND u.deleted_at IS NULL AND (u.account_id IS NULL OR NOT a.disabled) AND ` + postpg.PublisherPredicate(r.visibility)
 	if r.visibility != nil {
 		where += ` AND NOT (` + r.visibility.PostBlockedSQL() + `)`
 	}
@@ -196,7 +197,7 @@ func (r *Repository) FollowRequests(ctx context.Context, actor, selector string)
 		return nil, e
 	}
 	var manager bool
-	e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publisher_members WHERE publisher_id=$1 AND account_id=$2 AND role>=100 AND joined_at IS NOT NULL AND revoked_at IS NULL)`, pub, actor).Scan(&manager)
+	e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publisher_members m JOIN owned_publishers u ON u.id=m.publisher_id WHERE m.publisher_id=$2 AND m.account_id=$1 AND m.role>=100 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND `+postpg.PublisherMemberPredicate(r.visibility)+`)`, actor, pub).Scan(&manager)
 	if e != nil {
 		return nil, e
 	}
@@ -236,7 +237,7 @@ func (r *Repository) DecideFollow(ctx context.Context, actor, selector, request 
 		if e != nil {
 			return e
 		}
-		if e = requireManager(ctx, tx, actor, pub); e != nil {
+		if e = r.requireManager(ctx, tx, actor, pub); e != nil {
 			return e
 		}
 		// The requested publisher scopes the request ID; one publisher's manager

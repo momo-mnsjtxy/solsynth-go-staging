@@ -14,6 +14,7 @@ import (
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/media"
+	"solsynth.local/go-migration/ports/sphere/posts"
 	"solsynth.local/go-migration/ports/sphere/stickers"
 	"solsynth.local/go-migration/ports/sphere/surveys"
 	"sort"
@@ -47,6 +48,8 @@ func NewWithAuthority(db *sql.DB, g *authoritypg.TransactionGuard) *Repository {
 func (r *Repository) WithMedia(m surveys.MediaResolver) *Repository { r.media = m; return r }
 func (r *Repository) WithVisibility(v postpg.VisibilityProvider) *Repository {
 	r.visibility = v
+	realms, _ := v.(accountpg.RealmProvider)
+	r.publishers.WithRealms(realms)
 	return r
 }
 func (r *Repository) BindAuthority(ctx context.Context, p authority.Principal) context.Context {
@@ -145,6 +148,13 @@ func (r *Repository) pack(ctx context.Context, tx *sql.Tx, actor, selector strin
 	if e != nil {
 		return x, mapped(e)
 	}
+	scopes, e := postpg.PrelockPublisherRealms(ctx, tx, r.visibility, []string{pub})
+	if e != nil {
+		if errors.Is(e, posts.ErrNotFound) {
+			return x, stickers.ErrNotFound
+		}
+		return x, e
+	}
 	if edit {
 		if _, e = r.publishers.RequirePostEditor(ctx, tx, actor, pub); e != nil {
 			return x, e
@@ -161,6 +171,22 @@ func (r *Repository) pack(ctx context.Context, tx *sql.Tx, actor, selector strin
 	e = tx.QueryRowContext(ctx, `SELECT s.id::text,s.publisher_id::text,s.name,s.description,s.prefix,s.icon_id::text,s.created_at,s.updated_at,p.id::text,p.name,p.nick,p.bio,p.type,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at FROM owned_sticker_packs s JOIN owned_publishers p ON p.id=s.publisher_id WHERE s.id=$1 AND s.deleted_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled))`+lock, id).Scan(&x.p.ID, &x.p.PublisherID, &x.p.Name, &x.p.Description, &x.p.Prefix, &x.icon, &x.p.CreatedAt, &x.p.UpdatedAt, &x.p.Publisher.ID, &x.p.Publisher.Name, &x.p.Publisher.Nick, &x.p.Publisher.Bio, &x.p.Publisher.Type, &x.p.Publisher.AccountID, &x.p.Publisher.RealmID, &x.p.Publisher.CreatedAt, &x.p.Publisher.UpdatedAt)
 	if e != nil {
 		return x, mapped(e)
+	}
+	if x.p.PublisherID != pub {
+		return x, stickers.ErrConflict
+	}
+	if e = accountpg.VerifyPublisherRealms(ctx, tx, scopes); e != nil {
+		return x, e
+	}
+	visible, e := postpg.CanViewPublisher(ctx, tx, actor, pub, r.visibility)
+	if e != nil {
+		return x, e
+	}
+	if !visible {
+		return x, stickers.ErrNotFound
+	}
+	if edit && x.p.Publisher.Type != 0 {
+		return x, stickers.ErrUnsupported
 	}
 	if r.visibility != nil && actor != "" && x.p.Publisher.AccountID != nil {
 		blocked, e := r.visibility.IsBlockedInTransaction(ctx, tx, actor, *x.p.Publisher.AccountID)

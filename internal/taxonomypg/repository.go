@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"solsynth.local/go-migration/ports/sphere/taxonomy"
@@ -85,7 +86,11 @@ func get(ctx context.Context, tx *policyTx, k taxonomy.Kind, slug string, count,
 	if count {
 		u = usage(k)
 	}
-	q := "SELECT " + fields(k) + "," + u + " FROM " + tbl + " t WHERE lower(t.slug)=$1 AND t.deleted_at IS NULL LIMIT 1"
+	q := "SELECT " + fields(k) + "," + u + " FROM " + tbl + " t WHERE lower(t.slug)=$1 AND t.deleted_at IS NULL"
+	if tx.owned && k == taxonomy.Tag {
+		q += " AND " + ownedTagPublisherScope
+	}
+	q += " LIMIT 1"
 	if lock {
 		q += " FOR UPDATE"
 	}
@@ -200,6 +205,10 @@ func (r *Repository) List(ctx context.Context, q taxonomy.Query) (taxonomy.Page,
 	countSQL, rowsSQL, args, err := buildList(q, r.publicVisibility)
 	if err != nil {
 		return taxonomy.Page{}, err
+	}
+	if r.owned && q.Kind == taxonomy.Tag {
+		countSQL = strings.Replace(countSQL, "WHERE t.deleted_at IS NULL", "WHERE t.deleted_at IS NULL AND "+ownedTagPublisherScope, 1)
+		rowsSQL = strings.Replace(rowsSQL, "WHERE t.deleted_at IS NULL", "WHERE t.deleted_at IS NULL AND "+ownedTagPublisherScope, 1)
 	}
 	tx, err := r.begin(ctx, &sql.TxOptions{ReadOnly: true, Isolation: sql.LevelRepeatableRead})
 	if err != nil {
@@ -439,7 +448,11 @@ func (r *Repository) Quota(ctx context.Context, id string) ([]taxonomy.QuotaReco
 	if !taxonomy.ValidID(id) {
 		return nil, taxonomy.ErrInvalid
 	}
-	rows, err := r.db.QueryContext(ctx, policySQL(`SELECT id::text,slug,name,description,is_protected,is_event,event_ends_at FROM taxonomy_candidate.post_tags WHERE owner_publisher_id=$1 AND deleted_at IS NULL ORDER BY is_protected DESC,updated_at DESC`, r.owned), id)
+	q := `SELECT id::text,slug,name,description,is_protected,is_event,event_ends_at FROM taxonomy_candidate.post_tags WHERE owner_publisher_id=$1 AND deleted_at IS NULL`
+	if r.owned {
+		q += ` AND EXISTS(SELECT 1 FROM owned_publishers owner WHERE owner.id=$1 AND owner.type=0)`
+	}
+	rows, err := r.db.QueryContext(ctx, policySQL(q+` ORDER BY is_protected DESC,updated_at DESC`, r.owned), id)
 	if err != nil {
 		return nil, err
 	}
@@ -600,3 +613,7 @@ func appendAudit(ctx context.Context, tx *policyTx, row taxonomy.Record, operati
 	_, err := tx.ExecContext(ctx, `INSERT INTO taxonomy_candidate.actions(actor_id,is_admin,resource_kind,resource_id,operation,occurred_at) VALUES($1,$2,$3,$4,$5,$6)`, row.AuditActorID, row.AuditAdmin, string(row.Kind), row.ID, operation, row.UpdatedAt)
 	return err
 }
+
+// Owned organization tag ownership has no public realm policy yet. Retained or
+// imported rows cannot reveal a private publisher through global taxonomy.
+const ownedTagPublisherScope = `(t.owner_publisher_id IS NULL OR EXISTS(SELECT 1 FROM owned_publishers owner WHERE owner.id=t.owner_publisher_id AND owner.type=0))`

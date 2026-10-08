@@ -1,0 +1,11 @@
+{
+  "commit": "df782ccb6eeafb3c27429fe5ae4a3cb76641075d",
+  "workflow_run": 37752979316,
+  "job": 113230471787,
+  "conclusion": "success",
+  "required_pg_before": 228,
+  "required_pg_after_actual_database_restart": 33,
+  "skipped": 0,
+  "composed_merchant_and_exam_xp_group_flows": "passed",
+  "scope": "Merchant/ticket/exam composition plus all preceding audited modules; later realm/bot/calendar changes not included"
+}

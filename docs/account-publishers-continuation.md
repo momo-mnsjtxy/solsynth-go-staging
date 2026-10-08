@@ -1,5 +1,7 @@
 # Owned account and publisher continuation
 
+Organization creation and realm-scoped publisher access are now implemented by the later [realm publishing continuation](realm-publishing-continuation.md). Its explicit scope replaces this slice's original organization-provider gap below.
+
 This is a bounded, independently owned Go account/profile and publisher implementation. It uses canonical authority account rows and PostgreSQL persistence. It is not a claim of legacy Stargate/Shared wire or database compatibility, and it does not implement the complete Passport or Sphere service.
 
 ## Source and ownership boundary

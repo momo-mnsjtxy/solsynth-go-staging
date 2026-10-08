@@ -25,6 +25,7 @@ type Repository struct {
 	now              func() time.Time
 	guard            TransactionGuard
 	requireAuthority bool
+	realms           RealmProvider
 }
 
 // New permits reads but denies writes until a transaction guard is supplied.
@@ -251,49 +252,10 @@ func hydrate(ctx context.Context, q querier, p *accounts.Publisher) error {
 	return nil
 }
 func (r *Repository) LookupPublisher(ctx context.Context, ref string) (accounts.Publisher, error) {
-	if r == nil || r.db == nil {
-		return accounts.Publisher{}, accounts.ErrUnavailable
-	}
-	p, e := lookupPublisher(ctx, r.db, ref, false)
-	if e == nil {
-		e = hydrate(ctx, r.db, &p)
-	}
-	return p, e
+	return r.LookupPublisherForViewer(ctx, "", ref)
 }
 func (r *Repository) ListPublishers(ctx context.Context, account string) ([]accounts.Publisher, error) {
-	if r == nil || r.db == nil {
-		return nil, accounts.ErrUnavailable
-	}
-	if !authority.ValidID(account) {
-		return nil, accounts.ErrInvalid
-	}
-	if _, e := r.LookupAccount(ctx, account); e != nil {
-		return nil, e
-	}
-	rows, e := r.db.QueryContext(ctx, `SELECT `+publisherColumns+` FROM owned_publishers p JOIN owned_publisher_members m ON m.publisher_id=p.id LEFT JOIN owned_publishing_settings s ON s.account_id=m.account_id WHERE m.account_id=$1 AND m.revoked_at IS NULL AND m.joined_at IS NOT NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled)) ORDER BY (s.default_publisher_id=p.id) DESC NULLS LAST,p.created_at,p.id`, account)
-	if e != nil {
-		return nil, e
-	}
-	items := []accounts.Publisher{}
-	for rows.Next() {
-		p, e := scanPublisher(rows)
-		if e != nil {
-			rows.Close()
-			return nil, e
-		}
-		items = append(items, p)
-	}
-	e = rows.Err()
-	rows.Close()
-	if e != nil {
-		return nil, e
-	}
-	for i := range items {
-		if e = hydrate(ctx, r.db, &items[i]); e != nil {
-			return nil, e
-		}
-	}
-	return items, nil
+	return r.ListPublishersForViewer(ctx, "", account)
 }
 
 const memberColumns = `m.id::text,m.publisher_id::text,m.account_id::text,m.role,m.joined_at,m.created_at,m.updated_at`
@@ -313,7 +275,19 @@ func (r *Repository) Membership(ctx context.Context, publisher, account string) 
 	if r == nil || r.db == nil {
 		return accounts.Member{}, accounts.ErrUnavailable
 	}
-	return membership(ctx, r.db, publisher, account)
+	m, e := membership(ctx, r.db, publisher, account)
+	if e != nil {
+		return m, e
+	}
+	var allowed bool
+	e = r.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publishers p WHERE p.id=$1 AND $2::text IS NOT NULL AND `+r.publisherMember("p", "$2")+`)`, publisher, account).Scan(&allowed)
+	if e != nil {
+		return accounts.Member{}, e
+	}
+	if !allowed {
+		return accounts.Member{}, accounts.ErrNotFound
+	}
+	return m, nil
 }
 func require(ctx context.Context, q querier, publisher, actor string, role accounts.Role) error {
 	m, e := membership(ctx, q, publisher, actor)
@@ -332,7 +306,7 @@ func (r *Repository) RequireManager(ctx context.Context, actor, publisher string
 	if r == nil || r.db == nil {
 		return accounts.ErrUnavailable
 	}
-	return require(ctx, r.db, publisher, actor, accounts.Manager)
+	return r.require(ctx, r.db, publisher, actor, accounts.Manager)
 }
 func (r *Repository) Resolve(ctx context.Context, actor, selector string) (string, error) {
 	if r == nil || r.db == nil {
@@ -346,20 +320,20 @@ func (r *Repository) Resolve(ctx context.Context, actor, selector string) (strin
 		if e != nil {
 			return "", e
 		}
-		if e = require(ctx, r.db, p.ID, actor, accounts.Viewer); e != nil {
+		if e = r.require(ctx, r.db, p.ID, actor, accounts.Viewer); e != nil {
 			return "", e
 		}
 		return p.ID, nil
 	}
 	var id string
-	e := r.db.QueryRowContext(ctx, `SELECT p.id::text FROM owned_publishing_settings s JOIN owned_publishers p ON p.id=s.default_publisher_id JOIN owned_publisher_members m ON m.publisher_id=p.id AND m.account_id=s.account_id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE s.account_id=$1 AND NOT a.disabled AND p.deleted_at IS NULL AND m.revoked_at IS NULL AND m.joined_at IS NOT NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=p.account_id AND NOT owner.disabled))`, actor).Scan(&id)
+	e := r.db.QueryRowContext(ctx, `SELECT p.id::text FROM owned_publishing_settings s JOIN owned_publishers p ON p.id=s.default_publisher_id JOIN owned_publisher_members m ON m.publisher_id=p.id AND m.account_id=s.account_id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE s.account_id=$1 AND NOT a.disabled AND p.deleted_at IS NULL AND m.revoked_at IS NULL AND m.joined_at IS NOT NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=p.account_id AND NOT owner.disabled)) AND `+r.publisherMember("p", "$1"), actor).Scan(&id)
 	if e == nil {
 		return id, nil
 	}
 	if !errors.Is(e, sql.ErrNoRows) {
 		return "", e
 	}
-	ps, e := r.ListPublishers(ctx, actor)
+	ps, e := r.ListPublishersForViewer(ctx, actor, actor)
 	if e != nil {
 		return "", e
 	}

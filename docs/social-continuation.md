@@ -86,9 +86,7 @@ custom realm permissions, labels, boosts/payments, file attachments, experience,
 moderation logs and quota projection return explicit unsupported responses
 where routed. Creation/update reject unsupported picture/background IDs.
 Custom numeric member roles are rejected; they are not interpreted as grants.
-Organization-publisher creation and automatic publisher role synchronization
-are outside this family. Realm membership and publisher membership remain
-separate permissions; realm deletion does revoke associated publishers.
+Organization-publisher creation is supplied by the later [realm publishing continuation](realm-publishing-continuation.md). Automatic publisher role synchronization remains unsupported. Realm membership and publisher membership remain separate permissions; realm deletion revokes associated publishers.
 
 These are owned behavior choices rather than claims of a full legacy model
 port. In particular, private realm metadata is guarded, pending memberships do

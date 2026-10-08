@@ -24,7 +24,7 @@ func (r *Repository) CreatePublisher(ctx context.Context, actor string, patch ac
 		if e != nil {
 			return e
 		}
-		if e = tx.QueryRowContext(ctx, `SELECT count(*) FROM owned_publishers WHERE account_id=$1 AND deleted_at IS NULL`, actor).Scan(&used); e != nil {
+		if e = tx.QueryRowContext(ctx, publisherQuotaUsed, actor).Scan(&used); e != nil {
 			return e
 		}
 		if used >= total {
@@ -62,11 +62,11 @@ func (r *Repository) UpdatePublisher(ctx context.Context, actor, ref string, pat
 	}
 	e := r.write(ctx, actor, "publishers.update", func(tx *sql.Tx, now time.Time) error {
 		var e error
-		p, e = lookupPublisher(ctx, tx, ref, true)
+		p, e = r.lockPublisher(ctx, tx, actor, ref)
 		if e != nil {
 			return e
 		}
-		if e = require(ctx, tx, p.ID, actor, accounts.Manager); e != nil {
+		if e = r.require(ctx, tx, p.ID, actor, accounts.Manager); e != nil {
 			return e
 		}
 		if patch.Nick != nil {
@@ -88,11 +88,11 @@ func (r *Repository) UpdatePublisher(ctx context.Context, actor, ref string, pat
 }
 func (r *Repository) DeletePublisher(ctx context.Context, actor, ref string) error {
 	return r.write(ctx, actor, "publishers.delete", func(tx *sql.Tx, now time.Time) error {
-		p, e := lookupPublisher(ctx, tx, ref, true)
+		p, e := r.lockPublisher(ctx, tx, actor, ref)
 		if e != nil {
 			return e
 		}
-		if e = require(ctx, tx, p.ID, actor, accounts.Owner); e != nil {
+		if e = r.require(ctx, tx, p.ID, actor, accounts.Owner); e != nil {
 			return e
 		}
 		if _, e = tx.ExecContext(ctx, `UPDATE owned_publishers SET deleted_at=$2,updated_at=$2 WHERE id=$1`, p.ID, now); e != nil {
@@ -126,9 +126,18 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c acco
 		return out, e
 	}
 	e = r.write(ctx, actor, permission, func(tx *sql.Tx, now time.Time) error {
-		p, e := lookupPublisher(ctx, tx, ref, true)
+		p, e := r.lockPublisher(ctx, tx, actor, ref)
 		if e != nil {
 			return e
+		}
+		if p.Type == 1 && (c.Action == accounts.InviteMember || c.Action == accounts.AcceptInvite || c.Action == accounts.UpdateRole) {
+			var joined bool
+			if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publishers p WHERE p.id=$1 AND `+r.publisherMember("p", "$2")+`)`, p.ID, c.AccountID).Scan(&joined); e != nil {
+				return e
+			}
+			if !joined {
+				return accounts.ErrForbidden
+			}
 		}
 		m, e := membership(ctx, tx, p.ID, c.AccountID)
 		if e != nil && !errors.Is(e, accounts.ErrNotFound) {
@@ -137,10 +146,10 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c acco
 		found := e == nil
 		switch c.Action {
 		case accounts.InviteMember:
-			if e = require(ctx, tx, p.ID, actor, accounts.Manager); e != nil {
+			if e = r.require(ctx, tx, p.ID, actor, accounts.Manager); e != nil {
 				return e
 			}
-			if e = require(ctx, tx, p.ID, actor, c.Role); e != nil {
+			if e = r.require(ctx, tx, p.ID, actor, c.Role); e != nil {
 				return e
 			}
 			if found {
@@ -188,10 +197,10 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c acco
 					return accounts.ErrNotFound
 				}
 			} else {
-				if e = require(ctx, tx, p.ID, actor, accounts.Manager); e != nil {
+				if e = r.require(ctx, tx, p.ID, actor, accounts.Manager); e != nil {
 					return e
 				}
-				if e = require(ctx, tx, p.ID, actor, m.Role); e != nil {
+				if e = r.require(ctx, tx, p.ID, actor, m.Role); e != nil {
 					return e
 				}
 			}
@@ -215,7 +224,7 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c acco
 			if c.Role > need {
 				need = c.Role
 			}
-			if e = require(ctx, tx, p.ID, actor, need); e != nil {
+			if e = r.require(ctx, tx, p.ID, actor, need); e != nil {
 				return e
 			}
 			m.Role = c.Role
@@ -245,6 +254,9 @@ func memberPermission(action accounts.Mutation) (string, error) {
 	}
 }
 func (r *Repository) ListMembers(ctx context.Context, ref string, offset, take int) ([]accounts.Member, int64, error) {
+	return r.ListMembersForViewer(ctx, "", ref, offset, take)
+}
+func (r *Repository) ListMembersForViewer(ctx context.Context, viewer, ref string, offset, take int) ([]accounts.Member, int64, error) {
 	if r == nil || r.db == nil {
 		return nil, 0, accounts.ErrUnavailable
 	}
@@ -256,12 +268,20 @@ func (r *Repository) ListMembers(ctx context.Context, ref string, offset, take i
 		return nil, 0, e
 	}
 	defer tx.Rollback()
-	p, e := lookupPublisher(ctx, tx, ref, false)
+	if viewer != "" {
+		if !authority.ValidID(viewer) {
+			return nil, 0, accounts.ErrForbidden
+		}
+		if _, e = lookupAccount(ctx, tx, viewer); e != nil {
+			return nil, 0, e
+		}
+	}
+	p, e := r.visiblePublisher(ctx, tx, viewer, ref)
 	if e != nil {
 		return nil, 0, e
 	}
 	var total int64
-	where := ` FROM owned_publisher_members m JOIN owned_authority_accounts a ON a.id=m.account_id WHERE m.publisher_id=$1 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND NOT a.disabled`
+	where := ` FROM owned_publisher_members m JOIN owned_authority_accounts a ON a.id=m.account_id JOIN owned_publishers p ON p.id=m.publisher_id WHERE m.publisher_id=$1 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND NOT a.disabled AND ` + r.publisherMember("p", "m.account_id")
 	if e = tx.QueryRowContext(ctx, `SELECT count(*)`+where, p.ID).Scan(&total); e != nil {
 		return nil, 0, e
 	}
@@ -305,7 +325,7 @@ func (r *Repository) ListInvites(ctx context.Context, actor string) ([]accounts.
 	if _, e := r.LookupAccount(ctx, actor); e != nil {
 		return nil, e
 	}
-	rows, e := r.db.QueryContext(ctx, `SELECT `+memberColumns+` FROM owned_publisher_members m JOIN owned_publishers p ON p.id=m.publisher_id WHERE m.account_id=$1 AND m.joined_at IS NULL AND m.revoked_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled)) ORDER BY m.created_at,m.id`, actor)
+	rows, e := r.db.QueryContext(ctx, `SELECT `+memberColumns+` FROM owned_publisher_members m JOIN owned_publishers p ON p.id=m.publisher_id WHERE m.account_id=$1 AND m.joined_at IS NULL AND m.revoked_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled)) AND `+r.publisherMember("p", "$1")+` ORDER BY m.created_at,m.id`, actor)
 	if e != nil {
 		return nil, e
 	}
@@ -324,7 +344,7 @@ func (r *Repository) ListInvites(ctx context.Context, actor string) ([]accounts.
 		return nil, e
 	}
 	for i := range out {
-		p, e := r.LookupPublisher(ctx, out[i].PublisherID)
+		p, e := r.LookupPublisherForViewer(ctx, actor, out[i].PublisherID)
 		if e != nil {
 			return nil, e
 		}

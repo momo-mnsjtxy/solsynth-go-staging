@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"sort"
 
+	"solsynth.local/go-migration/internal/accountpg"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/sphere/posts"
@@ -44,6 +45,10 @@ func (r *Repository) Prelock(ctx context.Context, tx *sql.Tx, actor, publisher s
 		ordered = append(ordered, id)
 	}
 	sort.Strings(ordered)
+	scopes, e := postpg.PrelockPublisherRealms(ctx, tx, r.visibility, ordered)
+	if e != nil {
+		return e
+	}
 	for _, id := range ordered {
 		mode := ` FOR SHARE`
 		if id == publisher {
@@ -53,6 +58,9 @@ func (r *Repository) Prelock(ctx context.Context, tx *sql.Tx, actor, publisher s
 		if e := tx.QueryRowContext(ctx, `SELECT id::text FROM owned_publishers WHERE id=$1 AND deleted_at IS NULL`+mode, id).Scan(&held); e != nil {
 			return missing(e)
 		}
+	}
+	if e = accountpg.VerifyPublisherRealms(ctx, tx, scopes); e != nil {
+		return e
 	}
 	ordered = ordered[:0]
 	for id := range targets {

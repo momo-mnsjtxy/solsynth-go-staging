@@ -12,6 +12,7 @@ import (
 	"solsynth.local/go-migration/internal/apppg"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/boardpg"
+	"solsynth.local/go-migration/internal/botpg"
 	"solsynth.local/go-migration/internal/chatpg"
 	"solsynth.local/go-migration/internal/commercepg"
 	"solsynth.local/go-migration/internal/interactionpg"
@@ -19,6 +20,7 @@ import (
 	"solsynth.local/go-migration/internal/mediapg"
 	"solsynth.local/go-migration/internal/merchantpg"
 	"solsynth.local/go-migration/internal/messagerpg"
+	"solsynth.local/go-migration/internal/notabledaypg"
 	"solsynth.local/go-migration/internal/notificationpg"
 	"solsynth.local/go-migration/internal/postmediapg"
 	"solsynth.local/go-migration/internal/postpg"
@@ -36,11 +38,13 @@ import (
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/develop/apps"
+	"solsynth.local/go-migration/ports/develop/bots"
 	"solsynth.local/go-migration/ports/media"
 	"solsynth.local/go-migration/ports/messager/rooms"
 	"solsynth.local/go-migration/ports/notifications"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/board"
+	"solsynth.local/go-migration/ports/passport/notabledays"
 	"solsynth.local/go-migration/ports/passport/presence"
 	"solsynth.local/go-migration/ports/passport/progression"
 	"solsynth.local/go-migration/ports/passport/social"
@@ -89,6 +93,8 @@ type Backend struct {
 	progression              *progressionpg.Repository
 	progressionNotifications progressionNotifications
 	tickets                  *ticketpg.Repository
+	bots                     *botpg.Repository
+	calendar                 *notabledaypg.Repository
 	signinEnabled            bool
 	external                 externalModules
 }
@@ -182,6 +188,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	locationRepo := locationpg.NewWithAuthority(db, guard)
 	locationHTTP := locations.NewHandler(locationRepo, postIdentity{identity})
 	socialRepo := socialpg.NewWithAuthority(db, guard)
+	accountRepo.WithRealms(socialRepo)
 	socialHTTP := (&social.Service{Repository: socialRepo, Authority: proofIdentity{identity}}).Handler()
 	interactionRepo := interactionpg.NewWithAuthority(db, guard).WithVisibility(socialRepo)
 	interactionHTTP := interactions.NewHandler(interactionRepo, postIdentity{identity})
@@ -237,6 +244,24 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		mediaRepo.WithReadVisibility(postMedia)
 		mediaHTTP = (&media.Service{Repository: mediaRepo, Authority: proofIdentity{identity}, MaxFileBytes: c.MaxMediaBytes}).Handler()
 	}
+	var calendarRepo *notabledaypg.Repository
+	var calendarHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "CALENDAR_AUTHORITY_UNAVAILABLE") })
+	if guard != nil {
+		calendarRepo, err = notabledaypg.New(db, guard, notabledaypg.Config{Activity: notabledaypg.CanonicalActivityOverlay{}})
+		if err != nil {
+			return nil, err
+		}
+		calendarHTTP = bindIdentity(v, (&notabledays.Service{Repository: calendarRepo, Authority: proofIdentity{identity}}).Handler())
+	}
+	var botRepo *botpg.Repository
+	var botHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "BOT_AUTHORITY_UNAVAILABLE") })
+	if guard != nil {
+		botRepo = botpg.NewWithAuthority(db, guard)
+		if mediaRepo != nil {
+			botRepo.WithMedia(mediaRepo)
+		}
+		botHTTP = (&bots.Service{Repository: botRepo, Authority: v, Bind: guard.Bind}).Handler()
+	}
 	surveysRepo := surveypg.NewWithAuthority(db, guard).WithVisibility(socialRepo)
 	stickersRepo := stickerpg.NewWithAuthority(db, guard).WithVisibility(socialRepo)
 	if mediaRepo != nil {
@@ -260,8 +285,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	h := router{modules{calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	return &Backend{external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 }
 
 type accountLookup interface {
@@ -298,6 +323,11 @@ func (b *Backend) ProcessDue(ctx context.Context, limit int) (int, error) {
 	l, le := b.locations.Expire(ctx, limit)
 	p, pe := b.progression.ProcessDue(ctx, limit)
 	d, de := b.progression.DispatchCompletions(ctx, limit, b.progressionNotifications)
+	if b.tickets != nil {
+		rewards, re := b.tickets.RetryPendingRewards(ctx, limit)
+		n += rewards
+		e = errors.Join(e, re)
+	}
 	m, x := b.external.processDue(ctx, min(limit, 100))
 	return n + int(l) + p + d + m, errors.Join(e, le, pe, de, x)
 }

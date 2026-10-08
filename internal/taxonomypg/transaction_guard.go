@@ -106,7 +106,7 @@ func lockPublishers(ctx context.Context, tx *policyTx, publishers ...*string) er
 	sort.Strings(ids)
 	for _, id := range ids {
 		var locked string
-		if err := tx.QueryRowContext(ctx, `SELECT id::text FROM owned_publishers WHERE id=$1 AND deleted_at IS NULL FOR SHARE`, id).Scan(&locked); err != nil {
+		if err := tx.QueryRowContext(ctx, `SELECT id::text FROM owned_publishers WHERE id=$1 AND type=0 AND deleted_at IS NULL FOR SHARE`, id).Scan(&locked); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				return taxonomy.ErrForbidden
 			}
@@ -132,7 +132,7 @@ func (r *Repository) publisherPolicy(ctx context.Context, tx *policyTx, before, 
 			return taxonomy.ErrForbidden
 		}
 		var allowed bool
-		err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publisher_members m JOIN owned_publishers p ON p.id=m.publisher_id WHERE m.publisher_id=$1 AND m.account_id=$2 AND m.role>=$3 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled)))`, *owner, after.AuditActorID, role).Scan(&allowed)
+		err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publisher_members m JOIN owned_publishers p ON p.id=m.publisher_id WHERE m.publisher_id=$1 AND m.account_id=$2 AND m.role>=$3 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND p.deleted_at IS NULL AND p.type=0 AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled)))`, *owner, after.AuditActorID, role).Scan(&allowed)
 		if err != nil {
 			return err
 		}

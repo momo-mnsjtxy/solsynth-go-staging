@@ -5,6 +5,31 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGBackendBotMiniappComposition",
+        "TestPGBackendCalendarComposition",
+        "TestPGBotsCanonicalLifecycleAndCommands",
+        "TestPGBotsScopeIsolationHTTPAndFreshAuthority",
+        "TestPGBotsQuotaConcurrencyAndAtomicRollback",
+        "TestPGBotsOpposingEditorsAndOwnerDisable",
+        "TestPGBotsRevocationAndControlledDeactivation",
+        "TestPGBotsPolicyTimeBoundariesAndPublisherRevocation",
+        "TestPGBotsMiniappCanonicalPackagesAndPrivacy",
+        "TestPGBotsRestartPersistence",
+        "TestPGNotableDayCatalogLunarAndStableLookup",
+        "TestPGCalendarPrivacySubscriptionsAndSearch",
+        "TestPGCalendarRecurrenceMutationAndHTTPBounds",
+        "TestPGCalendarCanonicalActivityOverlayPrivacy",
+        "TestPGCalendarAtomicityAndFreshAuthority",
+        "TestPGCalendarRestartPersistence",
+
+        "TestPGRealmPublisherCreationRolesQuotaAndMetadata",
+        "TestPGRealmPublisherPostTimelineNestedPrivacy",
+        "TestPGRealmPublisherMediaSurveyStickerAndFederationPrivacy",
+        "TestPGRealmPublisherLockWaitRechecks",
+        "TestPGRealmPublisherOppositeRepliesAndRollback",
+        "TestPGRealmPublisherRestartPersistence",
+        "TestPGRealmPublisherUnsupportedPublicIntegrations",
+
         "TestPGTimelineOppositePublisherRepliesAndRollback",
         "TestPGTimelinePrelocksRecheckSourceAndTarget",
         "TestPGTimelinePublisherUUIDSelectorCollision",
@@ -248,6 +273,11 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGBotsRestartPersistence",
+        "TestPGCalendarRestartPersistence",
+
+        "TestPGRealmPublisherRestartPersistence",
+
         "TestPGTicketsExamsRestartPersistence",
 
         "TestPGMerchantsRestartPersistence",

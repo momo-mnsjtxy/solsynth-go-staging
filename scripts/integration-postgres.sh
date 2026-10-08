@@ -16,7 +16,7 @@ export SOLSYNTH_DISPOSABLE_PG="$run"
 export PG_TEST_REQUIRED=1
 export GOTOOLCHAIN=local
 export GOFLAGS="${GOFLAGS:-} -buildvcs=false"
-export GOCACHE="${GOCACHE:-/tmp/solsynth-go-cache}"
+export GOCACHE="${GOCACHE:-$("$GO_BIN" env GOCACHE)}"
 export GOPATH="${GOPATH:-$("$GO_BIN" env GOPATH)}"
 export GOMODCACHE="${GOMODCACHE:-$("$GO_BIN" env GOMODCACHE)}"
 export GOPROXY=off GOSUMDB=off
@@ -37,10 +37,10 @@ start
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/authoritypg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/accountpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/signinpg/schema.sql
-"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/oauthpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/ticketpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/notificationpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/apppg/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/oauthpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/mediapg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/mediapg/usage_schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/mediapg/resumable_schema.sql

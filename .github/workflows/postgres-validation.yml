@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # official v5 resolved 2026-10-07
         with:
           go-version: '1.26.4'
-          cache: false
+          cache: true
       - name: Download and verify declared modules
         run: |
           go mod download

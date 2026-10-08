@@ -107,6 +107,21 @@ def check(runner, read_schema=None):
                     raise ValueError("disposable schema table collision: " + qualified)
                 continue
             tables[qualified] = name
+    # Infer cross-file FK order from the actual owned SQL, not a maintained
+    # list of domain names. A table is known at its CREATE token, so self-FKs
+    # remain valid; REFERENCES and ALTER targets must already exist.
+    known_tables = set()
+    token = re.compile(r"\b(CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?|REFERENCES\s+|ALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?)([a-zA-Z_][a-zA-Z0-9_.]*)", re.I)
+    for name in schemas:
+        sql = re.sub(r"/\*.*?\*/", "", read_schema(name), flags=re.S)
+        sql = re.sub(r"--[^\n]*", "", sql)
+        for match in token.finditer(sql):
+            kind, table = match.groups()
+            qualified = table.lower() if "." in table else "public." + table.lower()
+            if kind.upper().startswith("CREATE"):
+                known_tables.add(qualified)
+            elif qualified not in known_tables:
+                raise ValueError("schema references a table before installation: " + name + " -> " + qualified)
     for variable, (binary, package) in REQUIRED_BINARIES.items():
         build = f'"$GO_BIN" build -o "$run/{binary}" ./cmd/{package}'
         export = f'export {variable}="$run/{binary}"'
@@ -160,6 +175,9 @@ def main():
         source.replace("host=$run/socket", "host=external.example.invalid"),
         source.replace("-c listen_addresses=''", "-c listen_addresses='*'"),
     ]
+    oauth = PSQL + "internal/oauthpg/schema.sql"
+    signin = PSQL + "internal/signinpg/schema.sql"
+    mutations.append(source.replace(oauth + "\n", "").replace(signin, signin + "\n" + oauth))
     # Repeated owned schemas must be rejected even when SQL uses IF NOT EXISTS.
     mutations.append(source.replace("PG_TEST_PHASE=before ", authority + "\nPG_TEST_PHASE=before ", 1))
     for mutated in mutations:

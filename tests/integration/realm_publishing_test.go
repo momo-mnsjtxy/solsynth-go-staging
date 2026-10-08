@@ -402,7 +402,7 @@ func TestPGRealmPublisherMediaSurveyStickerAndFederationPrivacy(t *testing.T) {
 	// Organization sticker creation remains unsupported. An isolated imported
 	// pack verifies the same outer metadata gate, without third-party media.
 	pack := authorityUUID(t)
-	prefix := "synthetic-realm-pack-" + f.actor
+	prefix := "syntheticrealmpack" + strings.ReplaceAll(f.actor, "-", "")
 	query(t, f.db, `INSERT INTO owned_sticker_packs(id,publisher_id,name,description,prefix,created_at,updated_at) VALUES($1,$2,'Private realm pack','Synthetic private intro',$3,$4,$4)`, pack, f.privatePub.ID, prefix, f.config.Now())
 	if _, e = f.stickers.GetPack(context.Background(), "", pack); !errors.Is(e, stickers.ErrNotFound) {
 		t.Fatal("realm sticker intro leak", e)

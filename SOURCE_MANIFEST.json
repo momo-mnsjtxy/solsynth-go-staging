@@ -1,6 +1,6 @@
 {
-  "checkpoint": "reviewed-oauth-fortune-post-realms",
-  "scope": "279 before/39 restart candidate; full local build/vet/race passed; real PostgreSQL pending",
+  "checkpoint": "reviewed279-harness-correction",
+  "scope": "279/39 candidate; corrected schema dependency order and valid synthetic sticker fixture; actual PostgreSQL pending",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
@@ -11,8 +11,8 @@
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
-      "bytes": 2098,
-      "sha256": "e3174e197aa5a942c9a1a35c57bcf1bde7b85b15b1761624ebf5ac780627cf75"
+      "bytes": 2097,
+      "sha256": "6864141f65a12e1460aed2fc5990e3e69373cdeb352aa80edf6a6cd9612cc700"
     },
     {
       "path": ".gitignore",
@@ -1226,8 +1226,8 @@
     },
     {
       "path": "docs/realm-publishing-ci-corrections.md",
-      "bytes": 1743,
-      "sha256": "e8dba61779164e9841a5db4d0095a38c4decdf8cf917f2bae448ad27b4eb9b8c"
+      "bytes": 2484,
+      "sha256": "7c04d1d17e441a40f085a388511a71efed2d8ba54b9a851da32fae9549c74868"
     },
     {
       "path": "docs/realm-publishing-continuation.md",
@@ -1261,8 +1261,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 34583,
-      "sha256": "2acaea8f69df9122020084656543ab81b440d444420c0a954e6066389f83a0c5"
+      "bytes": 34662,
+      "sha256": "1d43c6f13a0a4b27181f6a06653e56592ee1b992a931fe18e6a691a82abff7fa"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -6966,8 +6966,8 @@
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 6380,
-      "sha256": "9f70f371dc3dd0de08adecde3f242a993be2f2b5a6c28c89445e617b71bd3c18"
+      "bytes": 6382,
+      "sha256": "f3a81f24bf5507f478fcb49c2e6265d7ee71fb81bf98d1ee21ce13d25011e3dd"
     },
     {
       "path": "scripts/test-coverage-format.py",
@@ -6981,8 +6981,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 10818,
-      "sha256": "c86f2515833acf6972b50172a6b4019464c66f082af54c941027d1b9894755d3"
+      "bytes": 11975,
+      "sha256": "e35dce81458c85cde972fbe1399c781cbf173409909f0b1bdab68210491bcd3b"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -7476,8 +7476,8 @@
     },
     {
       "path": "tests/integration/realm_publishing_test.go",
-      "bytes": 36676,
-      "sha256": "18e337b1ab623e0bc4852df7e8ff0b6599e4a33cb1bdfd5d3816f9ef24075fb7"
+      "bytes": 36702,
+      "sha256": "3322292c47d717f4175cf087c8c5dd4b77485e896a1e9b60ae8ea62409e0d105"
     },
     {
       "path": "tests/integration/schema.sql",

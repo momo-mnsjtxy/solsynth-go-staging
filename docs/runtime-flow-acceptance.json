@@ -10,11 +10,11 @@
     "after_restart": 33
   },
   "latest_candidate": {
-    "commit": "3533fd08ec3a8554f6a63612a881cb407f09e4be",
-    "run": 37761349240,
-    "required_before": 251,
-    "required_after_restart": 36,
-    "status": "Isolated realm fixture corrections published; CI running"
+    "commit": "8f5d31194f60f209c95ddda06f27f53d227addaf",
+    "run": 37762367316,
+    "required_before": 279,
+    "required_after_restart": 39,
+    "status": "Build/vet/race passed; schema order prevented any actual PG test. Corrected OAuth dependency order and synthetic sticker prefix queued."
   },
   "local_required_before": 279,
   "local_required_after_restart": 39,

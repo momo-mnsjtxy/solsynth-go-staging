@@ -162,3 +162,5 @@ shared inbox forwarding; private federation messaging; media federation; key
 rotation UI; remotely applied moderation; production federation activation;
 upstream Shared-schema or C# differential parity. Existing NodeInfo output is
 not expanded to advertise these unsupported features.
+
+The later [signed quote authorization continuation](federation-quotes-continuation.md) adds a bounded incoming QuoteRequest/Accept/consume/revoke/Delete flow and public stamp dereference while retaining the explicit remote-discovery and broader protocol gaps above.

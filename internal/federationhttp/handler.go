@@ -24,10 +24,10 @@ type Handler struct {
 }
 
 func IsPublicRoute(p string) bool {
-	return p == "/.well-known/webfinger" || strings.HasPrefix(p, "/activitypub/")
+	return IsQuoteRoute(p) || p == "/.well-known/webfinger" || strings.HasPrefix(p, "/activitypub/")
 }
 func IsPrivateRoute(p string) bool {
-	return p == "/api/activitypub" || strings.HasPrefix(p, "/api/activitypub/")
+	return IsQuoteRoute(p) || p == "/api/activitypub" || strings.HasPrefix(p, "/api/activitypub/")
 }
 func write(w http.ResponseWriter, status int, value any, media string) {
 	w.Header().Set("Cache-Control", "no-store")
@@ -130,6 +130,10 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			fail(w, f.ErrForbidden)
 			return
 		}
+	}
+	if IsQuoteRoute(p) {
+		h.quote(w, r)
+		return
 	}
 	if IsPrivateRoute(p) {
 		h.private(w, r)

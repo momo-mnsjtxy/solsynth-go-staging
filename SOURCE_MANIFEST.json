@@ -1,11 +1,13 @@
 {
-  "checkpoint": "activation-artwork-realm560-corrections",
-  "scope": "Paid subscription group activation, canonical presence artwork and independently reviewed realm permissions including MLS enforcement. Full local build/vet/test/race, exact guard/SQL16/source checks pass. Actual PG pending. Corrected dynamic MLS read bind arity, explicit MLS grant parameter types, live subscription lookup and ticket23514 rollback contract. Added bounded Go-AST/PG16 static SQL argument guard. Full offline verification passed; actualPG pending.",
+  "checkpoint": "reviewed-passkit-quotes573",
+  "scope": "Configured Apple Wallet member pass issuance/callbacks with canonical root-only provisioning and internal-plan labels; signed inbound quote authorization with independent policy/key/wait review corrections. Full offline build/vet/unit/race/SQL16/arity/source guards passed. Actual573/75 PG and restart pending. No live Apple/provider actions.",
   "inputs": {
-    "remote_parent": "fc7d9d389446344de1f37dc4fb97f480ead8f5fb"
+    "remote_parent": "0bbb35534d30ed55d5af20693ffa2d1b1e645128"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
+    "ports/federation/quote-evidence/ActivityHandlerService.cs",
+    "ports/federation/quote-evidence/ActivityPubDeliveryService.cs",
     "ports/passport/artwork/source/ServiceCollectionExtensions.cs",
     "ports/passport/social/contract-evidence/RealmService.cs"
   ],
@@ -152,8 +154,18 @@
     },
     {
       "path": "cmd/backend/main.go",
-      "bytes": 15556,
-      "sha256": "27344768064c6ae5a695215ad3839b36e87bda0ac9ac6a2ab3aa2fda39ef3112"
+      "bytes": 15667,
+      "sha256": "6d5e49001172b014a8a666d5b5d90ee4ca899a24f791f3f066b95e8b7fbbe3fe"
+    },
+    {
+      "path": "cmd/backend/passkit_config.go",
+      "bytes": 4637,
+      "sha256": "059d6620060857eb1d20b643ffc945ec20184bb86e1c1f91f06904e95d3cc3d0"
+    },
+    {
+      "path": "cmd/backend/passkit_config_test.go",
+      "bytes": 2147,
+      "sha256": "c3baf17bde87b2b8ae91cf0b025ed9a28cec24664a72e31620edba5c40e8e6a6"
     },
     {
       "path": "cmd/backend/post_awards_config.go",
@@ -381,6 +393,11 @@
       "sha256": "d5b40d5ff97d94aca7d0c9171b491d0302ed21467d9f87265ac0e28b0591a3c7"
     },
     {
+      "path": "docs/apple-wallet-passkit.md",
+      "bytes": 11179,
+      "sha256": "6539849bf2165dc723d208f12cd248845a5d638f929ed680f954af3e4a6a8b09"
+    },
+    {
       "path": "docs/architecture.md",
       "bytes": 3317,
       "sha256": "66ef8fec4b8937ed9fe61f5073cebca2031a423de2d8bec970ebec9bd8818a8f"
@@ -552,8 +569,13 @@
     },
     {
       "path": "docs/federation-continuation.md",
-      "bytes": 9782,
-      "sha256": "1e0913feabf5b48955cc6f83343fc25a7db2c3fbe772f1235acbd020fd8c9248"
+      "bytes": 10049,
+      "sha256": "8a67d73972c90b768e19d2a1ecf5dc90db968913bc5f5c587b0095f4c7cf28f2"
+    },
+    {
+      "path": "docs/federation-quotes-continuation.md",
+      "bytes": 10499,
+      "sha256": "163c5fa724c2348a05399cea81511e775bc2829f4e4352d47d4cf019e00def9c"
     },
     {
       "path": "docs/federation-rename-continuation.md",
@@ -1687,8 +1709,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 94930,
-      "sha256": "79b30eec4d85c4b970adb455bd124ef9af1debbea2cda60aabd933b4b501fb83"
+      "bytes": 97139,
+      "sha256": "e71cc1065020b28d66e6bba0b8af872fb4d8f3b34f25d5afbdd24b1c09a684c6"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -1937,8 +1959,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 28146,
-      "sha256": "c3c9651c5e650bc8c1c96cfc0e410bc545269009a8a2a6834979c6fe9ad67bb2"
+      "bytes": 28595,
+      "sha256": "ca8ca60ed0178e447be0e5b9e27528cd734d619dcbefcf7cb7eae152f5bc7a8d"
     },
     {
       "path": "internal/application/commerce.go",
@@ -1959,6 +1981,11 @@
       "path": "internal/application/external_modules_test.go",
       "bytes": 1616,
       "sha256": "0ac9d65c940bfc7f0a167b909627cccb2b406d53aac5527272d685327f75b1c0"
+    },
+    {
+      "path": "internal/application/federation_quotes_test.go",
+      "bytes": 1045,
+      "sha256": "6141f513c85c6d384addcb2d4843e7cec394c437c6c6913d2b2d2c2caa42fa23"
     },
     {
       "path": "internal/application/identity.go",
@@ -1989,6 +2016,21 @@
       "path": "internal/application/notifications.go",
       "bytes": 445,
       "sha256": "2259de80598a6793a9c45455f3386ae933567adca8067e8df7cb55af13d411ce"
+    },
+    {
+      "path": "internal/application/passkit.go",
+      "bytes": 1942,
+      "sha256": "11e30b7871332343fb9c4b7c063e5422924eac44392e81c58aff81933679e491"
+    },
+    {
+      "path": "internal/application/passkit_provisioning_review_test.go",
+      "bytes": 1586,
+      "sha256": "cb297917be255b58dc6c6b330e2acac7bdbf7bf30007d8f1c96cfd0c9ed7272e"
+    },
+    {
+      "path": "internal/application/passkit_test.go",
+      "bytes": 5148,
+      "sha256": "e968ea90853f3997e7b21f85e70986c3e9b8145040bacdc25a3f9e0a34b15645"
     },
     {
       "path": "internal/application/posts.go",
@@ -2027,13 +2069,13 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 8541,
-      "sha256": "b1f3b70f88eb544f87caebab2672c0e149e1ebbef88f5ec355f88577e9109ffb"
+      "bytes": 8597,
+      "sha256": "5da0dc7d40ceb0a3d99098966d445f457c11c41c9ed93150c0ffe5ad4c266b88"
     },
     {
       "path": "internal/application/router.go",
-      "bytes": 18370,
-      "sha256": "d10a6095dfff1d116ae0c1406f1b02b27c86709fce3105e2df3a060f36cd896f"
+      "bytes": 18809,
+      "sha256": "083d79522ca04d21e1258893a8d0cbe32ef79b02c48ae00d712aa507cfe2c2f2"
     },
     {
       "path": "internal/application/router_test.go",
@@ -2647,8 +2689,8 @@
     },
     {
       "path": "internal/federationhttp/handler.go",
-      "bytes": 8652,
-      "sha256": "ba17994d088337ee4b1ec5e6a7622a08aa4a3649af81c5bf0a85b37355895286"
+      "bytes": 8740,
+      "sha256": "242df3b5ba430e7227b42f45cd12a08cccc22cfe68b00a7cfe4b54928f93e682"
     },
     {
       "path": "internal/federationhttp/handler_test.go",
@@ -2656,9 +2698,19 @@
       "sha256": "4742f4ca71a51579a08f4fb7f9277b7b4fe8b85431d88f75340fa0d938b0928c"
     },
     {
+      "path": "internal/federationhttp/quotes.go",
+      "bytes": 1698,
+      "sha256": "52f937bddebd86253b69e1e49e267eb7e5675656280cc1334b8e228b5650ac3f"
+    },
+    {
+      "path": "internal/federationhttp/quotes_test.go",
+      "bytes": 1870,
+      "sha256": "0f2c89d7604ac53f39d8bca3f60a58a3fb85b0c3040deb893966a8436ec70e14"
+    },
+    {
       "path": "internal/federationpg/delivery.go",
-      "bytes": 14943,
-      "sha256": "16b744678e2fb8944a58e03780e0931cfdbc0357c2e21421009715618835e7cd"
+      "bytes": 15395,
+      "sha256": "3843586c4946a4f59f21aae40f433c2204aabdf7e344d38a9c2e434644346249"
     },
     {
       "path": "internal/federationpg/identity.go",
@@ -2677,18 +2729,28 @@
     },
     {
       "path": "internal/federationpg/inbox.go",
-      "bytes": 8243,
-      "sha256": "1ad25d2e07e5b1e0c93f57aa91d8d3ffe5ce724fa0557ce4283f4f1f535846ef"
+      "bytes": 9063,
+      "sha256": "21b1b0b7856557e5704e369762d1593f0d3a951d6890ba06d4424bca5aca16cb"
+    },
+    {
+      "path": "internal/federationpg/quote_schema.sql",
+      "bytes": 1029,
+      "sha256": "d54cf0b413f62b16c90a2ec87281196e0b9c3e57973e56a258325eec049a3c31"
+    },
+    {
+      "path": "internal/federationpg/quotes.go",
+      "bytes": 16382,
+      "sha256": "7b4e7699959f796b4471e1d31974776592cb4bf798db38dc364f351cbf531bd8"
     },
     {
       "path": "internal/federationpg/relationships.go",
-      "bytes": 5022,
-      "sha256": "e848bb14dbdf2e30a35090d5839283952f1f6562adb3c86354d42f79c59fbd02"
+      "bytes": 5460,
+      "sha256": "1ad26d1663f8bbbc0f4b6e8ed92fb8e1f892468f38f1bcb31e3467f8d7628baa"
     },
     {
       "path": "internal/federationpg/repository.go",
-      "bytes": 16939,
-      "sha256": "48ef4a632c37968b44b60c82e451c0ed653f45d0af28c8d77447f49bddfdef9f"
+      "bytes": 17341,
+      "sha256": "80f45fa3fc695d727f11de86a626d2c38e7a6b4ea979d7459f25396461034984"
     },
     {
       "path": "internal/federationpg/repository_test.go",
@@ -3201,6 +3263,16 @@
       "sha256": "af0460c00aa302f2903e46e952b65ab2c71cc596c2e6926e7d000362dde87751"
     },
     {
+      "path": "internal/passkitpg/repository.go",
+      "bytes": 14225,
+      "sha256": "dfa2c052014ff2f90d94774d6fe500948fecf09439f8c5c76c84fc0f26cbee6f"
+    },
+    {
+      "path": "internal/passkitpg/schema.sql",
+      "bytes": 1149,
+      "sha256": "5d96f7b13456d8b05ea6e7df9eccb208a3bb8cb48cea0f725730a08300e34842"
+    },
+    {
       "path": "internal/postawardpg/fulfillment.go",
       "bytes": 6373,
       "sha256": "e128ba4df95f1d324cec4afaa434bd3ead76ebb2e9f0904e8e62750a86dad1b3"
@@ -3709,6 +3781,11 @@
       "path": "internal/tencenttranslation/provider_test.go",
       "bytes": 6047,
       "sha256": "6b063209261aa95edb38840c171dc85285391904e28378c5f4632636c22df57f"
+    },
+    {
+      "path": "internal/testpasskit/fixture.go",
+      "bytes": 3428,
+      "sha256": "f2d1352d1337b55e8d482aabbeadf6afeaee1dcbb498df465e79b1da05a5e5e2"
     },
     {
       "path": "internal/ticketmediapg/repository.go",
@@ -6151,9 +6228,69 @@
       "sha256": "012711f116c4dc3853c7c508aa2fa02e75236a7de17683e204e07b62efbeb0a2"
     },
     {
+      "path": "ports/federation/quote-evidence/ActivityHandlerService.cs",
+      "bytes": 37542,
+      "sha256": "db37b00ffcaa1e5ff96a7b9b0bc666a7ad532c0ffa8505bb965cbda2dbeb01ad"
+    },
+    {
+      "path": "ports/federation/quote-evidence/ActivityPubDeliveryService.cs",
+      "bytes": 41871,
+      "sha256": "d0ce684eab237b4e874389052fc3dd726ef2cd8b53c578167a4fab99765eca38"
+    },
+    {
+      "path": "ports/federation/quote-evidence/ActivityRenderer.cs",
+      "bytes": 14379,
+      "sha256": "580bde6dbd456e990f5b767ee0e1a596d209f1464ec509825900bdc82e18bb30"
+    },
+    {
+      "path": "ports/federation/quote-evidence/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/federation/quote-evidence/QUOTE_AUTHORIZATION.md",
+      "bytes": 6039,
+      "sha256": "e1f6c4492a1726f743f26b441458acd72e15dd61ecc8ea81cace836b7176bb53"
+    },
+    {
+      "path": "ports/federation/quote-evidence/QuoteAuthorizationController.cs",
+      "bytes": 5046,
+      "sha256": "d644a1eee31f64d83373cfbffa2b6ccadd0cf5216bc0f934afee4d3bf4078778"
+    },
+    {
+      "path": "ports/federation/quote-evidence/ServerActorController.cs",
+      "bytes": 4886,
+      "sha256": "58e598f9ed22b5c085859223887e73f359d6860685d6888960b4ba76d2381417"
+    },
+    {
+      "path": "ports/federation/quote-evidence/ServerActorResponse.cs",
+      "bytes": 2687,
+      "sha256": "53be5efa8de696515d5a03ff3159cfb507dd8b725fdf4767b29f7e8dfd684d5e"
+    },
+    {
+      "path": "ports/federation/quote-evidence/ServerSigningKeyService.cs",
+      "bytes": 4493,
+      "sha256": "a733626e90134cd699982bfbc38b067f7246b7eb693bde8682a774ae24a0855b"
+    },
+    {
+      "path": "ports/federation/quote-evidence/manifest.json",
+      "bytes": 4634,
+      "sha256": "d41ed5f3ae7af8c159e013975c8a7baa671ae048272d4b8a971a7e398cb3dd4d"
+    },
+    {
+      "path": "ports/federation/quotes.go",
+      "bytes": 643,
+      "sha256": "0bf11ad1ff297e131ce6eddf6c589156f75193dea8dbb6663aa4e3a6c17f3db1"
+    },
+    {
+      "path": "ports/federation/quotes_test.go",
+      "bytes": 2587,
+      "sha256": "b739e897afa633b828e40e11f69c02cc70ec8198959fb38b70212c05d15afb90"
+    },
+    {
       "path": "ports/federation/signature.go",
-      "bytes": 5806,
-      "sha256": "ba7891c7d03b3c6aef2aa3e9da84ae9dd384a3ebfbac94419bdbc2dc1064ec86"
+      "bytes": 6462,
+      "sha256": "8ebc97ae1b7b339c81fccfdf6f9fe45d6ca987230ce286ae8bd06a55c4ec25cb"
     },
     {
       "path": "ports/federation/signature_test.go",
@@ -6167,8 +6304,8 @@
     },
     {
       "path": "ports/federation/types.go",
-      "bytes": 5205,
-      "sha256": "24bf8a392805674f8a023f5812bae639d42d7066df048110164d31319a7d52bd"
+      "bytes": 5508,
+      "sha256": "74ad5f5587ca5d424684b958823f49bdf679340ef568230fe14c7ea57975bb93"
     },
     {
       "path": "ports/federation/validation.go",
@@ -7459,6 +7596,81 @@
       "path": "ports/passport/notabledays/validation.go",
       "bytes": 6374,
       "sha256": "4571d6c3de0225419d2bb8564e8019d42e43d88f383a74c68cc80638ecc9126a"
+    },
+    {
+      "path": "ports/passport/passkit/assets_review_test.go",
+      "bytes": 550,
+      "sha256": "eca5f7847aebd9f5c2dd56f32fb7681d9d258190cbcecef4dd98fe6469d5019a"
+    },
+    {
+      "path": "ports/passport/passkit/cms.go",
+      "bytes": 5123,
+      "sha256": "684afe99ecf534123909c1f9930d18b77f5ff4f19c5887a178399e83de0dfb31"
+    },
+    {
+      "path": "ports/passport/passkit/generator.go",
+      "bytes": 8732,
+      "sha256": "5a765fe2bfe175b3e66cd9b699cc859e5683458f09aaf074142a7fc8e296b7c7"
+    },
+    {
+      "path": "ports/passport/passkit/generator_test.go",
+      "bytes": 5874,
+      "sha256": "6eb4d0d7fb071ade119a363399b7b16c0463b76a25bcedaf3b062e1b6ccf79bc"
+    },
+    {
+      "path": "ports/passport/passkit/http.go",
+      "bytes": 8398,
+      "sha256": "40891ae009e274668372e35b9e68d0fa6d8f576833e873b55065b23a8d0f5da7"
+    },
+    {
+      "path": "ports/passport/passkit/source/APPLE_WALLET_MEMBER_PASS.md",
+      "bytes": 15670,
+      "sha256": "b96f30ad8df37108096a8ceabce3210ec59709651bddf51179c9d485f618b5e7"
+    },
+    {
+      "path": "ports/passport/passkit/source/AccountCurrentController.cs",
+      "bytes": 10747,
+      "sha256": "9dac86470690c7258315de060d6803d640173b12bbcf0917fdffbf384072a563"
+    },
+    {
+      "path": "ports/passport/passkit/source/ApplePassService.cs",
+      "bytes": 16526,
+      "sha256": "21cf8f5c712df9f62a212b12560bff379a422b8264844c86333451a8416c73cc"
+    },
+    {
+      "path": "ports/passport/passkit/source/AppleWalletOptions.cs",
+      "bytes": 1526,
+      "sha256": "db0629c06c78def41d5aae2a1d16e42de87561addf9e64d171ad61aec233f230"
+    },
+    {
+      "path": "ports/passport/passkit/source/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/passport/passkit/source/PassKitController.cs",
+      "bytes": 6665,
+      "sha256": "9f5ede691b9ac04aaeb1714ae607cd0137e920180e6fa8171a5e7ea9a59028b5"
+    },
+    {
+      "path": "ports/passport/passkit/source/SnApplePass.cs",
+      "bytes": 841,
+      "sha256": "aaff570c767a3a7876c8236003a6a712dab7db701b47f968b6cbff1d84fdb637"
+    },
+    {
+      "path": "ports/passport/passkit/source/SnApplePassRegistration.cs",
+      "bytes": 590,
+      "sha256": "98ef11d53d89c563beb598d40ef2978d17d3c98e7ef16d9e368c70d9b633ffec"
+    },
+    {
+      "path": "ports/passport/passkit/source/manifest.json",
+      "bytes": 3924,
+      "sha256": "2152573c2ea7db81bafe13831a9217b6c27d390210cc407d231fab57222d2f3b"
+    },
+    {
+      "path": "ports/passport/passkit/types.go",
+      "bytes": 2511,
+      "sha256": "e9010431cdb19015a2374d6cd285866939f4cfdf2929fca5070b2cf005d646c7"
     },
     {
       "path": "ports/passport/presence/http.go",
@@ -9252,8 +9464,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 36944,
-      "sha256": "f018c1a3abac5e505b4a75102bb4fd58c4ca9555ae49be2e6297d8043e21a041"
+      "bytes": 37816,
+      "sha256": "bd0cdb53f907e77d4af1342301f12c60fcb81efdc57370746718b4dd9a0704c6"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -9262,8 +9474,8 @@
     },
     {
       "path": "scripts/check-source-evidence.py",
-      "bytes": 6672,
-      "sha256": "50b5479deb9eb624f4d0bb4e2e714d3103489c0dd34c22b7feb3a7918be5a2d3"
+      "bytes": 6741,
+      "sha256": "8613a0c4e82f24439f458ea7b9554cae5f8c04b4ce4ca254f003f3b0e382de57"
     },
     {
       "path": "scripts/check-sql-argument-count.py",
@@ -9277,8 +9489,8 @@
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 9432,
-      "sha256": "9469eadc1e7a2b0b3821d0186b090fed01ee5866f36b5216c80e5b106fb85d51"
+      "bytes": 9626,
+      "sha256": "40ad6fed3269bfc3671bfd04c99b42b9138debfd3e6524dd4f4875cabb601297"
     },
     {
       "path": "scripts/sql-parser-requirements.txt",
@@ -9302,13 +9514,13 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 18333,
-      "sha256": "53b6a4e8238985be46f0e46ce46fd02341bea83dec0ef36e38f8bedf166d56fa"
+      "bytes": 19033,
+      "sha256": "6410c5487523a84a1892ba01738a10f918262cf69caf7bf2783df3cb96876fed"
     },
     {
       "path": "scripts/test-source-evidence.py",
-      "bytes": 2984,
-      "sha256": "34dac77d33e524a7bdd64081a72f0be4117e8165c427432432b416d24e4c0b3c"
+      "bytes": 3192,
+      "sha256": "30926bbbb6fe041bcd012bbcff8b7c0b07caff564a3763bb0237fe478be2f055"
     },
     {
       "path": "scripts/verify-candidate-http.py",
@@ -9866,6 +10078,11 @@
       "sha256": "752efa65fdf334c4266037250acebeecf746359bc4d5b1ba07a0e642821e45fa"
     },
     {
+      "path": "tests/integration/federation_quotes_test.go",
+      "bytes": 20798,
+      "sha256": "a59b4ad7f971a5aeb796be01fe56dfa67f15100113019ad5ccca9f498f1dd773"
+    },
+    {
       "path": "tests/integration/federation_rename_test.go",
       "bytes": 18700,
       "sha256": "a6e189a63a853e2738b8bfd596bd6317570a45c72b8d87fae5b590e584da79fb"
@@ -9969,6 +10186,21 @@
       "path": "tests/integration/oauth_test.go",
       "bytes": 24566,
       "sha256": "ff182348051337ca2fc06ce78961bc5612fadecbd346bee11bf571889a6132e9"
+    },
+    {
+      "path": "tests/integration/passkit_program_review_test.go",
+      "bytes": 4501,
+      "sha256": "cac2aa8f72e38df4ff1bdfcc189aebb4e2b4ad89f22fa332f6d0122d8009832c"
+    },
+    {
+      "path": "tests/integration/passkit_provisioning_review_test.go",
+      "bytes": 6592,
+      "sha256": "638ba838398b9f8b65f04569c94cc10c9765c12759b7eaf6208f889f676afbeb"
+    },
+    {
+      "path": "tests/integration/passkit_test.go",
+      "bytes": 16575,
+      "sha256": "80a81be9fb09dbd44ae0ba5888871b2e2091c52364688af3533155a92e398b24"
     },
     {
       "path": "tests/integration/payment_pin_test.go",

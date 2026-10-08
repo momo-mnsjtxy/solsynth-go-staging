@@ -41,6 +41,9 @@ func (r *Repository) Change(ctx context.Context, actor, ref string, c f.Change) 
 	}
 	switch c.Action {
 	case "block":
+		if _, e = tx.ExecContext(ctx, `UPDATE owned_federation_quote_authorizations SET revoked_at=COALESCE(revoked_at,$3) WHERE publisher_id=$1 AND actor_uri=$2`, p.id, k.Actor, r.config.Clock()); e != nil {
+			return e
+		}
 		_, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_blocks(publisher_id,actor_uri,created_at) VALUES($1,$2,$3) ON CONFLICT DO NOTHING`, p.id, k.Actor, r.config.Clock())
 		if e != nil {
 			return e
@@ -87,6 +90,9 @@ func (r *Repository) Change(ctx context.Context, actor, ref string, c f.Change) 
 			return e
 		}
 	case "unfollow":
+		if _, e = tx.ExecContext(ctx, `UPDATE owned_federation_quote_authorizations SET revoked_at=COALESCE(revoked_at,$3) WHERE publisher_id=$1 AND actor_uri=$2`, p.id, k.Actor, r.config.Clock()); e != nil {
+			return e
+		}
 		var id, status string
 		e = tx.QueryRowContext(ctx, `SELECT follow_id,status FROM owned_federation_relationships WHERE publisher_id=$1 AND actor_uri=$2 AND direction='out'`, p.id, k.Actor).Scan(&id, &status)
 		if e != nil {

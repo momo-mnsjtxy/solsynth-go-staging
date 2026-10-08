@@ -16,7 +16,8 @@ def check(root):
                       "ports/sphere/nodeinfo/source", "ports/wallet/productcatalog/source",
                       "inventory/product-client-evidence", "ports/passport/artwork/source",
                       "ports/passport/affiliation/source", "ports/passport/social/contract-evidence",
-                      "inventory/operation-sources"):
+                      "inventory/operation-sources", "ports/federation/quote-evidence", "ports/passport/passkit/source"):
+
         base = root / directory
         manifest = json.loads((base / "manifest.json").read_text())
         entries = manifest["files"] if isinstance(manifest, dict) else manifest

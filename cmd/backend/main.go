@@ -71,6 +71,7 @@ func run(args []string, out io.Writer) error {
 	translationSettings := translationFlags(fs)
 	ipCheckSettings := ipCheckFlags(fs)
 	accountExtrasSettings := accountExtraFlags(fs)
+	passkitSettings := passkitFlags(fs)
 	factorIssuer := fs.String("factor-issuer-label", "SoSYS", "human-readable TOTP issuer label")
 	enableOAuth := fs.Bool("enable-oauth", false, "enable owned OAuth authorization-code and OIDC userinfo flows")
 	consentURL := fs.String("oauth-consent-url", "", "deployed HTTPS consent UI calling the owned authorization API")
@@ -231,6 +232,9 @@ func run(args []string, out io.Writer) error {
 	appConfig := application.Config{EnableMLSDelivery: *enableMLS, Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
 	if *enablePINEnrollment {
 		appConfig.PINEnrollmentPepperID = *pepperID
+	}
+	if err = passkitSettings.apply(&appConfig); err != nil {
+		return err
 	}
 	if err = accountExtrasSettings.apply(&appConfig); err != nil {
 		return err

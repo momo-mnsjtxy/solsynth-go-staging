@@ -49,6 +49,12 @@ func (r *Repository) Receive(ctx context.Context, name string, v f.Verified) err
 	} else if b {
 		return f.ErrForbidden
 	}
+	{
+		current, x := r.remote(ctx, k.Actor)
+		if x != nil || !v.Fresh(r.config.Clock()) || !sameQuoteKey(current, k) {
+			return f.ErrSignature
+		}
+	}
 	var existingActor string
 	var digest []byte
 	e = tx.QueryRowContext(ctx, `SELECT actor_uri,digest FROM owned_federation_inbox WHERE publisher_id=$1 AND activity_id=$2`, p.id, a.ID).Scan(&existingActor, &digest)
@@ -65,6 +71,10 @@ func (r *Repository) Receive(ctx context.Context, name string, v f.Verified) err
 		return e
 	}
 	switch a.Type {
+	case "QuoteRequest":
+		if e = r.receiveQuoteRequest(ctx, tx, p, k, a); e != nil {
+			return e
+		}
 	case "Follow":
 		target, e := f.ObjectID(a.Object)
 		if e != nil || target != r.actorID(p) {
@@ -146,7 +156,7 @@ func (r *Repository) Receive(ctx context.Context, name string, v f.Verified) err
 			return f.ErrForbidden
 		}
 		// Withdraw any acceptance still waiting for this peer.
-		_, e = tx.ExecContext(ctx, `UPDATE owned_federation_deliveries SET status='cancelled',finished_at=$3 WHERE publisher_id=$1 AND actor_uri=$2 AND status='pending' AND activity_type='Accept'`, p.id, k.Actor, r.config.Clock())
+		_, e = tx.ExecContext(ctx, `UPDATE owned_federation_deliveries SET status='cancelled',finished_at=$3 WHERE publisher_id=$1 AND actor_uri=$2 AND status='pending' AND activity_type='Accept' AND quote_id IS NULL`, p.id, k.Actor, r.config.Clock())
 		if e != nil {
 			return e
 		}
@@ -160,10 +170,17 @@ func (r *Repository) Receive(ctx context.Context, name string, v f.Verified) err
 			return f.ErrForbidden
 		}
 		if e = r.receiveObject(ctx, tx, p, k, a); e != nil {
-			return e
+			return quotePolicyFailure(tx, e)
 		}
 	default:
 		return f.ErrUnsupported
+	}
+	current, e := r.remote(ctx, k.Actor)
+	if e != nil || !v.Fresh(r.config.Clock()) || !sameQuoteKey(current, k) {
+		return f.ErrSignature
+	}
+	if e = r.quotePublicationCurrent(ctx, tx, p, a); e != nil {
+		return e
 	}
 	if _, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_inbox(publisher_id,activity_id,actor_uri,digest,received_at) VALUES($1,$2,$3,$4,$5)`, p.id, a.ID, k.Actor, v.Digest(), r.config.Clock()); e != nil {
 		return e
@@ -196,6 +213,9 @@ func (r *Repository) receiveObject(ctx context.Context, tx *sql.Tx, p publisher,
 		if !exists {
 			return f.ErrNotFound
 		}
+		if _, e = tx.ExecContext(ctx, `UPDATE owned_federation_quote_authorizations SET revoked_at=COALESCE(revoked_at,$4) WHERE publisher_id=$1 AND actor_uri=$2 AND object_uri=$3`, p.id, k.Actor, id, r.config.Clock()); e != nil {
+			return e
+		}
 		// Retain the tombstone so later Create cannot resurrect this object.
 		_, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_objects(publisher_id,object_id,actor_uri,object,deleted,updated_at) VALUES($1,$2,$3,$4,true,$5) ON CONFLICT(publisher_id,object_id) DO UPDATE SET object=EXCLUDED.object,deleted=true,updated_at=EXCLUDED.updated_at`, p.id, id, k.Actor, string(marshal(map[string]string{"id": id, "type": "Tombstone"})), r.config.Clock())
 		return e
@@ -206,6 +226,9 @@ func (r *Repository) receiveObject(ctx context.Context, tx *sql.Tx, p publisher,
 	var n f.Note
 	if json.Unmarshal(a.Object, &n) != nil || n.Type != "Note" || n.AttributedTo != k.Actor || len(n.Content) > 262144 || (!f.Has(n.To, f.Public) && !f.Has(n.CC, f.Public)) {
 		return f.ErrForbidden
+	}
+	if e = r.validateQuoteUse(ctx, tx, p, k, &n); e != nil {
+		return e
 	}
 	// Cache only the defined public Note projection. Extension fields, hidden
 	// recipients, remote markup, attachments, and credentials are not retained.

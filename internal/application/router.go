@@ -26,6 +26,7 @@ import (
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
 	artwork                                                                                                                                                                                                                                              http.Handler
+	passkit                                                                                                                                                                                                                                              passkitModules
 	publisherCommerce                                                                                                                                                                                                                                    publisherCommerceModules
 	domainCollections                                                                                                                                                                                                                                    domainCollectionModules
 	admin                                                                                                                                                                                                                                                adminModules
@@ -55,6 +56,9 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		problem(w, 400, "INVALID_ROUTE_PATH")
 		return
 	}
+	if h.passkit.route(w, r) {
+		return
+	}
 	if handler := h.publisherCommerce.route(p); handler != nil {
 		handler.ServeHTTP(w, r)
 		return
@@ -65,6 +69,10 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	// Federation signatures cover the original canonical target. These public
 	// routes bypass bearer middleware and gateway path rewriting.
+	if h.federationPrivate != nil && federationhttp.IsQuoteRoute(p) && r.Method != "GET" {
+		h.federationPrivate.ServeHTTP(w, r)
+		return
+	}
 	if h.federationPublic != nil && federationhttp.IsPublicRoute(p) {
 		h.federationPublic.ServeHTTP(w, r)
 		return

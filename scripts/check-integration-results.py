@@ -5,6 +5,8 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGPasskitInternalProgramEligibility",
+        "TestPGPasskitProvisioningAuthorizationAndWaitRevocation",
         "TestPGRealmPermissionLifecycleAndGenerationIsolation",
         "TestPGRealmPermissionEscalationOwnerAndMembershipIncarnation",
         "TestPGRealmPermissionRevocationWaitAndRollback",
@@ -22,7 +24,18 @@ EXPECTED = {
         "TestPGSubscriptionActivationRevokedAppConsent",
         "TestPGBackendSubscriptionActivationRoutes",
         "TestPGSubscriptionActivationRestartPersistence",
+        "TestPGFederationQuoteReviewWaitsAndAcceptanceIsolation",
+        "TestPGFederationQuoteSignedLifecycleAndSingleObject",
+        "TestPGFederationQuoteCurrentPrivacyOriginAndOwnership",
+        "TestPGFederationQuoteFreshKeyAndBlockRevocation",
+        "TestPGFederationQuoteConcurrentReplayAndRollback",
+        "TestPGFederationQuoteRestartPersistence",
 
+        "TestPGPasskitCompositionRegistrationIsolationAndUpdates",
+        "TestPGPasskitCanonicalProfileMediaAndConcurrentIssuance",
+        "TestPGPasskitSigningRollbackAndCurrentIdentity",
+        "TestPGPasskitWaitRechecksAccountAndCanonicalMedia",
+        "TestPGPasskitRestartPersistence",
         "TestPGWalletManagedTransactionPurposeScopes",
         "TestPGWalletManagedIndexLegacyMigrationAtomicity",
 
@@ -610,6 +623,8 @@ EXPECTED = {
 
         "TestPGSubscriptionActivationRestartPersistence",
 
+        "TestPGFederationQuoteRestartPersistence",
+        "TestPGPasskitRestartPersistence",
         "TestPGTicketMediaRestartPersistence",
 
         "TestPGProductStockRestartPersistence",

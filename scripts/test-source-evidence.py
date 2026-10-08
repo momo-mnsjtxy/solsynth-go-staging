@@ -19,6 +19,9 @@ def check():
         assert evidence.check(copy) == baseline_count
         mutations = [
             "ports/passport/social/contract-evidence/RealmService.cs",
+            "ports/federation/quote-evidence/QUOTE_AUTHORIZATION.md",
+            "ports/federation/quote-evidence/ActivityHandlerService.cs",
+            "ports/passport/passkit/source/ApplePassService.cs",
             "ports/messager/mls-evidence/mls_group_manager.dart",
             "ports/messager/mls-evidence/DYSON-LICENSE.txt",
             "ports/passport/artwork/source/PresenceArtworkService.cs",

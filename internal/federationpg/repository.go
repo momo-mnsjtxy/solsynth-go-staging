@@ -20,7 +20,7 @@ import (
 
 //go:embed schema.sql
 var baseSchema string
-var Schema = baseSchema + "\n" + IdentitySchema
+var Schema = baseSchema + "\n" + IdentitySchema + "\n" + QuoteSchema
 
 type TransactionGuard interface {
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
@@ -351,6 +351,12 @@ func (r *Repository) Settings(ctx context.Context, actor, ref string, s f.Settin
 		return e
 	}
 	if !s.Enabled {
+		if _, e = tx.ExecContext(ctx, `UPDATE owned_federation_quote_authorizations SET revoked_at=COALESCE(revoked_at,$2) WHERE publisher_id=$1`, p.id, r.config.Clock()); e != nil {
+			return e
+		}
+		if _, e = tx.ExecContext(ctx, `UPDATE owned_federation_objects SET object=object-'quote'-'quoteAuthorization' WHERE publisher_id=$1`, p.id); e != nil {
+			return e
+		}
 		if _, e = tx.ExecContext(ctx, `UPDATE owned_federation_deliveries SET status='cancelled',finished_at=$2,lease_token=NULL,lease_until=NULL WHERE publisher_id=$1 AND status IN('pending','inflight')`, p.id, r.config.Clock()); e != nil {
 			return e
 		}
@@ -434,6 +440,7 @@ func (r *Repository) remote(ctx context.Context, uri string) (f.RemoteKey, error
 		return f.RemoteKey{}, f.ErrForbidden
 	}
 	k, e := r.keys.RemoteActor(ctx, uri)
+	k = k.Snapshot()
 	if e != nil || k.Actor != uri || !r.config.ValidRemote(k) {
 		return f.RemoteKey{}, f.ErrForbidden
 	}

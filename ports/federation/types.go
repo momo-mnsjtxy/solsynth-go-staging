@@ -57,26 +57,30 @@ type Actor struct {
 	Manual    bool      `json:"manuallyApprovesFollowers"`
 }
 type Note struct {
-	Context      string    `json:"@context,omitempty"`
-	ID           string    `json:"id"`
-	Type         string    `json:"type"`
-	AttributedTo string    `json:"attributedTo"`
-	Content      string    `json:"content,omitempty"`
-	MediaType    string    `json:"mediaType,omitempty"`
-	To           []string  `json:"to,omitempty"`
-	CC           []string  `json:"cc,omitempty"`
-	Published    time.Time `json:"published,omitzero"`
-	Updated      time.Time `json:"updated,omitzero"`
+	Quote              string    `json:"quote,omitempty"`
+	QuoteAuthorization string    `json:"quoteAuthorization,omitempty"`
+	Context            string    `json:"@context,omitempty"`
+	ID                 string    `json:"id"`
+	Type               string    `json:"type"`
+	AttributedTo       string    `json:"attributedTo"`
+	Content            string    `json:"content,omitempty"`
+	MediaType          string    `json:"mediaType,omitempty"`
+	To                 []string  `json:"to,omitempty"`
+	CC                 []string  `json:"cc,omitempty"`
+	Published          time.Time `json:"published,omitzero"`
+	Updated            time.Time `json:"updated,omitzero"`
 }
 type Activity struct {
-	Context   any             `json:"@context,omitempty"`
-	ID        string          `json:"id"`
-	Type      string          `json:"type"`
-	Actor     string          `json:"actor"`
-	Object    json.RawMessage `json:"object"`
-	To        []string        `json:"to,omitempty"`
-	CC        []string        `json:"cc,omitempty"`
-	Published time.Time       `json:"published,omitzero"`
+	Instrument json.RawMessage `json:"instrument,omitempty"`
+	Result     string          `json:"result,omitempty"`
+	Context    any             `json:"@context,omitempty"`
+	ID         string          `json:"id"`
+	Type       string          `json:"type"`
+	Actor      string          `json:"actor"`
+	Object     json.RawMessage `json:"object"`
+	To         []string        `json:"to,omitempty"`
+	CC         []string        `json:"cc,omitempty"`
+	Published  time.Time       `json:"published,omitzero"`
 }
 type Collection struct {
 	Context string `json:"@context"`

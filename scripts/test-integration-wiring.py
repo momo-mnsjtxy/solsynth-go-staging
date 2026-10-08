@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
  "internal/socialpg/permissions_schema.sql",
+ "internal/passkitpg/schema.sql",
  "internal/ticketmediapg/schema.sql",
  "internal/chatpg/mls_schema.sql",
  "internal/mediapg/artwork_schema.sql",
@@ -22,6 +23,7 @@ REQUIRED_SCHEMAS = {
  "internal/domaintrustpg/schema.sql",
  "internal/accountpg/name_schema.sql",
  "internal/federationpg/identity_schema.sql",
+ "internal/federationpg/quote_schema.sql",
  "internal/adminpg/schema.sql",
  "internal/livestreampg/schema.sql",
  "internal/moderationpg/schema.sql",
@@ -123,6 +125,10 @@ def check(runner, read_schema=None):
         raise ValueError("publisher reservations require canonical publishers first")
     if schemas.index("internal/federationpg/identity_schema.sql") <= max(schemas.index("internal/federationpg/schema.sql"), schemas.index("internal/accountpg/name_schema.sql")):
         raise ValueError("federation anchors require registrations and name reservations first")
+    if schemas.index("internal/federationpg/quote_schema.sql") <= max(schemas.index("internal/federationpg/identity_schema.sql"), schemas.index("internal/postpg/schema.sql")):
+        raise ValueError("quote authorizations require canonical posts and anchored federation first")
+    if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/federationpg/quote_schema.sql' not in runner:
+        raise ValueError("quote authorization migration must be atomic")
     if schemas.index("internal/commercepg/order_index_scope.sql") <= schemas.index("internal/commercepg/schema.sql"):
         raise ValueError("commerce index migration requires the base commerce schema first")
     if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/commercepg/order_index_scope.sql' not in runner:
@@ -228,6 +234,7 @@ def main():
     accounts = PSQL + "internal/accountpg/schema.sql"
     mutations = [
         source.replace("--single-transaction -f internal/socialpg/permissions_schema.sql", "-f internal/socialpg/permissions_schema.sql"),
+        source.replace("--single-transaction -f internal/federationpg/quote_schema.sql", "-f internal/federationpg/quote_schema.sql"),
         source.replace("--single-transaction -f internal/commercepg/order_index_scope.sql", "-f internal/commercepg/order_index_scope.sql"),
         source.replace("--single-transaction -f internal/mediapg/usage_schema.sql", "-f internal/mediapg/usage_schema.sql"),
         source.replace("test -timeout 30m -race", "test -race"),

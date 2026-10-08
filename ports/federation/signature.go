@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"math/big"
 	"net/http"
 	"strings"
 	"time"
@@ -26,16 +27,34 @@ type Verified struct {
 	digest   [32]byte
 	target   string
 	valid    bool
+	signedAt time.Time
 }
 
 func (v Verified) Activity() Activity {
 	a := v.activity
 	a.Object = append(json.RawMessage{}, a.Object...)
+	a.Instrument = append(json.RawMessage{}, a.Instrument...)
 	a.To = append([]string{}, a.To...)
 	a.CC = append([]string{}, a.CC...)
 	return a
 }
-func (v Verified) Remote() RemoteKey             { return v.remote }
+func (v Verified) Fresh(now time.Time) bool {
+	return v.valid && now.Sub(v.signedAt) <= 5*time.Minute && v.signedAt.Sub(now) <= 5*time.Minute
+}
+func snapshotRemote(k RemoteKey) RemoteKey {
+	if k.PublicKey != nil {
+		public := *k.PublicKey
+		if public.N != nil {
+			public.N = new(big.Int).Set(public.N)
+		}
+		k.PublicKey = &public
+	}
+	return k
+}
+
+// Snapshot prevents a provider-owned RSA modulus from changing a retained binding.
+func (k RemoteKey) Snapshot() RemoteKey          { return snapshotRemote(k) }
+func (v Verified) Remote() RemoteKey             { return snapshotRemote(v.remote) }
 func (v Verified) Digest() []byte                { return append([]byte{}, v.digest[:]...) }
 func (v Verified) ValidFor(actorURL string) bool { return v.valid && v.target == actorURL+"/inbox" }
 
@@ -144,6 +163,7 @@ func Verify(ctx context.Context, c Config, keys KeyProvider, r *http.Request, bo
 	if e != nil {
 		return out, ErrSignature
 	}
+	k = snapshotRemote(k)
 	if !c.ValidRemote(k) || k.KeyID != params["keyId"] || k.Actor != a.Actor {
 		return out, ErrSignature
 	}
@@ -155,7 +175,7 @@ func Verify(ctx context.Context, c Config, keys KeyProvider, r *http.Request, bo
 	if rsa.VerifyPKCS1v15(k.PublicKey, crypto.SHA256, hash[:], signed) != nil {
 		return out, ErrSignature
 	}
-	return Verified{activity: a, remote: k, digest: sum, target: c.Origin + r.URL.Path, valid: true}, nil
+	return Verified{activity: a, remote: k, digest: sum, target: c.Origin + r.URL.Path, valid: true, signedAt: stamp}, nil
 }
 func Sign(r *http.Request, body []byte, keyID string, signer crypto.Signer, now time.Time) error {
 	if _, e := PEM(signer); e != nil {

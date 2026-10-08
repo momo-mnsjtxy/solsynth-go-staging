@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed realm/activation/artwork plus MLS policy adapter, explicit grant SQL types, current subscription selection and exact rollback-contract corrections; offline SQL arity guard added",
+  "local_source_checkpoint": "Reviewed signed federation quote authorization and configured Apple Wallet member passes, including canonical root-only provisioning and opaque callback isolation; actual PG pending.",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,14 +12,14 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "fc7d9d389446344de1f37dc4fb97f480ead8f5fb",
-    "run": 37840859755,
-    "required_before": 539,
-    "required_after_restart": 70,
-    "status": "Run37840859755 failed9 before cases and never reached restart: MLS policy arity/bootstrap, current subscription lookup and ticket rollback error expectation. Bounded corrections are included in this local560 candidate; actual rerun pending."
+    "commit": "0bbb35534d30ed55d5af20693ffa2d1b1e645128",
+    "run": 37847926155,
+    "required_before": 560,
+    "required_after_restart": 73,
+    "status": "Running; previous539/70 failed9 before cases and never reached restart. No new full pass claimed."
   },
-  "local_required_before": 560,
-  "local_required_after_restart": 73,
+  "local_required_before": 573,
+  "local_required_after_restart": 75,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -1589,6 +1589,39 @@
         "unmapped_case_names": [],
         "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       }
+    },
+    {
+      "source_family": "passport.apple_wallet_passes",
+      "local_status": "implemented_pending_actual_ci",
+      "supported_flows": [
+        "Configured signed member pass issuance and Apple device callbacks"
+      ],
+      "guarded_pg_cases": [
+        "TestPGPasskitCompositionRegistrationIsolationAndUpdates",
+        "TestPGPasskitCanonicalProfileMediaAndConcurrentIssuance",
+        "TestPGPasskitSigningRollbackAndCurrentIdentity",
+        "TestPGPasskitWaitRechecksAccountAndCanonicalMedia",
+        "TestPGPasskitProvisioningAuthorizationAndWaitRevocation",
+        "TestPGPasskitRestartPersistence",
+        "TestPGPasskitInternalProgramEligibility"
+      ],
+      "remaining_reference": "current_remaining.families:passport.apple_wallet_passes"
+    },
+    {
+      "source_family": "federation.quote_authorization",
+      "local_status": "implemented_pending_actual_ci",
+      "supported_flows": [
+        "Signed inbound one-object quote authorization with durable acceptance, current policy and observed-key revocation"
+      ],
+      "guarded_pg_cases": [
+        "TestPGFederationQuoteSignedLifecycleAndSingleObject",
+        "TestPGFederationQuoteCurrentPrivacyOriginAndOwnership",
+        "TestPGFederationQuoteFreshKeyAndBlockRevocation",
+        "TestPGFederationQuoteConcurrentReplayAndRollback",
+        "TestPGFederationQuoteReviewWaitsAndAcceptanceIsolation",
+        "TestPGFederationQuoteRestartPersistence"
+      ],
+      "remaining_reference": "current_remaining.families:federation.quote_authorization"
     }
   ],
   "additional_cross_service_flows": [
@@ -1687,12 +1720,14 @@
       "sphere.post_awards",
       "wallet.funds",
       "messager.opaque_mls",
-      "passport.social_realms"
+      "passport.social_realms",
+      "passport.apple_wallet_passes",
+      "federation.quote_authorization"
     ],
     "delivered_not_integrated": []
   },
   "current_remaining": {
-    "as_of": "2026-10-08T20:53:00Z",
+    "as_of": "2026-10-08T21:39:00Z",
     "authoritative_for": "Known remaining flows, not a count of source operations. Partial/unresearched contracts remain research tasks; unavailable is never inferred from lack of prior research.",
     "families": [
       {
@@ -1751,7 +1786,7 @@
         "family": "passport.accounts_presence",
         "remaining": [
           "Admin contacts, phone/address verification, security modes and excluded SDK preference encoding",
-          "External identity providers, PassKit, affiliation spells"
+          "External identity providers and affiliation spells"
         ]
       },
       {
@@ -2035,20 +2070,34 @@
           "No implemented MLS cryptographic engine or validated client handshake/device possession",
           "Authored attachment confidentiality limitation is deferred client work; no E2EE confidentiality marketing"
         ]
+      },
+      {
+        "family": "passport.apple_wallet_passes",
+        "remaining": [
+          "Configured production Apple signing material and physical Wallet validation; no live installation or APNs transmission performed",
+          "App-product membership label eligibility intentionally excluded; pass token lifecycle is purpose-specific and does not inherit ordinary session logout"
+        ]
+      },
+      {
+        "family": "federation.quote_authorization",
+        "remaining": [
+          "Outbound QuoteRequest and unknown remote-issued authorizations",
+          "Unobserved remote signing-key rollback requires provider generation/history; observed mismatches revoke durably",
+          "Remote/private/realm/media discovery and whole-FEP conformance remain unsupported"
+        ]
       }
     ],
     "cross_platform": [
       "Original data migration/import, rollback and compatibility fixtures for historical data",
-      "Broader federation actor/realm/quote/follow/moderation/key-management and remote discovery contracts",
+      "Broader federation actor/realm/follow/moderation/key-management and remote discovery contracts; implemented bounded quote authorization tracked separately",
       "Original external provider execution, settlement/payout and production operational acceptance; live actions require separate authorization",
       "Coupon issuance/discount/usage semantics remain only partially evidenced: retained callers accept coupon strings but calculation delegates to excluded/unavailable model code; no invented coupon economy",
       "Address fulfillment and provider-specific recurring workspace execution",
       "Source-declaration818 acceptance map remains an operation inventory, not runtime endpoint count or proof of whole-platform completion"
     ],
     "active_implementation": [
-      "Configured Apple Wallet member passes and callbacks",
-      "Bounded signed inbound federation quote authorization",
-      "Offline isolated-cluster CI partition proposal (not active)"
+      "Relationship request expiry and timed block/mute degradation",
+      "Offline isolated-cluster CI partition review (not active)"
     ],
     "not_remaining_missing_features": [
       "PIN enrollment/rotation/removal",
@@ -2057,7 +2106,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last full green is455/60. Candidate539/70 is running. Local560/73 additions and complete source reconstructions have offline evidence only. Restart phase/marker corrections are required before crediting new assertions."
+    "verification_note": "Last full green is455/60. Corrected560/73 candidate is running. Reviewed PassKit and quote integration has offline evidence only; actual PG/restart pending."
   },
   "global_remaining": [
     "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",

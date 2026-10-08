@@ -13,6 +13,9 @@ import (
 // Ready verifies required relation presence without creating or mutating data.
 // It is a dependency readiness probe, not certification of schema/parity/migrations.
 func (b *Backend) Ready(ctx context.Context) error {
+	if e := b.passkit.ready(ctx); e != nil {
+		return e
+	}
 	if b == nil || b.db == nil || b.authorityDB == nil {
 		return errors.New("backend unavailable")
 	}

@@ -1,6 +1,6 @@
 {
-  "checkpoint": "canonical-chat-relations-composition",
-  "scope": "294 before/41 restart candidate; full local build/vet/race and guard regression passed, actual PostgreSQL pending",
+  "checkpoint": "chat294-fixtures",
+  "scope": "Isolated validated checkpoint with fixture-only corrections; actual PostgreSQL CI pending",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
@@ -7486,8 +7486,8 @@
     },
     {
       "path": "tests/integration/chat_lifecycle_test.go",
-      "bytes": 17848,
-      "sha256": "b2ab33ccdfe5c205b505ac2c024ba43674308c3d7841ac4ebce4db13d0747440"
+      "bytes": 18357,
+      "sha256": "de7d402f1472a5931bbb181ce642b88611f74e3591ff66252d6ecbb924b8377c"
     },
     {
       "path": "tests/integration/chat_preflight_test.go",
@@ -7496,8 +7496,8 @@
     },
     {
       "path": "tests/integration/chat_relations_test.go",
-      "bytes": 19512,
-      "sha256": "e613e431640575d048905820e8e71dd0fda2ea68137d262c6b917007f523c09c"
+      "bytes": 19806,
+      "sha256": "f319b3ed6b0939d2456721940e4dc92eed1aa8d97a7ab4a98d0f99fe7cc46341"
     },
     {
       "path": "tests/integration/commerce_test.go",

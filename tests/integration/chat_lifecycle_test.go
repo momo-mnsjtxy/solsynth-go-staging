@@ -363,7 +363,14 @@ func TestPGChatAuthorityAndUnsupportedBoundaries(t *testing.T) {
 		chatCall(t, f.handler, "POST", base+"/messages", f.token, body, 501)
 	}
 	chatCall(t, f.handler, "POST", base+"/messages?identity="+f.other, f.token, `{"content":"hi"}`, 501)
-	chatCall(t, f.handler, "POST", "/api/chat/direct", f.token, `{}`, 501)
+	// DM creation is implemented, but this compatibility fixture deliberately
+	// lacks canonical social policy. The route must fail unavailable and create
+	// no direct room instead of falling back to ordinary room authority.
+	chatCall(t, f.handler, "POST", "/api/chat/direct", f.token, `{"related_user_id":"`+f.other+`"}`, 503)
+	var directRooms int
+	if e := f.db.QueryRow(`SELECT count(*) FROM chat_rooms WHERE owned_owner_id=$1 AND owned_type=1`, f.owner).Scan(&directRooms); e != nil || directRooms != 0 {
+		t.Fatal("unconfigured direct route created a room", directRooms, e)
+	}
 	chatCall(t, f.handler, "POST", "/api/chat", f.token, `{"name":"room","encryption_mode":88}`, 501)
 	if e := authoritypg.New(f.db).ReplacePolicy(context.Background(), f.owner, []authority.Rule{{Pattern: "*"}, {Pattern: "chat.messages.create", Deny: true}}, nil); e != nil {
 		t.Fatal(e)

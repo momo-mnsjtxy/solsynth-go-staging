@@ -112,12 +112,16 @@ func relationRealm(t *testing.T, f chatRelationsFixture, public bool) social.Rea
 	if e != nil {
 		t.Fatal(e)
 	}
+	// Elevated realm roles require an explicitly granted level-2 entitlement.
+	// This synthetic setup must not bypass the canonical invitation policy.
+	query(t, f.db, `UPDATE owned_realms SET boost_level=2 WHERE id=$1`, v.ID)
+	v.BoostLevel = 2
 	for _, entry := range []struct {
 		id   string
 		role social.Role
 	}{{f.other, social.Moderator}, {f.third, social.Normal}} {
 		if _, e = f.social.ChangeMember(f.contexts[f.owner], f.owner, v.ID, social.MemberChange{Action: social.Invite, AccountID: entry.id, Role: entry.role}); e != nil {
-			t.Fatal(e)
+			t.Fatalf("synthetic realm invite role %d: %v", entry.role, e)
 		}
 		if _, e = f.social.ChangeMember(f.contexts[entry.id], entry.id, v.ID, social.MemberChange{Action: social.Accept}); e != nil {
 			t.Fatal(e)

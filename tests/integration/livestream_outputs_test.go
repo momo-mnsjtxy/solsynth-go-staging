@@ -271,7 +271,7 @@ func TestPGLiveStreamOutputsRequireFixedDestinationsAndAdminEditor(t *testing.T)
 	outputFiles(t, f, v.OutputID)
 	streamGetCall(t, f.streamFixture, *v.PlaylistURL, f.otherToken, 200)
 	streamGetCall(t, f.streamFixture, *v.PlaylistURL, f.thirdToken, 404)
-	query(t, f.db, `UPDATE owned_publishers SET shadowban_reason='synthetic output policy',shadowbanned_at=clock_timestamp() WHERE id=$1::uuid`, f.pub.ID)
+	fixturePublisherShadowban(t, f.db, f.pub.ID, "other", time.Now().UTC())
 	if _, e = f.repo.StartEgress(f.ownerCtx, f.owner, s.ID, live.EgressRequest{DestinationIDs: []string{"relay"}}); !errors.Is(e, live.ErrForbidden) {
 		t.Fatal("editor exception bypassed public relay visibility", e)
 	}
@@ -412,7 +412,7 @@ func TestPGLiveStreamOutputsFreshPolicyAndDurableStopRetry(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	query(t, f.db, `UPDATE owned_publishers SET shadowban_reason='synthetic output revocation',shadowbanned_at=clock_timestamp() WHERE id=$1::uuid`, f.pub.ID)
+	fixturePublisherShadowban(t, f.db, f.pub.ID, "other", time.Now().UTC())
 	if e = outputDue(t, f, s.ID); e != nil {
 		t.Fatal(e)
 	}

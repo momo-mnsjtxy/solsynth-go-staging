@@ -341,7 +341,7 @@ func TestPGFederatedRenameQueuedDeliveryAndCurrentPrivacy(t *testing.T) {
 		case "disabled":
 			query(t, f.db, `UPDATE owned_authority_accounts SET disabled=true WHERE id=$1::uuid`, f.actor)
 		case "shadowbanned":
-			query(t, f.db, `UPDATE owned_publishers SET shadowbanned_at=now(),shadowban_reason='spam' WHERE id=$1::uuid`, f.publisher)
+			fixturePublisherShadowban(t, f.db, f.publisher, "spam", f.config.Now())
 		case "deleted":
 			query(t, f.db, `UPDATE owned_publishers SET deleted_at=now() WHERE id=$1::uuid`, f.publisher)
 		}
@@ -353,7 +353,7 @@ func TestPGFederatedRenameQueuedDeliveryAndCurrentPrivacy(t *testing.T) {
 		case "disabled":
 			query(t, f.db, `UPDATE owned_authority_accounts SET disabled=false WHERE id=$1::uuid`, f.actor)
 		case "shadowbanned":
-			query(t, f.db, `UPDATE owned_publishers SET shadowbanned_at=NULL,shadowban_reason=NULL WHERE id=$1::uuid`, f.publisher)
+			fixturePublisherShadowban(t, f.db, f.publisher, "", time.Time{})
 		}
 	}
 }

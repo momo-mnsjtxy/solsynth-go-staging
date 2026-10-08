@@ -11,6 +11,7 @@ import (
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"strings"
 	"testing"
+	"time"
 )
 
 func boardDiscover(t *testing.T, f developerFixture, slug string) []apps.BoardDiscoveryApp {
@@ -49,11 +50,11 @@ func TestPGBoardDiscoveryCurrentVisibilityAndDTO(t *testing.T) {
 		t.Fatal("disabled owner public")
 	}
 	query(t, f.db, `UPDATE owned_authority_accounts SET disabled=false WHERE id=$1::uuid`, f.actor)
-	query(t, f.db, `UPDATE owned_publishers SET shadowbanned_at=clock_timestamp(),shadowban_reason='spam' WHERE name=$1::text`, f.dev)
+	fixturePublisherShadowbanName(t, f.db, f.dev, "spam", time.Now().UTC())
 	if len(boardDiscover(t, f, a.Slug)) != 0 {
 		t.Fatal("shadowbanned publisher public")
 	}
-	query(t, f.db, `UPDATE owned_publishers SET shadowbanned_at=NULL,shadowban_reason=NULL WHERE name=$1::text`, f.dev)
+	fixturePublisherShadowbanName(t, f.db, f.dev, "", time.Time{})
 	backendJSONCall(t, f.handler, "PATCH", root+q, f.token, map[string]any{"oauth_config": map[string]any{"allowed_scopes": []string{"orders.create"}}}, 200)
 	if len(boardDiscover(t, f, a.Slug)) != 0 {
 		t.Fatal("scope removal not current")

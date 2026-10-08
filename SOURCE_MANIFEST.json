@@ -1,8 +1,8 @@
 {
-  "checkpoint": "chat-profile-funds-recurring-origin516",
-  "scope": "Canonical chat/profile media, held wallet funds, recurring app product fulfillment and origin/account policy-history correction composed. Full local verify passed; focused readiness propagation race verification recorded separately. Actual PostgreSQL candidate pending. Final checkout deadline is checked after transaction waits; global maintenance fixtures only backdate their own coherent subscription rows. Focused race checks passed; new PG case awaits private CI.",
+  "checkpoint": "516-canonical-fixture-correction",
+  "scope": "Fixture-only canonical publisher handle selectors and shared valid shadowban state construction; runtime lookup, ownership, settlement and schema constraints unchanged. Local integration compilation/race checks pass; actual private PG pending. Current acceptance map replaces obsolete remaining labels and separates exact-commit green evidence from pending implementation.",
   "inputs": {
-    "remote_parent": "854cf4571b0be15a5cd094482a40a9190b3ad851"
+    "remote_parent": "733a5f72745c92afed5cd18c948d6d3637959779"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "files": [
@@ -1647,9 +1647,14 @@
       "sha256": "a842d7767ce7d18c60d03d2016f25dc2239eef765765246f8e3a9f671cda286b"
     },
     {
+      "path": "docs/runtime-flow-acceptance-history.json",
+      "bytes": 4865,
+      "sha256": "2a008306108779f111a95f5bb1d23e89857bee480a10b3c48f658907e15e150d"
+    },
+    {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 60128,
-      "sha256": "b148697dbcb7b50a1f0eb1dd19bf8d30f6fbd77b38d61f64146d5399efbd5355"
+      "bytes": 87862,
+      "sha256": "656058a421bee7589953e36ca5f8b8f510782c38a7ac14302948280aa9e26cd3"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -9278,8 +9283,8 @@
     },
     {
       "path": "tests/integration/backend_post_awards_test.go",
-      "bytes": 2740,
-      "sha256": "fbb5cb970d64ff4f1b61124708ce8685ff9f097504ee6e262a3c6eee51703963"
+      "bytes": 3162,
+      "sha256": "dd01282e69ba0bb371ceaeba244fbe8d3fef1021e5d94ff883a0f055cc7cdc6e"
     },
     {
       "path": "tests/integration/backend_presence_test.go",
@@ -9318,8 +9323,8 @@
     },
     {
       "path": "tests/integration/board_discovery_test.go",
-      "bytes": 6555,
-      "sha256": "f61fc5fcabdd8a7671fc8f643128aed5faefb67427d0a21713c4dcbe0b2403cb"
+      "bytes": 6451,
+      "sha256": "3636a7ad8ebb6f4abd4d5dcddc570bef71517f8f43245e09387818ce4da9a7dc"
     },
     {
       "path": "tests/integration/board_http_test.go",
@@ -9438,8 +9443,8 @@
     },
     {
       "path": "tests/integration/federation_rename_test.go",
-      "bytes": 18806,
-      "sha256": "d0138ca9c9953ba288e00d4b1fe78c93ea87424c5f8d101cf747a96719d689ee"
+      "bytes": 18700,
+      "sha256": "a6e189a63a853e2738b8bfd596bd6317570a45c72b8d87fae5b590e584da79fb"
     },
     {
       "path": "tests/integration/federation_test.go",
@@ -9473,8 +9478,8 @@
     },
     {
       "path": "tests/integration/livestream_outputs_test.go",
-      "bytes": 23684,
-      "sha256": "5f5c8d7da573d350dabc285bd98d389ef45d04908c7e4025cdb49dd5c776eb88"
+      "bytes": 23522,
+      "sha256": "459945baaa2514256f12c732fd224ef85755acc33b262c284d262629c551397c"
     },
     {
       "path": "tests/integration/livestreams_test.go",
@@ -9548,8 +9553,8 @@
     },
     {
       "path": "tests/integration/post_awards_test.go",
-      "bytes": 21027,
-      "sha256": "9b695196a57b384eee3d2d3ba82d145352cb041a6f221968d9d2345eefe8706b"
+      "bytes": 22069,
+      "sha256": "da7813e6bbeccf30957080b7b4f72255330d1b27c96169701eb4fa4e85440a8d"
     },
     {
       "path": "tests/integration/post_interactions_test.go",
@@ -9583,8 +9588,13 @@
     },
     {
       "path": "tests/integration/publisher_ratings_test.go",
-      "bytes": 9102,
-      "sha256": "8d2030d025f4a975b58289ff356e648d05a0e8ece84e6eb4c96cbb4d1d000ea2"
+      "bytes": 9025,
+      "sha256": "2c2724ba7ed0dffc4243296de83abdfaf8236812672cab63ca9601814f1ad7e3"
+    },
+    {
+      "path": "tests/integration/publisher_route_fixture_test.go",
+      "bytes": 542,
+      "sha256": "d48b89811c2faf92c76899d9ff6478c64bd8bd07d51bae91ab04965178af130e"
     },
     {
       "path": "tests/integration/publisher_sponsorship_test.go",
@@ -9625,6 +9635,11 @@
       "path": "tests/integration/schema.sql",
       "bytes": 751,
       "sha256": "4117024de7548fda716ae5b98ba636fb0c0f4c2d65226798a59f3be69319fa99"
+    },
+    {
+      "path": "tests/integration/shadowban_fixture_test.go",
+      "bytes": 1372,
+      "sha256": "a7f6300654e8276d3ae1615aadf1d025e29300c80dbd337d0bbd38fb03b63517"
     },
     {
       "path": "tests/integration/signin_test.go",

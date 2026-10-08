@@ -51,7 +51,7 @@ func newPostAwardFixture(t *testing.T, policy string) *postAwardFixture {
 	if e = f.awards.Ready(f.ctx); e != nil {
 		t.Fatal(e)
 	}
-	if _, e = f.awards.BindWallet(f.ctx, f.actor, f.individual.ID, a.WalletPatch{WalletID: &f.beneficiary.ID}); e != nil {
+	if _, e = f.awards.BindWallet(f.ctx, f.actor, fixturePublisherHandle(f.individual), a.WalletPatch{WalletID: &f.beneficiary.ID}); e != nil {
 		t.Fatal(e)
 	}
 	return f
@@ -141,7 +141,7 @@ func TestPGPostAwardNegativeAndExplicitRounding(t *testing.T) {
 	if e != nil || read.AwardedScore.String() != "-0.761" {
 		t.Fatal(read, e)
 	}
-	if n, e := f.awards.SettleMerchant(f.ctx, f.actor, f.individual.ID, 100); e != nil || n != 1 {
+	if n, e := f.awards.SettleMerchant(f.ctx, f.actor, fixturePublisherHandle(f.individual), 100); e != nil || n != 1 {
 		t.Fatal(n, e)
 	}
 	walletAssertBalance(t, walletpg.New(f.db), f.payer.ID, "points", "96.759", "0.000", "96.759")
@@ -150,18 +150,30 @@ func TestPGPostAwardNegativeAndExplicitRounding(t *testing.T) {
 }
 func TestPGPostAwardImmutableBeneficiaryAndMissingBinding(t *testing.T) {
 	f := newPostAwardFixture(t, "")
+	// Merchant routes resolve exact publisher handles. A UUID is not a handle,
+	// and resolving the correct publisher grants no access to another wallet.
+	if _, e := f.awards.Merchant(f.ctx, f.actor, f.individual.ID); !errors.Is(e, a.ErrNotFound) {
+		t.Fatal("publisher UUID was accepted as a merchant handle", e)
+	}
+	if _, e := f.awards.BindWallet(f.ctx, f.actor, fixturePublisherHandle(f.individual), a.WalletPatch{WalletID: &f.payer.ID}); !errors.Is(e, a.ErrWallet) {
+		t.Fatal("foreign beneficiary wallet accepted", e)
+	}
+	binding, e := f.awards.Merchant(f.ctx, f.actor, fixturePublisherHandle(f.individual))
+	if e != nil || binding.PublisherID != f.individual.ID || binding.PaymentWalletID == nil || *binding.PaymentWalletID != f.beneficiary.ID {
+		t.Fatal("rejected wallet changed explicit beneficiary binding", binding, e)
+	}
 	p := f.post(t, f.individual, "Synthetic captured beneficiary", posts.Public)
 	paid := f.order(t, p, "paid", "5", 0)
 	f.pay(t, paid)
 	unpaid := f.order(t, p, "unpaid", "6", 0)
 	next := walletCreate(t, walletpg.New(f.db), f.actor)
-	if _, e := f.awards.BindWallet(f.ctx, f.actor, f.individual.ID, a.WalletPatch{WalletID: &next.ID}); e != nil {
+	if _, e := f.awards.BindWallet(f.ctx, f.actor, fixturePublisherHandle(f.individual), a.WalletPatch{WalletID: &next.ID}); e != nil {
 		t.Fatal(e)
 	}
 	if _, e := f.checkout.PayOrder(f.otherCtx, f.other, unpaid.OrderID, &f.payer.ID); !errors.Is(e, c.ErrConflict) {
 		t.Fatal("binding drift accepted", e)
 	}
-	if _, e := f.awards.BindWallet(f.ctx, f.actor, f.individual.ID, a.WalletPatch{}); e != nil {
+	if _, e := f.awards.BindWallet(f.ctx, f.actor, fixturePublisherHandle(f.individual), a.WalletPatch{}); e != nil {
 		t.Fatal(e)
 	}
 	if _, e := f.awards.CreateOrder(f.otherCtx, f.other, p.ID, "missing", a.Request{Amount: walletAmount(t, "1")}); !errors.Is(e, a.ErrWallet) {
@@ -172,7 +184,7 @@ func TestPGPostAwardImmutableBeneficiaryAndMissingBinding(t *testing.T) {
 	}
 	walletAssertBalance(t, walletpg.New(f.db), f.beneficiary.ID, "points", "5.000", "0.000", "5.000")
 	walletAssertBalance(t, walletpg.New(f.db), f.payer.ID, "points", "95.000", "0.000", "95.000")
-	if _, e := f.awards.BindWallet(f.otherCtx, f.other, f.individual.ID, a.WalletPatch{WalletID: &f.payer.ID}); !errors.Is(e, a.ErrForbidden) {
+	if _, e := f.awards.BindWallet(f.otherCtx, f.other, fixturePublisherHandle(f.individual), a.WalletPatch{WalletID: &f.payer.ID}); !errors.Is(e, a.ErrForbidden) {
 		t.Fatal("foreign manager", e)
 	}
 }
@@ -291,14 +303,14 @@ func TestPGPostAwardReleaseDisabledBeneficiaryAndRollback(t *testing.T) {
 	t.Cleanup(func() {
 		query(t, f.db, `ALTER TABLE owned_post_award_audit DROP CONSTRAINT IF EXISTS synthetic_post_award_release`)
 	})
-	_, e := f.awards.SettleMerchant(f.ctx, f.actor, f.individual.ID, 100)
+	_, e := f.awards.SettleMerchant(f.ctx, f.actor, fixturePublisherHandle(f.individual), 100)
 	var pg *pgconn.PgError
 	if !errors.As(e, &pg) || pg.Code != "23514" || pg.ConstraintName != "synthetic_post_award_release" {
 		t.Fatal(e)
 	}
 	walletAssertBalance(t, walletpg.New(f.db), f.treasury.ID, "points", "0.000", "5.000", "5.000")
 	query(t, f.db, `ALTER TABLE owned_post_award_audit DROP CONSTRAINT synthetic_post_award_release`)
-	if n, e := f.awards.SettleMerchant(f.ctx, f.actor, f.individual.ID, 100); e != nil || n != 1 {
+	if n, e := f.awards.SettleMerchant(f.ctx, f.actor, fixturePublisherHandle(f.individual), 100); e != nil || n != 1 {
 		t.Fatal(n, e)
 	}
 }
@@ -362,7 +374,7 @@ func TestPGPostAwardOppositePublisherPayments(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if _, e = f.awards.BindWallet(f.otherCtx, f.other, pub.ID, a.WalletPatch{WalletID: &f.payer.ID}); e != nil {
+	if _, e = f.awards.BindWallet(f.otherCtx, f.other, fixturePublisherHandle(pub), a.WalletPatch{WalletID: &f.payer.ID}); e != nil {
 		t.Fatal(e)
 	}
 	visibility := posts.Public
@@ -422,7 +434,7 @@ func TestPGPostAwardOrganizationWalletAndRevocation(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if _, e = f.awards.BindWallet(f.ctx, f.actor, f.privatePub.ID, a.WalletPatch{WalletID: &realmWallet.ID}); e != nil {
+	if _, e = f.awards.BindWallet(f.ctx, f.actor, fixturePublisherHandle(f.privatePub), a.WalletPatch{WalletID: &realmWallet.ID}); e != nil {
 		t.Fatal(e)
 	}
 	p := f.post(t, f.privatePub, "Synthetic private organization award", posts.Public)
@@ -431,7 +443,7 @@ func TestPGPostAwardOrganizationWalletAndRevocation(t *testing.T) {
 	if _, _, e = f.awards.List(f.ctx, "", p.ID, a.Page{}); !errors.Is(e, a.ErrNotFound) {
 		t.Fatal("organization award leak", e)
 	}
-	if n, e := f.awards.SettleMerchant(f.ctx, f.actor, f.privatePub.ID, 100); e != nil || n != 1 {
+	if n, e := f.awards.SettleMerchant(f.ctx, f.actor, fixturePublisherHandle(f.privatePub), 100); e != nil || n != 1 {
 		t.Fatal(n, e)
 	}
 	walletAssertBalance(t, walletpg.New(f.db), realmWallet.ID, "points", "4.000", "0.000", "4.000")

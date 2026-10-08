@@ -130,7 +130,7 @@ func TestPGPublisherRatingRanksAliasesAndCurrentPrivacy(t *testing.T) {
 	if _, e = f.ratings.Overview(f.ctx, f.actor, f.publicPub.ID); e != nil {
 		t.Fatal("realm member lost own visibility", e)
 	}
-	query(t, f.db, `UPDATE owned_publishers SET shadowbanned_at=$2::timestamptz,shadowban_reason='spam' WHERE id=$1::uuid`, f.individual.ID, f.config.Now())
+	fixturePublisherShadowban(t, f.db, f.individual.ID, "spam", f.config.Now())
 	if _, e = f.ratings.Overview(f.ctx, "", alias); !errors.Is(e, s.ErrNotFound) {
 		t.Fatal("alias bypassed publisher moderation", e)
 	}

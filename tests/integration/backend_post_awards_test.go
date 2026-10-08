@@ -47,8 +47,13 @@ func TestPGBackendPostAwardCheckoutAndRelease(t *testing.T) {
 	if pending.PayoutAmount.String() != "5.125" {
 		t.Fatal(pending)
 	}
-	backendCall(t, app, "GET", "/api/merchants/"+f.individual.ID+"/wallet", f.otherToken, "", 403)
-	backendCall(t, app, "GET", "/api/merchants/"+f.individual.Name+"/settlements", f.token, "", 200)
+	backendCall(t, app, "GET", "/api/merchants/"+f.individual.ID+"/wallet", f.token, "", 404)
+	backendCall(t, app, "GET", fixtureMerchantRoute(f.individual, "wallet"), f.otherToken, "", 403)
+	binding := backendDecode[a.Merchant](t, backendCall(t, app, "GET", fixtureMerchantRoute(f.individual, "wallet"), f.token, "", 200))
+	if binding.PublisherID != f.individual.ID || binding.PaymentWalletID == nil || *binding.PaymentWalletID != f.beneficiary.ID {
+		t.Fatal("host merchant handle resolved another binding", binding)
+	}
+	backendCall(t, app, "GET", fixtureMerchantRoute(f.individual, "settlements"), f.token, "", 200)
 	if n, e := app.ProcessPostAwardsDue(context.Background(), 100); e != nil || n != 1 {
 		t.Fatal(n, e)
 	}

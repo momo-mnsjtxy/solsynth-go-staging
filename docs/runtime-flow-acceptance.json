@@ -12,17 +12,18 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "854cf4571b0be15a5cd094482a40a9190b3ad851",
-    "required_before": 484,
-    "required_after_restart": 63,
-    "status": "Private CI pending; separate455 rerun includes explicit phase timeouts. Six durable ABA regressions passed in22e2e96d before the package timed out; restart not reached."
+    "commit": "733a5f72745c92afed5cd18c948d6d3637959779",
+    "run": 37831906669,
+    "required_before": 516,
+    "required_after_restart": 67,
+    "status": "Actual PostgreSQL running; earlier484 run failed on fourteen shared award setup handle/UUID fixtures and two noncanonical shadowban reasons, corrected in this local fixture-only follow-up. Full result pending."
   },
   "local_required_before": 516,
   "local_required_after_restart": 67,
   "families": [
     {
       "source_family": "develop.apps_products",
-      "local_status": "implemented",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical app/product CRUD, scoped app keys and public app reads",
         "Owned OAuth/OIDC execution is tracked separately below; resource API delegation remains restricted",
@@ -40,9 +41,21 @@
         "TestPGRecurringProductHostPINCatalogAndCancel",
         "TestPGRecurringProductRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Remaining legacy app-management contracts, required address/stock fulfillment and external workspace/provider execution"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [
+          "TestPGRecurringProductCheckoutAtomicAndIsolation",
+          "TestPGRecurringProductRenewalEconomicsAndRevocation",
+          "TestPGRecurringProductConsentWaitAndSnapshot",
+          "TestPGRecurringProductOppositeWalletPayments",
+          "TestPGRecurringProductHostPINCatalogAndCancel",
+          "TestPGRecurringProductRestartPersistence"
+        ],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 4
+      },
+      "remaining_reference": "current_remaining.families:develop.apps_products"
     },
     {
       "source_family": "develop.developers",
@@ -56,7 +69,14 @@
         "TestPGDeveloperAppsLifecycle",
         "TestPGDeveloperAppsRestartPersistence"
       ],
-      "unsupported_or_remaining": []
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 4
+      },
+      "remaining_reference": null
     },
     {
       "source_family": "develop.projects",
@@ -70,11 +90,18 @@
         "TestPGDeveloperAppsLifecycle",
         "TestPGDeveloperAppsRestartPersistence"
       ],
-      "unsupported_or_remaining": []
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 4
+      },
+      "remaining_reference": null
     },
     {
       "source_family": "develop.bots",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical app-owned bot accounts, controlled lifecycle, command metadata and fresh authority checks"
       ],
@@ -89,9 +116,14 @@
         "TestPGBotsRestartPersistence",
         "TestPGBackendBotMiniappComposition"
       ],
-      "unsupported_or_remaining": [
-        "Command execution, bot credential enrollment, external webhooks and legacy migration"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 9
+      },
+      "remaining_reference": "current_remaining.families:develop.bots"
     },
     {
       "source_family": "develop.boards",
@@ -113,11 +145,18 @@
         "TestPGBackendBoardDiscoveryComposition",
         "TestPGBoardDiscoveryRestartPersistence"
       ],
-      "unsupported_or_remaining": []
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 11
+      },
+      "remaining_reference": null
     },
     {
       "source_family": "develop.miniapps",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Private miniapp lifecycle, production metadata and authorized canonical media ZIP package publication/download"
       ],
@@ -132,13 +171,18 @@
         "TestPGBotsRestartPersistence",
         "TestPGBackendBotMiniappComposition"
       ],
-      "unsupported_or_remaining": [
-        "Hosted execution, legacy multipart/image contracts and legacy migration"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 9
+      },
+      "remaining_reference": "current_remaining.families:develop.miniapps"
     },
     {
       "source_family": "messager.messages",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical text send/edit/delete, read/sync/unread and sequences",
         "Current DM/realm restrictions consistently apply to message reads, sync, unread, sends and notification replay",
@@ -164,13 +208,24 @@
         "TestPGBackendChatMediaAndReactionsComposition",
         "TestPGChatMediaReactionsRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "E2EE control plane integrating separately; full source message types, non-null thread/forward operations remain unsupported"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [
+          "TestPGChatMediaLifecycleCurrentVisibilityAndIsolation",
+          "TestPGChatReactionsContractsConcurrencyAndRollback",
+          "TestPGChatMediaAuthorityAndFileWaitRevalidation",
+          "TestPGBackendChatMediaAndReactionsComposition",
+          "TestPGChatMediaReactionsRestartPersistence"
+        ],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 13
+      },
+      "remaining_reference": "current_remaining.families:messager.messages"
     },
     {
       "source_family": "messager.rooms",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Group/community rooms, invitations, members and read markers",
         "Direct pair create/confirm/block/unblock; realm-linked rooms and current moderator timeout policy"
@@ -192,13 +247,18 @@
         "TestPGChatAuthorityPreflightSameTransactionAndNoLocks",
         "TestPGBackendChatRelationsComposition"
       ],
-      "unsupported_or_remaining": [
-        "Fine-grained custom roles, media/profile customization, bots, MLS/E2EE and legacy system-message envelopes"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 15
+      },
+      "remaining_reference": "current_remaining.families:messager.rooms"
     },
     {
       "source_family": "messager.calls",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical room call admission, moderation, cleanup and notification events",
         "Explicit LiveKit Cloud-capable adapter; synthetic transport tests only"
@@ -213,26 +273,36 @@
         "TestPGBackendCallsFederationComposition",
         "TestPGBackendCallsFederationRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Media-plane validation, legacy packet/system-message/VoIP-push compatibility and configured live provider"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 8
+      },
+      "remaining_reference": "current_remaining.families:messager.calls"
     },
     {
       "source_family": "passport.badges",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Licensed public badge manifest/icons and canonical earned progression badges"
       ],
       "guarded_pg_cases": [
         "TestPGProgressionCanonicalProjectorRollbackAndEarnedBadges"
       ],
-      "unsupported_or_remaining": [
-        "Legacy badge import and original external earning providers"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 1
+      },
+      "remaining_reference": "current_remaining.families:passport.badges"
     },
     {
       "source_family": "passport.fortunes",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Configured language-filtered sayings and random catalogue",
         "Durable version2 check-in report generation with bounded configured corpus/provider and private Today/history/calendar projection"
@@ -246,14 +316,18 @@
         "TestPGFortuneRestartPersistence",
         "TestPGBackendFortuneComposition"
       ],
-      "unsupported_or_remaining": [
-        "Original sayings/tips/fallback corpus excluded pending provenance",
-        "Birthday/backdated rules and unsupported enrichment; original personality RPC not imported"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 7
+      },
+      "remaining_reference": "current_remaining.families:passport.fortunes"
     },
     {
       "source_family": "passport.accounts_presence",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical profiles/publishers; first-party password/TOTP/recovery and session flows",
         "Verified-session presence leases, status and privacy settings",
@@ -294,14 +368,25 @@
         "TestPGProfileMediaMembershipCannotRedistribute",
         "TestPGProfileMediaRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Admin contacts, phone/address verification, security modes and excluded SDK preference encoding",
-        "External identity providers, PassKit/artwork and remaining source account operations"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [
+          "TestPGProfileMediaComposedUploadReferenceAndRemoval",
+          "TestPGProfileMediaOwnershipAtomicityAndCurrentPrivacy",
+          "TestPGProfileMediaAuthorityAndFileLockWait",
+          "TestPGProfileMediaReadWaitObservesCurrentVisibility",
+          "TestPGProfileMediaMembershipCannotRedistribute",
+          "TestPGProfileMediaRestartPersistence"
+        ],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 24
+      },
+      "remaining_reference": "current_remaining.families:passport.accounts_presence"
     },
     {
       "source_family": "passport.progression",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "UTC100-XP daily check-in, earned badges, achievements and quests",
         "Idempotent automatic canonical event projection and reward outbox"
@@ -315,13 +400,18 @@
         "TestPGPresenceProgressionRestartPersistence",
         "TestPGProgressionChatSocialProjection"
       ],
-      "unsupported_or_remaining": [
-        "Source-point payout provider, explicit level threshold policy values, unsupported legacy event categories"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 7
+      },
+      "remaining_reference": "current_remaining.families:passport.progression"
     },
     {
       "source_family": "passport.social_realms",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Friend requests, block/close-friend visibility, realms/members and realm wallets"
       ],
@@ -342,13 +432,18 @@
         "TestPGSocialRestartPersistence",
         "TestPGSocialTransactionsAndHTTP"
       ],
-      "unsupported_or_remaining": [
-        "Mute expiry, custom roles/permissions and boosts"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 15
+      },
+      "remaining_reference": "current_remaining.families:passport.social_realms"
     },
     {
       "source_family": "passport.location_nfc",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Private meets, explicit WKT locations, nearby discovery and session-owned pins",
         "Plain NFC ownership/metadata with privacy-filtered account resolution"
@@ -363,13 +458,18 @@
         "TestPGLocationsHTTPStreamCompletionAndRevocation",
         "TestPGLocationsRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Hardware/encrypted NFC, provider geocoding, image attachments, durable stream replay"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 8
+      },
+      "remaining_reference": "current_remaining.families:passport.location_nfc"
     },
     {
       "source_family": "passport.tickets_exams",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Private support cases/messages/assignment and on-call",
         "Exam bank, immutable attempts, automatic/manual grading, trials",
@@ -386,15 +486,18 @@
         "TestPGExamsRewardSinkAtomicAndIdempotent",
         "TestPGBackendTicketsExamProgressionComposition"
       ],
-      "unsupported_or_remaining": [
-        "Ticket attachments/newer unmapped status values",
-        "Activation requests remain pending until an authority activation policy exists",
-        "External provider delivery"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 8
+      },
+      "remaining_reference": "current_remaining.families:passport.tickets_exams"
     },
     {
       "source_family": "passport.notable_days",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Regional notable-day CRUD, calendar recurrence/month/search/countdown and subscriptions",
         "Canonical privacy-aware activity overlays; independently verified lunisolar calculation"
@@ -408,13 +511,18 @@
         "TestPGCalendarRestartPersistence",
         "TestPGBackendCalendarComposition"
       ],
-      "unsupported_or_remaining": [
-        "Regional seed corpus, icon/background media associations and unverified merged activity type codes"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 7
+      },
+      "remaining_reference": "current_remaining.families:passport.notable_days"
     },
     {
       "source_family": "sphere.federation_discovery",
-      "local_status": "candidate_only",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Retained standalone NodeInfo/host-meta candidates"
       ],
@@ -424,13 +532,18 @@
         "TestPGNodeInfoPolicyAndReadOnly",
         "TestPGNodeInfoRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Canonical host discovery integration"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 4
+      },
+      "remaining_reference": "current_remaining.families:sphere.federation_discovery"
     },
     {
       "source_family": "sphere.federation",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Explicitly configured actor/object/WebFinger/inbox/outbox endpoints",
         "Canonical public-post reconciliation and durable signed delivery with explicit peers/transport"
@@ -446,13 +559,18 @@
         "TestPGBackendCallsFederationComposition",
         "TestPGBackendCallsFederationRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Remote discovery, client-to-server activity, private/realm/media federation and broader activity types"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 9
+      },
+      "remaining_reference": "current_remaining.families:sphere.federation"
     },
     {
       "source_family": "sphere.taxonomy",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Tags/categories/admin operations/subscriptions and canonical post associations"
       ],
@@ -478,13 +596,18 @@
         "TestPGTaxonomySubscriptionsAndDeleteRollback",
         "TestPGTaxonomyTransactionalAudit"
       ],
-      "unsupported_or_remaining": [
-        "Legacy entitlement and migration equivalence"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 20
+      },
+      "remaining_reference": "current_remaining.families:sphere.taxonomy"
     },
     {
       "source_family": "sphere.publishers",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical publisher identity, memberships, defaults and quotas",
         "Realm-moderator organization creation; current realm visibility/membership gates on publisher and nested content"
@@ -508,22 +631,32 @@
         "TestPGRealmPublisherRestartPersistence",
         "TestPGRealmPublisherUnsupportedPublicIntegrations"
       ],
-      "unsupported_or_remaining": [
-        "Remaining ratings/settlement/subscription administration and organization-specific collection/sticker/app/taxonomy/federation compatibility; implemented subflows are tracked in dedicated families"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 17
+      },
+      "remaining_reference": "current_remaining.families:sphere.publishers"
     },
     {
       "source_family": "sphere.live_ads",
-      "local_status": "not_implemented",
+      "local_status": "implemented_subset",
       "supported_flows": [],
       "guarded_pg_cases": [],
-      "unsupported_or_remaining": [
-        "Live provider configuration and actual external egress remain unvalidated; owned synthetic egress lifecycle is tracked in sphere.livestream_egress_hls"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 0
+      },
+      "remaining_reference": "current_remaining.families:sphere.live_ads"
     },
     {
       "source_family": "sphere.content_utilities",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Anonymous configured-origin link previews, bounded optional HTTPS fetch and durable cache",
         "Fresh cache.scrap authorization with generation-fenced atomic invalidation",
@@ -552,14 +685,18 @@
         "TestPGBackendTranslationComposition",
         "TestPGBackendAutocompleteComposition"
       ],
-      "unsupported_or_remaining": [
-        "Original PerkLevel mapping is an explicit owned subscription policy",
-        "Internal article/gRPC contract not reproduced; live provider activation not performed"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 20
+      },
+      "remaining_reference": "current_remaining.families:sphere.content_utilities"
     },
     {
       "source_family": "sphere.stickers_surveys",
-      "local_status": "implemented",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Survey publish/archive/clone, atomic response replacement and private feedback",
         "Canonical public-media sticker packs, content, acquisition and ordering"
@@ -577,13 +714,18 @@
         "TestPGStickersVerifiedHTTPAndRevocation",
         "TestPGSurveysStickersRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Excluded legacy migrations and third-party sticker assets"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 11
+      },
+      "remaining_reference": "current_remaining.families:sphere.stickers_surveys"
     },
     {
       "source_family": "sphere.timeline",
-      "local_status": "implemented",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Privacy-filtered feeds/search and cursor pagination",
         "Reply/forward/chain threads, publisher follows and approval",
@@ -599,13 +741,18 @@
         "TestPGTimelineRestartPersistence",
         "TestPGTimelineRelationRollbackDepthAndCancellation"
       ],
-      "unsupported_or_remaining": [
-        "Semantic/fuzzy search and external notification delivery"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 8
+      },
+      "remaining_reference": "current_remaining.families:sphere.timeline"
     },
     {
       "source_family": "sphere.posts",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Text lifecycle, visibility, reactions/bookmarks/collections and taxonomy links",
         "Ordered canonical media attachments, attachment-only posts and dynamic private download visibility",
@@ -646,24 +793,34 @@
         "TestPGPostRealmRestartPersistence",
         "TestPGBackendPostRealmComposition"
       ],
-      "unsupported_or_remaining": [
-        "Blog, scheduling/moderation and remaining original admin/statistics operations"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 32
+      },
+      "remaining_reference": "current_remaining.families:sphere.posts"
     },
     {
       "source_family": "wallet.product_catalog",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Exchange and explicit product configuration catalogs composed into host"
       ],
       "guarded_pg_cases": [],
-      "unsupported_or_remaining": [
-        "Configuration provisioning and full provider purchase flows"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 0
+      },
+      "remaining_reference": "current_remaining.families:wallet.product_catalog"
     },
     {
       "source_family": "wallet.ledger",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Exact-decimal wallets/transfers/holds/confirm/refund/expiry, PIN verification and realm grants"
       ],
@@ -679,13 +836,18 @@
         "TestPGWalletRestartPersistence",
         "TestPGWalletVerifiedAuthorityComposition"
       ],
-      "unsupported_or_remaining": [
-        "Legacy import policy; compatible user PIN enrollment is implemented in passport.payment_pin"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 10
+      },
+      "remaining_reference": "current_remaining.families:wallet.ledger"
     },
     {
       "source_family": "wallet.orders_payments",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical held-fund orders, stock, checkout metadata and settlement/refund",
         "Checkout expiry is rechecked after wallet and fulfillment waits, rolling back all effects on expiry"
@@ -699,13 +861,20 @@
         "TestPGCommerceSubscriptionRenewCancelAndGiftRedeem",
         "TestPGRecurringProductCheckoutExpiryDuringWalletWait"
       ],
-      "unsupported_or_remaining": [
-        "Live provider clients, address fulfillment, coupons, payouts"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [
+          "TestPGRecurringProductCheckoutExpiryDuringWalletWait"
+        ],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 6
+      },
+      "remaining_reference": "current_remaining.families:wallet.orders_payments"
     },
     {
       "source_family": "wallet.subscriptions_gifts",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Subscription activation/renew/cancel, gift pay/send/redeem/expiry",
         "App-scoped recurring catalog definitions, explicit buyer renewal opt-in, exact cycle/economics snapshot and current consent revocation"
@@ -724,13 +893,25 @@
         "TestPGRecurringProductHostPINCatalogAndCancel",
         "TestPGRecurringProductRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Provider synchronization, trials and remaining billing views; address/stock and external workspace fulfillment"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [
+          "TestPGRecurringProductCheckoutAtomicAndIsolation",
+          "TestPGRecurringProductRenewalEconomicsAndRevocation",
+          "TestPGRecurringProductConsentWaitAndSnapshot",
+          "TestPGRecurringProductOppositeWalletPayments",
+          "TestPGRecurringProductHostPINCatalogAndCancel",
+          "TestPGRecurringProductRestartPersistence"
+        ],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 6
+      },
+      "remaining_reference": "current_remaining.families:wallet.subscriptions_gifts"
     },
     {
       "source_family": "wallet.merchants",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical app-to-wallet binding and administrator subscription definitions",
         "App ancestry rechecked for catalog checkout"
@@ -746,13 +927,18 @@
         "TestPGMerchantsRestartPersistence",
         "TestPGBackendMerchantCatalogComposition"
       ],
-      "unsupported_or_remaining": [
-        "Legacy publisher-wide settlement state and payouts"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 9
+      },
+      "remaining_reference": "current_remaining.families:wallet.merchants"
     },
     {
       "source_family": "wallet.reporting",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Private publisher/buyer order history and exact currency-separated totals with UTC date buckets"
       ],
@@ -760,13 +946,18 @@
         "TestPGMerchantsReportsExactAndIsolated",
         "TestPGBackendMerchantCatalogComposition"
       ],
-      "unsupported_or_remaining": [
-        "Global financial administration and provider settlement reports"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 2
+      },
+      "remaining_reference": "current_remaining.families:wallet.reporting"
     },
     {
       "source_family": "owned.oauth_oidc",
-      "local_status": "partial",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical authorization code/S256 PKCE/consent, exact redirects, RS256 ID token and scoped userinfo",
         "Bounded one-use code/refresh lifecycle and canonical parent/app/consent revocation"
@@ -786,15 +977,18 @@
         "TestPGOAuthPreviewRechecksRegistrationAndOwnerVersion",
         "TestPGOAuthConfidentialPurposeScopeWithdrawal"
       ],
-      "unsupported_or_remaining": [
-        "Production consent UI deployment",
-        "Resource API delegation pending concrete route/scope mapping",
-        "External providers, device flow, dynamic registration, introspection and legacy authorized-app routes"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 13
+      },
+      "remaining_reference": "current_remaining.families:owned.oauth_oidc"
     },
     {
       "source_family": "passport.ip_check",
-      "local_status": "fully validated in d4d61e14,316/44",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Caller geolocation through explicitly configured local CIDR dataset",
         "Current Superuser plus admin.ip.check diagnostics; explicit trusted proxy chain and redacted header projection"
@@ -802,13 +996,18 @@
       "guarded_pg_cases": [
         "TestPGBackendIPCheckComposition"
       ],
-      "unsupported_or_remaining": [
-        "Original MaxMind/MMDB adapter and licensed geographic dataset not bundled; explicit owned JSON CIDR format"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 1
+      },
+      "remaining_reference": "current_remaining.families:passport.ip_check"
     },
     {
       "source_family": "passport.name_cards",
-      "local_status": "fully validated in ee2340ce,327/46",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Source paid-card order/list/use; canonical payment and receipt in one transaction",
         "Account/realm/publisher rename and account session invalidation"
@@ -821,13 +1020,18 @@
         "TestPGNameCardRestartPersistence",
         "TestPGBackendPaidNameCardComposition"
       ],
-      "unsupported_or_remaining": [
-        "Remote actor Move/origin migration; stable publisher aliases are implemented in federation.publisher_aliases"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 6
+      },
+      "remaining_reference": "current_remaining.families:passport.name_cards"
     },
     {
       "source_family": "passport.rewind",
-      "local_status": "fully validated in ee2340ce,327/46",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Annual canonical activity snapshot with current reference privacy",
         "Revocable public share with private DM/call/word projection redacted"
@@ -839,15 +1043,18 @@
         "TestPGRewindRestartPersistence",
         "TestPGBackendRewindComposition"
       ],
-      "unsupported_or_remaining": [
-        "Optional original action telemetry provider",
-        "Licensed/configured tokenizer and dictionary",
-        "Original hardcoded-year and time-truncation defects deliberately corrected"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 5
+      },
+      "remaining_reference": "current_remaining.families:passport.rewind"
     },
     {
       "source_family": "admin.content_moderation",
-      "local_status": "fully validated in b8f8890b,338/47",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Current Superuser plus named-permission post/publisher/realm administration",
         "Shadowban propagation through ordinary reads, public metadata, nested/media/survey projections and federation withdrawal",
@@ -867,14 +1074,18 @@
         "TestPGContentModerationPublicMetadataAndNestedReads",
         "TestPGBackendContentModerationComposition"
       ],
-      "unsupported_or_remaining": [
-        "Custom realm permission overrides",
-        "Full legacy model hydration/global middleware internal parity; verification/admin stats/manual automod are implemented in their dedicated family"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 11
+      },
+      "remaining_reference": "current_remaining.families:admin.content_moderation"
     },
     {
       "source_family": "sphere.livestreams",
-      "local_status": "fully validated initial lifecycle in3a71a2f9,348/48",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical publisher stream metadata, visibility and thumbnail linking",
         "Configured LiveKit RTMP/WHIP/native start and scoped viewer/publisher admissions",
@@ -893,16 +1104,18 @@
         "TestPGLiveStreamCleanupRestartPersistence",
         "TestPGBackendLivestreamComposition"
       ],
-      "unsupported_or_remaining": [
-        "Configured egress/HLS output/playback policy",
-        "Subscriber notifications/provider webhooks",
-        "Unobservable ingress creates require operator/provider reconciliation; never blind retry",
-        "Chat and canonical paid awards are implemented in their dedicated families"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 10
+      },
+      "remaining_reference": "current_remaining.families:sphere.livestreams"
     },
     {
       "source_family": "admin.verification_statistics_automod",
-      "local_status": "implemented and composed; actual PG candidate pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical account/publisher/realm verification metadata with current privacy gates",
         "Explicit Passport/Sphere/Wallet aggregate service stats routes and qualified aliases",
@@ -921,16 +1134,18 @@
         "TestPGAdminExtensionsRestartPersistence",
         "TestPGBackendAdminExtensionsComposition"
       ],
-      "unsupported_or_remaining": [
-        "Unknown verification enum string-to-number aliases",
-        "Automatic post enforcement/deranking remains separate",
-        "Excluded original RPC/model semantics",
-        "Original .NET regex features outside RE2 intentionally rejected"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 11
+      },
+      "remaining_reference": "current_remaining.families:admin.verification_statistics_automod"
     },
     {
       "source_family": "sphere.livestream_chat",
-      "local_status": "implemented and composed; actual PG candidate pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical authorized history/send/delete/timeout with durable idempotency",
         "Bounded data outbox with current recipient/session/visibility checks and explicit provider acceptance",
@@ -948,14 +1163,18 @@
         "TestPGLiveStreamChatOpposingModeratorsAndParentRevocation",
         "TestPGBackendLivestreamChatComposition"
       ],
-      "unsupported_or_remaining": [
-        "No recipient receipt or exactly-once network claim",
-        "Bounded lifetime retention; no purge/redrive API"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 10
+      },
+      "remaining_reference": "current_remaining.families:sphere.livestream_chat"
     },
     {
       "source_family": "federation.publisher_aliases",
-      "local_status": "implemented and composed; actual PG candidate pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Permanent UUID-bound current/retired publisher handle ownership with atomic paid/admin rename",
         "Stable actor/key identifiers, cached old URLs and current privacy checks",
@@ -970,15 +1189,18 @@
         "TestPGFederatedRenameRestartPersistence",
         "TestPGBackendFederatedRenameComposition"
       ],
-      "unsupported_or_remaining": [
-        "Remote Move/origin migration",
-        "Remote alias discovery/history enumeration",
-        "Organization federation"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 7
+      },
+      "remaining_reference": "current_remaining.families:federation.publisher_aliases"
     },
     {
       "source_family": "sphere.livestream_awards",
-      "local_status": "implemented, reconstructed host retesting",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Paid-only award history and leaderboard",
         "Canonical wallet/order payment with 90/10 conservation",
@@ -989,16 +1211,18 @@
         "TestPGLiveStreamAwardsPaidLifecycleAndConservation",
         "TestPGLiveStreamAwardsPayoutRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Refunds and chargebacks",
-        "External payment providers",
-        "Realm publisher beneficiaries",
-        "Realtime award packets"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 3
+      },
+      "remaining_reference": "current_remaining.families:sphere.livestream_awards"
     },
     {
       "source_family": "passport.domain_trust_and_sphere.collection_admin",
-      "local_status": "implemented, real PG pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Current global-admin domain rules, deterministic local validation and bounded durable metrics",
         "Canonical collection metadata list/detail/rename/delete with current global authority"
@@ -1008,14 +1232,18 @@
         "TestPGDomainTrustRestartPersistence",
         "TestPGCollectionAdminAuditRollbackAndDeleteRace"
       ],
-      "unsupported_or_remaining": [
-        "Metrics retention/purge operations",
-        "Domain trust does not authorize network fetching"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 3
+      },
+      "remaining_reference": "current_remaining.families:passport.domain_trust_and_sphere.collection_admin"
     },
     {
       "source_family": "passport.payment_pin",
-      "local_status": "implemented, real PG pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Authored type-4 PIN bodies with five-minute one-use canonical password/MFA assurance",
         "Atomic rate-limited PIN create/enable/disable/delete and payment-policy revocation",
@@ -1026,15 +1254,18 @@
         "TestPGPaymentPINRestartPersistence",
         "TestPGPaymentPINMoneyRollbackAndPolicyLockOrdering"
       ],
-      "unsupported_or_remaining": [
-        "Automatic frontend reauthentication prompt",
-        "Provider/passwordless assurance",
-        "Generic no-PIN opt-out or automatic PIN recovery"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 3
+      },
+      "remaining_reference": "current_remaining.families:passport.payment_pin"
     },
     {
       "source_family": "owned.authority_refresh_continuity",
-      "local_status": "implemented, actual PG pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Strict access-token rotation and unchanged short PIN/payment Epoch binding",
         "Durable live/chat/call authorization generation with current account/session/ancestor/scope/policy/membership checks",
@@ -1043,13 +1274,18 @@
       "guarded_pg_cases": [
         "TestPGBackendRefreshContinuesBroadcastChatThenLogoutRevokes"
       ],
-      "unsupported_or_remaining": [
-        "Operator must stop old writers and apply explicit atomic schema migration before rollout"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 1
+      },
+      "remaining_reference": "current_remaining.families:owned.authority_refresh_continuity"
     },
     {
       "source_family": "wallet.transfer_requests",
-      "local_status": "implemented, actual PG pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Authored create/anonymous lookup bodies and canonical named permission",
         "Immutable request terms override untrusted payment input",
@@ -1061,14 +1297,18 @@
         "TestPGWalletTransferRequestExpiresDuringWalletWait",
         "TestPGWalletTransferRequestRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Original full enum encoding not evidenced; owned numeric status declared",
-        "Explicit retention/purge policy"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 4
+      },
+      "remaining_reference": "current_remaining.families:wallet.transfer_requests"
     },
     {
       "source_family": "owned.factor_setup",
-      "local_status": "implemented; six policy-history regressions have real PG evidence; new origin/account-flag regressions pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "One completed credential login supports prerequisite recovery setup, one pending TOTP and OTP activation via bounded same-session receipt",
         "Refresh preserves only original setup deadline; unrelated security changes invalidate pending enrollment",
@@ -1082,14 +1322,22 @@
         "TestPGFactorSetupAccountSecurityRollbackAndProfileWrites",
         "TestPGFactorSetupSessionOriginFreshFallback"
       ],
-      "unsupported_or_remaining": [
-        "Pre-upgrade pending factors without owned provenance require restart",
-        "Residual fresh-bearer window is documented; no claim of per-action credential reentry"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [
+          "TestPGFactorSetupAccountSecurityRestoration",
+          "TestPGFactorSetupAccountSecurityRollbackAndProfileWrites",
+          "TestPGFactorSetupSessionOriginFreshFallback"
+        ],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 1
+      },
+      "remaining_reference": "current_remaining.families:owned.factor_setup"
     },
     {
       "source_family": "sphere.publisher_sponsorship_and_ratings",
-      "local_status": "implemented, actual PG pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Canonical golds checkout creates paid-only sponsorship bids with atomic rollback and current public visibility",
         "Bounded durable hourly weighted placements and impression counts",
@@ -1101,14 +1349,18 @@
         "TestPGPublisherSponsorshipRestartPersistence",
         "TestPGPublisherRatingRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Prior reaction-only receipts are not silently rewritten",
-        "Operator must configure treasury and rating start day"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 3
+      },
+      "remaining_reference": "current_remaining.families:sphere.publisher_sponsorship_and_ratings"
     },
     {
       "source_family": "sphere.livestream_egress_hls",
-      "local_status": "implemented, actual PG pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Fixed operator destinations with one-use durable output intents and bounded cleanup",
         "Current stream/session/privacy-authorized private live HLS playlist and segment reads",
@@ -1118,15 +1370,21 @@
         "TestPGBackendLivestreamOutputPlaybackComposition",
         "TestPGLiveStreamOutputsRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Uncorrelated uncertain RTMP starts require operator investigation, never blind retry",
-        "Archived HLS playback",
-        "Live provider/storage activation is not performed"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [
+          "TestPGBackendLivestreamOutputPlaybackComposition",
+          "TestPGLiveStreamOutputsRestartPersistence"
+        ],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 0
+      },
+      "remaining_reference": "current_remaining.families:sphere.livestream_egress_hls"
     },
     {
       "source_family": "wallet.maintenance_quarantine",
-      "local_status": "implemented, actual PG pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Inconsistent subscription projections are quarantined before financial effects",
         "Bounded subsequent due-work progress and trusted coherent retry"
@@ -1135,13 +1393,21 @@
         "TestPGCommerceMaintenanceQuarantineAllowsOtherRenewals",
         "TestPGCommerceMaintenanceQuarantineRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "Operator HTTP UI for inspection/retry"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [
+          "TestPGCommerceMaintenanceQuarantineAllowsOtherRenewals",
+          "TestPGCommerceMaintenanceQuarantineRestartPersistence"
+        ],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 0
+      },
+      "remaining_reference": "current_remaining.families:wallet.maintenance_quarantine"
     },
     {
       "source_family": "sphere.post_awards",
-      "local_status": "implemented, actual PG pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Authored order_id checkout response with positive/negative paid award score",
         "Captured explicit merchant wallet, exact100% default payout; explicit80% alternative",
@@ -1151,15 +1417,21 @@
         "TestPGBackendPostAwardCheckoutAndRelease",
         "TestPGPostAwardRestartPersistence"
       ],
-      "unsupported_or_remaining": [
-        "XP/social-credit projections and global resettlement",
-        "Automatic individual-wallet fallback",
-        "Retroactive rewrite of reaction-only rating receipts"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [
+          "TestPGBackendPostAwardCheckoutAndRelease",
+          "TestPGPostAwardRestartPersistence"
+        ],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 0
+      },
+      "remaining_reference": "current_remaining.families:sphere.post_awards"
     },
     {
       "source_family": "wallet.funds",
-      "local_status": "implemented, actual PG pending",
+      "local_status": "implemented_subset",
       "supported_flows": [
         "Exact-mills held red packets with open/invited admission and even/random splits",
         "Raising contributions settle to captured creator beneficiary on success, and cancellation/expiry refunds remaining reservations once",
@@ -1178,11 +1450,26 @@
         "TestPGWalletFundsRestartPersistence",
         "TestPGWalletFundsFixedRandomAndInputBounds"
       ],
-      "unsupported_or_remaining": [
-        "Original source defects corrected with explicitly owned conservation semantics",
-        "PIN-required contribution requires optional owned pin_code field; omitted PIN never bypasses policy",
-        "Client-only recipient/order routes lack corresponding retained controller contract"
-      ]
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "pending_guarded_cases": [
+          "TestPGWalletFundsRedPacketExactClaimsAndPublicHTTP",
+          "TestPGWalletFundsRaisingInvitesPayoutAndImmutableBeneficiary",
+          "TestPGWalletFundsCancellationRefundsRemainingHoldsOnce",
+          "TestPGWalletFundsConcurrentFinalContributionAndClaims",
+          "TestPGWalletFundsExpiryRefundsAndClosureRaces",
+          "TestPGWalletFundsExpiryWinsQueuedFinalContribution",
+          "TestPGWalletFundsRollbackAndIdempotentCreation",
+          "TestPGWalletFundsPINPolicyProofAndRateLimits",
+          "TestPGWalletFundsAuthorityAndNotificationProjection",
+          "TestPGWalletFundsRestartPersistence",
+          "TestPGWalletFundsFixedRandomAndInputBounds"
+        ],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
+        "green_guarded_case_count": 0
+      },
+      "remaining_reference": "current_remaining.families:wallet.funds"
     }
   ],
   "additional_cross_service_flows": [
@@ -1217,124 +1504,450 @@
       ]
     }
   ],
+  "current_implemented": {
+    "green_at_recorded_commit": [
+      "develop.apps_products",
+      "develop.developers",
+      "develop.projects",
+      "develop.bots",
+      "develop.boards",
+      "develop.miniapps",
+      "messager.messages",
+      "messager.rooms",
+      "messager.calls",
+      "passport.badges",
+      "passport.fortunes",
+      "passport.accounts_presence",
+      "passport.progression",
+      "passport.social_realms",
+      "passport.location_nfc",
+      "passport.tickets_exams",
+      "passport.notable_days",
+      "sphere.federation_discovery",
+      "sphere.federation",
+      "sphere.taxonomy",
+      "sphere.publishers",
+      "sphere.content_utilities",
+      "sphere.stickers_surveys",
+      "sphere.timeline",
+      "sphere.posts",
+      "wallet.ledger",
+      "wallet.orders_payments",
+      "wallet.subscriptions_gifts",
+      "wallet.merchants",
+      "wallet.reporting",
+      "owned.oauth_oidc",
+      "passport.ip_check",
+      "passport.name_cards",
+      "passport.rewind",
+      "admin.content_moderation",
+      "sphere.livestreams",
+      "admin.verification_statistics_automod",
+      "sphere.livestream_chat",
+      "federation.publisher_aliases",
+      "sphere.livestream_awards",
+      "passport.domain_trust_and_sphere.collection_admin",
+      "passport.payment_pin",
+      "owned.authority_refresh_continuity",
+      "wallet.transfer_requests",
+      "owned.factor_setup",
+      "sphere.publisher_sponsorship_and_ratings"
+    ],
+    "pending_actual_ci": [
+      "develop.apps_products",
+      "messager.messages",
+      "passport.accounts_presence",
+      "sphere.live_ads",
+      "wallet.product_catalog",
+      "wallet.orders_payments",
+      "wallet.subscriptions_gifts",
+      "owned.factor_setup",
+      "sphere.livestream_egress_hls",
+      "wallet.maintenance_quarantine",
+      "sphere.post_awards",
+      "wallet.funds"
+    ],
+    "delivered_not_integrated": [
+      {
+        "family": "messager.opaque_mls",
+        "artifact": "chat-opaque-mls-control.patch",
+        "sha256": "a3bc271c5164dbf72eb1a9f3a18397161a598cd2a45c91832c78d29d9ff1b0dd",
+        "tests": 6,
+        "scope": "Opaque server authorization/delivery with explicit generation reset opt-in; cryptographic/client compatibility is not certified"
+      },
+      {
+        "family": "wallet.product_stock",
+        "artifact": "product-stock.patch",
+        "sha256": "41ea25501a2732633e0f56eaa81e230a231ad0f2df192d46d5da87c4dd160eb4",
+        "tests": 9,
+        "scope": "Canonical reservation/window/restock and recurring stock; actual PG pending"
+      }
+    ]
+  },
+  "current_remaining": {
+    "as_of": "2026-10-08T19:33:00Z",
+    "authoritative_for": "Known remaining flows, not a count of source operations. Partial/unresearched contracts remain research tasks; unavailable is never inferred from lack of prior research.",
+    "families": [
+      {
+        "family": "develop.apps_products",
+        "remaining": [
+          "Remaining original app-management contracts",
+          "Required address fulfillment and external workspace/provider execution; finite stock backend is delivered separately"
+        ]
+      },
+      {
+        "family": "develop.bots",
+        "remaining": [
+          "Command execution, bot credential enrollment, external webhooks and legacy migration"
+        ]
+      },
+      {
+        "family": "develop.miniapps",
+        "remaining": [
+          "Hosted execution, legacy multipart/image contracts and legacy migration"
+        ]
+      },
+      {
+        "family": "messager.messages",
+        "remaining": [
+          "Full original system/message types, non-null thread/forward operations; opaque MLS backend is delivered separately and awaits integration/CI",
+          "Later client integration for generation-aware reset and encrypted deletion; attachment cryptography remains deferred frontend work"
+        ]
+      },
+      {
+        "family": "messager.rooms",
+        "remaining": [
+          "Custom fine-grained realm roles/permission enforcement is in progress",
+          "Room profile/media customization and bot automatic confirmation/execution",
+          "Legacy system-message envelopes; opaque MLS backend is delivered separately"
+        ]
+      },
+      {
+        "family": "messager.calls",
+        "remaining": [
+          "Media-plane validation, legacy packet/system-message/VoIP-push compatibility and configured live provider"
+        ]
+      },
+      {
+        "family": "passport.badges",
+        "remaining": [
+          "Legacy badge import and original external earning providers"
+        ]
+      },
+      {
+        "family": "passport.fortunes",
+        "remaining": [
+          "Original sayings/tips/fallback corpus excluded pending provenance",
+          "Birthday/backdated rules and unsupported enrichment; original personality RPC not imported"
+        ]
+      },
+      {
+        "family": "passport.accounts_presence",
+        "remaining": [
+          "Admin contacts, phone/address verification, security modes and excluded SDK preference encoding",
+          "External identity providers, PassKit, affiliation spells and presence artwork"
+        ]
+      },
+      {
+        "family": "passport.progression",
+        "remaining": [
+          "Source-point payout provider, explicit level threshold policy values, unsupported legacy event categories"
+        ]
+      },
+      {
+        "family": "passport.social_realms",
+        "remaining": [
+          "Custom role/permission lifecycle and enforcement in progress",
+          "Relationship mute expiry and realm boosts remain to reconstruct; no realm-mute contract was found in retained realm sources"
+        ]
+      },
+      {
+        "family": "passport.location_nfc",
+        "remaining": [
+          "Hardware/encrypted NFC, provider geocoding, image attachments, durable stream replay"
+        ]
+      },
+      {
+        "family": "passport.tickets_exams",
+        "remaining": [
+          "Ticket attachments/newer unmapped status values",
+          "Activation requests remain pending until an authority activation policy exists",
+          "External provider delivery"
+        ]
+      },
+      {
+        "family": "passport.notable_days",
+        "remaining": [
+          "Regional seed corpus, icon/background media associations and unverified merged activity type codes"
+        ]
+      },
+      {
+        "family": "sphere.federation_discovery",
+        "remaining": [
+          "Canonical host discovery integration"
+        ]
+      },
+      {
+        "family": "sphere.federation",
+        "remaining": [
+          "Remote discovery, client-to-server activity, private/realm/media federation and broader activity types"
+        ]
+      },
+      {
+        "family": "sphere.taxonomy",
+        "remaining": [
+          "Legacy entitlement and migration equivalence"
+        ]
+      },
+      {
+        "family": "sphere.publishers",
+        "remaining": [
+          "Remaining ratings/settlement/subscription administration and organization-specific collection/sticker/app/taxonomy/federation compatibility; implemented subflows are tracked in dedicated families"
+        ]
+      },
+      {
+        "family": "sphere.live_ads",
+        "remaining": [
+          "Live provider configuration and actual external egress are operational acceptance gaps; implemented lifecycle is tracked separately"
+        ]
+      },
+      {
+        "family": "sphere.content_utilities",
+        "remaining": [
+          "Original PerkLevel mapping is an explicit owned subscription policy",
+          "Internal article/gRPC contract not reproduced; live provider activation not performed"
+        ]
+      },
+      {
+        "family": "sphere.stickers_surveys",
+        "remaining": [
+          "Excluded legacy migrations and third-party sticker assets"
+        ]
+      },
+      {
+        "family": "sphere.timeline",
+        "remaining": [
+          "Semantic/fuzzy search and external notification delivery"
+        ]
+      },
+      {
+        "family": "sphere.posts",
+        "remaining": [
+          "Blog, scheduling/moderation and remaining original admin/statistics operations"
+        ]
+      },
+      {
+        "family": "wallet.product_catalog",
+        "remaining": [
+          "Configuration provisioning and full provider purchase flows"
+        ]
+      },
+      {
+        "family": "wallet.ledger",
+        "remaining": [
+          "Legacy import policy; compatible user PIN enrollment is implemented in passport.payment_pin"
+        ]
+      },
+      {
+        "family": "wallet.orders_payments",
+        "remaining": [
+          "Live provider clients, address fulfillment, coupons, payouts"
+        ]
+      },
+      {
+        "family": "wallet.subscriptions_gifts",
+        "remaining": [
+          "Provider synchronization and trials",
+          "Pending activation/group switching billing flow in progress",
+          "Required address and external workspace fulfillment; finite stock backend is delivered separately"
+        ]
+      },
+      {
+        "family": "wallet.merchants",
+        "remaining": [
+          "Legacy publisher-wide settlement state and payouts"
+        ]
+      },
+      {
+        "family": "wallet.reporting",
+        "remaining": [
+          "Global financial administration and provider settlement reports"
+        ]
+      },
+      {
+        "family": "owned.oauth_oidc",
+        "remaining": [
+          "Production consent UI deployment",
+          "Resource API delegation pending concrete route/scope mapping",
+          "External providers, device flow, dynamic registration, introspection and legacy authorized-app routes"
+        ]
+      },
+      {
+        "family": "passport.ip_check",
+        "remaining": [
+          "Original MaxMind/MMDB adapter and licensed geographic dataset not bundled; explicit owned JSON CIDR format"
+        ]
+      },
+      {
+        "family": "passport.name_cards",
+        "remaining": [
+          "Remote actor Move/origin migration; stable publisher aliases are implemented in federation.publisher_aliases"
+        ]
+      },
+      {
+        "family": "passport.rewind",
+        "remaining": [
+          "Optional original action telemetry provider",
+          "Licensed/configured tokenizer and dictionary",
+          "Original hardcoded-year and time-truncation defects deliberately corrected"
+        ]
+      },
+      {
+        "family": "admin.content_moderation",
+        "remaining": [
+          "Custom realm permission overrides",
+          "Full legacy model hydration/global middleware internal parity; verification/admin stats/manual automod are implemented in their dedicated family"
+        ]
+      },
+      {
+        "family": "sphere.livestreams",
+        "remaining": [
+          "Configured egress/HLS output/playback policy",
+          "Subscriber notifications/provider webhooks",
+          "Unobservable ingress creates require operator/provider reconciliation; never blind retry",
+          "Chat and canonical paid awards are implemented in their dedicated families"
+        ]
+      },
+      {
+        "family": "admin.verification_statistics_automod",
+        "remaining": [
+          "Unknown verification enum string-to-number aliases",
+          "Automatic post enforcement/deranking remains separate",
+          "Excluded original RPC/model semantics",
+          "Original .NET regex features outside RE2 intentionally rejected"
+        ]
+      },
+      {
+        "family": "sphere.livestream_chat",
+        "remaining": [
+          "No recipient receipt or exactly-once network claim",
+          "Bounded lifetime retention; no purge/redrive API"
+        ]
+      },
+      {
+        "family": "federation.publisher_aliases",
+        "remaining": [
+          "Remote Move/origin migration",
+          "Remote alias discovery/history enumeration",
+          "Organization federation"
+        ]
+      },
+      {
+        "family": "sphere.livestream_awards",
+        "remaining": [
+          "Refunds and chargebacks",
+          "External payment providers",
+          "Realm publisher beneficiaries",
+          "Realtime award packets"
+        ]
+      },
+      {
+        "family": "passport.domain_trust_and_sphere.collection_admin",
+        "remaining": [
+          "Metrics retention/purge operations",
+          "Domain trust does not authorize network fetching"
+        ]
+      },
+      {
+        "family": "passport.payment_pin",
+        "remaining": [
+          "Automatic frontend reauthentication prompt",
+          "Provider/passwordless assurance",
+          "Generic no-PIN opt-out or automatic PIN recovery"
+        ]
+      },
+      {
+        "family": "owned.authority_refresh_continuity",
+        "remaining": [
+          "Operator must stop old writers and apply explicit atomic schema migration before rollout"
+        ]
+      },
+      {
+        "family": "wallet.transfer_requests",
+        "remaining": [
+          "Original full enum encoding not evidenced; owned numeric status declared",
+          "Explicit retention/purge policy"
+        ]
+      },
+      {
+        "family": "owned.factor_setup",
+        "remaining": [
+          "Pre-upgrade pending factors without owned provenance require restart",
+          "Residual fresh-bearer window is documented; no claim of per-action credential reentry"
+        ]
+      },
+      {
+        "family": "sphere.publisher_sponsorship_and_ratings",
+        "remaining": [
+          "Prior reaction-only receipts are not silently rewritten",
+          "Operator must configure treasury and rating start day"
+        ]
+      },
+      {
+        "family": "sphere.livestream_egress_hls",
+        "remaining": [
+          "Uncorrelated uncertain RTMP starts require operator investigation, never blind retry",
+          "Archived HLS playback",
+          "Live provider/storage activation is not performed"
+        ]
+      },
+      {
+        "family": "wallet.maintenance_quarantine",
+        "remaining": [
+          "Operator HTTP UI for inspection/retry"
+        ]
+      },
+      {
+        "family": "sphere.post_awards",
+        "remaining": [
+          "XP/social-credit projections and global resettlement",
+          "Automatic individual-wallet fallback",
+          "Retroactive rewrite of reaction-only rating receipts"
+        ]
+      },
+      {
+        "family": "wallet.funds",
+        "remaining": [
+          "Original source defects corrected with explicitly owned conservation semantics",
+          "PIN-required contribution requires optional owned pin_code field; omitted PIN never bypasses policy",
+          "Client-only recipient/order routes lack corresponding retained controller contract"
+        ]
+      }
+    ],
+    "cross_platform": [
+      "Original data migration/import, rollback and compatibility fixtures for historical data",
+      "Broader federation actor/realm/quote/follow/moderation/key-management and remote discovery contracts",
+      "Original external provider execution, settlement/payout and production operational acceptance; live actions require separate authorization",
+      "Coupon issuance/discount/usage semantics remain only partially evidenced: retained callers accept coupon strings but calculation delegates to excluded/unavailable model code; no invented coupon economy",
+      "Address fulfillment and provider-specific recurring workspace execution",
+      "Source-declaration818 acceptance map remains an operation inventory, not runtime endpoint count or proof of whole-platform completion"
+    ],
+    "active_implementation": [
+      "Realm custom permission lifecycle/enforcement",
+      "Ticket media attachment lifecycle",
+      "Pending subscription activation and group switching"
+    ],
+    "not_remaining_missing_features": [
+      "PIN enrollment/rotation/removal",
+      "Domain trust and post collection administration",
+      "Verification marks/statistics/automod rule CRUD and test",
+      "Livestream chat and awards",
+      "Publisher sponsorship/subscriptions/ratings"
+    ],
+    "verification_note": "Those listed implementations have recorded tests; automatic enforcement, external providers and other explicitly named extensions remain separate gaps. Last full green is455/60; newer candidates and delivered patches await their own full runs."
+  },
   "global_remaining": [
-    "Remaining groups are explicit uncompleted functionality, not evidence that their contracts are unavailable",
-    "Core moderation and paid name-card/rewind validated; livestream ingress/lifecycle candidate published; follow-up chat, actor aliases and admin extensions active",
-    "Live provider transmissions and production deployment require separate authorization; configured adapter code and synthetic tests proceed independently"
-  ],
-  "remaining_acceptance_groups": [
-    {
-      "group": "messaging",
-      "state": "Direct/realm lifecycle fully validated294/41; remaining message/role families explicit below",
-      "remaining": [
-        "E2EE/media message types, reactions and original system-message compatibility",
-        "Custom fine-grained roles and bot automatic confirmation/execution"
-      ],
-      "source_controllers": [
-        "ChatController",
-        "ChatRoomController",
-        "RealmChatController"
-      ]
-    },
-    {
-      "group": "content utilities",
-      "state": "Reader/translation/autocomplete fully validated315/44",
-      "remaining": [
-        "Internal article/gRPC contracts and original PerkLevel migration mapping"
-      ],
-      "source_controllers": [
-        "WebReaderController",
-        "TranslationController",
-        "AutocompletionController"
-      ]
-    },
-    {
-      "group": "live and commercial content",
-      "state": "Livestream ingress/lifecycle composed candidate348/48; remaining contracts partially researched",
-      "remaining": [
-        "Livestream chat, egress/HLS access-controlled output/playback, awards and subscriber delivery",
-        "Ads/sponsorship, publisher subscriptions and ratings"
-      ],
-      "source_controllers": [
-        "LiveStreamController",
-        "AdsController",
-        "PublisherSubscriptionController",
-        "PublisherPublicController"
-      ]
-    },
-    {
-      "group": "account extensions",
-      "state": "Profiles/contacts/preferences and IP checks validated; paid names/rewind fully validated327/46",
-      "remaining": [
-        "PassKit, affiliation spells, domain trust and presence artwork",
-        "Remaining admin contacts/statistics, media/security modes and original SDK preference encoding",
-        "Rewind optional action-telemetry/tokenizer providers and original DTO compatibility gaps"
-      ],
-      "source_controllers": [
-        "PassKitController",
-        "AffiliationSpellController",
-        "DomainTrustController",
-        "PresenceArtworkController",
-        "AccountSettingsController",
-        "AccountAdminController",
-        "AccountStatsAdminController"
-      ]
-    },
-    {
-      "group": "administration and moderation",
-      "state": "Global post/publisher/realm moderation and scoped realm removal fully validated338/47",
-      "remaining": [
-        "Verification marks, aggregate service statistics and automod rule CRUD/test in active next slice",
-        "Automatic moderation enforcement, post collection administration and custom realm permission overrides"
-      ],
-      "source_controllers": [
-        "AutomodController",
-        "PostAdminController",
-        "PostStatsAdminController",
-        "PostCollectionAdminController",
-        "PublisherAdminController",
-        "RealmAdminController"
-      ]
-    },
-    {
-      "group": "federation",
-      "state": "partial",
-      "remaining": [
-        "Broader actor/realm/quote/follow/moderation/key-management and remote discovery contracts; media plane"
-      ],
-      "source_controllers": [
-        "ActivityPubRealmController",
-        "ActivityPubFollowController",
-        "FediverseModerationController",
-        "FediverseKeyController",
-        "FediverseKeyAdminController",
-        "QuoteAuthorizationController",
-        "ServerActorController",
-        "WebFingerController"
-      ]
-    },
-    {
-      "group": "wallet and providers",
-      "state": "partial",
-      "remaining": [
-        "PIN enrollment, remaining product/payment administration, coupons/addresses/fulfillment/payouts/provider settlement",
-        "Provider-specific recurring fulfillment and production adapter configuration"
-      ],
-      "source_controllers": [
-        "WalletController",
-        "PaymentAdminController",
-        "WalletProductAdminController",
-        "WalletStatsAdminController",
-        "SubscriptionController"
-      ]
-    },
-    {
-      "group": "migration and deployment",
-      "state": "not validated",
-      "remaining": [
-        "Original data migration/rollback, original external contracts, configured provider end-to-end and production operational acceptance"
-      ],
-      "source_controllers": []
-    }
+    "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",
+    "Passing configured adapters and owned policies does not establish upstream internal behavior, live provider activation, or production migration readiness."
   ]
 }

@@ -277,7 +277,7 @@ func TestPGAuthorityAtomicWrites(t *testing.T) {
 	})
 	t.Run("pool_isolation_and_explicit_nonatomic_opt_in", func(t *testing.T) {
 		f := newAtomicAuthorityFixture(t)
-		visibility := int32(17)
+		visibility := int32(0)
 		policy := messagerpg.IndependentPolicy{NoneEncryptionMode: 77, NotifyAll: 10, NotifyMentions: 20, NotifyNone: 30}
 		separate := database(t)
 		config := application.Config{Authority: f.config, PublicVisibility: &visibility, MessagerPolicy: &policy}

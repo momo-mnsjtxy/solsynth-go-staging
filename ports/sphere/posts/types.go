@@ -13,6 +13,7 @@ import (
 
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/accounts"
+	"solsynth.local/go-migration/ports/sphere/taxonomy"
 )
 
 type Failure struct {
@@ -51,34 +52,56 @@ const (
 	Blog    = 2
 )
 
-type Post struct {
+type Collection struct {
 	ID          string             `json:"id"`
-	Title       *string            `json:"title"`
-	Description *string            `json:"description"`
-	Slug        *string            `json:"slug"`
-	Content     string             `json:"content"`
-	Visibility  int                `json:"visibility"`
-	Type        int                `json:"type"`
-	Language    *string            `json:"language"`
 	PublisherID string             `json:"publisher_id"`
 	Publisher   accounts.Publisher `json:"publisher"`
-	DraftedAt   *time.Time         `json:"drafted_at"`
-	PublishedAt *time.Time         `json:"published_at"`
+	Slug        string             `json:"slug"`
+	Name        *string            `json:"name"`
+	Description *string            `json:"description"`
+	Background  any                `json:"background"`
+	Icon        any                `json:"icon"`
 	CreatedAt   time.Time          `json:"created_at"`
 	UpdatedAt   time.Time          `json:"updated_at"`
 	DeletedAt   *time.Time         `json:"deleted_at"`
-	LockedAt    *time.Time         `json:"locked_at"`
+}
+
+type Post struct {
+	Tags                 []taxonomy.TagProjection      `json:"tags"`
+	Categories           []taxonomy.CategoryProjection `json:"categories"`
+	PublisherCollections []Collection                  `json:"publisher_collections"`
+	ReactionsCount       map[string]int64              `json:"reactions_count"`
+	ReactionsMade        map[string]bool               `json:"reactions_made"`
+	ID                   string                        `json:"id"`
+	Title                *string                       `json:"title"`
+	Description          *string                       `json:"description"`
+	Slug                 *string                       `json:"slug"`
+	Content              string                        `json:"content"`
+	Visibility           int                           `json:"visibility"`
+	Type                 int                           `json:"type"`
+	Language             *string                       `json:"language"`
+	PublisherID          string                        `json:"publisher_id"`
+	Publisher            accounts.Publisher            `json:"publisher"`
+	DraftedAt            *time.Time                    `json:"drafted_at"`
+	PublishedAt          *time.Time                    `json:"published_at"`
+	CreatedAt            time.Time                     `json:"created_at"`
+	UpdatedAt            time.Time                     `json:"updated_at"`
+	DeletedAt            *time.Time                    `json:"deleted_at"`
+	LockedAt             *time.Time                    `json:"locked_at"`
 }
 type Patch struct {
-	Title       *string    `json:"title"`
-	Description *string    `json:"description"`
-	Slug        *string    `json:"slug"`
-	Content     *string    `json:"content"`
-	Visibility  *int       `json:"visibility"`
-	Type        *int       `json:"type"`
-	Language    *string    `json:"language"`
-	DraftedAt   *time.Time `json:"drafted_at"`
-	PublishedAt *time.Time `json:"published_at"`
+	Tags          *[]string  `json:"tags"`
+	Categories    *[]string  `json:"categories"`
+	CollectionIDs *[]string  `json:"collection_ids"`
+	Title         *string    `json:"title"`
+	Description   *string    `json:"description"`
+	Slug          *string    `json:"slug"`
+	Content       *string    `json:"content"`
+	Visibility    *int       `json:"visibility"`
+	Type          *int       `json:"type"`
+	Language      *string    `json:"language"`
+	DraftedAt     *time.Time `json:"drafted_at"`
+	PublishedAt   *time.Time `json:"published_at"`
 }
 type ListOptions struct {
 	Offset, Take int
@@ -106,6 +129,29 @@ type Auth interface {
 }
 
 func ValidatePatch(p Patch, create bool, now time.Time) error {
+	for _, f := range []struct {
+		values *[]string
+		max    int
+	}{{p.Tags, 16}, {p.Categories, 8}, {p.CollectionIDs, 16}} {
+		if f.values != nil {
+			if len(*f.values) > f.max {
+				return ErrInvalid
+			}
+			for _, v := range *f.values {
+				if !utf8.ValidString(v) || strings.ContainsRune(v, 0) || taxonomy.UTF16Length(v) > 128 || strings.TrimSpace(v) == "" {
+					return ErrInvalid
+				}
+			}
+		}
+	}
+	if p.CollectionIDs != nil {
+		for _, id := range *p.CollectionIDs {
+			if !authority.ValidID(id) {
+				return ErrInvalid
+			}
+		}
+	}
+
 	for _, f := range []struct {
 		value *string
 		max   int

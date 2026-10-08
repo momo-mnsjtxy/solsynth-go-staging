@@ -10,7 +10,7 @@ import (
 
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
-type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session http.Handler }
+type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social http.Handler }
 type router struct{ modules }
 
 func under(p, base string) bool { return p == base || strings.HasPrefix(p, base+"/") }
@@ -23,6 +23,10 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// between services. Neither a service-name prefix nor traversal is authority.
 	if p == "" || p[0] != '/' || path.Clean(p) != p || strings.Contains(p, "\\") || strings.Contains(p, "//") || r.URL.RawPath != "" && r.URL.EscapedPath() != p {
 		problem(w, 400, "INVALID_ROUTE_PATH")
+		return
+	}
+	if h.public != nil && publicCatalogRoute(p) {
+		h.public.ServeHTTP(w, r)
 		return
 	}
 	if p == "/healthz" {
@@ -116,6 +120,15 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.accounts != nil && (under(canonical, "/api/publishers") || under(canonical, "/api/accounts") && !boardRoute(canonical) && canonical != "/api/accounts/me/pin-status") && (service == "sphere" || service == "passport" || service == "api") {
 		target = h.accounts
 	}
+	if h.interactions != nil && interactionRoute(canonical) && (service == "sphere" || service == "api") {
+		target = h.interactions
+	}
+	if h.social != nil && socialRoute(canonical) && (service == "passport" || service == "stargate" || service == "api") {
+		target = h.social
+	}
+	if h.public != nil && publicCatalogRoute(canonical) && (service == "wallet" || service == "passport" || service == "api") {
+		target = h.public
+	}
 	if under(canonical, "/api/private/apps") {
 		problem(w, 501, "APP_IDENTITY_UNSUPPORTED")
 		return
@@ -173,3 +186,14 @@ func (w locationWriter) Write(b []byte) (int, error) { return w.ResponseWriter.W
 type headWriter struct{ http.ResponseWriter }
 
 func (w headWriter) Write(b []byte) (int, error) { return len(b), nil }
+
+func interactionRoute(p string) bool {
+	if under(p, "/api/collections") || p == "/api/posts/bookmarks" {
+		return true
+	}
+	parts := strings.Split(strings.TrimPrefix(p, "/"), "/")
+	return len(parts) == 4 && parts[0] == "api" && parts[1] == "posts" && (parts[3] == "reactions" || parts[3] == "bookmark") || len(parts) >= 4 && parts[0] == "api" && parts[1] == "publishers" && parts[3] == "collections"
+}
+func socialRoute(p string) bool {
+	return under(p, "/api/relationships") || under(p, "/stargate/relationships") || under(p, "/api/realms")
+}

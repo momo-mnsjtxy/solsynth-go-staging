@@ -25,6 +25,7 @@ import (
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
 )
 
 func explicitInt(value, name string) (int32, error) {
@@ -50,6 +51,8 @@ func run(args []string, out io.Writer) error {
 	all := fs.String("messager-notify-all", "", "explicit all-notifications mode stored in database")
 	mentions := fs.String("messager-notify-mentions", "", "explicit mentions-only notification mode")
 	noNotify := fs.String("messager-notify-none", "", "explicit no-notifications mode")
+	catalogFile := fs.String("catalog-config", "", "optional explicit catalog JSON snapshot")
+	badgeIcons := fs.String("badge-icons", "", "optional directory of licensed badge icons")
 	pepperEnv := fs.String("pin-pepper-env", "", "optional explicit environment variable with base64 PIN pepper")
 	pepperID := fs.String("pin-pepper-id", "", "key ID for that externally provisioned PIN policy")
 	settlement := fs.Duration("settlement-interval", 15*time.Minute, "bounded durable wallet lifecycle interval")
@@ -112,6 +115,19 @@ func run(args []string, out io.Writer) error {
 		defer clear(raw)
 		peppers[*pepperID] = raw
 	}
+	var catalogProviders []exchangecatalog.Provider
+	if *catalogFile != "" {
+		file, e := os.Open(*catalogFile)
+		if e != nil {
+			return errors.New("catalog configuration unavailable")
+		}
+		provider, e := exchangecatalog.LoadJSON(file)
+		closeErr := file.Close()
+		if e != nil || closeErr != nil {
+			return errors.New("catalog configuration invalid")
+		}
+		catalogProviders = []exchangecatalog.Provider{provider}
+	}
 	if !*serve {
 		_, err = fmt.Fprintln(out, "Backend configuration validated. No database connection, schema, account, key, grant, listener or transfer was created.")
 		return err
@@ -124,7 +140,7 @@ func run(args []string, out io.Writer) error {
 	db.SetMaxOpenConns(30)
 	db.SetMaxIdleConns(5)
 	db.SetConnMaxLifetime(30 * time.Minute)
-	backend, err := application.NewPostgres(db, nil, application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers})
+	backend, err := application.NewPostgres(db, nil, application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons})
 	if err != nil {
 		return errors.New("backend configuration unavailable")
 	}

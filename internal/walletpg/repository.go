@@ -21,9 +21,10 @@ var SchemaSQL string
 // Repository implements the independent wallet_v1 policy. It does not load a
 // legacy database or create schema. Only cooperating writers are supported.
 type Repository struct {
-	db        *sql.DB
-	now       func() time.Time
-	authority *authoritypg.TransactionGuard
+	db          *sql.DB
+	now         func() time.Time
+	authority   *authoritypg.TransactionGuard
+	realmWrites RealmWritePolicy
 }
 
 func New(db *sql.DB) *Repository { return &Repository{db: db, now: time.Now} }

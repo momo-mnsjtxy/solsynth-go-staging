@@ -5,6 +5,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+    "internal/socialpg/schema.sql",
+    "internal/interactionpg/schema.sql",
     "internal/chatpg/schema.sql",
     "internal/authoritypg/schema.sql",
     "internal/accountpg/schema.sql",
@@ -52,6 +54,10 @@ def check(runner, read_schema=None):
             raise ValueError("owned dependent schema must follow accounts: " + name)
     if schemas.index("internal/chatpg/schema.sql") <= schemas.index("internal/messagerpg/testdata/schema.sql"):
         raise ValueError("chat write extension requires canonical read schema first")
+    if schemas.index("internal/postpg/schema.sql") >= schemas.index("internal/application/schema.sql"):
+        raise ValueError("canonical taxonomy view requires posts first")
+    if schemas.index("internal/interactionpg/schema.sql") <= schemas.index("internal/application/schema.sql"):
+        raise ValueError("interactions require taxonomy first")
     tables = {}
     for name in schemas:
         source = read_schema(name)

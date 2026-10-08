@@ -148,3 +148,5 @@ features. It does not deliver mail, notifications, external payments, media,
 federation or realtime events. An outbox record is durable internal state, not
 proof of provider delivery. Client differential tests, migration/rollback plans,
 production credentials and ingress, and full API coverage remain separate gates.
+
+The integrated host additionally mounts canonical social/realm and post-interaction routes, including relationship-based visibility, and public badge/exchange/product catalogs. Explicit `--catalog-config` supplies catalog values and `--badge-icons` supplies icon assets. Product catalog reads return a configuration error until currency is explicit. Canonical taxonomy public visibility is 0. Post/wallet writes now use same-transaction authority checks; other domains retain their documented boundaries. Realm-wallet writes use canonical locked realm membership.

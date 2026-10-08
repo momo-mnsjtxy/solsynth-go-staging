@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"solsynth.local/go-migration/ports/authority"
@@ -101,7 +102,13 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 			target = &p.PublishedAt
 		case "account_id", "publisher_id", "publisher", "id", "created_at", "updated_at", "deleted_at", "locked_at":
 			return p, ErrInvalid
-		case "attachments", "tags", "categories", "embeds", "collection_ids":
+		case "tags":
+			target = &p.Tags
+		case "categories":
+			target = &p.Categories
+		case "collection_ids":
+			target = &p.CollectionIDs
+		case "attachments", "embeds":
 			var a []json.RawMessage
 			if json.Unmarshal(b, &a) != nil {
 				return p, ErrInvalid
@@ -141,6 +148,9 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 	}
 	if _, e = d.Token(); e != io.EOF {
 		return p, ErrInvalid
+	}
+	if e := ValidatePatch(Patch{Tags: p.Tags, Categories: p.Categories, CollectionIDs: p.CollectionIDs}, false, time.Time{}); e != nil {
+		return p, e
 	}
 	return p, nil
 }

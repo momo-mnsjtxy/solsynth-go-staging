@@ -31,6 +31,13 @@ func RouteMatches(path string) bool {
 
 // NewHandler stays disabled until whole-host global policy is established.
 func NewHandler(catalog *Catalog) http.Handler { return handler{catalog: catalog} }
+
+// NewOwnedPublicHandler applies the independent anonymous-read policy to explicit
+// catalog configuration. Hosts must validate supplied identity before dispatch.
+// Raw identity-bearing requests remain rejected by this handler.
+func NewOwnedPublicHandler(catalog *Catalog) http.Handler {
+	return handler{catalog: catalog, candidate: true}
+}
 func NewSyntheticCompatibilityHandler(catalog *Catalog) http.Handler {
 	return handler{catalog: catalog, candidate: true}
 }

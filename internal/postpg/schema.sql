@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS owned_text_posts (
  publisher_id uuid NOT NULL REFERENCES owned_publishers(id),
  title text CHECK(length(title)<=1024),description text CHECK(length(description)<=4096),
  slug text CHECK(length(slug)<=1024),content text NOT NULL CHECK(length(btrim(content))>0 AND length(content)<=1048576),
- visibility integer NOT NULL CHECK(visibility IN(0,2,3)),type integer NOT NULL CHECK(type IN(0,1)),language text CHECK(length(language)<=16),
+ visibility integer NOT NULL CHECK(visibility IN(0,1,2,3,4)),type integer NOT NULL CHECK(type IN(0,1)),language text CHECK(length(language)<=16),
  drafted_at timestamptz,published_at timestamptz,created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL,
  deleted_at timestamptz,locked_at timestamptz,
  CHECK((drafted_at IS NULL)<>(published_at IS NULL))

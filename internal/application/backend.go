@@ -12,16 +12,21 @@ import (
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/boardpg"
 	"solsynth.local/go-migration/internal/chatpg"
+	"solsynth.local/go-migration/internal/interactionpg"
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/internal/postpg"
+	"solsynth.local/go-migration/internal/socialpg"
 	"solsynth.local/go-migration/internal/taxonomypg"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/messager/rooms"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/board"
+	"solsynth.local/go-migration/ports/passport/social"
+	"solsynth.local/go-migration/ports/sphere/interactions"
 	"solsynth.local/go-migration/ports/sphere/posts"
 	"solsynth.local/go-migration/ports/sphere/taxonomy"
+	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
 )
 
 // Config is injected by the embedding application. Enum values are mandatory
@@ -33,6 +38,8 @@ type Config struct {
 	PINPeppers                    map[string][]byte
 	SessionService                *authority.Service
 	AllowNonAtomicAuthorityWrites bool
+	CatalogProviders              []exchangecatalog.Provider
+	BadgeIconsPath                string
 }
 type Backend struct {
 	handler         http.Handler
@@ -54,7 +61,7 @@ func (b *Backend) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // owns the DB pool and startup readiness. Authority data may be on a SELECT-only
 // separate pool; nil authorityDB uses db for the explicitly combined runtime.
 func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
-	if db == nil || c.PublicVisibility == nil || c.MessagerPolicy == nil {
+	if db == nil || c.PublicVisibility == nil || *c.PublicVisibility != 0 || c.MessagerPolicy == nil {
 		return nil, errors.New("backend: database and explicit projection policies required")
 	}
 	if authorityDB == nil {
@@ -85,18 +92,27 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	}
 	mh := (&rooms.Service{Repository: cr, Authority: proofIdentity{identity}, Reader: mr}).Handler()
 	th := taxonomy.NewAuthorityHandler(taxonomypg.NewWithIndependentPolicy(db, *c.PublicVisibility), taxonomyIdentity{identity, publisherRepository{accountRepo}}, time.Now)
+	socialRepo := socialpg.NewWithAuthority(db, guard)
+	socialHTTP := (&social.Service{Repository: socialRepo, Authority: proofIdentity{identity}}).Handler()
+	interactionRepo := interactionpg.NewWithAuthority(db, guard).WithVisibility(socialRepo)
+	interactionHTTP := interactions.NewHandler(interactionRepo, postIdentity{identity})
 	postRepository := postpg.NewWithAuthority(db, guard)
 	if guard == nil {
 		postRepository = postpg.New(db)
 	}
+	postRepository.WithAssociations(interactionRepo).WithVisibility(socialRepo)
 	ph := posts.NewHandler(postRepository, postIdentity{identity})
-	wh, wallet := walletHandler(db, identity, c.PINPeppers, guard)
+	wh, wallet := walletHandler(db, identity, c.PINPeppers, guard, socialRepo)
 	session := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 501, "AUTHORITY_ISSUER_ROLE_REQUIRED") })
 	var sessionHTTP http.Handler = session
 	if c.SessionService != nil {
 		sessionHTTP = c.SessionService.Handler()
 	}
-	h := router{modules{board: bindIdentity(v, bh), taxonomy: bindIdentity(v, th), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, mh), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	catalogs, err := publicCatalogs(c)
+	if err != nil {
+		return nil, err
+	}
+	h := router{modules{social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bh), taxonomy: bindIdentity(v, th), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, mh), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
 	return &Backend{handler: h, verifier: v, wallet: wallet, db: db, authorityDB: authorityDB}, nil
 }
 

@@ -5,6 +5,22 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGSocialRelationships",
+        "TestPGSocialRealms",
+        "TestPGSocialTransactionsAndHTTP",
+        "TestPGSocialRestartPersistence",
+        "TestPGSocialRealmWriteRevocationOrdering",
+        "TestPGPostInteractionsReactionBookmarkPrivacy",
+        "TestPGPostInteractionsCollectionOwnershipAndBatch",
+        "TestPGPostInteractionsCanonicalTaxonomyAndAtomicLinks",
+        "TestPGPostInteractionsIndependentPoolRaces",
+        "TestPGPostInteractionsAuditRollback",
+        "TestPGPostInteractionsAuthenticatedHTTPAndRevocation",
+        "TestPGPostInteractionsRestartPersistence",
+        "TestPGPostInteractionsMembershipRevocation",
+        "TestPGPostInteractionsDeletedAndDisabledIsolation",
+        "TestPGPostInteractionsSocialVisibility",
+
         "TestPGAuthorityAtomicWrites",
         "TestPGChatRoomTextLifecycle",
         "TestPGChatMembershipPrivacyAndPolicy",
@@ -94,6 +110,9 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGSocialRestartPersistence",
+        "TestPGPostInteractionsRestartPersistence",
+
         "TestPGChatRestartPersistence",
         "TestPGAccountsRestartPersistence",
         "TestPGAuthorityRestartPersistence",

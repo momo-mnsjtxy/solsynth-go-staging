@@ -37,8 +37,10 @@ start
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/authoritypg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/accountpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/walletpg/schema.sql
-"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/application/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/postpg/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/application/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/socialpg/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/interactionpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f tests/integration/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/watchpg/testdata/watchers-projection.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/boardpg/testdata/schema.sql

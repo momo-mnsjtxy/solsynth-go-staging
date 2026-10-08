@@ -22,10 +22,12 @@ import (
 var Schema string
 
 type Repository struct {
-	db         *sql.DB
-	publishers *accountpg.Repository
-	now        func() time.Time
-	authority  *authoritypg.TransactionGuard
+	db           *sql.DB
+	publishers   *accountpg.Repository
+	now          func() time.Time
+	authority    *authoritypg.TransactionGuard
+	associations AssociationStore
+	visibility   VisibilityProvider
 }
 
 func New(db *sql.DB) *Repository {
@@ -160,7 +162,7 @@ func apply(p *posts.Post, v posts.Patch) {
 func (r *Repository) Create(ctx context.Context, actor, selector string, v posts.Patch) (posts.Post, error) {
 	var p posts.Post
 	e := r.write(ctx, actor, "posts.create", func(tx *sql.Tx, now time.Time) error {
-		if e := posts.ValidatePatch(v, true, now); e != nil {
+		if e := r.validatePatch(v, true, now); e != nil {
 			return e
 		}
 		pub, e := r.publishers.ResolveForPost(ctx, tx, actor, selector)
@@ -179,6 +181,9 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 		apply(&p, v)
 		_, e = tx.ExecContext(ctx, `INSERT INTO owned_text_posts(id,publisher_id,title,description,slug,content,visibility,type,language,drafted_at,published_at,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12)`, p.ID, p.PublisherID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, now)
 		if e != nil {
+			return e
+		}
+		if e = r.applyAssociations(ctx, tx, actor, &p, v, true); e != nil {
 			return e
 		}
 		return audit(ctx, tx, actor, p.ID, "create", now)
@@ -224,7 +229,7 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 	}
 	e := r.write(ctx, actor, permission, func(tx *sql.Tx, now time.Time) error {
 		if action == "update" {
-			if e := posts.ValidatePatch(v, false, now); e != nil {
+			if e := r.validatePatch(v, false, now); e != nil {
 				return e
 			}
 		}
@@ -249,6 +254,9 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 		}
 		p.UpdatedAt = now
 		if e = save(ctx, tx, p); e != nil {
+			return e
+		}
+		if e = r.applyAssociations(ctx, tx, actor, &p, v, false); e != nil {
 			return e
 		}
 		return audit(ctx, tx, actor, id, action, now)
@@ -300,9 +308,14 @@ func (r *Repository) detail(ctx context.Context, actor, filter string, args ...a
 	}
 	defer tx.Rollback()
 	all := append([]any{actor}, args...)
-	p, e := scan(tx.QueryRowContext(ctx, `SELECT `+columns+base+` AND u.type=0 AND ((p.drafted_at IS NULL AND p.published_at<=CURRENT_TIMESTAMP AND p.visibility IN(0,2)) OR `+editor+`) AND `+filter, all...))
+	p, e := scan(tx.QueryRowContext(ctx, `SELECT `+columns+base+` AND `+DetailPredicate(r.visibility)+` AND `+filter, all...))
 	if e != nil {
 		return posts.Post{}, e
+	}
+	if r.associations != nil {
+		if e = r.associations.Load(ctx, tx, actor, &p); e != nil {
+			return posts.Post{}, e
+		}
 	}
 	if e = tx.Commit(); e != nil {
 		return posts.Post{}, e
@@ -357,9 +370,12 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	order := `p.published_at`
 	if o.Drafts {
 		where += ` AND p.drafted_at IS NOT NULL AND ` + editor
+		if r.visibility != nil {
+			where += ` AND NOT (` + r.visibility.PostBlockedSQL() + `)`
+		}
 		order = `p.drafted_at`
 	} else {
-		where += ` AND p.drafted_at IS NULL AND p.published_at<=CURRENT_TIMESTAMP AND (p.visibility=0 OR ` + editor + `)`
+		where += ` AND ` + ListingPredicate(r.visibility)
 	}
 	args := []any{actor, o.Publisher, o.Type}
 	var total int64
@@ -387,6 +403,13 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	rows.Close()
 	if e != nil {
 		return nil, 0, e
+	}
+	if r.associations != nil {
+		for i := range out {
+			if e = r.associations.Load(ctx, tx, actor, &out[i]); e != nil {
+				return nil, 0, e
+			}
+		}
 	}
 	if e = tx.Commit(); e != nil {
 		return nil, 0, e

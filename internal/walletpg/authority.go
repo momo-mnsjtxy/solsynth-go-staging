@@ -10,6 +10,15 @@ import (
 	"solsynth.local/go-migration/ports/wallet/accounts"
 )
 
+type RealmWritePolicy interface {
+	AuthorizeRealmWrite(context.Context, *sql.Tx, string, string) error
+}
+
+func (r *Repository) WithRealmWritePolicy(p RealmWritePolicy) *Repository {
+	r.realmWrites = p
+	return r
+}
+
 // Authority, then realm grants, then existing domain locks is the request-write
 // lock order. Maintenance transitions do not represent an authenticated request.
 func (r *Repository) writeAuthority(ctx context.Context, tx *sql.Tx, owner accounts.Owner, actor, permission string) error {
@@ -43,6 +52,9 @@ func (r *Repository) writeAuthority(ctx context.Context, tx *sql.Tx, owner accou
 			return accounts.ErrForbidden
 		}
 		return nil
+	}
+	if r.realmWrites != nil {
+		return r.realmWrites.AuthorizeRealmWrite(ctx, tx, p.Account.ID, owner.RealmID)
 	}
 	// A realm permission checked by the service before the SQL transaction may
 	// already be stale. Lock and recheck the actual grant through domain commit.

@@ -7,8 +7,10 @@ import (
 	"errors"
 	"net/http"
 	"solsynth.local/go-migration/internal/authoritypg"
+	"solsynth.local/go-migration/internal/socialpg"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/passport/social"
 	"solsynth.local/go-migration/ports/wallet/accounts"
 )
 
@@ -37,13 +39,33 @@ func walletError(err error) error {
 	}
 	return accounts.ErrUnavailable
 }
-func walletHandler(db *sql.DB, id identity, peppers map[string][]byte, guard *authoritypg.TransactionGuard) (http.Handler, *walletpg.Repository) {
+func walletHandler(db *sql.DB, id identity, peppers map[string][]byte, guard *authoritypg.TransactionGuard, realms *socialpg.Repository) (http.Handler, *walletpg.Repository) {
 	repo := walletpg.NewWithAuthority(db, guard)
 	if guard == nil {
 		repo = walletpg.New(db) // Explicit separate-pool non-atomic opt-in.
 	}
+	repo.WithRealmWritePolicy(canonicalRealmWrites{realms})
 	handler := accounts.NewAuthorityHandler(repo, proofIdentity{id}, func(p authority.Principal) accounts.Principal {
 		return accounts.Principal{AccountID: p.Account.ID, SessionID: p.Session.ID}
-	}, walletpg.NewRealmAuthority(db), walletpg.NewPINVerifier(db, peppers), walletError)
+	}, realms, walletpg.NewPINVerifier(db, peppers), walletError)
 	return bindIdentity(id.verifier, bindTransactionAuthority(guard, handler)), repo
+}
+
+type canonicalRealmWrites struct{ repository *socialpg.Repository }
+
+func (c canonicalRealmWrites) AuthorizeRealmWrite(ctx context.Context, tx *sql.Tx, actor, realm string) error {
+	if c.repository == nil {
+		return accounts.ErrUnavailable
+	}
+	role, err := c.repository.RealmRoleForWriteInTransaction(ctx, tx, actor, realm)
+	if errors.Is(err, social.ErrForbidden) || errors.Is(err, social.ErrNotFound) {
+		return accounts.ErrForbidden
+	}
+	if err != nil {
+		return accounts.ErrUnavailable
+	}
+	if role != social.Owner {
+		return accounts.ErrForbidden
+	}
+	return nil
 }

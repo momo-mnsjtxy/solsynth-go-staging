@@ -42,7 +42,7 @@ type backendFixture struct {
 
 func backendApp(t *testing.T, db *sql.DB, config authority.Config) *application.Backend {
 	t.Helper()
-	visibility := int32(17)
+	visibility := int32(0)
 	policy := messagerpg.IndependentPolicy{NoneEncryptionMode: 77, NotifyAll: 10, NotifyMentions: 20, NotifyNone: 30}
 	app, err := application.NewPostgres(db, nil, application.Config{Authority: config, PublicVisibility: &visibility, MessagerPolicy: &policy})
 	if err != nil {
@@ -110,6 +110,10 @@ func backendDecode[T any](t *testing.T, w *httptest.ResponseRecorder) T {
 func TestPGBackendDomainComposition(t *testing.T) {
 	f := newBackendFixture(t)
 	backendCall(t, f.app, "GET", "/readyz", "", "", 200)
+	backendCall(t, f.app, "GET", "/.well-known/badges", "", "", 200)
+	backendCall(t, f.app, "GET", "/wallet/wallets/exchange", f.token, "", 200)
+	backendCall(t, f.app, "GET", "/wallet/wallet-products/catalog", "", "", 503)
+	backendCall(t, f.app, "GET", "/wallet/wallets/exchange", "invalid", "", 401)
 	backendCall(t, f.app, "GET", "/stargate/accounts/me", "", "", 401)
 	me := backendDecode[profiles.Account](t, backendCall(t, f.app, "GET", "/stargate/accounts/me", f.token, "", 200))
 	if me.ID != f.actor {
@@ -160,6 +164,29 @@ func TestPGBackendDomainComposition(t *testing.T) {
 	backendCall(t, f.app, "POST", "/sphere/posts/"+draft.ID+"/publish", f.token, "", 200)
 	backendCall(t, f.app, "GET", "/api/posts/"+draft.ID, "", "", 200)
 	backendCall(t, f.app, "PATCH", "/sphere/posts/"+draft.ID, f.otherToken, `{"content":"wrong publisher"}`, 403)
+
+	backendCall(t, f.app, "POST", "/stargate/relationships/"+f.other+"/friends", f.token, "", 200)
+	backendCall(t, f.app, "POST", "/stargate/relationships/"+f.actor+"/friends/accept", f.otherToken, "", 200)
+	backendCall(t, f.app, "PATCH", "/sphere/posts/"+draft.ID, f.token, `{"visibility":1}`, 200)
+	backendCall(t, f.app, "GET", "/sphere/posts/"+draft.ID, f.otherToken, "", 200)
+	backendCall(t, f.app, "GET", "/sphere/posts/"+draft.ID, "", "", 404)
+	backendCall(t, f.app, "POST", "/sphere/posts/"+draft.ID+"/reactions", f.otherToken, `{"symbol":"heart","attitude":0}`, 200)
+	backendCall(t, f.app, "POST", "/sphere/posts/"+draft.ID+"/bookmark", f.otherToken, "", 200)
+	backendCall(t, f.app, "POST", "/sphere/publishers/"+pub.ID+"/collections", f.token, `{"slug":"composed"}`, 201)
+	backendCall(t, f.app, "POST", "/sphere/publishers/"+pub.ID+"/collections/composed/posts", f.token, fmt.Sprintf(`{"post_id":%q}`, draft.ID), 204)
+	backendCall(t, f.app, "GET", "/sphere/publishers/"+pub.ID+"/collections/composed/posts", f.otherToken, "", 200)
+	realmRaw := backendCall(t, f.app, "POST", "/passport/realms", f.token, fmt.Sprintf(`{"slug":%q,"name":"Composed realm"}`, "realm_"+strings.ReplaceAll(f.actor, "-", "")), 200)
+	var realm struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(realmRaw.Body.Bytes(), &realm); err != nil || realm.ID == "" {
+		t.Fatal("realm projection", err)
+	}
+	realmWallet := backendDecode[wallet.Wallet](t, backendCall(t, f.app, "POST", "/wallet/wallets", f.token, fmt.Sprintf(`{"name":"Canonical realm wallet","realm_id":%q}`, realm.ID), 200))
+	if realmWallet.RealmID == nil || *realmWallet.RealmID != realm.ID {
+		t.Fatal("realm wallet owner")
+	}
+	backendCall(t, f.app, "GET", "/wallet/wallets/"+realmWallet.ID, f.otherToken, "", 403)
 
 	w := backendDecode[wallet.Wallet](t, backendCall(t, f.app, "POST", "/wallet/wallets", f.token, `{"name":"Composed wallet"}`, 200))
 	if w.AccountID == nil || *w.AccountID != f.actor {
@@ -214,10 +241,12 @@ func TestPGBackendHTTPProcessRestart(t *testing.T) {
 	q := url.Values{"host": {filepath.Join(os.Getenv("SOLSYNTH_DISPOSABLE_PG"), "socket")}, "sslmode": {"disable"}}
 	u.RawQuery = q.Encode()
 	t.Setenv("BACKEND_PROCESS_TEST_DSN", u.String())
-	args := []string{"--serve", "--dsn-env=BACKEND_PROCESS_TEST_DSN", "--issuer=" + f.config.Issuer, "--audience=" + f.config.Audience, "--key-id=synthetic", "--trusted-public-key-file=" + public, "--taxonomy-public-visibility=17", "--messager-none-encryption=77", "--messager-notify-all=10", "--messager-notify-mentions=20", "--messager-notify-none=30"}
+	args := []string{"--serve", "--dsn-env=BACKEND_PROCESS_TEST_DSN", "--issuer=" + f.config.Issuer, "--audience=" + f.config.Audience, "--key-id=synthetic", "--trusted-public-key-file=" + public, "--taxonomy-public-visibility=0", "--messager-none-encryption=77", "--messager-notify-all=10", "--messager-notify-mentions=20", "--messager-notify-none=30"}
 	headers := map[string]string{"Authorization": "Bearer " + f.token}
 	p := startDomainProcess(t, "BACKEND_BINARY", "Authenticated backend listening on ", args...)
 	p.call(t, "GET", "/readyz", "", 200, nil)
+	p.call(t, "GET", "/.well-known/badges", "", 200, nil)
+	p.call(t, "GET", "/wallet/wallets/exchange", "", 200, headers)
 	p.call(t, "GET", "/passport/accounts/me/board", "", 401, nil)
 	body := fmt.Sprintf(`[{"id":%q,"widget_key":"memo","payload":{"content":"backend-process-restart"}}]`, authorityUUID(t))
 	p.call(t, "PUT", "/passport/accounts/me/board", body, 200, headers)
@@ -246,12 +275,21 @@ func TestPGBackendHTTPProcessRestart(t *testing.T) {
 		t.Fatal("room process response", err)
 	}
 	p.call(t, "POST", "/messager/chat/"+savedRoom.ID+"/messages", `{"content":"process-chat-restart","client_message_id":"process-message"}`, 200, headers)
+	otherHeaders := map[string]string{"Authorization": "Bearer " + f.otherToken}
+	p.call(t, "POST", "/stargate/relationships/"+f.other+"/friends", "", 200, headers)
+	p.call(t, "POST", "/stargate/relationships/"+f.actor+"/friends/accept", "", 200, otherHeaders)
+	p.call(t, "POST", "/sphere/posts/"+savedPost.ID+"/bookmark", "", 200, otherHeaders)
 	p.stop()
 	p = startDomainProcess(t, "BACKEND_BINARY", "Authenticated backend listening on ", args...)
 	raw, _ := p.call(t, "GET", "/api/accounts/me/board", "", 200, headers)
 	if !bytes.Contains(raw, []byte("backend-process-restart")) {
 		t.Fatal("committed data lost across process restart")
 	}
+	bookmarkRaw, _ := p.call(t, "GET", "/sphere/posts/"+savedPost.ID+"/bookmark", "", 200, otherHeaders)
+	if !bytes.Contains(bookmarkRaw, []byte(savedPost.ID)) {
+		t.Fatal("bookmark lost across process restart")
+	}
+	p.call(t, "GET", "/stargate/relationships/"+f.actor, "", 200, otherHeaders)
 	chatRaw, _ := p.call(t, "GET", "/messager/chat/"+savedRoom.ID+"/messages", "", 200, headers)
 	if !bytes.Contains(chatRaw, []byte("process-chat-restart")) {
 		t.Fatal("chat message lost across process restart")

@@ -14,7 +14,8 @@ def check(root):
     for directory in ("ports/messager/source", "ports/messager/contract-evidence", "ports/develop/source",
                       "ports/develop/product-source", "ports/develop/package-source",
                       "ports/sphere/nodeinfo/source", "ports/wallet/productcatalog/source",
-                      "inventory/product-client-evidence",
+                      "inventory/product-client-evidence", "ports/passport/artwork/source",
+                      "ports/passport/affiliation/source", "ports/passport/social/contract-evidence",
                       "inventory/operation-sources"):
         base = root / directory
         manifest = json.loads((base / "manifest.json").read_text())

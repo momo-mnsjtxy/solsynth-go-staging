@@ -50,6 +50,17 @@ func (r *Repository) Apply(ctx context.Context, tx *sql.Tx, actor string, m *mes
 	if !rooms.ValidID(actor) || !rooms.ValidID(m.ID) || len(*ids) > 32 {
 		return rooms.ErrInvalid
 	}
+	if len(*ids) > 0 {
+		if policy, ok := r.access.(interface {
+			RequireRoomMediaInTransaction(context.Context, *sql.Tx, string, string) error
+		}); ok {
+			if e := policy.RequireRoomMediaInTransaction(ctx, tx, actor, m.ChatRoomID); e != nil {
+				return e
+			}
+		} else {
+			return rooms.ErrUnavailable
+		}
+	}
 	ordered := append([]string{}, (*ids)...)
 	sort.Strings(ordered)
 	grants := map[string]bool{}

@@ -487,8 +487,8 @@ func (r *Repository) manage(ctx context.Context, tx *sql.Tx, v rooms.Room, actor
 		if r.social == nil {
 			return rooms.ErrUnavailable
 		}
-		role, e := r.social.RealmRoleForWriteInTransaction(ctx, tx, actor, *v.RealmID)
-		if e != nil || role < social.Moderator {
+		e := r.realmPermission(ctx, tx, actor, *v.RealmID, social.CanModerateChat)
+		if e != nil {
 			return rooms.ErrForbidden
 		}
 		allowed, e := r.CanReadInTransaction(ctx, tx, actor, v.ID)

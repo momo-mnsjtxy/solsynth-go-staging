@@ -105,7 +105,7 @@ func (r *Repository) BindWallet(ctx context.Context, actor, selector string, q a
 		}
 		if s.Realm != "" {
 			var owner bool
-			if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_realm_members WHERE realm_id=$1::uuid AND account_id=$2::uuid AND joined_at IS NOT NULL AND leave_at IS NULL AND role=100)`, s.Realm, actor).Scan(&owner); e != nil {
+			if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_realm_members m JOIN owned_realms r ON r.id=m.realm_id AND r.account_id=m.account_id WHERE m.realm_id=$1::uuid AND m.account_id=$2::uuid AND m.joined_at IS NOT NULL AND m.leave_at IS NULL AND r.deleted_at IS NULL)`, s.Realm, actor).Scan(&owner); e != nil {
 				return out, e
 			}
 			if !owner {

@@ -194,13 +194,19 @@ func TestPGTicketMediaOwnershipIdempotencyAndAtomicRollback(t *testing.T) {
 	constraint := "ticket_media_rollback_" + strings.ReplaceAll(f.actor, "-", "")
 	query(t, f.db, `ALTER TABLE owned_ticket_exam_audit ADD CONSTRAINT `+constraint+` CHECK(actor_id<>'`+f.actor+`'::uuid) NOT VALID`)
 	t.Cleanup(func() { f.db.Exec(`ALTER TABLE owned_ticket_exam_audit DROP CONSTRAINT IF EXISTS ` + constraint) })
-	backendJSONCall(t, f.app, "POST", "/api/tickets/"+v.ID+"/messages", f.token, map[string]any{"content": "Failed reference", "file_ids": []string{file}}, 503)
+	// SQLSTATE23514 is the existing request-invalid contract, even for our
+	// injected audit check. The valid request must still roll back completely.
+	backendJSONCall(t, f.app, "POST", "/api/tickets/"+v.ID+"/messages", f.token, map[string]any{"content": "Failed reference", "file_ids": []string{file}}, 400)
 	query(t, f.db, `ALTER TABLE owned_ticket_exam_audit DROP CONSTRAINT `+constraint)
 	if n := ticketCount(t, f.ticketFixture, `SELECT count(*) FROM owned_ticket_messages WHERE ticket_id=$1::uuid`, v.ID); n != 2 {
 		t.Fatal("message escaped rollback", n)
 	}
 	if n := ticketCount(t, f.ticketFixture, `SELECT count(*) FROM owned_ticket_media l JOIN owned_ticket_messages m ON m.id=l.message_id WHERE m.ticket_id=$1::uuid`, v.ID); n != 2 {
 		t.Fatal("link escaped rollback", n)
+	}
+	backendJSONCall(t, f.app, "POST", "/api/tickets/"+v.ID+"/messages", f.token, map[string]any{"content": "Failed reference", "file_ids": []string{file}}, 200)
+	if n := ticketCount(t, f.ticketFixture, `SELECT count(*) FROM owned_ticket_media l JOIN owned_ticket_messages m ON m.id=l.message_id WHERE m.ticket_id=$1::uuid`, v.ID); n != 3 {
+		t.Fatal("valid retry did not attach after the injected constraint was removed", n)
 	}
 	backendJSONCall(t, f.app, "POST", "/api/tickets/"+v.ID+"/messages", f.token, map[string]any{"content": "", "file_ids": []string{file}}, 400)
 	backendJSONCall(t, f.app, "POST", "/api/tickets/"+v.ID+"/status", f.adminToken, map[string]any{"status": 4}, 501)

@@ -25,6 +25,7 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	artwork                                                                                                                                                                                                                                              http.Handler
 	publisherCommerce                                                                                                                                                                                                                                    publisherCommerceModules
 	domainCollections                                                                                                                                                                                                                                    domainCollectionModules
 	admin                                                                                                                                                                                                                                                adminModules
@@ -119,6 +120,10 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			handler.ServeHTTP(w, copy)
 			return
 		}
+	}
+	if h.artwork != nil && under(p, "/api/presence/artworks") {
+		h.artwork.ServeHTTP(w, r)
+		return
 	}
 	if h.locations != nil {
 		canonical := p

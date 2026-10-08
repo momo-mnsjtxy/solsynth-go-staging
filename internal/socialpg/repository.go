@@ -17,7 +17,12 @@ import (
 )
 
 //go:embed schema.sql
-var Schema string
+var baseSchema string
+
+//go:embed permissions_schema.sql
+var PermissionsSchema string
+
+var Schema = baseSchema + "\n" + PermissionsSchema
 
 // New performs no I/O, migrations, account enrollment, quota grants or role seeding.
 type TransactionGuard interface {
@@ -116,6 +121,11 @@ func (r *Repository) write(ctx context.Context, actor string, ids []string, perm
 	}
 	if e = fn(tx, now.UTC()); e != nil {
 		return mapped(e)
+	}
+	if r.requireGuard {
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, permissions...); e != nil {
+			return e
+		}
 	}
 	return tx.Commit()
 }

@@ -431,7 +431,21 @@ func subscriptionRow(ctx context.Context, tx *sql.Tx, idv string, locked bool) (
 	return decode[c.Subscription](tx.QueryRowContext(ctx, `SELECT document FROM commerce_v1.subscriptions WHERE id=$1`+suffix, idv))
 }
 func lookupSubscription(ctx context.Context, tx *sql.Tx, actor, identifier string) (c.Subscription, error) {
-	return decode[c.Subscription](tx.QueryRowContext(ctx, `SELECT document FROM commerce_v1.subscriptions WHERE account_id=$1 AND (identifier=$2 OR id::text=$2) ORDER BY begun_at DESC,id DESC LIMIT 1 FOR UPDATE`, actor, identifier))
+	// A concrete row selector remains bound to that historical subscription,
+	// including an idempotent cancellation after another subscription is created.
+	if wallet.ValidID(identifier) {
+		s, e := decode[c.Subscription](tx.QueryRowContext(ctx, `SELECT document FROM commerce_v1.subscriptions WHERE account_id=$1 AND id=$2::uuid FOR UPDATE`, actor, identifier))
+		if !errors.Is(e, c.ErrNotFound) {
+			return s, e
+		}
+	}
+	return lookupSubscriptionDefinition(ctx, tx, actor, identifier)
+}
+func lookupSubscriptionDefinition(ctx context.Context, tx *sql.Tx, actor, identifier string) (c.Subscription, error) {
+	// Cancelled/expired history cannot shadow the current unpaid or active row.
+	// BegunAt is an entitlement schedule, not a creation sequence; queued cycles
+	// can start in the future and multiple creations can share the same clock.
+	return decode[c.Subscription](tx.QueryRowContext(ctx, `SELECT document FROM commerce_v1.subscriptions WHERE account_id=$1 AND identifier=$2 ORDER BY (status IN(0,1)) DESC,begun_at DESC,id DESC LIMIT 1 FOR UPDATE`, actor, identifier))
 }
 func saveSubscription(ctx context.Context, tx *sql.Tx, s c.Subscription) error {
 	b, e := jsonBytes(s)
@@ -501,7 +515,7 @@ func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c
 		}
 		return s, tx.Commit()
 	}
-	old, e := lookupSubscription(ctx, tx, actor, req.Identifier)
+	old, e := lookupSubscriptionDefinition(ctx, tx, actor, req.Identifier)
 	if e == nil && (old.Status == c.SubscriptionUnpaid || old.Status == c.SubscriptionActive) {
 		if noop {
 			return old, tx.Commit()

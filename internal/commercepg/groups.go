@@ -10,12 +10,20 @@ import (
 )
 
 func (r *Repository) SubscriptionGroup(ctx context.Context, actor, group string) (c.GroupState, error) {
-	out := c.GroupState{GroupIdentifier: group, Catalog: c.GroupCatalog{GroupIdentifier: group, Items: []c.Definition{}}, Subscriptions: []c.GroupItem{}}
+	var out c.GroupState
 	tx, e := r.userTx(ctx, actor, "")
 	if e != nil {
 		return out, e
 	}
 	defer tx.Rollback()
+	out, e = subscriptionGroup(ctx, tx, actor, group, r.now().UTC())
+	if e != nil {
+		return out, e
+	}
+	return out, tx.Commit()
+}
+func subscriptionGroup(ctx context.Context, tx *sql.Tx, actor, group string, now time.Time) (c.GroupState, error) {
+	out := c.GroupState{GroupIdentifier: group, Catalog: c.GroupCatalog{GroupIdentifier: group, Items: []c.Definition{}}, Subscriptions: []c.GroupItem{}}
 	rows, e := tx.QueryContext(ctx, `SELECT document FROM commerce_v1.definitions d WHERE enabled AND `+catalogVisible+` AND COALESCE(NULLIF(document->>'group_identifier',''),identifier)=$1 ORDER BY identifier`, group)
 	if e != nil {
 		return out, e
@@ -47,7 +55,6 @@ func (r *Repository) SubscriptionGroup(ctx context.Context, actor, group string)
 	if e != nil {
 		return out, e
 	}
-	now := r.now().UTC()
 	for rows.Next() {
 		var b []byte
 		var s c.Subscription
@@ -88,7 +95,7 @@ func (r *Repository) SubscriptionGroup(ctx context.Context, actor, group string)
 			}
 		}
 	}
-	return out, tx.Commit()
+	return out, nil
 }
 
 // The account authority row serializes paid grants in a group. Purchased time

@@ -104,7 +104,7 @@ func (r *Repository) mutateRealm(ctx context.Context, actor, ref string, cmd c.C
 		return nil, e
 	}
 	if target != "" && target != v.AccountID {
-		res, e := tx.ExecContext(ctx, `UPDATE owned_realm_members SET role=0,updated_at=$3 WHERE realm_id=$1 AND account_id=$2 AND role=100 AND leave_at IS NULL AND joined_at IS NOT NULL`, v.ID, v.AccountID, now)
+		res, e := tx.ExecContext(ctx, `UPDATE owned_realm_members SET role=0,permission_generation=(SELECT generation FROM owned_realm_role_permissions WHERE realm_id=$1 AND role_level=0),updated_at=$3 WHERE realm_id=$1 AND account_id=$2 AND role=100 AND leave_at IS NULL AND joined_at IS NOT NULL`, v.ID, v.AccountID, now)
 		if e != nil {
 			return nil, e
 		}
@@ -115,7 +115,10 @@ func (r *Repository) mutateRealm(ctx context.Context, actor, ref string, cmd c.C
 		if n != 1 {
 			return nil, c.ErrConflict
 		}
-		if _, e = tx.ExecContext(ctx, `UPDATE owned_realm_members SET role=100,updated_at=$3 WHERE realm_id=$1 AND account_id=$2 AND leave_at IS NULL AND joined_at IS NOT NULL`, v.ID, target, now); e != nil {
+		if _, e = tx.ExecContext(ctx, `UPDATE owned_realm_members SET role=100,permission_generation=(SELECT generation FROM owned_realm_role_permissions WHERE realm_id=$1 AND role_level=100),updated_at=$3 WHERE realm_id=$1 AND account_id=$2 AND leave_at IS NULL AND joined_at IS NOT NULL`, v.ID, target, now); e != nil {
+			return nil, e
+		}
+		if _, e = tx.ExecContext(ctx, `DELETE FROM owned_realm_user_permissions WHERE realm_id=$1 AND account_id IN($2::uuid,$3::uuid)`, v.ID, v.AccountID, target); e != nil {
 			return nil, e
 		}
 		v.AccountID = target
@@ -157,10 +160,17 @@ func (r *Repository) mutateRealm(ctx context.Context, actor, ref string, cmd c.C
 			if e = activeTarget(ctx, tx, cmd.AccountID); e != nil {
 				return nil, e
 			}
-			if *cmd.Role == 50 && v.BoostLevel < 2 {
+			if *cmd.Role == 100 && cmd.AccountID != v.AccountID {
 				return nil, c.ErrConflict
 			}
-			_, e = tx.ExecContext(ctx, `UPDATE owned_realm_members SET role=$3,updated_at=$4 WHERE realm_id=$1 AND account_id=$2`, v.ID, cmd.AccountID, *cmd.Role, now)
+			if *cmd.Role > 0 && *cmd.Role < 100 && v.BoostLevel < 2 {
+				return nil, c.ErrConflict
+			}
+			var generation int64
+			if e = tx.QueryRowContext(ctx, `SELECT generation FROM owned_realm_role_permissions WHERE realm_id=$1 AND role_level=$2 AND deleted_at IS NULL`, v.ID, *cmd.Role).Scan(&generation); e != nil {
+				return nil, mapped(e)
+			}
+			_, e = tx.ExecContext(ctx, `UPDATE owned_realm_members SET role=$3,updated_at=$4,permission_generation=$5 WHERE realm_id=$1 AND account_id=$2`, v.ID, cmd.AccountID, *cmd.Role, now, generation)
 		}
 		if e != nil {
 			return nil, e

@@ -180,6 +180,9 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	if tail != "" {
 		parts = strings.Split(strings.TrimPrefix(tail, "/"), "/")
 	}
+	if s.permissionHTTP(w, r, parts) {
+		return
+	}
 	s.realmHTTP(w, r, actor, parts)
 }
 func (s *Service) relationshipHTTP(w http.ResponseWriter, r *http.Request, p []string) {

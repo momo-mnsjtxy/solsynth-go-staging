@@ -103,6 +103,12 @@ currency, payout, recurrence, consent, app or product eligibility changes. It
 never silently upgrades a subscription to newly edited terms. Existing platform
 renewal now also verifies cycle-scaled price rather than comparing a multi-cycle
 total to a one-cycle price. Cancellation is immediate, account-bound and durable.
+
+Definition-key lookups prefer an unpaid or active subscription over cancelled or
+expired history. Entitlement start dates can be queued or equal and do not identify
+the current purchase. Explicit actor-owned subscription UUIDs continue to address
+their original rows, so replaying an old cancellation or creation idempotency key
+cannot retarget the replacement or release its stock reservation.
 External delivery of outbox events is still the host publisher's responsibility.
 
 ## Validation

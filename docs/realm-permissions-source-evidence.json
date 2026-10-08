@@ -1,0 +1,14 @@
+{
+  "repository": "Solsynth/DysonNetwork",
+  "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "path": "DysonNetwork.Passport/Realm/RealmService.cs",
+  "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmService.cs",
+  "git_blob_sha": "f7aed2430a446667f88da621794f6ed960a49f8c",
+  "sha256": "2cc78429c22d3c0f3d4e32b783dccb8e818c1fe163a6827021c732430505c26e",
+  "bytes": 15883,
+  "license": "AGPL-3.0-only; existing pinned inventory/operation-sources/LICENSE.txt",
+  "read_scope": "Complete authored file retained exactly at ports/passport/social/contract-evidence/RealmService.cs, with pinned license and enforced source hashes.",
+  "default_algorithm": "Authored GetDefaultPermission defines named Normal/Moderator/Owner profiles directly; Moderator realm.manage=false.",
+  "excluded_boundary": "DysonNetwork.Shared.Models supplies named numeric role constants and model declarations; those declarations and all excluded generated schemas/protocols remain unread.",
+  "owned_policy": "Built-in numeric mapping 0/50/100, canonical owner protection, membership-before-override, unknown-key denial, generations, and stored-row projection/clear semantics are explicit owned choices."
+}

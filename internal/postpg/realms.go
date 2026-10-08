@@ -9,6 +9,7 @@ import (
 	"solsynth.local/go-migration/internal/accountpg"
 
 	"solsynth.local/go-migration/ports/passport/accounts"
+	"solsynth.local/go-migration/ports/passport/social"
 	"solsynth.local/go-migration/ports/sphere/posts"
 )
 
@@ -70,7 +71,7 @@ func (r *Repository) prelock(ctx context.Context, tx *sql.Tx, actor string, scop
 	}
 	return accountpg.VerifyPublisherRealms(ctx, tx, scopes)
 }
-func (r *Repository) authorizeRealms(ctx context.Context, tx *sql.Tx, actor string, publisherType int, old *string, v posts.Patch, deleting bool) error {
+func (r *Repository) authorizeRealms(ctx context.Context, tx *sql.Tx, actor string, publisherType int, old *string, v posts.Patch, deleting, replying bool) error {
 	ids := RealmIDs(old, v.RealmID)
 	if len(ids) == 0 || deleting {
 		return nil
@@ -88,6 +89,13 @@ func (r *Repository) authorizeRealms(ctx context.Context, tx *sql.Tx, actor stri
 			continue
 		}
 		seen[id] = true
+		key := social.CanPost
+		if replying {
+			key = social.CanComment
+		}
+		if e := RequireRealmAction(ctx, tx, r.visibility, actor, id, key); e != nil {
+			return e
+		}
 		if e := realms.RequirePostRealmMember(ctx, tx, actor, id); e != nil {
 			return e
 		}
@@ -103,4 +111,18 @@ func ResolveRealmFilter(ctx context.Context, tx *sql.Tx, v VisibilityProvider, a
 		return "", posts.ErrUnsupported
 	}
 	return realms.ResolvePostRealmFilter(ctx, tx, actor, selector)
+}
+
+func RequireRealmAction(ctx context.Context, tx *sql.Tx, v VisibilityProvider, actor, id string, key social.RealmPermission) error {
+	p, ok := v.(interface {
+		RequireRealmPermissionInTransaction(context.Context, *sql.Tx, string, string, social.RealmPermission) error
+	})
+	if !ok {
+		return posts.ErrUnsupported
+	}
+	e := p.RequireRealmPermissionInTransaction(ctx, tx, actor, id, key)
+	if errors.Is(e, social.ErrNotFound) || errors.Is(e, social.ErrForbidden) {
+		return posts.ErrForbidden
+	}
+	return e
 }

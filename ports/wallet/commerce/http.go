@@ -197,6 +197,40 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx = r.Context()
 	actor := p.AccountID
+	if path == "subscriptions/pending-activations" && method == "GET" {
+		repo, ok := s.Store.(ActivationStore)
+		if !ok {
+			problem(w, ErrUnavailable, "WALLET_SUBSCRIPTION_PENDING_FAILED")
+			return
+		}
+		v, e := repo.PendingActivations(ctx, actor, page(r))
+		done(v, e, "WALLET_SUBSCRIPTION_PENDING_FAILED")
+		return
+	}
+	if len(parts) == 4 && parts[0] == "subscriptions" && parts[1] == "groups" && parts[3] == "activate" && method == "POST" {
+		var q ActivateSubscription
+		if e = body(r, &q); e != nil || !wallet.ValidID(q.SubscriptionID) {
+			problem(w, ErrInvalid, "WALLET_SUBSCRIPTION_ACTIVATE_FAILED")
+			return
+		}
+		a, ok := s.Identity.(Authorizer)
+		if !ok {
+			problem(w, ErrUnavailable, "WALLET_SUBSCRIPTION_ACTIVATE_FAILED")
+			return
+		}
+		if e = a.Require(ctx, p, "subscriptions.groups.manage"); e != nil {
+			problem(w, e, "WALLET_SUBSCRIPTION_ACTIVATE_FAILED")
+			return
+		}
+		repo, ok := s.Store.(ActivationStore)
+		if !ok {
+			problem(w, ErrUnavailable, "WALLET_SUBSCRIPTION_ACTIVATE_FAILED")
+			return
+		}
+		v, e := repo.SwitchSubscriptionActivation(ctx, actor, parts[2], q.SubscriptionID)
+		done(v, e, "WALLET_SUBSCRIPTION_ACTIVATE_FAILED")
+		return
+	}
 	if method == "GET" && len(parts) >= 3 && parts[0] == "subscriptions" && (parts[1] == "groups" || parts[1] == "fuzzy") {
 		g, ok := s.Store.(GroupStore)
 		if !ok {

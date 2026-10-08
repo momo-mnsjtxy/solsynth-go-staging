@@ -36,7 +36,12 @@ func (r *Repository) SendSQL(room, actor string) string {
 		return "FALSE"
 	}
 	viewer := fmt.Sprintf(`NULLIF((%s)::text,'')::uuid`, actor)
-	return `(` + r.ReadSQL(room, actor) + ` AND EXISTS(SELECT 1 FROM chat_members sending JOIN chat_rooms linked ON linked.id=sending.chat_room_id WHERE sending.chat_room_id=(` + room + `)::uuid AND sending.account_id=` + viewer + ` AND sending.joined_at IS NOT NULL AND sending.leave_at IS NULL AND sending.deleted_at IS NULL AND NOT sending.owned_banned AND(sending.owned_timeout_until IS NULL OR sending.owned_timeout_until<=clock_timestamp())AND(linked.owned_type<>1 OR sending.owned_confirmed_at IS NOT NULL)) AND NOT EXISTS(SELECT 1 FROM owned_chat_realm_links link WHERE link.room_id=(` + room + `)::uuid AND NOT EXISTS(SELECT 1 FROM owned_realm_members member WHERE member.realm_id=link.realm_id AND member.account_id=` + viewer + ` AND member.joined_at IS NOT NULL AND member.leave_at IS NULL)))`
+	permission := "FALSE"
+	if provider, ok := r.social.(social.PermissionProvider); ok {
+		permission = provider.RealmPermissionSQL("permission_link.realm_id", actor, social.CanChat)
+	}
+	realmGate := ` AND NOT EXISTS(SELECT 1 FROM owned_chat_realm_links permission_link WHERE permission_link.room_id=(` + room + `)::uuid AND NOT (` + permission + `))`
+	return `(` + r.ReadSQL(room, actor) + realmGate + ` AND EXISTS(SELECT 1 FROM chat_members sending JOIN chat_rooms linked ON linked.id=sending.chat_room_id WHERE sending.chat_room_id=(` + room + `)::uuid AND sending.account_id=` + viewer + ` AND sending.joined_at IS NOT NULL AND sending.leave_at IS NULL AND sending.deleted_at IS NULL AND NOT sending.owned_banned AND(sending.owned_timeout_until IS NULL OR sending.owned_timeout_until<=clock_timestamp())AND(linked.owned_type<>1 OR sending.owned_confirmed_at IS NOT NULL)) AND NOT EXISTS(SELECT 1 FROM owned_chat_realm_links link WHERE link.room_id=(` + room + `)::uuid AND NOT EXISTS(SELECT 1 FROM owned_realm_members member WHERE member.realm_id=link.realm_id AND member.account_id=` + viewer + ` AND member.joined_at IS NOT NULL AND member.leave_at IS NULL)))`
 }
 func (r *Repository) CallSQL(room, actor string) string {
 	if !expression.MatchString(room) || !expression.MatchString(actor) {

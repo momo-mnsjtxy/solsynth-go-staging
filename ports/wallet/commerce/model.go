@@ -293,6 +293,19 @@ type GroupStore interface {
 	SubscriptionGroup(context.Context, string, string) (GroupState, error)
 }
 
+type PendingActivations struct {
+	TotalCount       int            `json:"total_count"`
+	NextActivationAt *time.Time     `json:"next_activation_at"`
+	Subscriptions    []Subscription `json:"subscriptions"`
+}
+type ActivateSubscription struct {
+	SubscriptionID string `json:"subscription_id"`
+}
+type ActivationStore interface {
+	PendingActivations(context.Context, string, PageQuery) (PendingActivations, error)
+	SwitchSubscriptionActivation(context.Context, string, string, string) (GroupState, error)
+}
+
 type OrderApp struct {
 	ID          string          `json:"id"`
 	Slug        string          `json:"slug"`

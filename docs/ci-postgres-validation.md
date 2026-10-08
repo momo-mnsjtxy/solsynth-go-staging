@@ -30,7 +30,7 @@ are tracked separately in the runtime flow acceptance map.
 
 ## Expanded suite budgets
 
-The composed candidate now requires 539 before-restart cases and 70 restart
+The composed candidate now requires 560 before-restart cases and 73 restart
 cases, with the exact names enforced by the guard. Each Go test command retains
 `-race -count=1 -json` and all security derivation work. The before phase has an
 explicit 30-minute package timeout; restart has 10 minutes. The Actions job has
@@ -64,3 +64,15 @@ restart success is attributed to those invalid assertions. Repository
 reconstruction on one pool is documented separately from an actual DB restart.
 
 The enlarged 539-case checkpoint uses 30/10-minute phase budgets and a 50-minute job ceiling because observed before phases reached 17–19 minutes. This gives bounded runner-variance headroom without changing per-test deadlines, password/PIN derivation, race instrumentation, or assertions. Per-test JSON durations remain the basis for future isolated-cluster sharding; composed cross-domain and actual restart coverage must remain intact.
+
+
+## Static SQL bind-argument preflight
+
+`sqlargs` uses the Go AST to resolve string literals and package-local string
+constants/concatenations at SQL-looking Exec/Query calls, then the pinned PG16
+parser counts genuine ParamRef nodes. Quoted and commented dollar markers do not
+count. Highest parameter index must match the explicit argument count. Four
+wrong-count controls are rejected. Dynamic builders, unresolved expressions,
+variadic calls, SQL type inference and transaction behavior remain outside this
+guard. The MLS standalone-policy mismatch was dynamic; it is corrected by
+reusing the existing canonical read adapter and still requires actual PG tests.

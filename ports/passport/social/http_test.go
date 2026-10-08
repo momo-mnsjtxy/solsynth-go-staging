@@ -130,7 +130,7 @@ func TestRealmValidationAndRoleBoundaries(t *testing.T) {
 	if e := ValidateRealm(RealmPatch{Slug: &slug, Name: &name}, true); e != nil {
 		t.Fatal(e)
 	}
-	for _, role := range []Role{-1, 1, 49, 51, 99, 101, 200} {
+	for _, role := range []Role{-1, 101, 200} {
 		if role.Valid() {
 			t.Fatal("unsupported role", role)
 		}

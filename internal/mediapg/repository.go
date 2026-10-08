@@ -101,7 +101,7 @@ func validUpload(u media.Upload, max int64) error {
 	}
 	return nil
 }
-func (r *Repository) begin(ctx context.Context, actor, permission string) (*sql.Tx, error) {
+func (r *Repository) begin(ctx context.Context, actor string, permissions ...string) (*sql.Tx, error) {
 	if !authority.ValidID(actor) {
 		return nil, authority.ErrInvalid
 	}
@@ -109,7 +109,7 @@ func (r *Repository) begin(ctx context.Context, actor, permission string) (*sql.
 	if err != nil {
 		return nil, err
 	}
-	_, err = r.guard.Authorize(ctx, r.db, tx, actor, permission)
+	_, err = r.guard.Authorize(ctx, r.db, tx, actor, permissions...)
 	if err != nil {
 		tx.Rollback()
 		return nil, err
@@ -235,8 +235,9 @@ func (r *Repository) upload(ctx context.Context, actor string, u media.Upload, r
 	}
 	return f, false, nil
 }
-func (r *Repository) finish(ctx context.Context, actor string, f media.File, reader io.Reader, measured bool) (media.File, error) {
-	tx, err := r.begin(ctx, actor, media.CreatePermission)
+func (r *Repository) finish(ctx context.Context, actor string, f media.File, reader io.Reader, measured bool, additional ...string) (media.File, error) {
+	permissions := append([]string{media.CreatePermission}, additional...)
+	tx, err := r.begin(ctx, actor, permissions...)
 	if err != nil {
 		return f, err
 	}
@@ -274,7 +275,7 @@ func (r *Repository) finish(ctx context.Context, actor string, f media.File, rea
 	}
 	// Wall-clock credential expiry can change while streaming even though the
 	// canonical account lock excludes revocation and policy changes.
-	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, media.CreatePermission); err != nil {
+	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, permissions...); err != nil {
 		return f, err
 	}
 	if _, err = tx.ExecContext(ctx, `UPDATE owned_media_quotas SET reserved_bytes=reserved_bytes-$2,used_bytes=used_bytes+$3 WHERE account_id=$1`, actor, reserved, f.Size); err != nil {
@@ -286,7 +287,7 @@ func (r *Repository) finish(ctx context.Context, actor string, f media.File, rea
 	}
 	return updated, tx.Commit()
 }
-func (r *Repository) read(ctx context.Context, actor, id string, open bool) (media.File, io.ReadSeekCloser, error) {
+func (r *Repository) read(ctx context.Context, actor, id string, open bool, artworkHash ...string) (media.File, io.ReadSeekCloser, error) {
 	if !authority.ValidID(id) {
 		return media.File{}, nil, media.ErrNotFound
 	}
@@ -315,7 +316,20 @@ func (r *Repository) read(ctx context.Context, actor, id string, open bool) (med
 	if !active {
 		return media.File{}, nil, media.ErrNotFound
 	}
-	if !f.Public && f.AccountID != actor {
+	artworkAllowed := false
+	if len(artworkHash) != 0 {
+		if f.SHA256 != strings.TrimPrefix(artworkHash[0], "sha256:") || !strings.HasPrefix(f.MIMEType, "image/") {
+			return media.File{}, nil, media.ErrNotFound
+		}
+		artworkAllowed, err = r.artworkLive(ctx, tx, artworkHash[0], f.ID)
+		if err != nil {
+			return media.File{}, nil, err
+		}
+		if !artworkAllowed {
+			return media.File{}, nil, media.ErrNotFound
+		}
+	}
+	if !f.Public && f.AccountID != actor && !artworkAllowed {
 		allowed := false
 		if r.readVisibility != nil {
 			allowed, err = r.readVisibility.CanReadInTransaction(ctx, tx, actor, id)
@@ -332,6 +346,26 @@ func (r *Repository) read(ctx context.Context, actor, id string, open bool) (med
 		body, err = r.openFile(ctx, f)
 		if err != nil {
 			return f, nil, err
+		}
+	}
+	if len(artworkHash) != 0 {
+		if actor != "" {
+			_, err = r.guard.Authorize(ctx, r.db, tx, actor, media.ReadPermission)
+		}
+		if err == nil {
+			err = artworkOwnerActive(ctx, tx, f.AccountID)
+		}
+		if err == nil {
+			artworkAllowed, err = r.artworkLive(ctx, tx, artworkHash[0], f.ID)
+			if err == nil && !artworkAllowed {
+				err = media.ErrNotFound
+			}
+		}
+		if err != nil {
+			if body != nil {
+				body.Close()
+			}
+			return media.File{}, nil, err
 		}
 	}
 	if err = tx.Commit(); err != nil {

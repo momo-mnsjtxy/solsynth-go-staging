@@ -206,12 +206,14 @@ func (r *Repository) mlsMember(ctx context.Context, tx *sql.Tx, actor, rid strin
 	if e != nil {
 		return m, e
 	}
-	q := r.ReadSQL("$1", "$2")
-	if send {
-		q = r.SendSQL("$1", "$2")
-	}
 	var allowed bool
-	e = tx.QueryRowContext(ctx, `SELECT `+q, rid, actor).Scan(&allowed)
+	if send {
+		e = tx.QueryRowContext(ctx, `SELECT `+r.SendSQL("$1", "$2"), rid, actor).Scan(&allowed)
+	} else {
+		// The standalone read policy has only the room parameter; the composed
+		// policy also binds the actor. Use the canonical adapter for both forms.
+		allowed, e = r.CanReadInTransaction(ctx, tx, actor, rid)
+	}
 	if e == nil && !allowed {
 		e = rooms.ErrForbidden
 	}

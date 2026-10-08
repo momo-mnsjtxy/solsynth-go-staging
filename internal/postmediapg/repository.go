@@ -12,6 +12,7 @@ import (
 	"solsynth.local/go-migration/internal/socialpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/media"
+	"solsynth.local/go-migration/ports/passport/social"
 	"solsynth.local/go-migration/ports/sphere/postmedia"
 	"solsynth.local/go-migration/ports/sphere/posts"
 )
@@ -81,6 +82,7 @@ func (r *Repository) Apply(ctx context.Context, tx *sql.Tx, actor string, p *pos
 			return posts.ErrInvalid
 		}
 	}
+
 	// Actor, publisher, current post, related-post locks precede attachment locks.
 	// File locks are sorted; no quota or additional account locks are taken here.
 	existing := map[string]bool{}
@@ -104,6 +106,26 @@ func (r *Repository) Apply(ctx context.Context, tx *sql.Tx, actor string, p *pos
 	rows.Close()
 	if e != nil {
 		return e
+	}
+	if len(ids) > 0 {
+		realms := []*string{p.RealmID, p.Publisher.RealmID}
+		// The canonical timeline prelocker retains reply target realms through
+		// this same transaction, including when an existing reply is edited.
+		var parentRealm, publisherRealm *string
+		e := tx.QueryRowContext(ctx, `SELECT parent.realm_id::text,publisher.realm_id::text FROM owned_post_relations link JOIN owned_text_posts parent ON parent.id=link.replied_post_id JOIN owned_publishers publisher ON publisher.id=parent.publisher_id WHERE link.post_id=$1`, p.ID).Scan(&parentRealm, &publisherRealm)
+		if e != nil && !errors.Is(e, sql.ErrNoRows) {
+			return e
+		}
+		realms = append(realms, parentRealm, publisherRealm)
+		seen := map[string]bool{}
+		for _, realm := range realms {
+			if realm != nil && !seen[*realm] {
+				seen[*realm] = true
+				if e := postpg.RequireRealmAction(ctx, tx, r.visibility, actor, *realm, social.CanUploadMedia); e != nil {
+					return e
+				}
+			}
+		}
 	}
 	orderedLocks := append([]string{}, ids...)
 	sort.Strings(orderedLocks)

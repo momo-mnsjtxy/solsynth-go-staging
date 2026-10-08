@@ -36,16 +36,17 @@ identity headers, excluded shared models, or legacy database imports.
 ## State and authority rules
 
 Install `internal/socialpg/schema.sql` explicitly after authority and account
-schemas. Constructors never apply schemas or seed authority, quotas or roles.
+schemas, followed atomically by `internal/socialpg/permissions_schema.sql`. Constructors never apply schemas or seed authority, quotas or roles.
 Realm creation requires a current `owned_realm_quota` row. Promoted invitations
 and role changes require `owned_realms.boost_level >= 2`; no payment processing
 or automatic entitlement issuance is implied. Slugs remain reserved after
 soft deletion.
 
-The owned role set is normal 0, moderator 50, owner 100. The creator receives
-one accepted owner membership. Owner role is immutable through these APIs.
-Inviters need an accepted moderator-or-owner membership and cannot grant their
-own role or greater. Role changes/removals require strictly greater authority
+Built-in roles are normal 0, moderator 50, and owner 100; defined custom roles
+use levels 1–99 except built-in 50. The creator receives one accepted owner
+membership. Canonical ownership comes from the realm account ID and is protected
+through these APIs. Inviters need current `can_manage_members` permission and
+cannot grant their own role, a greater role, or permissions they do not hold. Role changes/removals require strictly greater authority
 than both the current and new target roles. An invitation is accepted only by
 its target, while active and pending, after checking the inviter still has
 sufficient authority and neither side has blocked the other. Rejoining a
@@ -79,13 +80,17 @@ required locks. Permission names are drawn from the retained licensed registry.
 PATCH status additionally requires its underlying block/friend/close-friend
 permission, preventing a generic update permission from bypassing those gates.
 
+## Later permission continuation
+
+Custom realm role/permission lifecycle and canonical enforcement are added by [the realm permission continuation](realm-permissions-continuation.md). It supplies the role and override rules described above; timed realm mute expiry remains unsupported because no retained realm contract establishes it.
+
 ## Bounded gaps
 
 Mute/unmute, expiring blocks, degradation, presence, relationship sync,
-custom realm permissions, labels, boosts/payments, file attachments, experience,
+labels, boosts/payments, file attachments, experience,
 moderation logs and quota projection return explicit unsupported responses
 where routed. Creation/update reject unsupported picture/background IDs.
-Custom numeric member roles are rejected; they are not interpreted as grants.
+Undefined custom roles and stale assignment generations deny permissions.
 Organization-publisher creation is supplied by the later [realm publishing continuation](realm-publishing-continuation.md). Automatic publisher role synchronization remains unsupported. Realm membership and publisher membership remain separate permissions; realm deletion revokes associated publishers.
 
 These are owned behavior choices rather than claims of a full legacy model

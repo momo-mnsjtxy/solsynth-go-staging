@@ -258,13 +258,93 @@ func TestPGProductStockRecurringReservationRenewalAndCancel(t *testing.T) {
 	if e != nil || cancelled.Status != c.Cancelled {
 		t.Fatal("cancel retained reservation", cancelled, e)
 	}
-	if _, e = other.r.CreateSubscription(other.ctx, other.actor, c.CreateSubscription{Identifier: def.Identifier}, "replacement-stock", false); e != nil {
-		t.Fatal(e)
+	// A cancelled queued cycle can retain a future begun_at. Make historical
+	// ordering win deterministically instead of depending on random UUID ties.
+	query(t, other.db, `UPDATE commerce_v1.subscriptions SET begun_at=$2,document=jsonb_set(document,'{begun_at}',to_jsonb($2::timestamptz)) WHERE id=$1`, pending.ID, pending.BegunAt.Add(time.Hour))
+	replacementRequest := c.CreateSubscription{Identifier: def.Identifier}
+	replacement, e := other.r.CreateSubscription(other.ctx, other.actor, replacementRequest, "replacement-stock", false)
+	if e != nil || replacement.ID == pending.ID {
+		t.Fatal("replacement subscription identity", replacement, e)
 	}
-	if _, e = other.r.SubscriptionOrder(other.ctx, other.actor, def.Identifier); e != nil {
-		t.Fatal("cancelled subscription blocked new stock", e)
+	current, e := other.r.Subscription(other.ctx, other.actor, def.Identifier)
+	if e != nil || current.ID != replacement.ID || current.Status != c.SubscriptionUnpaid {
+		t.Fatal("cancelled history shadowed current subscription", current, e)
+	}
+	for _, replay := range []struct {
+		key, id string
+		status  c.SubscriptionStatus
+	}{{"pending-stock", pending.ID, c.SubscriptionCancelled}, {"replacement-stock", replacement.ID, c.SubscriptionUnpaid}} {
+		got, x := other.r.CreateSubscription(other.ctx, other.actor, replacementRequest, replay.key, false)
+		if x != nil || got.ID != replay.id || got.Status != replay.status {
+			t.Fatal("subscription creation replay changed incarnation", got, x)
+		}
+	}
+	if duplicate, x := other.r.CreateSubscription(other.ctx, other.actor, replacementRequest, "duplicate-live-stock", false); !errors.Is(x, c.ErrConflict) || duplicate.ID != replacement.ID {
+		t.Fatal("cancelled history permitted a second live subscription", duplicate, x)
+	}
+	if duplicate, x := other.r.CreateSubscription(other.ctx, other.actor, replacementRequest, "noop-live-stock", true); x != nil || duplicate.ID != replacement.ID {
+		t.Fatal("noop did not return current subscription", duplicate, x)
+	}
+	if replay, x := other.r.CancelSubscription(other.ctx, other.actor, pending.ID); x != nil || replay.ID != pending.ID || replay.Status != c.SubscriptionCancelled {
+		t.Fatal("historical cancellation replay changed target", replay, x)
+	}
+	if _, x := other.r.SubscriptionOrder(other.ctx, other.actor, pending.ID); !errors.Is(x, c.ErrConflict) {
+		t.Fatal("cancelled UUID acquired a replacement order", x)
+	}
+	replacementOrder, e := other.r.SubscriptionOrder(other.ctx, other.actor, def.Identifier)
+	if e != nil || replacementOrder.ID == order.ID || len(replacementOrder.Items) != 1 || replacementOrder.Items[0].Quantity != 1 || replacementOrder.Amount.String() != "2.123" {
+		t.Fatal("cancelled subscription blocked new stock", replacementOrder, e)
+	}
+	replayedOrder, e := other.r.SubscriptionOrder(other.ctx, other.actor, replacement.ID)
+	if e != nil || replayedOrder.ID != replacementOrder.ID {
+		t.Fatal("replacement order replay reserved twice", replayedOrder, e)
+	}
+	if _, e = stockOrder(other, 1, "must-remain-reserved"); !errors.Is(e, c.ErrStock) {
+		t.Fatal("old cancellation replay released replacement capacity", e)
 	}
 	walletAssertBalance(t, walletpg.New(other.db), other.wallet.ID, "synthetic-commerce", "100.000", "0.000", "100.000")
+	for _, selector := range []string{def.Identifier, replacement.ID} {
+		if got, x := other.r.CancelSubscription(other.ctx, other.actor, selector); x != nil || got.ID != replacement.ID || got.Status != c.SubscriptionCancelled {
+			t.Fatal("replacement cancellation is not idempotent", got, x)
+		}
+	}
+	for _, id := range []string{pending.ID, replacement.ID} {
+		if n := commerceCount(t, other.db, `SELECT count(*) FROM commerce_v1.outbox WHERE aggregate_id=$1 AND event_type='commerce.subscription.cancelled'`, id); n != 1 {
+			t.Fatal("repeated cancellation duplicated outbox", id, n)
+		}
+	}
+	final, e := other.r.CreateSubscription(other.ctx, other.actor, replacementRequest, "second-replacement-stock", false)
+	if e != nil || final.ID == replacement.ID || final.ID == pending.ID {
+		t.Fatal("second replacement failed", final, e)
+	}
+	finalOrder, e := other.r.SubscriptionOrder(other.ctx, other.actor, def.Identifier)
+	if e != nil || finalOrder.ID == replacementOrder.ID || finalOrder.ID == order.ID {
+		t.Fatal("repeated recreate did not obtain released stock", finalOrder, e)
+	}
+	paid, e := other.r.PayOrder(other.ctx, other.actor, finalOrder.ID, &other.wallet.ID)
+	if e != nil || paid.Status != c.Finished {
+		t.Fatal("replacement payment failed", paid, e)
+	}
+	if replay, x := other.r.PayOrder(other.ctx, other.actor, finalOrder.ID, &other.wallet.ID); x != nil || replay.TransactionID == nil || paid.TransactionID == nil || *replay.TransactionID != *paid.TransactionID {
+		t.Fatal("replacement payment replay changed transfer", replay, x)
+	}
+	if current, x := other.r.Subscription(other.ctx, other.actor, def.Identifier); x != nil || current.ID != final.ID || current.Status != c.SubscriptionActive {
+		t.Fatal("cancelled history shadowed paid replacement", current, x)
+	}
+	walletAssertBalance(t, walletpg.New(other.db), other.wallet.ID, "synthetic-commerce", "97.877", "0.000", "97.877")
+	walletAssertBalance(t, walletpg.New(other.db), other.payee.ID, "synthetic-commerce", "2.123", "0.000", "2.123")
+	if _, e = stockOrder(other, 1, "must-remain-consumed"); !errors.Is(e, c.ErrStock) {
+		t.Fatal("replacement payment lost consumed capacity", e)
+	}
+	if n := commerceCount(t, other.db, `SELECT count(*) FROM commerce_v1.orders WHERE actor_id=$1 AND status=2`, other.actor); n != 2 {
+		t.Fatal("cancelled orders changed after recreation", n)
+	}
+	if n := commerceCount(t, other.db, `SELECT count(*) FROM commerce_v1.subscriptions WHERE account_id=$1 AND identifier=$2`, other.actor, def.Identifier); n != 3 {
+		t.Fatal("replay created extra subscription rows", n)
+	}
+	if n := commerceCount(t, other.db, `SELECT count(*) FROM wallet_v1.transactions WHERE managed_by=$1`, finalOrder.ID); n != 1 {
+		t.Fatal("replay created extra money transfers", n)
+	}
 }
 
 func TestPGProductStockConcurrentSubscriptionBuyers(t *testing.T) {

@@ -5,8 +5,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/socialpg/permissions_schema.sql",
  "internal/ticketmediapg/schema.sql",
  "internal/chatpg/mls_schema.sql",
+ "internal/mediapg/artwork_schema.sql",
  "internal/chatmediapg/schema.sql",
  "internal/profilemediapg/schema.sql",
  "internal/walletpg/funds_schema.sql",
@@ -130,6 +132,10 @@ def check(runner, read_schema=None):
     for name in ("walletpg", "application", "postpg"):
         if schemas.index("internal/accountpg/schema.sql") >= schemas.index(f"internal/{name}/schema.sql"):
             raise ValueError("owned dependent schema must follow accounts: " + name)
+    if schemas.index("internal/socialpg/permissions_schema.sql") <= schemas.index("internal/socialpg/schema.sql"):
+        raise ValueError("realm permissions require canonical realm membership first")
+    if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/socialpg/permissions_schema.sql' not in runner:
+        raise ValueError("realm permission migration must be atomic")
     if schemas.index("internal/postpg/realm_schema.sql") <= max(schemas.index("internal/postpg/schema.sql"), schemas.index("internal/socialpg/schema.sql")):
         raise ValueError("post realm foreign key requires canonical posts and realms first")
     if schemas.index("internal/chatpg/schema.sql") <= schemas.index("internal/messagerpg/testdata/schema.sql"):
@@ -221,6 +227,7 @@ def main():
     authority = PSQL + "internal/authoritypg/schema.sql"
     accounts = PSQL + "internal/accountpg/schema.sql"
     mutations = [
+        source.replace("--single-transaction -f internal/socialpg/permissions_schema.sql", "-f internal/socialpg/permissions_schema.sql"),
         source.replace("--single-transaction -f internal/commercepg/order_index_scope.sql", "-f internal/commercepg/order_index_scope.sql"),
         source.replace("--single-transaction -f internal/mediapg/usage_schema.sql", "-f internal/mediapg/usage_schema.sql"),
         source.replace("test -timeout 30m -race", "test -race"),

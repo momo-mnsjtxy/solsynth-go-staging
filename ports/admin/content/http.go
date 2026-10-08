@@ -262,7 +262,7 @@ func query(r *http.Request, k Kind, members bool) (Query, error) {
 			return p, ErrInvalid
 		}
 	}
-	if p.Role != nil && *p.Role != 0 && *p.Role != 50 && *p.Role != 100 {
+	if p.Role != nil && (*p.Role < 0 || *p.Role > 100) {
 		return p, ErrInvalid
 	}
 	return p, nil

@@ -101,7 +101,7 @@ require the host's publisher and idempotent consumers.
 ## Explicit remaining boundaries
 
 No automatic migration of legacy Wallet databases; realm-owned payer wallet
-payment; merchant payouts; coupon/free-trial programs; nonintegral or unbounded cycle durations; address-contact fulfillment; subscription activation switching;
+payment; merchant payouts; coupon/free-trial programs; nonintegral or unbounded cycle durations; address-contact fulfillment;
 billing relation views; sponsor badge/golden-point grants; provider gold-currency
 minting; external billing cancellation; production provider clients; delivery of
 outbox events. Unsupported requests fail closed or are unrouted. These are not
@@ -142,3 +142,5 @@ see `recurring-products.md` for the complete contracts, independent policy and t
 
 `product-stock.md` documents periodic/manual stock windows, atomic recurring
 reservations, release/consume transitions and restart validation.
+
+Pending-activation listing and paid group switching are implemented in `subscription-activation.md`, including the precise partially evidenced coupon boundary and owned duration/opt-in corrections.

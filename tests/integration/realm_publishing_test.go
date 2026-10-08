@@ -167,6 +167,14 @@ func TestPGRealmPublisherCreationRolesQuotaAndMetadata(t *testing.T) {
 	if _, e := f.social.ChangeMember(f.ctx, f.actor, f.private.ID, social.MemberChange{Action: social.ChangeRole, AccountID: f.other, Role: social.Moderator}); e != nil {
 		t.Fatal(e)
 	}
+	denied := f.accountHTTP(t, f.otherCtx, f.otherToken, "POST", "/api/publishers/organization/"+f.private.Slug, `{"name":"synthetic-mod-denied-`+f.other+`","nick":"Needs explicit realm management"}`)
+	if denied.Code != 403 {
+		t.Fatal("numeric moderator bypassed realm permission", denied.Code, denied.Body.String())
+	}
+	allowed := true
+	if _, e := f.social.SetUserPermission(f.ctx, f.actor, f.private.ID, social.UserPermissionRequest{AccountID: f.other, PermissionOverrides: social.PermissionOverrides{CanManageRealm: &allowed}}); e != nil {
+		t.Fatal(e)
+	}
 	w := f.accountHTTP(t, f.otherCtx, f.otherToken, "POST", "/api/publishers/organization/"+f.private.Slug, `{"name":"synthetic-mod-`+f.other+`","nick":"Moderator organization"}`)
 	if w.Code != 200 {
 		t.Fatal("moderator organization route", w.Code, w.Body.String())

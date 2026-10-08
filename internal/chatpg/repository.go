@@ -228,8 +228,8 @@ func (r *Repository) Create(ctx context.Context, actor string, p rooms.RoomPatch
 	}
 	defer tx.Rollback()
 	if p.RealmID != nil {
-		role, x := r.social.RealmRoleForWriteInTransaction(ctx, tx, actor, *p.RealmID)
-		if x != nil || role < social.Moderator {
+		x := r.realmPermission(ctx, tx, actor, *p.RealmID, social.CanModerateChat)
+		if x != nil {
 			return rooms.Room{}, rooms.ErrForbidden
 		}
 	}
@@ -376,8 +376,8 @@ func (r *Repository) Update(ctx context.Context, actor, rid string, p rooms.Room
 		return v, rooms.ErrForbidden
 	}
 	if p.RealmID != nil {
-		role, x := r.social.RealmRoleForWriteInTransaction(ctx, tx, actor, *p.RealmID)
-		if x != nil || role < social.Moderator {
+		x := r.realmPermission(ctx, tx, actor, *p.RealmID, social.CanModerateChat)
+		if x != nil {
 			return v, rooms.ErrForbidden
 		}
 		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_chat_realm_links(room_id,realm_id)VALUES($1,$2)ON CONFLICT(room_id)DO UPDATE SET realm_id=EXCLUDED.realm_id`, rid, *p.RealmID); e != nil {

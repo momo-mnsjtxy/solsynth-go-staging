@@ -45,3 +45,5 @@ renewal opt-in, shared consent enforcement, and remaining fulfillment boundaries
 Stock/reservation source contracts are pinned in `stock-source-manifest.json`;
 `docs/product-stock.md` separates retained window/status behavior from owned
 recurring allocation, immutable-price checks and stock-exhausted renewal policy.
+
+`activation-source-manifest.json` records complete retained evidence for pending subscription activation and the incomplete coupon investigation. Exact routes, permissions and authored callers plus owned duration/opt-in corrections are documented in `docs/subscription-activation.md`.

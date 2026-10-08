@@ -55,6 +55,14 @@ func (r *Repository) RealmRoleInTransaction(ctx context.Context, tx *sql.Tx, act
 		return 0, e
 	}
 	m, e := requireRole(ctx, tx, v.ID, actor, social.Normal)
+	if e == nil {
+		if v.AccountID == actor {
+			return social.Owner, nil
+		}
+		if m.Role == social.Owner {
+			return 0, social.ErrForbidden
+		}
+	}
 	return m.Role, e
 }
 
@@ -67,7 +75,7 @@ func (r *Repository) RealmInTransaction(ctx context.Context, tx *sql.Tx, id stri
 	return realm(ctx, tx, id, false)
 }
 func (r *Repository) CanChatInTransaction(ctx context.Context, tx *sql.Tx, actor, id string) (bool, error) {
-	_, e := r.RealmRoleInTransaction(ctx, tx, actor, id)
+	_, e := r.requirePermission(ctx, tx, actor, id, social.CanChat)
 	if errors.Is(e, social.ErrForbidden) || errors.Is(e, social.ErrNotFound) {
 		return false, nil
 	}
@@ -154,5 +162,13 @@ func (r *Repository) RealmRoleForWriteInTransaction(ctx context.Context, tx *sql
 		return 0, e
 	}
 	m, e := requireRole(ctx, tx, v.ID, actor, social.Normal)
+	if e == nil {
+		if v.AccountID == actor {
+			return social.Owner, nil
+		}
+		if m.Role == social.Owner {
+			return 0, social.ErrForbidden
+		}
+	}
 	return m.Role, e
 }

@@ -109,7 +109,7 @@ func mlsMembership(ctx context.Context, tx *sql.Tx, s rooms.MLSState, device str
 func mlsGrant(ctx context.Context, tx *sql.Tx, s rooms.MLSState, device string, m rooms.Member, state string, epoch int64) error {
 	// Joining grants are ten minutes; Welcome grants last the delivery retention
 	// window. Membership incarnation prevents leave/rejoin from reviving access.
-	_, e := tx.ExecContext(ctx, `INSERT INTO owned_mls_memberships(group_id,device_id,member_id,membership_since,state,epoch,expires_at)VALUES($1,$2,$3,$4,$5,$6,CASE WHEN $5='joining' THEN clock_timestamp()+interval '10 minutes' WHEN $5='welcomed' THEN clock_timestamp()+interval '7 days' ELSE NULL END)ON CONFLICT(group_id,device_id)DO UPDATE SET member_id=EXCLUDED.member_id,membership_since=EXCLUDED.membership_since,state=EXCLUDED.state,epoch=EXCLUDED.epoch,expires_at=EXCLUDED.expires_at`, s.GroupID, device, m.ID, m.JoinedAt, state, epoch)
+	_, e := tx.ExecContext(ctx, `INSERT INTO owned_mls_memberships(group_id,device_id,member_id,membership_since,state,epoch,expires_at)VALUES($1::text,$2::text,$3::uuid,$4::timestamptz,$5::text,$6::bigint,CASE WHEN $5::text='joining' THEN clock_timestamp()+interval '10 minutes' WHEN $5::text='welcomed' THEN clock_timestamp()+interval '7 days' ELSE NULL END)ON CONFLICT(group_id,device_id)DO UPDATE SET member_id=EXCLUDED.member_id,membership_since=EXCLUDED.membership_since,state=EXCLUDED.state,epoch=EXCLUDED.epoch,expires_at=EXCLUDED.expires_at`, s.GroupID, device, m.ID, m.JoinedAt, state, epoch)
 	return e
 }
 func (r *Repository) mlsGroupOperation(ctx context.Context, tx *sql.Tx, actor, device, rid, op, target string, p rooms.MLSRequest) (any, error) {

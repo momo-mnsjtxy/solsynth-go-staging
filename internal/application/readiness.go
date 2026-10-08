@@ -80,6 +80,9 @@ func (b *Backend) Ready(ctx context.Context) error {
 			return err
 		}
 	}
+	if _, e := b.db.ExecContext(ctx, `SELECT role_level,generation,permission_mask FROM owned_realm_role_permissions LIMIT 0;SELECT allow_mask,deny_mask,membership_since FROM owned_realm_user_permissions LIMIT 0;SELECT owned_realm_permission_mask(NULL::uuid,NULL::uuid)`); e != nil {
+		return errors.New("realm permission schema unavailable")
+	}
 	if b.chat != nil {
 		if err := b.chat.RelationsReady(ctx); err != nil {
 			return err
@@ -137,6 +140,9 @@ func (b *Backend) Ready(ctx context.Context) error {
 		return errors.New("chat write schema unavailable")
 	}
 	if b.media != nil {
+		if err := b.media.ArtworkReady(ctx); err != nil {
+			return err
+		}
 		if err := b.media.Ready(ctx); err != nil {
 			return errors.New("media storage unavailable")
 		}

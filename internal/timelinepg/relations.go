@@ -7,6 +7,7 @@ import (
 	"errors"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/passport/social"
 	"solsynth.local/go-migration/ports/sphere/posts"
 	"solsynth.local/go-migration/ports/sphere/timeline"
 	"sort"
@@ -94,6 +95,14 @@ func (r *Repository) Apply(ctx context.Context, tx *sql.Tx, actor string, p *pos
 			}
 		}
 		if v.RepliedPostID != nil {
+			target := loaded[*v.RepliedPostID]
+			for _, rid := range []*string{target.RealmID, target.Publisher.RealmID} {
+				if rid != nil {
+					if e := postpg.RequireRealmAction(ctx, tx, r.visibility, actor, *rid, social.CanComment); e != nil {
+						return e
+					}
+				}
+			}
 			var depth int
 			var cycle bool
 			e := tx.QueryRowContext(ctx, `WITH RECURSIVE ancestors(id,path,cycle) AS (SELECT $1::uuid,ARRAY[$1::uuid],false UNION ALL SELECT l.replied_post_id,a.path||l.replied_post_id,l.replied_post_id=ANY(a.path) FROM ancestors a JOIN owned_post_relations l ON l.post_id=a.id WHERE l.replied_post_id IS NOT NULL AND cardinality(a.path)<51 AND NOT a.cycle) SELECT COALESCE(max(cardinality(path)),0),COALESCE(bool_or(cycle),false) FROM ancestors`, *v.RepliedPostID).Scan(&depth, &cycle)

@@ -5,6 +5,24 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGRealmPermissionLifecycleAndGenerationIsolation",
+        "TestPGRealmPermissionEscalationOwnerAndMembershipIncarnation",
+        "TestPGRealmPermissionRevocationWaitAndRollback",
+        "TestPGRealmPermissionCanonicalChatPostAndReplyEnforcement",
+        "TestPGRealmPermissionBackendDTOAndNullClear",
+        "TestPGRealmPermissionRestartPersistence",
+        "TestPGRealmPermissionMediaAdmissionAndScopedModeration",
+        "TestPGRealmPermissionDeletedMembershipCannotReviveOverride",
+        "TestPGRealmPermissionMLSOpaqueControlAndSendRevocation",
+
+        "TestPGSubscriptionActivationConservesPaidTimeAndMoney",
+        "TestPGSubscriptionActivationRollbackAndConcurrentReplay",
+        "TestPGSubscriptionActivationCurrentAuthorityAndIsolation",
+        "TestPGSubscriptionActivationRejectsUnpaidCancelledAndExpired",
+        "TestPGSubscriptionActivationRevokedAppConsent",
+        "TestPGBackendSubscriptionActivationRoutes",
+        "TestPGSubscriptionActivationRestartPersistence",
+
         "TestPGWalletManagedTransactionPurposeScopes",
         "TestPGWalletManagedIndexLegacyMigrationAtomicity",
 
@@ -31,6 +49,11 @@ EXPECTED = {
         "TestPGMLSBackendAuthorityAndGatewayComposition",
         "TestPGMLSRestartPersistence",
 
+        "TestPGArtworkComposedUploadDedupOwnershipAndRemoval",
+        "TestPGArtworkExpiryTouchCleanupAndQuota",
+        "TestPGArtworkConcurrentDuplicatesAndRollback",
+        "TestPGArtworkWaitRechecksOwnerExpiryAndAuthority",
+        "TestPGArtworkRestartPersistence",
         "TestPGChatMediaLifecycleCurrentVisibilityAndIsolation",
         "TestPGChatReactionsContractsConcurrencyAndRollback",
         "TestPGChatMediaAuthorityAndFileWaitRevalidation",
@@ -583,10 +606,15 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGRealmPermissionRestartPersistence",
+
+        "TestPGSubscriptionActivationRestartPersistence",
+
         "TestPGTicketMediaRestartPersistence",
 
         "TestPGProductStockRestartPersistence",
         "TestPGMLSRestartPersistence",
+        "TestPGArtworkRestartPersistence",
         "TestPGChatMediaReactionsRestartPersistence",
         "TestPGWalletFundsRestartPersistence",
         "TestPGProfileMediaRestartPersistence",

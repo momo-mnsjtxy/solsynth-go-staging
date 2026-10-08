@@ -16,6 +16,7 @@ import (
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/accounts"
+	"solsynth.local/go-migration/ports/passport/social"
 	"solsynth.local/go-migration/ports/sphere/posts"
 )
 
@@ -186,7 +187,16 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 		if pub.Type == 1 && v.Visibility != nil && (*v.Visibility == posts.Friends || *v.Visibility == posts.CloseFriends) {
 			return posts.ErrUnsupported
 		}
-		if e = r.authorizeRealms(ctx, tx, actor, pub.Type, nil, v, false); e != nil {
+		if pub.Type == 1 && pub.RealmID != nil {
+			key := social.CanPost
+			if v.RepliedPostID != nil {
+				key = social.CanComment
+			}
+			if e = RequireRealmAction(ctx, tx, r.visibility, actor, *pub.RealmID, key); e != nil {
+				return e
+			}
+		}
+		if e = r.authorizeRealms(ctx, tx, actor, pub.Type, nil, v, false, v.RepliedPostID != nil); e != nil {
 			return e
 		}
 		id, e := newID()
@@ -235,7 +245,22 @@ func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v
 	if p.PublisherID != publisher || !SameOptionalID(p.RealmID, realm) {
 		return posts.Post{}, posts.ErrConflict
 	}
-	if e = r.authorizeRealms(ctx, tx, actor, p.Publisher.Type, realm, v, deleting); e != nil {
+	replying := false
+	if _, supported := r.associations.(interface{ SupportsPostRelations() }); supported && !deleting {
+		if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_post_relations WHERE post_id=$1 AND replied_post_id IS NOT NULL)`, p.ID).Scan(&replying); e != nil {
+			return posts.Post{}, e
+		}
+	}
+	if !deleting && p.Publisher.Type == 1 && p.Publisher.RealmID != nil {
+		key := social.CanPost
+		if replying {
+			key = social.CanComment
+		}
+		if e = RequireRealmAction(ctx, tx, r.visibility, actor, *p.Publisher.RealmID, key); e != nil {
+			return posts.Post{}, e
+		}
+	}
+	if e = r.authorizeRealms(ctx, tx, actor, p.Publisher.Type, realm, v, deleting, replying); e != nil {
 		return posts.Post{}, e
 	}
 	if v.RealmID != nil && !SameOptionalID(p.RealmID, v.RealmID) {

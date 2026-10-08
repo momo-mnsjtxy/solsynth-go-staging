@@ -8,6 +8,7 @@ import (
 	"solsynth.local/go-migration/internal/postpg"
 	c "solsynth.local/go-migration/ports/admin/content"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/passport/social"
 	"solsynth.local/go-migration/ports/sphere/posts"
 	"strings"
 	"unicode/utf8"
@@ -130,14 +131,13 @@ func (r *Repository) mutatePosts(ctx context.Context, actor, ref string, cmd c.C
 		if len(scopes) != 1 || scopes[0].Realm == nil {
 			return nil, c.ErrNotInRealm
 		}
-		var role int
-		e = tx.QueryRowContext(ctx, `SELECT m.role FROM owned_realm_members m JOIN owned_realms r ON r.id=m.realm_id WHERE m.realm_id=$1 AND m.account_id=$2 AND m.joined_at IS NOT NULL AND m.leave_at IS NULL AND r.deleted_at IS NULL`, *scopes[0].Realm, actor).Scan(&role)
-		if errors.Is(e, sql.ErrNoRows) || e == nil && role < 50 {
-			return nil, c.ErrForbidden
-		}
-		if e != nil {
+		if e = r.social.RequireRealmPermissionInTransaction(ctx, tx, actor, *scopes[0].Realm, social.CanModeratePosts); e != nil {
+			if errors.Is(e, social.ErrForbidden) || errors.Is(e, social.ErrNotFound) {
+				return nil, c.ErrForbidden
+			}
 			return nil, e
 		}
+
 		if _, e = postpg.ReadWithVisibility(ctx, tx, actor, ref, r.social); e != nil {
 			return nil, e
 		}

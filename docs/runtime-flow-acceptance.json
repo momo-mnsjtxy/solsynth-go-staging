@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Stock, ticket media, opaque MLS and bounded runtime corrections composed; shared phase guards and exact restart markers added",
+  "local_source_checkpoint": "Reviewed realm/activation/artwork plus MLS policy adapter, explicit grant SQL types, current subscription selection and exact rollback-contract corrections; offline SQL arity guard added",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,14 +12,14 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "dd964c5bc7f307bd2c248d55c079b64627724d0f",
-    "run": 37833319218,
-    "required_before": 516,
-    "required_after_restart": 67,
-    "status": "Run37833319218 failed14 before-phase cases; restart not reached. Canonical quote/profile/funds/merchant-read corrections and fixture available-balance expectations are composed locally, awaiting a new actual run."
+    "commit": "fc7d9d389446344de1f37dc4fb97f480ead8f5fb",
+    "run": 37840859755,
+    "required_before": 539,
+    "required_after_restart": 70,
+    "status": "Run37840859755 failed9 before cases and never reached restart: MLS policy arity/bootstrap, current subscription lookup and ticket rollback error expectation. Bounded corrections are included in this local560 candidate; actual rerun pending."
   },
-  "local_required_before": 539,
-  "local_required_after_restart": 70,
+  "local_required_before": 560,
+  "local_required_after_restart": 73,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -334,7 +334,8 @@
         "Source-backed profile aliases with owner-only birthday",
         "Canonical email contacts, verification, public opt-in and primary promotion with stale-proof revocation",
         "Owned string-level notification preferences enforced by existing projection/delivery",
-        "Canonical picture/background references, current file ownership, public profile sharing and removal with current visibility"
+        "Canonical picture/background references, current file ownership, public profile sharing and removal with current visibility",
+        "Authored presence-artwork multipart upload/hash reads, canonical quotas, uploader ownership, dedup/touch and bounded cleanup"
       ],
       "guarded_pg_cases": [
         "TestPGAccountsAtomicRollbackAndQuotaRace",
@@ -366,7 +367,12 @@
         "TestPGProfileMediaAuthorityAndFileLockWait",
         "TestPGProfileMediaReadWaitObservesCurrentVisibility",
         "TestPGProfileMediaMembershipCannotRedistribute",
-        "TestPGProfileMediaRestartPersistence"
+        "TestPGProfileMediaRestartPersistence",
+        "TestPGArtworkComposedUploadDedupOwnershipAndRemoval",
+        "TestPGArtworkExpiryTouchCleanupAndQuota",
+        "TestPGArtworkConcurrentDuplicatesAndRollback",
+        "TestPGArtworkWaitRechecksOwnerExpiryAndAuthority",
+        "TestPGArtworkRestartPersistence"
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
@@ -377,7 +383,12 @@
           "TestPGProfileMediaAuthorityAndFileLockWait",
           "TestPGProfileMediaReadWaitObservesCurrentVisibility",
           "TestPGProfileMediaMembershipCannotRedistribute",
-          "TestPGProfileMediaRestartPersistence"
+          "TestPGProfileMediaRestartPersistence",
+          "TestPGArtworkComposedUploadDedupOwnershipAndRemoval",
+          "TestPGArtworkExpiryTouchCleanupAndQuota",
+          "TestPGArtworkConcurrentDuplicatesAndRollback",
+          "TestPGArtworkWaitRechecksOwnerExpiryAndAuthority",
+          "TestPGArtworkRestartPersistence"
         ],
         "unmapped_case_names": [],
         "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
@@ -413,7 +424,9 @@
       "source_family": "passport.social_realms",
       "local_status": "implemented_subset",
       "supported_flows": [
-        "Friend requests, block/close-friend visibility, realms/members and realm wallets"
+        "Friend requests, block/close-friend visibility, realms/members and realm wallets",
+        "Custom numeric roles and nullable member overrides, canonical-owner protection and generation/incarnation isolation",
+        "Current effective permissions govern realm administration, chat/MLS, posts/replies, media admission and moderation"
       ],
       "guarded_pg_cases": [
         "TestPGPostInteractionsAuditRollback",
@@ -430,12 +443,31 @@
         "TestPGSocialRealms",
         "TestPGSocialRelationships",
         "TestPGSocialRestartPersistence",
-        "TestPGSocialTransactionsAndHTTP"
+        "TestPGSocialTransactionsAndHTTP",
+        "TestPGRealmPermissionLifecycleAndGenerationIsolation",
+        "TestPGRealmPermissionEscalationOwnerAndMembershipIncarnation",
+        "TestPGRealmPermissionRevocationWaitAndRollback",
+        "TestPGRealmPermissionCanonicalChatPostAndReplyEnforcement",
+        "TestPGRealmPermissionBackendDTOAndNullClear",
+        "TestPGRealmPermissionRestartPersistence",
+        "TestPGRealmPermissionMediaAdmissionAndScopedModeration",
+        "TestPGRealmPermissionDeletedMembershipCannotReviveOverride",
+        "TestPGRealmPermissionMLSOpaqueControlAndSendRevocation"
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
         "green_guarded_case_count": 15,
-        "pending_guarded_cases": [],
+        "pending_guarded_cases": [
+          "TestPGRealmPermissionLifecycleAndGenerationIsolation",
+          "TestPGRealmPermissionEscalationOwnerAndMembershipIncarnation",
+          "TestPGRealmPermissionRevocationWaitAndRollback",
+          "TestPGRealmPermissionCanonicalChatPostAndReplyEnforcement",
+          "TestPGRealmPermissionBackendDTOAndNullClear",
+          "TestPGRealmPermissionRestartPersistence",
+          "TestPGRealmPermissionMediaAdmissionAndScopedModeration",
+          "TestPGRealmPermissionDeletedMembershipCannotReviveOverride",
+          "TestPGRealmPermissionMLSOpaqueControlAndSendRevocation"
+        ],
         "unmapped_case_names": [],
         "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
@@ -910,7 +942,8 @@
       "local_status": "implemented_subset",
       "supported_flows": [
         "Subscription activation/renew/cancel, gift pay/send/redeem/expiry",
-        "App-scoped recurring catalog definitions, explicit buyer renewal opt-in, exact cycle/economics snapshot and current consent revocation"
+        "App-scoped recurring catalog definitions, explicit buyer renewal opt-in, exact cycle/economics snapshot and current consent revocation",
+        "Pending-activation listing and atomic group switching conserve paid duration, captured prices and renewal opt-out without moving money"
       ],
       "guarded_pg_cases": [
         "TestPGCommerceConcurrentPaymentStockAndRollback",
@@ -924,7 +957,14 @@
         "TestPGRecurringProductConsentWaitAndSnapshot",
         "TestPGRecurringProductOppositeWalletPayments",
         "TestPGRecurringProductHostPINCatalogAndCancel",
-        "TestPGRecurringProductRestartPersistence"
+        "TestPGRecurringProductRestartPersistence",
+        "TestPGSubscriptionActivationConservesPaidTimeAndMoney",
+        "TestPGSubscriptionActivationRollbackAndConcurrentReplay",
+        "TestPGSubscriptionActivationCurrentAuthorityAndIsolation",
+        "TestPGSubscriptionActivationRejectsUnpaidCancelledAndExpired",
+        "TestPGSubscriptionActivationRevokedAppConsent",
+        "TestPGBackendSubscriptionActivationRoutes",
+        "TestPGSubscriptionActivationRestartPersistence"
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
@@ -935,7 +975,14 @@
           "TestPGRecurringProductConsentWaitAndSnapshot",
           "TestPGRecurringProductOppositeWalletPayments",
           "TestPGRecurringProductHostPINCatalogAndCancel",
-          "TestPGRecurringProductRestartPersistence"
+          "TestPGRecurringProductRestartPersistence",
+          "TestPGSubscriptionActivationConservesPaidTimeAndMoney",
+          "TestPGSubscriptionActivationRollbackAndConcurrentReplay",
+          "TestPGSubscriptionActivationCurrentAuthorityAndIsolation",
+          "TestPGSubscriptionActivationRejectsUnpaidCancelledAndExpired",
+          "TestPGSubscriptionActivationRevokedAppConsent",
+          "TestPGBackendSubscriptionActivationRoutes",
+          "TestPGSubscriptionActivationRestartPersistence"
         ],
         "unmapped_case_names": [],
         "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
@@ -1639,12 +1686,13 @@
       "wallet.maintenance_quarantine",
       "sphere.post_awards",
       "wallet.funds",
-      "messager.opaque_mls"
+      "messager.opaque_mls",
+      "passport.social_realms"
     ],
     "delivered_not_integrated": []
   },
   "current_remaining": {
-    "as_of": "2026-10-08T19:43:00Z",
+    "as_of": "2026-10-08T20:53:00Z",
     "authoritative_for": "Known remaining flows, not a count of source operations. Partial/unresearched contracts remain research tasks; unavailable is never inferred from lack of prior research.",
     "families": [
       {
@@ -1676,7 +1724,6 @@
       {
         "family": "messager.rooms",
         "remaining": [
-          "Custom fine-grained realm roles/permission enforcement is in progress",
           "Room profile/media customization and bot automatic confirmation/execution",
           "Legacy system-message envelopes"
         ]
@@ -1704,7 +1751,7 @@
         "family": "passport.accounts_presence",
         "remaining": [
           "Admin contacts, phone/address verification, security modes and excluded SDK preference encoding",
-          "External identity providers, PassKit, affiliation spells and presence artwork"
+          "External identity providers, PassKit, affiliation spells"
         ]
       },
       {
@@ -1716,8 +1763,8 @@
       {
         "family": "passport.social_realms",
         "remaining": [
-          "Custom role/permission lifecycle and enforcement in progress",
-          "Relationship mute expiry and realm boosts remain to reconstruct; no realm-mute contract was found in retained realm sources"
+          "Relationship mute expiry and realm boosts remain to reconstruct; no realm-mute contract was found in retained realm sources",
+          "Original excluded numeric role/model encoding and legacy data mapping; owned0/50/100 mapping and security differences are documented"
         ]
       },
       {
@@ -1818,7 +1865,6 @@
         "family": "wallet.subscriptions_gifts",
         "remaining": [
           "Provider synchronization and trials",
-          "Pending activation/group switching billing flow in progress",
           "Required address and external workspace fulfillment"
         ]
       },
@@ -1865,7 +1911,6 @@
       {
         "family": "admin.content_moderation",
         "remaining": [
-          "Custom realm permission overrides",
           "Full legacy model hydration/global middleware internal parity; verification/admin stats/manual automod are implemented in their dedicated family"
         ]
       },
@@ -2001,9 +2046,9 @@
       "Source-declaration818 acceptance map remains an operation inventory, not runtime endpoint count or proof of whole-platform completion"
     ],
     "active_implementation": [
-      "Realm custom permission lifecycle/enforcement",
-      "Affiliation spell/referral reconstruction",
-      "Pending subscription activation and group switching"
+      "Configured Apple Wallet member passes and callbacks",
+      "Bounded signed inbound federation quote authorization",
+      "Offline isolated-cluster CI partition proposal (not active)"
     ],
     "not_remaining_missing_features": [
       "PIN enrollment/rotation/removal",
@@ -2012,7 +2057,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last full green is455/60. Newer candidate runs failed before restart. The old pending recurring test used the wrong phase variable and has been corrected; no interim restart pass is credited. Current539/70 uses shared validated phase helpers for newly queued cases."
+    "verification_note": "Last full green is455/60. Candidate539/70 is running. Local560/73 additions and complete source reconstructions have offline evidence only. Restart phase/marker corrections are required before crediting new assertions."
   },
   "global_remaining": [
     "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",

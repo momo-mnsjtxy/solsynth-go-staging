@@ -111,6 +111,9 @@ func (r *Repository) CreateRealm(ctx context.Context, actor string, p social.Rea
 		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_realm_members(id,realm_id,account_id,role,joined_at,created_at,updated_at)VALUES($1,$2,$3,100,$4,$4,$4)`, mid, id, actor, now); e != nil {
 			return e
 		}
+		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_realm_role_permissions(realm_id,role_level,permission_mask)SELECT $1,p.level,p.mask FROM(VALUES(0,15),(50,127),(100,255))p(level,mask)`, id); e != nil {
+			return e
+		}
 		return audit(ctx, tx, actor, "realms.create", id, now)
 	})
 	return
@@ -161,7 +164,7 @@ func (r *Repository) UpdateRealm(ctx context.Context, actor, ref string, p socia
 		if e != nil {
 			return e
 		}
-		if _, e = requireRole(ctx, tx, out.ID, actor, social.Moderator); e != nil {
+		if _, e = r.requirePermission(ctx, tx, actor, out.ID, social.CanManageRealm); e != nil {
 			return e
 		}
 		if p.Slug != nil {
@@ -193,7 +196,10 @@ func (r *Repository) DeleteRealm(ctx context.Context, actor, ref string) error {
 		if e != nil {
 			return e
 		}
-		if _, e = requireRole(ctx, tx, v.ID, actor, social.Owner); e != nil {
+		if v.AccountID != actor {
+			return social.ErrForbidden
+		}
+		if _, e = requireRole(ctx, tx, v.ID, actor, social.Normal); e != nil {
 			return e
 		}
 		if _, e = tx.ExecContext(ctx, `UPDATE owned_realms SET deleted_at=$2,updated_at=$2 WHERE id=$1`, v.ID, now); e != nil {
@@ -273,6 +279,11 @@ func (r *Repository) Me(ctx context.Context, actor, ref string) (out social.Memb
 			return e
 		}
 		out.Realm = &v
+		perms, x := r.RealmPermissionsInTransaction(ctx, tx, actor, v.ID)
+		if x != nil {
+			return x
+		}
+		out.EffectivePermissions = &perms
 		out.Account, e = account(ctx, tx, actor)
 		return e
 	})
@@ -343,14 +354,24 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c soci
 		if e != nil && !errors.Is(e, social.ErrNotFound) {
 			return e
 		}
+		var assigned social.RolePermission
+		if c.Action == social.Invite || c.Action == social.ChangeRole {
+			assigned, e = rolePermission(ctx, tx, v.ID, c.Role)
+			if e != nil {
+				return e
+			}
+		}
 		switch c.Action {
 		case social.Invite:
-			am, e := requireRole(ctx, tx, v.ID, actor, social.Moderator)
+			am, e := r.memberManager(ctx, tx, actor, v.ID)
 			if e != nil {
 				return e
 			}
 			if actor == c.AccountID || am.Role <= c.Role {
 				return social.ErrForbidden
+			}
+			if e = r.canGrantRole(ctx, tx, actor, v, assigned); e != nil {
+				return e
 			}
 			if c.Role > social.Normal && v.BoostLevel < 2 {
 				return social.ErrForbidden
@@ -379,9 +400,23 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c soci
 			if e = tx.QueryRowContext(ctx, `SELECT invited_by::text FROM owned_realm_members WHERE id=$1`, m.ID).Scan(&inviter); e != nil {
 				return e
 			}
-			am, e := requireRole(ctx, tx, v.ID, inviter, social.Moderator)
+			am, e := r.memberManager(ctx, tx, inviter, v.ID)
 			if e != nil {
 				return e
+			}
+			definition, x := rolePermission(ctx, tx, v.ID, m.Role)
+			if x != nil {
+				return x
+			}
+			var generation int64
+			if x = tx.QueryRowContext(ctx, `SELECT permission_generation FROM owned_realm_members WHERE id=$1`, m.ID).Scan(&generation); x != nil {
+				return x
+			}
+			if generation != definition.Generation {
+				return social.ErrConflict
+			}
+			if x = r.canGrantRole(ctx, tx, inviter, v, definition); x != nil {
+				return x
 			}
 			if am.Role <= m.Role {
 				return social.ErrForbidden
@@ -426,11 +461,11 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c soci
 			if !found || m.JoinedAt == nil {
 				return social.ErrNotFound
 			}
-			if m.Role == social.Owner {
+			if m.AccountID == v.AccountID || m.Role == social.Owner {
 				return social.ErrForbidden
 			}
 			if c.Action == social.Remove {
-				am, e := requireRole(ctx, tx, v.ID, actor, social.Moderator)
+				am, e := r.memberManager(ctx, tx, actor, v.ID)
 				if e != nil {
 					return e
 				}
@@ -443,15 +478,21 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c soci
 				return e
 			}
 		case social.ChangeRole:
+			if c.AccountID == v.AccountID {
+				return social.ErrForbidden
+			}
 			if !found || m.JoinedAt == nil {
 				return social.ErrNotFound
 			}
-			am, e := requireRole(ctx, tx, v.ID, actor, social.Moderator)
+			am, e := r.memberManager(ctx, tx, actor, v.ID)
 			if e != nil {
 				return e
 			}
 			if actor == c.AccountID || am.Role <= m.Role || am.Role <= c.Role {
 				return social.ErrForbidden
+			}
+			if e = r.canGrantRole(ctx, tx, actor, v, assigned); e != nil {
+				return e
 			}
 			if c.Role > social.Normal && v.BoostLevel < 2 {
 				return social.ErrForbidden
@@ -461,6 +502,25 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c soci
 			}
 		default:
 			return social.ErrInvalid
+		}
+		if c.Action == social.Invite || c.Action == social.ChangeRole {
+			if _, e = tx.ExecContext(ctx, `UPDATE owned_realm_members SET permission_generation=$3 WHERE realm_id=$1 AND account_id=$2`, v.ID, c.AccountID, assigned.Generation); e != nil {
+				return e
+			}
+		}
+		if c.Action == social.Join {
+			base, e := rolePermission(ctx, tx, v.ID, social.Normal)
+			if e != nil {
+				return e
+			}
+			if _, e = tx.ExecContext(ctx, `UPDATE owned_realm_members SET permission_generation=$3 WHERE realm_id=$1 AND account_id=$2`, v.ID, actor, base.Generation); e != nil {
+				return e
+			}
+		}
+		if c.Action == social.Join || c.Action == social.Invite || c.Action == social.Leave || c.Action == social.Remove || c.Action == social.Decline {
+			if _, e = tx.ExecContext(ctx, `DELETE FROM owned_realm_user_permissions WHERE realm_id=$1 AND account_id=$2`, v.ID, c.AccountID); e != nil {
+				return e
+			}
 		}
 		if m.LeaveAt != nil {
 			out = m

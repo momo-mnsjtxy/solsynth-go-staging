@@ -93,7 +93,7 @@ func (r *Repository) ResolveRealmForPublisher(ctx context.Context, tx *sql.Tx, a
 	if e != nil {
 		return "", publisherRealmError(e)
 	}
-	if _, e = requireRole(ctx, tx, v.ID, actor, social.Moderator); e != nil {
+	if _, e = r.requirePermission(ctx, tx, actor, v.ID, social.CanManageRealm); e != nil {
 		return "", publisherRealmError(e)
 	}
 	return v.ID, nil

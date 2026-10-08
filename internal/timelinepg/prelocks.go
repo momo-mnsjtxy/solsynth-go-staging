@@ -4,6 +4,8 @@ package timelinepg
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"solsynth.local/go-migration/ports/passport/social"
 	"sort"
 
 	"solsynth.local/go-migration/internal/accountpg"
@@ -29,12 +31,25 @@ func (r *Repository) Prelock(ctx context.Context, tx *sql.Tx, actor string, scop
 	targets := map[string]targetScope{}
 	realms := postpg.RealmIDs(scope.RealmID, v.RealmID)
 	publishers := map[string]bool{publisher: true}
-	for _, target := range []*string{v.RepliedPostID, v.ForwardedPostID, v.ChainedPostID} {
+	targetIDs := []*string{v.RepliedPostID, v.ForwardedPostID, v.ChainedPostID}
+	var existingReply *string
+	if !create {
+		if v.RepliedPostID != nil || v.ForwardedPostID != nil || v.ChainedPostID != nil {
+			return posts.ErrUnsupported
+		}
+		if !scope.Deleting {
+			e := tx.QueryRowContext(ctx, `SELECT replied_post_id::text FROM owned_post_relations WHERE post_id=$1`, scope.PostID).Scan(&existingReply)
+			if e != nil && !errors.Is(e, sql.ErrNoRows) {
+				return e
+			}
+			if existingReply != nil {
+				targetIDs = append(targetIDs, existingReply)
+			}
+		}
+	}
+	for _, target := range targetIDs {
 		if target == nil {
 			continue
-		}
-		if !create {
-			return posts.ErrUnsupported
 		}
 		if !authority.ValidID(*target) {
 			return posts.ErrInvalid
@@ -83,6 +98,18 @@ func (r *Repository) Prelock(ctx context.Context, tx *sql.Tx, actor string, scop
 		}
 		if actual != targets[id].publisher || !postpg.SameOptionalID(realm, targets[id].realm) {
 			return posts.ErrConflict
+		}
+	}
+	if existingReply != nil {
+		ref := targets[*existingReply]
+		ids := postpg.RealmIDs(ref.realm)
+		if publisherRealm := scopes[ref.publisher]; publisherRealm != "" {
+			ids = append(ids, publisherRealm)
+		}
+		for _, realmID := range ids {
+			if e := postpg.RequireRealmAction(ctx, tx, r.visibility, actor, realmID, social.CanComment); e != nil {
+				return e
+			}
 		}
 	}
 	// Apply retains its editor, visibility, locked/draft and relation checks.

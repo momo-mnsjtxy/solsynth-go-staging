@@ -1,6 +1,6 @@
 {
-  "checkpoint": "reviewed279-harness-correction",
-  "scope": "279/39 candidate; corrected schema dependency order and valid synthetic sticker fixture; actual PostgreSQL pending",
+  "checkpoint": "reviewed279-http-fixtures",
+  "scope": "Isolated validated checkpoint with fixture-only corrections; actual PostgreSQL CI pending",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
@@ -7291,8 +7291,8 @@
     },
     {
       "path": "tests/integration/backend_identity_reports_test.go",
-      "bytes": 3724,
-      "sha256": "958c68fd0d8ac0cc27ca4346d272aed8101e2a4774c353b4cdb5b2a7ab9c1b2c"
+      "bytes": 3728,
+      "sha256": "53db67c0b3a1d6cb8f8a056e930a7d47538e9129a670b30f7fa848ca879a8ac2"
     },
     {
       "path": "tests/integration/backend_merchant_test.go",
@@ -7461,8 +7461,8 @@
     },
     {
       "path": "tests/integration/post_realms_test.go",
-      "bytes": 26570,
-      "sha256": "95126dc57e6460861d91e8f2143a425ac7bde541e9d4cb4602139807215282e5"
+      "bytes": 26641,
+      "sha256": "3dfcb65dc217562cc1eadc15ba74d354da2cb0cedeb14eb66b9bf8fccdb381b2"
     },
     {
       "path": "tests/integration/posts_test.go",

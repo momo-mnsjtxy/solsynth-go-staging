@@ -62,6 +62,9 @@ func postRealmHTTP(t *testing.T, f *realmPublishingFixture, method, path, body s
 	t.Helper()
 	r := httptest.NewRequest(method, path, strings.NewReader(body)).WithContext(f.ctx)
 	r.Header.Set("Authorization", "Bearer "+f.token)
+	if body != "" {
+		r.Header.Set("Content-Type", "application/json")
+	}
 	w := httptest.NewRecorder()
 	posts.NewVerifiedHandler(f.posts, f.verifier).ServeHTTP(w, r)
 	return w

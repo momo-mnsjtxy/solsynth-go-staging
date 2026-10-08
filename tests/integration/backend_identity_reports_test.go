@@ -59,7 +59,7 @@ func TestPGBackendFortuneComposition(t *testing.T) {
 	}
 	backendCall(t, app, "GET", "/passport/fortune?language=en", f.token, "", 200)
 	backendCall(t, app, "GET", "/passport/fortune?language=en", "", "", 401)
-	v := backendDecode[progression.CheckIn](t, backendCall(t, app, "POST", "/passport/accounts/me/check-in?version=2", f.token, "", 200))
+	v := backendDecode[progression.CheckIn](t, backendCall(t, app, "POST", "/passport/accounts/me/check-in?version=2", f.token, "null", 200))
 	if v.FortuneReport != nil {
 		t.Fatal("report completed before worker")
 	}

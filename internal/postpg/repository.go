@@ -1,0 +1,373 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+package postpg
+
+import (
+	"context"
+	"crypto/rand"
+	"database/sql"
+	_ "embed"
+	"encoding/hex"
+	"errors"
+	"strings"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgconn"
+	"solsynth.local/go-migration/internal/accountpg"
+	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/sphere/posts"
+)
+
+//go:embed schema.sql
+var Schema string
+
+type Repository struct {
+	db         *sql.DB
+	publishers *accountpg.Repository
+	now        func() time.Time
+}
+
+func New(db *sql.DB) *Repository {
+	return &Repository{db: db, publishers: accountpg.New(db), now: time.Now}
+}
+
+var _ posts.Repository = (*Repository)(nil)
+
+type scanner interface{ Scan(...any) error }
+
+func mapped(e error) error {
+	if errors.Is(e, sql.ErrNoRows) {
+		return posts.ErrNotFound
+	}
+	var pe *pgconn.PgError
+	if errors.As(e, &pe) && pe.Code == "23505" {
+		return posts.ErrConflict
+	}
+	return e
+}
+func newID() (string, error) {
+	b := make([]byte, 16)
+	if _, e := rand.Read(b); e != nil {
+		return "", e
+	}
+	b[6] = b[6]&15 | 64
+	b[8] = b[8]&63 | 128
+	h := hex.EncodeToString(b)
+	return h[:8] + "-" + h[8:12] + "-" + h[12:16] + "-" + h[16:20] + "-" + h[20:], nil
+}
+func optional(s *string) *string {
+	if s == nil {
+		return nil
+	}
+	v := strings.TrimSpace(*s)
+	if v == "" {
+		return nil
+	}
+	return &v
+}
+
+const columns = `p.id::text,p.publisher_id::text,p.title,p.description,p.slug,p.content,p.visibility,p.type,p.language,p.drafted_at,p.published_at,p.created_at,p.updated_at,p.deleted_at,p.locked_at,u.id::text,u.name,u.nick,u.bio,u.type,u.account_id::text,u.realm_id::text,u.created_at,u.updated_at`
+const base = ` FROM owned_text_posts p JOIN owned_publishers u ON u.id=p.publisher_id WHERE p.deleted_at IS NULL AND u.deleted_at IS NULL AND (u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=u.account_id AND NOT owner.disabled))`
+
+// The owned privacy rule is editor-only access for private/draft posts. This is
+// deliberately stricter than assuming unresolved upstream membership semantics.
+const editor = `EXISTS(SELECT 1 FROM owned_publisher_members m JOIN owned_authority_accounts a ON a.id=m.account_id WHERE m.publisher_id=p.publisher_id AND m.account_id=NULLIF($1,'')::uuid AND NOT a.disabled AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND m.role>=50)`
+
+func scan(s scanner) (posts.Post, error) {
+	var p posts.Post
+	e := s.Scan(&p.ID, &p.PublisherID, &p.Title, &p.Description, &p.Slug, &p.Content, &p.Visibility, &p.Type, &p.Language, &p.DraftedAt, &p.PublishedAt, &p.CreatedAt, &p.UpdatedAt, &p.DeletedAt, &p.LockedAt,
+		&p.Publisher.ID, &p.Publisher.Name, &p.Publisher.Nick, &p.Publisher.Bio, &p.Publisher.Type, &p.Publisher.AccountID, &p.Publisher.RealmID, &p.Publisher.CreatedAt, &p.Publisher.UpdatedAt)
+	return p, mapped(e)
+}
+func (r *Repository) write(ctx context.Context, actor string, fn func(*sql.Tx, time.Time) error) error {
+	if r == nil || r.db == nil {
+		return posts.ErrUnavailable
+	}
+	if !authority.ValidID(actor) {
+		return posts.ErrUnauthenticated
+	}
+	tx, e := r.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if e != nil {
+		return e
+	}
+	defer tx.Rollback()
+	var disabled bool
+	if e = tx.QueryRowContext(ctx, `SELECT disabled FROM owned_authority_accounts WHERE id=$1 FOR UPDATE`, actor).Scan(&disabled); e != nil {
+		return mapped(e)
+	}
+	if disabled {
+		return posts.ErrForbidden
+	}
+	if e = fn(tx, r.now().UTC()); e != nil {
+		return mapped(e)
+	}
+	return mapped(tx.Commit())
+}
+func audit(ctx context.Context, tx *sql.Tx, actor, id, action string, now time.Time) error {
+	_, e := tx.ExecContext(ctx, `INSERT INTO owned_text_post_audit(actor_id,post_id,action,occurred_at) VALUES($1,$2,$3,$4)`, actor, id, action, now)
+	return e
+}
+func apply(p *posts.Post, v posts.Patch) {
+	if v.Title != nil {
+		p.Title = optional(v.Title)
+	}
+	if v.Description != nil {
+		p.Description = optional(v.Description)
+	}
+	if v.Slug != nil {
+		p.Slug = optional(v.Slug)
+	}
+	if v.Content != nil {
+		p.Content = *v.Content
+	}
+	if v.Language != nil {
+		p.Language = optional(v.Language)
+	}
+	if v.Type != nil {
+		p.Type = *v.Type
+	}
+	if v.Visibility != nil {
+		p.Visibility = *v.Visibility
+	}
+	if v.DraftedAt != nil {
+		d := v.DraftedAt.UTC()
+		p.DraftedAt = &d
+		p.PublishedAt = nil
+	}
+	if v.PublishedAt != nil {
+		d := v.PublishedAt.UTC()
+		p.PublishedAt = &d
+		p.DraftedAt = nil
+	}
+}
+func (r *Repository) Create(ctx context.Context, actor, selector string, v posts.Patch) (posts.Post, error) {
+	var p posts.Post
+	e := r.write(ctx, actor, func(tx *sql.Tx, now time.Time) error {
+		if e := posts.ValidatePatch(v, true, now); e != nil {
+			return e
+		}
+		pub, e := r.publishers.ResolveForPost(ctx, tx, actor, selector)
+		if e != nil {
+			return e
+		}
+		// Realm publishing needs a realm membership provider, even for plain text.
+		if pub.Type != 0 {
+			return posts.ErrUnsupported
+		}
+		id, e := newID()
+		if e != nil {
+			return e
+		}
+		p = posts.Post{ID: id, PublisherID: pub.ID, Publisher: pub, CreatedAt: now, UpdatedAt: now, PublishedAt: &now}
+		apply(&p, v)
+		_, e = tx.ExecContext(ctx, `INSERT INTO owned_text_posts(id,publisher_id,title,description,slug,content,visibility,type,language,drafted_at,published_at,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12)`, p.ID, p.PublisherID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, now)
+		if e != nil {
+			return e
+		}
+		return audit(ctx, tx, actor, p.ID, "create", now)
+	})
+	if e != nil {
+		return posts.Post{}, e
+	}
+	return p, nil
+}
+func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string) (posts.Post, error) {
+	if !authority.ValidID(id) {
+		return posts.Post{}, posts.ErrNotFound
+	}
+	var publisher string
+	if e := tx.QueryRowContext(ctx, `SELECT publisher_id::text FROM owned_text_posts WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&publisher); e != nil {
+		return posts.Post{}, mapped(e)
+	}
+	pub, e := r.publishers.RequirePostEditor(ctx, tx, actor, publisher)
+	if e != nil {
+		return posts.Post{}, e
+	}
+	if pub.Type != 0 {
+		return posts.Post{}, posts.ErrUnsupported
+	}
+	p, e := scan(tx.QueryRowContext(ctx, `SELECT `+columns+base+` AND p.id=$1 FOR UPDATE OF p`, id))
+	if e != nil {
+		return posts.Post{}, e
+	}
+	if p.LockedAt != nil {
+		return posts.Post{}, posts.ErrLocked
+	}
+	return p, nil
+}
+func save(ctx context.Context, tx *sql.Tx, p posts.Post) error {
+	_, e := tx.ExecContext(ctx, `UPDATE owned_text_posts SET title=$2,description=$3,slug=$4,content=$5,visibility=$6,type=$7,language=$8,drafted_at=$9,published_at=$10,updated_at=$11,deleted_at=$12 WHERE id=$1`, p.ID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, p.UpdatedAt, p.DeletedAt)
+	return e
+}
+func (r *Repository) mutate(ctx context.Context, actor, id, action string, v posts.Patch) (posts.Post, error) {
+	var p posts.Post
+	e := r.write(ctx, actor, func(tx *sql.Tx, now time.Time) error {
+		if action == "update" {
+			if e := posts.ValidatePatch(v, false, now); e != nil {
+				return e
+			}
+		}
+		var e error
+		p, e = r.locked(ctx, tx, actor, id)
+		if e != nil {
+			return e
+		}
+		switch action {
+		case "update":
+			apply(&p, v)
+		case "publish":
+			if p.DraftedAt == nil {
+				return posts.ErrNotDraft
+			}
+			p.DraftedAt = nil
+			p.PublishedAt = &now
+		case "delete":
+			p.DeletedAt = &now
+		default:
+			return posts.ErrInvalid
+		}
+		p.UpdatedAt = now
+		if e = save(ctx, tx, p); e != nil {
+			return e
+		}
+		return audit(ctx, tx, actor, id, action, now)
+	})
+	if e != nil {
+		return posts.Post{}, e
+	}
+	return p, nil
+}
+func (r *Repository) Update(ctx context.Context, actor, id string, v posts.Patch) (posts.Post, error) {
+	return r.mutate(ctx, actor, id, "update", v)
+}
+func (r *Repository) Publish(ctx context.Context, actor, id string) (posts.Post, error) {
+	return r.mutate(ctx, actor, id, "publish", posts.Patch{})
+}
+func (r *Repository) Delete(ctx context.Context, actor, id string) error {
+	_, e := r.mutate(ctx, actor, id, "delete", posts.Patch{})
+	return e
+}
+
+func (r *Repository) read(ctx context.Context, actor string) (*sql.Tx, error) {
+	if r == nil || r.db == nil {
+		return nil, posts.ErrUnavailable
+	}
+	if actor != "" && !authority.ValidID(actor) {
+		return nil, posts.ErrUnauthenticated
+	}
+	tx, e := r.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead, ReadOnly: true})
+	if e != nil {
+		return nil, e
+	}
+	if actor != "" {
+		var enabled bool
+		e = tx.QueryRowContext(ctx, `SELECT NOT disabled FROM owned_authority_accounts WHERE id=$1`, actor).Scan(&enabled)
+		if e != nil || !enabled {
+			tx.Rollback()
+			if e != nil && !errors.Is(e, sql.ErrNoRows) {
+				return nil, e
+			}
+			return nil, posts.ErrUnauthenticated
+		}
+	}
+	return tx, nil
+}
+func (r *Repository) detail(ctx context.Context, actor, filter string, args ...any) (posts.Post, error) {
+	tx, e := r.read(ctx, actor)
+	if e != nil {
+		return posts.Post{}, e
+	}
+	defer tx.Rollback()
+	all := append([]any{actor}, args...)
+	p, e := scan(tx.QueryRowContext(ctx, `SELECT `+columns+base+` AND u.type=0 AND ((p.drafted_at IS NULL AND p.published_at<=CURRENT_TIMESTAMP AND p.visibility IN(0,2)) OR `+editor+`) AND `+filter, all...))
+	if e != nil {
+		return posts.Post{}, e
+	}
+	if e = tx.Commit(); e != nil {
+		return posts.Post{}, e
+	}
+	return p, nil
+}
+func (r *Repository) Get(ctx context.Context, actor, id string) (posts.Post, error) {
+	if !authority.ValidID(id) {
+		return posts.Post{}, posts.ErrNotFound
+	}
+	return r.detail(ctx, actor, `p.id=$2`, id)
+}
+func (r *Repository) GetSlug(ctx context.Context, actor, publisher, slug string) (posts.Post, error) {
+	if publisher == "" || len(publisher) > 256 || slug == "" || len(slug) > 4096 {
+		return posts.Post{}, posts.ErrNotFound
+	}
+	return r.detail(ctx, actor, `lower(u.name)=lower($2) AND lower(p.slug)=lower($3)`, publisher, slug)
+}
+func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions) ([]posts.Post, int64, error) {
+	if o.Offset < 0 || o.Take < 1 || o.Take > 100 || len(o.Publisher) > 256 {
+		return nil, 0, posts.ErrInvalid
+	}
+	if o.Type != nil && *o.Type != posts.Moment && *o.Type != posts.Article {
+		return nil, 0, posts.ErrUnsupported
+	}
+	if o.Drafts && actor == "" {
+		return nil, 0, posts.ErrUnauthenticated
+	}
+	tx, e := r.read(ctx, actor)
+	if e != nil {
+		return nil, 0, e
+	}
+	defer tx.Rollback()
+	if o.Publisher != "" {
+		var id string
+		e = tx.QueryRowContext(ctx, `SELECT u.id::text FROM owned_publishers u WHERE u.deleted_at IS NULL AND (u.id::text=$1 OR lower(u.name)=lower($1)) AND(u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=u.account_id AND NOT a.disabled))`, o.Publisher).Scan(&id)
+		if e != nil {
+			return nil, 0, mapped(e)
+		}
+		if o.Drafts {
+			var allowed bool
+			e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publisher_members WHERE publisher_id=$1 AND account_id=$2 AND joined_at IS NOT NULL AND revoked_at IS NULL AND role>=50)`, id, actor).Scan(&allowed)
+			if e != nil {
+				return nil, 0, e
+			}
+			if !allowed {
+				return nil, 0, posts.ErrForbidden
+			}
+		}
+	}
+	where := base + ` AND u.type=0 AND ($2='' OR u.id::text=$2 OR lower(u.name)=lower($2)) AND ($3::integer IS NULL OR p.type=$3)`
+	order := `p.published_at`
+	if o.Drafts {
+		where += ` AND p.drafted_at IS NOT NULL AND ` + editor
+		order = `p.drafted_at`
+	} else {
+		where += ` AND p.drafted_at IS NULL AND p.published_at<=CURRENT_TIMESTAMP AND (p.visibility=0 OR ` + editor + `)`
+	}
+	args := []any{actor, o.Publisher, o.Type}
+	var total int64
+	if e = tx.QueryRowContext(ctx, `SELECT count(*)`+where, args...).Scan(&total); e != nil {
+		return nil, 0, e
+	}
+	direction := " DESC"
+	if o.Ascending {
+		direction = " ASC"
+	}
+	rows, e := tx.QueryContext(ctx, `SELECT `+columns+where+` ORDER BY `+order+direction+`,p.id`+direction+` OFFSET $4 LIMIT $5`, append(args, o.Offset, o.Take)...)
+	if e != nil {
+		return nil, 0, e
+	}
+	out := []posts.Post{}
+	for rows.Next() {
+		p, e := scan(rows)
+		if e != nil {
+			rows.Close()
+			return nil, 0, e
+		}
+		out = append(out, p)
+	}
+	e = rows.Err()
+	rows.Close()
+	if e != nil {
+		return nil, 0, e
+	}
+	if e = tx.Commit(); e != nil {
+		return nil, 0, e
+	}
+	return out, total, nil
+}

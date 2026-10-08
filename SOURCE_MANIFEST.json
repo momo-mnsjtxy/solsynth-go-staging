@@ -1,18 +1,18 @@
 {
-  "checkpoint": "publication-safe-continuation-2026-10-08",
-  "scope": "Reconciled latest main and recovered source plus documented miniapp,bot,NodeInfo,host-meta,wallet-product read candidates and full scoped evidence; not whole backend completion",
+  "checkpoint": "owned-authority-domain-backend-2026-10-08",
+  "scope": "Owned-authority modular host plus account/publisher, board, taxonomy, message read, wallet and text-post lifecycle; incomplete original-platform parity",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
     "recovery_blobs": 187
   },
-  "remote_publication": "Recovery branch verified at0b129f4dd77a5ab3f96c57282cd48fe9bf1efede; this continuation ready for approved private publication and exact-tree CI",
-  "verification": "docs/continuation-result.json",
+  "remote_publication": "Previous private recovery checkpoint d53e31da1eff81bc6333446a0e2c7318861306c8 passed CI37725387408. This changed tree requires its own CI.",
+  "verification": "docs/owned-backend-checkpoint.json",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
-      "bytes": 1844,
-      "sha256": "a6a0a21bbe274a5949092e9d09bb43d0e8e389bf5a7a1ecc953b1dcddfb6b06d"
+      "bytes": 2051,
+      "sha256": "2711f4f56a39344890ba1a5d8c8c1057be4f422a89cf8b0f1bc69c542cdf2ca9"
     },
     {
       "path": ".gitignore",
@@ -31,8 +31,43 @@
     },
     {
       "path": "README.md",
-      "bytes": 22705,
-      "sha256": "e56f74fb5b4074bf84e093fd78395c48bfa7265984908f904674e7da63e42bb0"
+      "bytes": 22970,
+      "sha256": "34a998178cb2873e2c5fc928115c9bfb384a55aa620f993fc6ad609cecb38779"
+    },
+    {
+      "path": "cmd/account-service/main.go",
+      "bytes": 4445,
+      "sha256": "072595a0313f940572b37968d9a8e32c8b7300d014a69ee4227c211fa1920f21"
+    },
+    {
+      "path": "cmd/account-service/main_test.go",
+      "bytes": 2160,
+      "sha256": "22b06798de4d794812fe2ed75722a7e021db9197787244fe6f5dde314d0f5f59"
+    },
+    {
+      "path": "cmd/authority/main.go",
+      "bytes": 6204,
+      "sha256": "722ae8a20283a988de97147b396dbf71271dc4fc857a47bac1e2266db26ae39f"
+    },
+    {
+      "path": "cmd/authority/main_test.go",
+      "bytes": 2835,
+      "sha256": "44dc1230c9d879cfb0ed334aa17f241dff304ada726b992888efdb4d7dc16a40"
+    },
+    {
+      "path": "cmd/backend/config.go",
+      "bytes": 4350,
+      "sha256": "f7b87bde1f501e7180506af5346f266abef159be5240db4b70a09cbead5f48b3"
+    },
+    {
+      "path": "cmd/backend/config_test.go",
+      "bytes": 4839,
+      "sha256": "d171b7e56726fd71a82f4465ffa70456647ce33ccfdb8b7052e1819e77c97c3d"
+    },
+    {
+      "path": "cmd/backend/main.go",
+      "bytes": 7027,
+      "sha256": "6d5b968c1cea1d5998eccff65c59be054657227880bcacf4b7072f85f8ecc782"
     },
     {
       "path": "cmd/develop-discovery/bot_commands_test.go",
@@ -55,6 +90,16 @@
       "sha256": "6ef197961c7cdf53b402e76b519e36241e0d99988736114608da535a48fe4f7a"
     },
     {
+      "path": "cmd/messager-sync/main.go",
+      "bytes": 7327,
+      "sha256": "77f73e76d127736488d384eeb76d63c9a3b92e6865bbcdbf2e52e4815e101fd2"
+    },
+    {
+      "path": "cmd/messager-sync/main_test.go",
+      "bytes": 3068,
+      "sha256": "6460b31c1b6d964ce2a52eebd562a2483d4d75bdb01abed7890ef22090e34c25"
+    },
+    {
       "path": "cmd/nodeinfo/README.md",
       "bytes": 2253,
       "sha256": "dc071a05ed03bcc30757d09ccf37436d0e26caf41e78922e0edc12ae777a05f9"
@@ -68,6 +113,31 @@
       "path": "cmd/nodeinfo/main_test.go",
       "bytes": 7611,
       "sha256": "495ff58846bb67fa179e29608df0c339b8164e57e96fd83a43f09f6a68a88698"
+    },
+    {
+      "path": "cmd/passport-board/fixture.example.json",
+      "bytes": 1129,
+      "sha256": "cb366c8a1646abf74cc2e7ad431f0851a2a34810b32477f50947fbe8ed7db8fe"
+    },
+    {
+      "path": "cmd/passport-board/main.go",
+      "bytes": 3433,
+      "sha256": "d94fe628d18ac799e3b09e99e571dd72981fc2138f3df1bd2ada8fe6a5d3b1c3"
+    },
+    {
+      "path": "cmd/passport-board/main_test.go",
+      "bytes": 574,
+      "sha256": "4d060f8b946d8c70af6f4aced5f6244f1c488619ef3c18f6545a39202feb6ea0"
+    },
+    {
+      "path": "cmd/post-service/main.go",
+      "bytes": 4662,
+      "sha256": "2806008e436a158de4d3fd0166955579672e8a1b7392e11e1de636433f4acc74"
+    },
+    {
+      "path": "cmd/post-service/main_test.go",
+      "bytes": 1563,
+      "sha256": "acf612192fa9baf153f47703d04eb9dbcebc53eae585c51f7a27652792fe74c9"
     },
     {
       "path": "cmd/solsynth-go/badges_test.go",
@@ -100,9 +170,39 @@
       "sha256": "b3121bea914c7b6bc2ef9902343309daad94ed2eebf5137419b5722cb21ebf58"
     },
     {
+      "path": "cmd/taxonomy/main.go",
+      "bytes": 6209,
+      "sha256": "6f9bb1891fa25a6f46dcfb18c3a3022caac3805cccc6e5cea7d708107df1f3ca"
+    },
+    {
+      "path": "cmd/taxonomy/main_test.go",
+      "bytes": 3496,
+      "sha256": "7f5cd6ae1b4b0bd032f9ed88f5e4e50e8a1a70a2af0ff0006d335890216df9b2"
+    },
+    {
+      "path": "cmd/wallet-service/main.go",
+      "bytes": 8161,
+      "sha256": "c7eb553c3606e8a6d3fb2c2e20e86fb65f62f32f76dc4d24767ba3a0574451d0"
+    },
+    {
+      "path": "cmd/wallet-service/main_test.go",
+      "bytes": 1993,
+      "sha256": "6974d98b378b2dab3d9904d855f3cc33e61f0468d6c09e576819e9c567c87705"
+    },
+    {
+      "path": "docs/account-publishers-continuation.md",
+      "bytes": 13156,
+      "sha256": "da186a4f3e11753fb86a244535caff19ca8819ff4751003bd366665878fd194a"
+    },
+    {
       "path": "docs/architecture.md",
       "bytes": 3317,
       "sha256": "66ef8fec4b8937ed9fe61f5073cebca2031a423de2d8bec970ebec9bd8818a8f"
+    },
+    {
+      "path": "docs/authenticated-backend-host.md",
+      "bytes": 8994,
+      "sha256": "1b4906cee508e3c62dacb28cdd3274067cbe48f41be0f49cdbddeae62cea0364"
     },
     {
       "path": "docs/badges-live-smoke-result.json",
@@ -123,6 +223,16 @@
       "path": "docs/ci-result-2026-10-07.json",
       "bytes": 1220,
       "sha256": "f04fc0b6baa5d53cc1dbb50d4250c123fe12f971a88705dc1153dd3304e0fe88"
+    },
+    {
+      "path": "docs/combined-domain-integration-review.md",
+      "bytes": 6073,
+      "sha256": "a88ce7b45e51845e8ce587ed06a0b38ab9247f17541d71d9222e79297bd7919c"
+    },
+    {
+      "path": "docs/combined-validation-plan.md",
+      "bytes": 6689,
+      "sha256": "5735d62507bdf86136863adb8877696714c8b456050c998731e8f9d2c2fcfc9b"
     },
     {
       "path": "docs/compatibility-inventory.md",
@@ -183,6 +293,11 @@
       "path": "docs/main-source-manifest.json",
       "bytes": 28636,
       "sha256": "dc45ce0b8e12f0a8d3cd765be157cf498b2773bf18adc30b75860d2f71353e99"
+    },
+    {
+      "path": "docs/messager-continuation.md",
+      "bytes": 7537,
+      "sha256": "801a06042159b9e4c47106593537b7280dc5ab76863ea3c803adb75bbfc55db3"
     },
     {
       "path": "docs/messager-parity.json",
@@ -825,14 +940,34 @@
       "sha256": "b1cf683e6a79827a9b949a023bd42acfa406164b2248738a14b1701a8a31605b"
     },
     {
+      "path": "docs/owned-authority-architecture.md",
+      "bytes": 17994,
+      "sha256": "7558475b3533dc6dedb3e75f5783207f04013b167473b9c4112c5d8fa69c7a8b"
+    },
+    {
+      "path": "docs/owned-backend-checkpoint.json",
+      "bytes": 1905,
+      "sha256": "43312280ce015e3b1e74f4abff0f94f9957bd681de20c6756eab237cfef0ce98"
+    },
+    {
       "path": "docs/parity-matrix.json",
       "bytes": 12142,
       "sha256": "15e97f2af41b0c2c02a994b4204b37dc5b345ed02bc9aeeb9dd8a23fc3a8b792"
     },
     {
+      "path": "docs/passport-board-continuation.md",
+      "bytes": 13926,
+      "sha256": "8fd4510a89abb61740942d214d25f1cc673cf70262d62c01698b3b92551eaef1"
+    },
+    {
       "path": "docs/policy-followup.md",
       "bytes": 4106,
       "sha256": "68ef0789506e6efffd1d4e8af506622eda487e39ca5686ba9ae96ff9c8db14f2"
+    },
+    {
+      "path": "docs/post-lifecycle-continuation.md",
+      "bytes": 11595,
+      "sha256": "c11fb5ccf818dbf70bb7840da8147c2adf893b2629fb189f11ec97745207fb4c"
     },
     {
       "path": "docs/postgres-integration-result.json",
@@ -861,8 +996,13 @@
     },
     {
       "path": "docs/publication-safety-review.json",
-      "bytes": 1171,
-      "sha256": "eca303097a58d007371db32db2c45d5a9dfabfbb10cb3119e203405a9f67167f"
+      "bytes": 1712,
+      "sha256": "f2445afff48bdbae5c9b5962284c32f96a4dfaf24aacf40059db97b88890156a"
+    },
+    {
+      "path": "docs/published-continuation-ci.json",
+      "bytes": 732,
+      "sha256": "261ab6840527fc27d8d2f8406e422e82a44dcc759f23c38c58b1e2e3537cc6ab"
     },
     {
       "path": "docs/recovery-checkpoint.md",
@@ -885,6 +1025,11 @@
       "sha256": "cf3976d2d268ef76af057e73b7265d1b4ddab2591bd527ab284617b2f05ce56b"
     },
     {
+      "path": "docs/taxonomy-continuation.md",
+      "bytes": 14402,
+      "sha256": "09724e648a7ea6fd98acf24aac2598b4543633fba3b38b039f5c1424f8ab6177"
+    },
+    {
       "path": "docs/verification-result.json",
       "bytes": 3497,
       "sha256": "a15548ef7ab5a1ccfebf37f9044de59b3aa954e0b9e239c7d9bdb2e7315a065a"
@@ -895,6 +1040,11 @@
       "sha256": "bc397eb7ab77d7a02bce64b1c53d553f56be91286644d6c2ddff4ce8ec31e04f"
     },
     {
+      "path": "docs/wallet-transactions-continuation.md",
+      "bytes": 14449,
+      "sha256": "89716665062dca99a0ad1b6654e840884a160fe382542d473466292bdb553471"
+    },
+    {
       "path": "go.mod",
       "bytes": 352,
       "sha256": "2d31d1565e090a92abbff0a2adfaaf7f49a26ec9b4784704335781a9d6ef1951"
@@ -903,6 +1053,86 @@
       "path": "go.sum",
       "bytes": 2301,
       "sha256": "10f85f016b4bb4919ddc6453cc8c09962bc186a29d39ed064332a23ed5a58115"
+    },
+    {
+      "path": "internal/accountpg/publishers.go",
+      "bytes": 10354,
+      "sha256": "cc29b6462e67238dd51896256754af566c3dcb1e4bd6f6c46a444fb855f3396f"
+    },
+    {
+      "path": "internal/accountpg/repository.go",
+      "bytes": 12455,
+      "sha256": "6102a4e61905bcd9a1c0b80214ea8d6ae92c45cbba0073f8743fa42e645014d4"
+    },
+    {
+      "path": "internal/accountpg/schema.sql",
+      "bytes": 2954,
+      "sha256": "200e78412b162ba2f1f4692a94f28cdfc9d9474d00b7e40b69e07472851e7893"
+    },
+    {
+      "path": "internal/accountpg/transaction_provider.go",
+      "bytes": 2975,
+      "sha256": "3c3eec38a51c7ee12ef15f9c72c10a609033fd843d3a96ae29ccb742645e14ae"
+    },
+    {
+      "path": "internal/application/backend.go",
+      "bytes": 4687,
+      "sha256": "3129ce028fc8a87266fa55cb95c7a5cda37d1b4ba0b9a8f90b70b0fc7d3fe9ba"
+    },
+    {
+      "path": "internal/application/identity.go",
+      "bytes": 5257,
+      "sha256": "0dd55a53d3f20c4f8adf00875933fc9ed2e775ac1b69580390cb7b8c95244e48"
+    },
+    {
+      "path": "internal/application/identity_test.go",
+      "bytes": 13943,
+      "sha256": "b1d9855b9f0f63bac58b86578dda04eca78ad31c15787480a07a28e347593b78"
+    },
+    {
+      "path": "internal/application/posts.go",
+      "bytes": 634,
+      "sha256": "642bcad0bf241d89b2d6f18252369b8bc47be6555e4687f934c5905e29f77047"
+    },
+    {
+      "path": "internal/application/publishers.go",
+      "bytes": 1385,
+      "sha256": "d2a931babae367b0133f859ccd2bc20eab2ddebc51a631894775f6fed71042a3"
+    },
+    {
+      "path": "internal/application/readiness.go",
+      "bytes": 2339,
+      "sha256": "14e29a5a6b2da8379ba3e478a9f14b9f60643fee33d15a3d8d62a293c73e7687"
+    },
+    {
+      "path": "internal/application/router.go",
+      "bytes": 5278,
+      "sha256": "db289220040986da58aea00ee7326ec2e519a5b29999c6f1f8e517f1f2953180"
+    },
+    {
+      "path": "internal/application/router_test.go",
+      "bytes": 3664,
+      "sha256": "3d3327ad94daa9fc74f983f25d12196ea0a9e7053f368874fe252a5cec0fc787"
+    },
+    {
+      "path": "internal/application/schema.go",
+      "bytes": 276,
+      "sha256": "0beee547916559a2728edd0ad6dd821073030acbc3c853889aaea49dcfd486f3"
+    },
+    {
+      "path": "internal/application/schema.sql",
+      "bytes": 2413,
+      "sha256": "75ffb6db37106e56786a336fa130ac9656222955f8bf1e854e7431aa2f81f67f"
+    },
+    {
+      "path": "internal/application/taxonomy.go",
+      "bytes": 2528,
+      "sha256": "2add4fd83bc0d44881b296d34c05638bc23a5e48a68b71e7acd411cc0d00adf4"
+    },
+    {
+      "path": "internal/application/wallet.go",
+      "bytes": 1664,
+      "sha256": "43f4c403024f628d0049d022892eebc8086f402f0fda77ea71881403821d314e"
     },
     {
       "path": "internal/auth/CONTRACT.md",
@@ -970,14 +1200,34 @@
       "sha256": "3278d8dfbad8b3adbb1603270ca42dbb51eed16367388444f97ee5f71fbd5b42"
     },
     {
+      "path": "internal/authoritypg/repository.go",
+      "bytes": 12833,
+      "sha256": "5f08def23214df40b5d99d86af5665c7c442610c311ba1b3ceae8af927150f73"
+    },
+    {
+      "path": "internal/authoritypg/repository_test.go",
+      "bytes": 1577,
+      "sha256": "825a60edd811423612d1a9ce2ffe4d72fd95e97753e3b0c4bad1b7cc36972801"
+    },
+    {
+      "path": "internal/authoritypg/schema.sql",
+      "bytes": 3127,
+      "sha256": "e5aa7634880ffa8a16a5c4259246c583b8ba8c3fef8395b867af402e2e774c4f"
+    },
+    {
       "path": "internal/boardpg/README.md",
-      "bytes": 6151,
-      "sha256": "dd7c1669e457cbe05c61d7e57e8f1290955ae27369c90b6dc87e860bb5c37766"
+      "bytes": 7113,
+      "sha256": "7b806834ef6ab939e8d653027ec09aec5642d68d9ace9f68d05e9ecd9dae4e67"
+    },
+    {
+      "path": "internal/boardpg/delete.go",
+      "bytes": 1063,
+      "sha256": "71970d850ac40f747fd80259f820f768a39ef722cca8716b1a2db3009a776f5e"
     },
     {
       "path": "internal/boardpg/repository.go",
-      "bytes": 10962,
-      "sha256": "ddd7175abf5502282bbce448b34c66035c8f6d50cea7c7a3b8fe2794a3d3aea4"
+      "bytes": 11557,
+      "sha256": "135173ff23402c986ec36036977ea63901ac3c8bc0b523cdd60212ffa740670d"
     },
     {
       "path": "internal/boardpg/repository_test.go",
@@ -1040,6 +1290,61 @@
       "sha256": "244c6cabd5868d0b64a99adf7c0167b812fc73c228a838c8948d47014921c18b"
     },
     {
+      "path": "internal/messagerpg/evidence_test.go",
+      "bytes": 1496,
+      "sha256": "cfd0048eef0bb0aa1f78720ddd557083de4b21142346528cd05d214cdf61c379"
+    },
+    {
+      "path": "internal/messagerpg/repository.go",
+      "bytes": 14911,
+      "sha256": "f55aa47dadbad04d34987aa1955bc1b5db49a111bd890168caacab717e650447"
+    },
+    {
+      "path": "internal/messagerpg/repository_authority.go",
+      "bytes": 866,
+      "sha256": "193e54d25c549b0e54ce8169dea2a21e9e772c44ee1f0b69cb5e2d92b92067fe"
+    },
+    {
+      "path": "internal/messagerpg/repository_test.go",
+      "bytes": 13621,
+      "sha256": "f212157d4c6b536fec1c2dde0b85c7f2b2ce97e8949a5b21867494c1a681cc4f"
+    },
+    {
+      "path": "internal/messagerpg/schema-evidence.json",
+      "bytes": 11673,
+      "sha256": "15c80928c5c04f367d5e6a67f7201f883cc0409b03b7985d768b732638d199d5"
+    },
+    {
+      "path": "internal/messagerpg/source-manifest.json",
+      "bytes": 1301,
+      "sha256": "7db88f88321e5fb397cd394ed6741603d4e291366b96f08abd3c8956a5caebee"
+    },
+    {
+      "path": "internal/messagerpg/source/AppDatabaseModelSnapshot.cs",
+      "bytes": 33930,
+      "sha256": "7968bb5449b4fa25f30ae3a5f7588e2bd851f39a6c7c70a68944b6cbbcfbbdd7"
+    },
+    {
+      "path": "internal/messagerpg/source/ChatRoomService.cs",
+      "bytes": 27052,
+      "sha256": "b366429d359958219f8a55172bfb8d8eb054f9115a5a8aaad5cf48cc3dc744ef"
+    },
+    {
+      "path": "internal/messagerpg/source/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "internal/messagerpg/testdata/schema.sql",
+      "bytes": 1827,
+      "sha256": "7a17c1f8d2231b815a2a13a3ce8f187e14003f46ceea6ff7f1b0077d22e24035"
+    },
+    {
+      "path": "internal/messagerpg/verification.json",
+      "bytes": 1125,
+      "sha256": "82a6665b915a53d806c17096177363c042b83efcfee2b13dd6088cf1bcb22b74"
+    },
+    {
       "path": "internal/nodeinfopg/repository.go",
       "bytes": 3212,
       "sha256": "5640ed03a7192cd12a9d501ea3e96ea00568ada602629a0bb5ba9ec527b465f9"
@@ -1053,6 +1358,81 @@
       "path": "internal/nodeinfopg/testdata/schema.sql",
       "bytes": 798,
       "sha256": "b9ff080c15d99bcc3627e2e3b1ed1c7691f1f8407751d5f27f4ef7fa7fa655ac"
+    },
+    {
+      "path": "internal/postpg/repository.go",
+      "bytes": 12203,
+      "sha256": "337ef387bdec23ac4a04b0b9fc6ca023b3a99ef654b0977fe79bed6a5603c7a4"
+    },
+    {
+      "path": "internal/postpg/repository_test.go",
+      "bytes": 1102,
+      "sha256": "2bfd9339140cb0185eaa52f9d9c90bfc98c25220bea4c1365729e6c16af6f548"
+    },
+    {
+      "path": "internal/postpg/schema.sql",
+      "bytes": 1715,
+      "sha256": "cb0de54cb32cd7aca1179adc9783dbab7abfd047f2f99903b59385aef6f60e02"
+    },
+    {
+      "path": "internal/taxonomypg/repository.go",
+      "bytes": 19301,
+      "sha256": "bd1c2598ba809041531c5807bd69a194af60177e303ef00ffc87ff7c78becc1d"
+    },
+    {
+      "path": "internal/taxonomypg/repository_authority.go",
+      "bytes": 1649,
+      "sha256": "2c5601f9372e31827a9062c88fa1e3880e8d5fb601ffb96e65cdd28d3199ef01"
+    },
+    {
+      "path": "internal/taxonomypg/repository_authority_test.go",
+      "bytes": 1051,
+      "sha256": "6eac4a70ad94ccfcada52c6fb8509ef7f30b49da85a9c611dd2ad0a8a44124f6"
+    },
+    {
+      "path": "internal/taxonomypg/repository_test.go",
+      "bytes": 12018,
+      "sha256": "62e00adf452349e61feb67cfdfafb7a0daefaf6f87f2781b0ec784dd70fe5a55"
+    },
+    {
+      "path": "internal/taxonomypg/testdata/schema.sql",
+      "bytes": 2586,
+      "sha256": "590140289771794d3729d842854ee00e18e246e93e2c319749f7d41a98f044bd"
+    },
+    {
+      "path": "internal/walletpg/pin.go",
+      "bytes": 6131,
+      "sha256": "e7587ca7e67f85b2872ce62b885db251d8250975ff95a348110c230e984708bb"
+    },
+    {
+      "path": "internal/walletpg/pin_test.go",
+      "bytes": 1507,
+      "sha256": "7973379ff176d9b564d35b7d758be8504644941e82ae27c8e8f0381005ff2300"
+    },
+    {
+      "path": "internal/walletpg/realm.go",
+      "bytes": 2046,
+      "sha256": "3f715f10882123ee59c2779c6531f3de7ac45ce79760dcc036289ee2d41f8d0c"
+    },
+    {
+      "path": "internal/walletpg/repository.go",
+      "bytes": 11542,
+      "sha256": "499091626dfefd3343791df698f5a04fe2005a97f554bac092a6195b36cad3b7"
+    },
+    {
+      "path": "internal/walletpg/schema.sql",
+      "bytes": 4942,
+      "sha256": "bf1b6897789dce5aa6f0d1eb00940cd8050e2b045481ce7f9eece0a6ebfda69b"
+    },
+    {
+      "path": "internal/walletpg/transactions.go",
+      "bytes": 11729,
+      "sha256": "637d18ef438baa17358add85bcd015a16e32f742a0e53cb7f51862090a14274e"
+    },
+    {
+      "path": "internal/walletpg/verification.json",
+      "bytes": 1443,
+      "sha256": "88a94447adb92c93a9d69b17330e5ed35e6159433def48c7535ea7ca3423e1d8"
     },
     {
       "path": "internal/watchpg/README.md",
@@ -2695,6 +3075,46 @@
       "sha256": "e8f9510088f69ea71c5a37f8011ba5104a18c30730652ba8bb0c398d586bf865"
     },
     {
+      "path": "ports/authority/authority_test.go",
+      "bytes": 17010,
+      "sha256": "4330b70fa9ba1497167a1c9106b257242279586ca23634ad439cd3b6455856e3"
+    },
+    {
+      "path": "ports/authority/crypto.go",
+      "bytes": 8441,
+      "sha256": "14625ddcbb204f7f0975b8f7296aad56662df9cdcc8d99a8a6ddc3838281e8eb"
+    },
+    {
+      "path": "ports/authority/http.go",
+      "bytes": 5763,
+      "sha256": "790adcbcb777b593ed153b28bb087239db498f1117d9a1e05357a8c6ef2311c8"
+    },
+    {
+      "path": "ports/authority/principal_authentication.go",
+      "bytes": 959,
+      "sha256": "76fd2cadcdc14a88325fbf53252d4605cceb9481815e705acf366db4336ca82e"
+    },
+    {
+      "path": "ports/authority/principal_authentication_test.go",
+      "bytes": 2310,
+      "sha256": "b8fcba8fc2296301497c107b8fc26e1ea5d8c578c9ec07bec0e835cb185a8f94"
+    },
+    {
+      "path": "ports/authority/service.go",
+      "bytes": 13188,
+      "sha256": "a18d35d8de72c22161b926068214c57c56622c52ffdad0966dd5f007e43ed014"
+    },
+    {
+      "path": "ports/authority/types.go",
+      "bytes": 4388,
+      "sha256": "d23ee5af3b4ec9e7584603e1498ac1b71974e6e0f7fab0715e53e44f3ff06fca"
+    },
+    {
+      "path": "ports/authority/verifier.go",
+      "bytes": 2245,
+      "sha256": "a2fae89e72db77c1b568ffe21545102260ed4881e3ee1975a69dc0733555c067"
+    },
+    {
       "path": "ports/develop/PROVENANCE.md",
       "bytes": 8985,
       "sha256": "539dbb5657ecdfe0a91378d7d2061f2e517dd22ac3b290fd647a11428a2f9038"
@@ -2931,8 +3351,8 @@
     },
     {
       "path": "ports/messager/ROOM-SYNC-CONTRACT.md",
-      "bytes": 10082,
-      "sha256": "2d4cd13dc2f348b6448fc870f55b573398c61dd63e738314a4a76e9d2319263c"
+      "bytes": 10406,
+      "sha256": "9f303ac05bad4355932fb126e5a2665fe7ee70ece073f723421b244328868609"
     },
     {
       "path": "ports/messager/SERVICE-MAP.md",
@@ -3130,6 +3550,31 @@
       "sha256": "637d7b82c38e1e38c27e6842e4e54314576c369c462275c41386fcc719fe1bc8"
     },
     {
+      "path": "ports/messager/sync-PROVENANCE.md",
+      "bytes": 4497,
+      "sha256": "c446d93cb21fc8e178a17c411b6fb099981551f9bcc48c1dcef92d133ac2f55d"
+    },
+    {
+      "path": "ports/messager/sync_authority.go",
+      "bytes": 921,
+      "sha256": "834a4af6b98928e3d19b1eabf13f77a5c38f3767af9cd7821bd4a23b8eadd4d1"
+    },
+    {
+      "path": "ports/messager/sync_http.go",
+      "bytes": 8793,
+      "sha256": "cb7e9efc3820594c8838771be968d61e742472f9e1ab658aaaff18af4f02a671"
+    },
+    {
+      "path": "ports/messager/sync_http_test.go",
+      "bytes": 9299,
+      "sha256": "c0d2e782fbc663188be76b543495c121e21797264692379613451bd0419cdee7"
+    },
+    {
+      "path": "ports/messager/sync_service.go",
+      "bytes": 7600,
+      "sha256": "febd57ba41708fa84ca8a95af007561e7c3b6d7c272909e722afc81e4192588d"
+    },
+    {
       "path": "ports/messager/unread-PROVENANCE.md",
       "bytes": 4046,
       "sha256": "a8c25a425cf0b3268468a41646fb3526d375f7efb7ad63db8a27ee8c685659cc"
@@ -3143,6 +3588,26 @@
       "path": "ports/messager/unread_test.go",
       "bytes": 5445,
       "sha256": "764336da5d9ddfff468650d6dc469a175094414fb2323dc1b76ee88833763162"
+    },
+    {
+      "path": "ports/passport/accounts/http.go",
+      "bytes": 10066,
+      "sha256": "253ca075fd55a932e4716eaef7c6e2bf4a834b1b885eac006bd195300796b835"
+    },
+    {
+      "path": "ports/passport/accounts/http_test.go",
+      "bytes": 12029,
+      "sha256": "3b05d1b4fa840991e6083f40e95b12acb909db64761b7649391e1d00628f354d"
+    },
+    {
+      "path": "ports/passport/accounts/types.go",
+      "bytes": 6266,
+      "sha256": "fe30eb253daa34fd4ab4620128921fb2e161dd72b413d6229e1ce3b9465f2ad3"
+    },
+    {
+      "path": "ports/passport/accounts/validation.go",
+      "bytes": 2274,
+      "sha256": "06bf7a70c4ef80eda8518cb4913e993b1aea7240c35298d6726371c76b8163e6"
     },
     {
       "path": "ports/passport/badgediscovery/LICENSE.txt",
@@ -3266,13 +3731,13 @@
     },
     {
       "path": "ports/passport/board/README.md",
-      "bytes": 5489,
-      "sha256": "5f5f1865fda38c2cab2709b499f834e811d6d55b94ed243eac209ffc4c33ea4c"
+      "bytes": 6166,
+      "sha256": "129da2ff5448a3c6ae35ebda5504b91a58dfc53760bb19edf4f90c36e394973f"
     },
     {
       "path": "ports/passport/board/board.go",
-      "bytes": 14722,
-      "sha256": "e6051cc473c699b00a6ca3f901aa268b94f826acd79c40d64eab3684c4852367"
+      "bytes": 14738,
+      "sha256": "ac0060b5f4c0c67e34c0586a774e048535556431071f8d3478b32dcce32b77e1"
     },
     {
       "path": "ports/passport/board/board_test.go",
@@ -3280,9 +3745,129 @@
       "sha256": "cf3e889918dc38be4198dfe6ccd497f6816cf9d723a7dc6cc61d0decbfa8f5d8"
     },
     {
+      "path": "ports/passport/board/cache.go",
+      "bytes": 1179,
+      "sha256": "078f2543e060849173909c3794740a597ca5e4f29aa5bf5d0c66ebd17f83124d"
+    },
+    {
+      "path": "ports/passport/board/envelope.go",
+      "bytes": 5272,
+      "sha256": "3013ddaecc9e1ebafdc016357364e3dffa935c6343adc1786c40db419b939182"
+    },
+    {
+      "path": "ports/passport/board/http.go",
+      "bytes": 15468,
+      "sha256": "634467da0dc5fa3df31208b094d696e9ac9720a6c380a75a9ef185ac57030c3a"
+    },
+    {
+      "path": "ports/passport/board/http_test.go",
+      "bytes": 13782,
+      "sha256": "c3ee037da29f10e7ce7aecbd75d28ad5a642e7e8c20b033b379c44244fb447fa"
+    },
+    {
+      "path": "ports/passport/board/provenance_test.go",
+      "bytes": 904,
+      "sha256": "9b049f231b55719de442467db49405a73fa24c5027d223ee6faf9bcd8b313216"
+    },
+    {
       "path": "ports/passport/board/schema.json",
       "bytes": 1716,
       "sha256": "f88cc92324e0f1a9c116c8f36e939b7646145c52d54f575b77ab9f94051c0720"
+    },
+    {
+      "path": "ports/passport/board/source/AccountAdminController.cs",
+      "bytes": 26714,
+      "sha256": "744864a688167eceb954e4232265eb1362c1556dc87898fd446bc62de7c4eeda"
+    },
+    {
+      "path": "ports/passport/board/source/AccountBoardService.cs",
+      "bytes": 12735,
+      "sha256": "0659624901cb3ff1908c864cafd94d74ec9b2d81a34f184862480452e665c5b1"
+    },
+    {
+      "path": "ports/passport/board/source/AccountCurrentController.cs",
+      "bytes": 10747,
+      "sha256": "9dac86470690c7258315de060d6803d640173b12bbcf0917fdffbf384072a563"
+    },
+    {
+      "path": "ports/passport/board/source/AccountPublicController.cs",
+      "bytes": 2269,
+      "sha256": "1d017b4285058eb99ecdd6f1d65fcb5f601676e9ff2fd4b032af07d87f10149d"
+    },
+    {
+      "path": "ports/passport/board/source/CUSTOM_APP_BOARD_PRIVATE_API.md",
+      "bytes": 7947,
+      "sha256": "f657239a33748be6d4f2cdbec67e11f27add58e8198d483c0fbfaf31ce5061c8"
+    },
+    {
+      "path": "ports/passport/board/source/DYSON-LICENSE.txt",
+      "bytes": 34524,
+      "sha256": "e9df4c4e4e64b8168a71c3c67668dcffabbe8fca11d4ac4a7d5482562cd1679c"
+    },
+    {
+      "path": "ports/passport/board/source/DysonNetwork.Develop__Identity__CustomAppController.cs",
+      "bytes": 37255,
+      "sha256": "1685bc827f957605b6550d196d53740f7be11dfd72c48980eef123f569a981ad"
+    },
+    {
+      "path": "ports/passport/board/source/DysonNetwork.Develop__Identity__CustomAppService.cs",
+      "bytes": 19007,
+      "sha256": "025883b599df33148927b5bc740802179d92584727aabf65a750f81d526f8bb0"
+    },
+    {
+      "path": "ports/passport/board/source/DysonNetwork.Passport__Migrations__20260708150813_AddAccountBoardItems.cs",
+      "bytes": 2191,
+      "sha256": "3ae2ac7bb98d96e39fdf17e89cc6d55f0ba1d7e73c21e8f834a6669981d6c8d5"
+    },
+    {
+      "path": "ports/passport/board/source/DysonNetwork.Passport__Migrations__20260708152943_AddCustomAppWidgetKeyToAccountBoardItems.cs",
+      "bytes": 1303,
+      "sha256": "aa780b08eee9141dcfdbd7ff6459a1ed2af0803048ca0483ef64f866451556e8"
+    },
+    {
+      "path": "ports/passport/board/source/DysonNetwork.Passport__Migrations__AppDatabaseModelSnapshot.cs",
+      "bytes": 164129,
+      "sha256": "658c4de4fe6560aa25c46be9ad9f42eea79129f60bd995a28c772c07b1b6d39a"
+    },
+    {
+      "path": "ports/passport/board/source/Passport-AppDatabase.cs",
+      "bytes": 18632,
+      "sha256": "fc268cd596a7d2d28ddee476a8294b84e70626f6b9ee80b969c358da95a2aa7f"
+    },
+    {
+      "path": "ports/passport/board/source/SOLIAN-LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/passport/board/source/Solian-board.dart",
+      "bytes": 73960,
+      "sha256": "8b9b70c97df9f650dd5f4ae280ba38c667501520f9e223d12a65ee561091f5c8"
+    },
+    {
+      "path": "ports/passport/board/source/Solian-dashboard.dart",
+      "bytes": 47890,
+      "sha256": "bd8c8a29898b0a4b013a889f17b17ee9cf6d4c81a4af94a5d7dbd0caa177a941"
+    },
+    {
+      "path": "ports/passport/board/source/docs__ACCOUNT_ADMIN_API.md",
+      "bytes": 26375,
+      "sha256": "7bb6da553507c913ed0f0ce6dda55e430c205659d66c19a98597ed368cd543a3"
+    },
+    {
+      "path": "ports/passport/board/source/docs__ACCOUNT_BOARD.md",
+      "bytes": 21429,
+      "sha256": "b213773878ac1d01c0dd29ab985860cada45fa0d192b544dbdf9d492d4183360"
+    },
+    {
+      "path": "ports/passport/board/source/manifest.json",
+      "bytes": 8866,
+      "sha256": "80f16ddc6c481f297c309da30bfe6dbbb9cd769da98d2d06f324bee37265d74e"
+    },
+    {
+      "path": "ports/passport/board/synthetic.go",
+      "bytes": 8718,
+      "sha256": "72d2349d59e3e2356b70299fb193b95edba88a75093912e2fb19c1f3566a1737"
     },
     {
       "path": "ports/passport/board/transaction_test.go",
@@ -3425,6 +4010,71 @@
       "sha256": "4060e1790bb4fc3cccddb2efa2a5fd345468f1c594f439ad8fab4c7b5821dada"
     },
     {
+      "path": "ports/sphere/posts/authority.go",
+      "bytes": 2139,
+      "sha256": "33ebbddd19bbf462e364175081224ed8cf049e953d297da1046873b4d3617a3e"
+    },
+    {
+      "path": "ports/sphere/posts/evidence-inventory.json",
+      "bytes": 100101,
+      "sha256": "580392c88a009320d8e1e955f604f05afe3bc88bfbff2e7ffba4454607089748"
+    },
+    {
+      "path": "ports/sphere/posts/http.go",
+      "bytes": 9159,
+      "sha256": "28a3ab4eb8d2b68700afb48243a2a0d05d77ea83fe544f8b5dbdc514f52f8a67"
+    },
+    {
+      "path": "ports/sphere/posts/http_test.go",
+      "bytes": 5964,
+      "sha256": "2055ecc433d515bd1e49a524d8ef4c8d5a5cdceebb23c8db5ede338cf6226f7d"
+    },
+    {
+      "path": "ports/sphere/posts/types.go",
+      "bytes": 5299,
+      "sha256": "cbfe399d85ce339821b104c94ce7d8a3a529b211f29f008194d14288cd7354a2"
+    },
+    {
+      "path": "ports/sphere/posts/upstream/DYSON-LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/sphere/posts/upstream/SOLIAN-LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/sphere/posts/upstream/lib__posts__compose.dart",
+      "bytes": 743,
+      "sha256": "6e9e2b9af3ea57f352c6967db3b3e7aaadfee6fc9fb216f8429f09b7c013e167"
+    },
+    {
+      "path": "ports/sphere/posts/upstream/lib__posts__pods__post_list.dart",
+      "bytes": 8722,
+      "sha256": "3463d828640b447b69f45384cba1a2a3970a6d0c8b5abe24f454f82df106c144"
+    },
+    {
+      "path": "ports/sphere/posts/upstream/lib__posts__screens__compose.dart",
+      "bytes": 638,
+      "sha256": "40dee726ca8afbe5028554befa0f4b32c2b6507500e721587ba6bb8efbdc7953"
+    },
+    {
+      "path": "ports/sphere/posts/upstream/lib__posts__widgets__compose__compose_settings_sheet.dart",
+      "bytes": 31054,
+      "sha256": "39ef211a4084fe3cbd7be73c1a3eb88e37edb94dac1873ce991cb709c040e6f0"
+    },
+    {
+      "path": "ports/sphere/posts/upstream/lib__posts__widgets__compose__compose_shared.dart",
+      "bytes": 79385,
+      "sha256": "ff9442f5af030b43cddbea0df585467d75d12568894c9af2b755cb83235291c4"
+    },
+    {
+      "path": "ports/sphere/posts/upstream/lib__posts__widgets__compose__compose_state_utils.dart",
+      "bytes": 6764,
+      "sha256": "5556cdcdb5886aabb3683b57cfa914c1a47e936c647ca32c2cbfc0ae4ee98eff"
+    },
+    {
       "path": "ports/sphere/ranking.go",
       "bytes": 5597,
       "sha256": "790a5a7ea5908b6a49acb0e510070a8df87dcf86ebd047799df014ee0a2c69d4"
@@ -3438,6 +4088,111 @@
       "path": "ports/sphere/source-manifest.json",
       "bytes": 1178,
       "sha256": "dcf0903affef9b48b3e2adbb5c27cda164fe7bcecfdd59434a56ecb51409100a"
+    },
+    {
+      "path": "ports/sphere/taxonomy/PROVENANCE.md",
+      "bytes": 3428,
+      "sha256": "aa936fa3e7f2e9a5b99bb5f5607066d09911ca4756d12e97a5e971b2e72228dd"
+    },
+    {
+      "path": "ports/sphere/taxonomy/casing.go",
+      "bytes": 724,
+      "sha256": "adc665e507461b1b04a715bbeb7c8c4d8f3adfa6bf4efd8af003d66dcdc579b5"
+    },
+    {
+      "path": "ports/sphere/taxonomy/casing_test.go",
+      "bytes": 1135,
+      "sha256": "7b2c7b6d1d9b9118bab62dc7e2f05485534efec3bd6e6ca3f073618985f611a3"
+    },
+    {
+      "path": "ports/sphere/taxonomy/http.go",
+      "bytes": 11368,
+      "sha256": "217185ce1a6c7c26b304b77c040932814a874d9421daf5692e0e8786b20898d4"
+    },
+    {
+      "path": "ports/sphere/taxonomy/http_test.go",
+      "bytes": 6647,
+      "sha256": "31e2124d3f4336694392248e99c3d492b41bffa1c41130b363317d9902536691"
+    },
+    {
+      "path": "ports/sphere/taxonomy/operation-coverage.json",
+      "bytes": 9836,
+      "sha256": "c7b43a7c9c9ef466b56252d1122eec4891b000da3a124a11d7a1980afa3516a6"
+    },
+    {
+      "path": "ports/sphere/taxonomy/oracle/NuGet.Config",
+      "bytes": 74,
+      "sha256": "9508cae5f76364f56e80eb97cb16493977243cf38e5cca6284e3d74f83b20a2c"
+    },
+    {
+      "path": "ports/sphere/taxonomy/oracle/Program.cs",
+      "bytes": 721,
+      "sha256": "ae6be7e1ae8327ce8341319c1418dec47d2a17dc94a8d08294d8fa3a6d3901fe"
+    },
+    {
+      "path": "ports/sphere/taxonomy/oracle/TaxonomyCasingOracle.csproj",
+      "bytes": 211,
+      "sha256": "38e201f047792df530db8c7d157c2b6b19d1ed2e4134dba5da5c59e97d3b0da2"
+    },
+    {
+      "path": "ports/sphere/taxonomy/oracle/results.json",
+      "bytes": 908,
+      "sha256": "9c567e1edaff25f0108ed685663b93346290863a4cd2f10e4ca0d3085c4a12a1"
+    },
+    {
+      "path": "ports/sphere/taxonomy/provenance_test.go",
+      "bytes": 1331,
+      "sha256": "9b7c7780e20efa924405b41a844a1abf609883d1e5ca5c0d42d8bc12336460f7"
+    },
+    {
+      "path": "ports/sphere/taxonomy/service_authority.go",
+      "bytes": 2176,
+      "sha256": "8e2ed4fa938b29b68b0982fee1e91d2accf86059cf859521ebacceecb84432ea"
+    },
+    {
+      "path": "ports/sphere/taxonomy/source/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/sphere/taxonomy/source/PostTagService.cs",
+      "bytes": 10646,
+      "sha256": "d3d7944aff5d93e2fbd94478449f833a55304fb12e88ee14fabd6d6d85cc447d"
+    },
+    {
+      "path": "ports/sphere/taxonomy/source/Solian__lib__creators__screens__posts__tag_manage.dart",
+      "bytes": 33508,
+      "sha256": "43437951a545ffb6ff9b6bf9fd5335929ed6a8331612beb5641245c45d4c9cfa"
+    },
+    {
+      "path": "ports/sphere/taxonomy/source/Solian__lib__posts__pods__post_categories.dart",
+      "bytes": 3174,
+      "sha256": "ba24109579b41b68337c6553313538d4bf55609efdacc97e7f6c870c5f2ea8b4"
+    },
+    {
+      "path": "ports/sphere/taxonomy/source/Solian__lib__posts__screens__post_category_detail.dart",
+      "bytes": 24599,
+      "sha256": "82faec4498f5ef65eb869f5cab737300e7fe3a98d39cf83c38805ba0b5c1c02c"
+    },
+    {
+      "path": "ports/sphere/taxonomy/source/manifest.json",
+      "bytes": 2746,
+      "sha256": "da6721dada7d465db99de9e0ad3cba83494cec3bf591a937b6ba1226b1309879"
+    },
+    {
+      "path": "ports/sphere/taxonomy/taxonomy.go",
+      "bytes": 19237,
+      "sha256": "eeb0a0506f1e71a4ed164079cc9e7850b10de0b663236ac60f15c685f0fcfd60"
+    },
+    {
+      "path": "ports/sphere/taxonomy/taxonomy_test.go",
+      "bytes": 11800,
+      "sha256": "c7aeb9355a496dd6787b86a2ee85eb66fb4353241a57d87ba143614c2f317b96"
+    },
+    {
+      "path": "ports/sphere/taxonomy/testdata/invariant-casing.json",
+      "bytes": 18319,
+      "sha256": "290240fcaed79fe0a437c71c229821ec0cc633acc411e560684cbffc224f5af7"
     },
     {
       "path": "ports/sphere/upstream/LICENSE.txt",
@@ -3478,6 +4233,156 @@
       "path": "ports/sphere/watch_test.go",
       "bytes": 9711,
       "sha256": "199f8c8d29e90297a401a6154f3783bfe6b298d7a793e20b5611709ae3b8a6a2"
+    },
+    {
+      "path": "ports/wallet/accounts/PROVENANCE.md",
+      "bytes": 3168,
+      "sha256": "be676c6667a779c3eb94aaf3f0b6619af27459839175aa70ee20c4f5302075cf"
+    },
+    {
+      "path": "ports/wallet/accounts/authority.go",
+      "bytes": 3503,
+      "sha256": "17a6d258e0fbafc62ea00236f0048071eaff399ca38b9ed6cfa4fcb65a18450c"
+    },
+    {
+      "path": "ports/wallet/accounts/authority_test.go",
+      "bytes": 2521,
+      "sha256": "88d510ecdfb33caf45023c46b56c35d3701d5c912b910632dbb81f23791f44ae"
+    },
+    {
+      "path": "ports/wallet/accounts/http.go",
+      "bytes": 6051,
+      "sha256": "f9925220151d764c03e0bfa0399f604e471ce656d73e25de116b8e55de09b67a"
+    },
+    {
+      "path": "ports/wallet/accounts/http_test.go",
+      "bytes": 3225,
+      "sha256": "dfa169d84e20a31202539326db4e15f8a32335940c4136e0d06c451c42af1456"
+    },
+    {
+      "path": "ports/wallet/accounts/lifecycle.go",
+      "bytes": 1969,
+      "sha256": "92d0f52094d6f0039ea0a9ec0cd5254e7a82f17ffd74589bac26dfc64098f6ed"
+    },
+    {
+      "path": "ports/wallet/accounts/lifecycle_test.go",
+      "bytes": 2503,
+      "sha256": "9ddc8cbb6edf092573351dca103c8e5297d6b1e5e0892306a8b7f6a17f9be0dd"
+    },
+    {
+      "path": "ports/wallet/accounts/model.go",
+      "bytes": 7425,
+      "sha256": "3a9386a670a39fbd58c0f46192f96f1ec509fac0478e894b21bce5d821a9b9c5"
+    },
+    {
+      "path": "ports/wallet/accounts/money.go",
+      "bytes": 3088,
+      "sha256": "e237a883bcd4289174bfd75572735e9ab3173c15c9e655227531ce1aa3d76c80"
+    },
+    {
+      "path": "ports/wallet/accounts/money_test.go",
+      "bytes": 1970,
+      "sha256": "08ae98f111a411ea3fa7ba5a78fe4ed220db9757f7e3ef58b3989ee96d5ed11c"
+    },
+    {
+      "path": "ports/wallet/accounts/service.go",
+      "bytes": 8240,
+      "sha256": "4337b8c42c5e68a5f1050a82e15d2639d221a19ee8f87d5dfa5c1e8bc9debe68"
+    },
+    {
+      "path": "ports/wallet/accounts/service_test.go",
+      "bytes": 6904,
+      "sha256": "efda11c1d20860318b615251d79505bd6f3ea064c5820b163dc102e358b89ff5"
+    },
+    {
+      "path": "ports/wallet/accounts/source/DysonNetwork.Wallet__Migrations__20260401000000_InitialMigration.cs",
+      "bytes": 26141,
+      "sha256": "9f8769186b468c5704cceb6c2fc5f3b4c82c9722e43e9b7070fac5476ae2dd77"
+    },
+    {
+      "path": "ports/wallet/accounts/source/DysonNetwork.Wallet__Migrations__20260504130000_AddMultiWalletSupport.cs",
+      "bytes": 3112,
+      "sha256": "de27bafed62abaea6eb5d602047f6427ac9b10daa81fbecb939714e45407fa71"
+    },
+    {
+      "path": "ports/wallet/accounts/source/DysonNetwork.Wallet__Migrations__20260607145913_EnrichWalletTranasction.cs",
+      "bytes": 4663,
+      "sha256": "1fa37cc4719643752fe670ce346d0d840b8723ff154f515f9dbc45e614c3e729"
+    },
+    {
+      "path": "ports/wallet/accounts/source/DysonNetwork.Wallet__Migrations__AppDatabaseModelSnapshot.cs",
+      "bytes": 55807,
+      "sha256": "d66ecaae47a45527351eae23d293369488583ffd7dcb479c0754f70beeeab777"
+    },
+    {
+      "path": "ports/wallet/accounts/source/DysonNetwork.Wallet__Payment__PaymentService.cs",
+      "bytes": 76079,
+      "sha256": "055dbb24b268c12936e5b02b9558526461ab993de94ca6d24ac8c13a61d173bb"
+    },
+    {
+      "path": "ports/wallet/accounts/source/DysonNetwork.Wallet__Payment__WalletController.cs",
+      "bytes": 61958,
+      "sha256": "66b05f979b09fd732cebf07b24e830836fd46a38980f45c7019dbd1d69562030"
+    },
+    {
+      "path": "ports/wallet/accounts/source/DysonNetwork.Wallet__Payment__WalletService.cs",
+      "bytes": 6112,
+      "sha256": "53cf3637e032b495a9287ce7466b80bbf396bc65ddeb98dbda492d3bd3d3e687"
+    },
+    {
+      "path": "ports/wallet/accounts/source/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/wallet/accounts/source/SOLIAN-LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/wallet/accounts/source/Solian__lib__wallets__pin_status.dart",
+      "bytes": 764,
+      "sha256": "ee5f71f5943fe83e2c19de4297ea24eabae148181e3fc8b295307b6a7c6bbe12"
+    },
+    {
+      "path": "ports/wallet/accounts/source/Solian__lib__wallets__realtime_wallet.dart",
+      "bytes": 7086,
+      "sha256": "74d7930f0f7f08c5569d8578ec1f8a3a3bf524f39b9b6eb572d6ef761e0f679b"
+    },
+    {
+      "path": "ports/wallet/accounts/source/Solian__lib__wallets__transaction_detail.dart",
+      "bytes": 19842,
+      "sha256": "9471749ea06c25f342de360a8598dc80501ed431452da91bcbb0d91658035121"
+    },
+    {
+      "path": "ports/wallet/accounts/source/Solian__lib__wallets__wallet.dart",
+      "bytes": 180770,
+      "sha256": "9a771af72f874c2595b4cf1ff4f750b56d78a8ba9560bfba7a9599ed9505c50a"
+    },
+    {
+      "path": "ports/wallet/accounts/source/docs__MULTI_WALLET.md",
+      "bytes": 6866,
+      "sha256": "ef207ff184c568677e52e349863f5e5e62958d5598aeba2f3b184629f6c34512"
+    },
+    {
+      "path": "ports/wallet/accounts/source/docs__WALLET_PIN_VALIDATION.md",
+      "bytes": 2845,
+      "sha256": "2487b3a8882fb9f4dbe4b481668d378935b9fc7e3be704bc82590c52693adc4e"
+    },
+    {
+      "path": "ports/wallet/accounts/source/docs__WALLET_TRANSACTION_LIFECYCLE.md",
+      "bytes": 10733,
+      "sha256": "2c509103fc0e078be057679dff6ed41100c72f8a86c322fd31a477e9f057eef4"
+    },
+    {
+      "path": "ports/wallet/accounts/source/manifest.json",
+      "bytes": 8347,
+      "sha256": "08e39f4fa3cf7983e3f08213264a1852b2105e87d7ab4b08c5aa70fc2eeff1e7"
+    },
+    {
+      "path": "ports/wallet/accounts/source_test.go",
+      "bytes": 1292,
+      "sha256": "332f9484fc48f4091fef59d1f7ffeadd104d086881927feec32b1c22fea62ee6"
     },
     {
       "path": "ports/wallet/exchangecatalog/PROVENANCE.md",
@@ -3651,18 +4556,18 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 2732,
-      "sha256": "121361ecc04c9c6dddd13e37ba99af65b0d5cf2bcb53933e161d16964a21b4d5"
+      "bytes": 6909,
+      "sha256": "a0e74610fbcb59b37ed5ed903f59822d6d5279ba1c610bb15a97deca3d57c72c"
     },
     {
       "path": "scripts/check-source-evidence.py",
-      "bytes": 4959,
-      "sha256": "0be854ba65949435f3af965d07ec459bc0d0572f0cce7b5c8c923ff2e75915a1"
+      "bytes": 5261,
+      "sha256": "0c95d048d1d24ed5259a281371916508c09273eaf9f975dfb630cbf21ca3dc63"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 3176,
-      "sha256": "2ca15110946e9f08557ee7278f75833cc27b90818102973b7685acdc1c16a257"
+      "bytes": 4229,
+      "sha256": "75e70fdab5d1278615dbc2e2449a95469cc038ba18b0b4df62bbfbbcdbe1f936"
     },
     {
       "path": "scripts/test-coverage-format.py",
@@ -3671,13 +4576,18 @@
     },
     {
       "path": "scripts/test-integration-guard.py",
-      "bytes": 1233,
-      "sha256": "18344017b0dedb2e862d9a5bd64a1eea569db3791201516c7226bf7312474a8f"
+      "bytes": 3178,
+      "sha256": "94a674418d974565a144d2f2ab741f22d1938983d854979bd76f412167600add"
+    },
+    {
+      "path": "scripts/test-integration-wiring.py",
+      "bytes": 7634,
+      "sha256": "bbec19277e0cc82d308c803800c1de9fc44d9e6d52653fb0896ff7a152f6003e"
     },
     {
       "path": "scripts/test-source-evidence.py",
-      "bytes": 2411,
-      "sha256": "7c628fbb2219039c328984a8a67795af5c85dab3bc8f86ea244822cac989583a"
+      "bytes": 2493,
+      "sha256": "3a7556efd080df2025a212b32fdae3556394eaf35dec6c5b5906430e7fa8a6ed"
     },
     {
       "path": "scripts/verify-candidate-http.py",
@@ -3706,8 +4616,8 @@
     },
     {
       "path": "scripts/verify.sh",
-      "bytes": 1183,
-      "sha256": "315217f0cf09793063b9f27891f46623a78965835e21ed245c998c434cd18429"
+      "bytes": 1226,
+      "sha256": "8189cc3e0aa2193fd82d9a7054ad7901feec382dbefd0d77a59b411988096cc1"
     },
     {
       "path": "tests/contract/badges-oracle/ApiError.cs",
@@ -3955,6 +4865,26 @@
       "sha256": "06052c3a889ef82b8d19d067dcad6a51c1bb5d8940c810aa95cc6c6951fb9934"
     },
     {
+      "path": "tests/integration/accounts_test.go",
+      "bytes": 13622,
+      "sha256": "d8472652539f4d3de9dacff7f3fdac287138e150a00562a89cfbbeeb2039f48f"
+    },
+    {
+      "path": "tests/integration/authority_test.go",
+      "bytes": 14120,
+      "sha256": "8dd91319c13a9e3541ae2350c3884fee6f02c47c1f9ad09dc3dcac5104528cf1"
+    },
+    {
+      "path": "tests/integration/backend_test.go",
+      "bytes": 14496,
+      "sha256": "0b1594b0745ef961f8e06f049ea4b7952559b7bab82f74f8c9af56b4207d6756"
+    },
+    {
+      "path": "tests/integration/board_http_test.go",
+      "bytes": 8155,
+      "sha256": "2888907d17e13faf996243b1505a69bcc13d8f17b547042c43f3b8ba7e1a3b8c"
+    },
+    {
       "path": "tests/integration/board_test.go",
       "bytes": 14630,
       "sha256": "2ff297223b03d00c6c4dbc280cec462701e92b7e0b56ccf18b635649fcdba7cd"
@@ -3975,14 +4905,39 @@
       "sha256": "11a54f0806dbfb2c065e4aad08da246e180645ca78885cc0d6df24ea897811c8"
     },
     {
+      "path": "tests/integration/domain_http_test.go",
+      "bytes": 9308,
+      "sha256": "ccd8beba44b133c6536e69d90bbdc8ae99680dd1005c149b6939489d63644d91"
+    },
+    {
+      "path": "tests/integration/messager_test.go",
+      "bytes": 20627,
+      "sha256": "f29c0f5083b552b092c29cbdb7d8311371786653942a58e5795fbeef28a7fb10"
+    },
+    {
       "path": "tests/integration/nodeinfo_test.go",
       "bytes": 10460,
       "sha256": "91c81e09d76cdd70a4ab1024e05ccaf43b201ab2280e67bd851608f724e6a27f"
     },
     {
+      "path": "tests/integration/posts_test.go",
+      "bytes": 18566,
+      "sha256": "a688fd1573b001d09cae80e5717e60dd946a0cdfa86dede49563c2e43da80bf2"
+    },
+    {
       "path": "tests/integration/schema.sql",
       "bytes": 751,
       "sha256": "4117024de7548fda716ae5b98ba636fb0c0f4c2d65226798a59f3be69319fa99"
+    },
+    {
+      "path": "tests/integration/taxonomy_test.go",
+      "bytes": 23147,
+      "sha256": "da72ed3cb38decccb85b8b304bfb58f249c867abf583f0af953e6cdb24de352d"
+    },
+    {
+      "path": "tests/integration/wallet_test.go",
+      "bytes": 28456,
+      "sha256": "7d89c29b3b64d119a2cbdfcb551466ce26519e32081ec68cfbdfb4022b6e89d2"
     },
     {
       "path": "tests/integration/watchers_test.go",

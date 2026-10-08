@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-08",
+  "baseline": "ac50657a6fa0fc16921ae44ca0ddedc46689f496",
+  "implementation_policy": "independently owned wallet_v1; source-informed, not legacy storage/global-policy parity",
+  "unit_recorder_race": "passed",
+  "temporary_combined_tree_race_all_packages": "passed; database tests skip",
+  "scoped_vet": "passed",
+  "wallet_command_build": "passed with public-key-only owned authority dependency",
+  "actual_postgresql": "not executed locally; tests compiled and skipped without guarded DSN; no socket attempts",
+  "real_client_e2e": "not executed",
+  "real_provider_financial_account_operations": "not executed",
+  "required_database_tests": [
+    "TestPGWalletHTTPFamily",
+    "TestPGWalletAtomicPrecisionRollbackAndIdempotency",
+    "TestPGWalletConcurrentDebitAndDuplicate",
+    "TestPGWalletHeldLifecycleAndExpiry",
+    "TestPGWalletConcurrentQuotaDefaultAndConfirm",
+    "TestPGWalletRestartPersistence",
+    "TestPGWalletDurablePINPolicyAndLockout",
+    "TestPGWalletFreshRealmGrantPolicy",
+    "TestPGWalletVerifiedAuthorityComposition"
+  ],
+  "restart_test": "TestPGWalletRestartPersistence with PG_TEST_PHASE=before then after; after is read-only and cannot reseed",
+  "test_only_credentials": "ephemeral random RSA/hash/seal/pepper/salts in test memory or temporary synthetic fixture files; no persistent production keys or accounts",
+  "outbox_delivery": "queued only; publisher/ack integration absent"
+}

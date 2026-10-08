@@ -41,6 +41,16 @@ func New(db *sql.DB) *Repository { return &Repository{db: db} }
 // IDs; injected current time for new IDs/updates. This is not verified EF parity.
 // A nil clock selects time.Now. Never wire this constructor into a public server.
 func NewForCompatibilityTests(db *sql.DB, now func() time.Time) *Repository {
+	return NewWithIndependentPolicy(db, now)
+}
+
+// NewWithIndependentPolicy explicitly selects the authored storage policy:
+// active means deleted_at IS NULL, supplied IDs are preserved, retained active
+// IDs retain created_at, updates use the injected UTC clock, and cooperating
+// writers serialize by account. It is an independently selected architecture,
+// not an emulation of excluded shared hooks. Authentication is outside this
+// repository and must still fail closed unless a verified authority is supplied.
+func NewWithIndependentPolicy(db *sql.DB, now func() time.Time) *Repository {
 	if now == nil {
 		now = time.Now
 	}

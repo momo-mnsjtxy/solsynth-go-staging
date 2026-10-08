@@ -18,6 +18,7 @@ def check():
         shutil.copytree(root, copy, ignore=shutil.ignore_patterns('.git', '.cache', '__pycache__', 'bin', 'obj'))
         assert evidence.check(copy) == baseline_count
         mutations = [
+            'ports/sphere/posts/upstream/lib__posts__compose.dart',
             'ports/messager/source/ChatService.cs',
             'ports/develop/source/DysonNetwork.Develop__Identity__CustomAppPublicController.cs',
             'ports/develop/package-source/DysonNetwork.Develop__MiniApp__MiniAppService.cs',
@@ -50,7 +51,7 @@ def check():
             pass
         else:
             raise AssertionError('missing evidence not detected')
-    print(f'Verified {baseline_count} source snapshots, 11 mutation rejections and missing-file rejection')
+    print(f'Verified {baseline_count} source snapshots, {len(mutations)} mutation rejections and missing-file rejection')
 
 if __name__ == '__main__':
     check()

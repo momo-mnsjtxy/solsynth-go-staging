@@ -1,0 +1,16 @@
+{
+  "checked_on": "2026-10-08",
+  "base_commit": "ac50657a6fa0fc16921ae44ca0ddedc46689f496",
+  "unit_recorder_http_command_race": "passed: go test -race ./ports/messager ./internal/messagerpg ./cmd/messager-sync",
+  "focused_vet": "passed: go vet ./ports/messager ./internal/messagerpg ./cmd/messager-sync ./tests/integration",
+  "command_build": "passed with GOFLAGS=-buildvcs=false",
+  "disposable_postgres_tests": "compiled; locally skipped because PG_TEST_DSN was absent; no socket access retried",
+  "http_transport_tests": "ResponseRecorder only; no local HTTP server started",
+  "remaining_required_validation": [
+    "Run all seven TestPGMessager tests on guarded actual disposable PostgreSQL.",
+    "Restart the actual PostgreSQL cluster and rerun TestPGMessagerRestartPersistence.",
+    "Run loopback command HTTP smoke in parent CI."
+  ],
+  "auth_and_contract_status": "explicit synthetic projection; production construction denied; not full message wire/client compatibility",
+  "full_repository_race": "passed: GOFLAGS=-buildvcs=false go test -race -count=1 ./...; actual PostgreSQL tests skipped without DSN"
+}

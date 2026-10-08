@@ -32,6 +32,13 @@ start() {
   running=1
 }
 start
+# Owned runtime schemas precede every dependent fixture. These installs are
+# explicit and apply only to the synthetic cluster created above.
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/authoritypg/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/accountpg/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/walletpg/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/application/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/postpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f tests/integration/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/watchpg/testdata/watchers-projection.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/boardpg/testdata/schema.sql
@@ -39,17 +46,27 @@ start
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/developpg/testdata/packages.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/developpg/testdata/bot_commands.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/nodeinfopg/testdata/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/messagerpg/testdata/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/taxonomypg/testdata/schema.sql
+"$GO_BIN" build -o "$run/backend" ./cmd/backend
+export BACKEND_BINARY="$run/backend"
+"$GO_BIN" build -o "$run/passport-board" ./cmd/passport-board
+"$GO_BIN" build -o "$run/messager-sync" ./cmd/messager-sync
+"$GO_BIN" build -o "$run/taxonomy" ./cmd/taxonomy
+export PASSPORT_BOARD_BINARY="$run/passport-board"
+export MESSAGER_SYNC_BINARY="$run/messager-sync"
+export TAXONOMY_BINARY="$run/taxonomy"
 "$GO_BIN" build -o "$run/develop-discovery" ./cmd/develop-discovery
 "$GO_BIN" build -o "$run/solsynth-go" ./cmd/solsynth-go
 "$GO_BIN" build -o "$run/nodeinfo" ./cmd/nodeinfo
-PG_TEST_PHASE=before "$GO_BIN" test -race -count=1 -json ./tests/integration | tee "$run/before.jsonl"
+PG_TEST_PHASE=before "$GO_BIN" test -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern before)" ./tests/integration | tee "$run/before.jsonl"
 python3 scripts/check-integration-results.py before "$run/before.jsonl"
 python3 scripts/verify-develop-http.py "$run/develop-discovery"
 python3 scripts/verify-catalog-http.py "$run/solsynth-go"
 "$PG_BIN/pg_ctl" -D "$run/data" -m fast -w stop
 running=0
 start
-PG_TEST_PHASE=after "$GO_BIN" test -race -count=1 -json -run '^(TestPGRestartPersistence|TestPGBoardRestartPersistence|TestPGDevelopDiscoveryRestartPersistence|TestPGDevelopPackageRestartPersistence|TestPGNodeInfoRestartPersistence|TestPGDevelopBotCommandsRestartPersistence)$' ./tests/integration | tee "$run/after.jsonl"
+PG_TEST_PHASE=after "$GO_BIN" test -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern after)" ./tests/integration | tee "$run/after.jsonl"
 python3 scripts/check-integration-results.py after "$run/after.jsonl"
 python3 scripts/verify-develop-http.py "$run/develop-discovery"
 python3 scripts/verify-catalog-http.py "$run/solsynth-go"

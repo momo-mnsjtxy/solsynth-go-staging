@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+"""Offline fixture wiring checks only; never starts PostgreSQL or an HTTP host."""
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+REQUIRED_SCHEMAS = {
+    "internal/authoritypg/schema.sql",
+    "internal/accountpg/schema.sql",
+    "internal/walletpg/schema.sql",
+    "internal/application/schema.sql",
+    "internal/postpg/schema.sql",
+    "tests/integration/schema.sql",
+    "internal/watchpg/testdata/watchers-projection.sql",
+    "internal/boardpg/testdata/schema.sql",
+    "internal/developpg/testdata/schema.sql",
+    "internal/developpg/testdata/packages.sql",
+    "internal/developpg/testdata/bot_commands.sql",
+    "internal/nodeinfopg/testdata/schema.sql",
+    "internal/messagerpg/testdata/schema.sql",
+    "internal/taxonomypg/testdata/schema.sql",
+}
+REQUIRED_BINARIES = {
+    "BACKEND_BINARY": ("backend", "backend"),
+    "PASSPORT_BOARD_BINARY": ("passport-board", "passport-board"),
+    "MESSAGER_SYNC_BINARY": ("messager-sync", "messager-sync"),
+    "TAXONOMY_BINARY": ("taxonomy", "taxonomy"),
+}
+PSQL = '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f '
+
+
+def check(runner, read_schema=None):
+    if read_schema is None:
+        read_schema = lambda name: (ROOT / name).read_text()
+    # Inspect only the explicit disposable schema paths, not deployment files.
+    installs = list(re.finditer(
+        r'^"\$PG_BIN/psql" "\$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f ([a-zA-Z0-9_./-]+)$',
+        runner, re.M,
+    ))
+    schemas = [match.group(1) for match in installs]
+    if set(schemas) != REQUIRED_SCHEMAS or len(schemas) != len(REQUIRED_SCHEMAS):
+        raise ValueError("missing, unexpected or duplicate disposable schema install")
+    before = runner.index("PG_TEST_PHASE=before ")
+    after = runner.index("PG_TEST_PHASE=after ")
+    if before >= after or any(match.start() > before for match in installs):
+        raise ValueError("all disposable schemas must precede the before phase")
+    if not schemas.index("internal/authoritypg/schema.sql") < schemas.index("internal/accountpg/schema.sql"):
+        raise ValueError("accounts require the authority schema first")
+    for name in ("walletpg", "application", "postpg"):
+        if schemas.index("internal/accountpg/schema.sql") >= schemas.index(f"internal/{name}/schema.sql"):
+            raise ValueError("owned dependent schema must follow accounts: " + name)
+    tables = {}
+    for name in schemas:
+        source = read_schema(name)
+        for table in re.findall(
+            r"^CREATE TABLE\s+(?:IF NOT EXISTS\s+)?([a-zA-Z_][a-zA-Z0-9_.]*)\s*\(",
+            source, re.M | re.I,
+        ):
+            qualified = table.lower() if "." in table else "public." + table.lower()
+            if qualified in tables:
+                raise ValueError("disposable schema table collision: " + qualified)
+            tables[qualified] = name
+    for variable, (binary, package) in REQUIRED_BINARIES.items():
+        build = f'"$GO_BIN" build -o "$run/{binary}" ./cmd/{package}'
+        export = f'export {variable}="$run/{binary}"'
+        if build not in runner[:before] or export not in runner[:before]:
+            raise ValueError("fixture binary is not built/exported before required tests: " + variable)
+    for phase in ("before", "after"):
+        invocation = (
+            f'PG_TEST_PHASE={phase} "$GO_BIN" test -race -count=1 -json '
+            f'-run "$(python3 scripts/check-integration-results.py --pattern {phase})" '
+            f'./tests/integration | tee "$run/{phase}.jsonl"'
+        )
+        verification = f'python3 scripts/check-integration-results.py {phase} "$run/{phase}.jsonl"'
+        if invocation not in runner or verification not in runner:
+            raise ValueError("phase selector/log guard must use the required-set source: " + phase)
+        if runner.index(verification) <= runner.index(invocation):
+            raise ValueError("phase log must be checked after the test command")
+    if '"$PG_BIN/pg_ctl" -D "$run/data" -m fast -w stop\nrunning=0\nstart\n' not in runner[before:after]:
+        raise ValueError("actual PostgreSQL stop/start is required between phases")
+    for required in (
+        "set -euo pipefail",
+        "export PG_TEST_REQUIRED=1",
+        'export PG_TEST_DSN="host=$run/socket port=55432 user=synthetic dbname=postgres sslmode=disable"',
+        'export SOLSYNTH_DISPOSABLE_PG="$run"',
+        "-c listen_addresses='' -c unix_socket_permissions=0700",
+    ):
+        if required not in runner[:before]:
+            raise ValueError("required disposable-cluster safety or fail-closed control is missing")
+    return len(schemas), len(tables)
+
+
+def main():
+    source = (ROOT / "scripts/integration-postgres.sh").read_text()
+    schemas, tables = check(source)
+    authority = PSQL + "internal/authoritypg/schema.sql"
+    accounts = PSQL + "internal/accountpg/schema.sql"
+    mutations = [
+        source.replace("-f internal/messagerpg/testdata/schema.sql", "-f tests/integration/schema.sql"),
+        source.replace("export MESSAGER_SYNC_BINARY=", "export OMITTED_MESSAGER_SYNC_BINARY="),
+        source.replace("export BACKEND_BINARY=", "export OMITTED_BACKEND_BINARY="),
+        source.replace("./cmd/taxonomy", "./cmd/missing-taxonomy"),
+        source.replace("./cmd/backend", "./cmd/missing-backend"),
+        source.replace("export PG_TEST_REQUIRED=1", "export PG_TEST_REQUIRED=0"),
+        source.replace("--pattern after", "--pattern before"),
+        source.replace("--pattern before", "--pattern after"),
+        source.replace("check-integration-results.py after", "check-integration-results.py before"),
+        source.replace("-f internal/taxonomypg/testdata/schema.sql", "-f internal/watchpg/testdata/schema.sql"),
+        source.replace(authority + "\n" + accounts, accounts + "\n" + authority),
+        source.replace(accounts + "\n", "").replace("PG_TEST_PHASE=before ", accounts + "\nPG_TEST_PHASE=before ", 1),
+        source.replace('stop\nrunning=0\nstart\nPG_TEST_PHASE=after ', 'stop\nrunning=0\nPG_TEST_PHASE=after '),
+        source.replace("set -euo pipefail", "set -eu"),
+        source.replace("host=$run/socket", "host=external.example.invalid"),
+        source.replace("-c listen_addresses=''", "-c listen_addresses='*'"),
+    ]
+    # Repeated owned schemas must be rejected even when SQL uses IF NOT EXISTS.
+    mutations.append(source.replace("PG_TEST_PHASE=before ", authority + "\nPG_TEST_PHASE=before ", 1))
+    for mutated in mutations:
+        if mutated == source:
+            raise AssertionError("regression mutation did not change the runner")
+        try:
+            check(mutated)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("incomplete or conflicting integration wiring was accepted")
+    # Detect a genuine qualified table collision even when it is guarded by
+    # IF NOT EXISTS; that SQL clause must not hide incompatible fixture ownership.
+    def conflicting_schema(name):
+        value = (ROOT / name).read_text()
+        if name == "internal/accountpg/schema.sql":
+            value += "\nCREATE TABLE IF NOT EXISTS owned_authority_accounts (id uuid);\n"
+        return value
+
+    try:
+        check(source, conflicting_schema)
+    except ValueError as error:
+        assert "table collision" in str(error)
+    else:
+        raise AssertionError("IF NOT EXISTS hid a table collision")
+    print(
+        f"Verified {schemas} disposable schemas / {tables} distinct tables, required binary/phase "
+        f"wiring and {len(mutations) + 1} regression rejections; no database or HTTP started"
+    )
+
+
+if __name__ == "__main__":
+    main()

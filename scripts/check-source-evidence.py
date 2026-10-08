@@ -76,6 +76,10 @@ def check(root):
         if len(data) != entry["bytes"] or hashlib.sha256(data).hexdigest() != entry["sha256"]:
             raise ValueError("documented-model fixture mismatch: " + entry["file"])
         count += 1
+    for entry in json.loads((root / "ports/sphere/posts/evidence-inventory.json").read_text())["files"]:
+        if hashlib.sha256((root / entry["file"]).read_bytes()).hexdigest() != entry["sha256"]:
+            raise ValueError("post lifecycle evidence mismatch: " + entry["file"])
+        count += 1
     return count
 
 

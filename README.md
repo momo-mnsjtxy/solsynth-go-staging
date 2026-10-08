@@ -1,3 +1,5 @@
+Current owned backend checkpoint: see [scope and validation](docs/owned-backend-checkpoint.json) and [authenticated host](docs/authenticated-backend-host.md). The original operation inventory remains a historical baseline; full platform completion is not claimed.
+
 # Solsynth Go migration workspace
 
 **Status: initial, local-only domain ports and migration evidence. This is not a functional replacement for the Solsynth backend.**

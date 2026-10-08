@@ -225,7 +225,7 @@ func TestPGBackendDomainComposition(t *testing.T) {
 	backendCall(t, f.app, "POST", "/messager/chat/"+room+"/sync", f.token, `{"last_sync_timestamp":0}`, 200)
 	backendCall(t, f.app, "POST", "/api/chat/"+room+"/sync", f.otherToken, `{"last_sync_timestamp":0}`, 403)
 	backendCall(t, f.app, "POST", "/api/chat/"+room+"/sync", "", `{"last_sync_timestamp":0}`, 401)
-	backendCall(t, f.app, "POST", "/develop/private/apps/"+authorityUUID(t)+"/board/payload", f.token, `{}`, 401)
+	backendCall(t, f.app, "POST", appRoot+"/board/payload", f.token, fmt.Sprintf(`{"account_id":%q,"widget_key":"weather","payload":{"temperature":{"value":18,"label":"Temperature"}}}`, f.other), 401)
 	backendCall(t, f.app, "POST", "/stargate/auth/token", "", `{}`, 501)
 }
 

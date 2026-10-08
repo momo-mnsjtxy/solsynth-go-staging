@@ -1,6 +1,6 @@
 {
-  "checkpoint": "livestream-composition",
-  "scope": "348 before/48 restart candidate; full local build/vet/race passed; actual PostgreSQL pending",
+  "checkpoint": "livestream348-correction",
+  "scope": "Isolated bounded correction; actual PostgreSQL CI pending; exact changed files establish runtime or fixture scope",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
@@ -2151,8 +2151,8 @@
     },
     {
       "path": "internal/livestreampg/lifecycle.go",
-      "bytes": 14060,
-      "sha256": "f3d5514d39296f45e106c3547c7f2ec4788005b905f7b979f364437547b7621c"
+      "bytes": 15029,
+      "sha256": "d1932136d22b510a08376942d1ddcda4534247e2be52020fbe3edc7f8c19a421"
     },
     {
       "path": "internal/livestreampg/maintenance.go",
@@ -2161,8 +2161,8 @@
     },
     {
       "path": "internal/livestreampg/metadata.go",
-      "bytes": 5320,
-      "sha256": "ff3e11f8a214561afe98d4a1a261ee73756ca44d193fb3f87fa852893bcccec6"
+      "bytes": 5346,
+      "sha256": "ea764c9eab7fc7597ca162540588bca3d18b9223a6d4ce8e72dde2c6028c1d82"
     },
     {
       "path": "internal/livestreampg/repository.go",
@@ -8106,8 +8106,8 @@
     },
     {
       "path": "tests/integration/backend_livestream_test.go",
-      "bytes": 2980,
-      "sha256": "07a0a1b54647dd61dabfcdeec76e38d0cc1dd8e521306ceddb3f65b3a522dad4"
+      "bytes": 3103,
+      "sha256": "a60521fd8b3a38f2eaff9b92ff3a5bd9bc51b900ce4f69768899abd8b89abd38"
     },
     {
       "path": "tests/integration/backend_merchant_test.go",
@@ -8251,8 +8251,8 @@
     },
     {
       "path": "tests/integration/livestreams_test.go",
-      "bytes": 21270,
-      "sha256": "208b75e6f09aa59c7e3606282183127a7e07585e5de90fa2ea1e10c25366400d"
+      "bytes": 22452,
+      "sha256": "074c194bcb99e618b8631fc14303602de53c3f3eb0c28e27ae63321bc2609d37"
     },
     {
       "path": "tests/integration/locations_test.go",

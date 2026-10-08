@@ -80,7 +80,7 @@ func (r *Repository) Create(ctx context.Context, actor, selector, key string, p 
 	if e != nil {
 		return v, live.ErrInvalid
 	}
-	_, e = tx.ExecContext(ctx, `INSERT INTO owned_livestreams(id,publisher_id,title,description,slug,type,visibility,room_name,thumbnail_id,metadata,created_at,updated_at)VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11,$11)`, id, v.PublisherID, p.Title, p.Description, p.Slug, typ, visibility, roomName(id, 1), p.ThumbnailID, string(meta), at)
+	_, e = tx.ExecContext(ctx, `INSERT INTO owned_livestreams(id,publisher_id,title,description,slug,type,visibility,room_name,thumbnail_id,metadata,created_at,updated_at)VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11::timestamptz,$11::timestamptz)`, id, v.PublisherID, p.Title, p.Description, p.Slug, typ, visibility, roomName(id, 1), p.ThumbnailID, string(meta), at)
 	if e != nil {
 		return v, e
 	}

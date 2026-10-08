@@ -112,7 +112,7 @@ func streamConfig() livestreampg.Config {
 func newStreamFixture(t *testing.T) streamFixture {
 	t.Helper()
 	f := streamFixture{callFixture: newCallFixture(t)}
-	for _, s := range []string{accountpg.Schema, socialpg.Schema, mediapg.Schema, livestreampg.Schema} {
+	for _, s := range []string{accountpg.Schema, socialpg.Schema, livestreampg.Schema} {
 		query(t, f.db, s)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
@@ -215,6 +215,19 @@ func TestPGLiveStreamLifecycleTokensAndPrivateVisibility(t *testing.T) {
 		t.Fatal(s)
 	}
 	first := streamNative(t, f, s.ID)
+	// Native activation intentionally stores NULL ingress_id. Assert the typed
+	// timestamp arithmetic and every recorded ownership/version field directly.
+	var phase, owner, actor, session, permission string
+	var ingress *string
+	var generation, ownerVersion, actorVersion, epoch int64
+	var updated, due, expires time.Time
+	if e := f.db.QueryRow(`SELECT phase,ingress_id,generation,owner_id::text,owner_version,actor_id::text,account_version,session_id::text,session_epoch,permission,updated_at,next_attempt_at,expires_at FROM owned_livestream_runs WHERE stream_id=$1::uuid`, s.ID).Scan(&phase, &ingress, &generation, &owner, &ownerVersion, &actor, &actorVersion, &session, &epoch, &permission, &updated, &due, &expires); e != nil {
+		t.Fatal("native activation persisted run", e)
+	}
+	if phase != "active" || ingress != nil || generation != 1 || owner != f.owner || actor != f.owner || ownerVersion < 1 || actorVersion < 1 || epoch < 1 || !authority.ValidID(session) || permission != "livestreams.start" || due.Sub(updated) != 10*time.Second || !expires.After(updated) {
+		t.Fatal("native activation run fields", phase, ingress, generation, ownerVersion, actorVersion, epoch, due.Sub(updated))
+	}
+
 	listed, e := f.repo.List(f.ctx, "", "", 100, 0)
 	if e != nil {
 		t.Fatal(e)

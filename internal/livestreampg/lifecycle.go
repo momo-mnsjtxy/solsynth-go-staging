@@ -93,12 +93,19 @@ func (r *Repository) findIngress(ctx context.Context, v run) (*live.Ingress, err
 	return found, nil
 }
 func (r *Repository) Start(ctx context.Context, actor, id string, req live.StartRequest) (out live.StartResponse, e error) {
+	stage := "validate request"
+	defer func() {
+		if e != nil {
+			e = fmt.Errorf("livestream start (%s): %w", stage, e)
+		}
+	}()
 	if e = live.ValidateStart(req); e != nil {
 		return
 	}
 	if e = r.configured(); e != nil {
 		return
 	}
+	stage = "lock initial authority and stream"
 	tx, p, v, e := r.locked(ctx, actor, id, "", "livestreams.start", true, false)
 	if e != nil {
 		return out, e
@@ -136,11 +143,13 @@ func (r *Repository) Start(ctx context.Context, actor, id string, req live.Start
 		if x = tx.QueryRowContext(ctx, `SELECT version FROM owned_authority_accounts WHERE id=$1`, ownerScope.owner).Scan(&ownerVersion); x != nil {
 			return out, x
 		}
-		_, e = tx.ExecContext(ctx, `INSERT INTO owned_livestream_runs(stream_id,generation,room_name,provider,endpoint,actor_id,session_id,account_version,session_epoch,owner_id,owner_version,mode,identity,ingress_name,participant_name,transcoding,request_hash,phase,created_at,updated_at,expires_at,next_attempt_at)VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$17,$18,$10,$11,$3,$12,$13,$14,'attempted',$15,$15,$16,$15)`, id, generation, room, r.provider.Name(), r.provider.Endpoint(), actor, p.Session.ID, p.Account.Version, p.Session.Epoch, mode, identity, name, transcode, digest, at, at.Add(r.cfg.MaxRunDuration), ownerScope.owner, ownerVersion)
+		stage = "insert durable run intent"
+		_, e = tx.ExecContext(ctx, `INSERT INTO owned_livestream_runs(stream_id,generation,room_name,provider,endpoint,actor_id,session_id,account_version,session_epoch,owner_id,owner_version,mode,identity,ingress_name,participant_name,transcoding,request_hash,phase,created_at,updated_at,expires_at,next_attempt_at)VALUES($1::uuid,$2::bigint,$3::text,$4::text,$5::text,$6::uuid,$7::uuid,$8::bigint,$9::bigint,$17::uuid,$18::bigint,$10::integer,$11::text,$3::text,$12::text,$13::boolean,$14::bytea,'attempted',$15::timestamptz,$15::timestamptz,$16::timestamptz,$15::timestamptz)`, id, generation, room, r.provider.Name(), r.provider.Endpoint(), actor, p.Session.ID, p.Account.Version, p.Session.Epoch, mode, identity, name, transcode, digest, at, at.Add(r.cfg.MaxRunDuration), ownerScope.owner, ownerVersion)
 		if e != nil {
 			return out, e
 		}
-		_, e = tx.ExecContext(ctx, `UPDATE owned_livestreams SET generation=$2,room_name=$3,operation_state='starting',status=0,started_at=NULL,ended_at=NULL,viewer_count=0,updated_at=$4 WHERE id=$1`, id, generation, room, at)
+		stage = "mark stream starting"
+		_, e = tx.ExecContext(ctx, `UPDATE owned_livestreams SET generation=$2,room_name=$3,operation_state='starting',status=0,started_at=NULL,ended_at=NULL,viewer_count=0,updated_at=$4::timestamptz WHERE id=$1::uuid`, id, generation, room, at)
 		if e != nil {
 			return out, e
 		}
@@ -153,14 +162,17 @@ func (r *Repository) Start(ctx context.Context, actor, id string, req live.Start
 	}
 	// The attempt is durable before any provider operation. Only this invocation
 	// may perform the first create; later invocations only discover its result.
+	stage = "commit durable run intent"
 	if e = r.commit(ctx, tx, actor, "livestreams.start"); e != nil {
 		return out, e
 	}
+	stage = "lock activation authority and stream"
 	tx, p, v, e = r.locked(ctx, actor, id, "", "livestreams.start", true, false)
 	if e != nil {
 		return out, e
 	}
 	defer tx.Rollback()
+	stage = "load recorded run intent"
 	run, e := loadRun(ctx, tx, id, v.Generation)
 	if e != nil {
 		return out, e
@@ -180,11 +192,13 @@ func (r *Repository) Start(ctx context.Context, actor, id string, req live.Start
 	}
 	op, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
+	stage = "ensure provider room"
 	if e = r.provider.EnsureRoom(op, run.Room); e != nil {
 		return out, live.ErrProvider
 	}
 	out = live.StartResponse{URL: r.provider.Endpoint(), RoomName: run.Room}
 	if run.Mode != 0 {
+		stage = "reconcile provider ingress"
 		ing, x := r.findIngress(op, run)
 		if x != nil {
 			return out, x
@@ -219,16 +233,20 @@ func (r *Repository) Start(ctx context.Context, actor, id string, req live.Start
 				return out, e
 			}
 		}
-		if _, e = tx.ExecContext(ctx, `UPDATE owned_livestream_runs SET phase='active',ingress_id=$3,updated_at=$4,next_attempt_at=$4+interval '10 seconds' WHERE stream_id=$1 AND generation=$2`, id, run.Generation, run.Ingress, at); e != nil {
+		stage = "activate durable run"
+		if _, e = tx.ExecContext(ctx, `UPDATE owned_livestream_runs SET phase='active',ingress_id=$3::text,updated_at=$4::timestamptz,next_attempt_at=$4::timestamptz+interval '10 seconds' WHERE stream_id=$1::uuid AND generation=$2::bigint`, id, run.Generation, run.Ingress, at); e != nil {
 			return out, e
 		}
-		if _, e = tx.ExecContext(ctx, `UPDATE owned_livestreams SET operation_state='active',status=1,started_at=$2,ended_at=NULL,updated_at=$2 WHERE id=$1`, id, at); e != nil {
+		stage = "activate stream"
+		if _, e = tx.ExecContext(ctx, `UPDATE owned_livestreams SET operation_state='active',status=1,started_at=$2::timestamptz,ended_at=NULL,updated_at=$2::timestamptz WHERE id=$1::uuid`, id, at); e != nil {
 			return out, e
 		}
+		stage = "audit activation"
 		if e = audit(ctx, tx, id, actor, "livestreams.start"); e != nil {
 			return out, e
 		}
 	}
+	stage = "commit activation"
 	if e = r.commit(ctx, tx, actor, "livestreams.start"); e != nil {
 		return live.StartResponse{}, e
 	}
@@ -308,7 +326,7 @@ func (r *Repository) Token(ctx context.Context, actor, id string, streamer, tool
 	if e != nil || token == "" {
 		return out, live.ErrProvider
 	}
-	_, e = tx.ExecContext(ctx, `INSERT INTO owned_livestream_admissions(stream_id,generation,session_id,actor_id,tool,publishing,permission,identity,account_version,session_epoch,state,issued_at,expires_at)VALUES($1,$2,$3,$4,$5,$6,$12,$7,$8,$9,'admitted',$10,$11)ON CONFLICT(stream_id,generation,session_id,tool,publishing)DO UPDATE SET identity=EXCLUDED.identity,account_version=EXCLUDED.account_version,session_epoch=EXCLUDED.session_epoch,state='admitted',permission=EXCLUDED.permission,issued_at=EXCLUDED.issued_at,expires_at=EXCLUDED.expires_at`, id, run.Generation, p.Session.ID, actor, tool, streamer, identity, p.Account.Version, p.Session.Epoch, at, expiry, permission)
+	_, e = tx.ExecContext(ctx, `INSERT INTO owned_livestream_admissions(stream_id,generation,session_id,actor_id,tool,publishing,permission,identity,account_version,session_epoch,state,issued_at,expires_at)VALUES($1::uuid,$2::bigint,$3::uuid,$4::uuid,$5::boolean,$6::boolean,$12::text,$7::uuid,$8::bigint,$9::bigint,'admitted',$10::timestamptz,$11::timestamptz)ON CONFLICT(stream_id,generation,session_id,tool,publishing)DO UPDATE SET identity=EXCLUDED.identity,account_version=EXCLUDED.account_version,session_epoch=EXCLUDED.session_epoch,state='admitted',permission=EXCLUDED.permission,issued_at=EXCLUDED.issued_at,expires_at=EXCLUDED.expires_at`, id, run.Generation, p.Session.ID, actor, tool, streamer, identity, p.Account.Version, p.Session.Epoch, at, expiry, permission)
 	if e != nil {
 		return out, e
 	}
@@ -352,11 +370,11 @@ func markEnd(ctx context.Context, tx *sql.Tx, v live.Stream, deleting bool, acto
 		deleted = at
 		state = "deleted"
 	}
-	_, e = tx.ExecContext(ctx, `UPDATE owned_livestreams SET status=2,operation_state=$2,ended_at=COALESCE(ended_at,$3::timestamptz),total_duration_seconds=total_duration_seconds+$4,viewer_count=0,deleted_at=COALESCE(deleted_at,$5::timestamptz),updated_at=$3 WHERE id=$1`, v.ID, state, at, duration, deleted)
+	_, e = tx.ExecContext(ctx, `UPDATE owned_livestreams SET status=2,operation_state=$2,ended_at=COALESCE(ended_at,$3::timestamptz),total_duration_seconds=total_duration_seconds+$4,viewer_count=0,deleted_at=COALESCE(deleted_at,$5::timestamptz),updated_at=$3::timestamptz WHERE id=$1::uuid`, v.ID, state, at, duration, deleted)
 	if e != nil {
 		return e
 	}
-	if _, e = tx.ExecContext(ctx, `UPDATE owned_livestream_runs SET phase='ending',updated_at=$2,next_attempt_at=$2 WHERE stream_id=$1 AND phase<>'done'`, v.ID, at); e != nil {
+	if _, e = tx.ExecContext(ctx, `UPDATE owned_livestream_runs SET phase='ending',updated_at=$2::timestamptz,next_attempt_at=$2::timestamptz WHERE stream_id=$1::uuid AND phase<>'done'`, v.ID, at); e != nil {
 		return e
 	}
 	if _, e = tx.ExecContext(ctx, `UPDATE owned_livestream_admissions SET state='removing' WHERE stream_id=$1 AND state='admitted'`, v.ID); e != nil {

@@ -36,13 +36,14 @@ func TestPGBackendLivestreamComposition(t *testing.T) {
 	if !host.IsStreamer {
 		t.Fatal("owner publishing unavailable")
 	}
-	backendJSONCall(t, app, "PATCH", "/api/livestreams/"+stream.ID, f.token, map[string]any{"visibility": live.Private}, 200)
-	backendCall(t, app, "GET", "/api/livestreams/"+stream.ID, f.otherToken, "", 404)
+	backendJSONCall(t, app, "PATCH", "/api/livestreams/"+stream.ID, f.token, map[string]any{"visibility": live.Private}, 409)
 	backendCall(t, app, "POST", "/api/livestreams/"+stream.ID+"/end", f.token, "", 200)
 	query(t, f.db, `UPDATE owned_livestream_runs SET next_attempt_at=clock_timestamp()-interval '1 microsecond' WHERE stream_id=$1::uuid`, stream.ID)
 	if _, e = app.ProcessExternalDue(context.Background(), 100); e != nil {
 		t.Fatal(e)
 	}
+	backendJSONCall(t, app, "PATCH", "/api/livestreams/"+stream.ID, f.token, map[string]any{"visibility": live.Private}, 200)
+	backendCall(t, app, "GET", "/api/livestreams/"+stream.ID, f.otherToken, "", 404)
 	var phase string
 	if e = f.db.QueryRow(`SELECT phase FROM owned_livestream_runs WHERE stream_id=$1::uuid`, stream.ID).Scan(&phase); e != nil || phase != "done" {
 		t.Fatal("durable cleanup", phase, e)

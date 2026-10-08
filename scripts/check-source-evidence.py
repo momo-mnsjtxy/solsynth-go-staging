@@ -80,6 +80,13 @@ def check(root):
         if hashlib.sha256((root / entry["file"]).read_bytes()).hexdigest() != entry["sha256"]:
             raise ValueError("post lifecycle evidence mismatch: " + entry["file"])
         count += 1
+    base = root / "ports/media/source"
+    for entry in json.loads((base / "manifest.json").read_text()):
+        data = (base / entry["file"]).read_bytes()
+        blob = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
+        if hashlib.sha256(data).hexdigest() != entry["sha256"] or blob != entry["git_blob"]:
+            raise ValueError("media evidence mismatch: " + entry["file"])
+        count += 1
     return count
 
 

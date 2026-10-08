@@ -29,7 +29,7 @@ func socialFixture(t *testing.T) (*sql.DB, *socialpg.Repository, []string) {
 	}
 	ids := []string{authorityUUID(t), authorityUUID(t), authorityUUID(t), authorityUUID(t)}
 	for _, id := range ids {
-		if e := authoritypg.SeedSynthetic(context.Background(), db, id, "social_"+strings.ReplaceAll(id, "-", ""), time.Now()); e != nil {
+		if e := authoritypg.SeedSynthetic(context.Background(), db, id, "synthetic_social_"+strings.ReplaceAll(id, "-", ""), time.Now()); e != nil {
 			t.Fatal(e)
 		}
 		query(t, db, `INSERT INTO owned_realm_quota(account_id,total,starts_at)VALUES($1,8,'2020-01-01')`, id)
@@ -381,7 +381,7 @@ func TestPGSocialRestartPersistence(t *testing.T) {
 	case "before":
 		query(t, db, socialpg.Schema)
 		for _, id := range []string{a, b} {
-			if e := authoritypg.SeedSynthetic(ctx, db, id, "restart_"+strings.ReplaceAll(id, "-", ""), time.Now()); e != nil {
+			if e := authoritypg.SeedSynthetic(ctx, db, id, "synthetic_restart_"+strings.ReplaceAll(id, "-", ""), time.Now()); e != nil {
 				t.Fatal(e)
 			}
 		}

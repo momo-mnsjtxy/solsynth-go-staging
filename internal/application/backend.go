@@ -13,12 +13,14 @@ import (
 	"solsynth.local/go-migration/internal/boardpg"
 	"solsynth.local/go-migration/internal/chatpg"
 	"solsynth.local/go-migration/internal/interactionpg"
+	"solsynth.local/go-migration/internal/mediapg"
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/internal/socialpg"
 	"solsynth.local/go-migration/internal/taxonomypg"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/media"
 	"solsynth.local/go-migration/ports/messager/rooms"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/board"
@@ -40,12 +42,15 @@ type Config struct {
 	AllowNonAtomicAuthorityWrites bool
 	CatalogProviders              []exchangecatalog.Provider
 	BadgeIconsPath                string
+	MediaStore                    media.ObjectStore
+	MaxMediaBytes                 int64
 }
 type Backend struct {
 	handler         http.Handler
 	verifier        *authority.Verifier
 	db, authorityDB *sql.DB
 	wallet          *walletpg.Repository
+	media           *mediapg.Repository
 }
 
 func (b *Backend) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -108,12 +113,24 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if c.SessionService != nil {
 		sessionHTTP = c.SessionService.Handler()
 	}
+	var mediaRepo *mediapg.Repository
+	var mediaHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "MEDIA_STORAGE_UNCONFIGURED") })
+	if c.MediaStore != nil {
+		if authorityDB != db || c.MaxMediaBytes <= 0 {
+			return nil, errors.New("media requires same-pool authority and explicit positive size limit")
+		}
+		mediaRepo, err = mediapg.New(db, c.MediaStore, guard, mediapg.Config{MaxFileBytes: c.MaxMediaBytes, PendingTTL: time.Hour})
+		if err != nil {
+			return nil, err
+		}
+		mediaHTTP = (&media.Service{Repository: mediaRepo, Authority: proofIdentity{identity}, MaxFileBytes: c.MaxMediaBytes}).Handler()
+	}
 	catalogs, err := publicCatalogs(c)
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bh), taxonomy: bindIdentity(v, th), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, mh), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{handler: h, verifier: v, wallet: wallet, db: db, authorityDB: authorityDB}, nil
+	h := router{modules{media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bh), taxonomy: bindIdentity(v, th), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, mh), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	return &Backend{handler: h, verifier: v, wallet: wallet, media: mediaRepo, db: db, authorityDB: authorityDB}, nil
 }
 
 type accountLookup interface {

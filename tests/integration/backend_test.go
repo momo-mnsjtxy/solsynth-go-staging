@@ -4,6 +4,7 @@ package integration_test
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"crypto/x509"
 	"database/sql"
 	"encoding/json"
@@ -172,9 +173,10 @@ func TestPGBackendDomainComposition(t *testing.T) {
 	backendCall(t, f.app, "GET", "/sphere/posts/"+draft.ID, "", "", 404)
 	backendCall(t, f.app, "POST", "/sphere/posts/"+draft.ID+"/reactions", f.otherToken, `{"symbol":"heart","attitude":0}`, 200)
 	backendCall(t, f.app, "POST", "/sphere/posts/"+draft.ID+"/bookmark", f.otherToken, "", 200)
-	backendCall(t, f.app, "POST", "/sphere/publishers/"+pub.ID+"/collections", f.token, `{"slug":"composed"}`, 201)
-	backendCall(t, f.app, "POST", "/sphere/publishers/"+pub.ID+"/collections/composed/posts", f.token, fmt.Sprintf(`{"post_id":%q}`, draft.ID), 204)
-	backendCall(t, f.app, "GET", "/sphere/publishers/"+pub.ID+"/collections/composed/posts", f.otherToken, "", 200)
+	backendCall(t, f.app, "POST", "/sphere/publishers/"+pub.Name+"/collections", f.token, `{"slug":"composed"}`, 201)
+	backendCall(t, f.app, "POST", "/sphere/publishers/"+pub.Name+"/collections/composed/posts", f.token, fmt.Sprintf(`{"post_id":%q}`, draft.ID), 204)
+	backendCall(t, f.app, "GET", "/sphere/publishers/"+pub.Name+"/collections/composed/posts", f.otherToken, "", 200)
+	query(t, f.db, `INSERT INTO owned_realm_quota(account_id,total,starts_at) VALUES($1,2,now())`, f.actor)
 	realmRaw := backendCall(t, f.app, "POST", "/passport/realms", f.token, fmt.Sprintf(`{"slug":%q,"name":"Composed realm"}`, "realm_"+strings.ReplaceAll(f.actor, "-", "")), 200)
 	var realm struct {
 		ID string `json:"id"`
@@ -242,6 +244,9 @@ func TestPGBackendHTTPProcessRestart(t *testing.T) {
 	u.RawQuery = q.Encode()
 	t.Setenv("BACKEND_PROCESS_TEST_DSN", u.String())
 	args := []string{"--serve", "--dsn-env=BACKEND_PROCESS_TEST_DSN", "--issuer=" + f.config.Issuer, "--audience=" + f.config.Audience, "--key-id=synthetic", "--trusted-public-key-file=" + public, "--taxonomy-public-visibility=0", "--messager-none-encryption=77", "--messager-notify-all=10", "--messager-notify-mentions=20", "--messager-notify-none=30"}
+	mediaRoot := t.TempDir()
+	args = append(args, "--media-root="+mediaRoot, "--media-max-bytes=1048576")
+	query(t, f.db, `INSERT INTO owned_media_quotas(account_id,limit_bytes) VALUES($1,1048576)`, f.actor)
 	headers := map[string]string{"Authorization": "Bearer " + f.token}
 	p := startDomainProcess(t, "BACKEND_BINARY", "Authenticated backend listening on ", args...)
 	p.call(t, "GET", "/readyz", "", 200, nil)
@@ -279,12 +284,27 @@ func TestPGBackendHTTPProcessRestart(t *testing.T) {
 	p.call(t, "POST", "/stargate/relationships/"+f.other+"/friends", "", 200, headers)
 	p.call(t, "POST", "/stargate/relationships/"+f.actor+"/friends/accept", "", 200, otherHeaders)
 	p.call(t, "POST", "/sphere/posts/"+savedPost.ID+"/bookmark", "", 200, otherHeaders)
+	mediaBody := "process-media-restart"
+	digest := sha256.Sum256([]byte(mediaBody))
+	mediaHeaders := map[string]string{"Authorization": "Bearer " + f.token, "Content-Type": "text/plain", "X-File-Name": "fixture.txt", "X-Content-SHA256": fmt.Sprintf("%x", digest), "Idempotency-Key": "process-media"}
+	fileRaw, _ := p.call(t, "POST", "/drive/media/files", mediaBody, 201, mediaHeaders)
+	var savedFile struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(fileRaw, &savedFile); err != nil || savedFile.ID == "" {
+		t.Fatal("media process projection", err)
+	}
 	p.stop()
 	p = startDomainProcess(t, "BACKEND_BINARY", "Authenticated backend listening on ", args...)
 	raw, _ := p.call(t, "GET", "/api/accounts/me/board", "", 200, headers)
 	if !bytes.Contains(raw, []byte("backend-process-restart")) {
 		t.Fatal("committed data lost across process restart")
 	}
+	fileAfter, _ := p.call(t, "GET", "/drive/files/"+savedFile.ID, "", 200, headers)
+	if string(fileAfter) != mediaBody {
+		t.Fatal("media bytes changed across process restart")
+	}
+	p.call(t, "GET", "/drive/files/"+savedFile.ID, "", 404, nil)
 	bookmarkRaw, _ := p.call(t, "GET", "/sphere/posts/"+savedPost.ID+"/bookmark", "", 200, otherHeaders)
 	if !bytes.Contains(bookmarkRaw, []byte(savedPost.ID)) {
 		t.Fatal("bookmark lost across process restart")

@@ -10,7 +10,7 @@ import (
 
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
-type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social http.Handler }
+type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media http.Handler }
 type router struct{ modules }
 
 func under(p, base string) bool { return p == base || strings.HasPrefix(p, base+"/") }
@@ -73,6 +73,13 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		} else {
 			canonical = "/api"
 		}
+	case "drive":
+		target = h.media
+		if found {
+			canonical = "/api/" + rest
+		} else {
+			canonical = "/api"
+		}
 	case "wallet":
 		target = h.wallet
 		if found {
@@ -119,6 +126,9 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if h.accounts != nil && (under(canonical, "/api/publishers") || under(canonical, "/api/accounts") && !boardRoute(canonical) && canonical != "/api/accounts/me/pin-status") && (service == "sphere" || service == "passport" || service == "api") {
 		target = h.accounts
+	}
+	if h.media != nil && (under(canonical, "/api/media") || under(canonical, "/api/files")) && (service == "drive" || service == "api") {
+		target = h.media
 	}
 	if h.interactions != nil && interactionRoute(canonical) && (service == "sphere" || service == "api") {
 		target = h.interactions

@@ -18,6 +18,7 @@ def check():
         shutil.copytree(root, copy, ignore=shutil.ignore_patterns('.git', '.cache', '__pycache__', 'bin', 'obj'))
         assert evidence.check(copy) == baseline_count
         mutations = [
+            "ports/media/source/DRIVE_API.md",
             'ports/sphere/posts/upstream/lib__posts__compose.dart',
             'ports/messager/source/ChatService.cs',
             'ports/develop/source/DysonNetwork.Develop__Identity__CustomAppPublicController.cs',

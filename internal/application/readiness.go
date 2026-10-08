@@ -28,6 +28,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err != nil || columns != 4 {
 		return errors.New("chat write schema unavailable")
 	}
+	if b.media != nil {
+		if err := b.media.Ready(ctx); err != nil {
+			return errors.New("media storage unavailable")
+		}
+	}
 	return nil
 }
 func (b *Backend) readinessHTTP(w http.ResponseWriter, r *http.Request) {

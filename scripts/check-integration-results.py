@@ -5,6 +5,15 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGMediaLifecycleAndIsolation",
+        "TestPGMediaQuotaAndIdempotencyConcurrency",
+        "TestPGMediaRollbackCleanupAndRecovery",
+        "TestPGMediaHTTPDirectAndRange",
+        "TestPGMediaFreshAuthorityAndCancellation",
+        "TestPGMediaAuthoritySerialization",
+        "TestPGMediaMetadataFailureAfterObjectWrite",
+        "TestPGMediaRestartPersistence",
+
         "TestPGSocialRelationships",
         "TestPGSocialRealms",
         "TestPGSocialTransactionsAndHTTP",
@@ -110,6 +119,7 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGMediaRestartPersistence",
         "TestPGSocialRestartPersistence",
         "TestPGPostInteractionsRestartPersistence",
 

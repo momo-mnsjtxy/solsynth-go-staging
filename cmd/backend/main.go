@@ -23,8 +23,10 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"solsynth.local/go-migration/internal/application"
 	"solsynth.local/go-migration/internal/authoritypg"
+	"solsynth.local/go-migration/internal/mediastore"
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/media"
 	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
 )
 
@@ -51,6 +53,8 @@ func run(args []string, out io.Writer) error {
 	all := fs.String("messager-notify-all", "", "explicit all-notifications mode stored in database")
 	mentions := fs.String("messager-notify-mentions", "", "explicit mentions-only notification mode")
 	noNotify := fs.String("messager-notify-none", "", "explicit no-notifications mode")
+	mediaRoot := fs.String("media-root", "", "explicit preprovisioned private filesystem media directory")
+	mediaMax := fs.Int64("media-max-bytes", 20<<20, "maximum streamed media object bytes")
 	catalogFile := fs.String("catalog-config", "", "optional explicit catalog JSON snapshot")
 	badgeIcons := fs.String("badge-icons", "", "optional directory of licensed badge icons")
 	pepperEnv := fs.String("pin-pepper-env", "", "optional explicit environment variable with base64 PIN pepper")
@@ -115,6 +119,18 @@ func run(args []string, out io.Writer) error {
 		defer clear(raw)
 		peppers[*pepperID] = raw
 	}
+	var objectStore media.ObjectStore
+	if *mediaMax <= 0 || *mediaMax > 1<<30 {
+		return errors.New("media maximum must be positive and at most one GiB")
+	}
+	if *mediaRoot != "" {
+		store, e := mediastore.NewFilesystem(*mediaRoot, *mediaMax)
+		if e != nil {
+			return errors.New("media root unavailable or not private")
+		}
+		defer store.Close()
+		objectStore = store
+	}
 	var catalogProviders []exchangecatalog.Provider
 	if *catalogFile != "" {
 		file, e := os.Open(*catalogFile)
@@ -140,7 +156,7 @@ func run(args []string, out io.Writer) error {
 	db.SetMaxOpenConns(30)
 	db.SetMaxIdleConns(5)
 	db.SetConnMaxLifetime(30 * time.Minute)
-	backend, err := application.NewPostgres(db, nil, application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons})
+	backend, err := application.NewPostgres(db, nil, application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax})
 	if err != nil {
 		return errors.New("backend configuration unavailable")
 	}
@@ -174,6 +190,12 @@ func run(args []string, out io.Writer) error {
 				cancel()
 				if err != nil {
 					fmt.Fprintln(out, "Wallet lifecycle batch failed; committed state remains durable.")
+				}
+				cleanupCtx, cleanupCancel := context.WithTimeout(ctx, 20*time.Second)
+				_, cleanupErr := backend.CleanupMedia(cleanupCtx, 100)
+				cleanupCancel()
+				if cleanupErr != nil {
+					fmt.Fprintln(out, "Media cleanup batch failed; durable reservations retained.")
 				}
 			}
 		}

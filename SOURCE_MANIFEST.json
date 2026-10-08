@@ -1,6 +1,6 @@
 {
-  "checkpoint": "admin-extensions-composition",
-  "scope": "359 before/49 restart candidate; full local build/vet/race plus focused corrected fixtures passed; actual PostgreSQL pending",
+  "checkpoint": "admin359-fixture-isolation",
+  "scope": "Isolated bounded correction; actual PostgreSQL CI pending; exact changed files establish runtime or fixture scope",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
@@ -8171,8 +8171,8 @@
     },
     {
       "path": "tests/integration/admin_extensions_test.go",
-      "bytes": 20181,
-      "sha256": "a31cc908b667c5b7b8ba5746cd14148394e862696b8e7382b12ee5da9943c71a"
+      "bytes": 20672,
+      "sha256": "205ba94e3e4707ea049118ec0806a2dda2fdfeefcc15048d2388f0b6c06c51b5"
     },
     {
       "path": "tests/integration/authority_atomic_test.go",
@@ -8246,8 +8246,8 @@
     },
     {
       "path": "tests/integration/backend_presence_test.go",
-      "bytes": 3494,
-      "sha256": "745d350145eb35185e463984fe5464b537c4e03dfb415d58f0c6f7ea18a66e61"
+      "bytes": 4115,
+      "sha256": "58a146573acd00af77a714d3b4939e81a863fca2ee13279bd37872207c65a8f6"
     },
     {
       "path": "tests/integration/backend_reader_test.go",

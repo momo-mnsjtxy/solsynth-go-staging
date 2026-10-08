@@ -226,6 +226,15 @@ func TestPGAdminStatisticsCanonicalCounts(t *testing.T) {
 	// Disposable ledger rows exercise aggregates; no payment command/provider runs.
 	payer, payee := authorityUUID(t), authorityUUID(t)
 	query(t, f.db, `INSERT INTO wallet_v1.wallets(id,account_id,name,created_at,updated_at)VALUES($1,$2,'Synthetic admin stats wallet',$3,$3),($4,$5,'Synthetic admin stats wallet',$3,$3)`, payer, f.actor, now, payee, f.other)
+
+	// Aggregate-only imported rows intentionally do not create ledger holds. Keep
+	// them confined to this fixture, including on assertion failure, so unrelated
+	// lifecycle workers never observe an unbacked pending transaction.
+	t.Cleanup(func() {
+		if _, err := f.db.Exec(`DELETE FROM wallet_v1.transactions WHERE payer_wallet_id=$1::uuid AND payee_wallet_id=$2::uuid AND currency='synthetic-admin-stats'`, payer, payee); err != nil {
+			t.Error("aggregate fixture cleanup", err)
+		}
+	})
 	for i, status := range []int{0, 2, 4} {
 		created := now.Add(-time.Duration(i) * 8 * 24 * time.Hour)
 		query(t, f.db, `INSERT INTO wallet_v1.transactions(id,actor_id,payer_wallet_id,payee_wallet_id,currency,amount,status,is_frozen,require_confirmation,expires_at,created_at,updated_at,fingerprint)VALUES($1,$2,$3,$4,'synthetic-admin-stats',1,$5,false,false,$6,$7,$7,$8)`, authorityUUID(t), f.actor, payer, payee, status, now.Add(time.Hour), created, strings.Repeat("0", 64))

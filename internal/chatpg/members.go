@@ -91,7 +91,7 @@ func (r *Repository) Invites(ctx context.Context, actor string, take, offset int
 		return nil, e
 	}
 	defer tx.Rollback()
-	rows, e := tx.QueryContext(ctx, `SELECT `+memberColumns+` FROM chat_members WHERE account_id=$1 AND joined_at IS NULL AND leave_at IS NULL AND deleted_at IS NULL AND NOT owned_banned AND EXISTS(SELECT 1 FROM chat_rooms r WHERE r.id=chat_room_id AND r.deleted_at IS NULL AND r.owned_owner_id IS NOT NULL AND r.encryption_mode=$2) AND `+r.ReadSQL("chat_members.chat_room_id", "$1")+` ORDER BY owned_updated_at DESC,id LIMIT $3 OFFSET $4`, actor, r.policy.NoneEncryptionMode, take, offset)
+	rows, e := tx.QueryContext(ctx, `SELECT `+memberColumns+` FROM chat_members WHERE account_id=$1 AND joined_at IS NULL AND leave_at IS NULL AND deleted_at IS NULL AND NOT owned_banned AND EXISTS(SELECT 1 FROM chat_rooms r WHERE r.id=chat_room_id AND r.deleted_at IS NULL AND r.owned_owner_id IS NOT NULL AND (r.encryption_mode=$2 OR ($5 AND r.encryption_mode=3))) AND `+r.ReadSQL("chat_members.chat_room_id", "$1")+` ORDER BY owned_updated_at DESC,id LIMIT $3 OFFSET $4`, actor, r.policy.NoneEncryptionMode, take, offset, r.mls)
 	if e != nil {
 		return nil, e
 	}

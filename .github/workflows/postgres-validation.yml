@@ -10,7 +10,7 @@ permissions:
 jobs:
   contracts:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 50
     steps:
       - name: Check out source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # official v4 resolved 2026-10-07
@@ -46,5 +46,5 @@ jobs:
       - name: Record scope
         if: success()
         run: |
-          echo 'Local build/vet/race checks passed. 516 actual PostgreSQL cases across owned Authority, Accounts, Wallet, Posts, Chat, Social, Interactions, Media, Apps, Notifications and Backend plus retained watcher/Board/Develop/NodeInfo/Messager/Taxonomy fixtures, 67 post-restart persistence assertions and real loopback backend/Board/Messager/Taxonomy/Develop/catalog/package/bot/NodeInfo process HTTP checks passed without skips.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Local build/vet/race checks passed. 539 actual PostgreSQL cases across owned Authority, Accounts, Wallet, Posts, Chat, Social, Interactions, Media, Apps, Notifications and Backend plus retained watcher/Board/Develop/NodeInfo/Messager/Taxonomy fixtures, 70 post-restart persistence assertions and real loopback backend/Board/Messager/Taxonomy/Develop/catalog/package/bot/NodeInfo process HTTP checks passed without skips.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Synthetic disposable private-socket database only. This validates the implemented owned authority protocol and explicitly configured domain policies; it does not establish upstream identity-protocol compatibility, production migration readiness, C# differential behavior, upstream watcher/global-filter parity, or whole-platform parity.' >> "$GITHUB_STEP_SUMMARY"

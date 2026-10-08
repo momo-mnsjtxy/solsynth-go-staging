@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Chat media/reactions, profile media, wallet funds, recurring app products and assurance-origin repair composed; exact-commit PG pending",
+  "local_source_checkpoint": "Stock, ticket media, opaque MLS and bounded runtime corrections composed; shared phase guards and exact restart markers added",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,14 +12,14 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "733a5f72745c92afed5cd18c948d6d3637959779",
-    "run": 37831906669,
+    "commit": "dd964c5bc7f307bd2c248d55c079b64627724d0f",
+    "run": 37833319218,
     "required_before": 516,
     "required_after_restart": 67,
-    "status": "Actual PostgreSQL running; earlier484 run failed on fourteen shared award setup handle/UUID fixtures and two noncanonical shadowban reasons, corrected in this local fixture-only follow-up. Full result pending."
+    "status": "Run37833319218 failed14 before-phase cases; restart not reached. Canonical quote/profile/funds/merchant-read corrections and fixture available-balance expectations are composed locally, awaiting a new actual run."
   },
-  "local_required_before": 516,
-  "local_required_after_restart": 67,
+  "local_required_before": 539,
+  "local_required_after_restart": 70,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -43,6 +43,7 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 4,
         "pending_guarded_cases": [
           "TestPGRecurringProductCheckoutAtomicAndIsolation",
           "TestPGRecurringProductRenewalEconomicsAndRevocation",
@@ -52,8 +53,7 @@
           "TestPGRecurringProductRestartPersistence"
         ],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 4
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:develop.apps_products"
     },
@@ -71,10 +71,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 4,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 4
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": null
     },
@@ -92,10 +92,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 4,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 4
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": null
     },
@@ -118,10 +118,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 9,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 9
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:develop.bots"
     },
@@ -147,10 +147,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 11,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 11
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": null
     },
@@ -173,10 +173,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 9,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 9
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:develop.miniapps"
     },
@@ -210,6 +210,7 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 13,
         "pending_guarded_cases": [
           "TestPGChatMediaLifecycleCurrentVisibilityAndIsolation",
           "TestPGChatReactionsContractsConcurrencyAndRollback",
@@ -218,8 +219,7 @@
           "TestPGChatMediaReactionsRestartPersistence"
         ],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 13
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:messager.messages"
     },
@@ -249,10 +249,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 15,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 15
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:messager.rooms"
     },
@@ -275,10 +275,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 8,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 8
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:messager.calls"
     },
@@ -293,10 +293,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 1,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 1
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.badges"
     },
@@ -318,10 +318,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 7,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 7
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.fortunes"
     },
@@ -370,6 +370,7 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 24,
         "pending_guarded_cases": [
           "TestPGProfileMediaComposedUploadReferenceAndRemoval",
           "TestPGProfileMediaOwnershipAtomicityAndCurrentPrivacy",
@@ -379,8 +380,7 @@
           "TestPGProfileMediaRestartPersistence"
         ],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 24
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.accounts_presence"
     },
@@ -402,10 +402,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 7,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 7
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.progression"
     },
@@ -434,10 +434,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 15,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 15
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.social_realms"
     },
@@ -460,10 +460,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 8,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 8
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.location_nfc"
     },
@@ -474,7 +474,8 @@
         "Private support cases/messages/assignment and on-call",
         "Exam bank, immutable attempts, automatic/manual grading, trials",
         "Explicit canonical group mappings and once-per-test canonical XP reward",
-        "Bounded durable reward retry worker applies canonical XP once without regrading"
+        "Bounded durable reward retry worker applies canonical XP once without regrading",
+        "Authored create/reply file_ids and per-message files with uploader ownership, current creator/assignee/operator download policy and revocation"
       ],
       "guarded_pg_cases": [
         "TestPGTicketsPrivateSupportLifecycle",
@@ -484,14 +485,25 @@
         "TestPGExamsFreshAuthorityAndDisabledIsolation",
         "TestPGTicketsExamsRestartPersistence",
         "TestPGExamsRewardSinkAtomicAndIdempotent",
-        "TestPGBackendTicketsExamProgressionComposition"
+        "TestPGBackendTicketsExamProgressionComposition",
+        "TestPGTicketMediaComposedLifecycleAndPrivateAudience",
+        "TestPGTicketMediaOwnershipIdempotencyAndAtomicRollback",
+        "TestPGTicketMediaFileWaitRevalidatesStateAndAuthority",
+        "TestPGTicketMediaReadWaitObservesAssignmentWithdrawal",
+        "TestPGTicketMediaRestartPersistence"
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "pending_guarded_cases": [],
+        "green_guarded_case_count": 8,
+        "pending_guarded_cases": [
+          "TestPGTicketMediaComposedLifecycleAndPrivateAudience",
+          "TestPGTicketMediaOwnershipIdempotencyAndAtomicRollback",
+          "TestPGTicketMediaFileWaitRevalidatesStateAndAuthority",
+          "TestPGTicketMediaReadWaitObservesAssignmentWithdrawal",
+          "TestPGTicketMediaRestartPersistence"
+        ],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 8
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.tickets_exams"
     },
@@ -513,10 +525,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 7,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 7
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.notable_days"
     },
@@ -534,10 +546,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 4,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 4
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.federation_discovery"
     },
@@ -561,10 +573,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 9,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 9
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.federation"
     },
@@ -598,10 +610,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 20,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 20
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.taxonomy"
     },
@@ -633,10 +645,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 17,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 17
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.publishers"
     },
@@ -647,10 +659,10 @@
       "guarded_pg_cases": [],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 0,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 0
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.live_ads"
     },
@@ -687,10 +699,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 20,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 20
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.content_utilities"
     },
@@ -716,10 +728,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 11,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 11
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.stickers_surveys"
     },
@@ -743,10 +755,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 8,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 8
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.timeline"
     },
@@ -795,10 +807,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 32,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 32
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.posts"
     },
@@ -806,15 +818,36 @@
       "source_family": "wallet.product_catalog",
       "local_status": "implemented_subset",
       "supported_flows": [
-        "Exchange and explicit product configuration catalogs composed into host"
+        "Exchange and explicit product configuration catalogs composed into host",
+        "Canonical order-item stock reservations with UTC windows/manual restock, atomic payment/cancellation release and finite recurring stock"
       ],
-      "guarded_pg_cases": [],
+      "guarded_pg_cases": [
+        "TestPGProductStockConcurrentReservationConsumeAndRelease",
+        "TestPGProductStockUTCWindowsExpiryAndRollback",
+        "TestPGProductStockManualRestockThroughHost",
+        "TestPGProductStockRecurringReservationRenewalAndCancel",
+        "TestPGProductStockConcurrentSubscriptionBuyers",
+        "TestPGProductStockRestockAndWindowWaits",
+        "TestPGProductStockCancellationPaymentRace",
+        "TestPGProductStockRejectsMismatchedCycleEconomics",
+        "TestPGProductStockRestartPersistence"
+      ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "pending_guarded_cases": [],
+        "green_guarded_case_count": 0,
+        "pending_guarded_cases": [
+          "TestPGProductStockConcurrentReservationConsumeAndRelease",
+          "TestPGProductStockUTCWindowsExpiryAndRollback",
+          "TestPGProductStockManualRestockThroughHost",
+          "TestPGProductStockRecurringReservationRenewalAndCancel",
+          "TestPGProductStockConcurrentSubscriptionBuyers",
+          "TestPGProductStockRestockAndWindowWaits",
+          "TestPGProductStockCancellationPaymentRace",
+          "TestPGProductStockRejectsMismatchedCycleEconomics",
+          "TestPGProductStockRestartPersistence"
+        ],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 0
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:wallet.product_catalog"
     },
@@ -838,10 +871,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 10,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 10
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:wallet.ledger"
     },
@@ -863,12 +896,12 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 6,
         "pending_guarded_cases": [
           "TestPGRecurringProductCheckoutExpiryDuringWalletWait"
         ],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 6
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:wallet.orders_payments"
     },
@@ -895,6 +928,7 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 6,
         "pending_guarded_cases": [
           "TestPGRecurringProductCheckoutAtomicAndIsolation",
           "TestPGRecurringProductRenewalEconomicsAndRevocation",
@@ -904,8 +938,7 @@
           "TestPGRecurringProductRestartPersistence"
         ],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 6
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:wallet.subscriptions_gifts"
     },
@@ -929,10 +962,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 9,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 9
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:wallet.merchants"
     },
@@ -948,10 +981,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 2,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 2
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:wallet.reporting"
     },
@@ -979,10 +1012,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 13,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 13
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:owned.oauth_oidc"
     },
@@ -998,10 +1031,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 1,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 1
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.ip_check"
     },
@@ -1022,10 +1055,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 6,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 6
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.name_cards"
     },
@@ -1045,10 +1078,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 5,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 5
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.rewind"
     },
@@ -1076,10 +1109,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 11,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 11
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:admin.content_moderation"
     },
@@ -1106,10 +1139,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 10,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 10
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.livestreams"
     },
@@ -1136,10 +1169,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 11,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 11
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:admin.verification_statistics_automod"
     },
@@ -1165,10 +1198,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 10,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 10
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.livestream_chat"
     },
@@ -1191,10 +1224,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 7,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 7
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:federation.publisher_aliases"
     },
@@ -1213,10 +1246,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 3,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 3
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.livestream_awards"
     },
@@ -1234,10 +1267,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 3,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 3
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.domain_trust_and_sphere.collection_admin"
     },
@@ -1256,10 +1289,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 3,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 3
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:passport.payment_pin"
     },
@@ -1276,10 +1309,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 1,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 1
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:owned.authority_refresh_continuity"
     },
@@ -1299,10 +1332,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 4,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 4
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:wallet.transfer_requests"
     },
@@ -1324,14 +1357,14 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 1,
         "pending_guarded_cases": [
           "TestPGFactorSetupAccountSecurityRestoration",
           "TestPGFactorSetupAccountSecurityRollbackAndProfileWrites",
           "TestPGFactorSetupSessionOriginFreshFallback"
         ],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 1
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:owned.factor_setup"
     },
@@ -1351,10 +1384,10 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 3,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 3
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.publisher_sponsorship_and_ratings"
     },
@@ -1372,13 +1405,13 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 0,
         "pending_guarded_cases": [
           "TestPGBackendLivestreamOutputPlaybackComposition",
           "TestPGLiveStreamOutputsRestartPersistence"
         ],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 0
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.livestream_egress_hls"
     },
@@ -1395,13 +1428,13 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 0,
         "pending_guarded_cases": [
           "TestPGCommerceMaintenanceQuarantineAllowsOtherRenewals",
           "TestPGCommerceMaintenanceQuarantineRestartPersistence"
         ],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 0
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:wallet.maintenance_quarantine"
     },
@@ -1419,13 +1452,13 @@
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 0,
         "pending_guarded_cases": [
           "TestPGBackendPostAwardCheckoutAndRelease",
           "TestPGPostAwardRestartPersistence"
         ],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 0
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:sphere.post_awards"
     },
@@ -1435,7 +1468,8 @@
       "supported_flows": [
         "Exact-mills held red packets with open/invited admission and even/random splits",
         "Raising contributions settle to captured creator beneficiary on success, and cancellation/expiry refunds remaining reservations once",
-        "Canonical PIN/current policy and durable concurrency/idempotency boundaries"
+        "Canonical PIN/current policy and durable concurrency/idempotency boundaries",
+        "Purpose-scoped canonical commerce uniqueness preserves separate fund receipts; explicit atomic index migration and duplicate-commerce regression"
       ],
       "guarded_pg_cases": [
         "TestPGWalletFundsRedPacketExactClaimsAndPublicHTTP",
@@ -1448,10 +1482,13 @@
         "TestPGWalletFundsPINPolicyProofAndRateLimits",
         "TestPGWalletFundsAuthorityAndNotificationProjection",
         "TestPGWalletFundsRestartPersistence",
-        "TestPGWalletFundsFixedRandomAndInputBounds"
+        "TestPGWalletFundsFixedRandomAndInputBounds",
+        "TestPGWalletManagedTransactionPurposeScopes",
+        "TestPGWalletManagedIndexLegacyMigrationAtomicity"
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 0,
         "pending_guarded_cases": [
           "TestPGWalletFundsRedPacketExactClaimsAndPublicHTTP",
           "TestPGWalletFundsRaisingInvitesPayoutAndImmutableBeneficiary",
@@ -1463,13 +1500,48 @@
           "TestPGWalletFundsPINPolicyProofAndRateLimits",
           "TestPGWalletFundsAuthorityAndNotificationProjection",
           "TestPGWalletFundsRestartPersistence",
-          "TestPGWalletFundsFixedRandomAndInputBounds"
+          "TestPGWalletFundsFixedRandomAndInputBounds",
+          "TestPGWalletManagedTransactionPurposeScopes",
+          "TestPGWalletManagedIndexLegacyMigrationAtomicity"
         ],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit.",
-        "green_guarded_case_count": 0
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
       },
       "remaining_reference": "current_remaining.families:wallet.funds"
+    },
+    {
+      "source_family": "messager.opaque_mls",
+      "local_status": "implemented_subset",
+      "supported_flows": [
+        "Account-owned devices, bounded opaque key packages with one-use audited claims, room/group binding and forward-only epochs",
+        "Joining grants, ordered per-device queue/ack, canonical ciphertext mutations and current membership/revocation checks",
+        "Explicit generation-aware reset capability, cross-generation replay/race rejection; no server decryption or cryptographic-possession claim"
+      ],
+      "guarded_pg_cases": [
+        "TestPGMLSOpaqueLifecycleIsolationAndRestart",
+        "TestPGMLSKeyClaimsAreOneUseAndRevocationDurable",
+        "TestPGMLSResetRequiresExplicitGenerationAndRejectsReplay",
+        "TestPGMLSCanonicalCiphertextAndAuthoredHTTP",
+        "TestPGMLSAtomicFanoutRollbackAndJoiningExpiry",
+        "TestPGMLSBackendAuthorityAndGatewayComposition",
+        "TestPGMLSRestartPersistence"
+      ],
+      "remaining_reference": "current_remaining.families:messager.opaque_mls",
+      "verification": {
+        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_guarded_case_count": 0,
+        "pending_guarded_cases": [
+          "TestPGMLSOpaqueLifecycleIsolationAndRestart",
+          "TestPGMLSKeyClaimsAreOneUseAndRevocationDurable",
+          "TestPGMLSResetRequiresExplicitGenerationAndRejectsReplay",
+          "TestPGMLSCanonicalCiphertextAndAuthoredHTTP",
+          "TestPGMLSAtomicFanoutRollbackAndJoiningExpiry",
+          "TestPGMLSBackendAuthorityAndGatewayComposition",
+          "TestPGMLSRestartPersistence"
+        ],
+        "unmapped_case_names": [],
+        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+      }
     }
   ],
   "additional_cross_service_flows": [
@@ -1557,6 +1629,7 @@
       "develop.apps_products",
       "messager.messages",
       "passport.accounts_presence",
+      "passport.tickets_exams",
       "sphere.live_ads",
       "wallet.product_catalog",
       "wallet.orders_payments",
@@ -1565,34 +1638,20 @@
       "sphere.livestream_egress_hls",
       "wallet.maintenance_quarantine",
       "sphere.post_awards",
-      "wallet.funds"
+      "wallet.funds",
+      "messager.opaque_mls"
     ],
-    "delivered_not_integrated": [
-      {
-        "family": "messager.opaque_mls",
-        "artifact": "chat-opaque-mls-control.patch",
-        "sha256": "a3bc271c5164dbf72eb1a9f3a18397161a598cd2a45c91832c78d29d9ff1b0dd",
-        "tests": 6,
-        "scope": "Opaque server authorization/delivery with explicit generation reset opt-in; cryptographic/client compatibility is not certified"
-      },
-      {
-        "family": "wallet.product_stock",
-        "artifact": "product-stock.patch",
-        "sha256": "41ea25501a2732633e0f56eaa81e230a231ad0f2df192d46d5da87c4dd160eb4",
-        "tests": 9,
-        "scope": "Canonical reservation/window/restock and recurring stock; actual PG pending"
-      }
-    ]
+    "delivered_not_integrated": []
   },
   "current_remaining": {
-    "as_of": "2026-10-08T19:33:00Z",
+    "as_of": "2026-10-08T19:43:00Z",
     "authoritative_for": "Known remaining flows, not a count of source operations. Partial/unresearched contracts remain research tasks; unavailable is never inferred from lack of prior research.",
     "families": [
       {
         "family": "develop.apps_products",
         "remaining": [
           "Remaining original app-management contracts",
-          "Required address fulfillment and external workspace/provider execution; finite stock backend is delivered separately"
+          "Required address fulfillment and external workspace/provider execution"
         ]
       },
       {
@@ -1610,7 +1669,7 @@
       {
         "family": "messager.messages",
         "remaining": [
-          "Full original system/message types, non-null thread/forward operations; opaque MLS backend is delivered separately and awaits integration/CI",
+          "Full original system/message types and non-null thread/forward operations",
           "Later client integration for generation-aware reset and encrypted deletion; attachment cryptography remains deferred frontend work"
         ]
       },
@@ -1619,7 +1678,7 @@
         "remaining": [
           "Custom fine-grained realm roles/permission enforcement is in progress",
           "Room profile/media customization and bot automatic confirmation/execution",
-          "Legacy system-message envelopes; opaque MLS backend is delivered separately"
+          "Legacy system-message envelopes"
         ]
       },
       {
@@ -1670,8 +1729,9 @@
       {
         "family": "passport.tickets_exams",
         "remaining": [
-          "Ticket attachments/newer unmapped status values",
-          "Activation requests remain pending until an authority activation policy exists",
+          "Attachment-only UI/controller disagreement and no evidenced per-message edit/detach route",
+          "Unmapped newer status values and excluded generated DTO parity",
+          "Activation requests remain pending until an explicit secure activation policy exists",
           "External provider delivery"
         ]
       },
@@ -1759,7 +1819,7 @@
         "remaining": [
           "Provider synchronization and trials",
           "Pending activation/group switching billing flow in progress",
-          "Required address and external workspace fulfillment; finite stock backend is delivered separately"
+          "Required address and external workspace fulfillment"
         ]
       },
       {
@@ -1922,6 +1982,14 @@
           "PIN-required contribution requires optional owned pin_code field; omitted PIN never bypasses policy",
           "Client-only recipient/order routes lack corresponding retained controller contract"
         ]
+      },
+      {
+        "family": "messager.opaque_mls",
+        "remaining": [
+          "Client reset and encrypted-delete integration required; original incomplete recovery sequence remains rejected",
+          "No implemented MLS cryptographic engine or validated client handshake/device possession",
+          "Authored attachment confidentiality limitation is deferred client work; no E2EE confidentiality marketing"
+        ]
       }
     ],
     "cross_platform": [
@@ -1934,7 +2002,7 @@
     ],
     "active_implementation": [
       "Realm custom permission lifecycle/enforcement",
-      "Ticket media attachment lifecycle",
+      "Affiliation spell/referral reconstruction",
       "Pending subscription activation and group switching"
     ],
     "not_remaining_missing_features": [
@@ -1944,7 +2012,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Those listed implementations have recorded tests; automatic enforcement, external providers and other explicitly named extensions remain separate gaps. Last full green is455/60; newer candidates and delivered patches await their own full runs."
+    "verification_note": "Last full green is455/60. Newer candidate runs failed before restart. The old pending recurring test used the wrong phase variable and has been corrected; no interim restart pass is credited. Current539/70 uses shared validated phase helpers for newly queued cases."
   },
   "global_remaining": [
     "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",

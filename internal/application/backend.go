@@ -46,6 +46,7 @@ import (
 	"solsynth.local/go-migration/internal/stickerpg"
 	"solsynth.local/go-migration/internal/surveypg"
 	"solsynth.local/go-migration/internal/taxonomypg"
+	"solsynth.local/go-migration/internal/ticketmediapg"
 	"solsynth.local/go-migration/internal/ticketpg"
 	"solsynth.local/go-migration/internal/timelinepg"
 	"solsynth.local/go-migration/internal/translationpg"
@@ -87,6 +88,7 @@ import (
 // Config is injected by the embedding application. Enum values are mandatory
 // explicit database-policy decisions; zero is never silently treated as public.
 type Config struct {
+	EnableMLSDelivery             bool // Explicit owned opaque delivery capability; requires MLSSchema.
 	PostAwards                    *postawardpg.Config
 	Sponsorship                   *sponsorshippg.Config
 	PublisherRatings              *publisherratingpg.Config
@@ -255,6 +257,12 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
+	if c.EnableMLSDelivery {
+		if c.MessagerPolicy.NoneEncryptionMode == rooms.MLSEncryptionMode {
+			return nil, errors.New("plaintext mapping must differ from authored MLS mode 3")
+		}
+		cr.WithMLSDelivery()
+	}
 	chatMedia := chatmediapg.New(db, cr, c.MessagerPolicy.NoneEncryptionMode)
 	cr.WithAssociations(chatMedia)
 	mr.WithMessageDecorator(chatMedia)
@@ -376,7 +384,9 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		if err != nil {
 			return nil, err
 		}
-		profileMedia := profilemediapg.New(db, mediapg.AnyReadVisibility{postMedia, chatMedia})
+		ticketMedia := ticketmediapg.New(db, ticketRepo)
+		ticketRepo.WithMedia(ticketMedia)
+		profileMedia := profilemediapg.New(db, mediapg.AnyReadVisibility{postMedia, chatMedia, ticketMedia})
 		accountRepo.WithProfileMedia(profileMedia)
 		mediaRepo.WithReadVisibility(profileMedia)
 		mediaHTTP = (&media.Service{Repository: mediaRepo, Authority: proofIdentity{identity}, MaxFileBytes: c.MaxMediaBytes}).Handler()

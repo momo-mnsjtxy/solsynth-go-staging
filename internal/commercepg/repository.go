@@ -31,6 +31,7 @@ type Product struct {
 	Enabled                  bool
 	StockMode                string
 	StockQuantity            *int64
+	LastRestockedAt          *time.Time
 	Recurrence               string
 	RequiresAddress          bool
 	Catalog                  apps.Product
@@ -335,21 +336,17 @@ func (r *Repository) CreateOrder(ctx context.Context, req c.CreateOrder, key str
 			if p.Currency != o.Currency {
 				return o, c.ErrInvalid
 			}
-			if p.StockMode != "unlimited" {
-				if p.StockMode != "manual" || p.StockQuantity == nil || *p.StockQuantity < 0 {
-					return o, c.ErrUnavailable
-				}
-				var used int64
-				e = tx.QueryRowContext(ctx, `SELECT COALESCE(sum(i.quantity),0) FROM commerce_v1.order_items i JOIN commerce_v1.orders o ON o.id=i.order_id WHERE i.product_id=$1 AND (o.status IN (1,3) OR o.status=0 AND o.expires_at>$2)`, p.ID, now).Scan(&used)
-				if e != nil {
-					return o, e
-				}
-				if used+int64(totals[name]) > *p.StockQuantity {
-					return o, c.ErrStock
-				}
-			}
 			o.Items = append(o.Items, c.OrderItem{ProductIdentifier: name, Quantity: totals[name], UnitPrice: p.Price, Currency: p.Currency})
 			items = append(items, selection{p, totals[name]})
+		}
+	}
+	// A blocked product read may cross a stock window or manual restock.
+	// Admit all items using one fresh clock after every product lock is owned.
+	now = r.now().UTC()
+	o.CreatedAt, o.UpdatedAt, o.ExpiredAt = now, now, now.Add(time.Duration(req.DurationHours)*time.Hour)
+	for _, item := range items {
+		if e = checkProductStock(ctx, tx, item.p, item.quantity, now); e != nil {
+			return o, e
 		}
 	}
 	if len(o.Items) > 0 {
@@ -368,7 +365,7 @@ func (r *Repository) CreateOrder(ctx context.Context, req c.CreateOrder, key str
 		return o, e
 	}
 	for _, item := range items {
-		_, e = tx.ExecContext(ctx, `INSERT INTO commerce_v1.order_items(order_id,product_id,identifier,quantity) VALUES($1,$2,$3,$4)`, o.ID, item.p.ID, item.p.Identifier, item.quantity)
+		e = reserveProduct(ctx, tx, o.ID, item.p.ID, item.p.Identifier, item.quantity)
 		if e != nil {
 			return o, e
 		}

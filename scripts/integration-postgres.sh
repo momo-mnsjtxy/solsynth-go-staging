@@ -57,6 +57,7 @@ start
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/walletpg/transfer_requests_schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/walletpg/funds_schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/commercepg/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/commercepg/order_index_scope.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/commercepg/maintenance_schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/translationpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/postpg/schema.sql
@@ -71,6 +72,7 @@ start
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/timelinepg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/postmediapg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/profilemediapg/schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/ticketmediapg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/surveypg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/stickerpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f tests/integration/schema.sql
@@ -84,6 +86,7 @@ start
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/chatpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/chatmediapg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/chatpg/relations_schema.sql
+"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/chatpg/mls_schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/presencepg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/progressionpg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f internal/notabledaypg/schema.sql
@@ -113,7 +116,7 @@ export TAXONOMY_BINARY="$run/taxonomy"
 "$GO_BIN" build -o "$run/develop-discovery" ./cmd/develop-discovery
 "$GO_BIN" build -o "$run/solsynth-go" ./cmd/solsynth-go
 "$GO_BIN" build -o "$run/nodeinfo" ./cmd/nodeinfo
-PG_TEST_PHASE=before "$GO_BIN" test -timeout 20m -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern before)" ./tests/integration | tee "$run/before.jsonl"
+PG_TEST_PHASE=before "$GO_BIN" test -timeout 30m -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern before)" ./tests/integration | tee "$run/before.jsonl"
 python3 scripts/check-integration-results.py before "$run/before.jsonl"
 python3 scripts/verify-develop-http.py "$run/develop-discovery"
 python3 scripts/verify-catalog-http.py "$run/solsynth-go"

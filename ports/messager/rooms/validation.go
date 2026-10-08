@@ -42,6 +42,20 @@ func ValidateTimeout(p *TimeoutRequest) error {
 	return nil
 }
 func ValidateText(p TextRequest, edit bool) (TextRequest, error) {
+	if p.Type != nil && *p.Type != "text" || p.SurveyID != nil || p.FundID != nil {
+		return p, ErrUnsupported
+	}
+	if p.EncryptionMeta != nil {
+		if e := ValidateEncryption(p.EncryptionMeta); e != nil {
+			return p, e
+		}
+		if p.ContentSet || p.Content != "" || p.Embeds != nil {
+			return p, ErrInvalid
+		}
+		if e := ValidateMLSReferenceMeta(p.Meta); e != nil {
+			return p, e
+		}
+	}
 	if !validText(p.Content, 4096) {
 		return p, ErrInvalid
 	}
@@ -78,7 +92,7 @@ func ValidateText(p TextRequest, edit bool) (TextRequest, error) {
 			return p, ErrInvalid
 		}
 	}
-	if !edit && strings.TrimSpace(p.Content) == "" && (p.AttachmentsID == nil || len(*p.AttachmentsID) == 0) && (p.Embeds == nil || len(*p.Embeds) == 0) {
+	if !edit && p.EncryptionMeta == nil && strings.TrimSpace(p.Content) == "" && (p.AttachmentsID == nil || len(*p.AttachmentsID) == 0) && (p.Embeds == nil || len(*p.Embeds) == 0) {
 		return p, ErrInvalid
 	}
 	if p.Nonce != nil && (!validText(*p.Nonce, 36) || strings.TrimSpace(*p.Nonce) == "") {

@@ -24,6 +24,7 @@ type Repository struct {
 	policy       rooms.Policy
 	guard        TransactionGuard
 	fixture      bool
+	mls          bool
 	social       rooms.SocialProvider
 	associations MessageAssociations
 }
@@ -147,7 +148,7 @@ func (r *Repository) room(ctx context.Context, tx *sql.Tx, rid string, lock bool
 		q += ` FOR UPDATE`
 	}
 	v, e := scanRoom(tx.QueryRowContext(ctx, q, rid))
-	if e == nil && v.EncryptionMode != r.policy.NoneEncryptionMode {
+	if e == nil && v.EncryptionMode != r.policy.NoneEncryptionMode && !(r.mls && v.EncryptionMode == rooms.MLSEncryptionMode) {
 		e = rooms.ErrUnsupported
 	}
 	if e == nil && v.RelationGuard {
@@ -318,7 +319,7 @@ func (r *Repository) List(ctx context.Context, actor string, take, offset int) (
 		return nil, e
 	}
 	defer tx.Rollback()
-	rows, e := tx.QueryContext(ctx, `SELECT `+roomColumns+` FROM chat_rooms WHERE owned_owner_id IS NOT NULL AND deleted_at IS NULL AND encryption_mode=$2 AND EXISTS(SELECT 1 FROM chat_members m WHERE m.chat_room_id=chat_rooms.id AND m.account_id=$1 AND m.joined_at IS NOT NULL AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned) AND `+r.ReadSQL("chat_rooms.id", "$1")+` ORDER BY owned_updated_at DESC,id LIMIT $3 OFFSET $4`, actor, r.policy.NoneEncryptionMode, take, offset)
+	rows, e := tx.QueryContext(ctx, `SELECT `+roomColumns+` FROM chat_rooms WHERE owned_owner_id IS NOT NULL AND deleted_at IS NULL AND (encryption_mode=$2 OR ($5 AND encryption_mode=3)) AND EXISTS(SELECT 1 FROM chat_members m WHERE m.chat_room_id=chat_rooms.id AND m.account_id=$1 AND m.joined_at IS NOT NULL AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned) AND `+r.ReadSQL("chat_rooms.id", "$1")+` ORDER BY owned_updated_at DESC,id LIMIT $3 OFFSET $4`, actor, r.policy.NoneEncryptionMode, take, offset, r.mls)
 	if e != nil {
 		return nil, e
 	}

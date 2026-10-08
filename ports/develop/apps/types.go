@@ -110,9 +110,11 @@ type AppPatch struct {
 	BackgroundID *string           `json:"background_id"`
 }
 type ProductState struct {
-	IsEnabled     bool   `json:"is_enabled"`
-	StockMode     string `json:"stock_mode"`
-	StockQuantity *int64 `json:"stock_quantity"`
+	IsEnabled             bool       `json:"is_enabled"`
+	StockMode             string     `json:"stock_mode"`
+	StockQuantity         *int64     `json:"stock_quantity"`
+	LastRestockedAt       *time.Time `json:"last_restocked_at"`
+	LastRestockedQuantity *int64     `json:"last_restocked_quantity"`
 }
 type Fulfillment struct {
 	IsAddressRequired bool     `json:"is_address_required"`
@@ -299,11 +301,19 @@ func ValidateProduct(p ProductPatch, create bool) error {
 		if p.State.StockQuantity != nil && *p.State.StockQuantity < 0 {
 			return ErrInvalid
 		}
-		if p.State.StockMode != nil && *p.State.StockMode != "unlimited" && *p.State.StockMode != "manual" {
+		if p.State.StockMode != nil && !SupportedStockMode(*p.State.StockMode) {
 			return ErrProvider
 		}
 	}
 	return nil
+}
+
+func SupportedStockMode(mode string) bool {
+	switch mode {
+	case "unlimited", "manual", "daily", "weekly", "monthly", "yearly":
+		return true
+	}
+	return false
 }
 func Duration(raw *string, def, max time.Duration) (time.Duration, error) {
 	if raw == nil {

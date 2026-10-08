@@ -68,9 +68,8 @@ not publish a purchasable subscription definition. Checkout also synchronizes a
 supported existing product after provisioning. Deleted/disabled/nonrecurring or
 unsupported products disable their existing definitions, preserving history.
 
-Supported recurring fulfillment is digital, unlimited stock, no address, with
-any requested scope backed by current explicit consent. Address/contact delivery,
-manual/periodic recurring stock allocation, mixed recurring baskets and quantities
+Supported recurring fulfillment is digital, no address, with
+any requested scope backed by current explicit consent. Address/contact delivery, mixed recurring baskets and merchant quantities
 above one remain unavailable or invalid. A one-time item requiring additional
 scope fulfillment now fails unavailable instead of silently ignoring its policy.
 
@@ -137,3 +136,7 @@ The sixth test is also mandatory after restart. No real PostgreSQL/socket run
 was attempted in this workspace; the parent's authorized private CI must execute
 these cases without skips. All fixtures are synthetic and run only behind the
 existing marked disposable-cluster guard.
+
+The dependent product-stock continuation adds all source stock windows and
+cycle-based recurring reservations; see `product-stock.md` for the owned renewal
+failure policy and additional concurrency coverage.

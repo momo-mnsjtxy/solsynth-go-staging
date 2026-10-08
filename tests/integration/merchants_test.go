@@ -125,6 +125,11 @@ func TestPGMerchantsCatalogRoundTripAndDisable(t *testing.T) {
 	if e != nil || o.Amount.String() != "3.333" {
 		t.Fatal("existing quote repriced", o, e)
 	}
+	paid, e := f.r.PayOrder(f.ctx, f.actor, o.ID, &f.wallet.ID)
+	if e != nil || paid.Amount.String() != "3.333" {
+		t.Fatal("captured catalog quote did not settle unchanged", paid, e)
+	}
+	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "96.667", "0.000", "96.667")
 	if e = r.DeleteDefinition(f.ctx, f.actor, key); e != nil {
 		t.Fatal(e)
 	}

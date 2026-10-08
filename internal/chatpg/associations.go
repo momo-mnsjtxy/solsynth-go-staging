@@ -23,6 +23,15 @@ func (r *Repository) WithAssociations(a MessageAssociations) *Repository {
 	return r
 }
 func (r *Repository) loadMessage(ctx context.Context, tx *sql.Tx, actor string, v *messager.MessageProjection) error {
+	if r.mls {
+		var raw []byte
+		if e := tx.QueryRowContext(ctx, `SELECT encryption_meta FROM chat_messages WHERE id=$1`, v.ID).Scan(&raw); e != nil {
+			return e
+		}
+		if len(raw) > 0 {
+			v.EncryptionMeta = raw
+		}
+	}
 	if r.associations != nil {
 		if e := r.associations.Load(ctx, tx, actor, v); e != nil {
 			return e
@@ -74,6 +83,9 @@ func mergeMeta(prior json.RawMessage, p rooms.TextRequest) json.RawMessage {
 	return out
 }
 func messageEmpty(v messager.MessageProjection) bool {
+	if len(v.EncryptionMeta) > 0 && string(v.EncryptionMeta) != "null" {
+		return false
+	}
 	if v.Content != nil && strings.TrimSpace(*v.Content) != "" {
 		return false
 	}

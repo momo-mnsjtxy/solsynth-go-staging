@@ -27,13 +27,20 @@ func loadTicket(ctx context.Context, tx *sql.Tx, id string, lock bool) (tickets.
 	if !authority.ValidID(id) {
 		return tickets.Ticket{}, tickets.ErrNotFound
 	}
-	q := `SELECT ` + ticketFields + ` FROM owned_ticket_cases t WHERE t.id=$1 AND t.deleted_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=t.creator_id AND NOT a.disabled)`
+	q := `SELECT ` + ticketFields + ` FROM owned_ticket_cases t WHERE t.id=$1 AND t.deleted_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=t.creator_id AND NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=a.id AND p.kind='disable_account' AND(p.starts_at IS NULL OR p.starts_at<=statement_timestamp())AND(p.expires_at IS NULL OR p.expires_at>statement_timestamp())))`
 	if lock {
 		q += ` FOR UPDATE OF t`
 	}
-	return scanTicket(tx.QueryRowContext(ctx, q, id))
+	t, e := scanTicket(tx.QueryRowContext(ctx, q, id))
+	if e != nil {
+		return t, e
+	}
+	if _, e = account(ctx, tx, t.CreatorID); e != nil {
+		return tickets.Ticket{}, e
+	}
+	return t, nil
 }
-func hydrateTicket(ctx context.Context, tx *sql.Tx, t *tickets.Ticket) error {
+func (r *Repository) hydrateTicket(ctx context.Context, tx *sql.Tx, actor string, t *tickets.Ticket) error {
 	var e error
 	t.Creator, e = account(ctx, tx, t.CreatorID)
 	if e != nil {
@@ -51,18 +58,30 @@ func hydrateTicket(ctx context.Context, tx *sql.Tx, t *tickets.Ticket) error {
 	if e != nil {
 		return e
 	}
-	defer rows.Close()
 	for rows.Next() {
 		var m tickets.Message
 		if e = rows.Scan(&m.ID, &m.TicketID, &m.SenderID, &m.Content, &m.CreatedAt, &m.Sender.Name, &m.Sender.Nick); e != nil {
+			rows.Close()
 			return e
 		}
 		m.Sender.ID = m.SenderID
 		m.Files = []any{}
 		t.Messages = append(t.Messages, m)
 	}
+	e = rows.Err()
+	rows.Close()
+	if e != nil {
+		return e
+	}
+	if r.media != nil {
+		for i := range t.Messages {
+			if e = r.media.Load(ctx, tx, actor, &t.Messages[i]); e != nil {
+				return e
+			}
+		}
+	}
 	t.MessagesTotal = len(t.Messages)
-	return rows.Err()
+	return nil
 }
 func (r *Repository) support(ctx context.Context, tx *sql.Tx, actor string, c tickets.Command, now time.Time) (out tickets.Result, e error) {
 	admin := false
@@ -163,7 +182,7 @@ func (r *Repository) support(ctx context.Context, tx *sql.Tx, actor string, c ti
 				if e != nil {
 					return out, e
 				}
-				e = hydrateTicket(ctx, tx, &t)
+				e = r.hydrateTicket(ctx, tx, actor, &t)
 				out.Value = t
 				return out, e
 			}
@@ -187,14 +206,14 @@ func (r *Repository) support(ctx context.Context, tx *sql.Tx, actor string, c ti
 		if e != nil {
 			return out, e
 		}
-		if _, e = addMessage(ctx, tx, actor, id, v.Content, "", now); e != nil {
+		if _, e = r.addMessage(ctx, tx, actor, id, v.Content, v.FileIDs, "", now); e != nil {
 			return out, e
 		}
 		t, e := loadTicket(ctx, tx, id, false)
 		if e != nil {
 			return out, e
 		}
-		e = hydrateTicket(ctx, tx, &t)
+		e = r.hydrateTicket(ctx, tx, actor, &t)
 		out.Value = t
 		out.Changed = true
 		out.ResourceID = id
@@ -218,7 +237,7 @@ func (r *Repository) support(ctx context.Context, tx *sql.Tx, actor string, c ti
 				return out, tickets.ErrUnsupported
 			}
 		}
-		where := ` FROM owned_ticket_cases t WHERE t.deleted_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=t.creator_id AND NOT a.disabled) AND ($1::text='' OR t.creator_id=NULLIF($1::text,'')::uuid) AND ($2::text='' OR t.assignee_id=NULLIF($2::text,'')::uuid) AND ($3::integer IS NULL OR t.type=$3) AND ($4::integer IS NULL OR t.status=$4) AND ($5::integer IS NULL OR t.priority=$5)`
+		where := ` FROM owned_ticket_cases t WHERE t.deleted_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=t.creator_id AND NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=a.id AND p.kind='disable_account' AND(p.starts_at IS NULL OR p.starts_at<=statement_timestamp())AND(p.expires_at IS NULL OR p.expires_at>statement_timestamp()))) AND ($1::text='' OR t.creator_id=NULLIF($1::text,'')::uuid) AND ($2::text='' OR t.assignee_id=NULLIF($2::text,'')::uuid) AND ($3::integer IS NULL OR t.type=$3) AND ($4::integer IS NULL OR t.status=$4) AND ($5::integer IS NULL OR t.priority=$5)`
 		var total int64
 		if e = tx.QueryRowContext(ctx, `SELECT count(*)`+where, q.CreatorID, q.AssigneeID, q.Type, q.Status, q.Priority).Scan(&total); e != nil {
 			return out, e
@@ -247,7 +266,7 @@ func (r *Repository) support(ctx context.Context, tx *sql.Tx, actor string, c ti
 			return out, e
 		}
 		for i := range items {
-			if e = hydrateTicket(ctx, tx, &items[i]); e != nil {
+			if e = r.hydrateTicket(ctx, tx, actor, &items[i]); e != nil {
 				return out, e
 			}
 		}
@@ -262,7 +281,7 @@ func (r *Repository) support(ctx context.Context, tx *sql.Tx, actor string, c ti
 		if !admin && t.CreatorID != actor && (t.AssigneeID == nil || *t.AssigneeID != actor) {
 			return out, tickets.ErrNotFound
 		}
-		e = hydrateTicket(ctx, tx, &t)
+		e = r.hydrateTicket(ctx, tx, actor, &t)
 		out.Value = t
 		return out, e
 	}
@@ -273,13 +292,10 @@ func (r *Repository) support(ctx context.Context, tx *sql.Tx, actor string, c ti
 		if c.Message == nil {
 			return out, tickets.ErrInvalid
 		}
-		if len(c.Message.FileIDs) > 0 {
-			return out, tickets.ErrUnsupported
-		}
-		if !tickets.Text(c.Message.Content, 1, 16384) {
+		if !tickets.ValidFileIDs(c.Message.FileIDs) || !tickets.Text(c.Message.Content, 1, 16384) {
 			return out, tickets.ErrInvalid
 		}
-		m, e := addMessage(ctx, tx, actor, t.ID, c.Message.Content, c.IdempotencyKey, now)
+		m, e := r.addMessage(ctx, tx, actor, t.ID, c.Message.Content, c.Message.FileIDs, c.IdempotencyKey, now)
 		out.Value = m
 		out.Changed = e == nil && !m.Replayed
 		out.ResourceID = m.ID
@@ -290,6 +306,11 @@ func (r *Repository) support(ctx context.Context, tx *sql.Tx, actor string, c ti
 	}
 	switch c.Operation {
 	case "ticket.delete":
+		if r.media != nil {
+			if e = r.media.RemoveTicket(ctx, tx, t.ID); e != nil {
+				return out, e
+			}
+		}
 		_, e = tx.ExecContext(ctx, `UPDATE owned_ticket_cases SET deleted_at=$2,updated_at=$2 WHERE id=$1`, t.ID, now)
 		out.Changed = e == nil
 		out.ResourceID = t.ID
@@ -358,14 +379,24 @@ func (r *Repository) support(ctx context.Context, tx *sql.Tx, actor string, c ti
 		return out, e
 	}
 	t.UpdatedAt = now
-	e = hydrateTicket(ctx, tx, &t)
+	e = r.hydrateTicket(ctx, tx, actor, &t)
 	out.Value = t
 	out.ResourceID = t.ID
 	out.Changed = true
 	return out, e
 }
-func addMessage(ctx context.Context, tx *sql.Tx, actor, id, content, key string, now time.Time) (m tickets.Message, e error) {
-	hash, e := digest(content)
+func (r *Repository) addMessage(ctx context.Context, tx *sql.Tx, actor, id, content string, files []string, key string, now time.Time) (m tickets.Message, e error) {
+	if len(files) > 0 && r.media == nil {
+		return m, tickets.ErrUnsupported
+	}
+	var identity any = content
+	if len(files) > 0 {
+		identity = struct {
+			Content string
+			Files   []string
+		}{content, files}
+	}
+	hash, e := digest(identity)
 	if e != nil {
 		return m, e
 	}
@@ -381,6 +412,9 @@ func addMessage(ctx context.Context, tx *sql.Tx, actor, id, content, key string,
 			m.SenderID = actor
 			m.Files = []any{}
 			m.Sender, e = account(ctx, tx, actor)
+			if e == nil && r.media != nil {
+				e = r.media.Load(ctx, tx, actor, &m)
+			}
 			return m, e
 		}
 		if !errors.Is(e, sql.ErrNoRows) {
@@ -410,6 +444,16 @@ func addMessage(ctx context.Context, tx *sql.Tx, actor, id, content, key string,
 	_, e = tx.ExecContext(ctx, `INSERT INTO owned_ticket_messages(id,ticket_id,sender_id,content,created_at,request_key,request_hash)VALUES($1,$2,$3,$4,$5,$6,$7)`, m.ID, id, actor, content, now, nullable(key), hash)
 	if e != nil {
 		return m, e
+	}
+	if len(files) > 0 {
+		if e = r.media.Apply(ctx, tx, actor, m.ID, files); e != nil {
+			return m, e
+		}
+	}
+	if r.media != nil {
+		if e = r.media.Load(ctx, tx, actor, &m); e != nil {
+			return m, e
+		}
 	}
 	_, e = tx.ExecContext(ctx, `UPDATE owned_ticket_cases SET updated_at=$2 WHERE id=$1`, id, now)
 	return m, e

@@ -87,6 +87,19 @@ def check(root):
         if hashlib.sha256(data).hexdigest() != entry["sha256"] or blob != entry["git_blob"]:
             raise ValueError("media evidence mismatch: " + entry["file"])
         count += 1
+    base = root / "ports/messager/mls-evidence"
+    for manifest_name in ("manifest.json", "server-docs-manifest.json"):
+        manifest = json.loads((base / manifest_name).read_text())
+        for entry in manifest["files"]:
+            data = (base / entry["file"]).read_bytes()
+            blob = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
+            if len(data) != entry["bytes"] or hashlib.sha256(data).hexdigest() != entry["sha256"] or blob != entry["blob"]:
+                raise ValueError("MLS source evidence mismatch: " + entry["file"])
+            count += 1
+        data = (base / manifest.get("license_file", "LICENSE.txt")).read_bytes()
+        if hashlib.sha256(data).hexdigest() != manifest["license_sha256"]:
+            raise ValueError("MLS source license mismatch")
+        count += 1
     return count
 
 

@@ -1,0 +1,39 @@
+{
+  "verification_date_utc": "2026-10-08",
+  "default_runtime_enabled": false,
+  "source_evidence": {
+    "whole_file_and_license_snapshots_verified": 463,
+    "mutation_negative_controls": 15,
+    "missing_file_negative_control": true,
+    "licensed_mls_sources": "ports/messager/mls-evidence/manifest.json",
+    "licensed_server_documents": "ports/messager/mls-evidence/server-docs-manifest.json"
+  },
+  "passed": [
+    "go test ./... (PostgreSQL-dependent cases skipped)",
+    "go test -race ./ports/messager/rooms ./internal/chatpg ./internal/application",
+    "go vet ./ports/messager/rooms ./internal/chatpg ./internal/application ./cmd/backend",
+    "new MLS schema parsed with pinned pglast 6.7 / PostgreSQL 16 grammar",
+    "independent read-only SQL/fixture review; identified stale enable UpdatedAt fixed with RETURNING"
+  ],
+  "not_established": [
+    "actual PostgreSQL catalog/type/locking/rollback outcomes",
+    "authored-client cryptographic handshake",
+    "MLS cryptographic verification",
+    "device signing-key possession",
+    "end-to-end attachment confidentiality"
+  ],
+  "postgres_cases": [
+    "TestPGMLSOpaqueLifecycleIsolationAndRestart",
+    "TestPGMLSKeyClaimsAreOneUseAndRevocationDurable",
+    "TestPGMLSResetRequiresExplicitGenerationAndRejectsReplay",
+    "TestPGMLSCanonicalCiphertextAndAuthoredHTTP",
+    "TestPGMLSAtomicFanoutRollbackAndJoiningExpiry",
+    "TestPGMLSBackendAuthorityAndGatewayComposition"
+  ],
+  "logs": {
+    "chat-opaque-control-test.log": "8e089361ae3d361171a0e940a02677a001b0d317c5a04bc47cdd20ab8570f1c2",
+    "chat-opaque-control-race.log": "22b0f71e77aedd5bd8da6ff4a7edf8264082e0e354940cd4f24f3a4c46567473",
+    "chat-opaque-control-final-targeted.log": "3bde0f0416b5172407461087c0d9b2373bae06cef9b388c2de9e1930a04707e3",
+    "chat-opaque-control-pg-local.log": "efa2de5b65872da9f91bf3d46ae9e226a968edee9a846701e0762cc0c29b7ddd"
+  }
+}

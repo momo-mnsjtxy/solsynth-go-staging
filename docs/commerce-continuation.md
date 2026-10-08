@@ -58,7 +58,8 @@ There is no standalone public settlement method.
 
 An unpaid order snapshots server-side product prices and its configured payout
 wallet. Duplicate items are combined and products locked in sorted order.
-Unlimited/manual stock counts unpaid unexpired plus paid/finished reservations;
+Bounded stock counts unpaid unexpired plus paid/finished reservations within its
+source-defined UTC/manual window;
 cancelled/expired orders release availability. Digital recurring app products use the canonical subscription fulfillment
 described in `recurring-products.md`; address-required products remain unavailable.
 Exact rational prices are added before the single truncation to canonical
@@ -100,8 +101,7 @@ require the host's publisher and idempotent consumers.
 ## Explicit remaining boundaries
 
 No automatic migration of legacy Wallet databases; realm-owned payer wallet
-payment; merchant payouts; coupon/free-trial programs; nonintegral or unbounded cycle durations; periodic product stock resets;
-address-contact fulfillment; subscription activation switching;
+payment; merchant payouts; coupon/free-trial programs; nonintegral or unbounded cycle durations; address-contact fulfillment; subscription activation switching;
 billing relation views; sponsor badge/golden-point grants; provider gold-currency
 minting; external billing cancellation; production provider clients; delivery of
 outbox events. Unsupported requests fail closed or are unrouted. These are not
@@ -139,3 +139,6 @@ synthetic and confined to the marked disposable cluster.
 
 Recurring app product fulfillment and bounded whole-cycle pricing are now implemented;
 see `recurring-products.md` for the complete contracts, independent policy and tests.
+
+`product-stock.md` documents periodic/manual stock windows, atomic recurring
+reservations, release/consume transitions and restart validation.

@@ -22,6 +22,7 @@ import (
 	"solsynth.local/go-migration/internal/profilemediapg"
 	"solsynth.local/go-migration/internal/socialpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/media"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/social"
 	"solsynth.local/go-migration/ports/sphere/posts"
@@ -350,7 +351,7 @@ func TestPGProfileMediaMembershipCannotRedistribute(t *testing.T) {
 	if _, e = f.social.ChangeMember(f.ctx, f.actor, f.private.ID, social.MemberChange{Action: social.Remove, AccountID: f.other}); e != nil {
 		t.Fatal(e)
 	}
-	if _, body, e := f.repo.Open(f.otherCtx, f.other, file.ID); !errors.Is(e, accounts.ErrNotFound) || body != nil {
+	if _, body, e := f.repo.Open(f.otherCtx, f.other, file.ID); !errors.Is(e, media.ErrNotFound) || body != nil {
 		if body != nil {
 			body.Close()
 		}
@@ -359,12 +360,13 @@ func TestPGProfileMediaMembershipCannotRedistribute(t *testing.T) {
 }
 
 func TestPGProfileMediaRestartPersistence(t *testing.T) {
+	phase := fixtureRestartPhase(t)
 	db := database(t)
 	root := os.Getenv("SOLSYNTH_DISPOSABLE_PG")
 	objects := filepath.Join(root, "profile-media-objects")
 	record := filepath.Join(root, "profile-media-record.json")
 	type saved struct{ Account, File string }
-	if os.Getenv("PG_TEST_PHASE") == "before" {
+	if phase == "before" {
 		f := newProfileMediaFixture(t)
 		if e := os.Mkdir(objects, 0700); e != nil {
 			t.Fatal(e)
@@ -382,7 +384,7 @@ func TestPGProfileMediaRestartPersistence(t *testing.T) {
 		}
 		return
 	}
-	if os.Getenv("PG_TEST_PHASE") != "after" {
+	if phase != "after" {
 		t.Fatal("explicit restart phase required")
 	}
 	b, e := os.ReadFile(record)

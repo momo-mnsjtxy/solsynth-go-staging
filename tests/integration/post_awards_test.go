@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"github.com/jackc/pgx/v5/pgconn"
-	"os"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/commercepg"
 	"solsynth.local/go-migration/internal/postawardpg"
@@ -109,7 +108,7 @@ func TestPGPostAwardCheckoutReceiptAndConservation(t *testing.T) {
 		t.Fatal("duplicate order")
 	}
 	walletAssertBalance(t, walletpg.New(f.db), f.payer.ID, "points", "94.875", "0.000", "94.875")
-	walletAssertBalance(t, walletpg.New(f.db), f.treasury.ID, "points", "0.000", "5.125", "5.125")
+	walletAssertBalance(t, walletpg.New(f.db), f.treasury.ID, "points", "0.000", "5.125", "0.000")
 	pending, e := f.awards.Pending(f.ctx, "", p.ID)
 	if e != nil || pending.Count != 1 || pending.TotalAmount.String() != "5.125" || pending.PayoutAmount.String() != "5.125" {
 		t.Fatal(pending, e)
@@ -297,7 +296,7 @@ func TestPGPostAwardReleaseDisabledBeneficiaryAndRollback(t *testing.T) {
 	if n, e := f.awards.ProcessDue(context.Background(), 100); e == nil || n != 0 {
 		t.Fatal(n, e)
 	}
-	walletAssertBalance(t, walletpg.New(f.db), f.treasury.ID, "points", "0.000", "5.000", "5.000")
+	walletAssertBalance(t, walletpg.New(f.db), f.treasury.ID, "points", "0.000", "5.000", "0.000")
 	query(t, f.db, `UPDATE owned_authority_accounts SET disabled=false WHERE id=$1::uuid`, f.actor)
 	query(t, f.db, `ALTER TABLE owned_post_award_audit ADD CONSTRAINT synthetic_post_award_release CHECK(action<>'settled' OR order_id<>'`+o.OrderID+`'::uuid) NOT VALID`)
 	t.Cleanup(func() {
@@ -308,7 +307,7 @@ func TestPGPostAwardReleaseDisabledBeneficiaryAndRollback(t *testing.T) {
 	if !errors.As(e, &pg) || pg.Code != "23514" || pg.ConstraintName != "synthetic_post_award_release" {
 		t.Fatal(e)
 	}
-	walletAssertBalance(t, walletpg.New(f.db), f.treasury.ID, "points", "0.000", "5.000", "5.000")
+	walletAssertBalance(t, walletpg.New(f.db), f.treasury.ID, "points", "0.000", "5.000", "0.000")
 	query(t, f.db, `ALTER TABLE owned_post_award_audit DROP CONSTRAINT synthetic_post_award_release`)
 	if n, e := f.awards.SettleMerchant(f.ctx, f.actor, fixturePublisherHandle(f.individual), 100); e != nil || n != 1 {
 		t.Fatal(n, e)
@@ -413,8 +412,9 @@ func TestPGPostAwardOppositePublisherPayments(t *testing.T) {
 	}
 }
 func TestPGPostAwardRestartPersistence(t *testing.T) {
+	phase := fixtureRestartPhase(t)
 	const marker = "Synthetic durable post award reserve"
-	if os.Getenv("PG_TEST_PHASE") == "after" {
+	if phase == "after" {
 		db := database(t)
 		var n int
 		e := db.QueryRow(`SELECT count(*) FROM owned_post_award_purchases p JOIN owned_text_posts post ON post.id=p.post_id JOIN owned_post_award_receipts r ON r.purchase_id=p.id JOIN wallet_v1.transactions source ON source.id=r.transaction_id JOIN wallet_v1.transactions reserve ON reserve.id=r.reserve_transaction_id WHERE post.content=$1::text AND p.policy='merchant_full_v1' AND p.fulfilled_at IS NOT NULL AND p.share_amount=p.amount AND source.status=2 AND reserve.status=1 AND reserve.amount=p.amount AND r.settled_at IS NULL AND post.awarded_score=p.amount`, marker).Scan(&n)

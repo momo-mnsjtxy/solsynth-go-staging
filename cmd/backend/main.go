@@ -55,6 +55,7 @@ func run(args []string, out io.Writer) error {
 	keyFile := fs.String("trusted-public-key-file", "", "explicit RSA public PEM, no certificates or private keys")
 	maxLifetime := fs.Duration("max-access-lifetime", 10*time.Minute, "maximum access-token lifetime, matching issuer policy")
 	public := fs.String("taxonomy-public-visibility", "", "explicit public visibility enum stored in database")
+	enableMLS := fs.Bool("enable-mls-delivery", false, "opt in to owned opaque MLS delivery; requires explicit MLS schema and client validation")
 	none := fs.String("messager-none-encryption", "", "explicit unencrypted room mode stored in database")
 	all := fs.String("messager-notify-all", "", "explicit all-notifications mode stored in database")
 	mentions := fs.String("messager-notify-mentions", "", "explicit mentions-only notification mode")
@@ -227,7 +228,7 @@ func run(args []string, out io.Writer) error {
 		}
 		catalogProviders = []exchangecatalog.Provider{provider}
 	}
-	appConfig := application.Config{Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
+	appConfig := application.Config{EnableMLSDelivery: *enableMLS, Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
 	if *enablePINEnrollment {
 		appConfig.PINEnrollmentPepperID = *pepperID
 	}

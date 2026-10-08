@@ -132,6 +132,9 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		failure(w, ErrUnavailable)
 		return
 	}
+	if bound, ok := s.Authority.(interface{ RequestIdentityPresent(*http.Request) bool }); ok {
+		authPresent = authPresent || bound.RequestIdentityPresent(r)
+	}
 	// Invalid supplied credentials never silently downgrade to anonymous access.
 	if authPresent {
 		if _, e := s.principal(r); e != nil {
@@ -168,14 +171,15 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" && len(parts) == 3 && (parts[0] == "api" || parts[0] == "stargate") && parts[1] == "accounts" && parts[2] != "me" {
 		viewer := ""
 		ctx := r.Context()
-		if authPresent {
-			p, err := s.principal(r)
-			if err != nil {
-				failure(w, err)
-				return
-			}
+		// The host may remove bearer bytes after binding verified proof. Resolve
+		// that proof even without a raw header so viewer policy is not bypassed.
+		p, authErr := s.principal(r)
+		if authErr == nil {
 			viewer = p.Account.ID
 			ctx = accountContext(s.Repository, ctx, p)
+		} else if authPresent || !errors.Is(authErr, authority.ErrInvalid) {
+			failure(w, authErr)
+			return
 		}
 		var a Account
 		var e error

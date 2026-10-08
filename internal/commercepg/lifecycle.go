@@ -346,6 +346,12 @@ func (r *Repository) UpdateOrder(ctx context.Context, idv string, req c.UpdateSt
 	return o, tx.Commit()
 }
 func definition(ctx context.Context, tx *sql.Tx, identifier string) (c.Definition, error) {
+	return definitionLocked(ctx, tx, identifier, false)
+}
+func definitionForOrder(ctx context.Context, tx *sql.Tx, identifier string) (c.Definition, error) {
+	return definitionLocked(ctx, tx, identifier, true)
+}
+func definitionLocked(ctx context.Context, tx *sql.Tx, identifier string, stock bool) (c.Definition, error) {
 	var d c.Definition
 	var b []byte
 	// Inspect the optional immutable scope before taking the definition lock.
@@ -359,7 +365,7 @@ func definition(ctx context.Context, tx *sql.Tx, identifier string) (c.Definitio
 	if e := lockDefinitionApp(ctx, tx, initialApp); e != nil {
 		return d, e
 	}
-	currentProduct, e := lockDefinitionProduct(ctx, tx, d)
+	currentProduct, e := lockDefinitionProduct(ctx, tx, d, stock)
 	if e != nil {
 		return d, e
 	}
@@ -620,6 +626,9 @@ func (r *Repository) CancelSubscription(ctx context.Context, actor, identifier s
 	if e = saveSubscription(ctx, tx, s); e != nil {
 		return s, e
 	}
+	if e = cancelSubscriptionReservations(ctx, tx, s, now); e != nil {
+		return s, e
+	}
 	if e = event(ctx, tx, "subscription.cancelled", s.ID, s, now); e != nil {
 		return s, e
 	}
@@ -639,7 +648,7 @@ func (r *Repository) SubscriptionOrder(ctx context.Context, actor, identifier st
 	if s.Status == c.SubscriptionCancelled {
 		return o, c.ErrConflict
 	}
-	d, e := definition(ctx, tx, s.Identifier)
+	d, e := definitionForOrder(ctx, tx, s.Identifier)
 	if e != nil {
 		return o, e
 	}
@@ -661,6 +670,7 @@ func (r *Repository) resourceOrder(ctx context.Context, tx *sql.Tx, actor string
 	if !errors.Is(e, c.ErrNotFound) {
 		return o, e
 	}
+	now = r.now().UTC()
 	oid, e := id()
 	if e != nil {
 		return o, e
@@ -676,11 +686,33 @@ func (r *Repository) resourceOrder(ctx context.Context, tx *sql.Tx, actor string
 		o.Meta["gift_id"], _ = json.Marshal(gift)
 	}
 	app := ""
+	var stockProduct Product
+	var quantity int
+	if d.ProductID != "" {
+		if sub == "" || gift != "" {
+			return o, c.ErrUnavailable
+		}
+		stockProduct, quantity, e = subscriptionStock(ctx, tx, d, sub, now)
+		if e != nil {
+			return o, e
+		}
+		o.Items = []c.OrderItem{{ProductIdentifier: stockProduct.Identifier, Quantity: quantity, UnitPrice: stockProduct.Price, Currency: stockProduct.Currency}}
+		captured, err := c.Total(o.Items)
+		if err != nil || captured.Cmp(o.Amount) != 0 || stockProduct.Currency != o.Currency {
+			return o, c.ErrConflict
+		}
+	}
 	if d.ProductID != "" && d.AppIdentifier != nil {
 		o.AppIdentifier = *d.AppIdentifier
 		app = strings.TrimPrefix(*d.AppIdentifier, "developer.app:")
 	}
-	return o, insertOrder(ctx, tx, o, app, actor, sub, gift)
+	if e = insertOrder(ctx, tx, o, app, actor, sub, gift); e != nil {
+		return o, e
+	}
+	if d.ProductID != "" {
+		e = reserveProduct(ctx, tx, o.ID, stockProduct.ID, stockProduct.Identifier, quantity)
+	}
+	return o, e
 }
 func (r *Repository) activateSubscription(ctx context.Context, tx *sql.Tx, sid string, o c.Order, now time.Time) error {
 	s, e := subscriptionRow(ctx, tx, sid, true)

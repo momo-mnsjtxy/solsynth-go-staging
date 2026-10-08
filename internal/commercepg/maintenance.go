@@ -132,7 +132,7 @@ func (r *Repository) dueOne(ctx context.Context, kind string) (bool, error) {
 		return skipMaintenance(tx)
 	}
 	renew, days := row.Renew, row.Days
-	d, e := definition(ctx, tx, s.Identifier)
+	d, e := definitionForOrder(ctx, tx, s.Identifier)
 	if e != nil && !errors.Is(e, c.ErrNotFound) && !errors.Is(e, c.ErrConflict) {
 		return false, e
 	}
@@ -149,19 +149,22 @@ func (r *Repository) dueOne(ctx context.Context, kind string) (bool, error) {
 		if e != nil {
 			return false, e
 		}
-		canRenew = old.PayeeWalletID == d.PayeeWalletID
+		canRenew = old.PayeeWalletID == d.PayeeWalletID && old.Amount.Cmp(s.FinalPrice) == 0 && old.Currency == s.PaymentDetails.Currency && old.Status == c.Finished && old.TransactionID != nil && old.PayerWalletID != nil && *old.PayerWalletID == *s.PaymentDetails.PayerWalletID
 	}
 	if canRenew {
 		if _, e = tx.ExecContext(ctx, `SAVEPOINT renewal_attempt`); e != nil {
 			return false, e
 		}
 		o, e := r.resourceOrder(ctx, tx, actor, d, s.ID, "", s.PaymentDetails.PayerWalletID, s.FinalPrice)
-		if e != nil {
+		if e != nil && !errors.Is(e, c.ErrStock) {
 			return false, e
 		}
 		payer := *s.PaymentDetails.PayerWalletID
-		tr, e := walletpg.CommerceHold(ctx, tx, o.ID, actor, payer, o.PayeeWalletID, o.Currency, o.Amount, now)
-		if errors.Is(e, wallet.ErrInsufficient) {
+		var tr wallet.Transaction
+		if e == nil {
+			tr, e = walletpg.CommerceHold(ctx, tx, o.ID, actor, payer, o.PayeeWalletID, o.Currency, o.Amount, now)
+		}
+		if errors.Is(e, wallet.ErrInsufficient) || errors.Is(e, c.ErrStock) {
 			if _, e = tx.ExecContext(ctx, `ROLLBACK TO SAVEPOINT renewal_attempt`); e != nil {
 				return false, e
 			}

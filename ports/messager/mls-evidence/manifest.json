@@ -1,0 +1,48 @@
+{
+  "repository": "Solsynth/Solian",
+  "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+  "license": "AGPL-3.0-only",
+  "license_sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+  "files": [
+    {
+      "path": "lib/e2ee/mls_client.dart",
+      "file": "mls_client.dart",
+      "blob": "86fd47889528eb273fb778f6f462d82f549607b0",
+      "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/e2ee/mls_client.dart",
+      "sha256": "c0448a0df8b11f0c538a42f30e24602103e64d5f1a642ef925776fee493ff0f6",
+      "bytes": 13017
+    },
+    {
+      "path": "lib/e2ee/mls_identity_manager.dart",
+      "file": "mls_identity_manager.dart",
+      "blob": "dca67d0bad5dec1015b000c994dd5db307edf920",
+      "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/e2ee/mls_identity_manager.dart",
+      "sha256": "ae29d1c1f1dc539ef774b38f5a989a5a36d36ebd9d04a326a5d344f5ac428b7e",
+      "bytes": 14444
+    },
+    {
+      "path": "lib/e2ee/mls_group_manager.dart",
+      "file": "mls_group_manager.dart",
+      "blob": "62c5546b4d8e1d119686bcca395caa48472ebb56",
+      "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/e2ee/mls_group_manager.dart",
+      "sha256": "5ee5e8a2ef355f09cff26ebf78241868919f96995ea6f8fc52e5e08cd533e909",
+      "bytes": 38826
+    },
+    {
+      "path": "lib/e2ee/mls_message_handler.dart",
+      "file": "mls_message_handler.dart",
+      "blob": "8385a14091dcded356381657863da0fb9d53e96e",
+      "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/e2ee/mls_message_handler.dart",
+      "sha256": "7ee7d7b9741378c38d97b9b6f688f82dfd09132598e6ca7cdaf74df72af21038",
+      "bytes": 28111
+    },
+    {
+      "path": "lib/chat/send/message_sender.dart",
+      "file": "message_sender.dart",
+      "blob": "0618441204e9fab475a749cde535642b1a07a449",
+      "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/send/message_sender.dart",
+      "sha256": "0dc79d3e7275c830645b596b40cabb6ab3c051c4c5139a8180ff2a70bc09b539",
+      "bytes": 31330
+    }
+  ]
+}

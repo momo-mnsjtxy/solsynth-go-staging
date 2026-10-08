@@ -26,9 +26,25 @@ def events_for(names):
     return result + [event()]
 
 
+def check_phase_names(source):
+    names = re.findall(r'os\.Getenv\("([^"\n]*PHASE[^"\n]*)"\)', source)
+    if any(name != "PG_TEST_PHASE" for name in names):
+        raise ValueError("restart fixtures must use the runner's PG_TEST_PHASE contract")
+
+
+for invalid in ['os.Getenv("SOLSYNTH_PG_RESTART_PHASE")', 'os.Getenv("PG_RESTART_PHASE")']:
+    try:
+        check_phase_names(invalid)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("invented phase environment variable accepted")
+
+
 found = set()
 for path in (ROOT / "tests/integration").glob("*_test.go"):
     source = path.read_text()
+    check_phase_names(source)
     found.update(re.findall(r"^func (TestPG\w+)\(", source, re.M))
     for batch in re.findall(r"\.ProcessPending\([^;\n]*?,\s*(\d+)\s*\)", source):
         assert 1 <= int(batch) <= 100, f"{path.name}: notification processing batch must be1..100"
@@ -85,5 +101,5 @@ for phase, names in guard.EXPECTED.items():
             raise AssertionError("guard accepted missing/skipped/failed/foreign/wrong-phase events")
 print(
     f"Verified PostgreSQL guard: {len(found)} before / {len(guard.EXPECTED['after'])} after, "
-    f"exact declarations/selectors and {rejections} negative cases; no database tests executed"
+    f"exact declarations/selectors, {rejections} result negatives and two phase-name negatives; no database tests executed"
 )

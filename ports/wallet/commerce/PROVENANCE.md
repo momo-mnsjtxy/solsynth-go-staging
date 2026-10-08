@@ -41,3 +41,7 @@ The recurring-product continuation retains additional complete licensed source a
 client files in `recurring-source/manifest.json`. `docs/recurring-products.md` records
 source conflicts, app-scoped identifiers, exact whole-cycle pricing, explicit buyer
 renewal opt-in, shared consent enforcement, and remaining fulfillment boundaries.
+
+Stock/reservation source contracts are pinned in `stock-source-manifest.json`;
+`docs/product-stock.md` separates retained window/status behavior from owned
+recurring allocation, immutable-price checks and stock-exhausted renewal policy.

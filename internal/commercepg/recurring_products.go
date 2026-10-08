@@ -19,7 +19,7 @@ func productDefinitionID(id string) string { return "app-product:" + id }
 
 func recurringDefinition(p apps.Product, payee string) (c.Definition, error) {
 	days := map[string]int{"weekly": 7, "monthly": 30, "yearly": 365}[p.Recurrence]
-	if !wallet.ValidID(p.ID) || !wallet.ValidID(p.AppID) || days == 0 || !p.State.IsEnabled || p.State.StockMode != "unlimited" || p.Fulfillment != nil && p.Fulfillment.IsAddressRequired {
+	if !wallet.ValidID(p.ID) || !wallet.ValidID(p.AppID) || days == 0 || !p.State.IsEnabled || !apps.SupportedStockMode(p.State.StockMode) || p.State.StockMode != "unlimited" && (p.State.StockQuantity == nil || *p.State.StockQuantity < 0) || p.Fulfillment != nil && p.Fulfillment.IsAddressRequired {
 		return c.Definition{}, c.ErrUnavailable
 	}
 	price, e := c.Total([]c.OrderItem{{UnitPrice: p.Price, Quantity: 1}})
@@ -88,7 +88,7 @@ func (r *Repository) SyncProduct(ctx context.Context, tx *sql.Tx, p apps.Product
 
 // Call after locking app ancestry and before locking a definition row. Product
 // updates use the same product -> definition ordering, avoiding lock inversion.
-func lockDefinitionProduct(ctx context.Context, tx *sql.Tx, d c.Definition) (c.Definition, error) {
+func lockDefinitionProduct(ctx context.Context, tx *sql.Tx, d c.Definition, exclusive bool) (c.Definition, error) {
 	if d.ProductID == "" {
 		return d, nil
 	}
@@ -97,7 +97,11 @@ func lockDefinitionProduct(ctx context.Context, tx *sql.Tx, d c.Definition) (c.D
 	}
 	app := strings.TrimPrefix(*d.AppIdentifier, "developer.app:")
 	var raw []byte
-	e := tx.QueryRowContext(ctx, `SELECT document FROM owned_app_products WHERE id=$1::uuid AND app_id=$2::uuid AND deleted_at IS NULL FOR SHARE`, d.ProductID, app).Scan(&raw)
+	lock := " FOR SHARE"
+	if exclusive {
+		lock = " FOR UPDATE"
+	}
+	e := tx.QueryRowContext(ctx, `SELECT document FROM owned_app_products WHERE id=$1::uuid AND app_id=$2::uuid AND deleted_at IS NULL`+lock, d.ProductID, app).Scan(&raw)
 	if e != nil {
 		return d, notFound(e)
 	}
@@ -209,8 +213,15 @@ func (r *Repository) fulfillRecurringOrder(ctx context.Context, tx *sql.Tx, acto
 	return r.activateSubscription(ctx, tx, s.ID, *o, now)
 }
 
-// The original subscription contract is immutable even if the catalog changes.
+// App-product subscriptions bind current product/consent terms. Independently
+// configured catalog subscriptions retain their already captured quote price.
 func subscriptionEconomics(ctx context.Context, tx *sql.Tx, s c.Subscription, d c.Definition) error {
+	if d.ProductID == "" {
+		if s.ProductTerms != "" || s.ConsentVersion != 0 || strings.HasPrefix(s.Identifier, "app-product:") {
+			return c.ErrConflict
+		}
+		return nil
+	}
 	var days int
 	if e := tx.QueryRowContext(ctx, `SELECT cycle_days FROM commerce_v1.subscriptions WHERE id=$1::uuid`, s.ID).Scan(&days); e != nil {
 		return e
@@ -223,7 +234,7 @@ func subscriptionEconomics(ctx context.Context, tx *sql.Tx, s c.Subscription, d 
 		return c.ErrConflict
 	}
 	if d.ProductID != "" {
-		if s.ConsentVersion < 1 || s.ProductTerms != d.ProductTerms || !sameDefinitionApp(s.AppIdentifier, d.AppIdentifier) {
+		if s.CycleDurationDays != days || s.ConsentVersion < 1 || s.ProductTerms != d.ProductTerms || !sameDefinitionApp(s.AppIdentifier, d.AppIdentifier) {
 			return c.ErrConflict
 		}
 		_, e = recurringConsent(ctx, tx, s.AccountID, d, s.ConsentVersion)

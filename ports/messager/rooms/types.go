@@ -47,22 +47,25 @@ func (p Policy) ValidNotify(n int32) bool {
 
 // Room and Member are explicitly versioned projections, not full legacy DTOs.
 type Room struct {
-	Type           int           `json:"type"`
-	RealmID        *string       `json:"realm_id,omitempty"`
-	Realm          *social.Realm `json:"realm,omitempty"`
-	DirectMembers  []Member      `json:"direct_members,omitempty"`
-	Members        []Member      `json:"members,omitempty"`
-	RelationGuard  bool          `json:"-"`
-	ID             string        `json:"id"`
-	AccountID      string        `json:"account_id"`
-	Name           string        `json:"name"`
-	Description    string        `json:"description"`
-	IsPublic       bool          `json:"is_public"`
-	IsCommunity    bool          `json:"is_community"`
-	EncryptionMode int32         `json:"encryption_mode"`
-	CreatedAt      time.Time     `json:"created_at"`
-	UpdatedAt      time.Time     `json:"updated_at"`
-	DeletedAt      *time.Time    `json:"deleted_at"`
+	Type            int           `json:"type"`
+	RealmID         *string       `json:"realm_id,omitempty"`
+	Realm           *social.Realm `json:"realm,omitempty"`
+	DirectMembers   []Member      `json:"direct_members,omitempty"`
+	Members         []Member      `json:"members,omitempty"`
+	RelationGuard   bool          `json:"-"`
+	ID              string        `json:"id"`
+	AccountID       string        `json:"account_id"`
+	Name            string        `json:"name"`
+	Description     string        `json:"description"`
+	IsPublic        bool          `json:"is_public"`
+	IsCommunity     bool          `json:"is_community"`
+	EncryptionMode  int32         `json:"encryption_mode"`
+	MLSGroupID      *string       `json:"mls_group_id,omitempty"`
+	MLSStateVersion int64         `json:"mls_state_version,omitempty"`
+	MLSEpoch        int64         `json:"mls_epoch,omitempty"`
+	CreatedAt       time.Time     `json:"created_at"`
+	UpdatedAt       time.Time     `json:"updated_at"`
+	DeletedAt       *time.Time    `json:"deleted_at"`
 }
 type Member struct {
 	ConfirmedAt  *time.Time        `json:"confirmed_at"`
@@ -124,6 +127,10 @@ type SocialProvider interface {
 	RealmInTransaction(context.Context, *sql.Tx, string) (social.Realm, error)
 }
 type TextRequest struct {
+	Type               *string           `json:"type,omitempty"`
+	EncryptionMeta     *EncryptionMeta   `json:"encryption_meta,omitempty"`
+	SurveyID           *string           `json:"survey_id,omitempty"`
+	FundID             *string           `json:"fund_id,omitempty"`
 	Content            string            `json:"content"`
 	ContentSet         bool              `json:"-"`
 	AttachmentsID      *[]string         `json:"attachments_id,omitempty"`

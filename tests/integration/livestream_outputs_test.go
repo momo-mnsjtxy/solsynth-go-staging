@@ -578,6 +578,7 @@ func TestPGLiveStreamOutputsEndCleanupIndependentAndUnconfigured(t *testing.T) {
 }
 
 func TestPGLiveStreamOutputsRestartPersistence(t *testing.T) {
+	phase := fixtureRestartPhase(t)
 	database(t)
 	path := filepath.Join(os.Getenv("SOLSYNTH_DISPOSABLE_PG"), "synthetic-livestream-output-restart.json")
 	type state struct {
@@ -585,7 +586,7 @@ func TestPGLiveStreamOutputsRestartPersistence(t *testing.T) {
 		Provider                 live.ProviderOutput
 	}
 	var saved state
-	if os.Getenv("PG_TEST_PHASE") == "before" {
+	if phase == "before" {
 		f := newOutputFixture(t)
 		s := outputStream(t, f, "outputs-restart")
 		v := hlsStart(t, f, s.ID, "restart")
@@ -603,7 +604,7 @@ func TestPGLiveStreamOutputsRestartPersistence(t *testing.T) {
 		}
 		return
 	}
-	if os.Getenv("PG_TEST_PHASE") != "after" {
+	if phase != "after" {
 		t.Fatal("PG_TEST_PHASE must be before or after")
 	}
 	raw, e := os.ReadFile(path)

@@ -6,4 +6,4 @@ ALTER TABLE owned_media_files ADD COLUMN IF NOT EXISTS usage text NOT NULL DEFAU
 
 -- The documented profile label remains descriptive and never grants a read.
 ALTER TABLE owned_media_files DROP CONSTRAINT IF EXISTS owned_media_files_usage_check;
-ALTER TABLE owned_media_files ADD CONSTRAINT owned_media_files_usage_check CHECK(usage IN ('','post','profile_picture'));
+ALTER TABLE owned_media_files ADD CONSTRAINT owned_media_files_usage_check CHECK(usage IN ('','post','profile_picture','ticket'));

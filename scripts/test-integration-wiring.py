@@ -5,6 +5,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/ticketmediapg/schema.sql",
+ "internal/chatpg/mls_schema.sql",
  "internal/chatmediapg/schema.sql",
  "internal/profilemediapg/schema.sql",
  "internal/walletpg/funds_schema.sql",
@@ -48,6 +50,7 @@ REQUIRED_SCHEMAS = {
     "internal/apppg/schema.sql",
     "internal/signinpg/schema.sql",
     "internal/commercepg/schema.sql",
+    "internal/commercepg/order_index_scope.sql",
     "internal/commercepg/maintenance_schema.sql",
     "internal/mediapg/resumable_schema.sql",
     "internal/mediapg/schema.sql",
@@ -118,6 +121,10 @@ def check(runner, read_schema=None):
         raise ValueError("publisher reservations require canonical publishers first")
     if schemas.index("internal/federationpg/identity_schema.sql") <= max(schemas.index("internal/federationpg/schema.sql"), schemas.index("internal/accountpg/name_schema.sql")):
         raise ValueError("federation anchors require registrations and name reservations first")
+    if schemas.index("internal/commercepg/order_index_scope.sql") <= schemas.index("internal/commercepg/schema.sql"):
+        raise ValueError("commerce index migration requires the base commerce schema first")
+    if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/commercepg/order_index_scope.sql' not in runner:
+        raise ValueError("commerce index migration must be atomic")
     if schemas.index("internal/commercepg/maintenance_schema.sql") <= schemas.index("internal/commercepg/schema.sql"):
         raise ValueError("maintenance quarantine requires canonical subscriptions")
     for name in ("walletpg", "application", "postpg"):
@@ -135,6 +142,10 @@ def check(runner, read_schema=None):
         raise ValueError("media usage constraint migration must be atomic")
     if schemas.index("internal/profilemediapg/schema.sql") <= max(schemas.index("internal/accountpg/schema.sql"), schemas.index("internal/mediapg/schema.sql"), schemas.index("internal/socialpg/schema.sql")):
         raise ValueError("profile media requires canonical accounts, media and social policy")
+    if schemas.index("internal/chatpg/mls_schema.sql") <= max(schemas.index("internal/chatpg/schema.sql"), schemas.index("internal/chatpg/relations_schema.sql"), schemas.index("internal/authoritypg/schema.sql")):
+        raise ValueError("opaque MLS requires canonical authority, chat and relations")
+    if schemas.index("internal/ticketmediapg/schema.sql") <= max(schemas.index("internal/ticketpg/schema.sql"), schemas.index("internal/mediapg/schema.sql")):
+        raise ValueError("ticket media requires canonical tickets and media")
     if schemas.index("internal/mediapg/resumable_schema.sql") <= schemas.index("internal/mediapg/schema.sql"):
         raise ValueError("resumable media requires base schema")
     if any(schemas.index("internal/commercepg/schema.sql") <= schemas.index(name) for name in ("internal/apppg/schema.sql","internal/walletpg/schema.sql")):
@@ -181,7 +192,7 @@ def check(runner, read_schema=None):
             raise ValueError("fixture binary is not built/exported before required tests: " + variable)
     for phase in ("before", "after"):
         invocation = (
-            f'PG_TEST_PHASE={phase} "$GO_BIN" test -timeout {"20m" if phase == "before" else "10m"} -race -count=1 -json '
+            f'PG_TEST_PHASE={phase} "$GO_BIN" test -timeout {"30m" if phase == "before" else "10m"} -race -count=1 -json '
             f'-run "$(python3 scripts/check-integration-results.py --pattern {phase})" '
             f'./tests/integration | tee "$run/{phase}.jsonl"'
         )
@@ -210,8 +221,9 @@ def main():
     authority = PSQL + "internal/authoritypg/schema.sql"
     accounts = PSQL + "internal/accountpg/schema.sql"
     mutations = [
+        source.replace("--single-transaction -f internal/commercepg/order_index_scope.sql", "-f internal/commercepg/order_index_scope.sql"),
         source.replace("--single-transaction -f internal/mediapg/usage_schema.sql", "-f internal/mediapg/usage_schema.sql"),
-        source.replace("test -timeout 20m -race", "test -race"),
+        source.replace("test -timeout 30m -race", "test -race"),
         source.replace("test -timeout 10m -race", "test -race"),
         source.replace("--single-transaction -f internal/signinpg/factor_setup_schema.sql", "-f internal/signinpg/factor_setup_schema.sql"),
         source.replace("--single-transaction -f internal/authoritypg/continuity_schema.sql", "-f internal/authoritypg/continuity_schema.sql"),

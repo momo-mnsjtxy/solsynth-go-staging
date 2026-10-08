@@ -407,12 +407,13 @@ func TestPGBackendChatMediaAndReactionsComposition(t *testing.T) {
 	backendCall(t, app, "POST", reaction, f.token, `{"symbol":"heart"}`, 404)
 }
 func TestPGChatMediaReactionsRestartPersistence(t *testing.T) {
+	phase := fixtureRestartPhase(t)
 	db := database(t)
 	root := os.Getenv("SOLSYNTH_DISPOSABLE_PG")
 	objects := filepath.Join(root, "chat-media-objects")
 	record := filepath.Join(root, "chat-media-record.json")
 	type saved struct{ Room, Message, File, Actor string }
-	if os.Getenv("PG_TEST_PHASE") == "before" {
+	if phase == "before" {
 		f := newChatMediaFixture(t)
 		if e := os.Mkdir(objects, 0700); e != nil {
 			t.Fatal(e)
@@ -440,7 +441,7 @@ func TestPGChatMediaReactionsRestartPersistence(t *testing.T) {
 		}
 		return
 	}
-	if os.Getenv("PG_TEST_PHASE") != "after" {
+	if phase != "after" {
 		t.Fatal("explicit restart phase required")
 	}
 	b, e := os.ReadFile(record)

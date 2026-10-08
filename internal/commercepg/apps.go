@@ -23,9 +23,13 @@ func AppAdapters(r *apppg.Repository) Adapters {
 			if e != nil {
 				return Product{}, appError(e)
 			}
-			return Product{ID: p.ID, Identifier: p.Identifier, Currency: p.Currency, Price: p.Price, Enabled: p.State.IsEnabled, StockMode: p.State.StockMode, StockQuantity: p.State.StockQuantity, Recurrence: p.Recurrence, RequiresAddress: p.Fulfillment != nil && p.Fulfillment.IsAddressRequired, Catalog: p}, nil
+			return productAdapter(p), nil
 		},
 	}
+}
+
+func productAdapter(p apps.Product) Product {
+	return Product{ID: p.ID, Identifier: p.Identifier, Currency: p.Currency, Price: p.Price, Enabled: p.State.IsEnabled, StockMode: p.State.StockMode, StockQuantity: p.State.StockQuantity, LastRestockedAt: p.State.LastRestockedAt, Recurrence: p.Recurrence, RequiresAddress: p.Fulfillment != nil && p.Fulfillment.IsAddressRequired, Catalog: p}
 }
 func appError(e error) error {
 	switch {

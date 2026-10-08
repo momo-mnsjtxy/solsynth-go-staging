@@ -116,9 +116,18 @@ func (r *Repository) Products(ctx context.Context, s apps.Scope, ref string, p *
 				}
 				if p.State.StockQuantity != nil {
 					v.State.StockQuantity = p.State.StockQuantity
+					if v.State.StockMode == "manual" {
+						var restocked time.Time
+						if e := tx.QueryRowContext(ctx, `SELECT clock_timestamp()`).Scan(&restocked); e != nil {
+							return e
+						}
+						restocked = restocked.UTC().Truncate(time.Microsecond)
+						v.State.LastRestockedAt = &restocked
+						v.State.LastRestockedQuantity = p.State.StockQuantity
+					}
 				}
 			}
-			if v.State.StockMode == "manual" && v.State.StockQuantity == nil {
+			if v.State.StockMode != "unlimited" && v.State.StockQuantity == nil {
 				return apps.ErrInvalid
 			}
 			v.UpdatedAt = now

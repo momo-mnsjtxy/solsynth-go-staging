@@ -57,6 +57,9 @@ func (r *Repository) CanReadInTransaction(ctx context.Context, tx *sql.Tx, actor
 	return yes, e
 }
 func (r *Repository) readable(ctx context.Context, tx *sql.Tx, v rooms.Room, actor string) error {
+	if v.EncryptionMode != r.policy.NoneEncryptionMode {
+		v.IsPublic = false
+	}
 	if e := readable(ctx, tx, v, actor); e != nil {
 		return e
 	}
@@ -72,6 +75,9 @@ func (r *Repository) readable(ctx context.Context, tx *sql.Tx, v rooms.Room, act
 func (r *Repository) RelationsReady(ctx context.Context) error {
 	if r == nil || r.db == nil || r.social == nil || r.guard == nil {
 		return rooms.ErrUnavailable
+	}
+	if e := r.MLSReady(ctx); e != nil {
+		return e
 	}
 	if r.associations != nil {
 		if e := r.associations.Ready(ctx); e != nil {
@@ -99,6 +105,11 @@ func canonicalAccount(ctx context.Context, tx *sql.Tx, id string) (*accounts.Acc
 	return &a, nil
 }
 func (r *Repository) decorateRoom(ctx context.Context, tx *sql.Tx, v *rooms.Room, actor string) error {
+	if r.mls && v.EncryptionMode == rooms.MLSEncryptionMode {
+		if e := tx.QueryRowContext(ctx, `SELECT id,epoch,state_version FROM owned_mls_groups WHERE room_id=$1`, v.ID).Scan(&v.MLSGroupID, &v.MLSEpoch, &v.MLSStateVersion); e != nil {
+			return e
+		}
+	}
 	if !v.RelationGuard {
 		return nil
 	}

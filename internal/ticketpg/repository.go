@@ -42,6 +42,7 @@ type Repository struct {
 	db    *sql.DB
 	guard *authoritypg.TransactionGuard
 	cfg   Config
+	media MediaStore
 }
 
 func New(db *sql.DB, guard *authoritypg.TransactionGuard, cfg Config) (*Repository, error) {
@@ -89,6 +90,9 @@ func (r *Repository) Ready(ctx context.Context) error {
 	_, e := r.db.ExecContext(ctx, `SELECT id,creator_id,status FROM owned_ticket_cases LIMIT 0; SELECT id,snapshot,submission_hash FROM owned_exam_attempts LIMIT 0; SELECT account_id,state FROM owned_exam_claims LIMIT 0; SELECT account_id,state FROM owned_exam_rewards LIMIT 0; SELECT account_id,state FROM owned_exam_activation_requests LIMIT 0; SELECT id,data FROM owned_exam_groups LIMIT 0; SELECT id,data FROM owned_exam_questions LIMIT 0; SELECT id,data FROM owned_exams LIMIT 0; SELECT id,data FROM owned_exam_trials LIMIT 0; SELECT account_id FROM owned_ticket_on_call LIMIT 0; SELECT id,sender_id,request_key FROM owned_ticket_messages LIMIT 0; SELECT test_id,group_id FROM owned_exam_group_links LIMIT 0; SELECT id,value,reviewed_by_id FROM owned_exam_answers LIMIT 0; SELECT actor_id,operation FROM owned_ticket_exam_audit LIMIT 0`)
 	if e == nil && r.cfg.Activation != nil && r.cfg.Activation.RequireVerifiedContact {
 		_, e = r.db.ExecContext(ctx, `SELECT account_id,verified_at FROM owned_authority_credentials LIMIT 0`)
+	}
+	if e == nil && r.media != nil {
+		e = r.media.Ready(ctx)
 	}
 	return e
 }
@@ -199,6 +203,32 @@ func (r *Repository) Execute(ctx context.Context, actor string, c tickets.Comman
 		return out, e
 	}
 	defer tx.Rollback()
+	// Assignments add a canonical account foreign key. Lock both accounts in
+	// UUID order before the ticket row, including opposing assignments.
+	if c.Operation == "ticket.assign" && c.AccountID != nil {
+		if !authority.ValidID(*c.AccountID) {
+			return out, tickets.ErrInvalid
+		}
+		if _, e = r.guard.Preflight(ctx, r.db, tx, actor, perm); e != nil {
+			return out, e
+		}
+		rows, e := tx.QueryContext(ctx, `SELECT id::text FROM owned_authority_accounts WHERE id=ANY($1::uuid[]) ORDER BY id FOR UPDATE`, []string{actor, *c.AccountID})
+		if e != nil {
+			return out, e
+		}
+		for rows.Next() {
+			var id string
+			if e = rows.Scan(&id); e != nil {
+				rows.Close()
+				return out, e
+			}
+		}
+		e = rows.Err()
+		rows.Close()
+		if e != nil {
+			return out, e
+		}
+	}
 	if !public {
 		if perm == "" {
 			_, e = r.guard.Authenticate(ctx, r.db, tx, actor)
@@ -209,7 +239,7 @@ func (r *Repository) Execute(ctx context.Context, actor string, c tickets.Comman
 			return out, e
 		}
 	}
-	now := r.cfg.Now().UTC()
+	now := r.cfg.Now().UTC().Truncate(time.Microsecond)
 	switch {
 	case strings.HasPrefix(c.Operation, "ticket."), strings.HasPrefix(c.Operation, "oncall."):
 		out, e = r.support(ctx, tx, actor, c, now)
@@ -233,6 +263,11 @@ func (r *Repository) Execute(ctx context.Context, actor string, c tickets.Comman
 	if e != nil {
 		return tickets.Result{}, mapped(e)
 	}
+	if strings.HasPrefix(c.Operation, "ticket.") {
+		if e = r.recheckTicket(ctx, tx, actor, c, perm); e != nil {
+			return tickets.Result{}, mapped(e)
+		}
+	}
 	if write && out.Changed {
 		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_ticket_exam_audit(actor_id,operation,resource_id,occurred_at)VALUES($1,$2,$3,$4)`, actor, c.Operation, nullable(out.ResourceID), now); e != nil {
 			return tickets.Result{}, mapped(e)
@@ -255,6 +290,6 @@ func (r *Repository) isAdmin(ctx context.Context, tx *sql.Tx, actor string) (boo
 }
 func account(ctx context.Context, tx *sql.Tx, id string) (tickets.Account, error) {
 	var a tickets.Account
-	e := tx.QueryRowContext(ctx, `SELECT id::text,name,nick FROM owned_authority_accounts WHERE id=$1 AND NOT disabled`, id).Scan(&a.ID, &a.Name, &a.Nick)
+	e := tx.QueryRowContext(ctx, `SELECT a.id::text,a.name,a.nick FROM owned_authority_accounts a WHERE a.id=$1::uuid AND NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=a.id AND p.kind='disable_account' AND(p.starts_at IS NULL OR p.starts_at<=statement_timestamp())AND(p.expires_at IS NULL OR p.expires_at>statement_timestamp()))`, id).Scan(&a.ID, &a.Name, &a.Nick)
 	return a, mapped(e)
 }

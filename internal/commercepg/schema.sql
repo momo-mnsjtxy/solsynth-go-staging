@@ -2,7 +2,7 @@
 -- Apply after owned authority, app, and canonical wallet schemas. Independent
 -- schema only; never read/mutate legacy tables. No runtime DDL or seeding.
 CREATE SCHEMA IF NOT EXISTS commerce_v1;
-CREATE UNIQUE INDEX wallet_commerce_order ON wallet_v1.transactions(managed_by) WHERE managed_by IS NOT NULL;
+CREATE UNIQUE INDEX wallet_commerce_order ON wallet_v1.transactions(managed_by) WHERE purpose='commerce' AND managed_by IS NOT NULL;
 CREATE TABLE commerce_v1.merchants (
  app_id uuid PRIMARY KEY REFERENCES owned_custom_apps(id), wallet_id uuid NOT NULL REFERENCES wallet_v1.wallets(id)
 );

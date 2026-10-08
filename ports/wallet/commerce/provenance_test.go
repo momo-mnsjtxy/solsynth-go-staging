@@ -18,6 +18,9 @@ func TestRetainedCommerceSourceBytes(t *testing.T) {
 func TestRetainedRecurringProductSourceBytes(t *testing.T) {
 	checkCommerceSources(t, "recurring-source/manifest.json")
 }
+func TestRetainedProductStockSourceBytes(t *testing.T) {
+	checkCommerceSources(t, "stock-source-manifest.json")
+}
 func checkCommerceSources(t *testing.T, manifest string) {
 	t.Helper()
 	var m struct {

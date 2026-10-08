@@ -3,7 +3,10 @@ package accounts
 
 import (
 	"context"
+	"errors"
 	"net/http"
+
+	"solsynth.local/go-migration/ports/authority"
 )
 
 // These additive capabilities keep standalone individual-only repositories
@@ -18,10 +21,14 @@ type ScopedPublisherReader interface {
 }
 
 func (s *Service) publisherViewer(r *http.Request) (string, error) {
-	if r.Header.Get("Authorization") == "" {
-		return "", nil
+	present := len(r.Header.Values("Authorization")) != 0
+	if bound, ok := s.Authority.(interface{ RequestIdentityPresent(*http.Request) bool }); ok {
+		present = present || bound.RequestIdentityPresent(r)
 	}
 	p, e := s.principal(r)
+	if !present && errors.Is(e, authority.ErrInvalid) {
+		return "", nil
+	}
 	return p.Account.ID, e
 }
 func (s *Service) lookupPublisher(ctx context.Context, viewer, ref string) (Publisher, error) {

@@ -221,7 +221,7 @@ func TestPGTicketsPrivateSupportLifecycle(t *testing.T) {
 	}
 	ticketRequest(t, h, "DELETE", "/api/admin/tickets/on-call/"+f.other, f.adminToken, "", "", 204)
 	ticketRequest(t, h, "DELETE", "/api/admin/tickets/on-call/"+f.other, f.adminToken, "", "", 204)
-	ticketRequest(t, h, "POST", "/api/tickets", f.token, "", `{"title":"Unsupported attachment","content":"text","type":0,"file_ids":["file"]}`, 501)
+	ticketRequest(t, h, "POST", "/api/tickets", f.token, "", `{"title":"Unsupported attachment","content":"text","type":0,"file_ids":["file"]}`, 400)
 	ticketRequest(t, h, "DELETE", "/api/tickets/"+one.ID, f.adminToken, "", "", 204)
 	ticketRequest(t, h, "GET", "/api/tickets/"+one.ID, f.token, "", "", 404)
 	if ticketCount(t, f, `SELECT count(*) FROM owned_ticket_messages WHERE ticket_id=$1`, one.ID) != 2 {

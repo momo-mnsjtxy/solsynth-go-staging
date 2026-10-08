@@ -206,9 +206,10 @@ func TestPGCommerceMaintenanceStaleCandidateContinues(t *testing.T) {
 	}
 }
 func TestPGCommerceMaintenanceQuarantineRestartPersistence(t *testing.T) {
+	phase := fixtureRestartPhase(t)
 	db := database(t)
 	file := filepath.Join(os.Getenv("SOLSYNTH_DISPOSABLE_PG"), "commerce-maintenance-quarantine.json")
-	if os.Getenv("PG_TEST_PHASE") == "before" {
+	if phase == "before" {
 		f, s := maintenanceSubscription(t)
 		query(t, db, `UPDATE commerce_v1.subscriptions SET ended_at='1903-01-01'::timestamptz WHERE id=$1::uuid`, s.ID)
 		if _, e := f.r.ProcessDue(f.ctx, 1000); e != nil {
@@ -220,7 +221,7 @@ func TestPGCommerceMaintenanceQuarantineRestartPersistence(t *testing.T) {
 		}
 		return
 	}
-	if os.Getenv("PG_TEST_PHASE") != "after" {
+	if phase != "after" {
 		t.Fatal("explicit restart phase required")
 	}
 	b, e := os.ReadFile(file)

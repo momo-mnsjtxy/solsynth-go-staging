@@ -5,6 +5,32 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGWalletManagedTransactionPurposeScopes",
+        "TestPGWalletManagedIndexLegacyMigrationAtomicity",
+
+        "TestPGTicketMediaComposedLifecycleAndPrivateAudience",
+        "TestPGTicketMediaOwnershipIdempotencyAndAtomicRollback",
+        "TestPGTicketMediaFileWaitRevalidatesStateAndAuthority",
+        "TestPGTicketMediaReadWaitObservesAssignmentWithdrawal",
+        "TestPGTicketMediaRestartPersistence",
+
+        "TestPGProductStockConcurrentReservationConsumeAndRelease",
+        "TestPGProductStockUTCWindowsExpiryAndRollback",
+        "TestPGProductStockManualRestockThroughHost",
+        "TestPGProductStockRecurringReservationRenewalAndCancel",
+        "TestPGProductStockConcurrentSubscriptionBuyers",
+        "TestPGProductStockRestockAndWindowWaits",
+        "TestPGProductStockCancellationPaymentRace",
+        "TestPGProductStockRejectsMismatchedCycleEconomics",
+        "TestPGProductStockRestartPersistence",
+        "TestPGMLSOpaqueLifecycleIsolationAndRestart",
+        "TestPGMLSKeyClaimsAreOneUseAndRevocationDurable",
+        "TestPGMLSResetRequiresExplicitGenerationAndRejectsReplay",
+        "TestPGMLSCanonicalCiphertextAndAuthoredHTTP",
+        "TestPGMLSAtomicFanoutRollbackAndJoiningExpiry",
+        "TestPGMLSBackendAuthorityAndGatewayComposition",
+        "TestPGMLSRestartPersistence",
+
         "TestPGChatMediaLifecycleCurrentVisibilityAndIsolation",
         "TestPGChatReactionsContractsConcurrencyAndRollback",
         "TestPGChatMediaAuthorityAndFileWaitRevalidation",
@@ -557,6 +583,10 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGTicketMediaRestartPersistence",
+
+        "TestPGProductStockRestartPersistence",
+        "TestPGMLSRestartPersistence",
         "TestPGChatMediaReactionsRestartPersistence",
         "TestPGWalletFundsRestartPersistence",
         "TestPGProfileMediaRestartPersistence",

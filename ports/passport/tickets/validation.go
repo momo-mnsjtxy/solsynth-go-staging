@@ -44,13 +44,24 @@ func ValidResources(v []*string) bool {
 	return true
 }
 func ValidateTicket(c TicketCreate) error {
-	if len(c.FileIDs) > 0 {
-		return ErrUnsupported
-	}
-	if !Text(c.Title, 3, 256) || !Text(c.Content, 1, 16384) || c.Type < 0 || c.Type > 3 || c.Priority < 0 || c.Priority > 3 || !ValidResources(c.Resources) {
+	if !ValidFileIDs(c.FileIDs) || !Text(c.Title, 3, 256) || !Text(c.Content, 1, 16384) || c.Type < 0 || c.Type > 3 || c.Priority < 0 || c.Priority > 3 || !ValidResources(c.Resources) {
 		return ErrInvalid
 	}
 	return nil
+}
+func ValidFileIDs(ids []string) bool {
+	if len(ids) > 32 {
+		return false
+	}
+	seen := map[string]bool{}
+	for _, id := range ids {
+		key := strings.ToLower(id)
+		if !authority.ValidID(id) || seen[key] {
+			return false
+		}
+		seen[key] = true
+	}
+	return true
 }
 func ValidateGroup(g GroupInput) error {
 	if !ValidKey(g.Key) || !Text(g.Title, 1, 256) || !OptionalText(g.Description, 4096) || !validConfig(g.Config) {

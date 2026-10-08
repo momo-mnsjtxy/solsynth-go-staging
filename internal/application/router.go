@@ -199,8 +199,15 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		} else {
 			canonical = "/api"
 		}
+	case "e2ee":
+		if under(p, "/e2ee/mls") {
+			target = h.messager
+		}
 	case "stargate":
-		if p == "/stargate/accounts/me/pin-status" {
+		if under(p, "/stargate/e2ee/mls") {
+			target = h.messager
+			canonical = strings.TrimPrefix(p, "/stargate")
+		} else if p == "/stargate/accounts/me/pin-status" {
 			target = h.wallet
 			canonical = "/api/accounts/me/pin-status"
 		} else if under(p, "/stargate/accounts") {
@@ -212,6 +219,9 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case under(p, "/api/wallets"), p == "/api/accounts/me/pin-status":
 			target = h.wallet
+		case under(p, "/api/e2ee/mls"):
+			target = h.messager
+			canonical = strings.TrimPrefix(p, "/api")
 		case under(p, "/api/chat"):
 			target = h.messager
 		case taxonomyRoute(p):

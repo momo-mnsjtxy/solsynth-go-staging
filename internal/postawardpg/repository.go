@@ -167,7 +167,7 @@ func (r *Repository) lockScope(ctx context.Context, tx *sql.Tx, actor, selector,
 			return out, a.ErrForbidden
 		}
 	}
-	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, permissions...); e != nil {
+	if e = r.checkAuthority(ctx, tx, actor, permissions...); e != nil {
 		return out, e
 	}
 	for _, id := range unique(before.Realm, before.PostRealm) {
@@ -210,8 +210,20 @@ func (r *Repository) visiblePost(ctx context.Context, tx *sql.Tx, actor, post st
 	p, e := postpg.ScanProjection(tx.QueryRowContext(ctx, `SELECT `+postpg.ProjectionColumns+postpg.ActivePostFrom+` AND `+postpg.DetailPredicate(r.visibility)+` AND p.id=$2::uuid AND p.drafted_at IS NULL AND p.published_at<=$3::timestamptz AND p.shadowbanned_at IS NULL AND u.shadowbanned_at IS NULL`, actor, post, r.cfg.Now()))
 	return p, mapped(e)
 }
+
+// Authenticated merchant reads still require current canonical proof and the
+// explicit manager check; named mutation permissions retain full authorization.
+func (r *Repository) checkAuthority(ctx context.Context, tx *sql.Tx, actor string, permissions ...string) error {
+	if len(permissions) == 0 {
+		_, err := r.guard.Authenticate(ctx, r.db, tx, actor)
+		return err
+	}
+	_, err := r.guard.Authorize(ctx, r.db, tx, actor, permissions...)
+	return err
+}
+
 func (r *Repository) commit(ctx context.Context, tx *sql.Tx, actor string, permissions ...string) error {
-	if _, e := r.guard.Authorize(ctx, r.db, tx, actor, permissions...); e != nil {
+	if e := r.checkAuthority(ctx, tx, actor, permissions...); e != nil {
 		return e
 	}
 	return tx.Commit()

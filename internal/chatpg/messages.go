@@ -99,6 +99,10 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
+	if e = r.mlsMessageCheck(ctx, tx, actor, rid, p.EncryptionMeta, false); e != nil {
+		return messager.MessageProjection{}, e
+	}
+	p.EncryptionMeta = normalizedMLSEncryption(ctx, p.EncryptionMeta)
 	meta := mergeMeta(nil, p)
 	encoded, _ := json.Marshal(struct {
 		Content     string
@@ -112,6 +116,12 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 			Content string
 			Reply   *string
 		}{p.Content, p.RepliedMessageID})
+	}
+	if p.EncryptionMeta != nil {
+		encoded, _ = json.Marshal(struct {
+			Plain      json.RawMessage
+			Encryption *rooms.EncryptionMeta
+		}{encoded, p.EncryptionMeta})
 	}
 	digest := sha256.Sum256(encoded)
 	if p.ClientMessageID != nil {
@@ -163,6 +173,9 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 	if e != nil {
 		return v, e
 	}
+	if e = setMessageEncryption(ctx, tx, &v, p.EncryptionMeta); e != nil {
+		return v, e
+	}
 	if e = r.applyAttachments(ctx, tx, actor, &v, p.AttachmentsID); e != nil {
 		return v, e
 	}
@@ -191,6 +204,10 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
+	if e = r.mlsMessageCheck(ctx, tx, actor, rid, p.EncryptionMeta, false); e != nil {
+		return messager.MessageProjection{}, e
+	}
+	p.EncryptionMeta = normalizedMLSEncryption(ctx, p.EncryptionMeta)
 	v, e := textMessage(tx.QueryRowContext(ctx, `SELECT `+textColumns+` FROM chat_messages WHERE id=$1 AND chat_room_id=$2 AND deleted_at IS NULL`, mid, rid))
 	if e != nil {
 		return v, e
@@ -206,6 +223,9 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 	}
 	previousAttachments := append([]byte(nil), v.Attachments...)
 	content := v.Content
+	if p.EncryptionMeta != nil {
+		content = nil
+	}
 	if p.ContentSet || p.Content != "" {
 		content = &p.Content
 	}
@@ -213,6 +233,9 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 	metaPatch := p
 	metaPatch.Meta = nil
 	meta := mergeMeta(v.Meta, metaPatch)
+	if p.EncryptionMeta != nil {
+		meta = mergeMeta(nil, p)
+	}
 	client := v.ClientMessageID
 	if p.ClientMessageID != nil {
 		client = p.ClientMessageID
@@ -227,7 +250,16 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 			return v, rooms.ErrConflict
 		}
 	}
-	unchanged := ((content == nil && v.Content == nil) || (content != nil && v.Content != nil && *content == *v.Content)) && bytes.Equal(meta, mergeMeta(v.Meta, rooms.TextRequest{}))
+	encryptionUnchanged := true
+	if p.EncryptionMeta != nil {
+		raw, _ := json.Marshal(p.EncryptionMeta)
+		var prior rooms.EncryptionMeta
+		priorErr := json.Unmarshal(v.EncryptionMeta, &prior)
+		canonicalPrior, _ := json.Marshal(prior)
+		encryptionUnchanged = priorErr == nil && bytes.Equal(canonicalPrior, raw)
+		v.EncryptionMeta = raw
+	}
+	unchanged := encryptionUnchanged && ((content == nil && v.Content == nil) || (content != nil && v.Content != nil && *content == *v.Content)) && bytes.Equal(meta, mergeMeta(v.Meta, rooms.TextRequest{}))
 	v.Content = content
 	v.Meta = meta
 	if e = r.applyAttachments(ctx, tx, actor, &v, p.AttachmentsID); e != nil {
@@ -235,6 +267,9 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 	}
 	if e = r.loadMessage(ctx, tx, actor, &v); e != nil {
 		return v, e
+	}
+	if p.EncryptionMeta != nil {
+		v.EncryptionMeta, _ = json.Marshal(p.EncryptionMeta)
 	}
 	if messageEmpty(v) {
 		return messager.MessageProjection{}, rooms.ErrInvalid
@@ -251,6 +286,12 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 	encoded, _ := json.Marshal(eventMeta)
 	event, e := appendMessage(ctx, tx, rid, m.ID, "messages.update", content, nil, v.RepliedMessageID, encoded, nil, nil)
 	if e != nil {
+		return v, e
+	}
+	if e = setMessageEncryption(ctx, tx, &event, p.EncryptionMeta); e != nil {
+		return v, e
+	}
+	if e = setMessageEncryption(ctx, tx, &v, p.EncryptionMeta); e != nil {
 		return v, e
 	}
 	v, e = textMessage(tx.QueryRowContext(ctx, `UPDATE chat_messages SET content=$2,meta=$3::jsonb,edited_at=$4,updated_at=$4,owned_creation_client_id=coalesce(owned_creation_client_id,client_message_id),client_message_id=$5 WHERE id=$1 RETURNING `+textColumns, mid, content, meta, event.CreatedAt, client))
@@ -279,6 +320,10 @@ func (r *Repository) DeleteMessage(ctx context.Context, actor, rid, mid string) 
 	if e != nil {
 		return e
 	}
+	deletion := rooms.MLSWriteFrom(ctx)
+	if e = r.mlsMessageCheck(ctx, tx, actor, rid, deletion.Encryption, true); e != nil {
+		return e
+	}
 	v, e := textMessage(tx.QueryRowContext(ctx, `SELECT `+textColumns+` FROM chat_messages WHERE id=$1 AND chat_room_id=$2`, mid, rid))
 	if e != nil {
 		return e
@@ -293,8 +338,11 @@ func (r *Repository) DeleteMessage(ctx context.Context, actor, rid, mid string) 
 		return r.commit(ctx, tx, actor, "chat.messages.delete")
 	}
 	meta, _ := json.Marshal(map[string]string{"message_id": v.ID})
-	event, e := appendMessage(ctx, tx, rid, m.ID, "messages.delete", nil, nil, nil, meta, nil, nil)
+	event, e := appendMessage(ctx, tx, rid, m.ID, "messages.delete", nil, deletion.ClientMessageID, nil, meta, nil, nil)
 	if e != nil {
+		return e
+	}
+	if e = setMessageEncryption(ctx, tx, &event, normalizedMLSEncryption(ctx, deletion.Encryption)); e != nil {
 		return e
 	}
 	// Hide previous edit snapshots along with the original text. The tombstone

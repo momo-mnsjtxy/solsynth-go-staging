@@ -30,11 +30,11 @@ are tracked separately in the runtime flow acceptance map.
 
 ## Expanded suite budgets
 
-The composed candidate now requires 516 before-restart cases and 67 restart
+The composed candidate now requires 539 before-restart cases and 70 restart
 cases, with the exact names enforced by the guard. Each Go test command retains
 `-race -count=1 -json` and all security derivation work. The before phase has an
-explicit 20-minute package timeout; restart has 10 minutes. The Actions job has
-35 minutes, allowing both bounded phases plus build/setup and process checks.
+explicit 30-minute package timeout; restart has 10 minutes. The Actions job has
+50 minutes, allowing both bounded phases plus build/setup and process checks.
 
 Commit `22e2e96d13bb5c90919cf3bfb78f7506dd832beb` reached Go's former default
 10-minute package timeout after 378 completed top-level PG cases; all six new
@@ -46,3 +46,21 @@ The narrow timeout-only correction is `e104bdc31c1202d2e154bf84a677a35c9490afda`
 JSON test events preserve individual durations, and an enlarged timeout must not
 be used to mask a blocked test, weaken derivation, remove race checks or skip a
 required case.
+
+
+## Restart fixture discipline
+
+New restart fixtures use `fixtureRestartPhase` and the runner's sole
+`PG_TEST_PHASE` variable. Unknown phases fail when a real PG configuration is
+present. Saved-state helpers create markers exclusively in before and read only
+in after; IDs and pre-restart documents must be verified before any continuation
+operation. The source guard rejects invented phase environment names.
+
+The pending recurring-product and stock fixtures initially used an unexported
+phase variable and would have recreated state in after. Both now use the shared
+helper and exact pre-restart order IDs. No earlier 455-case green test used that
+variable, and the pending candidates failed before restart, so no prior full
+restart success is attributed to those invalid assertions. Repository
+reconstruction on one pool is documented separately from an actual DB restart.
+
+The enlarged 539-case checkpoint uses 30/10-minute phase budgets and a 50-minute job ceiling because observed before phases reached 17–19 minutes. This gives bounded runner-variance headroom without changing per-test deadlines, password/PIN derivation, race instrumentation, or assertions. Per-test JSON durations remain the basis for future isolated-cluster sharding; composed cross-domain and actual restart coverage must remain intact.

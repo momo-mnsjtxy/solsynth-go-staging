@@ -18,6 +18,11 @@ import (
 // wallet's private proof envelope. The source request header has been removed.
 type proofIdentity struct{ identity }
 
+// RequestIdentityPresent distinguishes anonymous requests from a present proof
+// that fails revalidation after the host has removed the raw bearer header.
+func (a proofIdentity) RequestIdentityPresent(r *http.Request) bool {
+	return r.Context().Value(principalKey{}) != nil
+}
 func (a proofIdentity) AuthenticateRequest(r *http.Request) (authority.Principal, error) {
 	return a.require(r.Context())
 }

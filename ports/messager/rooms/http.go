@@ -137,6 +137,9 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if s != nil && s.serveMLS(w, r) {
+		return
+	}
 	if strings.HasPrefix(r.URL.Path, "/api/realms/") {
 		s.serveRealm(w, r)
 		return
@@ -235,6 +238,12 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	if s.Bind != nil {
 		ctx = s.Bind(ctx, principal)
 	}
+	writeProof, e := mlsWriteContext(r)
+	if e != nil {
+		failure(w, e)
+		return
+	}
+	ctx = WithMLSWrite(ctx, writeProof)
 	var result any
 	status := 200
 	switch {
@@ -452,7 +461,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			var req TextRequest
-			e = decode(w, r, &req, "content", "client_message_id", "nonce", "replied_message_id", "attachments_id", "meta", "embeds", "thread_id", "forwarded_message_id")
+			e = s.decodeText(w, r, &req)
 			if e == nil {
 				req, e = ValidateText(req, false)
 			}
@@ -463,7 +472,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			switch r.Method {
 			case "PATCH":
 				var req TextRequest
-				e = decode(w, r, &req, "content", "client_message_id", "nonce", "replied_message_id", "attachments_id", "meta", "embeds", "thread_id", "forwarded_message_id")
+				e = s.decodeText(w, r, &req)
 				if e == nil {
 					req, e = ValidateText(req, true)
 				}
@@ -471,8 +480,13 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 					result, e = s.Repository.Edit(ctx, actor, rid, p[2], req)
 				}
 			case "DELETE":
-				e = empty(w, r)
+				var deletion TextRequest
+				deletion, e = s.decodeMLSDelete(w, r)
 				if e == nil {
+					proof := MLSWriteFrom(ctx)
+					proof.Encryption = deletion.EncryptionMeta
+					proof.ClientMessageID = deletion.ClientMessageID
+					ctx = WithMLSWrite(ctx, proof)
 					e = s.Repository.DeleteMessage(ctx, actor, rid, p[2])
 				}
 				status = 204
@@ -491,7 +505,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if m, ok := result.(messager.MessageProjection); ok {
-		m.Content = messager.FormatMessageContent(m.Content, false)
+		m.Content = messager.FormatMessageContent(m.Content, len(m.EncryptionMeta) > 0 && string(m.EncryptionMeta) != "null")
 		result = m
 	}
 	send(w, status, result)

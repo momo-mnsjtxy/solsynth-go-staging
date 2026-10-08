@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"os"
 	"solsynth.local/go-migration/internal/apppg"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/commercepg"
@@ -319,10 +318,13 @@ func TestPGRecurringProductHostPINCatalogAndCancel(t *testing.T) {
 }
 
 func TestPGRecurringProductRestartPersistence(t *testing.T) {
-	if os.Getenv("SOLSYNTH_PG_RESTART_PHASE") == "after" {
+	phase := fixtureRestartPhase(t)
+	if phase == "after" {
 		db := database(t)
+		var saved struct{ OrderID string }
+		loadRestartFixture(t, "recurring-product-restart.json", &saved)
 		var raw []byte
-		if e := db.QueryRow(`SELECT document FROM commerce_v1.orders WHERE document->>'remarks'='Synthetic recurring restart'`).Scan(&raw); e != nil {
+		if e := db.QueryRow(`SELECT document FROM commerce_v1.orders WHERE id=$1::uuid AND document->>'remarks'='Synthetic recurring restart'`, saved.OrderID).Scan(&raw); e != nil {
 			t.Fatal(e)
 		}
 		var o c.Order
@@ -372,4 +374,5 @@ func TestPGRecurringProductRestartPersistence(t *testing.T) {
 	if _, e = wrong.PayOrder(f.ctx, f.actor, o.ID, &f.wallet.ID); e == nil {
 		t.Fatal("cross-pool proof accepted")
 	}
+	saveRestartFixture(t, "recurring-product-restart.json", struct{ OrderID string }{o.ID})
 }

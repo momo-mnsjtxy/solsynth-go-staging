@@ -491,13 +491,14 @@ func TestPGWalletFundsAuthorityAndNotificationProjection(t *testing.T) {
 	}
 }
 func TestPGWalletFundsRestartPersistence(t *testing.T) {
+	phase := fixtureRestartPhase(t)
 	db := database(t)
 	path := filepath.Join(os.Getenv("SOLSYNTH_DISPOSABLE_PG"), "wallet-funds-state.json")
 	type state struct {
 		Pending, Complete, Cancelled, Creator, Payer, Receipt string
 		Expires                                               time.Time
 	}
-	if os.Getenv("PG_TEST_PHASE") == "after" {
+	if phase == "after" {
 		raw, e := os.ReadFile(path)
 		if e != nil {
 			t.Fatal(e)

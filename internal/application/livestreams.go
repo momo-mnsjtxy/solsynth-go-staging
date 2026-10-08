@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"solsynth.local/go-migration/internal/accountpg"
 	"solsynth.local/go-migration/internal/authoritypg"
+	"solsynth.local/go-migration/internal/commercepg"
 	"solsynth.local/go-migration/internal/livestreampg"
 	"solsynth.local/go-migration/internal/mediapg"
 	"solsynth.local/go-migration/internal/socialpg"
@@ -18,9 +19,20 @@ type LivestreamConfig struct {
 	Provider live.Provider
 	Policy   livestreampg.Config
 	Chat     *livestreampg.ChatConfig
+	Awards   *livestreampg.AwardConfig
 }
 
-func (x *externalModules) configureStreams(db *sql.DB, c Config, v *authority.Verifier, g *authoritypg.TransactionGuard, a *accountpg.Repository, s *socialpg.Repository, m *mediapg.Repository) (http.Handler, error) {
+func (x *externalModules) configureStreams(db *sql.DB, c Config, v *authority.Verifier, g *authoritypg.TransactionGuard, a *accountpg.Repository, s *socialpg.Repository, m *mediapg.Repository, commerceRepo *commercepg.Repository) (http.Handler, error) {
+	if c.LivestreamAwardMaintenance != nil {
+		if c.Livestreams != nil {
+			return nil, errors.New("award maintenance mode excludes streaming APIs")
+		}
+		var err error
+		x.awardMaintenance, err = livestreampg.NewAwardMaintenance(db, commerceRepo, *c.LivestreamAwardMaintenance)
+		if err != nil {
+			return nil, err
+		}
+	}
 	if c.Livestreams == nil {
 		return (&live.Service{}).Handler(), nil
 	}
@@ -40,6 +52,12 @@ func (x *externalModules) configureStreams(db *sql.DB, c Config, v *authority.Ve
 		if err = x.streams.WithChat(*c.Livestreams.Chat); err != nil {
 			return nil, err
 		}
+	}
+	if c.Livestreams.Awards != nil {
+		if err = x.streams.WithAwards(*c.Livestreams.Awards, commerceRepo); err != nil {
+			return nil, err
+		}
+		commerceRepo.WithLiveStreamAwards(x.streams)
 	}
 	return (&live.Service{Repository: x.streams, Authority: v, Bind: g.Bind}).Handler(), nil
 }

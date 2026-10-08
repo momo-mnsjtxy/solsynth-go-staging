@@ -19,6 +19,7 @@ import (
 	"solsynth.local/go-migration/internal/commercepg"
 	"solsynth.local/go-migration/internal/fortunepg"
 	"solsynth.local/go-migration/internal/interactionpg"
+	"solsynth.local/go-migration/internal/livestreampg"
 	"solsynth.local/go-migration/internal/locationpg"
 	"solsynth.local/go-migration/internal/mediapg"
 	"solsynth.local/go-migration/internal/merchantpg"
@@ -82,6 +83,7 @@ import (
 // explicit database-policy decisions; zero is never silently treated as public.
 type Config struct {
 	Livestreams                   *LivestreamConfig
+	LivestreamAwardMaintenance    *livestreampg.AwardMaintenanceConfig
 	NameCards                     *namecardpg.Options
 	Rewind                        *rewindpg.Options
 	IPCheck                       *ipcheck.Config
@@ -436,7 +438,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		}
 		moderationHTTP = bindIdentity(v, bindTransactionAuthority(guard, content.NewHandler(moderationRepo, postIdentity{identity})))
 	}
-	streamHTTP, err := external.configureStreams(db, c, v, guard, accountRepo, socialRepo, mediaRepo)
+	streamHTTP, err := external.configureStreams(db, c, v, guard, accountRepo, socialRepo, mediaRepo, commerceRepo)
 	if err != nil {
 		return nil, err
 	}

@@ -205,13 +205,16 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 	if len(parts) == 0 && r.Method == "POST" {
 		allowed["pub"] = true
 	}
-	if r.Method == "GET" && (len(parts) == 0 || len(parts) == 2 && (parts[0] == "publisher" || parts[1] == "chat")) {
+	if r.Method == "GET" && (len(parts) == 0 || len(parts) == 2 && (parts[0] == "publisher" || parts[1] == "chat" || parts[1] == "awards")) {
 		allowed["limit"] = true
 		allowed["offset"] = true
 	}
 	if r.Method == "GET" && len(parts) == 2 && parts[1] == "token" {
 		allowed["streamer"] = true
 		allowed["tool"] = true
+	}
+	if r.Method == "GET" && len(parts) == 3 && parts[1] == "awards" && parts[2] == "leaderboard" {
+		allowed["limit"] = true
 	}
 	for key, values := range q {
 		if !allowed[key] || len(values) != 1 {
@@ -226,6 +229,12 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	limit, offset := 50, 0
+	if len(parts) > 1 && parts[1] == "awards" {
+		limit = 20
+		if len(parts) == 3 && parts[2] == "leaderboard" {
+			limit = 10
+		}
+	}
 	for key, dst := range map[string]*int{"limit": &limit, "offset": &offset} {
 		if raw := q.Get(key); raw != "" {
 			n, x := strconv.Atoi(raw)
@@ -276,11 +285,15 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		id := parts[0]
+		if len(parts) > 1 && parts[1] == "awards" {
+			s.awardsHTTP(w, r, ctx, actor, parts, limit, offset)
+			return
+		}
 		if len(parts) > 1 && parts[1] == "chat" {
 			s.chatHTTP(w, r, ctx, actor, parts, limit, offset)
 			return
 		}
-		if len(parts) > 1 && (parts[1] == "egress" || parts[1] == "hls" || parts[1] == "awards") {
+		if len(parts) > 1 && (parts[1] == "egress" || parts[1] == "hls") {
 			failure(w, ErrUnsupported)
 			return
 		}

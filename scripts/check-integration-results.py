@@ -5,6 +5,17 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGLiveStreamAwardsPaidLifecycleAndConservation",
+        "TestPGLiveStreamAwardsFulfillmentRollbackAndReplay",
+        "TestPGLiveStreamAwardsFreshAuthorityAndNOWAITRollback",
+        "TestPGLiveStreamAwardsOwnerBindingAndProviderIndependentPayout",
+        "TestPGLiveStreamAwardsEndDuringPaymentAndUnsupportedRefund",
+        "TestPGLiveStreamAwardsOpposingActorsAndStreams",
+        "TestPGLiveStreamAwardsExpiryCapsAndPayoutRollback",
+        "TestPGLiveStreamAwardsPayoutRestartPersistence",
+        "TestPGLiveStreamAwardsHTTPStrictRequestTransport",
+        "TestPGBackendLivestreamAwardsComposition",
+
         "TestPGLiveStreamChatHTTPHistoryAndIdempotency",
         "TestPGLiveStreamChatTimeoutDeleteAndExpiry",
         "TestPGLiveStreamChatOutboxRetryRecipientsAndRecordedRevocation",
@@ -410,6 +421,7 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGLiveStreamAwardsPayoutRestartPersistence",
         "TestPGLiveStreamChatOutboxRestartPersistence",
 
         "TestPGFederatedRenameRestartPersistence",

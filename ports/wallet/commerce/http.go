@@ -47,6 +47,10 @@ func problem(w http.ResponseWriter, e error, code string) {
 		message = "Authentication or permission check failed."
 	} else {
 		switch {
+		case errors.Is(e, ErrRetry):
+			status = 409
+			code = "ORDER_RETRY_REQUIRED"
+			message = "The transaction rolled back after a concurrent change; retry the same request."
 		case errors.Is(e, ErrNotFound), errors.Is(e, wallet.ErrNotFound):
 			status = 404
 			message = "Resource was not found."

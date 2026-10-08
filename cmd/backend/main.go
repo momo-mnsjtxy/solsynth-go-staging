@@ -61,6 +61,7 @@ func run(args []string, out io.Writer) error {
 	noNotify := fs.String("messager-notify-none", "", "explicit no-notifications mode")
 	verificationSettings := verificationFlags(fs)
 	externalSettings := externalFlags(fs)
+	awardSettings := livestreamAwardFlags(fs)
 	ticketSettings := ticketFlags(fs)
 	fortuneSettings := fortuneFlags(fs)
 	readerSettings := readerFlags(fs)
@@ -237,6 +238,9 @@ func run(args []string, out io.Writer) error {
 	if err = externalSettings.apply(&appConfig); err != nil {
 		return err
 	}
+	if err = awardSettings.apply(&appConfig); err != nil {
+		return err
+	}
 	fortuneConfig, fortuneCorpus, err := fortuneSettings.config()
 	if err != nil {
 		return err
@@ -299,7 +303,7 @@ func run(args []string, out io.Writer) error {
 	}()
 	// Revocation and federation delivery have a separate bounded cadence so a
 	// slow settlement batch cannot postpone canonical call cleanup indefinitely.
-	if *externalSettings.calls || *externalSettings.federation || *externalSettings.streams {
+	if *externalSettings.calls || *externalSettings.federation || *externalSettings.streams || *awardSettings.maintenance {
 		go func() {
 			ticker := time.NewTicker(*externalSettings.maintenance)
 			defer ticker.Stop()

@@ -2,21 +2,20 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Durable livestream chat and permanent publisher alias/stable federation identity composed locally",
+  "local_source_checkpoint": "Recovered canonical green source plus paid livestream awards and provider-free reserve maintenance",
   "last_fully_passed_ci": {
-    "commit": "3a71a2f9da2a2aa0aa2c94fca76c7b34a6386c6d",
-    "run": 37786451610,
-    "before": 348,
-    "after_restart": 48
+    "commit": "5e695228fab2e3c4eb956851731e09dcad15d04a",
+    "run": 37792619865,
+    "before": 376,
+    "after_restart": 51
   },
   "latest_candidate": {
-    "commit": "18ee4c8477eecc8a161ded268a12dbffefc6e7c6",
-    "required_before": 359,
-    "required_after_restart": 49,
-    "status": "Published isolated synthetic fixture corrections; actual PostgreSQL pending"
+    "required_before": 386,
+    "required_after_restart": 52,
+    "status": "Recovered exact award worker patch and reconstructed host composition; real PostgreSQL pending"
   },
-  "local_required_before": 376,
-  "local_required_after_restart": 51,
+  "local_required_before": 386,
+  "local_required_after_restart": 52,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -944,6 +943,26 @@
         "Remote Move/origin migration",
         "Remote alias discovery/history enumeration",
         "Organization federation"
+      ]
+    },
+    {
+      "source_family": "sphere.livestream_awards",
+      "local_status": "implemented, reconstructed host retesting",
+      "supported_flows": [
+        "Paid-only award history and leaderboard",
+        "Canonical wallet/order payment with 90/10 conservation",
+        "Provider-free durable earned reserve payout"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBackendLivestreamAwardsComposition",
+        "TestPGLiveStreamAwardsPaidLifecycleAndConservation",
+        "TestPGLiveStreamAwardsPayoutRestartPersistence"
+      ],
+      "unsupported_or_remaining": [
+        "Refunds and chargebacks",
+        "External payment providers",
+        "Realm publisher beneficiaries",
+        "Realtime award packets"
       ]
     }
   ],

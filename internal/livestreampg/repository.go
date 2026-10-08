@@ -29,14 +29,16 @@ type Config struct {
 	MaxStreamsPerPublisher              int
 }
 type Repository struct {
-	db         *sql.DB
-	guard      *authoritypg.TransactionGuard
-	publishers live.PublisherProvider
-	media      live.MediaProvider
-	social     live.SocialProvider
-	provider   live.Provider
-	cfg        Config
-	chat       *ChatConfig
+	db            *sql.DB
+	guard         *authoritypg.TransactionGuard
+	publishers    live.PublisherProvider
+	media         live.MediaProvider
+	social        live.SocialProvider
+	provider      live.Provider
+	cfg           Config
+	chat          *ChatConfig
+	awards        *AwardConfig
+	awardCommerce AwardCommerce
 }
 
 var _ live.Repository = (*Repository)(nil)
@@ -56,7 +58,10 @@ func (r *Repository) Ready(ctx context.Context) error {
 	}
 	_, e := r.db.ExecContext(ctx, `SELECT id,publisher_id,operation_state FROM owned_livestreams LIMIT 0;SELECT generation,phase,ingress_id,owner_version,permission FROM owned_livestream_runs LIMIT 0;SELECT state,identity,permission FROM owned_livestream_admissions LIMIT 0;SELECT ingress_id,deleted_at FROM owned_livestream_ingresses LIMIT 0;SELECT request_hash FROM owned_livestream_create_keys LIMIT 0;SELECT action FROM owned_livestream_audit LIMIT 0`)
 	if e == nil && r.chat != nil {
-		return r.ChatReady(ctx)
+		e = r.ChatReady(ctx)
+	}
+	if e == nil && r.awards != nil {
+		e = r.AwardsReady(ctx)
 	}
 	return e
 }
@@ -335,6 +340,9 @@ func (r *Repository) visible(ctx context.Context, tx *sql.Tx, actor string, v *l
 			return false, x
 		}
 	}
+	if e = r.awardTotals(ctx, tx, v); e != nil {
+		return false, e
+	}
 	return editor, nil
 }
 func (r *Repository) read(ctx context.Context, actor string) (*sql.Tx, error) {
@@ -383,6 +391,9 @@ func (r *Repository) List(ctx context.Context, actor, pid string, limit, offset 
 	order := `s.created_at DESC,s.id`
 	if pid == "" {
 		order = `s.viewer_count DESC,s.started_at DESC NULLS LAST,s.id`
+		if r.awards != nil {
+			order = `COALESCE((SELECT sum(a.amount) FROM owned_livestream_award_purchases a WHERE a.stream_id=s.id AND a.fulfilled_at IS NOT NULL),0)*10+s.viewer_count DESC,s.started_at DESC NULLS LAST,s.id`
+		}
 	}
 	rows, e := tx.QueryContext(ctx, `SELECT `+fields+` FROM owned_livestreams s JOIN owned_publishers p ON p.id=s.publisher_id WHERE `+where+` ORDER BY `+order+` LIMIT $3 OFFSET $4`, actor, pid, limit, offset)
 	if e != nil {

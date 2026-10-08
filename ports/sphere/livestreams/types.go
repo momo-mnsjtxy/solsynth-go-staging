@@ -11,6 +11,7 @@ import (
 	"solsynth.local/go-migration/ports/media"
 	"solsynth.local/go-migration/ports/messager/calls"
 	"solsynth.local/go-migration/ports/passport/accounts"
+	wallet "solsynth.local/go-migration/ports/wallet/accounts"
 )
 
 // Values come from the licensed authored Sphere/Models/LiveStream.cs.
@@ -71,8 +72,8 @@ type Stream struct {
 	TotalDurationSeconds   int64               `json:"total_duration_seconds"`
 	ViewerCount            int                 `json:"viewer_count"`
 	PeakViewerCount        int                 `json:"peak_viewer_count"`
-	TotalAwardScore        int64               `json:"total_award_score"`
-	DistributedAwardAmount int64               `json:"distributed_award_amount"`
+	TotalAwardScore        wallet.Amount       `json:"total_award_score"`
+	DistributedAwardAmount wallet.Amount       `json:"distributed_award_amount"`
 	Thumbnail              *media.File         `json:"thumbnail"`
 	Metadata               map[string]any      `json:"metadata"`
 	PublisherID            string              `json:"publisher_id"`

@@ -382,7 +382,7 @@ func (r *Repository) cleanup(ctx context.Context, tx *sql.Tx, s live.Stream, v r
 }
 
 // ProcessDue is a bounded host-owned reconciliation hook. It starts no goroutine.
-func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
+func (r *Repository) processLifecycleDue(ctx context.Context, limit int) (int, error) {
 	if limit < 1 || limit > 100 {
 		return 0, live.ErrInvalid
 	}
@@ -432,4 +432,21 @@ func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
 		result = errors.Join(result, chatError)
 	}
 	return n, result
+}
+
+// ProcessDue prioritizes already-earned monetary obligations independently of
+// RTC availability, then reconciles provider lifecycle and optional chat work.
+func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
+	if limit < 1 || limit > 100 {
+		return 0, live.ErrInvalid
+	}
+	n := 0
+	var result error
+	if r != nil && r.awards != nil {
+		count, e := r.ProcessAwardsDue(ctx, limit)
+		n += count
+		result = errors.Join(result, e)
+	}
+	count, e := r.processLifecycleDue(ctx, limit)
+	return n + count, errors.Join(result, e)
 }

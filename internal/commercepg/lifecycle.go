@@ -8,6 +8,7 @@ import (
 	"errors"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/passport/namecards"
+	live "solsynth.local/go-migration/ports/sphere/livestreams"
 	wallet "solsynth.local/go-migration/ports/wallet/accounts"
 	c "solsynth.local/go-migration/ports/wallet/commerce"
 	"time"
@@ -102,6 +103,15 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.pay"); e != nil {
 		return o, e
 	}
+	isLiveAward := o.AppIdentifier == "internal" && o.ProductIdentifier != nil && *o.ProductIdentifier == live.AwardProduct
+	if isLiveAward {
+		if r.liveAwards == nil || sub.Valid || gift.Valid {
+			return o, c.ErrUnavailable
+		}
+		if e = r.liveAwards.PrepareLiveStreamAward(ctx, r.db, tx, actor, o, payer, now); e != nil {
+			return o, awardError(e)
+		}
+	}
 	tr, e := walletpg.CommerceHold(ctx, tx, o.ID, actor, payer, o.PayeeWalletID, o.Currency, o.Amount, now)
 	if e != nil {
 		return o, e
@@ -154,6 +164,18 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		}
 		if e = r.namecards.FulfillNameCard(ctx, r.db, tx, actor, o, now); e != nil {
 			return o, e
+		}
+		o.Status = c.Finished
+	}
+	if isLiveAward {
+		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+			return o, e
+		}
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.pay"); e != nil {
+			return o, e
+		}
+		if e = r.liveAwards.FulfillLiveStreamAward(ctx, r.db, tx, actor, o, now); e != nil {
+			return o, awardError(e)
 		}
 		o.Status = c.Finished
 	}

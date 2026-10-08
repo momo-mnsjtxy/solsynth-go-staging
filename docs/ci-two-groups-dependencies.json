@@ -1,5 +1,5 @@
 {
-  "base_commit": "c8f2fe79c6f8822534c24ad3926fcfaad4ded917",
+  "base_commit": "434553ff66b94d3f7a161e140a964de06957209d",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -340,7 +340,7 @@
     {
       "test": "TestPGFederationQuoteRestartPersistence",
       "source": "tests/integration/federation_quotes_test.go",
-      "function_sha256": "3d06872b7ad519b08d98ccce4fb3b3c5352de313649fe74c8ec4571252f280e6",
+      "function_sha256": "df32f9cd0863f0453f632c78e6cfec1e3b9d50eefc19ece87cb08e310dca90c1",
       "group_before_and_after": "group-a",
       "marker_files": [
         "federation-quote-restart.json"
@@ -1572,7 +1572,7 @@
     },
     {
       "source": "tests/integration/federation_quotes_test.go",
-      "sha256": "a59b4ad7f971a5aeb796be01fe56dfa67f15100113019ad5ccca9f498f1dd773"
+      "sha256": "a5a69c4c6748744a9d07e089d9030468b80491274b65c575071296d4b9911848"
     },
     {
       "source": "tests/integration/federation_rename_test.go",
@@ -1861,5 +1861,6 @@
     ],
     "changed_fixture_review": "MLS encrypted fixture emits only encryption_meta and negative-control rejects plaintext field. Recreated realm-member fixture preserves required timestamps; opposite-realm lock fixture explicitly admits both actors while retaining lock-order/rollback assertions. PassKit/quote/expiry fixture helpers seed owned random accounts/IDs and retain current authority; no new cross-test producer/consumer dependency. Synthetic delivery/expiry maintenance queries preserve scoped restart snapshots. New restart marker ownership recorded individually.",
     "runtime_status": "Actual two-cluster coverage and ordering remain pending; no speedup or full pass claimed."
-  }
+  },
+  "quote_fixture_review": "Only enclosing Create/Update public audience corrected to match existing nested public Note. Added actual-PG private-envelope/public-Note denial before valid creation, and offline wire-roundtrip control. Restart marker/target state unchanged; no case assignment or required counts changed."
 }

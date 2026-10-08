@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed bounded two-cluster CI pilot at580/76, preserving full-suite all mode and all runtime/test/SQL bodies. Exact292/288 before and36/40 restart assignment; actual pilot pending.",
+  "local_source_checkpoint": "Bounded federation quote fixture correction: enclosing Create/Update and nested Note both public; actual-PG private-envelope denial and offline roundtrip control preserve receiver policy. Runtime unchanged.",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,11 +12,11 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "06a1166835970f1c03bec45d8a2849b890671fff",
-    "run": 37850668467,
+    "commit": "b58ec755e310bd550764898fdaee8b647aa9a413",
+    "run": 37851661475,
     "required_before": 580,
     "required_after_restart": 76,
-    "status": "Fixture-corrected monolithic run pending. Reviewed two-cluster pilot not yet validated."
+    "status": "First reviewed two-cluster pilot running, inherits six shared quote fixture failures discovered in573/75. Corrected fixture locally verified; actual rerun pending."
   },
   "local_required_before": 580,
   "local_required_after_restart": 76,
@@ -2135,7 +2135,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last full green455/60.560/73 failed3 before cases (557 passed), no restart.573/75 and580/76 remain pending. Fixture corrections do not constitute a new PG pass."
+    "verification_note": "Last full green455/60.573/75 ran564pass/9fail/0skip, no restart; seven PassKit cases passed actualPG. Older three fixture failures corrected; six quote envelope fixtures corrected in this candidate. No new full green."
   },
   "global_remaining": [
     "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",

@@ -1,8 +1,8 @@
 {
-  "checkpoint": "reviewed-two-cluster580-pilot",
-  "scope": "Approved bounded private two-cluster CI pilot. Complete exact580/76 disjoint assignments, preserved all mode, attempt-bound raw evidence/receipts and all-job checks. Full offline build/vet/unit/race/SQL/source and89 partition rejection controls passed. Actual two-cluster run pending; no runtime/test-body/schema/module changes in this checkpoint.",
+  "checkpoint": "quote-envelope-fixture580",
+  "scope": "Only quote transport fixture and exact dependency/evidence refresh. Both enclosing Create/Update and nested Note public; private envelope remains explicitly denied in actualPG regression; local wire control passes. Complete offline verify passed; actualPG pending. No runtime or policy changes.",
   "inputs": {
-    "remote_parent": "06a1166835970f1c03bec45d8a2849b890671fff"
+    "remote_parent": "b58ec755e310bd550764898fdaee8b647aa9a413"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -470,8 +470,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 86229,
-      "sha256": "60735fcf10c00033985f3ec8de47ed6eb9a7f4c1d8fad1ee0c5ac5aa3a49e650"
+      "bytes": 86548,
+      "sha256": "db97df7f24c0a7473136d26cadf8c0bad50cbf936e6794fb555567586a967fbb"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -1725,8 +1725,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 98677,
-      "sha256": "7ff0078d4b2312e2c26f1368b8533d3d2d1afbfe440283720e83e1cd825f4cd4"
+      "bytes": 98834,
+      "sha256": "87bb04e9e4ddb7ca6f8ff59e679edc7475e15f8ef98aab6e7fedbdcc70e30ca0"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -9571,7 +9571,7 @@
     {
       "path": "scripts/integration-groups.json",
       "bytes": 69694,
-      "sha256": "78dc68aa806d5734114c83611e1b95c27220c4171b99d0d491b8ecd66c0f38e3"
+      "sha256": "25756788a7abc52def6813505e5e8cab6eb8cd2d77b5abd0daab7c03c22f691c"
     },
     {
       "path": "scripts/integration-postgres.sh",
@@ -10180,8 +10180,8 @@
     },
     {
       "path": "tests/integration/federation_quotes_test.go",
-      "bytes": 20798,
-      "sha256": "a59b4ad7f971a5aeb796be01fe56dfa67f15100113019ad5ccca9f498f1dd773"
+      "bytes": 22194,
+      "sha256": "a5a69c4c6748744a9d07e089d9030468b80491274b65c575071296d4b9911848"
     },
     {
       "path": "tests/integration/federation_rename_test.go",

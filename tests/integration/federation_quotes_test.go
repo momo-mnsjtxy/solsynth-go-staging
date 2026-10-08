@@ -29,7 +29,12 @@ func quoteRemoteNote(t *testing.T, x *federationFixture) f.Note {
 		t.Fatal(e)
 	}
 	n := f.Note{ID: x.keys.remote.Actor + "/notes/" + authorityUUID(t), Type: "Note", AttributedTo: x.keys.remote.Actor, Content: "Synthetic remote public note", To: []string{f.Public}}
-	if e := x.receive(t, x.activity(t, "Create", n)); e != nil {
+	// A public nested Note does not make its private envelope public.
+	if e := x.receive(t, x.activity(t, "Create", n)); !errors.Is(e, f.ErrForbidden) {
+		t.Fatal("private envelope with public Note must remain forbidden", e)
+	}
+
+	if e := x.receive(t, publicQuoteEnvelope(x.activity(t, "Create", n))); e != nil {
 		t.Fatal(e)
 	}
 	return n
@@ -70,7 +75,7 @@ func TestPGFederationQuoteSignedLifecycleAndSingleObject(t *testing.T) {
 		t.Fatal("second stamp for same object", e)
 	}
 	n.Quote, n.QuoteAuthorization = grant.InteractionTarget, uri
-	if e = x.receive(t, x.activity(t, "Update", n)); e != nil {
+	if e = x.receive(t, publicQuoteEnvelope(x.activity(t, "Update", n))); e != nil {
 		t.Fatal(e)
 	}
 	var consumed bool
@@ -79,7 +84,7 @@ func TestPGFederationQuoteSignedLifecycleAndSingleObject(t *testing.T) {
 	}
 	other := n
 	other.ID = x.keys.remote.Actor + "/notes/" + authorityUUID(t)
-	if e = x.receive(t, x.activity(t, "Create", other)); e == nil {
+	if e = x.receive(t, publicQuoteEnvelope(x.activity(t, "Create", other))); e == nil {
 		t.Fatal("stamp reused for another object")
 	}
 	if w := x.call(t, "GET", "/quote-authorizations/"+id, "", false); w.Code != 200 {
@@ -111,7 +116,7 @@ func TestPGFederationQuoteSignedLifecycleAndSingleObject(t *testing.T) {
 	if _, e = x.r.QuoteAuthorization(x.ctx, id); !errors.Is(e, f.ErrNotFound) {
 		t.Fatal("revoked dereference", e)
 	}
-	if e = x.receive(t, x.activity(t, "Update", n)); e == nil {
+	if e = x.receive(t, publicQuoteEnvelope(x.activity(t, "Update", n))); e == nil {
 		t.Fatal("revoked stamp accepted")
 	}
 	var raw []byte
@@ -222,7 +227,7 @@ func TestPGFederationQuoteFreshKeyAndBlockRevocation(t *testing.T) {
 		t.Fatal(e)
 	}
 	newNote := quoteRemoteNote(t, x)
-	if e = x.receive(t, x.activity(t, "Create", n)); e != nil {
+	if e = x.receive(t, publicQuoteEnvelope(x.activity(t, "Create", n))); e != nil {
 		t.Fatal(e)
 	}
 	if _, e = x.r.QuoteAuthorization(x.ctx, id); !errors.Is(e, f.ErrNotFound) {
@@ -315,7 +320,7 @@ func TestPGFederationQuoteRestartPersistence(t *testing.T) {
 		saved.Publisher, saved.Grant = x.publisher, quoteGrantID(t, x, request)
 		other := n
 		other.ID = x.keys.remote.Actor + "/notes/" + authorityUUID(t)
-		if e := x.receive(t, x.activity(t, "Create", other)); e != nil {
+		if e := x.receive(t, publicQuoteEnvelope(x.activity(t, "Create", other))); e != nil {
 			t.Fatal(e)
 		}
 		request = quoteRequest(t, x, other, target)
@@ -525,5 +530,36 @@ func TestPGFederationQuoteReviewWaitsAndAcceptanceIsolation(t *testing.T) {
 				t.Fatal("new grant was immediately stale", e)
 			}
 		})
+	}
+}
+
+func publicQuoteEnvelope(a f.Activity) f.Activity {
+	a.To = []string{f.Public}
+	return a
+}
+func TestFederationQuoteFixturePublicEnvelope(t *testing.T) {
+	note := f.Note{ID: "https://remote.example.test/notes/synthetic", Type: "Note", AttributedTo: "https://remote.example.test/actors/synthetic", To: []string{f.Public}}
+	raw, e := json.Marshal(note)
+	if e != nil {
+		t.Fatal(e)
+	}
+	private := f.Activity{Type: "Create", Actor: note.AttributedTo, Object: raw, To: []string{"https://local.example.test/activitypub/actors/synthetic"}}
+	if f.IsPublic(private) {
+		t.Fatal("nested public Note widened private envelope")
+	}
+	wire, e := json.Marshal(publicQuoteEnvelope(private))
+	if e != nil {
+		t.Fatal(e)
+	}
+	var decoded f.Activity
+	if e = json.Unmarshal(wire, &decoded); e != nil {
+		t.Fatal(e)
+	}
+	if !f.IsPublic(decoded) {
+		t.Fatal("public fixture envelope lost public audience")
+	}
+	var nested f.Note
+	if e = json.Unmarshal(decoded.Object, &nested); e != nil || !f.Has(nested.To, f.Public) {
+		t.Fatal("nested public audience lost", e)
 	}
 }

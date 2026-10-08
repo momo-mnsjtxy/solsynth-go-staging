@@ -26,16 +26,17 @@ jobs:
           go mod download
           go mod verify
       - name: Install pinned PostgreSQL 16 syntax parser
-        run: python3 -m pip install --isolated --disable-pip-version-check --no-input --index-url https://pypi.org/simple --only-binary=:all: --no-deps --target "$RUNNER_TEMP/sql-parser" -r scripts/sql-parser-requirements.txt
+        run: |
+          python3 -m pip install --isolated --disable-pip-version-check --no-input --index-url https://pypi.org/simple --only-binary=:all: --no-deps --target "$RUNNER_TEMP/sql-parser" -r scripts/sql-parser-requirements.txt
       - name: Ordinary build, vet and race checks
         env:
           PYTHONPATH: ${{ runner.temp }}/sql-parser
-        env:
           GO_BIN: go
         run: bash scripts/verify.sh
       - name: Require actual PostgreSQL 16 cases and restart persistence
         env:
           GO_BIN: go
+          PYTHONPATH: ${{ runner.temp }}/sql-parser
           PG_BIN: /usr/lib/postgresql/16/bin
           PG_TEST_ROOT: ${{ runner.temp }}/solsynth-pg
         run: |

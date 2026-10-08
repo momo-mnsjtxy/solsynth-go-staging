@@ -59,7 +59,7 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if r == nil || r.db == nil {
 		return notabledays.ErrUnavailable
 	}
-	_, e := r.db.ExecContext(ctx, `SELECT id,definition,region,deleted_at FROM owned_notable_days LIMIT 0; SELECT id,definition,visibility,request_hash,version FROM owned_calendar_events LIMIT 0; SELECT id,subscriber_id,target_account_id FROM owned_calendar_subscriptions LIMIT 0; SELECT actor_id,operation FROM owned_calendar_audit LIMIT 0; SELECT account_id,related_id,status FROM owned_social_relationships LIMIT 0`)
+	_, e := r.db.ExecContext(ctx, `SELECT id,definition,region,deleted_at FROM owned_notable_days LIMIT 0; SELECT id,definition,visibility,request_hash,version FROM owned_calendar_events LIMIT 0; SELECT id,subscriber_id,target_account_id FROM owned_calendar_subscriptions LIMIT 0; SELECT actor_id,operation FROM owned_calendar_audit LIMIT 0; SELECT account_id,related_id,status FROM owned_social_effective_relationships LIMIT 0`)
 	if e == nil && r.cfg.Activity != nil {
 		e = r.cfg.Activity.Ready(ctx, r.db)
 	}
@@ -239,7 +239,7 @@ func relationship(ctx context.Context, tx *sql.Tx, a, b string) (blocked, friend
 	if a == "" || b == "" || a == b {
 		return false, false, nil
 	}
-	e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_social_relationships WHERE ((account_id=$1::uuid AND related_id=$2::uuid)OR(account_id=$2::uuid AND related_id=$1::uuid))AND status=-100),(EXISTS(SELECT 1 FROM owned_social_relationships WHERE account_id=$1::uuid AND related_id=$2::uuid AND status>=100)AND EXISTS(SELECT 1 FROM owned_social_relationships WHERE account_id=$2::uuid AND related_id=$1::uuid AND status>=100))`, a, b).Scan(&blocked, &friend)
+	e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE ((account_id=$1::uuid AND related_id=$2::uuid)OR(account_id=$2::uuid AND related_id=$1::uuid))AND status=-100),(EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE account_id=$1::uuid AND related_id=$2::uuid AND status>=100)AND EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE account_id=$2::uuid AND related_id=$1::uuid AND status>=100))`, a, b).Scan(&blocked, &friend)
 	return
 }
 func page[T any](v []T, q notabledays.Query) ([]T, *int64) {

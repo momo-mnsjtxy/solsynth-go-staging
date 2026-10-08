@@ -251,7 +251,7 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 			where += ` AND EXISTS(SELECT 1 FROM owned_publisher_follows f WHERE f.account_id=$1::uuid AND f.publisher_id=p.publisher_id AND f.state='accepted' AND f.ended_at IS NULL)`
 		}
 		if o.Filter == "friends" {
-			where += ` AND EXISTS(SELECT 1 FROM owned_social_relationships a WHERE a.account_id=$1::uuid AND a.related_id=u.account_id AND a.status>=100) AND EXISTS(SELECT 1 FROM owned_social_relationships b WHERE b.account_id=u.account_id AND b.related_id=$1::uuid AND b.status>=100)`
+			where += ` AND EXISTS(SELECT 1 FROM owned_social_effective_relationships a WHERE a.account_id=$1::uuid AND a.related_id=u.account_id AND a.status>=100) AND EXISTS(SELECT 1 FROM owned_social_effective_relationships b WHERE b.account_id=u.account_id AND b.related_id=$1::uuid AND b.status>=100)`
 		}
 	}
 	// Rank a complete chronological page. The cursor represents its last scanned

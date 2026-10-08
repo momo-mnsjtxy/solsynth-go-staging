@@ -16,7 +16,8 @@ def check(root):
                       "ports/sphere/nodeinfo/source", "ports/wallet/productcatalog/source",
                       "inventory/product-client-evidence", "ports/passport/artwork/source",
                       "ports/passport/affiliation/source", "ports/passport/social/contract-evidence",
-                      "inventory/operation-sources", "ports/federation/quote-evidence", "ports/passport/passkit/source"):
+                      "inventory/operation-sources", "ports/federation/quote-evidence", "ports/passport/passkit/source", "ports/passport/social/expiry-evidence"):
+
 
         base = root / directory
         manifest = json.loads((base / "manifest.json").read_text())

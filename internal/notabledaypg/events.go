@@ -13,8 +13,8 @@ import (
 )
 
 const eventFields = `e.id::text,e.account_id::text,e.definition,e.start_time,e.end_time,e.visibility,e.version,e.created_at,e.updated_at,e.deleted_at,a.name,a.nick`
-const friendSQL = `(EXISTS(SELECT 1 FROM owned_social_relationships f WHERE f.account_id=e.account_id AND f.related_id=NULLIF($1::text,'')::uuid AND f.status>=100)AND EXISTS(SELECT 1 FROM owned_social_relationships f WHERE f.account_id=NULLIF($1::text,'')::uuid AND f.related_id=e.account_id AND f.status>=100))`
-const blockedSQL = `EXISTS(SELECT 1 FROM owned_social_relationships b WHERE b.status=-100 AND((b.account_id=e.account_id AND b.related_id=NULLIF($1::text,'')::uuid)OR(b.related_id=e.account_id AND b.account_id=NULLIF($1::text,'')::uuid)))`
+const friendSQL = `(EXISTS(SELECT 1 FROM owned_social_effective_relationships f WHERE f.account_id=e.account_id AND f.related_id=NULLIF($1::text,'')::uuid AND f.status>=100)AND EXISTS(SELECT 1 FROM owned_social_effective_relationships f WHERE f.account_id=NULLIF($1::text,'')::uuid AND f.related_id=e.account_id AND f.status>=100))`
+const blockedSQL = `EXISTS(SELECT 1 FROM owned_social_effective_relationships b WHERE b.status=-100 AND((b.account_id=e.account_id AND b.related_id=NULLIF($1::text,'')::uuid)OR(b.related_id=e.account_id AND b.account_id=NULLIF($1::text,'')::uuid)))`
 const eventBase = ` FROM owned_calendar_events e JOIN owned_authority_accounts a ON a.id=e.account_id WHERE e.deleted_at IS NULL AND NOT a.disabled AND NOT ` + blockedSQL + ` AND(e.account_id=NULLIF($1::text,'')::uuid OR e.visibility=200 OR(e.visibility=100 AND ` + friendSQL + `))`
 
 func scanEvent(row interface{ Scan(...any) error }) (v notabledays.Event, e error) {

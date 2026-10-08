@@ -65,7 +65,7 @@ func (r *Repository) Badges(ctx context.Context, viewer, reference string) (out 
 		}
 		if viewer != "" && viewer != id {
 			var blocked bool
-			if e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_social_relationships WHERE ((account_id=$1 AND related_id=$2)OR(account_id=$2 AND related_id=$1))AND status=-100)`, viewer, id).Scan(&blocked); e != nil {
+			if e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE ((account_id=$1 AND related_id=$2)OR(account_id=$2 AND related_id=$1))AND status=-100)`, viewer, id).Scan(&blocked); e != nil {
 				return e
 			}
 			if blocked {

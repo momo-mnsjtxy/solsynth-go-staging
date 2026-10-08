@@ -18,6 +18,8 @@ def check():
         shutil.copytree(root, copy, ignore=shutil.ignore_patterns('.git', '.cache', '__pycache__', 'bin', 'obj'))
         assert evidence.check(copy) == baseline_count
         mutations = [
+            "ports/passport/social/expiry-evidence/RelationshipService.cs",
+            "ports/passport/social/expiry-evidence/relationship.dart",
             "ports/passport/social/contract-evidence/RealmService.cs",
             "ports/federation/quote-evidence/QUOTE_AUTHORIZATION.md",
             "ports/federation/quote-evidence/ActivityHandlerService.cs",

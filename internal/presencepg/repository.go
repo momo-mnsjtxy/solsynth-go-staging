@@ -194,7 +194,7 @@ func (r *Repository) GetStatus(ctx context.Context, viewer, reference string) (v
 		}
 		var blocked, friend bool
 		if viewer != "" && viewer != id {
-			if e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_social_relationships WHERE ((account_id=$1 AND related_id=$2)OR(account_id=$2 AND related_id=$1))AND status=-100),(EXISTS(SELECT 1 FROM owned_social_relationships WHERE account_id=$1 AND related_id=$2 AND status>=100) AND EXISTS(SELECT 1 FROM owned_social_relationships WHERE account_id=$2 AND related_id=$1 AND status>=100))`, id, viewer).Scan(&blocked, &friend); e != nil {
+			if e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE ((account_id=$1 AND related_id=$2)OR(account_id=$2 AND related_id=$1))AND status=-100),(EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE account_id=$1 AND related_id=$2 AND status>=100) AND EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE account_id=$2 AND related_id=$1 AND status>=100))`, id, viewer).Scan(&blocked, &friend); e != nil {
 				return e
 			}
 		}

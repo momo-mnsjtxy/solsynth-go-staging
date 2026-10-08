@@ -17,6 +17,8 @@ caller; no SDK or generated-client implementation was inferred from that result.
   children even with that permission, and app/OAuth sessions cannot provision
   or retrieve the enduring pass secret. This is an owned provisioning boundary,
   checked again inside the transaction before issuance and after signing/waits.
+  This means current authorization, not proof of credential entry within a recent
+  time window; no original-auth-time cap or new request header is imposed.
 - `GET /api/passkit/v1` returns the service description when configured.
 - `POST/DELETE /api/passkit/v1/devices/{device}/registrations/{type}/{serial}`
   authenticates the specific pass's `ApplePass` token. First registration returns

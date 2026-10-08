@@ -18,7 +18,7 @@ func (r *Repository) subscriptions(ctx context.Context, tx *sql.Tx, actor string
 		if c.Operation == "subscription.subscribers" {
 			field, where = "s.subscriber_id", "s.target_account_id"
 		}
-		rows, e := tx.QueryContext(ctx, `SELECT `+field+`::text FROM owned_calendar_subscriptions s JOIN owned_authority_accounts a ON a.id=`+field+` WHERE `+where+`=$1::uuid AND NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_social_relationships b WHERE b.status=-100 AND((b.account_id=$1::uuid AND b.related_id=`+field+`)OR(b.related_id=$1::uuid AND b.account_id=`+field+`))) ORDER BY s.created_at,s.id LIMIT 1001`, actor)
+		rows, e := tx.QueryContext(ctx, `SELECT `+field+`::text FROM owned_calendar_subscriptions s JOIN owned_authority_accounts a ON a.id=`+field+` WHERE `+where+`=$1::uuid AND NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_social_effective_relationships b WHERE b.status=-100 AND((b.account_id=$1::uuid AND b.related_id=`+field+`)OR(b.related_id=$1::uuid AND b.account_id=`+field+`))) ORDER BY s.created_at,s.id LIMIT 1001`, actor)
 		if e != nil {
 			return out, e
 		}

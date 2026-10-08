@@ -31,7 +31,7 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if r == nil || r.db == nil {
 		return accounts.ErrUnavailable
 	}
-	_, e := r.db.ExecContext(ctx, `SELECT account_id,slot,file_id,attached_at FROM owned_account_profile_media LIMIT 0; SELECT account_id,related_id,status FROM owned_social_relationships LIMIT 0`)
+	_, e := r.db.ExecContext(ctx, `SELECT account_id,slot,file_id,attached_at FROM owned_account_profile_media LIMIT 0; SELECT account_id,related_id,status FROM owned_social_effective_relationships LIMIT 0`)
 	if e != nil {
 		return e
 	}

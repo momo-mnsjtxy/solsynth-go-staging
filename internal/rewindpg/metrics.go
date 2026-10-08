@@ -29,7 +29,7 @@ func (r *Repository) snapshot(ctx context.Context, tx *sql.Tx, actor string, sta
 	return
 }
 func (r *Repository) passportMetrics(ctx context.Context, tx *sql.Tx, actor string, start, end time.Time, s *rewind.Snapshot) error {
-	if e := tx.QueryRowContext(ctx, `SELECT count(*)FILTER(WHERE status=100),count(*)FILTER(WHERE status=-100)FROM owned_social_relationships WHERE account_id=$1::text::uuid AND created_at>=$2::timestamptz AND created_at<$3::timestamptz`, actor, start, end).Scan(&s.Passport.NewFriendsCount, &s.Passport.NewBlockedCount); e != nil {
+	if e := tx.QueryRowContext(ctx, `SELECT count(*)FILTER(WHERE status=100),count(*)FILTER(WHERE status=-100)FROM owned_social_effective_relationships WHERE account_id=$1::text::uuid AND created_at>=$2::timestamptz AND created_at<$3::timestamptz`, actor, start, end).Scan(&s.Passport.NewFriendsCount, &s.Passport.NewBlockedCount); e != nil {
 		return e
 	}
 	rows, e := tx.QueryContext(ctx, `SELECT DISTINCT day FROM owned_progression_checkins WHERE account_id=$1::text::uuid AND created_at>=$2::timestamptz AND created_at<$3::timestamptz ORDER BY day LIMIT 368`, actor, start, end)

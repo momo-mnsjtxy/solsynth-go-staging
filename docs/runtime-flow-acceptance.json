@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed signed federation quote authorization and configured Apple Wallet member passes, including canonical root-only provisioning and opaque callback isolation; actual PG pending.",
+  "local_source_checkpoint": "Timed relationship/request expiry with immediate current-time visibility and durable cleanup, on reviewed PassKit/quote candidate; actual PG pending.",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,14 +12,14 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "0bbb35534d30ed55d5af20693ffa2d1b1e645128",
-    "run": 37847926155,
-    "required_before": 560,
-    "required_after_restart": 73,
-    "status": "Running; previous539/70 failed9 before cases and never reached restart. No new full pass claimed."
+    "commit": "b40df6589ec1e5facef8026f43f6eaea67d65a65",
+    "run": 37848978938,
+    "required_before": 573,
+    "required_after_restart": 75,
+    "status": "Running; preceding corrected560/73 also remains in progress. No new full pass claimed."
   },
-  "local_required_before": 573,
-  "local_required_after_restart": 75,
+  "local_required_before": 580,
+  "local_required_after_restart": 76,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -1622,6 +1622,24 @@
         "TestPGFederationQuoteRestartPersistence"
       ],
       "remaining_reference": "current_remaining.families:federation.quote_authorization"
+    },
+    {
+      "source_family": "passport.relationship_expiry",
+      "local_status": "implemented_pending_actual_ci",
+      "supported_flows": [
+        "Seven-day new pending requests; timed block/mute and bounded block-to-mute degradation",
+        "All canonical local relationship readers observe expiry before cleanup; durable revision-bound cleanup events and atomic mutation checks"
+      ],
+      "guarded_pg_cases": [
+        "TestPGRelationshipExpiryActorIsolationAndAtomicEvents",
+        "TestPGRelationshipExpiryCurrentVisibilityAcrossDomains",
+        "TestPGRelationshipExpiryDoesNotExpandFederationAudience",
+        "TestPGRelationshipExpiryImmediateDegradeAndCleanup",
+        "TestPGRelationshipExpiryRequestsAndLegacyNull",
+        "TestPGRelationshipExpiryRestartPersistence",
+        "TestPGRelationshipExpiryWaitObservesRenewalAndRequestDeadline"
+      ],
+      "remaining_reference": "current_remaining.families:passport.relationship_expiry"
     }
   ],
   "additional_cross_service_flows": [
@@ -1722,12 +1740,13 @@
       "messager.opaque_mls",
       "passport.social_realms",
       "passport.apple_wallet_passes",
-      "federation.quote_authorization"
+      "federation.quote_authorization",
+      "passport.relationship_expiry"
     ],
     "delivered_not_integrated": []
   },
   "current_remaining": {
-    "as_of": "2026-10-08T21:39:00Z",
+    "as_of": "2026-10-08T21:50:00Z",
     "authoritative_for": "Known remaining flows, not a count of source operations. Partial/unresearched contracts remain research tasks; unavailable is never inferred from lack of prior research.",
     "families": [
       {
@@ -1798,7 +1817,7 @@
       {
         "family": "passport.social_realms",
         "remaining": [
-          "Relationship mute expiry and realm boosts remain to reconstruct; no realm-mute contract was found in retained realm sources",
+          "Realm boosts remain to reconstruct; no realm-mute contract was found in retained realm sources",
           "Original excluded numeric role/model encoding and legacy data mapping; owned0/50/100 mapping and security differences are documented"
         ]
       },
@@ -2085,6 +2104,14 @@
           "Unobserved remote signing-key rollback requires provider generation/history; observed mismatches revoke durably",
           "Remote/private/realm/media discovery and whole-FEP conformance remain unsupported"
         ]
+      },
+      {
+        "family": "passport.relationship_expiry",
+        "remaining": [
+          "Remote federation actor blocks remain separate; no guessed local-account to remote-actor mapping",
+          "Legacy null expiry rows intentionally retain permanent semantics; no retroactive expiry invented",
+          "Durable local expiry events do not claim external notification delivery"
+        ]
       }
     ],
     "cross_platform": [
@@ -2096,7 +2123,8 @@
       "Source-declaration818 acceptance map remains an operation inventory, not runtime endpoint count or proof of whole-platform completion"
     ],
     "active_implementation": [
-      "Relationship request expiry and timed block/mute degradation",
+      "Room profile picture/background canonical media associations",
+      "Affiliation tracking, bounded invitations and explicitly configured once-only activation",
       "Offline isolated-cluster CI partition review (not active)"
     ],
     "not_remaining_missing_features": [
@@ -2106,7 +2134,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last full green is455/60. Corrected560/73 candidate is running. Reviewed PassKit and quote integration has offline evidence only; actual PG/restart pending."
+    "verification_note": "Last full green455/60. Candidates560/73 and573/75 are running. New580/76 expiry integration pending validation."
   },
   "global_remaining": [
     "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",

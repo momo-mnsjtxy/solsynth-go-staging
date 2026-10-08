@@ -22,7 +22,10 @@ var baseSchema string
 //go:embed permissions_schema.sql
 var PermissionsSchema string
 
-var Schema = baseSchema + "\n" + PermissionsSchema
+//go:embed expiry_schema.sql
+var ExpirySchema string
+
+var Schema = baseSchema + "\n" + PermissionsSchema + "\n" + ExpirySchema
 
 // New performs no I/O, migrations, account enrollment, quota grants or role seeding.
 type TransactionGuard interface {

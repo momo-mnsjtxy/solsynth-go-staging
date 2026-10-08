@@ -7,6 +7,14 @@ EXPECTED = {
     "before": {
         "TestPGPasskitInternalProgramEligibility",
         "TestPGPasskitProvisioningAuthorizationAndWaitRevocation",
+        "TestPGRelationshipExpiryImmediateDegradeAndCleanup",
+        "TestPGRelationshipExpiryRequestsAndLegacyNull",
+        "TestPGRelationshipExpiryActorIsolationAndAtomicEvents",
+        "TestPGRelationshipExpiryWaitObservesRenewalAndRequestDeadline",
+        "TestPGRelationshipExpiryCurrentVisibilityAcrossDomains",
+        "TestPGRelationshipExpiryDoesNotExpandFederationAudience",
+        "TestPGRelationshipExpiryRestartPersistence",
+
         "TestPGRealmPermissionLifecycleAndGenerationIsolation",
         "TestPGRealmPermissionEscalationOwnerAndMembershipIncarnation",
         "TestPGRealmPermissionRevocationWaitAndRollback",
@@ -619,6 +627,7 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGRelationshipExpiryRestartPersistence",
         "TestPGRealmPermissionRestartPersistence",
 
         "TestPGSubscriptionActivationRestartPersistence",

@@ -36,7 +36,8 @@ identity headers, excluded shared models, or legacy database imports.
 ## State and authority rules
 
 Install `internal/socialpg/schema.sql` explicitly after authority and account
-schemas, followed atomically by `internal/socialpg/permissions_schema.sql`. Constructors never apply schemas or seed authority, quotas or roles.
+schemas, followed atomically by `internal/socialpg/permissions_schema.sql` and
+`internal/socialpg/expiry_schema.sql`. Constructors never apply schemas or seed authority, quotas or roles.
 Realm creation requires a current `owned_realm_quota` row. Promoted invitations
 and role changes require `owned_realms.boost_level >= 2`; no payment processing
 or automatic entitlement issuance is implied. Slugs remain reserved after
@@ -86,7 +87,7 @@ Custom realm role/permission lifecycle and canonical enforcement are added by [t
 
 ## Bounded gaps
 
-Mute/unmute, expiring blocks, degradation, presence, relationship sync,
+Arbitrary expiry/degradation values, relationship sync,
 labels, boosts/payments, file attachments, experience,
 moderation logs and quota projection return explicit unsupported responses
 where routed. Creation/update reject unsupported picture/background IDs.
@@ -125,7 +126,7 @@ used. No additional full upstream source is retained by this change.
 
 Local race-enabled unit tests verify route/action mappings, exact permission
 gates, PATCH privilege boundaries, rejected identity headers, malformed bodies,
-unsupported expiry semantics and role/slug bounds. The PostgreSQL integration
+unsupported expiry/degradation values and role/slug bounds. The PostgreSQL integration
 suite compiles locally but deliberately skips execution without its guarded
 disposable CI database. No local database/listener was started.
 
@@ -141,3 +142,7 @@ revocation, strict role hierarchy, privilege-resetting rejoin, canonical wallet
 roles, realm/publisher deletion, transaction rollback and stale permission
 rejection after acquiring an account lock. Actual PostgreSQL pass/fail belongs
 to the staging CI result, not the local compile result.
+
+## Current relationship expiry
+
+The [relationship expiry continuation](relationship-expiry-continuation.md) supplies the authored timed block/mute and seven-day new-request lifecycle, current-time projections across canonical visibility consumers, and atomic durable cleanup events. Existing rows without a stored expiry remain permanent. No realm-wide mute route or remote-actor identity mapping is inferred.

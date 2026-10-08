@@ -68,7 +68,7 @@ func sourceEvent(ctx context.Context, tx *sql.Tx, actor, kind, source string, no
 	case "publisher.create":
 		e = tx.QueryRowContext(ctx, `SELECT p.id::text,p.created_at FROM owned_publishers p WHERE p.id=$1 AND p.deleted_at IS NULL AND EXISTS(SELECT 1 FROM owned_accounts_audit a WHERE a.actor_id=$2 AND a.target_id=p.id AND a.action='publishers.create')`, source, actor).Scan(&subject, &v.at)
 	case "relationship.friend_established":
-		e = tx.QueryRowContext(ctx, `SELECT r.related_id::text,r.created_at FROM owned_social_relationships r WHERE r.id=$1 AND r.account_id=$2 AND r.status>=100 AND EXISTS(SELECT 1 FROM owned_social_relationships reverse WHERE reverse.account_id=r.related_id AND reverse.related_id=r.account_id AND reverse.status>=100)`, source, actor).Scan(&subject, &v.at)
+		e = tx.QueryRowContext(ctx, `SELECT r.related_id::text,r.created_at FROM owned_social_effective_relationships r WHERE r.id=$1 AND r.account_id=$2 AND r.status>=100 AND EXISTS(SELECT 1 FROM owned_social_effective_relationships reverse WHERE reverse.account_id=r.related_id AND reverse.related_id=r.account_id AND reverse.status>=100)`, source, actor).Scan(&subject, &v.at)
 	case "account.active":
 		e = tx.QueryRowContext(ctx, `SELECT account_id::text,occurred_at FROM owned_presence_activity_days WHERE id=$1 AND account_id=$2`, source, actor).Scan(&subject, &v.at)
 	default:

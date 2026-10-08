@@ -43,7 +43,7 @@ func (r *Repository) Ready(ctx context.Context) error {
 		return autocomplete.ErrUnavailable
 	}
 	var ready bool
-	e := r.db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name)IS NOT NULL)FROM(VALUES('owned_authority_accounts'),('owned_accounts_profiles'),('owned_publishers'),('owned_realms'),('owned_realm_members'),('owned_social_relationships'),('owned_timeline_preferences'))required(name)`).Scan(&ready)
+	e := r.db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name)IS NOT NULL)FROM(VALUES('owned_authority_accounts'),('owned_accounts_profiles'),('owned_publishers'),('owned_realms'),('owned_realm_members'),('owned_social_effective_relationships'),('owned_timeline_preferences'))required(name)`).Scan(&ready)
 	if e != nil {
 		return e
 	}
@@ -79,7 +79,7 @@ func (r *Repository) room(ctx context.Context, tx *sql.Tx, actor, id string) err
 
 // Expressions passed here are compile-time canonical aliases, never request input.
 func allowedAccount(account string) string {
-	return `NOT EXISTS(SELECT 1 FROM owned_social_relationships b WHERE b.status=-100 AND((b.account_id=$1::uuid AND b.related_id=` + account + `)OR(b.related_id=$1::uuid AND b.account_id=` + account + `))) AND NOT EXISTS(SELECT 1 FROM owned_timeline_preferences x WHERE x.account_id=$1::uuid AND x.kind='account' AND x.reference_id=` + account + `) AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments x WHERE x.account_id=` + account + ` AND x.kind='disable_account' AND(x.starts_at IS NULL OR x.starts_at<=statement_timestamp())AND(x.expires_at IS NULL OR x.expires_at>statement_timestamp()))`
+	return `NOT EXISTS(SELECT 1 FROM owned_social_effective_relationships b WHERE b.status=-100 AND((b.account_id=$1::uuid AND b.related_id=` + account + `)OR(b.related_id=$1::uuid AND b.account_id=` + account + `))) AND NOT EXISTS(SELECT 1 FROM owned_timeline_preferences x WHERE x.account_id=$1::uuid AND x.kind='account' AND x.reference_id=` + account + `) AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments x WHERE x.account_id=` + account + ` AND x.kind='disable_account' AND(x.starts_at IS NULL OR x.starts_at<=statement_timestamp())AND(x.expires_at IS NULL OR x.expires_at>statement_timestamp()))`
 }
 func (r *Repository) candidates(ctx context.Context, tx *sql.Tx, actor, room string, q autocomplete.Query) ([]string, error) {
 	var query string

@@ -30,7 +30,7 @@ func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
  UNION ALL SELECT 'realm.join',m.account_id,m.id,m.joined_at FROM owned_realm_members m JOIN owned_realms r ON r.id=m.realm_id WHERE m.joined_at IS NOT NULL AND m.leave_at IS NULL AND r.deleted_at IS NULL
  UNION ALL SELECT 'publisher.create',a.actor_id,p.id,p.created_at FROM owned_publishers p JOIN owned_accounts_audit a ON a.target_id=p.id AND a.action='publishers.create' WHERE p.deleted_at IS NULL
  UNION ALL SELECT 'account.active',p.account_id,p.id,p.occurred_at FROM owned_presence_activity_days p
- UNION ALL SELECT 'relationship.friend_established',r.account_id,r.id,r.created_at FROM owned_social_relationships r WHERE r.status>=100 AND EXISTS(SELECT 1 FROM owned_social_relationships reverse WHERE reverse.account_id=r.related_id AND reverse.related_id=r.account_id AND reverse.status>=100)
+ UNION ALL SELECT 'relationship.friend_established',r.account_id,r.id,r.created_at FROM owned_social_effective_relationships r WHERE r.status>=100 AND EXISTS(SELECT 1 FROM owned_social_effective_relationships reverse WHERE reverse.account_id=r.related_id AND reverse.related_id=r.account_id AND reverse.status>=100)
  ) c WHERE occurred_at<=clock_timestamp() AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=c.account_id) AND NOT EXISTS(SELECT 1 FROM owned_progression_projection_receipts p WHERE p.kind=c.kind AND p.account_id=c.account_id AND p.source_id=c.source_id) ORDER BY occurred_at,kind,source_id LIMIT $1`, limit)
 	if e != nil {
 		return 0, e

@@ -55,7 +55,7 @@ type Authority interface {
 }
 
 // Provisioning exposes an enduring pass credential, including when retrieving
-// an existing pass. Call only with a freshly authenticated/authorized principal.
+// an existing pass. Call only with a currently revalidated canonical principal.
 // Delegated or app sessions cannot extend their lifetime through a pass token.
 const ProvisionPermission = "accounts.manage"
 

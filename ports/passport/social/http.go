@@ -250,19 +250,27 @@ func (s *Service) relationshipHTTP(w http.ResponseWriter, r *http.Request, p []s
 		c.Action = DeclineFriend
 		empty = true
 	case len(p) == 2 && p[1] == "block" && r.Method == "POST":
-		var body struct {
-			ExpiresIn *string `json:"expires_in"`
-			DegradeTo *int    `json:"degrade_to"`
-		}
+		var body ExpiryRequest
 		if e = decode(w, r, &body, true); e != nil {
 			failure(w, e)
 			return
 		}
-		if body.ExpiresIn != nil || body.DegradeTo != nil {
-			failure(w, ErrUnsupported)
+		c.Action, c.ExpiresIn, c.DegradeTo = Block, body.ExpiresIn, body.DegradeTo
+	case len(p) == 2 && p[1] == "mute" && r.Method == "POST":
+		var body ExpiryRequest
+		if e = decode(w, r, &body, true); e != nil {
+			failure(w, e)
 			return
 		}
-		c.Action = Block
+		c.Action, c.ExpiresIn, c.DegradeTo = Mute, body.ExpiresIn, body.DegradeTo
+	case len(p) == 2 && p[1] == "unmute" && r.Method == "POST":
+		var body struct{}
+		if e = decode(w, r, &body, true); e != nil {
+			failure(w, e)
+			return
+		}
+		c.Action = Unmute
+
 	case len(p) == 2 && p[1] == "close-friend" && (r.Method == "POST" || r.Method == "DELETE"):
 		c.Action = SetClose
 		if r.Method == "DELETE" {
@@ -278,11 +286,19 @@ func (s *Service) relationshipHTTP(w http.ResponseWriter, r *http.Request, p []s
 		}
 		c.Action = SetAlias
 		c.Alias = body.Alias
-	case len(p) == 2 && (p[1] == "mute" || p[1] == "unmute"):
-		failure(w, ErrUnsupported)
-		return
 	default:
 		http.NotFound(w, r)
+		return
+	}
+	if c.Action == RequestFriend || c.Action == AcceptFriend || c.Action == DeclineFriend {
+		var body struct{}
+		if e = decode(w, r, &body, true); e != nil {
+			failure(w, e)
+			return
+		}
+	}
+	if e = ValidateRelationshipChange(c); e != nil {
+		failure(w, e)
 		return
 	}
 	actor, e = s.principal(r, RelationshipPermissions(c)...)

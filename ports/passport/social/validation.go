@@ -51,6 +51,10 @@ func RelationshipPermissions(c RelationshipChange) []string {
 	switch c.Action {
 	case RequestFriend, AcceptFriend, DeclineFriend, CancelFriend:
 		return []string{"relationships.friends.manage"}
+	case Mute:
+		return []string{"relationships.mute.manage"}
+	case Unmute:
+		return []string{"relationships.mute.manage", "relationships.friends.manage"}
 	case Block:
 		return []string{"relationships.block.manage"}
 	case Forget:

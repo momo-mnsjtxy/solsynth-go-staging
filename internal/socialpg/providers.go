@@ -14,10 +14,10 @@ import (
 // request value is interpolated. The host installs this optional provider only
 // after explicitly installing the social schema.
 func (r *Repository) PostBlockedSQL() string {
-	return `EXISTS(SELECT 1 FROM owned_social_relationships sr WHERE sr.status=-100 AND ((sr.account_id=u.account_id AND sr.related_id=NULLIF($1::text,'')::uuid) OR(sr.related_id=u.account_id AND sr.account_id=NULLIF($1::text,'')::uuid)))`
+	return `EXISTS(SELECT 1 FROM owned_social_effective_relationships sr WHERE sr.status=-100 AND ((sr.account_id=u.account_id AND sr.related_id=NULLIF($1::text,'')::uuid) OR(sr.related_id=u.account_id AND sr.account_id=NULLIF($1::text,'')::uuid)))`
 }
 func (r *Repository) PostVisibilitySQL() string {
-	return `(u.type=0 AND u.account_id IS NOT NULL AND p.visibility IN(1,4) AND EXISTS(SELECT 1 FROM owned_social_relationships owner_rel WHERE owner_rel.account_id=u.account_id AND owner_rel.related_id=NULLIF($1::text,'')::uuid AND owner_rel.status>=CASE WHEN p.visibility=4 THEN 200 ELSE 100 END) AND EXISTS(SELECT 1 FROM owned_social_relationships viewer_rel WHERE viewer_rel.account_id=NULLIF($1::text,'')::uuid AND viewer_rel.related_id=u.account_id AND viewer_rel.status>=100) AND NOT ` + r.PostBlockedSQL() + `)`
+	return `(u.type=0 AND u.account_id IS NOT NULL AND p.visibility IN(1,4) AND EXISTS(SELECT 1 FROM owned_social_effective_relationships owner_rel WHERE owner_rel.account_id=u.account_id AND owner_rel.related_id=NULLIF($1::text,'')::uuid AND owner_rel.status>=CASE WHEN p.visibility=4 THEN 200 ELSE 100 END) AND EXISTS(SELECT 1 FROM owned_social_effective_relationships viewer_rel WHERE viewer_rel.account_id=NULLIF($1::text,'')::uuid AND viewer_rel.related_id=u.account_id AND viewer_rel.status>=100) AND NOT ` + r.PostBlockedSQL() + `)`
 }
 func (r *Repository) IsBlockedInTransaction(ctx context.Context, tx *sql.Tx, a, b string) (bool, error) {
 	if tx == nil {
@@ -40,7 +40,7 @@ func (r *Repository) CanReadFriendsInTransaction(ctx context.Context, tx *sql.Tx
 		minimum = social.CloseFriend
 	}
 	var v bool
-	e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publishers p JOIN owned_authority_accounts owner ON owner.id=p.account_id JOIN owned_authority_accounts viewer ON viewer.id=$1 WHERE p.id=$2 AND p.type=0 AND p.deleted_at IS NULL AND NOT owner.disabled AND NOT viewer.disabled AND EXISTS(SELECT 1 FROM owned_social_relationships f WHERE f.account_id=p.account_id AND f.related_id=$1 AND f.status>=$3) AND EXISTS(SELECT 1 FROM owned_social_relationships f WHERE f.account_id=$1 AND f.related_id=p.account_id AND f.status>=100) AND NOT EXISTS(SELECT 1 FROM owned_social_relationships f WHERE f.status=-100 AND ((f.account_id=$1 AND f.related_id=p.account_id) OR(f.account_id=p.account_id AND f.related_id=$1))))`, viewer, publisher, minimum).Scan(&v)
+	e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publishers p JOIN owned_authority_accounts owner ON owner.id=p.account_id JOIN owned_authority_accounts viewer ON viewer.id=$1 WHERE p.id=$2 AND p.type=0 AND p.deleted_at IS NULL AND NOT owner.disabled AND NOT viewer.disabled AND EXISTS(SELECT 1 FROM owned_social_effective_relationships f WHERE f.account_id=p.account_id AND f.related_id=$1 AND f.status>=$3) AND EXISTS(SELECT 1 FROM owned_social_effective_relationships f WHERE f.account_id=$1 AND f.related_id=p.account_id AND f.status>=100) AND NOT EXISTS(SELECT 1 FROM owned_social_effective_relationships f WHERE f.status=-100 AND ((f.account_id=$1 AND f.related_id=p.account_id) OR(f.account_id=p.account_id AND f.related_id=$1))))`, viewer, publisher, minimum).Scan(&v)
 	return v, e
 }
 func (r *Repository) RealmRoleInTransaction(ctx context.Context, tx *sql.Tx, actor, id string) (social.Role, error) {

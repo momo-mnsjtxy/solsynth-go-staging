@@ -32,6 +32,7 @@ var (
 // Values are evidenced by authored Solian relationship.dart and realm_detail.dart, not excluded shared definitions.
 const (
 	Blocked     = -100
+	Muted       = -50
 	Pending     = 0
 	Friend      = 100
 	CloseFriend = 200
@@ -67,6 +68,8 @@ const (
 	DeclineFriend RelationshipAction = "decline"
 	CancelFriend  RelationshipAction = "cancel"
 	Block         RelationshipAction = "block"
+	Mute          RelationshipAction = "mute"
+	Unmute        RelationshipAction = "unmute"
 	Forget        RelationshipAction = "forget"
 	SetClose      RelationshipAction = "close"
 	UnsetClose    RelationshipAction = "unclose"
@@ -75,9 +78,11 @@ const (
 )
 
 type RelationshipChange struct {
-	Action RelationshipAction
-	Status int
-	Alias  *string
+	ExpiresIn *string
+	DegradeTo *int
+	Action    RelationshipAction
+	Status    int
+	Alias     *string
 }
 type Realm struct {
 	Verification *accounts.VerificationMark `json:"verification,omitempty"`

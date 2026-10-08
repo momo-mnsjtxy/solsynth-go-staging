@@ -74,7 +74,7 @@ func (r *Repository) BindAuthority(ctx context.Context, p authority.Principal) c
 }
 func (r *Repository) now() time.Time { return r.options.Now().UTC().Truncate(time.Microsecond) }
 func (r *Repository) Ready(ctx context.Context) error {
-	_, e := r.db.ExecContext(ctx, `SELECT id,snapshot,sharable_code FROM owned_account_rewind_points LIMIT 0;SELECT day FROM owned_progression_checkins LIMIT 0;SELECT status FROM owned_social_relationships LIMIT 0;SELECT content FROM owned_text_posts LIMIT 0;SELECT attitude FROM owned_post_reactions LIMIT 0;SELECT sender_id FROM chat_messages LIMIT 0;SELECT ended_at FROM call_v1.calls LIMIT 0`)
+	_, e := r.db.ExecContext(ctx, `SELECT id,snapshot,sharable_code FROM owned_account_rewind_points LIMIT 0;SELECT day FROM owned_progression_checkins LIMIT 0;SELECT status FROM owned_social_effective_relationships LIMIT 0;SELECT content FROM owned_text_posts LIMIT 0;SELECT attitude FROM owned_post_reactions LIMIT 0;SELECT sender_id FROM chat_messages LIMIT 0;SELECT ended_at FROM call_v1.calls LIMIT 0`)
 	return e
 }
 func id() (string, error) {

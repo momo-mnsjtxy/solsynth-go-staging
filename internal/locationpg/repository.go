@@ -114,7 +114,7 @@ func socialState(ctx context.Context, tx *sql.Tx, a, b string) (blocked, friend 
 	if a == "" || a == b {
 		return false, a == b, nil
 	}
-	err = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_social_relationships WHERE status=-100 AND ((account_id=$1 AND related_id=$2) OR(account_id=$2 AND related_id=$1))),EXISTS(SELECT 1 FROM owned_social_relationships WHERE account_id=$1 AND related_id=$2 AND status>=100) AND EXISTS(SELECT 1 FROM owned_social_relationships WHERE account_id=$2 AND related_id=$1 AND status>=100)`, a, b).Scan(&blocked, &friend)
+	err = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE status=-100 AND ((account_id=$1 AND related_id=$2) OR(account_id=$2 AND related_id=$1))),EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE account_id=$1 AND related_id=$2 AND status>=100) AND EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE account_id=$2 AND related_id=$1 AND status>=100)`, a, b).Scan(&blocked, &friend)
 	return
 }
 func coordinates(wkt *string) (*float64, *float64, *string, error) {

@@ -2,21 +2,21 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Canonical profiles/contacts/preferences and configured translation/autocomplete host composition",
+  "local_source_checkpoint": "Canonical account utilities plus local IP-check diagnostics/geolocation candidate",
   "last_fully_passed_ci": {
-    "commit": "64798b9fd837bc503d6b99fd5e935466b8393145",
-    "run": 37765633373,
-    "before": 285,
-    "after_restart": 40
+    "commit": "e3e6decd9840e6eda6b38ec65400a8613d9ba662",
+    "run": 37777273608,
+    "before": 315,
+    "after_restart": 44
   },
   "latest_candidate": {
-    "commit": "db50f585f522e4f0beef8ba1f8cdf754bef54c99",
-    "run": 37771509995,
-    "required_before": 294,
-    "required_after_restart": 41,
-    "status": "Narrow chat fixture correction running; previous294 passed290 before and withheld restart"
+    "commit": "dac0491a4c27a3d8827eca6dbce6165c39fb6314",
+    "required_before": 315,
+    "required_after_restart": 44,
+    "status": "Fully passed315 actual PostgreSQL and44 real restart cases; no skips",
+    "run": 37772653508
   },
-  "local_required_before": 315,
+  "local_required_before": 316,
   "local_required_after_restart": 44,
   "families": [
     {
@@ -760,6 +760,20 @@
         "Resource API delegation pending concrete route/scope mapping",
         "External providers, device flow, dynamic registration, introspection and legacy authorized-app routes"
       ]
+    },
+    {
+      "source_family": "passport.ip_check",
+      "local_status": "implemented; actual PG candidate pending",
+      "supported_flows": [
+        "Caller geolocation through explicitly configured local CIDR dataset",
+        "Current Superuser plus admin.ip.check diagnostics; explicit trusted proxy chain and redacted header projection"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBackendIPCheckComposition"
+      ],
+      "unsupported_or_remaining": [
+        "Original MaxMind/MMDB adapter and licensed geographic dataset not bundled; explicit owned JSON CIDR format"
+      ]
     }
   ],
   "additional_cross_service_flows": [
@@ -796,13 +810,13 @@
   ],
   "global_remaining": [
     "Remaining groups below are explicit uncompleted functionality, not a claim that contracts are unavailable",
-    "Profile/contact and translation/autocomplete315/44 runtime validation pending; live streams, moderation and paid name/rewind implementation active",
+    "Live streams, administrative moderation and paid name-card/rewind implementation active",
     "Configured providers and production deployment require separate authorization; no live transmissions performed"
   ],
   "remaining_acceptance_groups": [
     {
       "group": "messaging",
-      "state": "Direct/realm lifecycle locally integrated;294/41 CI pending",
+      "state": "Direct/realm lifecycle fully validated294/41; remaining message/role families explicit below",
       "remaining": [
         "E2EE/media message types, reactions and original system-message compatibility",
         "Custom fine-grained roles and bot automatic confirmation/execution"
@@ -815,10 +829,9 @@
     },
     {
       "group": "content utilities",
-      "state": "Reader fully validated; translation/autocomplete315/44 candidate",
+      "state": "Reader/translation/autocomplete fully validated315/44",
       "remaining": [
-        "Actual translation/autocomplete PostgreSQL/restart validation",
-        "Internal article/gRPC contracts"
+        "Internal article/gRPC contracts and original PerkLevel migration mapping"
       ],
       "source_controllers": [
         "WebReaderController",
@@ -841,7 +854,7 @@
     },
     {
       "group": "account extensions",
-      "state": "Profiles/contacts/preferences locally integrated; paid rename/rewind active",
+      "state": "Profiles/contacts/preferences fully validated315/44; paid name/rewind active",
       "remaining": [
         "PassKit, affiliation spells, domain trust, IP checks, paid name cards, rewind and artwork",
         "Remaining admin contacts/statistics, media/security modes and original SDK preference encoding"

@@ -4,6 +4,8 @@ Prepared 2026-10-08 against `Solsynth/DysonNetwork@4ee2d0cebb9da8284a92483fee6dc
 
 Full-program completion plan; static surface mapping for the five remaining DysonNetwork C# services, plus cross-backend integration work. This is not a claim of complete or production-ready Go replacement.
 
+Current implementation and exact-commit test evidence are tracked in [runtime-flow-acceptance.json](runtime-flow-acceptance.json). The per-operation plan below preserves the original research checkpoint; its old implementation/blocker labels are historical.
+
 ## What is mapped
 
 - 98 controller files containing 99 controller class declarations and 818 static HTTP attributes. These are not 818 verified runtime endpoints.

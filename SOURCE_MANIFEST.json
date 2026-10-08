@@ -1,18 +1,18 @@
 {
-  "checkpoint": "taxonomy-realm-projection",
-  "scope": "Isolated bounded correction; actual PostgreSQL CI pending; exact changed files establish runtime or fixture scope",
+  "checkpoint": "ipcheck-composition",
+  "scope": "316 before/44 restart candidate; full local build/vet/race passed; new actual PostgreSQL case pending",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
     "recovery_blobs": 187
   },
-  "remote_publication": "Chat294/41 correctiondb50f585 running; last fully green64798b9f285/40",
-  "verification": "docs/published-reader-ci.json",
+  "remote_publication": "e3e6decd9840e6eda6b38ec65400a8613d9ba662 passed315/44",
+  "verification": "docs/published-taxonomy-realm-projection-ci.json",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
       "bytes": 2097,
-      "sha256": "f1d61b9c27ae5b5521d8681c5e8b363f8e9cdb8d129161e3bdad64292788ea67"
+      "sha256": "319c197eafa6f138dcf4ca5db71c80ac53d5a7ccc2dcce09a412a3ecb742d069"
     },
     {
       "path": ".gitignore",
@@ -85,6 +85,16 @@
       "sha256": "b0b1bf8d478d40d4893cf1cc9dbd42f6583efeb2350faee2d4e36fc4098288c3"
     },
     {
+      "path": "cmd/backend/ipcheck_config.go",
+      "bytes": 1357,
+      "sha256": "bccfa4c3ba1187bd9123351df7d1168c8aaba83072d04d707970a6ed8161ea3c"
+    },
+    {
+      "path": "cmd/backend/ipcheck_config_test.go",
+      "bytes": 1449,
+      "sha256": "581f12a59d9672597bd19dd713ffd9a1457fabc65a9a4c025dc1d07d11cb6057"
+    },
+    {
       "path": "cmd/backend/issuer.go",
       "bytes": 1568,
       "sha256": "f73d954dd62d391e77160e5a9e458e324750734614b412050bc1626e577c98f8"
@@ -96,8 +106,8 @@
     },
     {
       "path": "cmd/backend/main.go",
-      "bytes": 14130,
-      "sha256": "7da08522c1a37ac826670738c7e29ebe39c27f1c89be12fabdb70a3d3325451b"
+      "bytes": 14251,
+      "sha256": "698baebba46d6757d80e935fe58d34484fb717fa80fe470408e75bbd53cc7fe2"
     },
     {
       "path": "cmd/backend/reader_config.go",
@@ -418,6 +428,11 @@
       "path": "docs/identity-resolution-audit.md",
       "bytes": 20578,
       "sha256": "f1ddb482b7d8d62b137b5c29889510549dd9c7847ae8481942c9c7b84b4218ed"
+    },
+    {
+      "path": "docs/ip-check-continuation.md",
+      "bytes": 3212,
+      "sha256": "fe099551529e8d5c692a10ca239e28bf5e3c9160fc397d10c92033497d68e02c"
     },
     {
       "path": "docs/live-smoke-result.json",
@@ -1131,8 +1146,8 @@
     },
     {
       "path": "docs/operation-coverage-plan.md",
-      "bytes": 267968,
-      "sha256": "b1cf683e6a79827a9b949a023bd42acfa406164b2248738a14b1701a8a31605b"
+      "bytes": 268227,
+      "sha256": "b65af7ca30e72271b0cd167946a0d44d5f1c2c7e3654b14f23ca1ba544e06bb3"
     },
     {
       "path": "docs/owned-authority-architecture.md",
@@ -1230,6 +1245,11 @@
       "sha256": "f2445afff48bdbae5c9b5962284c32f96a4dfaf24aacf40059db97b88890156a"
     },
     {
+      "path": "docs/published-account-utilities-ci.json",
+      "bytes": 464,
+      "sha256": "cd4c447da4aeffc54d3c28cf64c5d04387597407a3d552163db88ec7307a4c1d"
+    },
+    {
       "path": "docs/published-apps-notifications-ci.json",
       "bytes": 415,
       "sha256": "fcf5198a948acdfb45ecffce493b600b43e21346791b83b837377eb7bbc3820b"
@@ -1243,6 +1263,11 @@
       "path": "docs/published-chat-authority-ci.json",
       "bytes": 540,
       "sha256": "11ec84a6a733dde9890210cb708a06fe389c725c0623ec00d2139cf50026093e"
+    },
+    {
+      "path": "docs/published-chat-relations-ci.json",
+      "bytes": 441,
+      "sha256": "be7b153b6cbb3034f321d41fda9ebccbfdbc14cd2308f1dd045386648e45b287"
     },
     {
       "path": "docs/published-continuation-ci.json",
@@ -1273,6 +1298,11 @@
       "path": "docs/published-reviewed-oauth-fortune-ci.json",
       "bytes": 416,
       "sha256": "2d409f4f04dd257747be9c10c7e1d56644717637258d7994b65770751557137e"
+    },
+    {
+      "path": "docs/published-taxonomy-realm-projection-ci.json",
+      "bytes": 458,
+      "sha256": "75f7013ce282fe80b1eef129d99fc444c351faf0f6905c95d5a6d1342ba3718a"
     },
     {
       "path": "docs/reader-continuation.md",
@@ -1321,8 +1351,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 38224,
-      "sha256": "7f5e19b7ef10a75d910753fd506efad57e7663678c66d95c1eea2070a09f1101"
+      "bytes": 38719,
+      "sha256": "98aa0b14192f2b309d750aedf58b85450553a6c8c06e29d53c72277b7ca52e22"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -1451,8 +1481,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 23200,
-      "sha256": "503a8bc9f3e53efb7b1210ac733ef875af1e00f3f5d54ee7b0518c57912534ec"
+      "bytes": 23393,
+      "sha256": "e83f2f2441222fe475bef5b05678cf858bc087674694b6c3c1582b3de7665f34"
     },
     {
       "path": "internal/application/commerce.go",
@@ -1478,6 +1508,11 @@
       "path": "internal/application/identity_test.go",
       "bytes": 13943,
       "sha256": "b1d9855b9f0f63bac58b86578dda04eca78ad31c15787480a07a28e347593b78"
+    },
+    {
+      "path": "internal/application/ipcheck.go",
+      "bytes": 725,
+      "sha256": "63d90a818dddc29ecc1ba09b53aacaf3425537318c8bb7959b4b7a17d89443df"
     },
     {
       "path": "internal/application/media.go",
@@ -1521,8 +1556,8 @@
     },
     {
       "path": "internal/application/router.go",
-      "bytes": 14585,
-      "sha256": "30eb7aafa595dced08da23d0e6acffed7e0a31014b47205f3012a0f7164cf962"
+      "bytes": 15020,
+      "sha256": "88c82a18e55e3a0272664a4cf2fec11cf5d7521c9cf34b41376bd8d7769fee50"
     },
     {
       "path": "internal/application/router_test.go",
@@ -5745,6 +5780,21 @@
       "sha256": "795aa7fe92d70fb1a839f7dca12e4158f42cd546bfc7c76c7c27505805c87075"
     },
     {
+      "path": "ports/passport/ipcheck/dataset.go",
+      "bytes": 3109,
+      "sha256": "7d3fce3c914e7fc3b6b50755b7009d442d4d622691fedaa8d502d6512677c406"
+    },
+    {
+      "path": "ports/passport/ipcheck/ipcheck.go",
+      "bytes": 6614,
+      "sha256": "78848ba53725ac4b3b8fa5ad7b26236106a521a3af399174d04f4eda46434f65"
+    },
+    {
+      "path": "ports/passport/ipcheck/ipcheck_test.go",
+      "bytes": 5458,
+      "sha256": "145787ebf5661e7259d10820456be61df9da2d91b8da9c8c9bc349635fa9ae7e"
+    },
+    {
       "path": "ports/passport/notabledays/calendar_test.go",
       "bytes": 7485,
       "sha256": "ca0351d2d845ddeffbaba2b115a453bd768dd79e594731f21c2c52519edf06e8"
@@ -7291,8 +7341,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 20903,
-      "sha256": "11139dfb22dc58cba74913b6e601b7fc025c05bc81b14f29ac3a480713202b32"
+      "bytes": 20946,
+      "sha256": "17d3d97242fe8972bb5c03cd5993aaf731caff08d4538066f6b5d9359d18098b"
     },
     {
       "path": "scripts/check-source-evidence.py",
@@ -7643,6 +7693,11 @@
       "path": "tests/integration/backend_identity_reports_test.go",
       "bytes": 3729,
       "sha256": "0aca3d9554a65861ea372023c6f5d3028117a156f2a25669219670105014ce4a"
+    },
+    {
+      "path": "tests/integration/backend_ipcheck_test.go",
+      "bytes": 2846,
+      "sha256": "e9075764c5dd96f1a4df889642c754c0459e8c1fe88f59b1ab0c22fe0cb5a7b5"
     },
     {
       "path": "tests/integration/backend_merchant_test.go",

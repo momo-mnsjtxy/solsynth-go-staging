@@ -1,0 +1,11 @@
+{
+  "commit": "e3e6decd9840e6eda6b38ec65400a8613d9ba662",
+  "tree": "ac510c669e4b68c0a425431db021594336d637e3",
+  "run": 37777273608,
+  "job": 113311193608,
+  "conclusion": "success",
+  "required_before_passed": 315,
+  "required_after_restart_passed": 44,
+  "skipped": 0,
+  "scope": "Public taxonomy view excludes realm-linked posts; composed regression checks linked and explicitly detached states. Disposable PostgreSQL and real process/restart checks."
+}

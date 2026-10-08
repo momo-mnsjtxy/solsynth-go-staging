@@ -5,6 +5,7 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGBackendIPCheckComposition",
         "TestPGBackendAccountSettingsComposition",
         "TestPGProfileAuthoredAliasesAndPrivateBirthday",
         "TestPGContactVerificationPrimaryAndPublicLifecycle",

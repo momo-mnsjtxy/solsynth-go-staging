@@ -13,6 +13,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"solsynth.local/go-migration/internal/accountpg"
+	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/sphere/posts"
 )
@@ -24,10 +25,22 @@ type Repository struct {
 	db         *sql.DB
 	publishers *accountpg.Repository
 	now        func() time.Time
+	authority  *authoritypg.TransactionGuard
 }
 
 func New(db *sql.DB) *Repository {
 	return &Repository{db: db, publishers: accountpg.New(db), now: time.Now}
+}
+
+// NewWithAuthority rechecks the bound signed proof and operation permission
+// under the canonical account lock in each write's own SQL transaction.
+func NewWithAuthority(db *sql.DB, guard *authoritypg.TransactionGuard) *Repository {
+	r := New(db)
+	if guard == nil {
+		guard = authoritypg.NewTransactionGuard(nil, nil)
+	}
+	r.authority = guard
+	return r
 }
 
 var _ posts.Repository = (*Repository)(nil)
@@ -78,7 +91,7 @@ func scan(s scanner) (posts.Post, error) {
 		&p.Publisher.ID, &p.Publisher.Name, &p.Publisher.Nick, &p.Publisher.Bio, &p.Publisher.Type, &p.Publisher.AccountID, &p.Publisher.RealmID, &p.Publisher.CreatedAt, &p.Publisher.UpdatedAt)
 	return p, mapped(e)
 }
-func (r *Repository) write(ctx context.Context, actor string, fn func(*sql.Tx, time.Time) error) error {
+func (r *Repository) write(ctx context.Context, actor, permission string, fn func(*sql.Tx, time.Time) error) error {
 	if r == nil || r.db == nil {
 		return posts.ErrUnavailable
 	}
@@ -90,6 +103,11 @@ func (r *Repository) write(ctx context.Context, actor string, fn func(*sql.Tx, t
 		return e
 	}
 	defer tx.Rollback()
+	if r.authority != nil {
+		if _, e = r.authority.Authorize(ctx, r.db, tx, actor, permission); e != nil {
+			return e
+		}
+	}
 	var disabled bool
 	if e = tx.QueryRowContext(ctx, `SELECT disabled FROM owned_authority_accounts WHERE id=$1 FOR UPDATE`, actor).Scan(&disabled); e != nil {
 		return mapped(e)
@@ -141,7 +159,7 @@ func apply(p *posts.Post, v posts.Patch) {
 }
 func (r *Repository) Create(ctx context.Context, actor, selector string, v posts.Patch) (posts.Post, error) {
 	var p posts.Post
-	e := r.write(ctx, actor, func(tx *sql.Tx, now time.Time) error {
+	e := r.write(ctx, actor, "posts.create", func(tx *sql.Tx, now time.Time) error {
 		if e := posts.ValidatePatch(v, true, now); e != nil {
 			return e
 		}
@@ -200,7 +218,11 @@ func save(ctx context.Context, tx *sql.Tx, p posts.Post) error {
 }
 func (r *Repository) mutate(ctx context.Context, actor, id, action string, v posts.Patch) (posts.Post, error) {
 	var p posts.Post
-	e := r.write(ctx, actor, func(tx *sql.Tx, now time.Time) error {
+	permission := "posts." + action
+	if action == "publish" {
+		permission = "posts.create"
+	}
+	e := r.write(ctx, actor, permission, func(tx *sql.Tx, now time.Time) error {
 		if action == "update" {
 			if e := posts.ValidatePatch(v, false, now); e != nil {
 				return e

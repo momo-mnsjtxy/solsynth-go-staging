@@ -238,12 +238,25 @@ func TestPGBackendHTTPProcessRestart(t *testing.T) {
 	if err := json.Unmarshal(postRaw, &savedPost); err != nil || savedPost.ID == "" {
 		t.Fatal("post process response", err)
 	}
+	roomRaw, _ := p.call(t, "POST", "/messager/chat", `{"name":"Process room"}`, 200, headers)
+	var savedRoom struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(roomRaw, &savedRoom); err != nil || savedRoom.ID == "" {
+		t.Fatal("room process response", err)
+	}
+	p.call(t, "POST", "/messager/chat/"+savedRoom.ID+"/messages", `{"content":"process-chat-restart","client_message_id":"process-message"}`, 200, headers)
 	p.stop()
 	p = startDomainProcess(t, "BACKEND_BINARY", "Authenticated backend listening on ", args...)
 	raw, _ := p.call(t, "GET", "/api/accounts/me/board", "", 200, headers)
 	if !bytes.Contains(raw, []byte("backend-process-restart")) {
 		t.Fatal("committed data lost across process restart")
 	}
+	chatRaw, _ := p.call(t, "GET", "/messager/chat/"+savedRoom.ID+"/messages", "", 200, headers)
+	if !bytes.Contains(chatRaw, []byte("process-chat-restart")) {
+		t.Fatal("chat message lost across process restart")
+	}
+	p.call(t, "GET", "/messager/chat/"+savedRoom.ID+"/messages", "", 403, map[string]string{"Authorization": "Bearer " + f.otherToken})
 	profileRaw, _ := p.call(t, "GET", "/api/accounts/"+f.actor, "", 200, nil)
 	if !bytes.Contains(profileRaw, []byte("process-profile-restart")) {
 		t.Fatal("profile lost across process restart")

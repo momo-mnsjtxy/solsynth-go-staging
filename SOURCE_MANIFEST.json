@@ -1,18 +1,18 @@
 {
-  "checkpoint": "owned-authority-domain-backend-2026-10-08",
-  "scope": "Owned-authority modular host plus account/publisher, board, taxonomy, message read, wallet and text-post lifecycle; incomplete original-platform parity",
+  "checkpoint": "chat-writes-and-atomic-authority-2026-10-08",
+  "scope": "Canonical text-room writes and transaction-bound owned post/wallet authorization added to verified owned core; incomplete platform parity",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
     "recovery_blobs": 187
   },
-  "remote_publication": "Previous private recovery checkpoint d53e31da1eff81bc6333446a0e2c7318861306c8 passed CI37725387408. This changed tree requires its own CI.",
+  "remote_publication": "Previous private recovery checkpoint9c6c06a passed80PG/14restart CI37726985433; changed tree requires87PG/15restart validation",
   "verification": "docs/owned-backend-checkpoint.json",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
-      "bytes": 2051,
-      "sha256": "2711f4f56a39344890ba1a5d8c8c1057be4f422a89cf8b0f1bc69c542cdf2ca9"
+      "bytes": 2047,
+      "sha256": "7189f542c8ded424d3197d06607791e29febe605acf99b6e3f8116093849b50a"
     },
     {
       "path": ".gitignore",
@@ -68,6 +68,16 @@
       "path": "cmd/backend/main.go",
       "bytes": 7027,
       "sha256": "6d5b968c1cea1d5998eccff65c59be054657227880bcacf4b7072f85f8ecc782"
+    },
+    {
+      "path": "cmd/chat-service/main.go",
+      "bytes": 6401,
+      "sha256": "eab15caba658e6ebe7312f9e9b62e1505258e20d9d785bbd8a09a47269848a25"
+    },
+    {
+      "path": "cmd/chat-service/main_test.go",
+      "bytes": 2253,
+      "sha256": "d314f0052695db6a5f0ba8979fbed46849eb30bcf5cb195e5eaeb89afe432dbb"
     },
     {
       "path": "cmd/develop-discovery/bot_commands_test.go",
@@ -205,9 +215,19 @@
       "sha256": "1b4906cee508e3c62dacb28cdd3274067cbe48f41be0f49cdbddeae62cea0364"
     },
     {
+      "path": "docs/authority-atomic-writes.md",
+      "bytes": 7041,
+      "sha256": "78e244d0c5738b957215b249607f9a44e39df715e2353cd7a949d43afdb63d89"
+    },
+    {
       "path": "docs/badges-live-smoke-result.json",
       "bytes": 472,
       "sha256": "53738cb9760f47460dd696dba491a27904534fd1d1e53a386fa2be00e602131d"
+    },
+    {
+      "path": "docs/chat-lifecycle-continuation.md",
+      "bytes": 7697,
+      "sha256": "768087ca1d5e18a0aa6a5850a2333b3a6f01315209c4fb9b68fe5923278c8052"
     },
     {
       "path": "docs/checkpoint.md",
@@ -231,8 +251,8 @@
     },
     {
       "path": "docs/combined-validation-plan.md",
-      "bytes": 6689,
-      "sha256": "5735d62507bdf86136863adb8877696714c8b456050c998731e8f9d2c2fcfc9b"
+      "bytes": 7039,
+      "sha256": "c9363464f1710627079b2a0874fdb3a0e13cd6be27859d57cddb45e8f2ccccd6"
     },
     {
       "path": "docs/compatibility-inventory.md",
@@ -1005,6 +1025,11 @@
       "sha256": "261ab6840527fc27d8d2f8406e422e82a44dcc759f23c38c58b1e2e3537cc6ab"
     },
     {
+      "path": "docs/published-owned-backend-ci.json",
+      "bytes": 584,
+      "sha256": "6084463a66a43535d09306de617601d5b8219079508c7a8d87bd0d81ae512524"
+    },
+    {
       "path": "docs/recovery-checkpoint.md",
       "bytes": 5780,
       "sha256": "f2e82220d3e510520e40a4e3612da5925658828182ae446d6c796b34ac5c1b3a"
@@ -1076,8 +1101,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 4687,
-      "sha256": "3129ce028fc8a87266fa55cb95c7a5cda37d1b4ba0b9a8f90b70b0fc7d3fe9ba"
+      "bytes": 5415,
+      "sha256": "5b75362801013995f0261006000b40a282638bd4efd77459405f1c6e935b7111"
     },
     {
       "path": "internal/application/identity.go",
@@ -1101,8 +1126,8 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 2339,
-      "sha256": "14e29a5a6b2da8379ba3e478a9f14b9f60643fee33d15a3d8d62a293c73e7687"
+      "bytes": 2795,
+      "sha256": "c4e543da292925608012a6f17a156244053dfa2cc8087c7b5317a28734d42397"
     },
     {
       "path": "internal/application/router.go",
@@ -1130,9 +1155,14 @@
       "sha256": "2add4fd83bc0d44881b296d34c05638bc23a5e48a68b71e7acd411cc0d00adf4"
     },
     {
+      "path": "internal/application/transaction.go",
+      "bytes": 704,
+      "sha256": "464e53725f628db66c27716cdba4363a31a187d2e765fa111b8d41dd3b3d59bb"
+    },
+    {
       "path": "internal/application/wallet.go",
-      "bytes": 1664,
-      "sha256": "43f4c403024f628d0049d022892eebc8086f402f0fda77ea71881403821d314e"
+      "bytes": 1899,
+      "sha256": "83bae6065cc88f860d14186ec078e09e4cb05e4f0df2c9d1ce36b8f600275bcc"
     },
     {
       "path": "internal/auth/CONTRACT.md",
@@ -1215,6 +1245,11 @@
       "sha256": "e5aa7634880ffa8a16a5c4259246c583b8ba8c3fef8395b867af402e2e774c4f"
     },
     {
+      "path": "internal/authoritypg/transaction.go",
+      "bytes": 3342,
+      "sha256": "68227b5e110f73210a3e5e5fe7a0ae7561dcdb779a0b50328ff213b454d273ce"
+    },
+    {
       "path": "internal/boardpg/README.md",
       "bytes": 7113,
       "sha256": "7b806834ef6ab939e8d653027ec09aec5642d68d9ace9f68d05e9ecd9dae4e67"
@@ -1243,6 +1278,31 @@
       "path": "internal/boardpg/testdata/schema.sql",
       "bytes": 1035,
       "sha256": "fe722ef809077a8ac7a9a5bc5c7b19285ebd1fa988baaf7fe0a5a7bfd3dc9618"
+    },
+    {
+      "path": "internal/chatpg/members.go",
+      "bytes": 8613,
+      "sha256": "b3886b3c566bdce7d166acb846c19d208cbb00e6dae4e66b16a4b8a70cd8dd0f"
+    },
+    {
+      "path": "internal/chatpg/messages.go",
+      "bytes": 7736,
+      "sha256": "bc6be7f25d0400db7f3e86eb0d72b840712de61e9b2f0fb64b7ad89217a0f608"
+    },
+    {
+      "path": "internal/chatpg/repository.go",
+      "bytes": 9364,
+      "sha256": "13bef11321b8cdac2f32e242953a8f2303e3f191d8da0c32500cf027bb6aaa5a"
+    },
+    {
+      "path": "internal/chatpg/repository_test.go",
+      "bytes": 513,
+      "sha256": "3bcabcc2a230e787cad150ba3f448b688dc6801a755c7c0f20755e5093896cfe"
+    },
+    {
+      "path": "internal/chatpg/schema.sql",
+      "bytes": 3483,
+      "sha256": "a287f640bfef699380b65d5188070ae3de5687070f08d1db549c916f9f3616fc"
     },
     {
       "path": "internal/developpg/bot_commands.go",
@@ -1361,8 +1421,8 @@
     },
     {
       "path": "internal/postpg/repository.go",
-      "bytes": 12203,
-      "sha256": "337ef387bdec23ac4a04b0b9fc6ca023b3a99ef654b0977fe79bed6a5603c7a4"
+      "bytes": 12910,
+      "sha256": "28e47d0647447b5686e089ea55641349d64050f010c60bbe12f0b5caaf164869"
     },
     {
       "path": "internal/postpg/repository_test.go",
@@ -1400,6 +1460,11 @@
       "sha256": "590140289771794d3729d842854ee00e18e246e93e2c319749f7d41a98f044bd"
     },
     {
+      "path": "internal/walletpg/authority.go",
+      "bytes": 1843,
+      "sha256": "d1c7cdb34d777920ab717e3727f97a2893274414891d27f68d1ec15615f7f695"
+    },
+    {
       "path": "internal/walletpg/pin.go",
       "bytes": 6131,
       "sha256": "e7587ca7e67f85b2872ce62b885db251d8250975ff95a348110c230e984708bb"
@@ -1416,8 +1481,8 @@
     },
     {
       "path": "internal/walletpg/repository.go",
-      "bytes": 11542,
-      "sha256": "499091626dfefd3343791df698f5a04fe2005a97f554bac092a6195b36cad3b7"
+      "bytes": 12194,
+      "sha256": "b85fc5a6b6c98dae830a33b4748c2778b937f60b3904dd5a8618a05068aaec69"
     },
     {
       "path": "internal/walletpg/schema.sql",
@@ -1426,8 +1491,8 @@
     },
     {
       "path": "internal/walletpg/transactions.go",
-      "bytes": 11729,
-      "sha256": "637d18ef438baa17358add85bcd015a16e32f742a0e53cb7f51862090a14274e"
+      "bytes": 11999,
+      "sha256": "4231d45817761fb5b008c666718782b818d39205ead697aa1e779a124ab658e1"
     },
     {
       "path": "internal/walletpg/verification.json",
@@ -3105,6 +3170,16 @@
       "sha256": "a18d35d8de72c22161b926068214c57c56622c52ffdad0966dd5f007e43ed014"
     },
     {
+      "path": "ports/authority/transaction.go",
+      "bytes": 2017,
+      "sha256": "653bb686922795027f807a27ef1494786753b40ca81ed8a3844eda8a0ef25508"
+    },
+    {
+      "path": "ports/authority/transaction_test.go",
+      "bytes": 3625,
+      "sha256": "a603e604c2e720b1ebf3d8d57d56567d81b4fb199e4514856034a3f383154788"
+    },
+    {
       "path": "ports/authority/types.go",
       "bytes": 4388,
       "sha256": "d23ee5af3b4ec9e7584603e1498ac1b71974e6e0f7fab0715e53e44f3ff06fca"
@@ -3448,6 +3523,26 @@
       "path": "ports/messager/recovery_test.go",
       "bytes": 3142,
       "sha256": "76fdee9d1b89524c5c983aa26e202344320a3be892e268cc27188bdc5e29684c"
+    },
+    {
+      "path": "ports/messager/rooms/http.go",
+      "bytes": 13381,
+      "sha256": "cb376253359759060decdc4659f7c335dd2e0c79cc1672cde6b182e98fe13944"
+    },
+    {
+      "path": "ports/messager/rooms/http_test.go",
+      "bytes": 7926,
+      "sha256": "f3eda8f51649097b01936693ffa884fb2f1b959a0eb03e6163654e46e4e96b99"
+    },
+    {
+      "path": "ports/messager/rooms/types.go",
+      "bytes": 4579,
+      "sha256": "1424e8a5f3c19edb4845f896906b4284e4bc52075464ca312766beafef459498"
+    },
+    {
+      "path": "ports/messager/rooms/validation.go",
+      "bytes": 1757,
+      "sha256": "ff6f4b9aed65abb20a8e6c65cd116f017180078358f90f544f908e9974c72cd9"
     },
     {
       "path": "ports/messager/source/ChatController.cs",
@@ -4556,8 +4651,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 6909,
-      "sha256": "a0e74610fbcb59b37ed5ed903f59822d6d5279ba1c610bb15a97deca3d57c72c"
+      "bytes": 7268,
+      "sha256": "f5c9fe3d4a4b9126eb5fa4c461bebbe3d2341af1ccbbb02c64a90423cde77f4d"
     },
     {
       "path": "scripts/check-source-evidence.py",
@@ -4566,8 +4661,8 @@
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 4229,
-      "sha256": "75e70fdab5d1278615dbc2e2449a95469cc038ba18b0b4df62bbfbbcdbe1f936"
+      "bytes": 4308,
+      "sha256": "1ee31fadc5d4368b6f790a3a1140e7b1c168385b542311007229970ddf5bc5ae"
     },
     {
       "path": "scripts/test-coverage-format.py",
@@ -4581,8 +4676,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 7634,
-      "sha256": "bbec19277e0cc82d308c803800c1de9fc44d9e6d52653fb0896ff7a152f6003e"
+      "bytes": 8331,
+      "sha256": "8e7e9d8a63c2ac47c8fdc48625d11c848e010746e5ff10fae324ff15efde811b"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -4870,14 +4965,19 @@
       "sha256": "d8472652539f4d3de9dacff7f3fdac287138e150a00562a89cfbbeeb2039f48f"
     },
     {
+      "path": "tests/integration/authority_atomic_test.go",
+      "bytes": 13894,
+      "sha256": "dfe4e46fc792f1de7dec157dd58a15c78d532a8a057e9945d8206c7018f505fe"
+    },
+    {
       "path": "tests/integration/authority_test.go",
       "bytes": 14120,
       "sha256": "8dd91319c13a9e3541ae2350c3884fee6f02c47c1f9ad09dc3dcac5104528cf1"
     },
     {
       "path": "tests/integration/backend_test.go",
-      "bytes": 14496,
-      "sha256": "0b1594b0745ef961f8e06f049ea4b7952559b7bab82f74f8c9af56b4207d6756"
+      "bytes": 15265,
+      "sha256": "1aefcec863c55382586d2d2d7ecbe5b6935bedb588c550c351325db42fbf5ac4"
     },
     {
       "path": "tests/integration/board_http_test.go",
@@ -4888,6 +4988,11 @@
       "path": "tests/integration/board_test.go",
       "bytes": 14630,
       "sha256": "2ff297223b03d00c6c4dbc280cec462701e92b7e0b56ccf18b635649fcdba7cd"
+    },
+    {
+      "path": "tests/integration/chat_lifecycle_test.go",
+      "bytes": 17827,
+      "sha256": "882ed80750779153f38294dbc2714e5ac4e6e445b44c563205924b0fd40a2e56"
     },
     {
       "path": "tests/integration/develop_bot_commands_test.go",

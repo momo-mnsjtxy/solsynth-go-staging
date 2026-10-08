@@ -1,0 +1,67 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+-- Owned text-room runtime schema. Explicit migration input; never run at startup.
+-- Requires internal/authoritypg/schema.sql. Shares canonical chat tables with
+-- messagerpg read/sync/unread; existing projection rows stay read-only here.
+CREATE TABLE IF NOT EXISTS chat_rooms (
+ id uuid PRIMARY KEY,
+ is_public boolean NOT NULL,
+ encryption_mode integer NOT NULL,
+ deleted_at timestamptz
+);
+CREATE TABLE IF NOT EXISTS chat_members (
+ id uuid PRIMARY KEY,
+ chat_room_id uuid NOT NULL REFERENCES chat_rooms(id),
+ account_id uuid NOT NULL,
+ notify integer NOT NULL DEFAULT -2147483648,
+ last_read_at timestamptz,
+ joined_at timestamptz,
+ leave_at timestamptz,
+ deleted_at timestamptz,
+ UNIQUE(chat_room_id,account_id)
+);
+CREATE TABLE IF NOT EXISTS chat_messages (
+ id uuid PRIMARY KEY,
+ chat_room_id uuid NOT NULL REFERENCES chat_rooms(id),
+ sender_id uuid NOT NULL REFERENCES chat_members(id),
+ type varchar(1024) NOT NULL,
+ room_sequence bigint NOT NULL,
+ content varchar(4096),
+ client_message_id varchar(128),
+ created_at timestamptz NOT NULL,
+ updated_at timestamptz NOT NULL,
+ deleted_at timestamptz,
+ edited_at timestamptz,
+ meta jsonb,
+ members_mentioned jsonb,
+ attachments jsonb NOT NULL DEFAULT '[]',
+ encryption_meta jsonb,
+ reactions_count jsonb NOT NULL DEFAULT '{}',
+ replied_message_id uuid REFERENCES chat_messages(id),
+ forwarded_message_id uuid REFERENCES chat_messages(id),
+ thread_id uuid,
+ UNIQUE(chat_room_id,room_sequence)
+);
+CREATE TABLE IF NOT EXISTS chat_reactions (
+ id uuid PRIMARY KEY,
+ message_id uuid NOT NULL REFERENCES chat_messages(id),
+ sender_id uuid NOT NULL REFERENCES chat_members(id),
+ symbol varchar(256) NOT NULL,
+ deleted_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS messager_fixture_threads ON chat_messages(thread_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS messager_fixture_reactions ON chat_reactions(message_id);
+
+ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_owner_id uuid REFERENCES owned_authority_accounts(id);
+ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_name varchar(1024) NOT NULL DEFAULT '';
+ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_description varchar(4096) NOT NULL DEFAULT '';
+ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_is_community boolean NOT NULL DEFAULT false;
+ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_next_sequence bigint NOT NULL DEFAULT 0 CHECK(owned_next_sequence>=0);
+ALTER TABLE chat_members ADD COLUMN IF NOT EXISTS owned_banned boolean NOT NULL DEFAULT false;
+ALTER TABLE chat_members ADD COLUMN IF NOT EXISTS owned_updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS owned_request_hash bytea;
+CREATE UNIQUE INDEX IF NOT EXISTS owned_chat_text_idempotency ON chat_messages(chat_room_id,sender_id,client_message_id)
+ WHERE type='text' AND client_message_id IS NOT NULL AND owned_request_hash IS NOT NULL;
+CREATE INDEX IF NOT EXISTS owned_chat_joined ON chat_members(account_id,chat_room_id) WHERE joined_at IS NOT NULL AND leave_at IS NULL AND deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS owned_chat_invites ON chat_members(account_id,chat_room_id) WHERE joined_at IS NULL AND leave_at IS NULL AND deleted_at IS NULL;

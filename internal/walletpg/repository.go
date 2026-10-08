@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/ports/wallet/accounts"
 	"sort"
 	"time"
@@ -20,11 +21,20 @@ var SchemaSQL string
 // Repository implements the independent wallet_v1 policy. It does not load a
 // legacy database or create schema. Only cooperating writers are supported.
 type Repository struct {
-	db  *sql.DB
-	now func() time.Time
+	db        *sql.DB
+	now       func() time.Time
+	authority *authoritypg.TransactionGuard
 }
 
 func New(db *sql.DB) *Repository { return &Repository{db: db, now: time.Now} }
+func NewWithAuthority(db *sql.DB, guard *authoritypg.TransactionGuard) *Repository {
+	r := New(db)
+	if guard == nil {
+		guard = authoritypg.NewTransactionGuard(nil, nil)
+	}
+	r.authority = guard
+	return r
+}
 func NewWithClock(db *sql.DB, clock func() time.Time) *Repository {
 	r := New(db)
 	if clock != nil {
@@ -201,6 +211,9 @@ func (r *Repository) CreateWallet(ctx context.Context, owner accounts.Owner, nam
 		return accounts.Wallet{}, e
 	}
 	defer tx.Rollback()
+	if e = r.writeAuthority(ctx, tx, owner, "", ""); e != nil {
+		return accounts.Wallet{}, e
+	}
 	if e = lock(ctx, tx, "owner:"+owner.Key()); e != nil {
 		return accounts.Wallet{}, e
 	}
@@ -233,6 +246,9 @@ func (r *Repository) SetDefault(ctx context.Context, id, account string) (accoun
 		return accounts.Wallet{}, e
 	}
 	defer tx.Rollback()
+	if e = r.writeAuthority(ctx, tx, accounts.Owner{AccountID: account}, account, ""); e != nil {
+		return accounts.Wallet{}, e
+	}
 	if e = lock(ctx, tx, "owner:account:"+account); e != nil {
 		return accounts.Wallet{}, e
 	}
@@ -268,6 +284,9 @@ func (r *Repository) SetPublicID(ctx context.Context, id string, owner accounts.
 		return accounts.Wallet{}, e
 	}
 	defer tx.Rollback()
+	if e = r.writeAuthority(ctx, tx, owner, "", accounts.PermissionPublicID); e != nil {
+		return accounts.Wallet{}, e
+	}
 	w, e := wallet(ctx, tx, id, true)
 	if e != nil {
 		return w, e

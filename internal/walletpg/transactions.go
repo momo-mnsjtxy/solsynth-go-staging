@@ -26,6 +26,9 @@ func (r *Repository) Transfer(ctx context.Context, c accounts.TransferCommand) (
 		return accounts.Transaction{}, e
 	}
 	defer tx.Rollback()
+	if e = r.writeAuthority(ctx, tx, c.PayerOwner, c.ActorID, accounts.PermissionTransactions); e != nil {
+		return accounts.Transaction{}, e
+	}
 	if c.IdempotencyKey != "" {
 		if e = lock(ctx, tx, "idempotency:"+c.ActorID+":"+c.IdempotencyKey); e != nil {
 			return accounts.Transaction{}, e
@@ -166,6 +169,9 @@ func (r *Repository) Transition(ctx context.Context, id string, payee accounts.O
 		return accounts.Transaction{}, e
 	}
 	defer tx.Rollback()
+	if e = r.writeAuthority(ctx, tx, payee, "", accounts.PermissionTransactions); e != nil {
+		return accounts.Transaction{}, e
+	}
 	old, e := scanTransaction(tx.QueryRowContext(ctx, `SELECT `+transactionCols+` FROM wallet_v1.transactions WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, id))
 	if e != nil {
 		return old, e

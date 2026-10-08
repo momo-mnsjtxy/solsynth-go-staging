@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+    "internal/chatpg/schema.sql",
     "internal/authoritypg/schema.sql",
     "internal/accountpg/schema.sql",
     "internal/walletpg/schema.sql",
@@ -49,6 +50,8 @@ def check(runner, read_schema=None):
     for name in ("walletpg", "application", "postpg"):
         if schemas.index("internal/accountpg/schema.sql") >= schemas.index(f"internal/{name}/schema.sql"):
             raise ValueError("owned dependent schema must follow accounts: " + name)
+    if schemas.index("internal/chatpg/schema.sql") <= schemas.index("internal/messagerpg/testdata/schema.sql"):
+        raise ValueError("chat write extension requires canonical read schema first")
     tables = {}
     for name in schemas:
         source = read_schema(name)
@@ -58,7 +61,12 @@ def check(runner, read_schema=None):
         ):
             qualified = table.lower() if "." in table else "public." + table.lower()
             if qualified in tables:
-                raise ValueError("disposable schema table collision: " + qualified)
+                shared_chat = (name == "internal/chatpg/schema.sql" and tables[qualified] == "internal/messagerpg/testdata/schema.sql"
+                               and qualified in {"public.chat_rooms", "public.chat_members", "public.chat_messages", "public.chat_reactions"}
+                               and re.search(r"^CREATE TABLE IF NOT EXISTS " + re.escape(table) + r"\s*\(", source, re.M))
+                if not shared_chat:
+                    raise ValueError("disposable schema table collision: " + qualified)
+                continue
             tables[qualified] = name
     for variable, (binary, package) in REQUIRED_BINARIES.items():
         build = f'"$GO_BIN" build -o "$run/{binary}" ./cmd/{package}'

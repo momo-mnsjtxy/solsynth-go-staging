@@ -23,6 +23,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err != nil || !ready {
 		return errors.New("domain schema unavailable")
 	}
+	var columns int
+	err = b.db.QueryRowContext(ctx, `SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND ((table_name='chat_rooms' AND column_name IN ('owned_owner_id','owned_next_sequence')) OR (table_name='chat_members' AND column_name='owned_banned') OR (table_name='chat_messages' AND column_name='owned_request_hash'))`).Scan(&columns)
+	if err != nil || columns != 4 {
+		return errors.New("chat write schema unavailable")
+	}
 	return nil
 }
 func (b *Backend) readinessHTTP(w http.ResponseWriter, r *http.Request) {

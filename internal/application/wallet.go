@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/wallet/accounts"
@@ -36,10 +37,13 @@ func walletError(err error) error {
 	}
 	return accounts.ErrUnavailable
 }
-func walletHandler(db *sql.DB, id identity, peppers map[string][]byte) (http.Handler, *walletpg.Repository) {
-	repo := walletpg.New(db)
+func walletHandler(db *sql.DB, id identity, peppers map[string][]byte, guard *authoritypg.TransactionGuard) (http.Handler, *walletpg.Repository) {
+	repo := walletpg.NewWithAuthority(db, guard)
+	if guard == nil {
+		repo = walletpg.New(db) // Explicit separate-pool non-atomic opt-in.
+	}
 	handler := accounts.NewAuthorityHandler(repo, proofIdentity{id}, func(p authority.Principal) accounts.Principal {
 		return accounts.Principal{AccountID: p.Account.ID, SessionID: p.Session.ID}
 	}, walletpg.NewRealmAuthority(db), walletpg.NewPINVerifier(db, peppers), walletError)
-	return bindIdentity(id.verifier, handler), repo
+	return bindIdentity(id.verifier, bindTransactionAuthority(guard, handler)), repo
 }

@@ -5,6 +5,13 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGAuthorityAtomicWrites",
+        "TestPGChatRoomTextLifecycle",
+        "TestPGChatMembershipPrivacyAndPolicy",
+        "TestPGChatConcurrentSequencesAndRollback",
+        "TestPGChatConcurrentRemovalAndSend",
+        "TestPGChatAuthorityAndUnsupportedBoundaries",
+        "TestPGChatRestartPersistence",
         "TestPGAuthorityLifecycle",
         "TestPGAuthorityRestartPersistence",
         "TestPGAccountsPublisherLifecycle",
@@ -87,6 +94,7 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGChatRestartPersistence",
         "TestPGAccountsRestartPersistence",
         "TestPGAuthorityRestartPersistence",
         "TestPGBackendRestartPersistence",

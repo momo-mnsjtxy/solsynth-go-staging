@@ -1,6 +1,6 @@
 {
-  "checkpoint": "reviewed-core-signin-commerce-resumable-2026-10-08",
-  "scope": "Owned sign-in, local verification adapters, commerce, resumable media and transaction guard review integrated; local build/vet/race passed; actual PostgreSQL pending exact-head CI",
+  "checkpoint": "reviewed-core-process-revocation-fixture",
+  "scope": "Prior reviewed core with composed revocation through real HTTP process; fixture frozen-clock mismatch corrected; real PostgreSQL CI pending",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
@@ -5746,8 +5746,8 @@
     },
     {
       "path": "tests/integration/backend_signin_test.go",
-      "bytes": 3506,
-      "sha256": "d3090d5f89a1ef331a3fe0728372b15f218b4785db9ce5e2c75cf171739de032"
+      "bytes": 3492,
+      "sha256": "0e133ae0c08023a9420f2ec9a4d0c43f86186acba612d8d5db7abee9caf5544e"
     },
     {
       "path": "tests/integration/backend_test.go",

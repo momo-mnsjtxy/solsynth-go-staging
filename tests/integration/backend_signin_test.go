@@ -63,9 +63,7 @@ func TestPGBackendSigninHTTPProcessRestart(t *testing.T) {
 	p.stop()
 	p = startDomainProcess(t, "BACKEND_BINARY", "Authenticated backend listening on ", args...)
 	p.call(t, "GET", "/stargate/accounts/me", "", 200, headers)
-	if e := f.issuer.Revoke(f.ctx, pair.Token, "current"); e != nil {
-		t.Fatal(e)
-	}
+	p.call(t, "DELETE", "/stargate/sessions/current", "", 204, headers)
 	p.call(t, "GET", "/stargate/accounts/me", "", 401, headers)
 	p.stop()
 }

@@ -56,6 +56,7 @@ type Challenge struct {
 	AccountID        string    `json:"account_id"`
 	Version          int64     `json:"-"`
 	Purpose          string    `json:"-"`
+	ContactID        string    `json:"-"`
 	PasswordOK       bool      `json:"-"`
 	SecondOK         bool      `json:"-"`
 	RequireSecond    bool      `json:"-"`

@@ -4,9 +4,11 @@ package accounts
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/authority/signin"
 	"time"
 )
 
@@ -46,42 +48,57 @@ func NormalizeError(e error) error {
 	return ErrUnavailable
 }
 
-// Deliberate public projection: no contacts, credentials, grants, punishment,
-// superuser flag or private authority metadata is ever serialized here.
+// Deliberate public projection: optional contacts contain only current verified
+// opt-in entries. Credentials, grants, punishment and private authority metadata
+// are never serialized. Birthday is populated only for an authenticated owner.
 type Account struct {
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
-	Nick      string     `json:"nick"`
-	Language  string     `json:"language"`
-	Region    string     `json:"region"`
-	Profile   *Profile   `json:"profile,omitempty"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	ID        string           `json:"id"`
+	Name      string           `json:"name"`
+	Nick      string           `json:"nick"`
+	Language  string           `json:"language"`
+	Region    string           `json:"region"`
+	Profile   *Profile         `json:"profile,omitempty"`
+	CreatedAt time.Time        `json:"created_at"`
+	UpdatedAt *time.Time       `json:"updated_at,omitempty"`
+	Contacts  []signin.Contact `json:"contacts,omitempty"`
 }
 type Profile struct {
-	ID       string `json:"id"`
-	Bio      string `json:"bio"`
-	Pronouns string `json:"pronouns"`
-	Location string `json:"location"`
-	TimeZone string `json:"time_zone"`
-	Links    []Link `json:"links"`
+	ID         string `json:"id"`
+	Bio        string `json:"bio"`
+	Pronouns   string `json:"pronouns"`
+	Location   string `json:"location"`
+	TimeZone   string `json:"time_zone"`
+	Links      []Link `json:"links"`
+	FirstName  string `json:"first_name"`
+	MiddleName string `json:"middle_name"`
+	LastName   string `json:"last_name"`
+	Gender     string `json:"gender"`
+	// Populated only through the authenticated self projection.
+	Birthday *time.Time `json:"birthday,omitempty"`
 }
 type Link struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
 }
 type ProfilePatch struct {
-	Name         *string `json:"name"`
-	Nick         *string `json:"nick"`
-	Language     *string `json:"language"`
-	Region       *string `json:"region"`
-	Bio          *string `json:"bio"`
-	Pronouns     *string `json:"pronouns"`
-	Location     *string `json:"location"`
-	TimeZone     *string `json:"time_zone"`
-	Links        *[]Link `json:"links"`
-	PictureID    *string `json:"picture_id"`
-	BackgroundID *string `json:"background_id"`
+	Name            *string         `json:"name"`
+	Nick            *string         `json:"nick"`
+	Language        *string         `json:"language"`
+	Region          *string         `json:"region"`
+	Bio             *string         `json:"bio"`
+	Pronouns        *string         `json:"pronouns"`
+	Location        *string         `json:"location"`
+	TimeZone        *string         `json:"time_zone"`
+	Links           *[]Link         `json:"links"`
+	PictureID       *string         `json:"picture_id"`
+	BackgroundID    *string         `json:"background_id"`
+	FirstName       *string         `json:"first_name"`
+	MiddleName      *string         `json:"middle_name"`
+	LastName        *string         `json:"last_name"`
+	Gender          *string         `json:"gender"`
+	Birthday        *time.Time      `json:"birthday"`
+	BirthdayPresent bool            `json:"-"`
+	UsernameColor   json.RawMessage `json:"username_color"`
 }
 
 // Role values are owned API encoding, not copied from the excluded Shared enum.

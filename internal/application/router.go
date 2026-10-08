@@ -7,9 +7,12 @@ import (
 	"path"
 	"solsynth.local/go-migration/internal/federationhttp"
 	"solsynth.local/go-migration/ports/authority/oauth"
+	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/develop/bots"
+	"solsynth.local/go-migration/ports/passport/accountsettings"
 	"solsynth.local/go-migration/ports/passport/presence"
 	"solsynth.local/go-migration/ports/passport/progression"
+	"solsynth.local/go-migration/ports/sphere/autocomplete"
 	"solsynth.local/go-migration/ports/sphere/timeline"
 	"strings"
 )
@@ -17,6 +20,8 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	accountSettings                                                                                                                                                                                                                                      http.Handler
+	translation, autocomplete                                                                                                                                                                                                                            http.Handler
 	reader                                                                                                                                                                                                                                               http.Handler
 	oauth                                                                                                                                                                                                                                                http.Handler
 	fortunes                                                                                                                                                                                                                                             http.Handler
@@ -51,7 +56,7 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.oauth.ServeHTTP(w, r)
 		return
 	}
-	if h.signin != nil && signinRoute(r.Method, p) {
+	if h.signin != nil && (signinRoute(r.Method, p) || signin.ContactRouteMatches(p)) {
 		h.signin.ServeHTTP(w, r)
 		return
 	}
@@ -234,6 +239,17 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if h.public != nil && publicCatalogRoute(canonical) && (service == "wallet" || service == "passport" || service == "api") {
 		target = h.public
+	}
+	if h.accountSettings != nil && (service == "api" || service == "passport") && accountsettings.RouteMatches(canonical) {
+		target = h.accountSettings
+	}
+	if h.translation != nil && (service == "api" || service == "sphere") && canonical == "/api/translate" {
+		target = h.translation
+	}
+	if h.autocomplete != nil {
+		if room, ok := autocomplete.Route(canonical); ok && (service == "api" || room == "" && service == "sphere" || room != "" && service == "messager") {
+			target = h.autocomplete
+		}
 	}
 	if h.reader != nil && (service == "api" || service == "sphere") && under(canonical, "/api/scrap") {
 		target = h.reader

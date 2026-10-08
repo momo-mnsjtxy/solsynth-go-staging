@@ -65,7 +65,18 @@ func (r *Repository) Register(ctx context.Context, a authority.Account, c signin
 	if _, e = tx.ExecContext(ctx, `INSERT INTO owned_authority_accounts(id,name,nick,language,created_at) VALUES($1,$2,$3,$4,$5)`, a.ID, a.Name, a.Nick, a.Language, a.CreatedAt); e != nil {
 		return conflict(e)
 	}
+	if e = lockEmails(ctx, tx, c.Email); e != nil {
+		return e
+	}
+	if used, err := emailOwned(ctx, tx, c.Email, ""); err != nil {
+		return err
+	} else if used {
+		return signin.ErrConflict
+	}
 	if _, e = tx.ExecContext(ctx, `INSERT INTO owned_authority_credentials(account_id,email) VALUES($1,$2)`, a.ID, c.Email); e != nil {
+		return conflict(e)
+	}
+	if _, e = tx.ExecContext(ctx, `INSERT INTO owned_authority_contacts(id,account_id,type,credential_account_id,created_at,updated_at)VALUES($1::uuid,$1::uuid,0,$1::uuid,$2::timestamptz,$2::timestamptz)`, a.ID, a.CreatedAt); e != nil {
 		return conflict(e)
 	}
 	at, e := r.authority.JoinTransaction(ctx, r.db, tx, a.ID)
@@ -222,7 +233,9 @@ func (t *transaction) DeleteFactor(id string) error {
 func (t *transaction) Challenge(hash []byte) (signin.Challenge, error) {
 	var c signin.Challenge
 	var blacklist []byte
-	e := t.tx.QueryRowContext(t.ctx, `SELECT hash,account_id::text,account_version,purpose,created_at,expires_at,device_name,platform,password_ok,second_ok,require_second,completed,blacklist,updated_at,device_id,ip_address,user_agent,failed_attempts FROM owned_authority_challenges WHERE account_id=$1 AND hash=$2`, t.canonical.Account().ID, hash).Scan(&c.Hash, &c.AccountID, &c.Version, &c.Purpose, &c.CreatedAt, &c.ExpiredAt, &c.DeviceName, &c.Platform, &c.PasswordOK, &c.SecondOK, &c.RequireSecond, &c.Completed, &blacklist, &c.UpdatedAt, &c.DeviceID, &c.IPAddress, &c.UserAgent, &c.FailedAttempts)
+	var contact sql.NullString
+	e := t.tx.QueryRowContext(t.ctx, `SELECT hash,account_id::text,account_version,purpose,created_at,expires_at,device_name,platform,password_ok,second_ok,require_second,completed,blacklist,updated_at,device_id,ip_address,user_agent,failed_attempts,contact_id::text FROM owned_authority_challenges WHERE account_id=$1 AND hash=$2`, t.canonical.Account().ID, hash).Scan(&c.Hash, &c.AccountID, &c.Version, &c.Purpose, &c.CreatedAt, &c.ExpiredAt, &c.DeviceName, &c.Platform, &c.PasswordOK, &c.SecondOK, &c.RequireSecond, &c.Completed, &blacklist, &c.UpdatedAt, &c.DeviceID, &c.IPAddress, &c.UserAgent, &c.FailedAttempts, &contact)
+	c.ContactID = contact.String
 	if errors.Is(e, sql.ErrNoRows) {
 		e = authority.ErrNotFound
 	}
@@ -242,7 +255,16 @@ func (t *transaction) SaveChallenge(c signin.Challenge) error {
 	if e != nil {
 		return e
 	}
-	r, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_challenges(hash,account_id,account_version,purpose,created_at,expires_at,device_name,platform,password_ok,second_ok,require_second,completed,blacklist,updated_at,device_id,ip_address,user_agent,failed_attempts) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) ON CONFLICT(hash) DO UPDATE SET password_ok=EXCLUDED.password_ok,second_ok=EXCLUDED.second_ok,completed=EXCLUDED.completed,blacklist=EXCLUDED.blacklist,updated_at=EXCLUDED.updated_at,failed_attempts=EXCLUDED.failed_attempts WHERE owned_authority_challenges.account_id=EXCLUDED.account_id AND owned_authority_challenges.account_version=EXCLUDED.account_version AND owned_authority_challenges.purpose=EXCLUDED.purpose AND (NOT owned_authority_challenges.completed OR EXCLUDED.completed)`, c.Hash, c.AccountID, c.Version, c.Purpose, c.CreatedAt, c.ExpiredAt, c.DeviceName, c.Platform, c.PasswordOK, c.SecondOK, c.RequireSecond, c.Completed, b, c.UpdatedAt, c.DeviceID, c.IPAddress, c.UserAgent, c.FailedAttempts)
+	var contact any
+	if c.ContactID != "" {
+		if !authority.ValidID(c.ContactID) || c.Purpose != "verify_contact" {
+			return authority.ErrInvalid
+		}
+		contact = c.ContactID
+	} else if c.Purpose == "verify_contact" {
+		return authority.ErrInvalid
+	}
+	r, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_challenges(hash,account_id,account_version,purpose,created_at,expires_at,device_name,platform,password_ok,second_ok,require_second,completed,blacklist,updated_at,device_id,ip_address,user_agent,failed_attempts,contact_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19::uuid) ON CONFLICT(hash) DO UPDATE SET password_ok=EXCLUDED.password_ok,second_ok=EXCLUDED.second_ok,completed=EXCLUDED.completed,blacklist=EXCLUDED.blacklist,updated_at=EXCLUDED.updated_at,failed_attempts=EXCLUDED.failed_attempts WHERE owned_authority_challenges.account_id=EXCLUDED.account_id AND owned_authority_challenges.account_version=EXCLUDED.account_version AND owned_authority_challenges.purpose=EXCLUDED.purpose AND owned_authority_challenges.contact_id IS NOT DISTINCT FROM EXCLUDED.contact_id AND (NOT owned_authority_challenges.completed OR EXCLUDED.completed)`, c.Hash, c.AccountID, c.Version, c.Purpose, c.CreatedAt, c.ExpiredAt, c.DeviceName, c.Platform, c.PasswordOK, c.SecondOK, c.RequireSecond, c.Completed, b, c.UpdatedAt, c.DeviceID, c.IPAddress, c.UserAgent, c.FailedAttempts, contact)
 	if e != nil {
 		return e
 	}

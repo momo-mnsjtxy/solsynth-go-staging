@@ -61,6 +61,7 @@ func run(args []string, out io.Writer) error {
 	ticketSettings := ticketFlags(fs)
 	fortuneSettings := fortuneFlags(fs)
 	readerSettings := readerFlags(fs)
+	translationSettings := translationFlags(fs)
 	factorIssuer := fs.String("factor-issuer-label", "SoSYS", "human-readable TOTP issuer label")
 	enableOAuth := fs.Bool("enable-oauth", false, "enable owned OAuth authorization-code and OIDC userinfo flows")
 	consentURL := fs.String("oauth-consent-url", "", "deployed HTTPS consent UI calling the owned authorization API")
@@ -233,6 +234,10 @@ func run(args []string, out io.Writer) error {
 		return err
 	}
 	appConfig.Fortunes = fortuneConfig
+	appConfig.Translation, err = translationSettings.config()
+	if err != nil {
+		return err
+	}
 	appConfig.Reader, err = readerSettings.config()
 	if err != nil {
 		return err

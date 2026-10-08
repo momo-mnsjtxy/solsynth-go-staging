@@ -3,6 +3,7 @@ package accounts
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"solsynth.local/go-migration/ports/authority"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 type Service struct {
@@ -55,17 +57,27 @@ func decode(w http.ResponseWriter, r *http.Request, v any) error {
 	r.Body = http.MaxBytesReader(w, r.Body, 65536)
 	d := json.NewDecoder(r.Body)
 	var raw json.RawMessage
-	if e := d.Decode(&raw); e != nil || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+	if e := d.Decode(&raw); e != nil || !utf8.Valid(raw) || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
 		return ErrInvalid
 	}
 	var more any
 	if e := d.Decode(&more); e != io.EOF {
 		return ErrInvalid
 	}
+	if e := uniqueProfileJSON(json.NewDecoder(bytes.NewReader(raw)), 0); e != nil {
+		return ErrInvalid
+	}
 	d = json.NewDecoder(bytes.NewReader(raw))
 	d.DisallowUnknownFields()
 	if e := d.Decode(v); e != nil {
 		return ErrInvalid
+	}
+	if p, ok := v.(*ProfilePatch); ok {
+		var fields map[string]json.RawMessage
+		if json.Unmarshal(raw, &fields) != nil {
+			return ErrInvalid
+		}
+		_, p.BirthdayPresent = fields["birthday"]
 	}
 	return nil
 }
@@ -130,7 +142,15 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			failure(w, e)
 			return
 		}
-		a, e := s.Repository.LookupAccount(r.Context(), p.Account.ID)
+		ctx := accountContext(s.Repository, r.Context(), p)
+		var a Account
+		if own, ok := s.Repository.(interface {
+			LookupSelf(context.Context, string) (Account, error)
+		}); ok {
+			a, e = own.LookupSelf(ctx, p.Account.ID)
+		} else {
+			a, e = s.Repository.LookupAccount(ctx, p.Account.ID)
+		}
 		if e != nil {
 			failure(w, e)
 			return
@@ -147,7 +167,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		send(w, 200, a)
 		return
 	}
-	if path == "/api/accounts/me" && r.Method == "PATCH" {
+	if (path == "/api/accounts/me" || path == "/stargate/accounts/me" || path == "/stargate/accounts/me/profile" || path == "/api/accounts/me/profile") && r.Method == "PATCH" {
 		p, e := s.principal(r, "accounts.manage")
 		if e != nil {
 			failure(w, e)
@@ -158,11 +178,22 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			failure(w, e)
 			return
 		}
+		if strings.HasSuffix(path, "/profile") && (patch.Name != nil || patch.Nick != nil || patch.Language != nil || patch.Region != nil) {
+			failure(w, ErrInvalid)
+			return
+		}
+		if patch.Name != nil {
+			if *patch.Name != p.Account.Name {
+				failure(w, ErrNameChange)
+				return
+			}
+			patch.Name = nil
+		}
 		if e = ValidateProfile(patch); e != nil {
 			failure(w, e)
 			return
 		}
-		a, e := s.Repository.UpdateProfile(r.Context(), p.Account.ID, patch)
+		a, e := s.Repository.UpdateProfile(accountContext(s.Repository, r.Context(), p), p.Account.ID, patch)
 		if e != nil {
 			failure(w, e)
 			return

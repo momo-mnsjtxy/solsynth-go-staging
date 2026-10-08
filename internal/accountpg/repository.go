@@ -11,6 +11,7 @@ import (
 	"errors"
 	"github.com/jackc/pgx/v5/pgconn"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"strings"
 	"time"
@@ -26,6 +27,18 @@ type Repository struct {
 	guard            TransactionGuard
 	requireAuthority bool
 	realms           RealmProvider
+	contacts         PublicContactProvider
+}
+
+type PublicContactProvider interface {
+	PublicContacts(context.Context, *sql.DB, string) ([]signin.Contact, error)
+}
+
+// Configure once before serving. The adapter must read the canonical contacts,
+// exposing only active, explicitly public, currently verified addresses.
+func (r *Repository) WithPublicContacts(p PublicContactProvider) *Repository {
+	r.contacts = p
+	return r
 }
 
 // New permits reads but denies writes until a transaction guard is supplied.
@@ -75,19 +88,21 @@ func newID() (string, error) {
 	return s[:8] + "-" + s[8:12] + "-" + s[12:16] + "-" + s[16:20] + "-" + s[20:], nil
 }
 
-const accountColumns = `a.id::text,a.name,a.nick,a.language,a.region,a.created_at,p.id::text,p.bio,p.pronouns,p.location,p.time_zone,p.links,p.updated_at`
+const accountColumns = `a.id::text,a.name,a.nick,a.language,a.region,a.created_at,p.id::text,p.bio,p.pronouns,p.location,p.time_zone,p.links,p.updated_at,p.first_name,p.middle_name,p.last_name,p.gender`
 
 func scanAccount(s scanner) (accounts.Account, error) {
 	var a accounts.Account
 	var id, bio, pronouns, location, zone sql.NullString
 	var links []byte
 	var updated sql.NullTime
-	e := s.Scan(&a.ID, &a.Name, &a.Nick, &a.Language, &a.Region, &a.CreatedAt, &id, &bio, &pronouns, &location, &zone, &links, &updated)
+	var first, middle, last, gender sql.NullString
+	e := s.Scan(&a.ID, &a.Name, &a.Nick, &a.Language, &a.Region, &a.CreatedAt, &id, &bio, &pronouns, &location, &zone, &links, &updated, &first, &middle, &last, &gender)
 	if e != nil {
 		return a, mapped(e)
 	}
 	if id.Valid {
 		a.Profile = &accounts.Profile{ID: id.String, Bio: bio.String, Pronouns: pronouns.String, Location: location.String, TimeZone: zone.String}
+		a.Profile.FirstName, a.Profile.MiddleName, a.Profile.LastName, a.Profile.Gender = first.String, middle.String, last.String, gender.String
 		if e = json.Unmarshal(links, &a.Profile.Links); e != nil {
 			return accounts.Account{}, e
 		}
@@ -116,7 +131,11 @@ func (r *Repository) LookupAccount(ctx context.Context, ref string) (accounts.Ac
 	if r == nil || r.db == nil {
 		return accounts.Account{}, accounts.ErrUnavailable
 	}
-	return lookupAccount(ctx, r.db, ref)
+	a, e := lookupAccount(ctx, r.db, ref)
+	if e == nil && r.contacts != nil {
+		a.Contacts, e = r.contacts.PublicContacts(ctx, r.db, a.ID)
+	}
+	return a, e
 }
 func (r *Repository) write(ctx context.Context, actor, permission string, fn func(*sql.Tx, time.Time) error) error {
 	if r == nil || r.db == nil || r.requireAuthority && r.guard == nil {
@@ -167,6 +186,14 @@ func (r *Repository) UpdateProfile(ctx context.Context, actor string, p accounts
 		if e != nil {
 			return e
 		}
+		if p.Name != nil && *p.Name != a.Name {
+			return accounts.ErrNameChange
+		}
+		if a.Profile != nil {
+			if e = tx.QueryRowContext(ctx, `SELECT birthday FROM owned_accounts_profiles WHERE account_id=$1::uuid`, actor).Scan(&a.Profile.Birthday); e != nil {
+				return e
+			}
+		}
 		if p.Nick != nil {
 			a.Nick = *p.Nick
 		}
@@ -184,6 +211,18 @@ func (r *Repository) UpdateProfile(ctx context.Context, actor string, p accounts
 			a.Profile = &accounts.Profile{ID: id, Links: []accounts.Link{}}
 		}
 		v := a.Profile
+		if p.FirstName != nil {
+			v.FirstName = *p.FirstName
+		}
+		if p.MiddleName != nil {
+			v.MiddleName = *p.MiddleName
+		}
+		if p.LastName != nil {
+			v.LastName = *p.LastName
+		}
+		if p.Gender != nil {
+			v.Gender = *p.Gender
+		}
 		if p.Bio != nil {
 			v.Bio = *p.Bio
 		}
@@ -195,6 +234,21 @@ func (r *Repository) UpdateProfile(ctx context.Context, actor string, p accounts
 		}
 		if p.TimeZone != nil {
 			v.TimeZone = *p.TimeZone
+		}
+		if p.BirthdayPresent || p.Birthday != nil {
+			v.Birthday = p.Birthday
+		}
+		if v.Birthday != nil {
+			loc, err := time.LoadLocation(v.TimeZone)
+			if err != nil || v.TimeZone == "" {
+				loc = time.UTC
+			}
+			date := v.Birthday.In(loc)
+			if date.Year() < 1900 || date.Format("2006-01-02") > now.In(loc).Format("2006-01-02") {
+				return accounts.ErrInvalid
+			}
+			utc := v.Birthday.UTC()
+			v.Birthday = &utc
 		}
 		if p.Links != nil {
 			v.Links = *p.Links
@@ -212,7 +266,16 @@ func (r *Repository) UpdateProfile(ctx context.Context, actor string, p accounts
 		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_accounts_profiles(account_id,id,bio,pronouns,location,time_zone,links,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(account_id) DO UPDATE SET bio=EXCLUDED.bio,pronouns=EXCLUDED.pronouns,location=EXCLUDED.location,time_zone=EXCLUDED.time_zone,links=EXCLUDED.links,updated_at=EXCLUDED.updated_at`, actor, v.ID, v.Bio, v.Pronouns, v.Location, v.TimeZone, b, now); e != nil {
 			return e
 		}
-		a.UpdatedAt = &now
+		if _, e = tx.ExecContext(ctx, `UPDATE owned_accounts_profiles SET first_name=$2::text,middle_name=$3::text,last_name=$4::text,gender=$5::text,birthday=$6::timestamptz WHERE account_id=$1::uuid`, actor, v.FirstName, v.MiddleName, v.LastName, v.Gender, v.Birthday); e != nil {
+			return e
+		}
+		a, e = lookupAccount(ctx, tx, actor)
+		if e != nil {
+			return e
+		}
+		if e = tx.QueryRowContext(ctx, `SELECT birthday FROM owned_accounts_profiles WHERE account_id=$1::uuid`, actor).Scan(&a.Profile.Birthday); e != nil {
+			return e
+		}
 		return audit(ctx, tx, actor, "accounts.profile.update", actor, now)
 	})
 	return a, e

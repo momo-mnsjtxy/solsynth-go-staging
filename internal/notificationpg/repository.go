@@ -21,10 +21,11 @@ import (
 var Schema string
 
 type Repository struct {
-	roomAccess rooms.AccessPolicy
-	db         *sql.DB
-	guard      *authoritypg.TransactionGuard
-	app        string
+	preferences PreferencePolicy
+	roomAccess  rooms.AccessPolicy
+	db          *sql.DB
+	guard       *authoritypg.TransactionGuard
+	app         string
 }
 
 func (r *Repository) WithRoomAccess(p rooms.AccessPolicy) *Repository { r.roomAccess = p; return r }

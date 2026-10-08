@@ -2,11 +2,14 @@
 package accounts
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/url"
 	"regexp"
 	"solsynth.local/go-migration/ports/authority"
 	"strings"
 	"time"
+	_ "time/tzdata"
 	"unicode/utf8"
 )
 
@@ -16,13 +19,35 @@ func ValidateProfile(p ProfilePatch) error {
 	for _, v := range []struct {
 		p *string
 		n int
-	}{{p.Nick, 256}, {p.Language, 32}, {p.Region, 32}, {p.Bio, 4096}, {p.Pronouns, 128}, {p.Location, 256}, {p.TimeZone, 128}} {
+	}{{p.Name, 100}, {p.Nick, 256}, {p.Language, 32}, {p.Region, 32}, {p.Bio, 4096}, {p.Pronouns, 128}, {p.Location, 256}, {p.TimeZone, 128}, {p.FirstName, 128}, {p.MiddleName, 128}, {p.LastName, 128}, {p.Gender, 128}} {
 		if v.p != nil && (!utf8.ValidString(*v.p) || utf8.RuneCountInString(*v.p) > v.n || strings.ContainsRune(*v.p, 0)) {
 			return ErrInvalid
 		}
 	}
+	if p.Name != nil && strings.TrimSpace(*p.Name) == "" {
+		return ErrInvalid
+	}
 	if p.Name != nil {
 		return ErrNameChange
+	}
+	if p.Birthday != nil && (p.Birthday.Year() < 1900 || p.Birthday.Year() > 2199) {
+		return ErrInvalid
+	}
+	if len(p.UsernameColor) > 0 && !bytes.Equal(bytes.TrimSpace(p.UsernameColor), []byte("null")) {
+		var color struct {
+			Type      string   `json:"type"`
+			Value     *string  `json:"value"`
+			Direction *string  `json:"direction"`
+			Colors    []string `json:"colors"`
+		}
+		d := json.NewDecoder(bytes.NewReader(p.UsernameColor))
+		d.DisallowUnknownFields()
+		if d.Decode(&color) != nil {
+			return ErrInvalid
+		}
+		if color.Type != "plain" || color.Value != nil && *color.Value != "" || color.Direction != nil && *color.Direction != "" || len(color.Colors) > 0 {
+			return ErrUnsupported
+		}
 	}
 	if p.PictureID != nil || p.BackgroundID != nil {
 		return ErrUnsupported
@@ -31,6 +56,9 @@ func ValidateProfile(p ProfilePatch) error {
 		return ErrInvalid
 	}
 	if p.TimeZone != nil && *p.TimeZone != "" {
+		if *p.TimeZone == "Local" {
+			return ErrInvalid
+		}
 		if _, e := time.LoadLocation(*p.TimeZone); e != nil {
 			return ErrInvalid
 		}

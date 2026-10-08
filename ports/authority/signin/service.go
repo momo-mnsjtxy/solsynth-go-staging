@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/subtle"
 	"errors"
-	"net/mail"
 	"net/url"
 	"regexp"
 	"strings"
@@ -127,9 +126,8 @@ func (s *Service) Register(ctx context.Context, r RegisterRequest, peer string) 
 	if !accountName.MatchString(r.Name) || len(r.Nick) > 100 || len(r.Language) > 32 || !validPassword(r.Password) || r.AffiliationSpell != "" {
 		return a, ErrInput
 	}
-	email := strings.ToLower(strings.TrimSpace(r.Email))
-	parsed, e := mail.ParseAddress(email)
-	if e != nil || parsed.Address != email || len(email) > 254 {
+	email, e := NormalizeEmail(r.Email)
+	if e != nil {
 		return a, ErrInput
 	}
 	if e = s.limit(ctx, "register-peer", peer, 5, time.Hour); e != nil {
@@ -176,6 +174,13 @@ func (s *Service) VerifyEmail(ctx context.Context, raw string) error {
 	return s.consume(ctx, raw, "verify_email", func(tx Transaction, c Challenge) error {
 		if e := s.active(tx, false); e != nil {
 			return e
+		}
+		if c.Purpose == "verify_contact" {
+			contacts, ok := tx.(ContactTransaction)
+			if !ok || !authority.ValidID(c.ContactID) {
+				return ErrInvalid
+			}
+			return contacts.VerifyContact(c.ContactID, s.now())
 		}
 		v, e := tx.Credentials()
 		if e != nil {
@@ -270,10 +275,16 @@ func (s *Service) consume(ctx context.Context, raw, purpose string, fn func(Tran
 		if e != nil {
 			return e
 		}
-		if c.Purpose != purpose || c.Completed || c.Version != tx.Authority().Account().Version || !s.now().Before(c.ExpiredAt) {
+		if (c.Purpose != purpose && !(purpose == "verify_email" && c.Purpose == "verify_contact")) || c.Completed || c.Version != tx.Authority().Account().Version || !s.now().Before(c.ExpiredAt) {
 			return ErrInvalid
 		}
 		if e = fn(tx, c); e != nil {
+			return e
+		}
+		if !s.now().Before(c.ExpiredAt) {
+			return ErrInvalid
+		}
+		if e = s.active(tx, false); e != nil {
 			return e
 		}
 		c.Completed = true

@@ -7,6 +7,11 @@ CREATE TABLE IF NOT EXISTS owned_accounts_profiles(
  location text NOT NULL DEFAULT '' CHECK(length(location)<=256),time_zone text NOT NULL DEFAULT '' CHECK(length(time_zone)<=128),
  links jsonb NOT NULL DEFAULT '[]' CHECK(jsonb_typeof(links)='array'), updated_at timestamptz NOT NULL
 );
+ALTER TABLE owned_accounts_profiles ADD COLUMN IF NOT EXISTS first_name text NOT NULL DEFAULT '' CHECK(length(first_name)<=128);
+ALTER TABLE owned_accounts_profiles ADD COLUMN IF NOT EXISTS middle_name text NOT NULL DEFAULT '' CHECK(length(middle_name)<=128);
+ALTER TABLE owned_accounts_profiles ADD COLUMN IF NOT EXISTS last_name text NOT NULL DEFAULT '' CHECK(length(last_name)<=128);
+ALTER TABLE owned_accounts_profiles ADD COLUMN IF NOT EXISTS gender text NOT NULL DEFAULT '' CHECK(length(gender)<=128);
+ALTER TABLE owned_accounts_profiles ADD COLUMN IF NOT EXISTS birthday timestamptz;
 CREATE TABLE IF NOT EXISTS owned_publishers(
  id uuid PRIMARY KEY,name text NOT NULL CHECK(length(name) BETWEEN 1 AND 256),nick text NOT NULL CHECK(length(nick) BETWEEN 1 AND 256),bio text NOT NULL DEFAULT '' CHECK(length(bio)<=4096),
  type integer NOT NULL CHECK(type IN(0,1)),account_id uuid REFERENCES owned_authority_accounts(id),realm_id uuid,

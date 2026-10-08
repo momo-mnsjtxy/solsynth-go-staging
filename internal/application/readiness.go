@@ -27,6 +27,24 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err != nil || !ready {
 		return errors.New("post realm schema unavailable")
 	}
+	if b.accountSettings != nil {
+		if err := b.accountSettings.Ready(ctx); err != nil {
+			return err
+		}
+	}
+	if _, err := b.db.ExecContext(ctx, `SELECT credential_account_id,verified_at,is_public FROM owned_authority_contacts LIMIT 0`); err != nil {
+		return err
+	}
+	if b.translation != nil {
+		if err := b.translation.Ready(ctx); err != nil {
+			return err
+		}
+	}
+	if b.autocomplete != nil {
+		if err := b.autocomplete.Ready(ctx); err != nil {
+			return err
+		}
+	}
 	if b.chat != nil {
 		if err := b.chat.RelationsReady(ctx); err != nil {
 			return err

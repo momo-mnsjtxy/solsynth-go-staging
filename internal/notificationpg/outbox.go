@@ -132,6 +132,18 @@ func (r *Repository) processOne(ctx context.Context) (bool, error) {
 		return false, e
 	}
 	if active {
+		level, e := r.preference(ctx, tx, account, app, c.Topic)
+		if e != nil {
+			return false, e
+		}
+		if level == "reject" {
+			active = false
+		}
+		if level == "silent" {
+			c.External = false
+		}
+	}
+	if active {
 		now := time.Now().UTC()
 		n := notifications.Notification{ID: id, AccountID: account, AppID: app, Topic: c.Topic, Title: c.Title, Subtitle: c.Subtitle, Content: c.Content, Meta: c.Meta, Priority: c.Priority, CreatedAt: now, UpdatedAt: now}
 		_, e = tx.ExecContext(ctx, `INSERT INTO notification_v1.inbox(id,account_id,app_id,source_key,topic,title,subtitle,content,meta,priority,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11,$11) ON CONFLICT(account_id,app_id,source_key) DO NOTHING`, id, account, app, c.Key, c.Topic, c.Title, c.Subtitle, c.Content, string(c.Meta), c.Priority, now)
@@ -182,6 +194,13 @@ func (r *Repository) DispatchOne(ctx context.Context, s notifications.Sender) (b
 	active, e := lockAccount(ctx, tx, n.AccountID)
 	if e != nil {
 		return false, e
+	}
+	if active {
+		level, e := r.preference(ctx, tx, n.AccountID, n.AppID, n.Topic)
+		if e != nil {
+			return false, e
+		}
+		active = level == "normal"
 	}
 	if !active || n.DismissedAt != nil {
 		_, e = tx.ExecContext(ctx, `UPDATE notification_v1.deliveries SET suppressed_at=clock_timestamp(),lease_id=NULL,lease_until=NULL WHERE notification_id=$1`, id)

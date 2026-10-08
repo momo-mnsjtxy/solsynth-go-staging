@@ -90,6 +90,8 @@ func (s *Service) Handler() http.Handler { m := http.NewServeMux(); s.RegisterRo
 // RegisterRoutes permits the host to combine the owned first-party flow with
 // authority.Handler's existing token, refresh, current-account and session APIs.
 func (s *Service) RegisterRoutes(m *http.ServeMux) {
+	m.Handle("/stargate/contacts", s.ContactHandler())
+	m.Handle("/stargate/contacts/", s.ContactHandler())
 	m.HandleFunc("POST /stargate/accounts", func(w http.ResponseWriter, r *http.Request) {
 		var req RegisterRequest
 		if e := decode(w, r, &req); e != nil {

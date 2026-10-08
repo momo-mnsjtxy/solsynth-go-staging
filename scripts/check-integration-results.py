@@ -5,6 +5,29 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGBackendAccountSettingsComposition",
+        "TestPGProfileAuthoredAliasesAndPrivateBirthday",
+        "TestPGContactVerificationPrimaryAndPublicLifecycle",
+        "TestPGContactEmailOwnershipAndRegistrationRace",
+        "TestPGContactAtomicityExpiryAndAuthority",
+        "TestPGNotificationPreferenceProjectionAndQueuedDelivery",
+        "TestPGAccountSettingsRestartPersistence",
+
+        "TestPGBackendTranslationComposition",
+        "TestPGBackendAutocompleteComposition",
+        "TestPGAutocompleteCanonicalVisibilityAndPreferences",
+        "TestPGAutocompleteStickerVisibilityAndMediaChanges",
+        "TestPGAutocompleteFreshProofAndBoundedQueries",
+        "TestPGAutocompleteStickerRealmLockOrderingAndRecheck",
+        "TestPGAutocompleteChatRelationAndRealmPrivacy",
+        "TestPGAutocompleteRestartPersistence",
+        "TestPGTranslationEntitlementCacheAndIsolation",
+        "TestPGTranslationRejectsIneligibleCanonicalGrants",
+        "TestPGTranslationProviderWaitRechecksAuthorityAndEntitlement",
+        "TestPGTranslationCacheCapacityRollbackAndConcurrency",
+        "TestPGTranslationFreshProofWhileAccountLocked",
+        "TestPGTranslationRestartPersistence",
+
         "TestPGChatAuthorityPreflightSameTransactionAndNoLocks",
         "TestPGBackendChatRelationsComposition",
         "TestPGChatDirectLifecycleAndCrossPathPrivacy",
@@ -321,6 +344,11 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGAccountSettingsRestartPersistence",
+
+        "TestPGTranslationRestartPersistence",
+        "TestPGAutocompleteRestartPersistence",
+
         "TestPGChatRelationsDeletionAndRestartPersistence",
 
         "TestPGReaderRestartPersistence",

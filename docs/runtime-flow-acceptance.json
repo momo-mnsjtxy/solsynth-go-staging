@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Canonical direct and realm chat with shared read/send/call/realtime gates and corrected authority preflight",
+  "local_source_checkpoint": "Canonical profiles/contacts/preferences and configured translation/autocomplete host composition",
   "last_fully_passed_ci": {
     "commit": "64798b9fd837bc503d6b99fd5e935466b8393145",
     "run": 37765633373,
@@ -10,14 +10,14 @@
     "after_restart": 40
   },
   "latest_candidate": {
-    "commit": "64798b9fd837bc503d6b99fd5e935466b8393145",
-    "required_before": 285,
-    "required_after_restart": 40,
-    "status": "Fully passed285 actual PG and40 real restart cases; no skips",
-    "run": 37765633373
+    "commit": "db50f585f522e4f0beef8ba1f8cdf754bef54c99",
+    "run": 37771509995,
+    "required_before": 294,
+    "required_after_restart": 41,
+    "status": "Narrow chat fixture correction running; previous294 passed290 before and withheld restart"
   },
-  "local_required_before": 294,
-  "local_required_after_restart": 41,
+  "local_required_before": 315,
+  "local_required_after_restart": 44,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -240,7 +240,10 @@
       "local_status": "partial",
       "supported_flows": [
         "Canonical profiles/publishers; first-party password/TOTP/recovery and session flows",
-        "Verified-session presence leases, status and privacy settings"
+        "Verified-session presence leases, status and privacy settings",
+        "Source-backed profile aliases with owner-only birthday",
+        "Canonical email contacts, verification, public opt-in and primary promotion with stale-proof revocation",
+        "Owned string-level notification preferences enforced by existing projection/delivery"
       ],
       "guarded_pg_cases": [
         "TestPGAccountsAtomicRollbackAndQuotaRace",
@@ -259,10 +262,19 @@
         "TestPGSigninTOTPAndRecovery",
         "TestPGPresencePrivacyLeasesAndAuthority",
         "TestPGPresenceFriendsBlocksInvisibleAndExpiry",
-        "TestPGBackendPresenceProgressionLocationComposition"
+        "TestPGBackendPresenceProgressionLocationComposition",
+        "TestPGProfileAuthoredAliasesAndPrivateBirthday",
+        "TestPGContactVerificationPrimaryAndPublicLifecycle",
+        "TestPGContactEmailOwnershipAndRegistrationRace",
+        "TestPGContactAtomicityExpiryAndAuthority",
+        "TestPGNotificationPreferenceProjectionAndQueuedDelivery",
+        "TestPGAccountSettingsRestartPersistence",
+        "TestPGBackendAccountSettingsComposition"
       ],
       "unsupported_or_remaining": [
-        "Contacts, paid rename and external identity providers"
+        "Paid rename/cards and rewind in progress",
+        "Admin contacts, phone/address verification, profile media/security modes and excluded SDK preference encoding",
+        "External identity providers, PassKit/domain trust/artwork and remaining source account operations"
       ]
     },
     {
@@ -492,7 +504,9 @@
       "local_status": "partial",
       "supported_flows": [
         "Anonymous configured-origin link previews, bounded optional HTTPS fetch and durable cache",
-        "Fresh cache.scrap authorization with generation-fenced atomic invalidation"
+        "Fresh cache.scrap authorization with generation-fenced atomic invalidation",
+        "Configured subscription entitlement and bounded Tencent translation adapter with account-scoped cache",
+        "Canonical user/publisher/realm/sticker autocomplete and current room visibility"
       ],
       "guarded_pg_cases": [
         "TestPGReaderCacheLifecycleAndIsolation",
@@ -500,11 +514,25 @@
         "TestPGReaderCacheCapacityAndAtomicRollback",
         "TestPGReaderInvalidationFreshAuthorityAndPool",
         "TestPGReaderRestartPersistence",
-        "TestPGBackendReaderComposition"
+        "TestPGBackendReaderComposition",
+        "TestPGTranslationEntitlementCacheAndIsolation",
+        "TestPGTranslationRejectsIneligibleCanonicalGrants",
+        "TestPGTranslationProviderWaitRechecksAuthorityAndEntitlement",
+        "TestPGTranslationCacheCapacityRollbackAndConcurrency",
+        "TestPGTranslationFreshProofWhileAccountLocked",
+        "TestPGTranslationRestartPersistence",
+        "TestPGAutocompleteCanonicalVisibilityAndPreferences",
+        "TestPGAutocompleteStickerVisibilityAndMediaChanges",
+        "TestPGAutocompleteFreshProofAndBoundedQueries",
+        "TestPGAutocompleteStickerRealmLockOrderingAndRecheck",
+        "TestPGAutocompleteChatRelationAndRealmPrivacy",
+        "TestPGAutocompleteRestartPersistence",
+        "TestPGBackendTranslationComposition",
+        "TestPGBackendAutocompleteComposition"
       ],
       "unsupported_or_remaining": [
-        "Translation and source-supported autocomplete in progress",
-        "Internal article/gRPC contract not reproduced"
+        "Original PerkLevel mapping is an explicit owned subscription policy",
+        "Internal article/gRPC contract not reproduced; live provider activation not performed"
       ]
     },
     {
@@ -768,7 +796,7 @@
   ],
   "global_remaining": [
     "Remaining groups below are explicit uncompleted functionality, not a claim that contracts are unavailable",
-    "Chat relation294/41 runtime validation pending; account/contact extensions, live streams and translation/autocomplete implementation active",
+    "Profile/contact and translation/autocomplete315/44 runtime validation pending; live streams, moderation and paid name/rewind implementation active",
     "Configured providers and production deployment require separate authorization; no live transmissions performed"
   ],
   "remaining_acceptance_groups": [
@@ -787,9 +815,10 @@
     },
     {
       "group": "content utilities",
-      "state": "Reader285/40 checkpoint fully validated; translation/autocomplete implementation active",
+      "state": "Reader fully validated; translation/autocomplete315/44 candidate",
       "remaining": [
-        "Translation and source-supported autocomplete"
+        "Actual translation/autocomplete PostgreSQL/restart validation",
+        "Internal article/gRPC contracts"
       ],
       "source_controllers": [
         "WebReaderController",
@@ -812,10 +841,10 @@
     },
     {
       "group": "account extensions",
-      "state": "not implemented or partial; contracts not exhaustively researched",
+      "state": "Profiles/contacts/preferences locally integrated; paid rename/rewind active",
       "remaining": [
         "PassKit, affiliation spells, domain trust, IP checks, paid name cards, rewind and artwork",
-        "Remaining account settings, contact/profile fields and admin statistics"
+        "Remaining admin contacts/statistics, media/security modes and original SDK preference encoding"
       ],
       "source_controllers": [
         "PassKitController",

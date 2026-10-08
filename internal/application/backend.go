@@ -9,8 +9,10 @@ import (
 	"time"
 
 	"solsynth.local/go-migration/internal/accountpg"
+	"solsynth.local/go-migration/internal/accountsettingspg"
 	"solsynth.local/go-migration/internal/apppg"
 	"solsynth.local/go-migration/internal/authoritypg"
+	"solsynth.local/go-migration/internal/autocompletepg"
 	"solsynth.local/go-migration/internal/boardpg"
 	"solsynth.local/go-migration/internal/botpg"
 	"solsynth.local/go-migration/internal/chatpg"
@@ -37,6 +39,7 @@ import (
 	"solsynth.local/go-migration/internal/taxonomypg"
 	"solsynth.local/go-migration/internal/ticketpg"
 	"solsynth.local/go-migration/internal/timelinepg"
+	"solsynth.local/go-migration/internal/translationpg"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/authority/oauth"
@@ -47,6 +50,7 @@ import (
 	"solsynth.local/go-migration/ports/messager/rooms"
 	"solsynth.local/go-migration/ports/notifications"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
+	"solsynth.local/go-migration/ports/passport/accountsettings"
 	"solsynth.local/go-migration/ports/passport/board"
 	"solsynth.local/go-migration/ports/passport/fortunes"
 	"solsynth.local/go-migration/ports/passport/notabledays"
@@ -54,6 +58,7 @@ import (
 	"solsynth.local/go-migration/ports/passport/progression"
 	"solsynth.local/go-migration/ports/passport/social"
 	"solsynth.local/go-migration/ports/passport/tickets"
+	"solsynth.local/go-migration/ports/sphere/autocomplete"
 	"solsynth.local/go-migration/ports/sphere/interactions"
 	"solsynth.local/go-migration/ports/sphere/locations"
 	"solsynth.local/go-migration/ports/sphere/posts"
@@ -62,6 +67,7 @@ import (
 	"solsynth.local/go-migration/ports/sphere/surveys"
 	"solsynth.local/go-migration/ports/sphere/taxonomy"
 	"solsynth.local/go-migration/ports/sphere/timeline"
+	"solsynth.local/go-migration/ports/sphere/translation"
 	"solsynth.local/go-migration/ports/wallet/commerce"
 	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
 	"solsynth.local/go-migration/ports/wallet/merchants"
@@ -70,6 +76,7 @@ import (
 // Config is injected by the embedding application. Enum values are mandatory
 // explicit database-policy decisions; zero is never silently treated as public.
 type Config struct {
+	Translation                   *translationpg.Config
 	Reader                        *readerpg.Config
 	OAuthEnabled                  bool
 	OAuthConsentURL               string
@@ -92,6 +99,9 @@ type Config struct {
 	Federation                    *FederationConfig
 }
 type Backend struct {
+	accountSettings          *accountsettingspg.Repository
+	translation              *translationpg.Repository
+	autocomplete             *autocompletepg.Repository
 	chat                     *chatpg.Repository
 	reader                   *readerpg.Repository
 	oauth                    *oauthpg.Repository
@@ -146,7 +156,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	accountRepo := accountpg.NewWithAuthority(db, guard)
+	signinRepo := signinpg.New(db, aStore, guard)
+	accountRepo := accountpg.NewWithAuthority(db, guard).WithPublicContacts(signinRepo)
 	accountHTTP := bindIdentity(v, bindTransactionAuthority(guard, (&profiles.Service{Repository: accountRepo, Authority: proofIdentity{identity}}).Handler()))
 	var readerRepo *readerpg.Repository
 	var readerHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "READER_UNCONFIGURED") })
@@ -163,6 +174,22 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 			return nil, err
 		}
 		readerHTTP = bindIdentity(v, bindTransactionAuthority(guard, reader.NewHandler(readerRepo, postIdentity{identity})))
+	}
+	var translationRepo *translationpg.Repository
+	var translationHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "TRANSLATION_UNCONFIGURED") })
+	if c.Translation != nil {
+		if authorityDB != db || guard == nil {
+			return nil, errors.New("translation requires canonical same-pool authority")
+		}
+		cfg := *c.Translation
+		if cfg.Now == nil {
+			cfg.Now = c.Authority.Now
+		}
+		translationRepo, err = translationpg.New(db, guard, cfg)
+		if err != nil {
+			return nil, err
+		}
+		translationHTTP = bindIdentity(v, bindTransactionAuthority(guard, translation.NewHandler(translationRepo, postIdentity{identity})))
 	}
 	cache := board.NewGroupCache()
 	appRepo := apppg.NewWithAuthority(db, guard).WithBoardCache(cache)
@@ -261,7 +288,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 				return nil, err
 			}
 		}
-		signinService, err = signin.New(signinpg.New(db, aStore, guard), c.SessionService, v, *c.Signin)
+		signinService, err = signin.New(signinRepo, c.SessionService, v, *c.Signin)
 		if err != nil {
 			return nil, err
 		}
@@ -337,12 +364,33 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		surveysRepo.WithMedia(mediaRepo)
 		stickersRepo.WithMedia(mediaRepo)
 	}
+	var autocompleteRepo *autocompletepg.Repository
+	var autocompleteHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "AUTOCOMPLETE_AUTHORITY_UNAVAILABLE") })
+	if guard != nil {
+		autocompleteRepo, err = autocompletepg.New(db, guard, autocompletepg.Config{Stickers: stickersRepo, Rooms: cr})
+		if err != nil {
+			return nil, err
+		}
+		autocompleteHTTP = bindIdentity(v, bindTransactionAuthority(guard, autocomplete.NewHandler(autocompleteRepo, postIdentity{identity})))
+	}
 	surveysHTTP := surveys.NewHandler(surveysRepo, postIdentity{identity})
 	stickersHTTP := stickers.NewHandler(stickersRepo, postIdentity{identity})
 	if c.NotificationApp == "" {
 		c.NotificationApp = "dev.solsynth.solian"
 	}
+	var settingsRepo *accountsettingspg.Repository
+	var settingsHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "SETTINGS_AUTHORITY_UNAVAILABLE") })
+	if guard != nil {
+		settingsRepo, err = accountsettingspg.New(db, guard, c.NotificationApp)
+		if err != nil {
+			return nil, err
+		}
+		settingsHTTP = (&accountsettings.Service{Repository: settingsRepo, Authority: v}).Handler()
+	}
 	notificationRepo := notificationpg.New(db, guard, c.NotificationApp).WithRoomAccess(cr)
+	if settingsRepo != nil {
+		notificationRepo.WithPreferencePolicy(settingsRepo)
+	}
 	notificationIdentity := notificationIdentity{identity}
 	notificationHTTP := (notifications.HTTP{Repository: notificationRepo, Identity: notificationIdentity, App: c.NotificationApp}).Handler()
 	realtimeHTTP, err := realtime.New(notificationRepo, notificationIdentity, realtime.Config{App: c.NotificationApp})
@@ -354,8 +402,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{reader: readerHTTP, oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	h := router{modules{accountSettings: settingsHTTP, translation: translationHTTP, autocomplete: autocompleteHTTP, reader: readerHTTP, oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	return &Backend{accountSettings: settingsRepo, translation: translationRepo, autocomplete: autocompleteRepo, chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 }
 
 type accountLookup interface {

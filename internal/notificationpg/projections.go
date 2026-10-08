@@ -125,7 +125,7 @@ func (r *Repository) projectOne(ctx context.Context, source string, mode int) (b
 			return false, e
 		}
 		if source == "wallet" && (kind == "wallet.transaction.created" || kind == "wallet.transaction.confirmed" || kind == "wallet.transaction.refunded" || kind == "wallet.transaction.expired") {
-			if e = walletNotification(ctx, tx, a, r.app, id, aggregate, kind, at); e != nil {
+			if e = r.walletNotification(ctx, tx, a, r.app, id, aggregate, kind, at); e != nil {
 				return false, e
 			}
 		}
@@ -140,7 +140,14 @@ func (r *Repository) projectOne(ctx context.Context, source string, mode int) (b
 // Owned summaries make existing wallet writes populate the durable inbox.
 // Copy is deliberately identified as owned; no upstream wording or private
 // remarks are inferred. Both participant recipients come from canonical SQL.
-func walletNotification(ctx context.Context, tx *sql.Tx, account, app, event, transaction, kind string, at time.Time) error {
+func (r *Repository) walletNotification(ctx context.Context, tx *sql.Tx, account, app, event, transaction, kind string, at time.Time) error {
+	level, e := r.preference(ctx, tx, account, app, "wallets.transactions")
+	if e != nil {
+		return e
+	}
+	if level == "reject" {
+		return nil
+	}
 	id, e := uuid()
 	if e != nil {
 		return e

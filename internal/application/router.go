@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"solsynth.local/go-migration/ports/sphere/timeline"
 	"strings"
 )
 
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
-type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps, commerce, signin http.Handler }
+type modules struct{ board, taxonomy, posts, messager, wallet, accounts, session, public, interactions, social, media, notifications, realtime, apps, commerce, signin, timeline, surveys, stickers http.Handler }
 type router struct{ modules }
 
 func under(p, base string) bool { return p == base || strings.HasPrefix(p, base+"/") }
@@ -159,6 +160,23 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if under(canonical, "/api/private/apps") && (h.apps == nil || (service != "develop" && service != "api")) {
 		problem(w, 501, "APP_IDENTITY_UNSUPPORTED")
 		return
+	}
+	if service == "sphere" || service == "api" {
+		if h.surveys != nil && under(canonical, "/api/surveys") {
+			target = h.surveys
+		}
+		if h.stickers != nil && under(canonical, "/api/stickers") {
+			target = h.stickers
+		}
+	}
+	if h.timeline != nil && (service == "sphere" || service == "api") {
+		probe := r.Clone(r.Context())
+		u := *r.URL
+		u.Path = canonical
+		probe.URL = &u
+		if timeline.Handles(probe) {
+			target = h.timeline
+		}
 	}
 	if target == nil {
 		http.NotFound(w, r)

@@ -1,18 +1,18 @@
 {
-  "checkpoint": "reviewed-core-process-revocation-fixture",
-  "scope": "Prior reviewed core with composed revocation through real HTTP process; fixture frozen-clock mismatch corrected; real PostgreSQL CI pending",
+  "checkpoint": "content-composition-timeline-postmedia-surveys-stickers-usage",
+  "scope": "Owned content flows integrated and locally build/vet/race tested;177/27 actual PostgreSQL tests require exact-head CI",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
     "recovery_blobs": 187
   },
-  "remote_publication": "Previous d4ee9b826ae65138ba53d460ff5874d4181384fa green 122/20; this snapshot requires147/23",
+  "remote_publication": "Reviewed core49f896b pending CI147/23; prior d4ee9b8 green122/20",
   "verification": "docs/published-apps-notifications-ci.json",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
       "bytes": 2098,
-      "sha256": "8499c8cb0d881731c81a455cce359a84954db9a247c0fc7499019ad5e9bccc69"
+      "sha256": "7763ed2b931f40803cd76dc701e1187dc783120e12d44103faf07a079be7bd11"
     },
     {
       "path": ".gitignore",
@@ -348,6 +348,11 @@
       "path": "docs/media-resumable-continuation.md",
       "bytes": 6563,
       "sha256": "a0d1a6308e9e01280e53ca83dd82b0b5d503c53ad80a143f52f773b82e1470d3"
+    },
+    {
+      "path": "docs/media-usage-continuation.md",
+      "bytes": 3899,
+      "sha256": "72c4f197c777bd9491ede7b5243999fe0a98ea012a15b0b2cb4206eb49a836b0"
     },
     {
       "path": "docs/messager-continuation.md",
@@ -1050,6 +1055,11 @@
       "sha256": "c11fb5ccf818dbf70bb7840da8147c2adf893b2629fb189f11ec97745207fb4c"
     },
     {
+      "path": "docs/post-media-continuation.md",
+      "bytes": 7994,
+      "sha256": "4058d5e0f3692cdbcef2b289ec4676459dcf4588bfc7f1933cf4bf678cf32905"
+    },
+    {
       "path": "docs/postgres-integration-result.json",
       "bytes": 1949,
       "sha256": "abb4c6868f0a0e99cfbe836b0b572015db2815dc694016cd99be2e609c39faad"
@@ -1126,8 +1136,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 19860,
-      "sha256": "42b04dee0f363e0ab1d8498e2b0dd79e248618beeecc29cea96589d10f565022"
+      "bytes": 21847,
+      "sha256": "d428f6fefc01f72d151beddb79142b86c9d1a76466840a0afa70b8eaeebf71ee"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -1140,9 +1150,19 @@
       "sha256": "c84e8f096d10d2c38e3029ab74d7ac036c82421db4419732a3bef9142f54214b"
     },
     {
+      "path": "docs/surveys-stickers-continuation.md",
+      "bytes": 11918,
+      "sha256": "ff0a903e43806f3232b793135ee7a2254204d638199cd952e425362cfd9f4d4f"
+    },
+    {
       "path": "docs/taxonomy-continuation.md",
       "bytes": 14402,
       "sha256": "09724e648a7ea6fd98acf24aac2598b4543633fba3b38b039f5c1424f8ab6177"
+    },
+    {
+      "path": "docs/timeline-continuation.md",
+      "bytes": 13255,
+      "sha256": "0139b49e318fd38bee8789ef2dbec4e952d067611323b165eca4e2e35c172a9c"
     },
     {
       "path": "docs/verification-adapters.md",
@@ -1196,8 +1216,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 11019,
-      "sha256": "300c46d5a1bb3a40c78ac7598a96ebe284da88a9e59d8912782f27e3fb1b2beb"
+      "bytes": 12308,
+      "sha256": "3b71c7fed107db75dd224869f736df8bbfb3979b81541d7c260cc318eb32c556"
     },
     {
       "path": "internal/application/commerce.go",
@@ -1246,13 +1266,13 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 3964,
-      "sha256": "4c7f7f63933a53e2899569cd64862861324041b8a71eef8d7e9e54636bff2cf2"
+      "bytes": 4367,
+      "sha256": "f7cadfce3fe7ca7c54dbe72fca80a1517197319b5fb2a319e5f4a18d8f77abb3"
     },
     {
       "path": "internal/application/router.go",
-      "bytes": 8091,
-      "sha256": "6c79525f03a30a7fd67006954519f296335e16377be5b18dbfb0d8c1a938f7b2"
+      "bytes": 8611,
+      "sha256": "0cb97b6f34095a083e0dc47fa972c81c2624878beafd29deaaf51035c034a3a7"
     },
     {
       "path": "internal/application/router_test.go",
@@ -1585,9 +1605,14 @@
       "sha256": "2003b8a0f4dd090c1826b72834caa532a2ff49854a6ba33cb0d2fc0d1d18a438"
     },
     {
+      "path": "internal/mediapg/public_transaction.go",
+      "bytes": 1138,
+      "sha256": "122bd61948eb13bb34cb82c84843f460d77c694a257837a4134fd0f6efc20a5f"
+    },
+    {
       "path": "internal/mediapg/repository.go",
-      "bytes": 15472,
-      "sha256": "331eaa45ba883ee7aed79e082543a8ffc398c9ba702f3e0ad8f9d107e564fea4"
+      "bytes": 16483,
+      "sha256": "1a6d89dbf8651e84b4db74b96f77fdbbb7de1eb5ba3076662915d1103b9e308a"
     },
     {
       "path": "internal/mediapg/repository_test.go",
@@ -1596,8 +1621,8 @@
     },
     {
       "path": "internal/mediapg/resumable.go",
-      "bytes": 20069,
-      "sha256": "cbaa93c5d607834129dfe5aa794c497d9885cf0d6df55be6e4c4e6adf05e6e6d"
+      "bytes": 20179,
+      "sha256": "19617bca024747074a336ddf7521db41665e4f0e56b0ce47635c34d803d6bcdb"
     },
     {
       "path": "internal/mediapg/resumable_schema.sql",
@@ -1611,8 +1636,28 @@
     },
     {
       "path": "internal/mediapg/schema.sql",
-      "bytes": 1525,
-      "sha256": "11efbca745631f99c7dad83a01e16882b71073c228ba09bbe3e0a62290fbe6ac"
+      "bytes": 1586,
+      "sha256": "f5c355fcfd7455512673d998992de963b055e745f646058e98533517ae1a703d"
+    },
+    {
+      "path": "internal/mediapg/usage.go",
+      "bytes": 291,
+      "sha256": "6f04884bc139f6f706ffa3d135d42f1714d70ea9922412237a111e8fb5604b08"
+    },
+    {
+      "path": "internal/mediapg/usage_schema.sql",
+      "bytes": 394,
+      "sha256": "defd2041ef3f7128f9c146bad7cb4502d9553523ef8dc80ab57e06d6ced90332"
+    },
+    {
+      "path": "internal/mediapg/usage_test.go",
+      "bytes": 1313,
+      "sha256": "ba05dbfdb33bf184a85ecadbc01ecbcada5d637cd1a587696994cff69bb62932"
+    },
+    {
+      "path": "internal/mediapg/visibility.go",
+      "bytes": 642,
+      "sha256": "7a80e8122bb20dbf189807a11e43f3e8cb2271b6cf51852b8546e76898dfdcfb"
     },
     {
       "path": "internal/mediastore/filesystem.go",
@@ -1735,9 +1780,24 @@
       "sha256": "f3a59c5e4d7b055655010b677253b65b36f3520283369f3afc4a227fcfc57a81"
     },
     {
+      "path": "internal/postmediapg/repository.go",
+      "bytes": 6950,
+      "sha256": "a3813737608d439045c545a2766e9a21e963cb0e5cd9ae23105abf166c575e16"
+    },
+    {
+      "path": "internal/postmediapg/repository_test.go",
+      "bytes": 627,
+      "sha256": "46d3f7b6291a21f588eda09140c98a3858af4a4acf1378a8c8687e719c6fa79a"
+    },
+    {
+      "path": "internal/postmediapg/schema.sql",
+      "bytes": 640,
+      "sha256": "2605cda9dcf651c831485ab09a65dc07cb6ff63ac6abb37048040e47b55115ef"
+    },
+    {
       "path": "internal/postpg/associations.go",
-      "bytes": 2566,
-      "sha256": "913116bbd02f8af081e187c89b1f93af7ff3fda2e10e707b74284d1105e3e22c"
+      "bytes": 3524,
+      "sha256": "b0276e1dbbb1ad915200ae8b7476037e270dc9d91923035d799f25820967298b"
     },
     {
       "path": "internal/postpg/repository.go",
@@ -1751,8 +1811,8 @@
     },
     {
       "path": "internal/postpg/schema.sql",
-      "bytes": 1719,
-      "sha256": "8b05482825eadd3d8a798d7cae2c7b4d6930f48125a90637c155cb9268e9c735"
+      "bytes": 2089,
+      "sha256": "14e035bb2a223682105a30dd0b540f5c28dcce3f7f92285a431d25129fb05350"
     },
     {
       "path": "internal/postpg/visibility.go",
@@ -1815,6 +1875,26 @@
       "sha256": "e47e1d369ea542c13e298d3ed581a5f4d81a2a6879e64aea75d645ecbfd5f601"
     },
     {
+      "path": "internal/stickerpg/repository.go",
+      "bytes": 25425,
+      "sha256": "04829f3870835985260256eb6fc9e54c7775d90a36ab6e20205b18eee0558c01"
+    },
+    {
+      "path": "internal/stickerpg/schema.sql",
+      "bytes": 1931,
+      "sha256": "b2ee8f78023b515e8789d027651c02313b890b8ec8889ef6abb8b3978cf1d256"
+    },
+    {
+      "path": "internal/surveypg/repository.go",
+      "bytes": 23695,
+      "sha256": "46682b0eac456ea4e0fa07dcabf156a0c9e51007057ce5beaae2b085a4c4b75a"
+    },
+    {
+      "path": "internal/surveypg/schema.sql",
+      "bytes": 1660,
+      "sha256": "6f4573ec97b8016ff2cbc3f7f4296ee2995136d500832a6a95925d8282cb40a8"
+    },
+    {
       "path": "internal/taxonomypg/repository.go",
       "bytes": 21165,
       "sha256": "07ec25668f4a2657484eda6b7ccab3bc3de4dc2e58fe3b130f6e911c223d2f56"
@@ -1848,6 +1928,51 @@
       "path": "internal/taxonomypg/transaction_guard_test.go",
       "bytes": 1856,
       "sha256": "544ab9e2169f45fcd48c78227d2f620abb396d400494bdcb5c45f90e95a1b417"
+    },
+    {
+      "path": "internal/timelinepg/discovery.go",
+      "bytes": 16729,
+      "sha256": "fd2f7ee61f85a11332221d6d2c44c89e74f4ffa7e637dafe4e725e6d12629822"
+    },
+    {
+      "path": "internal/timelinepg/feeds.go",
+      "bytes": 12367,
+      "sha256": "40cb6b7f53b66caf8a9e6fb508441a2ba33836b5074f4dc3d5de9b3bb25b097a"
+    },
+    {
+      "path": "internal/timelinepg/follows.go",
+      "bytes": 9888,
+      "sha256": "0acdc8b2a34b47ef6a7400257fa31a79462b84a85f34677fc4dd746a56fa00d1"
+    },
+    {
+      "path": "internal/timelinepg/relations.go",
+      "bytes": 8511,
+      "sha256": "a44b9f6f7b93cacd05c03bf08fb0940e3c932cdd2f3331b63c5cc5f1f506675a"
+    },
+    {
+      "path": "internal/timelinepg/repository.go",
+      "bytes": 5699,
+      "sha256": "c4aaae37b4e03014bcd7a0ec8e6c1fdfc5609df17a167f9c72ab7b97427d9a99"
+    },
+    {
+      "path": "internal/timelinepg/repository_test.go",
+      "bytes": 1682,
+      "sha256": "fbc790f06393ab97d88104e980bf04a17532c763e334116c117a2139414adfd9"
+    },
+    {
+      "path": "internal/timelinepg/schema.sql",
+      "bytes": 3407,
+      "sha256": "567d6bed9cdeae64b66ef53c8200514cd22bd5ffe6396677da646bde97172ab3"
+    },
+    {
+      "path": "internal/timelinepg/threads.go",
+      "bytes": 5850,
+      "sha256": "13cf4ee5520a739a2dd9db92bf34d150da8501215a85bc45bd2039da8ec59bed"
+    },
+    {
+      "path": "internal/timelinepg/watches.go",
+      "bytes": 8152,
+      "sha256": "9e8bad68b1b54a9d451d3e96f59084230d57d99055926efeb28227b9429d7095"
     },
     {
       "path": "internal/verification/smtp.go",
@@ -3901,8 +4026,8 @@
     },
     {
       "path": "ports/media/direct.go",
-      "bytes": 4914,
-      "sha256": "85fed0aa52de6a4c998d9735b2676fae3b974ad3210a5d49245738328b4188f9"
+      "bytes": 5544,
+      "sha256": "b02a5fb6dd54efa584f155894a4d0f3c4fb717e9287fafc74dac5aa0dd568fe9"
     },
     {
       "path": "ports/media/http.go",
@@ -3961,8 +4086,18 @@
     },
     {
       "path": "ports/media/types.go",
-      "bytes": 3572,
-      "sha256": "146be3ddfe2c867621fb70ce85a917a8df0619359322099bc6d8a98078ff6103"
+      "bytes": 3665,
+      "sha256": "8292602f175ac6e139a43bf7c2164c815181eb5163852df7ae01bc33446ce52b"
+    },
+    {
+      "path": "ports/media/usage.go",
+      "bytes": 628,
+      "sha256": "19d790cdaddbf252c4544d30827ec8d0ce656b29821b2672f5418aa33146c620"
+    },
+    {
+      "path": "ports/media/usage_test.go",
+      "bytes": 2580,
+      "sha256": "097cef8d45f10039851b665d6f9509c04a730f89ea0844326fb73fc7ae0a87f3"
     },
     {
       "path": "ports/messager/PARITY.md",
@@ -4820,6 +4955,16 @@
       "sha256": "4060e1790bb4fc3cccddb2efa2a5fd345468f1c594f439ad8fab4c7b5821dada"
     },
     {
+      "path": "ports/sphere/postmedia/types.go",
+      "bytes": 1188,
+      "sha256": "973df1c9ced8080cd7b0873e35ad85f2b735cc288dc6193dbb6b47bf593ee371"
+    },
+    {
+      "path": "ports/sphere/postmedia/types_test.go",
+      "bytes": 1402,
+      "sha256": "ca1e55d19950d0d2f0e2dcb0afbfd6803dfe10b814a434be063841eb68677688"
+    },
+    {
       "path": "ports/sphere/posts/authority.go",
       "bytes": 2139,
       "sha256": "33ebbddd19bbf462e364175081224ed8cf049e953d297da1046873b4d3617a3e"
@@ -4831,8 +4976,8 @@
     },
     {
       "path": "ports/sphere/posts/http.go",
-      "bytes": 9414,
-      "sha256": "fd502bee31448c72d6cb8b54dda0f9b37b7b7ffa8df545c7d2bdb9c174f47cbf"
+      "bytes": 9586,
+      "sha256": "4b4922f6d53ef32be420a474ad2f9a27c1a639006d8307595d0f6249c9e9f36f"
     },
     {
       "path": "ports/sphere/posts/http_test.go",
@@ -4841,8 +4986,8 @@
     },
     {
       "path": "ports/sphere/posts/types.go",
-      "bytes": 7312,
-      "sha256": "3ce8383932e72a31044ce5ef90730d2b75a1ab102e7428c70f9e6a0442d59bc4"
+      "bytes": 8969,
+      "sha256": "ed37a6d18c95091657355eaae037fb1c6742f01225244ea419d37592e7973f30"
     },
     {
       "path": "ports/sphere/posts/upstream/DYSON-LICENSE.txt",
@@ -4898,6 +5043,136 @@
       "path": "ports/sphere/source-manifest.json",
       "bytes": 1178,
       "sha256": "dcf0903affef9b48b3e2adbb5c27cda164fe7bcecfdd59434a56ecb51409100a"
+    },
+    {
+      "path": "ports/sphere/stickers/authority.go",
+      "bytes": 2351,
+      "sha256": "d90317c96759a8896f56673b4abc1d87923cf331dd51684d7a4295327a86b1ef"
+    },
+    {
+      "path": "ports/sphere/stickers/http.go",
+      "bytes": 10261,
+      "sha256": "3ec27466753821cfc66b134a5fcb99687d5b988df044f9b6534a602f236b62e3"
+    },
+    {
+      "path": "ports/sphere/stickers/source/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/sphere/stickers/source/SOLIAN-LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/sphere/stickers/source/Solian__lib__creators__screens__stickers__pack_detail.dart",
+      "bytes": 30523,
+      "sha256": "2194806260547231350d856bc957c7b21c64610bbe6e8394a314629ffdaaedd7"
+    },
+    {
+      "path": "ports/sphere/stickers/source/Solian__lib__stickers__models__sticker.dart",
+      "bytes": 2634,
+      "sha256": "1beb57707ccf5a08ff09055716aaf45289df11a53fd3afa571bdeb95c7529249"
+    },
+    {
+      "path": "ports/sphere/stickers/source/StickerController.cs",
+      "bytes": 26302,
+      "sha256": "21df777b263dabf9e0b6124a165d0a8f18b9436361aef50b95095bb8871bd14e"
+    },
+    {
+      "path": "ports/sphere/stickers/source/StickerService.cs",
+      "bytes": 5097,
+      "sha256": "91425609ecd0bb9f2e6038209dd74542a8ddae1c2e5b71abad536462151256da"
+    },
+    {
+      "path": "ports/sphere/stickers/source/manifest.json",
+      "bytes": 3296,
+      "sha256": "7754a027683d02eb2918faef3341886b41ca43eadb38d10d6fe4d392bd4bf82b"
+    },
+    {
+      "path": "ports/sphere/stickers/types.go",
+      "bytes": 5471,
+      "sha256": "3a1d8979c6f6f31864ab6298ba44503c7a4c0a547bd4b1074fcf532be507511c"
+    },
+    {
+      "path": "ports/sphere/stickers/validation_test.go",
+      "bytes": 767,
+      "sha256": "c44bbae804d2adf55fe7364ec4f88765305047aaf6c509a7f87fe5e6eab0168d"
+    },
+    {
+      "path": "ports/sphere/surveys/authority.go",
+      "bytes": 2350,
+      "sha256": "844b1fdb78f90838384b0dcdb79389e6abfed78cafa907e9e8b7c766b742dc40"
+    },
+    {
+      "path": "ports/sphere/surveys/http.go",
+      "bytes": 7262,
+      "sha256": "9e15babc2e8b539c2ed2811b6cd22bae07daeede178c86aa4d4e868fc98e7307"
+    },
+    {
+      "path": "ports/sphere/surveys/source/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/sphere/surveys/source/SOLIAN-LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/sphere/surveys/source/SURVEY_API.md",
+      "bytes": 22196,
+      "sha256": "4ccc39c1cc5cb92b69f6571bdcef528dfde47e10e2ffb078f27ba1e29543bff4"
+    },
+    {
+      "path": "ports/sphere/surveys/source/Solian__lib__creators__screens__survey__survey_editor.dart",
+      "bytes": 48312,
+      "sha256": "0758a19dd35dd1da764a8fd9cbae006ee34dbd2de437a2f9a3311d7bde599d45"
+    },
+    {
+      "path": "ports/sphere/surveys/source/Solian__lib__surveys__screens__survey_editor.dart",
+      "bytes": 41459,
+      "sha256": "b21341e46dde489f59b06a20c167f74c30e443b379eabc2f52ef7a48a4600db1"
+    },
+    {
+      "path": "ports/sphere/surveys/source/Solian__lib__surveys__widgets__survey_stats_widget.dart",
+      "bytes": 6971,
+      "sha256": "572fdd31cbaf4008942a4d0bce8c2f33feabc344016ff6cc7a0c1ec165666998"
+    },
+    {
+      "path": "ports/sphere/surveys/source/Solian__lib__surveys__widgets__survey_submit.dart",
+      "bytes": 37598,
+      "sha256": "cd1ddf06aa94d4ee65bbd43f0d4b1dee5c9e8fcc1eca7635135b65f3237a0001"
+    },
+    {
+      "path": "ports/sphere/surveys/source/SurveyController.cs",
+      "bytes": 34548,
+      "sha256": "f5fe91f7285c5646d6a164f01d2e20223600112e83087b078f4a4de680611d8d"
+    },
+    {
+      "path": "ports/sphere/surveys/source/SurveyService.cs",
+      "bytes": 25421,
+      "sha256": "b40861de56d1e4f8e2190665639662fb0ca8765583ad389af83ed56b63043d58"
+    },
+    {
+      "path": "ports/sphere/surveys/source/manifest.json",
+      "bytes": 4920,
+      "sha256": "ed57f613696422b95edf6c49373e952d6698704ef2c94da27de1cdcd0f7842c4"
+    },
+    {
+      "path": "ports/sphere/surveys/types.go",
+      "bytes": 5315,
+      "sha256": "db9512432349e366710446b337b8390fd3dbbb67c28703f9b241932f9a467b45"
+    },
+    {
+      "path": "ports/sphere/surveys/validation.go",
+      "bytes": 3908,
+      "sha256": "f031fc934c0d1a75c7e4295a63d2e5e89d205e5c145d8821d4171384de3a97ce"
+    },
+    {
+      "path": "ports/sphere/surveys/validation_test.go",
+      "bytes": 1936,
+      "sha256": "18fd2907fc40eb66be1badb7a6b2ebb728e934a1d70db4d631540d8b476d2f01"
     },
     {
       "path": "ports/sphere/taxonomy/PROVENANCE.md",
@@ -5003,6 +5278,86 @@
       "path": "ports/sphere/taxonomy/testdata/invariant-casing.json",
       "bytes": 18319,
       "sha256": "290240fcaed79fe0a437c71c229821ec0cc633acc411e560684cbffc224f5af7"
+    },
+    {
+      "path": "ports/sphere/timeline/authority.go",
+      "bytes": 2402,
+      "sha256": "9a52b01f9a5a1bb50726692705ae1d19f9df3ecc5ef0637aaf7fb9e89ad1bacb"
+    },
+    {
+      "path": "ports/sphere/timeline/http.go",
+      "bytes": 18579,
+      "sha256": "8cf92c6ba8a407d54a8550a32233b988d89f186d19d27fb4c357c97adcfce8a4"
+    },
+    {
+      "path": "ports/sphere/timeline/http_test.go",
+      "bytes": 6539,
+      "sha256": "ce390d748663879f1000fd82935a3af84ad078b7acd51c190d062ad99cb4d167"
+    },
+    {
+      "path": "ports/sphere/timeline/provenance_test.go",
+      "bytes": 1046,
+      "sha256": "2cea4d3d3fc814900715fe47fd000f4d336238e65b6269aa7d446ea80e8569fc"
+    },
+    {
+      "path": "ports/sphere/timeline/source/DYSON-LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/sphere/timeline/source/SOLIAN-LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/sphere/timeline/source/Solian__lib__creators__screens__hub.dart",
+      "bytes": 87311,
+      "sha256": "cf4378855b34489589215dacdaff465b3e5327fcf3af7be8db821d00d7406e29"
+    },
+    {
+      "path": "ports/sphere/timeline/source/Solian__lib__discovery__discovery_feedback_service.dart",
+      "bytes": 4316,
+      "sha256": "99079183f63174b4ae4de622dabfa8b707fac2eb717ebad0fb34529e24250f3e"
+    },
+    {
+      "path": "ports/sphere/timeline/source/Solian__lib__discovery__explore.dart",
+      "bytes": 45349,
+      "sha256": "c98a5ddec3bbb8c775653f8e3abd6f57ffc0f3ca6eacf3f0f94b7d04432d387f"
+    },
+    {
+      "path": "ports/sphere/timeline/source/Solian__lib__discovery__widgets__discovery_profile_sheet.dart",
+      "bytes": 15793,
+      "sha256": "85c9ad10703940d0ac72defcbeb10a6537954d563e71378857b6d7f226c4d5ab"
+    },
+    {
+      "path": "ports/sphere/timeline/source/Solian__lib__discovery__widgets__subscribed_publishers_strip.dart",
+      "bytes": 14879,
+      "sha256": "78a13a7be40dc0e6b00070fad3355e63939987003f23cffae7afc28e2ef5ea0d"
+    },
+    {
+      "path": "ports/sphere/timeline/source/Solian__lib__posts__posts_pod.dart",
+      "bytes": 13215,
+      "sha256": "db51439528b8fc539f4698ca5bb16c087e8059cfd346ad624399e262c6a08ea0"
+    },
+    {
+      "path": "ports/sphere/timeline/source/Solian__lib__posts__screens__publisher_profile.dart",
+      "bytes": 72089,
+      "sha256": "abee1f58f8c6fd0bd52b49656df11714ffa50a5a35ec7974bb25cc78b6724fc4"
+    },
+    {
+      "path": "ports/sphere/timeline/source/Solian__test__discovery__explore_refresh_test.dart",
+      "bytes": 8978,
+      "sha256": "0405cd9418ad84358ae3d221c6a1f1bfa7fbc070178c33de0716c97ac7f3291c"
+    },
+    {
+      "path": "ports/sphere/timeline/source/manifest.json",
+      "bytes": 5176,
+      "sha256": "b6e026065a4f86ff0e646ac8693c95eaebc794f149ff5ca8f80b5a12a7d69e50"
+    },
+    {
+      "path": "ports/sphere/timeline/types.go",
+      "bytes": 7697,
+      "sha256": "abfdf2141b8c0b8f64ecac54c363e6c31f84337cbdba9712f31b84a3fbc57b35"
     },
     {
       "path": "ports/sphere/upstream/LICENSE.txt",
@@ -5421,8 +5776,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 10690,
-      "sha256": "eb371a310decd63820de3c51c695853829779dc92ebc4df69816e9a09877d06e"
+      "bytes": 12491,
+      "sha256": "e9b4ec85ea3ae39f2d1e73b9d4b22c2ef778df5ef1835d61f3b3c05044bdae74"
     },
     {
       "path": "scripts/check-source-evidence.py",
@@ -5431,8 +5786,8 @@
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 4974,
-      "sha256": "26c82e0dc95230fb98b0f967ab334f2042b953e0dbaa444c48e9379c4c9bf747"
+      "bytes": 5390,
+      "sha256": "d91d03f636734c7bd4539e9352f666880876358c29a8dde464c77b64763d89a6"
     },
     {
       "path": "scripts/test-coverage-format.py",
@@ -5446,8 +5801,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 9400,
-      "sha256": "bada2b64ccbff43238d27c16a2c39f66d45cb13968678250a8341d04d31ab4e0"
+      "bytes": 9576,
+      "sha256": "bb3d3e22d4de18ac0bc44abf79d011955e8281bf9c8932ae070292cd373b1dee"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -5745,6 +6100,11 @@
       "sha256": "8dd91319c13a9e3541ae2350c3884fee6f02c47c1f9ad09dc3dcac5104528cf1"
     },
     {
+      "path": "tests/integration/backend_content_test.go",
+      "bytes": 3715,
+      "sha256": "90fc0c2f12798b5ba31b1204158e373286314285d9d72a5051fb21253b136ded"
+    },
+    {
       "path": "tests/integration/backend_signin_test.go",
       "bytes": 3492,
       "sha256": "0e133ae0c08023a9420f2ec9a4d0c43f86186acba612d8d5db7abee9caf5544e"
@@ -5815,6 +6175,11 @@
       "sha256": "117a82ecf5b2d366d4b13334cbab53e3a370925c677cc5b27229b72a1ffb67f4"
     },
     {
+      "path": "tests/integration/media_usage_test.go",
+      "bytes": 11568,
+      "sha256": "ddfe3ae8459f196377814750ce46a09da5dd18f8a550b105b47ef8c8b57fc6df"
+    },
+    {
       "path": "tests/integration/messager_test.go",
       "bytes": 20627,
       "sha256": "f29c0f5083b552b092c29cbdb7d8311371786653942a58e5795fbeef28a7fb10"
@@ -5833,6 +6198,11 @@
       "path": "tests/integration/post_interactions_test.go",
       "bytes": 30169,
       "sha256": "a1c044785c578cb8aaaee10c0baa6acc3e94da51e6caab96340e9ea51c35bf01"
+    },
+    {
+      "path": "tests/integration/post_media_test.go",
+      "bytes": 18749,
+      "sha256": "46d63ca561673de79cce9735e394c1092f80af14a547d8f276836d290a30fbed"
     },
     {
       "path": "tests/integration/posts_test.go",
@@ -5855,9 +6225,19 @@
       "sha256": "92ac3d3743f5381eaed7bfc990f413ce4b5061a4211d23de13c5b59a59d5bed7"
     },
     {
+      "path": "tests/integration/surveys_test.go",
+      "bytes": 27584,
+      "sha256": "12dcd5d5fa30a4ee856d80a60480f5e7b5db3ec638fcb2ed33a7eee92e493d6f"
+    },
+    {
       "path": "tests/integration/taxonomy_test.go",
       "bytes": 23147,
       "sha256": "da72ed3cb38decccb85b8b304bfb58f249c867abf583f0af953e6cdb24de352d"
+    },
+    {
+      "path": "tests/integration/timeline_test.go",
+      "bytes": 26368,
+      "sha256": "30b183731f7fde6f6a4da78a60a9c351f837fbee6e8f205253b91a3acb310d80"
     },
     {
       "path": "tests/integration/verification_adapters_test.go",

@@ -82,6 +82,12 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 		}
 		var target any
 		switch k {
+		case "replied_post_id":
+			target = &p.RepliedPostID
+		case "forwarded_post_id":
+			target = &p.ForwardedPostID
+		case "chained_post_id":
+			target = &p.ChainedPostID
 		case "title":
 			target = &p.Title
 		case "description":
@@ -108,7 +114,9 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 			target = &p.Categories
 		case "collection_ids":
 			target = &p.CollectionIDs
-		case "attachments", "embeds":
+		case "attachments":
+			target = &p.Attachments
+		case "embeds":
 			var a []json.RawMessage
 			if json.Unmarshal(b, &a) != nil {
 				return p, ErrInvalid
@@ -132,7 +140,7 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 			if v != nil && *v {
 				return p, ErrUnsupported
 			}
-		case "embed_view", "replied_post_id", "forwarded_post_id", "chained_post_id", "realm_id", "survey_id", "fund_id", "meet_id", "live_stream_id", "notable_day_id", "calendar_event_id", "location_name", "location_address", "location_wkt", "thumbnail_id":
+		case "embed_view", "realm_id", "survey_id", "fund_id", "meet_id", "live_stream_id", "notable_day_id", "calendar_event_id", "location_name", "location_address", "location_wkt", "thumbnail_id":
 			if !bytes.Equal(bytes.TrimSpace(b), []byte("null")) {
 				return p, ErrUnsupported
 			}
@@ -149,7 +157,7 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 	if _, e = d.Token(); e != io.EOF {
 		return p, ErrInvalid
 	}
-	if e := ValidatePatch(Patch{Tags: p.Tags, Categories: p.Categories, CollectionIDs: p.CollectionIDs}, false, time.Time{}); e != nil {
+	if e := ValidatePatch(Patch{Tags: p.Tags, Categories: p.Categories, CollectionIDs: p.CollectionIDs, Attachments: p.Attachments}, false, time.Time{}); e != nil {
 		return p, e
 	}
 	return p, nil

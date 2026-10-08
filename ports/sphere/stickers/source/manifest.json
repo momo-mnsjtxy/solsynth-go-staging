@@ -1,0 +1,65 @@
+{
+  "scope": "Licensed authored sources only; no excluded repositories, SDK enums or generated bindings fetched.",
+  "files": [
+    {
+      "file": "LICENSE.txt",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_path": "LICENSE.txt",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/LICENSE.txt",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "license": "AGPL-3.0-only",
+      "kind": "authored-source-or-documentation"
+    },
+    {
+      "file": "SOLIAN-LICENSE.txt",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_path": "LICENSE.txt",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/LICENSE.txt",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+      "license": "AGPL-3.0-only",
+      "kind": "authored-source-or-documentation"
+    },
+    {
+      "file": "Solian__lib__creators__screens__stickers__pack_detail.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_path": "lib/creators/screens/stickers/pack_detail.dart",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/creators/screens/stickers/pack_detail.dart",
+      "sha256": "2194806260547231350d856bc957c7b21c64610bbe6e8394a314629ffdaaedd7",
+      "license": "AGPL-3.0-only",
+      "kind": "authored-source-or-documentation"
+    },
+    {
+      "file": "Solian__lib__stickers__models__sticker.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_path": "lib/stickers/models/sticker.dart",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/stickers/models/sticker.dart",
+      "sha256": "1beb57707ccf5a08ff09055716aaf45289df11a53fd3afa571bdeb95c7529249",
+      "license": "AGPL-3.0-only",
+      "kind": "authored-source-or-documentation"
+    },
+    {
+      "file": "StickerController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_path": "DysonNetwork.Sphere/Sticker/StickerController.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Sticker/StickerController.cs",
+      "sha256": "21df777b263dabf9e0b6124a165d0a8f18b9436361aef50b95095bb8871bd14e",
+      "license": "AGPL-3.0-only",
+      "kind": "authored-source-or-documentation"
+    },
+    {
+      "file": "StickerService.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_path": "DysonNetwork.Sphere/Sticker/StickerService.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Sticker/StickerService.cs",
+      "sha256": "91425609ecd0bb9f2e6038209dd74542a8ddae1c2e5b71abad536462151256da",
+      "license": "AGPL-3.0-only",
+      "kind": "authored-source-or-documentation"
+    }
+  ]
+}

@@ -5,6 +5,39 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGMediaUsageDirectAtomicMetadata",
+        "TestPGMediaUsageResumableAndPostProjection",
+        "TestPGMediaUsageRestartPersistence",
+        "TestPGMediaUsageAdditiveMigrationDefaults",
+
+        "TestPGBackendContentComposition",
+        "TestPGSurveysLifecyclePrivacyAndValidation",
+        "TestPGSurveysLinkedPostVisibilityAndDeadline",
+        "TestPGSurveysConcurrentReplacementAndRollback",
+        "TestPGSurveysVerifiedHTTPAndRevocation",
+        "TestPGSurveysArchiveWinsQueuedResponse",
+        "TestPGSurveysPublisherRevocationWhileWaiting",
+        "TestPGSurveysAuthorityRevocationWhileWaiting",
+        "TestPGStickersOwnershipContentAndMediaPrivacy",
+        "TestPGStickersCapacityConcurrencyAndAtomicBatch",
+        "TestPGStickersVerifiedHTTPAndRevocation",
+        "TestPGSurveysStickersRestartPersistence",
+
+        "TestPGTimelineFeedSearchPrivacyAndCursor",
+        "TestPGTimelineReplyForwardThreadChainLifecycle",
+        "TestPGTimelineFollowsPendingIsolationAndConcurrency",
+        "TestPGTimelineDiscoveryFeedbackAndAuditRollback",
+        "TestPGTimelineWatchCanonicalPrivacyAndAtomicPatch",
+        "TestPGTimelineGuardedHTTPAndFreshAuthority",
+        "TestPGTimelineRestartPersistence",
+        "TestPGTimelineRelationRollbackDepthAndCancellation",
+        "TestPGPostMediaComposeUploadAttachDownload",
+        "TestPGPostMediaVisibilityAndRevocation",
+        "TestPGPostMediaAtomicOwnershipAndReuse",
+        "TestPGPostMediaAuthorityAndFileLockOrdering",
+        "TestPGPostMediaIndependentPoolRaceAndMissingBytes",
+        "TestPGPostMediaRestartPersistence",
+
         "TestPGDomainTransactionAuthority",
         "TestPGTaxonomyPublisherMembershipGuard",
         "TestPGBackendSigninHTTPProcessRestart",
@@ -159,6 +192,13 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGMediaUsageRestartPersistence",
+
+        "TestPGSurveysStickersRestartPersistence",
+
+        "TestPGTimelineRestartPersistence",
+        "TestPGPostMediaRestartPersistence",
+
         "TestPGSigninRestartPersistence",
         "TestPGCommerceRestartPersistence",
         "TestPGMediaResumableRestartPersistence",

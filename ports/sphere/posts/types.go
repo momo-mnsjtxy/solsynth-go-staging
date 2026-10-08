@@ -13,6 +13,7 @@ import (
 
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/accounts"
+	"solsynth.local/go-migration/ports/sphere/postmedia"
 	"solsynth.local/go-migration/ports/sphere/taxonomy"
 )
 
@@ -67,6 +68,18 @@ type Collection struct {
 }
 
 type Post struct {
+	Attachments          []postmedia.Attachment        `json:"attachments"`
+	RepliedPostID        *string                       `json:"replied_post_id"`
+	ForwardedPostID      *string                       `json:"forwarded_post_id"`
+	ChainedPostID        *string                       `json:"chained_post_id"`
+	RepliedPost          *Post                         `json:"replied_post"`
+	ForwardedPost        *Post                         `json:"forwarded_post"`
+	ChainedPost          *Post                         `json:"chained_post"`
+	RepliesCount         int64                         `json:"replies_count"`
+	ForwardsCount        int64                         `json:"forwards_count"`
+	ThreadRepliesCount   int64                         `json:"thread_replies_count"`
+	ChainedCount         int64                         `json:"chained_count"`
+	ChainedPosts         []Post                        `json:"chained_posts"`
 	Tags                 []taxonomy.TagProjection      `json:"tags"`
 	Categories           []taxonomy.CategoryProjection `json:"categories"`
 	PublisherCollections []Collection                  `json:"publisher_collections"`
@@ -90,18 +103,22 @@ type Post struct {
 	LockedAt             *time.Time                    `json:"locked_at"`
 }
 type Patch struct {
-	Tags          *[]string  `json:"tags"`
-	Categories    *[]string  `json:"categories"`
-	CollectionIDs *[]string  `json:"collection_ids"`
-	Title         *string    `json:"title"`
-	Description   *string    `json:"description"`
-	Slug          *string    `json:"slug"`
-	Content       *string    `json:"content"`
-	Visibility    *int       `json:"visibility"`
-	Type          *int       `json:"type"`
-	Language      *string    `json:"language"`
-	DraftedAt     *time.Time `json:"drafted_at"`
-	PublishedAt   *time.Time `json:"published_at"`
+	Attachments     *[]string  `json:"attachments"`
+	RepliedPostID   *string    `json:"replied_post_id"`
+	ForwardedPostID *string    `json:"forwarded_post_id"`
+	ChainedPostID   *string    `json:"chained_post_id"`
+	Tags            *[]string  `json:"tags"`
+	Categories      *[]string  `json:"categories"`
+	CollectionIDs   *[]string  `json:"collection_ids"`
+	Title           *string    `json:"title"`
+	Description     *string    `json:"description"`
+	Slug            *string    `json:"slug"`
+	Content         *string    `json:"content"`
+	Visibility      *int       `json:"visibility"`
+	Type            *int       `json:"type"`
+	Language        *string    `json:"language"`
+	DraftedAt       *time.Time `json:"drafted_at"`
+	PublishedAt     *time.Time `json:"published_at"`
 }
 type ListOptions struct {
 	Offset, Take int
@@ -129,6 +146,19 @@ type Auth interface {
 }
 
 func ValidatePatch(p Patch, create bool, now time.Time) error {
+	if p.Attachments != nil {
+		if _, ok := postmedia.NormalizeIDs(*p.Attachments); !ok {
+			return ErrInvalid
+		}
+	}
+	for _, id := range []*string{p.RepliedPostID, p.ForwardedPostID, p.ChainedPostID} {
+		if id != nil && !authority.ValidID(*id) {
+			return ErrInvalid
+		}
+	}
+	if p.ChainedPostID != nil && (p.RepliedPostID != nil || p.ForwardedPostID != nil) {
+		return &Failure{"POST_CHAIN_CONFLICT", "A chained post cannot also be a reply or a forward.", 400}
+	}
 	for _, f := range []struct {
 		values *[]string
 		max    int
@@ -160,7 +190,7 @@ func ValidatePatch(p Patch, create bool, now time.Time) error {
 			return ErrInvalid
 		}
 	}
-	if create && (p.Content == nil || strings.TrimSpace(*p.Content) == "") || p.Content != nil && strings.TrimSpace(*p.Content) == "" {
+	if create && (p.Content == nil || strings.TrimSpace(*p.Content) == "") && (p.Attachments == nil || len(*p.Attachments) == 0) {
 		return ErrInvalid
 	}
 	if p.Visibility != nil && *p.Visibility != Public && *p.Visibility != Unlisted && *p.Visibility != Private {

@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "e7fa653a33bf9970ca2e7b4623d310b929153b64",
+  "local_source_checkpoint": "based on d3b65e2bdc6cee756a5f759b6ed0e6172b307d0d with content composition",
   "last_fully_passed_ci": {
     "commit": "d4ee9b826ae65138ba53d460ff5874d4181384fa",
     "run": 37737268425,
@@ -10,11 +10,13 @@
     "after_restart": 20
   },
   "latest_candidate": {
-    "scope": "Reviewed core plus sign-in, commerce, resumable media and verification adapters",
-    "status": "Local verification; actual PG pending publication"
+    "commit": "49f896b5369b5f77745c599fd71d60cb5f5b4bb9",
+    "required_before": 147,
+    "required_after_restart": 23,
+    "status": "CI pending; prior single process-test frozen-clock fixture failure corrected with HTTP revocation"
   },
-  "local_required_before": 147,
-  "local_required_after_restart": 23,
+  "local_required_before": 177,
+  "local_required_after_restart": 27,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -371,27 +373,56 @@
     },
     {
       "source_family": "sphere.stickers_surveys",
-      "local_status": "in_progress",
-      "supported_flows": [],
-      "guarded_pg_cases": [],
+      "local_status": "implemented",
+      "supported_flows": [
+        "Survey publish/archive/clone, atomic response replacement and private feedback",
+        "Canonical public-media sticker packs, content, acquisition and ordering"
+      ],
+      "guarded_pg_cases": [
+        "TestPGSurveysLifecyclePrivacyAndValidation",
+        "TestPGSurveysLinkedPostVisibilityAndDeadline",
+        "TestPGSurveysConcurrentReplacementAndRollback",
+        "TestPGSurveysVerifiedHTTPAndRevocation",
+        "TestPGSurveysArchiveWinsQueuedResponse",
+        "TestPGSurveysPublisherRevocationWhileWaiting",
+        "TestPGSurveysAuthorityRevocationWhileWaiting",
+        "TestPGStickersOwnershipContentAndMediaPrivacy",
+        "TestPGStickersCapacityConcurrencyAndAtomicBatch",
+        "TestPGStickersVerifiedHTTPAndRevocation",
+        "TestPGSurveysStickersRestartPersistence"
+      ],
       "unsupported_or_remaining": [
-        "Survey/sticker slice under implementation"
+        "Excluded legacy migrations and third-party sticker assets"
       ]
     },
     {
       "source_family": "sphere.timeline",
-      "local_status": "awaiting_integration",
-      "supported_flows": [],
-      "guarded_pg_cases": [],
+      "local_status": "implemented",
+      "supported_flows": [
+        "Privacy-filtered feeds/search and cursor pagination",
+        "Reply/forward/chain threads, publisher follows and approval",
+        "Owned discovery feedback and source-compatible watch preferences"
+      ],
+      "guarded_pg_cases": [
+        "TestPGTimelineFeedSearchPrivacyAndCursor",
+        "TestPGTimelineReplyForwardThreadChainLifecycle",
+        "TestPGTimelineFollowsPendingIsolationAndConcurrency",
+        "TestPGTimelineDiscoveryFeedbackAndAuditRollback",
+        "TestPGTimelineWatchCanonicalPrivacyAndAtomicPatch",
+        "TestPGTimelineGuardedHTTPAndFreshAuthority",
+        "TestPGTimelineRestartPersistence",
+        "TestPGTimelineRelationRollbackDepthAndCancellation"
+      ],
       "unsupported_or_remaining": [
-        "Delivered feed/search/thread/follow/watch slice needs host/schema/CI integration; documented state-enum gap"
+        "Semantic/fuzzy search and external notification delivery"
       ]
     },
     {
       "source_family": "sphere.posts",
       "local_status": "partial",
       "supported_flows": [
-        "Text lifecycle, visibility, reactions/bookmarks/collections and taxonomy links"
+        "Text lifecycle, visibility, reactions/bookmarks/collections and taxonomy links",
+        "Ordered canonical media attachments, attachment-only posts and dynamic private download visibility"
       ],
       "guarded_pg_cases": [
         "TestPGPostInteractionsAuditRollback",
@@ -410,7 +441,14 @@
         "TestPGPostsLifecycleAndPrivacy",
         "TestPGPostsMembershipRevocationSerializesWithWrites",
         "TestPGPostsRestartPersistence",
-        "TestPGPostsVisibilityAndStateGuards"
+        "TestPGPostsVisibilityAndStateGuards",
+        "TestPGPostMediaComposeUploadAttachDownload",
+        "TestPGPostMediaVisibilityAndRevocation",
+        "TestPGPostMediaAtomicOwnershipAndReuse",
+        "TestPGPostMediaAuthorityAndFileLockOrdering",
+        "TestPGPostMediaIndependentPoolRaceAndMissingBytes",
+        "TestPGPostMediaRestartPersistence",
+        "TestPGBackendContentComposition"
       ],
       "unsupported_or_remaining": [
         "Replies/reposts awaiting timeline integration; attachment publication, Blog, scheduling/moderation and remaining source operations"

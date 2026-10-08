@@ -18,11 +18,15 @@ import (
 	"solsynth.local/go-migration/internal/mediapg"
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/internal/notificationpg"
+	"solsynth.local/go-migration/internal/postmediapg"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/internal/realtime"
 	"solsynth.local/go-migration/internal/signinpg"
 	"solsynth.local/go-migration/internal/socialpg"
+	"solsynth.local/go-migration/internal/stickerpg"
+	"solsynth.local/go-migration/internal/surveypg"
 	"solsynth.local/go-migration/internal/taxonomypg"
+	"solsynth.local/go-migration/internal/timelinepg"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/authority/signin"
@@ -35,7 +39,10 @@ import (
 	"solsynth.local/go-migration/ports/passport/social"
 	"solsynth.local/go-migration/ports/sphere/interactions"
 	"solsynth.local/go-migration/ports/sphere/posts"
+	"solsynth.local/go-migration/ports/sphere/stickers"
+	"solsynth.local/go-migration/ports/sphere/surveys"
 	"solsynth.local/go-migration/ports/sphere/taxonomy"
+	"solsynth.local/go-migration/ports/sphere/timeline"
 	"solsynth.local/go-migration/ports/wallet/commerce"
 	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
 )
@@ -132,7 +139,10 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if guard == nil {
 		postRepository = postpg.New(db)
 	}
-	postRepository.WithAssociations(interactionRepo).WithVisibility(socialRepo)
+	postMedia := postmediapg.New(db, interactionRepo).WithVisibility(socialRepo)
+	timelineRepo := timelinepg.NewWithAuthority(db, guard).WithVisibility(socialRepo).WithAssociations(postMedia)
+	timelineHTTP := timeline.NewHandler(timelineRepo, postIdentity{identity})
+	postRepository.WithAssociations(timelineRepo).WithVisibility(socialRepo)
 	ph := posts.NewHandler(postRepository, postIdentity{identity})
 	wh, wallet := walletHandler(db, identity, c.PINPeppers, guard, socialRepo)
 	var signinHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "SIGNIN_ISSUER_UNCONFIGURED") })
@@ -174,8 +184,17 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		if err != nil {
 			return nil, err
 		}
+		mediaRepo.WithReadVisibility(postMedia)
 		mediaHTTP = (&media.Service{Repository: mediaRepo, Authority: proofIdentity{identity}, MaxFileBytes: c.MaxMediaBytes}).Handler()
 	}
+	surveysRepo := surveypg.NewWithAuthority(db, guard).WithVisibility(socialRepo)
+	stickersRepo := stickerpg.NewWithAuthority(db, guard).WithVisibility(socialRepo)
+	if mediaRepo != nil {
+		surveysRepo.WithMedia(mediaRepo)
+		stickersRepo.WithMedia(mediaRepo)
+	}
+	surveysHTTP := surveys.NewHandler(surveysRepo, postIdentity{identity})
+	stickersHTTP := stickers.NewHandler(stickersRepo, postIdentity{identity})
 	if c.NotificationApp == "" {
 		c.NotificationApp = "dev.solsynth.solian"
 	}
@@ -191,7 +210,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	h := router{modules{surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
 	return &Backend{handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 }
 

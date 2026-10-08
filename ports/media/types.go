@@ -47,6 +47,7 @@ type File struct {
 	SHA256    string    `json:"sha256"`
 	Public    bool      `json:"is_public"`
 	State     string    `json:"state"`
+	Usage     string    `json:"usage,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -57,6 +58,7 @@ type Quota struct {
 }
 type Upload struct {
 	Name, MIMEType, SHA256, IdempotencyKey string
+	Usage                                  string
 	Size                                   int64
 	Public                                 bool
 }

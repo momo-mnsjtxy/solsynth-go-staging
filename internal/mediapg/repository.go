@@ -28,11 +28,12 @@ type Config struct {
 	PendingTTL   time.Duration
 }
 type Repository struct {
-	db         *sql.DB
-	store      media.ObjectStore
-	guard      *authoritypg.TransactionGuard
-	cfg        Config
-	completion *completionQueue
+	db             *sql.DB
+	store          media.ObjectStore
+	guard          *authoritypg.TransactionGuard
+	cfg            Config
+	completion     *completionQueue
+	readVisibility ReadVisibility
 }
 
 func New(db *sql.DB, store media.ObjectStore, guard *authoritypg.TransactionGuard, cfg Config) (*Repository, error) {
@@ -45,7 +46,7 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if err := r.store.Ready(ctx); err != nil {
 		return err
 	}
-	_, err := r.db.ExecContext(ctx, `SELECT id,charge,expires_at FROM owned_media_files LIMIT 0; SELECT account_id,limit_bytes,used_bytes,reserved_bytes FROM owned_media_quotas LIMIT 0`)
+	_, err := r.db.ExecContext(ctx, `SELECT id,charge,expires_at,usage FROM owned_media_files LIMIT 0; SELECT account_id,limit_bytes,used_bytes,reserved_bytes FROM owned_media_quotas LIMIT 0`)
 	if err == nil {
 		if _, ok := r.store.(media.ChunkObjectStore); ok {
 			return r.ResumableReady(ctx)
@@ -63,6 +64,9 @@ func uuid() (string, error) {
 	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x", b[:4], b[4:6], b[6:8], b[8:10], b[10:]), nil
 }
 func validUpload(u media.Upload, max int64) error {
+	if e := media.ValidateUsage(u.Usage); e != nil {
+		return e
+	}
 	if u.Size < 0 || u.Size > max {
 		return media.ErrTooLarge
 	}
@@ -108,19 +112,19 @@ func (r *Repository) begin(ctx context.Context, actor, permission string) (*sql.
 	return tx, nil
 }
 
-const fields = `id::text,account_id::text,name,mime_type,size,sha256,is_public,state,created_at,updated_at`
+const fields = `id::text,account_id::text,name,mime_type,size,sha256,is_public,state,created_at,updated_at,usage`
 
 type scanner interface{ Scan(...any) error }
 
 func scan(row scanner) (f media.File, err error) {
-	err = row.Scan(&f.ID, &f.AccountID, &f.Name, &f.MIMEType, &f.Size, &f.SHA256, &f.Public, &f.State, &f.CreatedAt, &f.UpdatedAt)
+	err = row.Scan(&f.ID, &f.AccountID, &f.Name, &f.MIMEType, &f.Size, &f.SHA256, &f.Public, &f.State, &f.CreatedAt, &f.UpdatedAt, &f.Usage)
 	if errors.Is(err, sql.ErrNoRows) {
 		err = media.ErrNotFound
 	}
 	return
 }
 func same(f media.File, u media.Upload) bool {
-	return f.Name == u.Name && f.MIMEType == u.MIMEType && f.Size == u.Size && f.SHA256 == u.SHA256 && f.Public == u.Public
+	return f.Name == u.Name && f.MIMEType == u.MIMEType && f.Size == u.Size && f.SHA256 == u.SHA256 && f.Public == u.Public && f.Usage == u.Usage
 }
 
 // Reserve before any filesystem work. Every operation takes canonical account,
@@ -177,7 +181,7 @@ func (r *Repository) reserveTx(ctx context.Context, tx *sql.Tx, actor string, u 
 	if err != nil {
 		return f, false, err
 	}
-	f, err = scan(tx.QueryRowContext(ctx, `INSERT INTO owned_media_files(id,account_id,idempotency_key,name,mime_type,size,sha256,is_public,state,charge,expires_at,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,'pending','reserved',now()+($9::bigint*interval '1 millisecond'),now(),now()) RETURNING `+fields, id, actor, u.IdempotencyKey, u.Name, u.MIMEType, u.Size, u.SHA256, u.Public, r.cfg.PendingTTL.Milliseconds()))
+	f, err = scan(tx.QueryRowContext(ctx, `INSERT INTO owned_media_files(id,account_id,idempotency_key,name,mime_type,size,sha256,is_public,state,charge,expires_at,created_at,updated_at,usage) VALUES($1,$2,$3,$4,$5,$6,$7,$8,'pending','reserved',now()+($9::bigint*interval '1 millisecond'),now(),now(),$10) RETURNING `+fields, id, actor, u.IdempotencyKey, u.Name, u.MIMEType, u.Size, u.SHA256, u.Public, r.cfg.PendingTTL.Milliseconds(), u.Usage))
 	if err != nil {
 		return f, false, err
 	}
@@ -252,6 +256,17 @@ func (r *Repository) finish(ctx context.Context, actor string, f media.File, rea
 	if err != nil {
 		return f, err
 	}
+	if measured {
+		if source, ok := reader.(media.UploadUsageSource); ok {
+			f.Usage, err = source.UploadUsage()
+			if err != nil {
+				return f, err
+			}
+			if err = media.ValidateUsage(f.Usage); err != nil {
+				return f, err
+			}
+		}
+	}
 	// Wall-clock credential expiry can change while streaming even though the
 	// canonical account lock excludes revocation and policy changes.
 	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, media.CreatePermission); err != nil {
@@ -260,7 +275,7 @@ func (r *Repository) finish(ctx context.Context, actor string, f media.File, rea
 	if _, err = tx.ExecContext(ctx, `UPDATE owned_media_quotas SET reserved_bytes=reserved_bytes-$2,used_bytes=used_bytes+$3 WHERE account_id=$1`, actor, reserved, f.Size); err != nil {
 		return f, err
 	}
-	updated, err := scan(tx.QueryRowContext(ctx, `UPDATE owned_media_files SET state='ready',charge='used',size=$2,sha256=$3,updated_at=clock_timestamp() WHERE id=$1 RETURNING `+fields, f.ID, f.Size, f.SHA256))
+	updated, err := scan(tx.QueryRowContext(ctx, `UPDATE owned_media_files SET state='ready',charge='used',size=$2,sha256=$3,usage=$4,updated_at=clock_timestamp() WHERE id=$1 RETURNING `+fields, f.ID, f.Size, f.SHA256, f.Usage))
 	if err != nil {
 		return f, err
 	}
@@ -281,9 +296,31 @@ func (r *Repository) read(ctx context.Context, actor, id string, open bool) (med
 		return media.File{}, nil, err
 	}
 	defer tx.Rollback()
-	f, err := scan(tx.QueryRowContext(ctx, `SELECT `+fields+` FROM owned_media_files WHERE id=$1 AND state='ready' AND (is_public OR account_id::text=$2) AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=owned_media_files.account_id AND NOT a.disabled) FOR SHARE`, id, actor))
+	f, err := scan(tx.QueryRowContext(ctx, `SELECT `+fields+` FROM owned_media_files WHERE id=$1 AND state='ready' FOR SHARE`, id))
 	if err != nil {
 		return f, nil, err
+	}
+	// Recheck owner state after the file lock, so a lock waiter observes a
+	// disable that committed while it waited. The optional policy never changes
+	// the file's public flag or its canonical ownership.
+	var active bool
+	if err = tx.QueryRowContext(ctx, `SELECT NOT disabled FROM owned_authority_accounts WHERE id=$1`, f.AccountID).Scan(&active); err != nil {
+		return f, nil, err
+	}
+	if !active {
+		return media.File{}, nil, media.ErrNotFound
+	}
+	if !f.Public && f.AccountID != actor {
+		allowed := false
+		if r.readVisibility != nil {
+			allowed, err = r.readVisibility.CanReadInTransaction(ctx, tx, actor, id)
+		}
+		if err != nil {
+			return f, nil, err
+		}
+		if !allowed {
+			return media.File{}, nil, media.ErrNotFound
+		}
 	}
 	var body io.ReadSeekCloser
 	if open {

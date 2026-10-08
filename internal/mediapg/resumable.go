@@ -40,7 +40,10 @@ func (r *Repository) ResumableReady(ctx context.Context) error {
 }
 
 func normalizeTask(request media.CreateUploadRequest, max int64) (media.CreateUploadRequest, string, error) {
-	if request.PoolID != "" || request.BundleID != "" || request.ParentID != "" || request.EncryptionScheme != "" || request.EncryptionHeader != "" || request.EncryptionSignature != "" || request.ExpiredAt != nil || request.Usage != "" || request.ApplicationType != "" {
+	if err := media.ValidateUsage(request.Usage); err != nil {
+		return request, "", err
+	}
+	if request.PoolID != "" || request.BundleID != "" || request.ParentID != "" || request.EncryptionScheme != "" || request.EncryptionHeader != "" || request.EncryptionSignature != "" || request.ExpiredAt != nil || request.ApplicationType != "" {
 		return request, "", media.ErrUnsupported
 	}
 	request.Hash = strings.ToLower(request.Hash)
@@ -59,7 +62,7 @@ func normalizeTask(request media.CreateUploadRequest, max int64) (media.CreateUp
 	if request.ChunkSize < 1 || request.ChunkSize > media.MaxChunkBytes || (request.FileSize-1)/request.ChunkSize+1 > media.MaxUploadChunks {
 		return request, "", media.ErrInvalid
 	}
-	u := media.Upload{Name: request.FileName, MIMEType: request.ContentType, Size: request.FileSize, SHA256: strings.Repeat("0", 64), IdempotencyKey: "validation"}
+	u := media.Upload{Name: request.FileName, MIMEType: request.ContentType, Usage: request.Usage, Size: request.FileSize, SHA256: strings.Repeat("0", 64), IdempotencyKey: "validation"}
 	if err := validUpload(u, max); err != nil {
 		return request, "", err
 	}
@@ -132,7 +135,7 @@ func (r *Repository) CreateResumable(ctx context.Context, actor string, request 
 	if active >= 100 {
 		return media.UploadTask{}, media.ErrPending
 	}
-	u := media.Upload{Name: request.FileName, MIMEType: request.ContentType, Size: request.FileSize, SHA256: fingerprint, IdempotencyKey: key}
+	u := media.Upload{Name: request.FileName, MIMEType: request.ContentType, Usage: request.Usage, Size: request.FileSize, SHA256: fingerprint, IdempotencyKey: key}
 	f, replayed, err := r.reserveTx(ctx, tx, actor, u)
 	if err != nil {
 		return media.UploadTask{}, err

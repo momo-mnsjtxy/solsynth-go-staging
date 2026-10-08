@@ -80,7 +80,7 @@ func (s *Service) direct(w http.ResponseWriter, r *http.Request) {
 		tail := &multipartFileReader{part: part, reader: reader, fields: metadata, contentType: typ}
 		// Content-Length includes framing, so the reservation is conservative. Only
 		// measured file bytes are charged after processing and successful commit.
-		f, e := repo.UploadDirect(r.Context(), p.Account.ID, Upload{Name: part.FileName(), MIMEType: typ, Size: min(r.ContentLength, max)}, tail)
+		f, e := repo.UploadDirect(r.Context(), p.Account.ID, Upload{Name: part.FileName(), MIMEType: typ, Size: min(r.ContentLength, max), Usage: metadata["usage"]}, tail)
 		if e != nil {
 			failure(w, e)
 			return
@@ -114,7 +114,11 @@ func checkFields(fields map[string]string, typ string) error {
 			if v != "" && v != typ {
 				return ErrUnsupported
 			}
-		case "pool_id", "bundle_id", "encryption_scheme", "encryption_header", "encryption_signature", "expired_at", "parent_id", "usage", "application_type":
+		case "usage":
+			if e := ValidateUsage(v); e != nil {
+				return e
+			}
+		case "pool_id", "bundle_id", "encryption_scheme", "encryption_header", "encryption_signature", "expired_at", "parent_id", "application_type":
 			if v != "" {
 				return ErrUnsupported
 			}
@@ -167,13 +171,29 @@ func checkEOF(fields map[string]string, typ string) error {
 
 // A truthful subset/nullable projection of the documented SnCloudFile contract.
 // No remote upload, thumbnail, MD5 deduplication or folder processing is claimed.
-func legacyFile(f File) map[string]any {
+func legacyFile(f File) map[string]any { return LegacyFile(f) }
+
+// LegacyFile is the shared truthful projection for upload and post attachment responses.
+func LegacyFile(f File) map[string]any {
+	var usage any
+	if f.Usage != "" {
+		usage = f.Usage
+	}
 	return map[string]any{
 		"id": f.ID, "name": f.Name, "description": nil, "user_meta": map[string]any{}, "sensitive_marks": []string{}, "mime_type": f.MIMEType, "hash": nil, "sha256": f.SHA256, "size": f.Size,
 		"has_compression": false, "has_thumbnail": false, "expired_at": nil, "uploaded_at": nil, "object_id": f.ID, "parent_id": nil, "bundle_id": nil, "indexed": false, "is_folder": false, "is_marked_recycle": false,
-		"storage_id": nil, "storage_url": nil, "account_id": f.AccountID, "usage": nil, "application_type": nil, "created_at": f.CreatedAt, "updated_at": f.UpdatedAt, "is_public": f.Public, "state": f.State,
+		"storage_id": nil, "storage_url": nil, "account_id": f.AccountID, "usage": usage, "application_type": nil, "created_at": f.CreatedAt, "updated_at": f.UpdatedAt, "is_public": f.Public, "state": f.State,
 	}
 }
 
 // LegacyID supports the optional extension suffix documented on open-file URLs.
 func legacyID(s string) string { id, _, _ := strings.Cut(s, "."); return id }
+
+// UploadUsage is consulted only after the whole multipart stream has reached
+// a validated EOF, so before-file and after-file metadata have the same meaning.
+func (m *multipartFileReader) UploadUsage() (string, error) {
+	if !m.done {
+		return "", ErrInvalid
+	}
+	return m.fields["usage"], ValidateUsage(m.fields["usage"])
+}

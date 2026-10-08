@@ -4,8 +4,10 @@ package postpg
 import (
 	"context"
 	"database/sql"
+	"solsynth.local/go-migration/ports/sphere/postmedia"
 	"solsynth.local/go-migration/ports/sphere/posts"
 	"solsynth.local/go-migration/ports/sphere/taxonomy"
+	"strings"
 )
 
 // AssociationStore joins the lifecycle's transaction. Apply is called only after
@@ -27,11 +29,27 @@ func (r *Repository) WithAssociations(a AssociationStore) *Repository {
 	return r
 }
 func (r *Repository) applyAssociations(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post, v posts.Patch, create bool) error {
+	// Existing taxonomy/interaction-only adapters must not silently consume
+	// newly recognized relation inputs. The relation adapter opts in explicitly.
+	if v.RepliedPostID != nil || v.ForwardedPostID != nil || v.ChainedPostID != nil {
+		if _, ok := r.associations.(interface{ SupportsPostRelations() }); !ok {
+			return posts.ErrUnsupported
+		}
+	}
+	if v.Attachments != nil && len(*v.Attachments) > 0 {
+		supported, ok := r.associations.(interface{ SupportsPostAttachments() bool })
+		if !ok || !supported.SupportsPostAttachments() {
+			return posts.ErrUnsupported
+		}
+	}
 	if r.associations != nil {
 		if e := r.associations.Apply(ctx, tx, actor, p, v, create); e != nil {
 			return e
 		}
-		return r.associations.Load(ctx, tx, actor, p)
+		if e := r.associations.Load(ctx, tx, actor, p); e != nil {
+			return e
+		}
+		return requireContent(p)
 	}
 	for _, s := range []*[]string{v.Tags, v.Categories, v.CollectionIDs} {
 		if s != nil && len(*s) > 0 {
@@ -39,9 +57,17 @@ func (r *Repository) applyAssociations(ctx context.Context, tx *sql.Tx, actor st
 		}
 	}
 	EmptyAssociations(p)
+	return requireContent(p)
+}
+func requireContent(p *posts.Post) error {
+	if p.DeletedAt == nil && strings.TrimSpace(p.Content) == "" && len(p.Attachments) == 0 {
+		return posts.ErrInvalid
+	}
 	return nil
 }
 func EmptyAssociations(p *posts.Post) {
+	p.Attachments = []postmedia.Attachment{}
+	p.ChainedPosts = []posts.Post{}
 	p.Tags = []taxonomy.TagProjection{}
 	p.Categories = []taxonomy.CategoryProjection{}
 	p.PublisherCollections = []posts.Collection{}

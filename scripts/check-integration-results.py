@@ -5,6 +5,13 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGWalletTransferRequestSourceHTTPAndAtomicFulfillment",
+        "TestPGWalletTransferRequestConcurrentPayersAndReplay",
+        "TestPGWalletTransferRequestVisibilityPermissionAndExpiry",
+        "TestPGWalletTransferRequestRollbackAndBounds",
+        "TestPGWalletTransferRequestExpiresDuringWalletWait",
+        "TestPGWalletTransferRequestRestartPersistence",
+
         "TestPGBoardDiscoveryCurrentVisibilityAndDTO",
         "TestPGBackendBoardDiscoveryComposition",
         "TestPGBoardDiscoveryRestartPersistence",
@@ -458,6 +465,7 @@ EXPECTED = {
         "TestPGPaymentPINAssuranceExpiryDuringPolicyWait",
     },
     "after": {
+        "TestPGWalletTransferRequestRestartPersistence",
         "TestPGBoardDiscoveryRestartPersistence",
         "TestPGRefreshContinuityRestartPersistence",
         "TestPGDomainTrustRestartPersistence",

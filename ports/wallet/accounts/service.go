@@ -147,9 +147,32 @@ func (s *Service) Transfer(ctx context.Context, p Principal, r TransferRequest, 
 	if s.Payments == nil {
 		return Transaction{}, ErrUnavailable
 	}
+	requestID := ""
 	if r.TransferRequestID != nil {
-		return Transaction{}, ErrUnavailable
-	} // QR request fulfillment must be atomic; not implemented.
+		requestID = *r.TransferRequestID
+		if !ValidID(requestID) {
+			return Transaction{}, ErrInvalid
+		}
+		requests, ok := s.Store.(TransferRequestRepository)
+		if !ok {
+			return Transaction{}, ErrUnavailable
+		}
+		saved, e := requests.ResolveTransferRequest(ctx, p.AccountID, requestID)
+		if e != nil {
+			return Transaction{}, e
+		}
+		r.Amount = saved.Amount
+		r.Currency = saved.Currency
+		r.Remark = saved.Remark
+		r.Freeze = saved.Freeze
+		r.RequireConfirmation = saved.RequireConfirmation
+		r.PayeeWalletID = &saved.PayeeWalletID
+		r.PayeeAccountID = nil
+		r.PayeePublicID = nil
+		if key == "" {
+			key = "transfer-request:" + requestID
+		}
+	}
 	if r.Amount.Sign() <= 0 {
 		return Transaction{}, ErrAmount
 	}
@@ -212,14 +235,15 @@ func (s *Service) Transfer(ctx context.Context, p Principal, r TransferRequest, 
 	if len(pin) > 256 {
 		return Transaction{}, ErrPIN
 	}
-	command := TransferCommand{ActorID: p.AccountID, IdempotencyKey: key, PayerWalletID: payer.ID, PayeeWalletID: payee.ID, PayerOwner: payer.Owner(), Currency: r.Currency, Amount: r.Amount, Remark: r.Remark, Freeze: r.Freeze, RequireConfirmation: r.RequireConfirmation}
+	command := TransferCommand{TransferRequestID: requestID, ActorID: p.AccountID, IdempotencyKey: key, PayerWalletID: payer.ID, PayeeWalletID: payee.ID, PayerOwner: payer.Owner(), Currency: r.Currency, Amount: r.Amount, Remark: r.Remark, Freeze: r.Freeze, RequireConfirmation: r.RequireConfirmation}
 	// PIN and session credentials are deliberately excluded from persistence and hashes.
 	b, _ := json.Marshal(struct {
 		Payer, Payee, Currency      string
 		Amount                      Amount
 		Remark                      *string
 		Freeze, RequireConfirmation bool
-	}{payer.ID, payee.ID, r.Currency, r.Amount, r.Remark, r.Freeze, r.RequireConfirmation})
+		TransferRequestID           string `json:",omitempty"`
+	}{payer.ID, payee.ID, r.Currency, r.Amount, r.Remark, r.Freeze, r.RequireConfirmation, requestID})
 	hash := sha256.Sum256(b)
 	command.Fingerprint = hex.EncodeToString(hash[:])
 	if payments, ok := s.Payments.(PaymentAuthorizer); ok {

@@ -2,21 +2,21 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Canonical public board discovery composed on the bounded renewal-fixture correction",
+  "local_source_checkpoint": "Wallet transfer request creation, public resolution and atomic canonical fulfillment",
   "last_fully_passed_ci": {
-    "commit": "bff7fdada24a41395e94e6c1cfdf83a39601df9b",
-    "run": 37803956613,
-    "before": 397,
-    "after_restart": 53
+    "commit": "b3f7497fa996ef16a16d263ec6b07dc79f61845d",
+    "run": 37808387289,
+    "before": 418,
+    "after_restart": 55
   },
   "latest_candidate": {
-    "commit": "b3f7497fa996ef16a16d263ec6b07dc79f61845d",
-    "required_before": 418,
-    "required_after_restart": 55,
-    "status": "Published fixture-only expiry consistency correction after PIN/continuity runs failed one renewal wait; rerun pending"
+    "commit": "af51dc3d10fe182901063aaa993b00b5b005e2df",
+    "required_before": 421,
+    "required_after_restart": 56,
+    "status": "Published fixture-only shadowban consistency correction; PostgreSQL rerun pending"
   },
-  "local_required_before": 421,
-  "local_required_after_restart": 56,
+  "local_required_before": 427,
+  "local_required_after_restart": 57,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -1015,6 +1015,25 @@
       ],
       "unsupported_or_remaining": [
         "Operator must stop old writers and apply explicit atomic schema migration before rollout"
+      ]
+    },
+    {
+      "source_family": "wallet.transfer_requests",
+      "local_status": "implemented, actual PG pending",
+      "supported_flows": [
+        "Authored create/anonymous lookup bodies and canonical named permission",
+        "Immutable request terms override untrusted payment input",
+        "Atomic ledger, PIN proof and one-use request fulfillment with retry/concurrency/expiry rollback"
+      ],
+      "guarded_pg_cases": [
+        "TestPGWalletTransferRequestSourceHTTPAndAtomicFulfillment",
+        "TestPGWalletTransferRequestConcurrentPayersAndReplay",
+        "TestPGWalletTransferRequestExpiresDuringWalletWait",
+        "TestPGWalletTransferRequestRestartPersistence"
+      ],
+      "unsupported_or_remaining": [
+        "Original full enum encoding not evidenced; owned numeric status declared",
+        "Explicit retention/purge policy"
       ]
     }
   ],

@@ -51,6 +51,9 @@ func (r *Repository) Transfer(ctx context.Context, c accounts.TransferCommand) (
 			if original.PayerWalletID != c.PayerWalletID || original.PayeeWalletID != c.PayeeWalletID {
 				return original, accounts.ErrIdempotency
 			}
+			if x = r.lockTransferRequest(ctx, tx, c, original.ID); x != nil {
+				return original, x
+			}
 			wallets, x := lockWallets(ctx, tx, original.PayerWalletID, original.PayeeWalletID)
 			if x != nil {
 				return original, x
@@ -66,6 +69,14 @@ func (r *Repository) Transfer(ctx context.Context, c accounts.TransferCommand) (
 			return original, tx.Commit()
 		}
 		if !errors.Is(e, sql.ErrNoRows) {
+			return accounts.Transaction{}, e
+		}
+	}
+	if e = r.lockTransferRequest(ctx, tx, c, ""); e != nil {
+		return accounts.Transaction{}, e
+	}
+	if c.TransferRequestID != "" {
+		if e = r.lockRequestPayee(ctx, tx, c.PayeeWalletID); e != nil {
 			return accounts.Transaction{}, e
 		}
 	}
@@ -114,6 +125,9 @@ func (r *Repository) Transfer(ctx context.Context, c accounts.TransferCommand) (
 		if e = pocketEvent(ctx, tx, t.PayeeWalletID, t.Currency, now); e != nil {
 			return t, e
 		}
+	}
+	if e = r.fulfillTransferRequest(ctx, tx, c, t.ID); e != nil {
+		return t, e
 	}
 	if r.payments != nil {
 		if e = r.payments.CheckPayment(ctx, r.db, tx, c.ActorID, accounts.PaymentTransfer, c.Fingerprint); e != nil {

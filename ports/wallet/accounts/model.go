@@ -164,6 +164,7 @@ type TransferRequest struct {
 	TransferRequestID   *string `json:"transfer_request_id"`
 }
 type TransferCommand struct {
+	TransferRequestID                                                            string
 	ActorID, IdempotencyKey, Fingerprint, PayerWalletID, PayeeWalletID, Currency string
 	PayerOwner                                                                   Owner
 	Amount                                                                       Amount

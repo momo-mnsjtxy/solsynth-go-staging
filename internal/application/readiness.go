@@ -32,6 +32,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err != nil || !ready {
 		return errors.New("post realm schema unavailable")
 	}
+	if b.wallet != nil {
+		if err := b.wallet.TransferRequestsReady(ctx); err != nil {
+			return err
+		}
+	}
 	if err := b.domainCollections.ready(ctx); err != nil {
 		return err
 	}

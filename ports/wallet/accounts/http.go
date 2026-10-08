@@ -78,6 +78,29 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	if r.Method == "GET" && strings.HasPrefix(path, "/api/wallets/transfer/requests/") {
+		id := strings.TrimPrefix(path, "/api/wallets/transfer/requests/")
+		if !ValidID(id) {
+			fail(w, ErrNotFound)
+			return
+		}
+		if h.Service == nil {
+			fail(w, ErrUnavailable)
+			return
+		}
+		repo, ok := h.Service.Store.(TransferRequestRepository)
+		if !ok {
+			fail(w, ErrUnavailable)
+			return
+		}
+		out, e := repo.PublicTransferRequest(r.Context(), id)
+		if e != nil {
+			fail(w, e)
+			return
+		}
+		writeJSON(w, 200, out)
+		return
+	}
 	if h.Authentication == nil {
 		fail(w, ErrUnavailable)
 		return
@@ -125,6 +148,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		var request CreateRequest
 		if e = decode(w, r, &request, true); e == nil {
 			value, e = h.Service.Create(ctx, p, request)
+		}
+	case r.Method == "POST" && suffix == "/transfer/requests":
+		request := CreateTransferRequest{ExpirationHours: 24}
+		if e = decode(w, r, &request, false); e == nil {
+			value, e = h.Service.CreateTransferRequest(ctx, p, request)
 		}
 	case r.Method == "POST" && suffix == "/transfer":
 		var request TransferRequest

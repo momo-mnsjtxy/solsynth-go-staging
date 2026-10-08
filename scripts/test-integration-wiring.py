@@ -63,6 +63,7 @@ REQUIRED_SCHEMAS = {
  "internal/authoritypg/assurance_schema.sql",
  "internal/signinpg/payment_pin_schema.sql",
  "internal/walletpg/pin_schema.sql",
+ "internal/walletpg/transfer_requests_schema.sql",
 }
 REQUIRED_BINARIES = {
     "BACKEND_BINARY": ("backend", "backend"),

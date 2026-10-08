@@ -1,8 +1,8 @@
 {
-  "checkpoint": "quote-envelope-fixture580",
-  "scope": "Only quote transport fixture and exact dependency/evidence refresh. Both enclosing Create/Update and nested Note public; private envelope remains explicitly denied in actualPG regression; local wire control passes. Complete offline verify passed; actualPG pending. No runtime or policy changes.",
+  "checkpoint": "reviewed-direct-recovery581",
+  "scope": "Bounded runtime privacy fix for direct pair recovery and direct-state responses, with independent review and negative regression: fresh sorted-account proof/visibility checks and freshly constructed minimal DTO. Three remaining existing fixture contracts corrected without relaxing runtime. Full combined offline verification passed;581/77 actualPG/restart pending.",
   "inputs": {
-    "remote_parent": "b58ec755e310bd550764898fdaee8b647aa9a413"
+    "remote_parent": "8100e0557089da3fbd762687ce3c6308a8a56c34"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -450,8 +450,8 @@
     },
     {
       "path": "docs/chat-relations-continuation.md",
-      "bytes": 13544,
-      "sha256": "0db6550e491f33385e6350326ec9cd294b232711a156334f6593d1722f42a5e5"
+      "bytes": 14405,
+      "sha256": "ebfba12f3cc0728a3bc565bceab0ac9f078cf08cbb114348dd82ee1d81b5f0f6"
     },
     {
       "path": "docs/checkpoint.md",
@@ -470,13 +470,13 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 86548,
-      "sha256": "db97df7f24c0a7473136d26cadf8c0bad50cbf936e6794fb555567586a967fbb"
+      "bytes": 88277,
+      "sha256": "8fbf57a39df03693667e1a00850670cf874a20ee53402ea86f0bac15628979a3"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
-      "bytes": 12803,
-      "sha256": "3d5e243268952c76c21726fcb8d2ab33c25ea5ed7de47c21e0b701ff31c84dc3"
+      "bytes": 13362,
+      "sha256": "79f4ecddf8198e5af8a21d8c9e39bfaca1675f6728878bbd50215d359450bef3"
     },
     {
       "path": "docs/combined-domain-integration-review.md",
@@ -1725,8 +1725,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 98834,
-      "sha256": "87bb04e9e4ddb7ca6f8ff59e679edc7475e15f8ef98aab6e7fedbdcc70e30ca0"
+      "bytes": 99168,
+      "sha256": "56944e149368753b172c3fa5b4a28da0fceff7dc00e2ea0b0197335670dfe06d"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -2484,9 +2484,14 @@
       "sha256": "18d3f7f9137cbcea9d5c3af15535bccbfd07596b8bc4fe4124458ce56b5e4dba"
     },
     {
+      "path": "internal/chatpg/recovery_test.go",
+      "bytes": 1843,
+      "sha256": "78e854b6ddcd10bbb9783c4859b7d03849bd8b53961f005055558883e4ed5a0b"
+    },
+    {
       "path": "internal/chatpg/relations.go",
-      "bytes": 17340,
-      "sha256": "b3e70799a694c329a8c9994f7f9d190094fb2d913d55676793bece7858319812"
+      "bytes": 20905,
+      "sha256": "bce6cadefe35450a4b728ad03bc2a1745f423e49d97b0b1b532719cd5fb5aa2a"
     },
     {
       "path": "internal/chatpg/relations_schema.sql",
@@ -6670,8 +6675,8 @@
     },
     {
       "path": "ports/messager/rooms/types.go",
-      "bytes": 7878,
-      "sha256": "d3b2f7340ff7a1c6bbb01c348fe37aee3b12fa82dc6bceca8c4505191c04aa00"
+      "bytes": 7942,
+      "sha256": "972bfa67c90729526494f2f34bd7bf3b524c9979fcb13f302cb55231d5d7ee01"
     },
     {
       "path": "ports/messager/rooms/validation.go",
@@ -9545,8 +9550,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 38968,
-      "sha256": "db5840e6b29b696b0f9cae248c134c8b12637a99964bc21913bf457feb8b7e51"
+      "bytes": 39082,
+      "sha256": "eee4fb2fef801ae1957a7971c2196cca71a22f82573ce3afacfb21d7a8fe10d2"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -9570,8 +9575,8 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 69694,
-      "sha256": "25756788a7abc52def6813505e5e8cab6eb8cd2d77b5abd0daab7c03c22f691c"
+      "bytes": 69862,
+      "sha256": "7969bcc2c328d9f2a3ee4a207b5306f8707b55724421010a0e5cfe2dfe8009fe"
     },
     {
       "path": "scripts/integration-postgres.sh",
@@ -10090,8 +10095,8 @@
     },
     {
       "path": "tests/integration/chat_mls_test.go",
-      "bytes": 22175,
-      "sha256": "75d4fd887477a2611f66a5c3b237d37cd748d5c5fdfd8753e4a2bb28b37cdc77"
+      "bytes": 22370,
+      "sha256": "a6fe8ddcef5dd688e3b37cd0e727f5ba8693192aeef57340a0da95326a946ff7"
     },
     {
       "path": "tests/integration/chat_preflight_test.go",
@@ -10100,8 +10105,8 @@
     },
     {
       "path": "tests/integration/chat_relations_test.go",
-      "bytes": 19806,
-      "sha256": "f319b3ed6b0939d2456721940e4dc92eed1aa8d97a7ab4a98d0f99fe7cc46341"
+      "bytes": 19827,
+      "sha256": "1335b0049f1c3ad659ff54bb2f57c67ff8f4c13cd2298e556662029bc63c1670"
     },
     {
       "path": "tests/integration/collection_admin_test.go",
@@ -10152,6 +10157,11 @@
       "path": "tests/integration/developer_apps_test.go",
       "bytes": 16757,
       "sha256": "faf6135627d45af87c9b2dae5548dbc8a9c019de8bd6e4df1b0e71633c64d46d"
+    },
+    {
+      "path": "tests/integration/direct_recovery_privacy_test.go",
+      "bytes": 15201,
+      "sha256": "2c76a82a6159c64099f7541d1fd48be96f77709c3233aaeb711ba0d489b386ca"
     },
     {
       "path": "tests/integration/domain_http_test.go",
@@ -10410,8 +10420,8 @@
     },
     {
       "path": "tests/integration/relationship_expiry_test.go",
-      "bytes": 15547,
-      "sha256": "b169107d0f665aa48584dfa8cbe2e3f46df05e2ca934c1a66b27996c9fc69884"
+      "bytes": 15749,
+      "sha256": "a78b828a113de7dbb75ac8e81aeb0d3fc5f1c9f431841f3de644951ed9561bf1"
     },
     {
       "path": "tests/integration/restart_fixture_test.go",
@@ -10440,8 +10450,8 @@
     },
     {
       "path": "tests/integration/social_test.go",
-      "bytes": 18991,
-      "sha256": "92ac3d3743f5381eaed7bfc990f413ce4b5061a4211d23de13c5b59a59d5bed7"
+      "bytes": 19373,
+      "sha256": "acf57959d391180eecb3712560bfef4871eb20ff6579190b11a24d00ac4a1d7f"
     },
     {
       "path": "tests/integration/subscription_activation_test.go",

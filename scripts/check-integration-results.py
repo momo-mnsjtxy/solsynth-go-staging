@@ -5,6 +5,7 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGDirectRecoveryPrivacyRestartPersistence",
         "TestPGPasskitInternalProgramEligibility",
         "TestPGPasskitProvisioningAuthorizationAndWaitRevocation",
         "TestPGRelationshipExpiryImmediateDegradeAndCleanup",
@@ -627,6 +628,7 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGDirectRecoveryPrivacyRestartPersistence",
         "TestPGRelationshipExpiryRestartPersistence",
         "TestPGRealmPermissionRestartPersistence",
 

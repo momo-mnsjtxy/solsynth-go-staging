@@ -329,10 +329,14 @@ func (r *Repository) CreateDirect(ctx context.Context, actor string, p rooms.Dir
 	if e = relationAudit(ctx, tx, actor, rid, "direct.create", p.RelatedUserID, now); e != nil {
 		return out, e
 	}
-	if e = r.decorateRoom(ctx, tx, &out, actor); e != nil {
-		return out, e
+	out, e = r.projectDirectRoom(ctx, tx, out, actor, p.RelatedUserID)
+	if e != nil {
+		return rooms.Room{}, e
 	}
-	return out, r.commit(ctx, tx, actor, "chat.create")
+	if e = r.commit(ctx, tx, actor, "chat.create"); e != nil {
+		return rooms.Room{}, e
+	}
+	return out, nil
 }
 func (r *Repository) GetDirect(ctx context.Context, actor, target string) (out rooms.Room, e error) {
 	if r == nil || r.social == nil {
@@ -341,9 +345,14 @@ func (r *Repository) GetDirect(ctx context.Context, actor, target string) (out r
 	if valid(actor, target) != nil || actor == target {
 		return out, rooms.ErrInvalid
 	}
-	tx, e := r.begin(ctx, true)
+	// Canonical pair-account locks precede the room lock. Read committed and
+	// fresh opaque proof checks prevent a blocked read from retaining old access.
+	tx, e := r.beginRoomWrite(ctx, actor, "", "", "", target)
+	if errors.Is(e, sql.ErrNoRows) {
+		return rooms.Room{}, rooms.ErrNotFound
+	}
 	if e != nil {
-		return out, e
+		return rooms.Room{}, e
 	}
 	defer tx.Rollback()
 	pair := dedup([]string{actor, target})
@@ -351,14 +360,67 @@ func (r *Repository) GetDirect(ctx context.Context, actor, target string) (out r
 	if e = tx.QueryRowContext(ctx, `SELECT room_id::text FROM owned_chat_direct_pairs WHERE account_low=$1 AND account_high=$2`, pair[0], pair[1]).Scan(&rid); e != nil {
 		return out, rooms.ErrNotFound
 	}
-	out, e = r.room(ctx, tx, rid, false)
+	// Avoid r.room: it may hydrate MLS or realm metadata before read admission.
+	out, e = scanRoom(tx.QueryRowContext(ctx, `SELECT `+roomColumns+` FROM chat_rooms WHERE id=$1 AND deleted_at IS NULL AND owned_owner_id IS NOT NULL FOR SHARE`, rid))
 	if e != nil {
-		return out, e
+		return rooms.Room{}, e
 	}
-	if e = r.decorateRoom(ctx, tx, &out, actor); e != nil {
-		return out, e
+	out, e = r.projectDirectRoom(ctx, tx, out, actor, target)
+	if e != nil {
+		return rooms.Room{}, e
 	}
-	return out, tx.Commit()
+	if e = r.commit(ctx, tx, actor, ""); e != nil {
+		return rooms.Room{}, e
+	}
+	return out, nil
+}
+
+func (r *Repository) projectDirectRoom(ctx context.Context, tx *sql.Tx, out rooms.Room, actor, target string) (rooms.Room, error) {
+	if out.Type != 1 || !out.RelationGuard || out.AccountID != actor && out.AccountID != target {
+		return rooms.Room{}, rooms.ErrConflict
+	}
+	if e := activeOther(ctx, tx, actor); e != nil {
+		return rooms.Room{}, e
+	}
+	allowed, e := r.CanReadInTransaction(ctx, tx, actor, out.ID)
+	if e != nil {
+		return rooms.Room{}, e
+	}
+	if allowed {
+		var unrelated bool
+		if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM chat_members WHERE chat_room_id=$1 AND account_id NOT IN($2::uuid,$3::uuid) AND deleted_at IS NULL)`, out.ID, actor, target).Scan(&unrelated); e != nil {
+			return rooms.Room{}, e
+		}
+		if unrelated {
+			return rooms.Room{}, rooms.ErrConflict
+		}
+		if out.EncryptionMode != r.policy.NoneEncryptionMode && !(r.mls && out.EncryptionMode == rooms.MLSEncryptionMode) {
+			return rooms.Room{}, rooms.ErrUnsupported
+		}
+		if e = r.decorateRoom(ctx, tx, &out, actor); e != nil {
+			return rooms.Room{}, e
+		}
+		// Time-dependent restrictions may begin during metadata reads.
+		allowed, e = r.CanReadInTransaction(ctx, tx, actor, out.ID)
+		if e != nil {
+			return rooms.Room{}, e
+		}
+	}
+	if e = activeOther(ctx, tx, actor); e != nil {
+		return rooms.Room{}, e
+	}
+	if allowed {
+		return out, nil
+	}
+	own, e := member(ctx, tx, out.ID, actor, false)
+	if errors.Is(e, rooms.ErrNotFound) {
+		// The pair is durable even when the member row was deleted. Preserve
+		// identifiers only; no joined/confirmed state is inferred or revived.
+		own = rooms.Member{AccountID: actor}
+	} else if e != nil {
+		return rooms.Room{}, e
+	}
+	return directRecoveryRoom(out, own, target), nil
 }
 func (r *Repository) ChangeDirect(ctx context.Context, actor, rid, action string) (out rooms.Room, e error) {
 	if r == nil || r.social == nil {
@@ -375,7 +437,7 @@ func (r *Repository) ChangeDirect(ctx context.Context, actor, rid, action string
 		return out, e
 	}
 	defer tx.Rollback()
-	out, e = r.room(ctx, tx, rid, true)
+	out, e = scanRoom(tx.QueryRowContext(ctx, `SELECT `+roomColumns+` FROM chat_rooms WHERE id=$1 AND deleted_at IS NULL AND owned_owner_id IS NOT NULL FOR UPDATE`, rid))
 	if e != nil {
 		return out, e
 	}
@@ -427,10 +489,18 @@ func (r *Repository) ChangeDirect(ctx context.Context, actor, rid, action string
 	if e = relationAudit(ctx, tx, actor, rid, "direct."+action, nil, now); e != nil {
 		return out, e
 	}
-	if e = r.decorateRoom(ctx, tx, &out, actor); e != nil {
-		return out, e
+	var target string
+	if e = tx.QueryRowContext(ctx, `SELECT CASE WHEN account_low=$2::uuid THEN account_high::text ELSE account_low::text END FROM owned_chat_direct_pairs WHERE room_id=$1 AND $2::uuid IN(account_low,account_high)`, rid, actor).Scan(&target); e != nil {
+		return rooms.Room{}, rooms.ErrNotFound
 	}
-	return out, r.commit(ctx, tx, actor, "")
+	out, e = r.projectDirectRoom(ctx, tx, out, actor, target)
+	if e != nil {
+		return rooms.Room{}, e
+	}
+	if e = r.commit(ctx, tx, actor, ""); e != nil {
+		return rooms.Room{}, e
+	}
+	return out, nil
 }
 
 func (r *Repository) RealmRooms(ctx context.Context, actor, ref string, take, offset int) (out []rooms.Room, e error) {
@@ -568,4 +638,15 @@ func (r *Repository) Timeout(ctx context.Context, actor, rid, target string, p *
 		}
 	}
 	return r.commit(ctx, tx, actor, permission)
+}
+
+// Denied content access permits only recovery of an already established pair.
+// Build a new projection so future nested DTO fields cannot inherit cached data.
+func directRecoveryRoom(room rooms.Room, own rooms.Member, target string) rooms.Room {
+	self := rooms.Member{ID: own.ID, ChatRoomID: room.ID, AccountID: own.AccountID, ConfirmedAt: own.ConfirmedAt, JoinedAt: own.JoinedAt, LeaveAt: own.LeaveAt}
+	owner := room.AccountID
+	if owner != own.AccountID && owner != target {
+		owner = ""
+	}
+	return rooms.Room{RecoveryOnly: true, ID: room.ID, Type: 1, AccountID: owner, Members: []rooms.Member{self}, DirectMembers: []rooms.Member{{AccountID: target}}}
 }

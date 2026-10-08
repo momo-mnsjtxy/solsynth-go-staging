@@ -12,6 +12,7 @@ import (
 	"solsynth.local/go-migration/internal/profilemediapg"
 	"solsynth.local/go-migration/internal/socialpg"
 	fed "solsynth.local/go-migration/ports/federation"
+	"solsynth.local/go-migration/ports/messager"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/presence"
 	"solsynth.local/go-migration/ports/passport/social"
@@ -264,8 +265,11 @@ func TestPGRelationshipExpiryCurrentVisibilityAcrossDomains(t *testing.T) {
 	if _, e = status.GetStatus(f.contexts[f.other], f.other, f.owner); !errors.Is(e, presence.ErrNotFound) {
 		t.Fatal("blocked presence exposed", e)
 	}
-	if _, e = f.chats.GetDirect(f.contexts[f.other], f.other, f.owner); e == nil {
-		t.Fatal("blocked chat exposed")
+	if e = relationRead(f, f.other, room.ID); !errors.Is(e, messager.ErrSyncForbidden) {
+		t.Fatal("blocked message history exposed", e)
+	}
+	if _, e = f.chats.GetDirect(f.contexts[f.other], f.other, f.owner); e != nil {
+		t.Fatal("own pair recovery metadata unexpectedly unavailable", e)
 	}
 	query(t, f.db, `UPDATE owned_social_relationships SET expired_at=clock_timestamp()-interval '1 second' WHERE id=$1`, v.ID)
 	// No cleanup invocation: all readers must use the same current-time policy.
@@ -275,8 +279,8 @@ func TestPGRelationshipExpiryCurrentVisibilityAcrossDomains(t *testing.T) {
 	if _, e = status.GetStatus(f.contexts[f.other], f.other, f.owner); e != nil {
 		t.Fatal("expired block retained by presence", e)
 	}
-	if _, e = f.chats.GetDirect(f.contexts[f.other], f.other, f.owner); e != nil {
-		t.Fatal("expired block retained by chat", e)
+	if e = relationRead(f, f.other, room.ID); e != nil {
+		t.Fatal("expired block retained by message history", e)
 	}
 	var friendship bool
 	if e = f.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE account_id=$1 AND related_id=$2 AND status>=100)`, f.owner, f.other).Scan(&friendship); e != nil || friendship {

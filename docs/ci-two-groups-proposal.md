@@ -90,3 +90,7 @@ the supplied historical timings nor this review establishes real two-cluster
 success, runtime speedup or new database/process-restart evidence.
 
 The full-suite comparison path remains `PG_TEST_GROUP=all bash scripts/integration-postgres.sh`; it executes every before/restart case and every process smoke in one disposable cluster. Partial group success never replaces full aggregate acceptance. The latest bounded fixture changes preserve encrypted-message rejection of plaintext fields and realm authority/lock assertions.
+
+## Recovery privacy correction checkpoint
+
+The next bounded correction requires581 before /77 restart cases: group-a293/43 and group-b288/34. The deterministic plan and dependency audit include the new privacy marker, original pair/member state and database-rounded timed block expiry. The preceding580 pilot executed577 passes and3 failures, with neither restart phase reached; no complete two-cluster pass is claimed. Runtime privacy corrections retain message/sync denial and remove peer-profile hydration from denied direct recovery and state responses.

@@ -47,6 +47,7 @@ func (p Policy) ValidNotify(n int32) bool {
 
 // Room and Member are explicitly versioned projections, not full legacy DTOs.
 type Room struct {
+	RecoveryOnly    bool          `json:"recovery_only,omitempty"`
 	Type            int           `json:"type"`
 	RealmID         *string       `json:"realm_id,omitempty"`
 	Realm           *social.Realm `json:"realm,omitempty"`

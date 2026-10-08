@@ -305,8 +305,12 @@ func TestPGSocialTransactionsAndHTTP(t *testing.T) {
 	if got := call("POST", "/stargate/relationships/"+b+"/friends", ""); got != 200 {
 		t.Fatal("client request route", got)
 	}
-	if got := call("POST", "/stargate/relationships/"+b+"/block", `{"expires_in":"30m"}`); got != 501 {
-		t.Fatal("finite block silently permanent", got)
+	if got := call("POST", "/stargate/relationships/"+b+"/block", `{"expires_in":"30m"}`); got != 200 {
+		t.Fatal("finite block request rejected", got)
+	}
+	var finite bool
+	if e := db.QueryRow(`SELECT status=-100 AND expired_at>clock_timestamp()+interval '29 minutes' AND expired_at<=clock_timestamp()+interval '30 minutes' AND degrade_to IS NULL FROM owned_social_relationships WHERE account_id=$1 AND related_id=$2`, a, b).Scan(&finite); e != nil || !finite {
+		t.Fatal("finite block did not persist its bounded deadline", finite, e)
 	}
 	if got := call("POST", "/stargate/relationships/"+b+"/block", `{"role":100}`); got != 400 {
 		t.Fatal("unknown request property", got)

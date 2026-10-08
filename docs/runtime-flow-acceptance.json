@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Bounded federation quote fixture correction: enclosing Create/Update and nested Note both public; actual-PG private-envelope denial and offline roundtrip control preserve receiver policy. Runtime unchanged.",
+  "local_source_checkpoint": "Independently reviewed direct-pair recovery privacy: current locked proof/visibility, no peer profile or nested cached fields on denied access, safe direct-state responses and exact saved expiry/privacy restart regression. Three remaining contract fixture assumptions corrected; full offline581/77 passed, actualPG pending.",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,14 +12,14 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "b58ec755e310bd550764898fdaee8b647aa9a413",
-    "run": 37851661475,
+    "commit": "8100e0557089da3fbd762687ce3c6308a8a56c34",
+    "run": 37852466609,
     "required_before": 580,
     "required_after_restart": 76,
-    "status": "First reviewed two-cluster pilot running, inherits six shared quote fixture failures discovered in573/75. Corrected fixture locally verified; actual rerun pending."
+    "status": "Terminal failure:577before pass,3fail,0skip, no restart. All six quote cases and seven PassKit cases passed actualPG. Remaining MLS/recovery/finite-block fixture failures corrected; real recovery privacy fix newly added pending actualPG."
   },
-  "local_required_before": 580,
-  "local_required_after_restart": 76,
+  "local_required_before": 581,
+  "local_required_after_restart": 77,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -228,7 +228,8 @@
       "local_status": "implemented_subset",
       "supported_flows": [
         "Group/community rooms, invitations, members and read markers",
-        "Direct pair create/confirm/block/unblock; realm-linked rooms and current moderator timeout policy"
+        "Direct pair create/confirm/block/unblock; realm-linked rooms and current moderator timeout policy",
+        "Denied direct-room recovery exposes only established pair IDs and requester recovery state; current proof/visibility rechecked after waits"
       ],
       "guarded_pg_cases": [
         "TestPGChatAuthorityAndUnsupportedBoundaries",
@@ -245,7 +246,8 @@
         "TestPGChatRelationsDisableAndProofDuringLockWait",
         "TestPGChatRelationsDeletionAndRestartPersistence",
         "TestPGChatAuthorityPreflightSameTransactionAndNoLocks",
-        "TestPGBackendChatRelationsComposition"
+        "TestPGBackendChatRelationsComposition",
+        "TestPGDirectRecoveryPrivacyRestartPersistence"
       ],
       "verification": {
         "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
@@ -2135,7 +2137,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last full green455/60.573/75 ran564pass/9fail/0skip, no restart; seven PassKit cases passed actualPG. Older three fixture failures corrected; six quote envelope fixtures corrected in this candidate. No new full green."
+    "verification_note": "Last full green455/60.580/76 latestpilot577pass3fail, no restart. This581/77 correction has offline evidence only; both PGgroups and aggregate must pass."
   },
   "global_remaining": [
     "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",

@@ -453,7 +453,7 @@ func TestPGChatRelationsDeletionAndRestartPersistence(t *testing.T) {
 	} else {
 		t.Fatal("PG_TEST_PHASE must be before or after")
 	}
-	chat, e := chatpg.New(db, chatPolicy)
+	chat, e := chatpg.NewForCompatibilityTests(db, chatPolicy)
 	if e != nil {
 		t.Fatal(e)
 	}

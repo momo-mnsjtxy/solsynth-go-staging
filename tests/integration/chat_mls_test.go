@@ -367,7 +367,9 @@ func TestPGMLSBackendAuthorityAndGatewayComposition(t *testing.T) {
 	call("POST", "/messager/chat/"+dm.ID+"/devices/me/joined", f.token, "", string(body), 200)
 	body = fixtureMLSMessageBody(t, rooms.EncryptionMeta{Scheme: "chat.mls.v2", Epoch: 0, Ciphertext: mlsBytes("backend-message"), Header: mlsBytes("header")})
 	call("POST", "/messager/chat/"+dm.ID+"/messages", f.token, "", string(body), 200)
-	backendCall(t, app, "POST", "/messager/chat/"+dm.ID+"/block", f.otherToken, "", 204)
+	// The authored direct-block route applies only before recipient confirmation.
+	backendCall(t, app, "POST", "/messager/chat/"+dm.ID+"/block", f.otherToken, "", 409)
+	backendJSONCall(t, app, "POST", "/stargate/relationships/"+f.actor+"/block", f.otherToken, map[string]any{}, 200)
 	call("GET", "/e2ee/mls/groups/"+*enabled.MLSGroupID+"/groupinfo", f.token, device, "", 403)
 	query(t, f.db, `UPDATE owned_authority_accounts SET disabled=true WHERE id=$1`, f.actor)
 	call("GET", "/e2ee/mls/kp/status", f.token, device, "", 423)

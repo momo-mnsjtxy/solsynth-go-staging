@@ -1,18 +1,18 @@
 {
-  "checkpoint": "content-moderation-composition",
-  "scope": "338 before/47 restart candidate; full local build/vet/race passed; actual PostgreSQL pending",
+  "checkpoint": "livestream-composition",
+  "scope": "348 before/48 restart candidate; full local build/vet/race passed; actual PostgreSQL pending",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
     "recovery_blobs": 187
   },
-  "remote_publication": "ee2340ce8bde9ce9db4c55e148fe65f7e3de9c95 candidate327/46 running",
-  "verification": "docs/published-ipcheck-ci.json",
+  "remote_publication": "b8f8890bd57b5650e604da81df8ab5e13eed3295 candidate338/47 running",
+  "verification": "docs/published-account-extras-ci.json",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
       "bytes": 2097,
-      "sha256": "0ba4593d45d41d3a1d9e4dc1b20183be9dfcc9d2136975ceb207977a9a122e8d"
+      "sha256": "2dc6cafaa74002bf0de25ef420759c52e2c60e956cc817ba12a5b9eaa90ac27b"
     },
     {
       "path": ".gitignore",
@@ -76,13 +76,13 @@
     },
     {
       "path": "cmd/backend/external_config.go",
-      "bytes": 7640,
-      "sha256": "92fc50756fc0d9d70e79144df2be83c5bb1fab8f46bc17600915414ccae3036c"
+      "bytes": 9252,
+      "sha256": "c0e13b635b9a7a5112e4eaa8f6552a76a669be0f3a1f6a3d8c4f88cf4c89b381"
     },
     {
       "path": "cmd/backend/external_config_test.go",
-      "bytes": 3523,
-      "sha256": "3882ba6d51829995e0ff5684e792c9802a981a3420076f1a9eec8d06fc87f8c7"
+      "bytes": 4737,
+      "sha256": "8db48ef0d85eb64246cdf42f665eede5511266eac94043b8f9a2be180a6e2b3d"
     },
     {
       "path": "cmd/backend/fortune_config.go",
@@ -116,8 +116,8 @@
     },
     {
       "path": "cmd/backend/main.go",
-      "bytes": 14379,
-      "sha256": "87743821e94b58ea965704d93b8e4a4fca825478e9362c8909fa9b5688511bee"
+      "bytes": 14408,
+      "sha256": "084261793ce01b7dc796009ee1306df396a9fefd4862e519637d89e24b5d5c42"
     },
     {
       "path": "cmd/backend/reader_config.go",
@@ -468,6 +468,11 @@
       "path": "docs/live-smoke-result.json",
       "bytes": 921,
       "sha256": "6e2667d29a9c2baa54a6b5195fdc0250e3a481841f1d818271974ca1e3e1136c"
+    },
+    {
+      "path": "docs/livestream-continuation.md",
+      "bytes": 16383,
+      "sha256": "483934cbcfbe1f00ed835f7491a234610549e37ecff936c5ba879b79d1f3c01e"
     },
     {
       "path": "docs/local-final-checkpoint.json",
@@ -1275,6 +1280,11 @@
       "sha256": "f2445afff48bdbae5c9b5962284c32f96a4dfaf24aacf40059db97b88890156a"
     },
     {
+      "path": "docs/published-account-extras-ci.json",
+      "bytes": 440,
+      "sha256": "8cf3c90e6cf3c4629af383d214dddea2e7926cebb89d79f27b56a7968a0ffc6a"
+    },
+    {
       "path": "docs/published-account-utilities-ci.json",
       "bytes": 464,
       "sha256": "cd4c447da4aeffc54d3c28cf64c5d04387597407a3d552163db88ec7307a4c1d"
@@ -1386,8 +1396,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 41953,
-      "sha256": "0a690acf09c68ba21782a3e56ca341c3d46640eea95614c6ac6744d954e06222"
+      "bytes": 43439,
+      "sha256": "2886f1e2da5fd945be2675b8c85e4692a9747c31445e4b8cc55d1c1fa8083ca8"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -1480,6 +1490,11 @@
       "sha256": "fcf8310db3b95d1274d220e77fc06fde3f3653191c2cb104dca4740e35532926"
     },
     {
+      "path": "internal/accountpg/publisher_transaction_reads.go",
+      "bytes": 1430,
+      "sha256": "d60e61bd86327d3a2ddfb5fc26063ac531aa3d61be4a96aece1bca891480dea4"
+    },
+    {
       "path": "internal/accountpg/publishers.go",
       "bytes": 11919,
       "sha256": "35b6dcbb6767d9a3c47cc96dfa7e6438409d868bc3eb61c8ba94437a6842e172"
@@ -1536,8 +1551,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 24878,
-      "sha256": "23a16ff906bcc9775dc10b335ff396b2f3591e0116c5f5947bd409a3b7469b16"
+      "bytes": 25089,
+      "sha256": "a035b825d59c565283966e7b1025a30257aa99d1c4dd8851d4cc16790276b9ea"
     },
     {
       "path": "internal/application/commerce.go",
@@ -1546,8 +1561,8 @@
     },
     {
       "path": "internal/application/external_modules.go",
-      "bytes": 4737,
-      "sha256": "8f6982cea146b18e657e0618d5ad4a7dd1435fa44d2c441258483b29b17f2d9c"
+      "bytes": 5081,
+      "sha256": "1788b60ad75450edec9fe9cbcd95964be2bc1894de5623ff8095668a03c75e75"
     },
     {
       "path": "internal/application/external_modules_test.go",
@@ -1568,6 +1583,11 @@
       "path": "internal/application/ipcheck.go",
       "bytes": 725,
       "sha256": "63d90a818dddc29ecc1ba09b53aacaf3425537318c8bb7959b4b7a17d89443df"
+    },
+    {
+      "path": "internal/application/livestreams.go",
+      "bytes": 1301,
+      "sha256": "cacf6dd753eb812a773c547154bdb4c517f6a0943931935b56f4f785d4659c49"
     },
     {
       "path": "internal/application/media.go",
@@ -1611,13 +1631,13 @@
     },
     {
       "path": "internal/application/router.go",
-      "bytes": 16183,
-      "sha256": "b5be715a28fc087d80cf49046a446c6d920cec24ccf2d55ee3ea2c896c08fdda"
+      "bytes": 16637,
+      "sha256": "75b27f30646c863d99606d99400697247e18422cb96f3e98dbde5b6974a72317"
     },
     {
       "path": "internal/application/router_test.go",
-      "bytes": 4235,
-      "sha256": "9dde4504b3f2ca348dceea96e85d1b98adf7277d0bd710c6ece0ad0d8009b498"
+      "bytes": 4411,
+      "sha256": "bf5975cdfacb3049171e606c36fdaa5c0f6b536e253d945b57c5b5e2884c5933"
     },
     {
       "path": "internal/application/schema.go",
@@ -1768,6 +1788,11 @@
       "path": "internal/authoritypg/oauth_binding_errors.go",
       "bytes": 343,
       "sha256": "d1eca133bc5637fb3fa978e56bb76c6c25d39625f27c2f79618b8639183fdfea"
+    },
+    {
+      "path": "internal/authoritypg/recorded_session.go",
+      "bytes": 1623,
+      "sha256": "00bcc340210821fbc5906ee538bd9950b290bdfc80eb7ea6bfcd5276bf1c9522"
     },
     {
       "path": "internal/authoritypg/repository.go",
@@ -2123,6 +2148,31 @@
       "path": "internal/interactionpg/schema.sql",
       "bytes": 2231,
       "sha256": "2003b8a0f4dd090c1826b72834caa532a2ff49854a6ba33cb0d2fc0d1d18a438"
+    },
+    {
+      "path": "internal/livestreampg/lifecycle.go",
+      "bytes": 14060,
+      "sha256": "f3d5514d39296f45e106c3547c7f2ec4788005b905f7b979f364437547b7621c"
+    },
+    {
+      "path": "internal/livestreampg/maintenance.go",
+      "bytes": 12482,
+      "sha256": "578148a07f67af02b85006f2bb33980e2f351294e4ce166fca1a85dba5cdfa17"
+    },
+    {
+      "path": "internal/livestreampg/metadata.go",
+      "bytes": 5320,
+      "sha256": "ff3e11f8a214561afe98d4a1a261ee73756ca44d193fb3f87fa852893bcccec6"
+    },
+    {
+      "path": "internal/livestreampg/repository.go",
+      "bytes": 14413,
+      "sha256": "587c64349aec7fc516b46be0b76aca1ed3f0068fc9538bbfe5b64e524fd7faf1"
+    },
+    {
+      "path": "internal/livestreampg/schema.sql",
+      "bytes": 4334,
+      "sha256": "153ab1f234b1cd4caab59cbb94a325fd39396e41f4453975c6f0cb24d9270dbc"
     },
     {
       "path": "internal/locationpg/meets.go",
@@ -2658,6 +2708,16 @@
       "path": "internal/rtcprovider/livekit_test.go",
       "bytes": 7158,
       "sha256": "aacd86ce89d18bff4c5f61a4e567224adbd128a82b6c48087e7b8b3b0d2d9ffc"
+    },
+    {
+      "path": "internal/rtcprovider/livestream.go",
+      "bytes": 7782,
+      "sha256": "d9567acd4b74b5fdf1cb9d5b2f13c8daeb9749ae011cb7f6040c0f49c73ac8fe"
+    },
+    {
+      "path": "internal/rtcprovider/livestream_test.go",
+      "bytes": 5801,
+      "sha256": "359a1e9c67c052a7839859c9f8f4ab9f38b1ff68868d2a47ea252a51b7d106cf"
     },
     {
       "path": "internal/signinpg/contacts.go",
@@ -4695,9 +4755,19 @@
       "sha256": "b8fcba8fc2296301497c107b8fc26e1ea5d8c578c9ec07bec0e835cb185a8f94"
     },
     {
+      "path": "ports/authority/recorded_session.go",
+      "bytes": 2097,
+      "sha256": "17ceb547ffbfbdaad5f058304953da108d9bd324df9157b06fa465482648a089"
+    },
+    {
+      "path": "ports/authority/recorded_session_test.go",
+      "bytes": 2978,
+      "sha256": "fcb64c01b242bd2036ccb4a7ae9e88c87d64e097ca66163a1f26d1f1be81e47e"
+    },
+    {
       "path": "ports/authority/service.go",
-      "bytes": 13815,
-      "sha256": "10b9a04e71a770208ad540e5b54580e50620d209f7aee0c349e339e804120b4f"
+      "bytes": 14092,
+      "sha256": "c46e53319032612baad5412c8dd58c2b322c2d56d48811a605beee1d49e135ef"
     },
     {
       "path": "ports/authority/session_listing_test.go",
@@ -6520,6 +6590,51 @@
       "sha256": "5338c33c8466525d9a29947ca83630d7a04e54482a686fe7d82ee75cb6cd6767"
     },
     {
+      "path": "ports/sphere/livestreams/http.go",
+      "bytes": 9047,
+      "sha256": "133f687483e5e6ac49cffc9c5a661984bfe7e250c73611db5f6be4b6cdafcabd"
+    },
+    {
+      "path": "ports/sphere/livestreams/http_test.go",
+      "bytes": 3682,
+      "sha256": "428ea9e5b3f03e6c78b5ba9a221cd446cd85051e3fe776ff0279a648e6731023"
+    },
+    {
+      "path": "ports/sphere/livestreams/source/DysonNetwork.Sphere__Live__LiveKitLivestreamService.cs",
+      "bytes": 15875,
+      "sha256": "6285835175a0f7118624168af13650c5bb5a834bab9443ea65dc068a798cc6d2"
+    },
+    {
+      "path": "ports/sphere/livestreams/source/DysonNetwork.Sphere__Live__LiveStreamService.cs",
+      "bytes": 21287,
+      "sha256": "67c017ccf90d54299c45edee5571e9cc6b1fa89c984e4476370b464c2313143a"
+    },
+    {
+      "path": "ports/sphere/livestreams/source/DysonNetwork.Sphere__Models__LiveStream.cs",
+      "bytes": 8338,
+      "sha256": "3cbd2e13481a09240d0d932f2b48032aa448bd89acccbebee97cb4c049aae960"
+    },
+    {
+      "path": "ports/sphere/livestreams/source/caller-search.json",
+      "bytes": 554,
+      "sha256": "2c93b0ef04fbe5fce0268bd60adadc8c8370d5823a340cb6ba81f556e8da894a"
+    },
+    {
+      "path": "ports/sphere/livestreams/source/manifest.json",
+      "bytes": 4170,
+      "sha256": "3a01fcd21b76b3a42f989f334ef5583cb5caf8fd083df509089c29bd40d07405"
+    },
+    {
+      "path": "ports/sphere/livestreams/types.go",
+      "bytes": 7776,
+      "sha256": "462c4480f23376fd907b78ef39d85b5bf6a05c1811cfb73cbdf89350cdcedbb5"
+    },
+    {
+      "path": "ports/sphere/livestreams/validation.go",
+      "bytes": 1502,
+      "sha256": "21638e0667447ab4af21934b41ce01e33f130f032cdd8ce0f67337dbbf83c082"
+    },
+    {
       "path": "ports/sphere/locations/authority.go",
       "bytes": 2352,
       "sha256": "42c1f302acbbe8e8d5e78cb583c67ef2427857056266f30e86c4449e8e5b8366"
@@ -7621,8 +7736,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 22355,
-      "sha256": "760e1137907e7d83e2959d8c9252472a1f08645d768e146c7f6e4013edb0bfde"
+      "bytes": 23007,
+      "sha256": "1c06c8b3d03ac451cd816e61af7655ac5f8356b87d57221b0ca7e051d27503d0"
     },
     {
       "path": "scripts/check-source-evidence.py",
@@ -7631,8 +7746,8 @@
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 6977,
-      "sha256": "6c141530647c01182e01855bca722f6b98bec6d273f92ecf84f5fb2d69dd00e2"
+      "bytes": 7062,
+      "sha256": "c5fe77fd047cd257319f53414b9a5550d7833b96f7430d35c48177615d92be83"
     },
     {
       "path": "scripts/test-coverage-format.py",
@@ -7646,8 +7761,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 12245,
-      "sha256": "713d62d46cee1a8339b3568ca32973143a836d3304adb65cf7e15ababc3ff42f"
+      "bytes": 12282,
+      "sha256": "059ac4dbf3f0da513d71b8847225c7d22ba89d2b5a5704a9646f01f5d83e05c0"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -7990,6 +8105,11 @@
       "sha256": "e9075764c5dd96f1a4df889642c754c0459e8c1fe88f59b1ab0c22fe0cb5a7b5"
     },
     {
+      "path": "tests/integration/backend_livestream_test.go",
+      "bytes": 2980,
+      "sha256": "07a0a1b54647dd61dabfcdeec76e38d0cc1dd8e521306ceddb3f65b3a522dad4"
+    },
+    {
       "path": "tests/integration/backend_merchant_test.go",
       "bytes": 1597,
       "sha256": "a934f59b70a8b6a143abeae578ed14b44ba43ba5ae2d4c406d4829da6bc470ae"
@@ -8128,6 +8248,11 @@
       "path": "tests/integration/identity_guard_review_test.go",
       "bytes": 8183,
       "sha256": "998270edce0471d5b48ac41a1d95ca82d669241cbcd3b3ccc36fc2a6abfb8987"
+    },
+    {
+      "path": "tests/integration/livestreams_test.go",
+      "bytes": 21270,
+      "sha256": "208b75e6f09aa59c7e3606282183127a7e07585e5de90fa2ea1e10c25366400d"
     },
     {
       "path": "tests/integration/locations_test.go",

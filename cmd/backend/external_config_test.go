@@ -93,3 +93,28 @@ func TestFederationConfigurationPinsExistingKeys(t *testing.T) {
 		t.Fatal("implicit config location")
 	}
 }
+
+func TestLivestreamProviderConfigurationIndependentOfCalls(t *testing.T) {
+	t.Setenv("SYNTHETIC_STREAM_KEY", "synthetic-only-key")
+	t.Setenv("SYNTHETIC_STREAM_SECRET", strings.Repeat("s", 64))
+	args := []string{"--enable-livestreams", "--livekit-endpoint=wss://nonexistent.invalid", "--livekit-api-key-env=SYNTHETIC_STREAM_KEY", "--livekit-api-secret-env=SYNTHETIC_STREAM_SECRET", "--livekit-cloud-revocation"}
+	var c application.Config
+	v := parseExternal(t, args...)
+	if e := v.apply(&c); e != nil || c.Livestreams == nil || c.Calls != nil {
+		t.Fatal("stream-only binding", e)
+	}
+	if *v.maintenance != 5*time.Second {
+		t.Fatal("cleanup cadence")
+	}
+	c = application.Config{}
+	v = parseExternal(t, append(args, "--enable-calls")...)
+	if e := v.apply(&c); e != nil || c.Calls == nil || any(c.Calls.Provider) != any(c.Livestreams.Provider) {
+		t.Fatal("provider instance not shared", e)
+	}
+	for _, bad := range [][]string{{"--livestream-publisher-limit=1"}, {"--enable-livestreams"}, append(args, "--livestream-idle-grace=1s"), append(args, "--livestream-token-ttl=10m")} {
+		var c application.Config
+		if e := parseExternal(t, bad...).apply(&c); e == nil {
+			t.Fatal("unsupported stream config", bad)
+		}
+	}
+}

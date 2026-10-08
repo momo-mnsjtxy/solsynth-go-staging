@@ -17,6 +17,7 @@ import (
 	"solsynth.local/go-migration/ports/passport/progression"
 	"solsynth.local/go-migration/ports/passport/rewind"
 	"solsynth.local/go-migration/ports/sphere/autocomplete"
+	"solsynth.local/go-migration/ports/sphere/livestreams"
 	"solsynth.local/go-migration/ports/sphere/timeline"
 	"strings"
 )
@@ -24,6 +25,7 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	livestreams                                                                                                                                                                                                                                          http.Handler
 	moderation                                                                                                                                                                                                                                           http.Handler
 	namecards, rewind                                                                                                                                                                                                                                    http.Handler
 	ipcheck                                                                                                                                                                                                                                              http.Handler
@@ -260,6 +262,9 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if h.moderation != nil && content.Handles(canonical) && (service == "api" || service == "passport" && under(canonical, "/api/admin/realms") || service == "sphere" && !under(canonical, "/api/admin/realms")) {
 		target = h.moderation
+	}
+	if h.livestreams != nil && (service == "api" || service == "sphere") && livestreams.RouteMatches(canonical) {
+		target = h.livestreams
 	}
 	if h.ipcheck != nil && (service == "api" || service == "passport") && ipcheck.Route(canonical) {
 		target = h.ipcheck

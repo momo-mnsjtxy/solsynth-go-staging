@@ -296,7 +296,7 @@ func run(args []string, out io.Writer) error {
 	}()
 	// Revocation and federation delivery have a separate bounded cadence so a
 	// slow settlement batch cannot postpone canonical call cleanup indefinitely.
-	if *externalSettings.calls || *externalSettings.federation {
+	if *externalSettings.calls || *externalSettings.federation || *externalSettings.streams {
 		go func() {
 			ticker := time.NewTicker(*externalSettings.maintenance)
 			defer ticker.Stop()

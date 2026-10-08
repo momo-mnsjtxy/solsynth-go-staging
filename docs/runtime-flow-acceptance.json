@@ -2,22 +2,22 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Canonical content moderation composed with previously frozen account extras",
+  "local_source_checkpoint": "Configured livestream lifecycle composed with canonical moderation and account extras",
   "last_fully_passed_ci": {
-    "commit": "d4d61e14302ab8a67418b7e4848a50d879d60732",
-    "run": 37780665119,
-    "before": 316,
-    "after_restart": 44
+    "commit": "ee2340ce8bde9ce9db4c55e148fe65f7e3de9c95",
+    "run": 37782048798,
+    "before": 327,
+    "after_restart": 46
   },
   "latest_candidate": {
-    "commit": "ee2340ce8bde9ce9db4c55e148fe65f7e3de9c95",
-    "required_before": 327,
-    "required_after_restart": 46,
+    "commit": "b8f8890bd57b5650e604da81df8ab5e13eed3295",
+    "required_before": 338,
+    "required_after_restart": 47,
     "status": "Published; actual PostgreSQL running",
-    "run": 37782048798
+    "run": 37783103970
   },
-  "local_required_before": 338,
-  "local_required_after_restart": 47,
+  "local_required_before": 348,
+  "local_required_after_restart": 48,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -777,7 +777,7 @@
     },
     {
       "source_family": "passport.name_cards",
-      "local_status": "implemented and composed; actual PostgreSQL candidate pending",
+      "local_status": "fully validated in ee2340ce,327/46",
       "supported_flows": [
         "Source paid-card order/list/use; canonical payment and receipt in one transaction",
         "Account/realm/publisher rename and account session invalidation"
@@ -796,7 +796,7 @@
     },
     {
       "source_family": "passport.rewind",
-      "local_status": "implemented and composed; actual PostgreSQL candidate pending",
+      "local_status": "fully validated in ee2340ce,327/46",
       "supported_flows": [
         "Annual canonical activity snapshot with current reference privacy",
         "Revocable public share with private DM/call/word projection redacted"
@@ -840,6 +840,35 @@
         "Verification marks/admin statistics/automod next slice",
         "Custom realm permission overrides",
         "Full legacy model hydration/global middleware internal parity"
+      ]
+    },
+    {
+      "source_family": "sphere.livestreams",
+      "local_status": "implemented and composed; actual PG candidate pending",
+      "supported_flows": [
+        "Canonical publisher stream metadata, visibility and thumbnail linking",
+        "Configured LiveKit RTMP/WHIP/native start and scoped viewer/publisher admissions",
+        "Durable provider intent, uncertain-create reconciliation and acknowledged end/delete cleanup",
+        "Current authority/session/publisher eligibility and fast bounded revocation maintenance"
+      ],
+      "guarded_pg_cases": [
+        "TestPGLiveStreamLifecycleTokensAndPrivateVisibility",
+        "TestPGLiveStreamIngressUncertainCreateAndDurableCleanup",
+        "TestPGLiveStreamCapturedPermissionAndPublisherRevocation",
+        "TestPGLiveStreamUnknownIngressOutcomeFailsClosed",
+        "TestPGLiveStreamConcurrentIdempotencyAndProviderRollback",
+        "TestPGLiveStreamCanonicalThumbnailAndUnconfiguredProvider",
+        "TestPGLiveStreamDisableDuringLockWait",
+        "TestPGLiveStreamParentExpiryAndIdleCleanup",
+        "TestPGLiveStreamCleanupRestartPersistence",
+        "TestPGBackendLivestreamComposition"
+      ],
+      "unsupported_or_remaining": [
+        "Stream chat follow-up in progress",
+        "Configured egress/HLS output/playback policy",
+        "Canonical paid awards/order fulfillment",
+        "Subscriber notifications/provider webhooks",
+        "Unobservable ingress creates require operator/provider reconciliation; never blind retry"
       ]
     }
   ],

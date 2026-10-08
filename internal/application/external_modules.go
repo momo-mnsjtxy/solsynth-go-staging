@@ -10,6 +10,7 @@ import (
 	"solsynth.local/go-migration/internal/callpg"
 	"solsynth.local/go-migration/internal/federationhttp"
 	"solsynth.local/go-migration/internal/federationpg"
+	"solsynth.local/go-migration/internal/livestreampg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/federation"
 	"solsynth.local/go-migration/ports/messager/calls"
@@ -31,6 +32,7 @@ type FederationConfig struct {
 	Transport federation.Transport
 }
 type externalModules struct {
+	streams                                       *livestreampg.Repository
 	calls                                         *callpg.Repository
 	federation                                    *federationpg.Repository
 	transport                                     federation.Transport
@@ -41,7 +43,7 @@ func externalModulesFor(db, authorityDB *sql.DB, c Config, v *authority.Verifier
 	x.callHTTP = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "CHAT_CALL_PROVIDER_UNCONFIGURED") })
 	x.federationPublic = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "FEDERATION_UNCONFIGURED") })
 	x.federationPrivate = x.federationPublic
-	if c.Calls != nil || c.Federation != nil {
+	if c.Calls != nil || c.Federation != nil || c.Livestreams != nil {
 		if authorityDB != db || guard == nil {
 			return x, errors.New("calls and federation require same-pool atomic authority")
 		}
@@ -77,6 +79,11 @@ func externalModulesFor(db, authorityDB *sql.DB, c Config, v *authority.Verifier
 	return x, nil
 }
 func (x externalModules) ready(ctx context.Context, db *sql.DB) error {
+	if x.streams != nil {
+		if e := x.streams.Ready(ctx); e != nil {
+			return e
+		}
+	}
 	if x.calls != nil {
 		var ready bool
 		e := db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name)IS NOT NULL)FROM(VALUES('call_v1.calls'),('call_v1.members'),('call_v1.events'),('call_v1.timeouts'),('call_v1.invites'))required(name)`).Scan(&ready)
@@ -94,6 +101,11 @@ func (x externalModules) ready(ctx context.Context, db *sql.DB) error {
 func (x externalModules) processDue(ctx context.Context, limit int) (count int, err error) {
 	if limit < 1 || limit > 100 {
 		return 0, errors.New("lifecycle batch size must be between 1 and 100")
+	}
+	if x.streams != nil {
+		n, e := x.streams.ProcessDue(ctx, limit)
+		count += n
+		err = errors.Join(err, e)
 	}
 	if x.calls != nil {
 		n, e := x.calls.ProcessDue(ctx, limit)

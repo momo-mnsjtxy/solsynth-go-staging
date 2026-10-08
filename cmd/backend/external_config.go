@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"solsynth.local/go-migration/internal/application"
+	"solsynth.local/go-migration/internal/livestreampg"
 	"solsynth.local/go-migration/internal/rtcprovider"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/federation"
@@ -21,6 +22,9 @@ import (
 )
 
 type externalFlagSet struct {
+	streams                                     *bool
+	streamTTL, streamLifetime, streamIdle       *time.Duration
+	streamLimit                                 *int
 	calls, federation, send, cloudRevocation    *bool
 	endpoint, keyEnv, secretEnv, federationFile *string
 	tokenTTL, callTTL, maintenance              *time.Duration
@@ -28,6 +32,11 @@ type externalFlagSet struct {
 
 func externalFlags(fs *flag.FlagSet) externalFlagSet {
 	return externalFlagSet{
+		streams:         fs.Bool("enable-livestreams", false, "enable canonical livestreams through explicitly configured LiveKit"),
+		streamTTL:       fs.Duration("livestream-token-ttl", time.Minute, "short-lived viewer or publisher token duration"),
+		streamLifetime:  fs.Duration("livestream-max-lifetime", 4*time.Hour, "maximum broadcast lifetime"),
+		streamIdle:      fs.Duration("livestream-idle-grace", 5*time.Minute, "idle ingress grace, 5m through 1h"),
+		streamLimit:     fs.Int("livestream-publisher-limit", 20, "maximum retained streams per publisher"),
 		calls:           fs.Bool("enable-calls", false, "enable canonical room-call signaling with explicitly provisioned LiveKit Cloud credentials"),
 		federation:      fs.Bool("enable-federation", false, "enable the explicitly provisioned ActivityPub subset"),
 		send:            fs.Bool("federation-send", false, "enable queued outbound delivery only to configured pinned HTTPS peers"),
@@ -41,9 +50,15 @@ func (v externalFlagSet) apply(c *application.Config) error {
 	if *v.maintenance < time.Second || *v.maintenance > 30*time.Second {
 		return errors.New("external maintenance interval must be between 1 and 30 seconds")
 	}
-	if !*v.calls {
+	if !*v.streams && (*v.streamTTL != time.Minute || *v.streamLifetime != 4*time.Hour || *v.streamIdle != 5*time.Minute || *v.streamLimit != 20) {
+		return errors.New("livestream limits require explicit enablement")
+	}
+	if *v.streams && (*v.streamTTL < 15*time.Second || *v.streamTTL > 5*time.Minute || *v.streamLifetime < *v.streamTTL || *v.streamLifetime > 24*time.Hour || *v.streamIdle < 5*time.Minute || *v.streamIdle > time.Hour || *v.streamLimit < 1 || *v.streamLimit > 10000) {
+		return errors.New("invalid livestream policy")
+	}
+	if !*v.calls && !*v.streams {
 		if *v.endpoint != "" || *v.keyEnv != "" || *v.secretEnv != "" || *v.cloudRevocation {
-			return errors.New("LiveKit provider settings require enable-calls")
+			return errors.New("LiveKit provider settings require enable-calls or enable-livestreams")
 		}
 	} else {
 		if *v.keyEnv == "" || *v.secretEnv == "" || *v.tokenTTL < 15*time.Second || *v.tokenTTL > 5*time.Minute || *v.callTTL < *v.tokenTTL || *v.callTTL > 24*time.Hour {
@@ -56,7 +71,12 @@ func (v externalFlagSet) apply(c *application.Config) error {
 		if e != nil {
 			return errors.New("LiveKit provider configuration is incomplete or unsupported")
 		}
-		c.Calls = &application.CallConfig{Provider: provider, TokenTTL: *v.tokenTTL, CallTTL: *v.callTTL}
+		if *v.calls {
+			c.Calls = &application.CallConfig{Provider: provider, TokenTTL: *v.tokenTTL, CallTTL: *v.callTTL}
+		}
+		if *v.streams {
+			c.Livestreams = &application.LivestreamConfig{Provider: provider, Policy: livestreampg.Config{TokenTTL: *v.streamTTL, MaxRunDuration: *v.streamLifetime, IdleGrace: *v.streamIdle, MaxStreamsPerPublisher: *v.streamLimit}}
+		}
 	}
 	if !*v.federation {
 		if *v.federationFile != "" || *v.send {

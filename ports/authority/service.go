@@ -175,48 +175,54 @@ func (s *Service) AuthorizePrincipal(ctx context.Context, p Principal, permissio
 }
 func policy(permissions []string) func(Transaction, Principal, time.Time) error {
 	return func(tx Transaction, p Principal, now time.Time) error {
-		if len(permissions) == 0 {
+		return evaluatePolicy(tx, p.Account, p.Session, now, permissions)
+	}
+}
+
+// evaluatePolicy is shared by original-proof authorization and read-only
+// eligibility of a previously recorded downstream admission.
+func evaluatePolicy(tx Transaction, account Account, session Session, now time.Time, permissions []string) error {
+	if len(permissions) == 0 {
+		return ErrForbidden
+	}
+	rules, e := tx.Rules()
+	if e != nil {
+		return e
+	}
+	punishments, e := tx.Punishments()
+	if e != nil {
+		return e
+	}
+	for _, key := range permissions {
+		if !validPattern(key) || strings.Contains(key, "*") {
 			return ErrForbidden
 		}
-		rules, e := tx.Rules()
-		if e != nil {
-			return e
+		scope := false
+		for _, v := range session.Scopes {
+			scope = scope || matches(v, key)
 		}
-		punishments, e := tx.Punishments()
-		if e != nil {
-			return e
+		if !scope {
+			return ErrForbidden
 		}
-		for _, key := range permissions {
-			if !validPattern(key) || strings.Contains(key, "*") {
+		for _, v := range punishments {
+			if v.Kind == "permission_modification" && active(v.StartsAt, v.ExpiresAt, now) && matches(v.Pattern, key) {
 				return ErrForbidden
 			}
-			scope := false
-			for _, v := range p.Session.Scopes {
-				scope = scope || matches(v, key)
-			}
-			if !scope {
-				return ErrForbidden
-			}
-			for _, v := range punishments {
-				if v.Kind == "permission_modification" && active(v.StartsAt, v.ExpiresAt, now) && matches(v.Pattern, key) {
+		}
+		allow := false
+		for _, r := range rules {
+			if active(r.StartsAt, r.ExpiresAt, now) && matches(r.Pattern, key) {
+				if r.Deny {
 					return ErrForbidden
 				}
-			}
-			allow := false
-			for _, r := range rules {
-				if active(r.StartsAt, r.ExpiresAt, now) && matches(r.Pattern, key) {
-					if r.Deny {
-						return ErrForbidden
-					}
-					allow = true
-				}
-			}
-			if !allow && !p.Account.Superuser {
-				return ErrForbidden
+				allow = true
 			}
 		}
-		return nil
+		if !allow && !account.Superuser {
+			return ErrForbidden
+		}
 	}
+	return nil
 }
 func (s *Service) newSession(tx Transaction, o SessionOptions, now time.Time) (Session, Pair, error) {
 	var se Session

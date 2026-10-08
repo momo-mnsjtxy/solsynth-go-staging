@@ -9,6 +9,8 @@ import (
 
 func TestGatewayAndDirectRouting(t *testing.T) {
 	cases := []struct{ path, module, canonical string }{
+		{"/sphere/livestreams", "livestreams", "/api/livestreams"},
+		{"/api/livestreams/id/token", "livestreams", "/api/livestreams/id/token"},
 		{"/passport/accounts/me/name-change-card/order", "namecards", "/api/accounts/me/name-change-card/order"},
 		{"/stargate/accounts/me/name-change-card/use", "namecards", "/stargate/accounts/me/name-change-card/use"},
 		{"/api/accounts/me/name-change-card", "namecards", "/api/accounts/me/name-change-card"},
@@ -46,7 +48,7 @@ func TestGatewayAndDirectRouting(t *testing.T) {
 					w.WriteHeader(201)
 				})
 			}
-			h := router{modules{namecards: handler("namecards"), rewind: handler("rewind"), board: handler("board"), taxonomy: handler("taxonomy"), posts: handler("posts"), messager: handler("messager"), wallet: handler("wallet"), accounts: handler("accounts"), session: handler("session")}}
+			h := router{modules{livestreams: handler("livestreams"), namecards: handler("namecards"), rewind: handler("rewind"), board: handler("board"), taxonomy: handler("taxonomy"), posts: handler("posts"), messager: handler("messager"), wallet: handler("wallet"), accounts: handler("accounts"), session: handler("session")}}
 			r := httptest.NewRequest("POST", tc.path+"?take=7", nil)
 			before := r.URL.String()
 			w := httptest.NewRecorder()

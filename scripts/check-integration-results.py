@@ -5,6 +5,17 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGLiveStreamLifecycleTokensAndPrivateVisibility",
+        "TestPGLiveStreamIngressUncertainCreateAndDurableCleanup",
+        "TestPGLiveStreamCapturedPermissionAndPublisherRevocation",
+        "TestPGLiveStreamUnknownIngressOutcomeFailsClosed",
+        "TestPGLiveStreamConcurrentIdempotencyAndProviderRollback",
+        "TestPGLiveStreamCanonicalThumbnailAndUnconfiguredProvider",
+        "TestPGLiveStreamDisableDuringLockWait",
+        "TestPGLiveStreamParentExpiryAndIdleCleanup",
+        "TestPGLiveStreamCleanupRestartPersistence",
+        "TestPGBackendLivestreamComposition",
+
         "TestPGContentModerationGlobalIsolationAndLifecycle",
         "TestPGContentModerationShadowbanPropagation",
         "TestPGContentModerationAtomicBatchAndAuditRollback",
@@ -369,6 +380,8 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGLiveStreamCleanupRestartPersistence",
+
         "TestPGContentModerationRestartPersistence",
 
         "TestPGNameCardRestartPersistence",

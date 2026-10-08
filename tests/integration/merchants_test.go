@@ -47,10 +47,7 @@ func merchantOther(t *testing.T, f commerceFixture) (string, context.Context, wa
 		t.Fatal(e)
 	}
 	token := pgIssue(t, f.issuer, id).Token
-	v, e := authority.NewVerifier(authoritypg.New(f.db), f.config)
-	if e != nil {
-		t.Fatal(e)
-	}
+	v := f.verifier
 	p, e := v.Authenticate(f.ctx, token)
 	if e != nil {
 		t.Fatal(e)
@@ -300,11 +297,9 @@ func TestPGMerchantsScopedCatalogRejectsDeadAncestry(t *testing.T) {
 func TestPGMerchantsAdminWaitRevocationAndHTTP(t *testing.T) {
 	f := newCommerceFixture(t)
 	r := merchantRepo(t, f)
-	v, e := authority.NewVerifier(authoritypg.New(f.db), f.config)
-	if e != nil {
-		t.Fatal(e)
-	}
+	v := f.verifier
 	h := merchants.NewVerifiedHandler(r, v)
+	var e error
 	if w := postHTTP(h, "GET", "/api/merchants/"+f.publisher, "", f.token); w.Code != 200 {
 		t.Fatal(w.Code, w.Body.String())
 	}

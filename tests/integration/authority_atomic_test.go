@@ -30,6 +30,7 @@ type atomicAuthorityFixture struct {
 	principal               authority.Principal
 	config                  authority.Config
 	guard                   *authoritypg.TransactionGuard
+	verifier                *authority.Verifier
 	issuer                  *authority.Service
 	posts                   *postpg.Repository
 	wallets                 *walletpg.Repository
@@ -69,6 +70,7 @@ func newAtomicAuthorityFixture(t *testing.T) atomicAuthorityFixture {
 	if err != nil {
 		t.Fatal(err)
 	}
+	f.verifier = v
 	f.guard = authoritypg.NewTransactionGuard(store, v)
 	f.ctx = f.guard.Bind(ctx, f.principal)
 	f.posts = postpg.NewWithAuthority(db, f.guard)

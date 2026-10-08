@@ -1,6 +1,6 @@
 {
-  "checkpoint": "canonical-merchant-ticket-exam-composition",
-  "scope": "228/33 candidate with prior audit fixes and configured canonical group/XP effects; local build/vet/race passed, actual PG pending",
+  "checkpoint": "merchant-proof-fixtures",
+  "scope": "Isolated validated checkpoint with fixture-only corrections; actual PostgreSQL CI pending",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
@@ -6761,8 +6761,8 @@
     },
     {
       "path": "tests/integration/authority_atomic_test.go",
-      "bytes": 13914,
-      "sha256": "fb7db8ec697b9222c320a78dea12dbb66cd6acaef737bd87b3d8075c35aaec25"
+      "bytes": 13975,
+      "sha256": "3ff6b784ff795890ebc130df44ea3095bc9d10b549ab97c1e4c7275e54865b05"
     },
     {
       "path": "tests/integration/authority_test.go",
@@ -6886,8 +6886,8 @@
     },
     {
       "path": "tests/integration/merchants_test.go",
-      "bytes": 16916,
-      "sha256": "2e83f0f5c11191e962677fcb911b9131bb3829342c03b0e966ae68165b7f5954"
+      "bytes": 16773,
+      "sha256": "5915d782431f9f4dd0ae0e82438685b7688ebbd77a8835fdd0f0469cb69a0738"
     },
     {
       "path": "tests/integration/messager_test.go",

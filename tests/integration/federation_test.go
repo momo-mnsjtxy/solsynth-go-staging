@@ -297,6 +297,41 @@ func TestPGFederationInboxReplayAndTargetIsolation(t *testing.T) {
 	if e := x.r.Receive(x.ctx, x.name, f.Verified{}); !errors.Is(e, f.ErrSignature) {
 		t.Fatal("zero verification envelope", e)
 	}
+	// Reuse this fixture's existing signer. Alias routing must preserve the
+	// signed request target and the stable activity identity independently.
+	newName := "renamed-" + x.name
+	tx, e := x.db.BeginTx(x.ctx, nil)
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer tx.Rollback()
+	if e = accountpg.RenamePublisherIdentity(x.ctx, tx, x.publisher, x.name, newName, x.config.Clock()); e != nil {
+		t.Fatal(e)
+	}
+	if e = tx.Commit(); e != nil {
+		t.Fatal(e)
+	}
+	if e = x.r.Receive(x.ctx, x.name, v); e != nil {
+		t.Fatal("cached inbox route replay", e)
+	}
+	if e = x.r.Receive(x.ctx, newName, v); !errors.Is(e, f.ErrSignature) {
+		t.Fatal("proof used for a different request target", e)
+	}
+	raw, _ := json.Marshal(follow)
+	request := httptest.NewRequest("POST", x.config.Origin+"/activitypub/actors/"+newName+"/inbox", bytes.NewReader(raw))
+	if e = f.Sign(request, raw, x.keys.remote.KeyID, x.remoteKey, x.config.Clock()); e != nil {
+		t.Fatal(e)
+	}
+	aliasProof, e := f.Verify(x.ctx, x.config, x.keys, request, raw)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = x.r.Receive(x.ctx, newName, aliasProof); e != nil {
+		t.Fatal("current alias inbox replay", e)
+	}
+	if x.count(t, "owned_federation_inbox") != 1 || x.count(t, "owned_federation_relationships") != 1 || x.count(t, "owned_federation_deliveries") != 1 {
+		t.Fatal("alias replay duplicated effects")
+	}
 	if e := x.r.Change(x.ctx, x.actor, x.publisher, f.Change{Action: "block", RemoteActor: x.keys.remote.Actor}); e != nil {
 		t.Fatal(e)
 	}

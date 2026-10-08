@@ -18,7 +18,10 @@ import (
 )
 
 //go:embed schema.sql
-var Schema string
+var baseSchema string
+
+// Both inputs remain separately available to explicit SQL installers.
+var Schema = baseSchema + "\n" + PublisherNamesSchema
 
 // New never migrates or provisions accounts, grants, entitlements or quota.
 type Repository struct {
@@ -304,7 +307,7 @@ func lookupPublisher(ctx context.Context, q querier, ref string, lock bool) (acc
 	if lock {
 		suffix = " FOR UPDATE OF p"
 	}
-	match := `lower(p.name)=lower($1)`
+	match := PublisherNamePredicate("p", "$1")
 	if authority.ValidID(ref) {
 		// Like account selectors, UUIDs identify only canonical IDs. A name that
 		// resembles another publisher's UUID must not acquire an unrelated lock.

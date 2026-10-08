@@ -34,7 +34,7 @@ func scanCollection(s interface{ Scan(...any) error }) (posts.Collection, error)
 	return c, e
 }
 func getCollection(ctx context.Context, tx *sql.Tx, publisher, slug string, lock bool) (posts.Collection, error) {
-	q := `SELECT ` + collectionColumns + collectionFrom + ` AND lower(u.name)=lower($1) AND c.slug=$2`
+	q := `SELECT ` + collectionColumns + collectionFrom + ` AND ` + accountpg.PublisherNamePredicate("u", "$1") + ` AND c.slug=$2`
 	if lock {
 		q += ` FOR UPDATE OF c`
 	}
@@ -77,7 +77,7 @@ func (r *Repository) Collections(ctx context.Context, actor, publisher string, p
 		return nil, 0, e
 	}
 	defer tx.Rollback()
-	where := collectionFrom + ` AND ($1='' OR lower(u.name)=lower($1)) AND ($2='' OR c.slug ILIKE $3 OR c.name ILIKE $3 OR c.description ILIKE $3 OR u.name ILIKE $3 OR u.nick ILIKE $3)`
+	where := collectionFrom + ` AND ($1='' OR ` + accountpg.PublisherNamePredicate("u", "$1") + `) AND ($2='' OR c.slug ILIKE $3 OR c.name ILIKE $3 OR c.description ILIKE $3 OR u.name ILIKE $3 OR u.nick ILIKE $3)`
 	where += ` AND ` + accountpg.PublisherModerationPredicate("u", "$4", `u.type=0`)
 	args := []any{publisher, q, "%" + q + "%", actor}
 	var total int64

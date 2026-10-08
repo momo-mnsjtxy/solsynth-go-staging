@@ -1,18 +1,18 @@
 {
-  "checkpoint": "admin359-fixture-isolation",
-  "scope": "Isolated bounded correction; actual PostgreSQL CI pending; exact changed files establish runtime or fixture scope",
+  "checkpoint": "livestream-chat-publisher-aliases-isolated-fixtures",
+  "scope": "376 before/51 restart candidate; full local verification and focused corrected fixtures passed; actual PostgreSQL pending",
   "inputs": {
     "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
     "main_blobs": 163,
     "recovery_blobs": 187
   },
-  "remote_publication": "3a71a2f9da2a2aa0aa2c94fca76c7b34a6386c6d isolated348/48 correction pending; lastgreen338/47",
-  "verification": "docs/published-content-moderation-ci.json",
+  "remote_publication": "18ee4c8477eecc8a161ded268a12dbffefc6e7c6 correctedadmin359/49 pending; lastgreen348/48",
+  "verification": "docs/published-livestream-ci.json",
   "files": [
     {
       "path": ".github/workflows/postgres-validation.yml",
       "bytes": 2097,
-      "sha256": "21ad61908641bcf4742ccebc1d23ff82706979eb14d62405ca8cbe8e6c238fb2"
+      "sha256": "466a2546d8f378df54be4e903eb6ef38f2701abd7e3ceaee89dcec8939dade3a"
     },
     {
       "path": ".gitignore",
@@ -76,13 +76,23 @@
     },
     {
       "path": "cmd/backend/external_config.go",
-      "bytes": 9252,
-      "sha256": "c0e13b635b9a7a5112e4eaa8f6552a76a669be0f3a1f6a3d8c4f88cf4c89b381"
+      "bytes": 11181,
+      "sha256": "43a83199117c3943e645b561a2f737fd9e3b3562df105851ff108ed5a3d340d1"
     },
     {
       "path": "cmd/backend/external_config_test.go",
-      "bytes": 4737,
-      "sha256": "8db48ef0d85eb64246cdf42f665eede5511266eac94043b8f9a2be180a6e2b3d"
+      "bytes": 5805,
+      "sha256": "e8483f4e547d3ffc57f63289d1be43b02d8a9fb26ba377e3eeff28f3f269b35b"
+    },
+    {
+      "path": "cmd/backend/federation_identity.go",
+      "bytes": 2978,
+      "sha256": "52724e5377277fb62cd16d83c4dd1cc579009c5f537f1b10dcb49af55e2c44d1"
+    },
+    {
+      "path": "cmd/backend/federation_identity_test.go",
+      "bytes": 833,
+      "sha256": "ee576fed54e12b0fc205548581fccfe28ef5ba48011e22627e5fc31a1e374e5a"
     },
     {
       "path": "cmd/backend/fortune_config.go",
@@ -116,8 +126,8 @@
     },
     {
       "path": "cmd/backend/main.go",
-      "bytes": 14408,
-      "sha256": "084261793ce01b7dc796009ee1306df396a9fefd4862e519637d89e24b5d5c42"
+      "bytes": 14535,
+      "sha256": "c60d28df98dedebbcda8de18433a47c418a09ecdd3e1c9b7287f4972f2760e30"
     },
     {
       "path": "cmd/backend/reader_config.go",
@@ -305,6 +315,11 @@
       "sha256": "3defb3e6964a65dd327d9d62f0c0c4456d781deb13de850352e0374600dda03f"
     },
     {
+      "path": "docs/admin-ci-fixture-isolation.json",
+      "bytes": 768,
+      "sha256": "fd666c9fe6c05ddf3f18c424042c1785f0bff8d74045e1077c94f9e6c7e419cc"
+    },
+    {
       "path": "docs/admin-extensions-continuation.md",
       "bytes": 11519,
       "sha256": "ba247ffa994ff12f86c58f782c7d863e7e18c35411cf7be2cb57f2785a6a62c1"
@@ -445,6 +460,16 @@
       "sha256": "1e0913feabf5b48955cc6f83343fc25a7db2c3fbe772f1235acbd020fd8c9248"
     },
     {
+      "path": "docs/federation-rename-continuation.md",
+      "bytes": 7694,
+      "sha256": "e4438e865ea978b167e61b9e0686a9ef02f9ab7558aae6ceebb5e5def2f0b43f"
+    },
+    {
+      "path": "docs/federation-rename-source-evidence.json",
+      "bytes": 1885,
+      "sha256": "92ccfd015c5758916583286d3628eea3b5c58913af5cc61b5d61c21bfea4d5bc"
+    },
+    {
       "path": "docs/fortunes-continuation.md",
       "bytes": 10088,
       "sha256": "48fcd9937439b9d9084be28af8df2533b9d27ad318bab244c7c525440022bb26"
@@ -478,6 +503,11 @@
       "path": "docs/live-smoke-result.json",
       "bytes": 921,
       "sha256": "6e2667d29a9c2baa54a6b5195fdc0250e3a481841f1d818271974ca1e3e1136c"
+    },
+    {
+      "path": "docs/livestream-chat-continuation.md",
+      "bytes": 15039,
+      "sha256": "93f38667ea6eca6bacfbf7b7376c919c2b9715ddb635688a76f232eb1f3c2abb"
     },
     {
       "path": "docs/livestream-ci-first-failure.json",
@@ -1340,6 +1370,11 @@
       "sha256": "247ab9e0e2a8590bf5c33c8942b4f2f1ec27a9f77f5e19e3f65ded226473be33"
     },
     {
+      "path": "docs/published-livestream-ci.json",
+      "bytes": 435,
+      "sha256": "db5dc907f59d4aa8fccaf80c686c36f62270f149c8ecec6df6ae92fbe8ae110f"
+    },
+    {
       "path": "docs/published-media-ci.json",
       "bytes": 468,
       "sha256": "2ba1c642236ed8b78555ce8993af2fd08dabb88c25cb0fc021601726c1843908"
@@ -1416,8 +1451,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 45278,
-      "sha256": "cb86f061ea843adc87c0310b0b564b2d59b42187e0223294954bc14ba68d40c3"
+      "bytes": 47608,
+      "sha256": "e2b050a416970a40ce7f2ceeeab2fbea24d4691d909c003328e198e93a7ca7e3"
     },
     {
       "path": "docs/signin-continuation.md",
@@ -1490,9 +1525,24 @@
       "sha256": "f431d06f2e0a9898ae86d2147d16d9d8ff722f27dce29ba24812dd1af710ba9a"
     },
     {
+      "path": "internal/accountpg/name_schema.sql",
+      "bytes": 3919,
+      "sha256": "6e9c5438374a07b34299e7ef21a72b10db8aeca162ed994b95708bc5d1dc370e"
+    },
+    {
       "path": "internal/accountpg/namecards.go",
-      "bytes": 3324,
-      "sha256": "27b3e7483f02211f77b8e36c41d009845e8d7fa0d44de2125aa590160779fcbd"
+      "bytes": 2888,
+      "sha256": "50e21c4955c9ee5ce372938d3878d5fc8fe4903364bf70d6cc38f4f1b709e8f5"
+    },
+    {
+      "path": "internal/accountpg/names.go",
+      "bytes": 3233,
+      "sha256": "d084088ee67b7b1384dba2d883385e6bdc24427c43edf347bdf06c59fe2c527a"
+    },
+    {
+      "path": "internal/accountpg/names_test.go",
+      "bytes": 538,
+      "sha256": "25e7cfd76d77db739a44f1907bd10c4fa0aac21c47bfa6e7a195b96c18bf62f8"
     },
     {
       "path": "internal/accountpg/organization.go",
@@ -1501,8 +1551,8 @@
     },
     {
       "path": "internal/accountpg/post_observation.go",
-      "bytes": 1567,
-      "sha256": "24a1f068de9dd58da3f4f2c7a0c4c2af2bf77d873c27d4525eac11678900b59c"
+      "bytes": 1575,
+      "sha256": "8f2ddf1199ddbe6f70b142f3fed181677da2164bfd00f0914663c993689145d5"
     },
     {
       "path": "internal/accountpg/private_profile.go",
@@ -1531,8 +1581,8 @@
     },
     {
       "path": "internal/accountpg/repository.go",
-      "bytes": 15735,
-      "sha256": "f36b419d8b2984b0886164a1902c82d21c3976a0cd15381c418a3d6cdc79c455"
+      "bytes": 15873,
+      "sha256": "6631db0cb6c4bfdfacaffb140a960f635c24a617cc805b66cf92d75d58bf291e"
     },
     {
       "path": "internal/accountpg/rewind.go",
@@ -1636,8 +1686,8 @@
     },
     {
       "path": "internal/application/livestreams.go",
-      "bytes": 1301,
-      "sha256": "cacf6dd753eb812a773c547154bdb4c517f6a0943931935b56f4f785d4659c49"
+      "bytes": 1459,
+      "sha256": "248eb8f08e2deeb789a1eda596254d33abbfd1cfbe2b12f0f97a855b1ebec209"
     },
     {
       "path": "internal/application/media.go",
@@ -1751,8 +1801,8 @@
     },
     {
       "path": "internal/apppg/repository.go",
-      "bytes": 15769,
-      "sha256": "eb97cb058f4e81f1af2f3595cf439d9c92a4ab301b71a8d2da90f5c5b74bdcb9"
+      "bytes": 15899,
+      "sha256": "117e0dfe4142651b73de2b7901153eae30159229d464ca3059f71c23af53237c"
     },
     {
       "path": "internal/apppg/schema.sql",
@@ -1926,8 +1976,8 @@
     },
     {
       "path": "internal/botpg/repository.go",
-      "bytes": 10006,
-      "sha256": "0c6475048a6c883093aa6f647e272267478ec791790d91bf05c79886bc709dd0"
+      "bytes": 10104,
+      "sha256": "c6fc0e485d90cd78d280dd41d3d262f14a89367098460132ce9bd3f19132da9a"
     },
     {
       "path": "internal/botpg/schema.sql",
@@ -2111,23 +2161,38 @@
     },
     {
       "path": "internal/federationhttp/handler.go",
-      "bytes": 8559,
-      "sha256": "cbaea8af6df747ec73e9a74e4f06968e0b1b7e1bd011e7e877ca86170291717a"
+      "bytes": 8652,
+      "sha256": "ba17994d088337ee4b1ec5e6a7622a08aa4a3649af81c5bf0a85b37355895286"
     },
     {
       "path": "internal/federationhttp/handler_test.go",
-      "bytes": 5689,
-      "sha256": "bc0d91c7c66ebdb97095bb34ddd8ef85fba03982b575058bda62e0ae4844780f"
+      "bytes": 6471,
+      "sha256": "4742f4ca71a51579a08f4fb7f9277b7b4fe8b85431d88f75340fa0d938b0928c"
     },
     {
       "path": "internal/federationpg/delivery.go",
-      "bytes": 14723,
-      "sha256": "cf0fa752a437fd8f273afd3d63a4266d49a664ff4b35914907947d4982319d4a"
+      "bytes": 14943,
+      "sha256": "16b744678e2fb8944a58e03780e0931cfdbc0357c2e21421009715618835e7cd"
+    },
+    {
+      "path": "internal/federationpg/identity.go",
+      "bytes": 4222,
+      "sha256": "1cf6417b8ddd489e133e875111c8c1553d5cc88fe82e19bcfef488250b68f05f"
+    },
+    {
+      "path": "internal/federationpg/identity_schema.sql",
+      "bytes": 2230,
+      "sha256": "7cd3e0dbbf84cc088b16a72e4655656332d87774a2321e036b58b1a588848bd2"
+    },
+    {
+      "path": "internal/federationpg/identity_test.go",
+      "bytes": 861,
+      "sha256": "f3f4fb605cda5ada8f8f5df795c0ed5889f83d5325fdeb66e3958eb4bd3a48c9"
     },
     {
       "path": "internal/federationpg/inbox.go",
-      "bytes": 8028,
-      "sha256": "70a51cc4ce672bea11d2c5b9491348d942c57247066215c74aa27328f8563341"
+      "bytes": 8243,
+      "sha256": "1ad25d2e07e5b1e0c93f57aa91d8d3ffe5ce724fa0557ce4283f4f1f535846ef"
     },
     {
       "path": "internal/federationpg/relationships.go",
@@ -2136,8 +2201,8 @@
     },
     {
       "path": "internal/federationpg/repository.go",
-      "bytes": 15862,
-      "sha256": "3d43b3ddfb985c523deef886f60a77645127cb98727eab3817aaf1e9838d92c8"
+      "bytes": 16939,
+      "sha256": "48ef4a632c37968b44b60c82e451c0ed653f45d0af28c8d77447f49bddfdef9f"
     },
     {
       "path": "internal/federationpg/repository_test.go",
@@ -2181,8 +2246,8 @@
     },
     {
       "path": "internal/interactionpg/collections.go",
-      "bytes": 11595,
-      "sha256": "5a10dbae77d0f1ff9a704c7377eca15b2087aa17d8add3737606e73d969014df"
+      "bytes": 11651,
+      "sha256": "0c72fddf2d8bf4a01d98925608ae295bca18376a2b3d38f38f6a620c8728746d"
     },
     {
       "path": "internal/interactionpg/repository.go",
@@ -2200,14 +2265,29 @@
       "sha256": "2003b8a0f4dd090c1826b72834caa532a2ff49854a6ba33cb0d2fc0d1d18a438"
     },
     {
+      "path": "internal/livestreampg/chat.go",
+      "bytes": 13987,
+      "sha256": "a3f479275907cb230b437729495c709a921eafeff5c5c1dbe8028855fc2c598b"
+    },
+    {
+      "path": "internal/livestreampg/chat_outbox.go",
+      "bytes": 8019,
+      "sha256": "d0deae9013e5bd1225fb187ea294b07a7563c2b8fd97b6bebbc44b319fb940dd"
+    },
+    {
+      "path": "internal/livestreampg/chat_schema.sql",
+      "bytes": 2849,
+      "sha256": "f6c5ea54b3be93e4f4523574d9f0b9d0c97fa24ec79ebeb2e65d823c25e0b66b"
+    },
+    {
       "path": "internal/livestreampg/lifecycle.go",
       "bytes": 15029,
       "sha256": "d1932136d22b510a08376942d1ddcda4534247e2be52020fbe3edc7f8c19a421"
     },
     {
       "path": "internal/livestreampg/maintenance.go",
-      "bytes": 12482,
-      "sha256": "578148a07f67af02b85006f2bb33980e2f351294e4ce166fca1a85dba5cdfa17"
+      "bytes": 12611,
+      "sha256": "1908d7b297af2e2ebe109f38013be2b88bf5f64fe5303c7df48041d504e3cc79"
     },
     {
       "path": "internal/livestreampg/metadata.go",
@@ -2216,8 +2296,8 @@
     },
     {
       "path": "internal/livestreampg/repository.go",
-      "bytes": 14413,
-      "sha256": "587c64349aec7fc516b46be0b76aca1ed3f0068fc9538bbfe5b64e524fd7faf1"
+      "bytes": 14613,
+      "sha256": "81c3da7eb74a281c20fdc1dc1a369466789d716d84e081c9ef92cd58ae82efbc"
     },
     {
       "path": "internal/livestreampg/schema.sql",
@@ -2421,8 +2501,8 @@
     },
     {
       "path": "internal/moderationpg/publishers.go",
-      "bytes": 3910,
-      "sha256": "3f1768f3d33e6a68c1a38213263bedf6e68304a83f7aba93b814bf43efcef0e2"
+      "bytes": 3853,
+      "sha256": "ea6b316225e27a227d40a3a3d0bb068f881e3cdba16613cef7f396b606ba4eb7"
     },
     {
       "path": "internal/moderationpg/reads.go",
@@ -2436,8 +2516,8 @@
     },
     {
       "path": "internal/moderationpg/repository.go",
-      "bytes": 9390,
-      "sha256": "5dc5965c16dd3a36c218a092ad615ee49c084089feefa0eeb28dbf56678e88f0"
+      "bytes": 9542,
+      "sha256": "1619b63b00c0ea6c534ebf8b7bbe8d9983c5106afb20c32a8509b2f6ccc87b10"
     },
     {
       "path": "internal/moderationpg/schema.sql",
@@ -2601,8 +2681,8 @@
     },
     {
       "path": "internal/postpg/repository.go",
-      "bytes": 15479,
-      "sha256": "149ced1a338efd9ab43ca866023c22aa501a35fc33e27225a5da024910c2f059"
+      "bytes": 15552,
+      "sha256": "a892c2d07105baa68e39a6e5e27ad05f9c44d8c691c6f12e0a7310708d36588e"
     },
     {
       "path": "internal/postpg/repository_test.go",
@@ -2770,6 +2850,16 @@
       "sha256": "d9567acd4b74b5fdf1cb9d5b2f13c8daeb9749ae011cb7f6040c0f49c73ac8fe"
     },
     {
+      "path": "internal/rtcprovider/livestream_data.go",
+      "bytes": 1275,
+      "sha256": "6752229eb61f240c1b45f33aa430550e23451f782e43caaa4f73a1ad6044f8ec"
+    },
+    {
+      "path": "internal/rtcprovider/livestream_data_test.go",
+      "bytes": 2726,
+      "sha256": "4e1d5de45128c5112ab2e1d29e45c5c71be8c0e9c606307d6a65594fedca3a8c"
+    },
+    {
       "path": "internal/rtcprovider/livestream_test.go",
       "bytes": 5801,
       "sha256": "359a1e9c67c052a7839859c9f8f4ab9f38b1ff68868d2a47ea252a51b7d106cf"
@@ -2846,8 +2936,8 @@
     },
     {
       "path": "internal/stickerpg/repository.go",
-      "bytes": 26343,
-      "sha256": "ca83beffe96fd3fc221195df5a7730ebf09f81b7f6bc7994f506a388c7455d2a"
+      "bytes": 26367,
+      "sha256": "42611d8d9b700209ccfed25ead44c7955f1d2d3088631563b15c41f4a702a0de"
     },
     {
       "path": "internal/stickerpg/schema.sql",
@@ -2866,8 +2956,8 @@
     },
     {
       "path": "internal/surveypg/repository.go",
-      "bytes": 24951,
-      "sha256": "902e76a39c5a69a7af89244285f7a158eead86ae85a7cae95edbf7b17c152b4c"
+      "bytes": 24975,
+      "sha256": "f4d25e4dc024460c5e134995df474b6659df3fab8bdc2421b12513109f0c91a0"
     },
     {
       "path": "internal/surveypg/schema.sql",
@@ -2966,13 +3056,13 @@
     },
     {
       "path": "internal/timelinepg/feeds.go",
-      "bytes": 12642,
-      "sha256": "e3faf5cf466b46c2b8d88a6b3def8f7a81a0ecc9c20a93058202319587b655cb"
+      "bytes": 12716,
+      "sha256": "04523fe9ca1df4d87a6963141c03b89066033ed192fc3291c8fce9d91b9c5894"
     },
     {
       "path": "internal/timelinepg/follows.go",
-      "bytes": 10128,
-      "sha256": "f19dce21144c1efee40a1b3b54259c600f7f0d14b9ebf56e47ffc84230e676f0"
+      "bytes": 10202,
+      "sha256": "73ca57922a9ebd2c7b22ff71ddba4533358bb3cbc19729c2e966b814f01450eb"
     },
     {
       "path": "internal/timelinepg/prelocks.go",
@@ -2986,8 +3076,8 @@
     },
     {
       "path": "internal/timelinepg/repository.go",
-      "bytes": 6725,
-      "sha256": "435a5b6f611a1efa52b39422debdd8b22821ec7fc1c3d3abc03b797deec3099b"
+      "bytes": 6743,
+      "sha256": "8f907e1ad57d661dc386507a3a06836c3a7415631c4f3fbd8d7a1363fe6bd2b2"
     },
     {
       "path": "internal/timelinepg/repository_test.go",
@@ -6705,14 +6795,49 @@
       "sha256": "5338c33c8466525d9a29947ca83630d7a04e54482a686fe7d82ee75cb6cd6767"
     },
     {
+      "path": "ports/sphere/livestreams/chat.go",
+      "bytes": 1921,
+      "sha256": "26377d0e81ec0c2f5415f54664da0bbd0067c120de6bf6c417e6e87bac3dae1a"
+    },
+    {
+      "path": "ports/sphere/livestreams/chat_http.go",
+      "bytes": 1538,
+      "sha256": "3a761ef4a37943236d5953ce08cf82577c0b3d395afe5debe6b153b9fa626363"
+    },
+    {
+      "path": "ports/sphere/livestreams/chat_http_test.go",
+      "bytes": 3187,
+      "sha256": "42b1f8c2dc082a0b47e1f1f4783cc3c71a37dd03d002a8e7200a943d20bc72de"
+    },
+    {
       "path": "ports/sphere/livestreams/http.go",
-      "bytes": 9047,
-      "sha256": "133f687483e5e6ac49cffc9c5a661984bfe7e250c73611db5f6be4b6cdafcabd"
+      "bytes": 9185,
+      "sha256": "5e6a0a6eb95b5f7357c1a342be22c52a19950a9dca9221c0f12c753474934ef6"
     },
     {
       "path": "ports/sphere/livestreams/http_test.go",
       "bytes": 3682,
       "sha256": "428ea9e5b3f03e6c78b5ba9a221cd446cd85051e3fe776ff0279a648e6731023"
+    },
+    {
+      "path": "ports/sphere/livestreams/operations-source/DysonNetwork.Sphere__Models__LiveStreamAward.cs",
+      "bytes": 1754,
+      "sha256": "3ab2000ef0dac1bfe8acab73cb8dcd66857b5f157f406fd4c8a785879e6c9506"
+    },
+    {
+      "path": "ports/sphere/livestreams/operations-source/DysonNetwork.Sphere__Models__LiveStreamAwardAttitude.cs",
+      "bytes": 132,
+      "sha256": "d110cf19dee334a14f29f0eac960974496f6480591a27260602cc444c42b2c11"
+    },
+    {
+      "path": "ports/sphere/livestreams/operations-source/DysonNetwork.Sphere__Models__LiveStreamChatMessage.cs",
+      "bytes": 716,
+      "sha256": "0ef75964982bf8767020b5cd964e9207faba48390bef5168d51822f2f9a9d1ac"
+    },
+    {
+      "path": "ports/sphere/livestreams/operations-source/manifest.json",
+      "bytes": 2875,
+      "sha256": "ee01c8a558d64af1711eb82de538ce2750eb5a6ad7b7e0e95239aa7dbcd071b9"
     },
     {
       "path": "ports/sphere/livestreams/source/DysonNetwork.Sphere__Live__LiveKitLivestreamService.cs",
@@ -7851,8 +7976,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 23653,
-      "sha256": "a4c9ff554f339a4cde08ccd1250975494862b8851159fd1c7da01288596f40e2"
+      "bytes": 24798,
+      "sha256": "527b77ee40a9b8af520bd7ac8a1298443add5bbeeb4950525c69a73a3e3ec744"
     },
     {
       "path": "scripts/check-source-evidence.py",
@@ -7861,8 +7986,8 @@
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 7142,
-      "sha256": "2cc8203d36d59a35922e8cced1075df4f037e17dea39fb1825a4982d605b61d7"
+      "bytes": 7413,
+      "sha256": "e5f136a0050a9a115204d363b413530f7c2943c5d0316529a0c2d4c80093a58a"
     },
     {
       "path": "scripts/test-coverage-format.py",
@@ -7876,8 +8001,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 12314,
-      "sha256": "48a53856dc7d5a934850bc212224550b7249bdce7401857640a05f36c2b9f176"
+      "bytes": 12912,
+      "sha256": "2458200d67375a11c4227eb196a1dac4aefae21920e5600e3cb73016fac886b4"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -8220,6 +8345,11 @@
       "sha256": "7cbd2737afea877114a09de6743baf513ca3c7f40cfa2a77e0c9d2b55a68bcca"
     },
     {
+      "path": "tests/integration/backend_federation_rename_test.go",
+      "bytes": 2288,
+      "sha256": "1fa13152bb889083d3a39fe14b61c3ebbcfb88ab0574dc56b956ec3bec09cbad"
+    },
+    {
       "path": "tests/integration/backend_identity_reports_test.go",
       "bytes": 3729,
       "sha256": "0aca3d9554a65861ea372023c6f5d3028117a156f2a25669219670105014ce4a"
@@ -8228,6 +8358,11 @@
       "path": "tests/integration/backend_ipcheck_test.go",
       "bytes": 2846,
       "sha256": "e9075764c5dd96f1a4df889642c754c0459e8c1fe88f59b1ab0c22fe0cb5a7b5"
+    },
+    {
+      "path": "tests/integration/backend_livestream_chat_test.go",
+      "bytes": 2969,
+      "sha256": "c6cdfb80de8ee2920aa0ef49acb741f1a9af4176b2d45e6d7ccdef089ff6e7a7"
     },
     {
       "path": "tests/integration/backend_livestream_test.go",
@@ -8321,8 +8456,8 @@
     },
     {
       "path": "tests/integration/content_moderation_test.go",
-      "bytes": 28176,
-      "sha256": "5bcbba410ff245239483dae6216cae8c0dbb271739383ffdbdae9c339ffe3934"
+      "bytes": 28548,
+      "sha256": "eccd7fd7ab1b58f1167b56dc690e32bc46ead5f56933146c8d83d83b6c9d04ec"
     },
     {
       "path": "tests/integration/content_translation_test.go",
@@ -8355,9 +8490,14 @@
       "sha256": "ccd8beba44b133c6536e69d90bbdc8ae99680dd1005c149b6939489d63644d91"
     },
     {
+      "path": "tests/integration/federation_rename_test.go",
+      "bytes": 18806,
+      "sha256": "d0138ca9c9953ba288e00d4b1fe78c93ea87424c5f8d101cf747a96719d689ee"
+    },
+    {
       "path": "tests/integration/federation_test.go",
-      "bytes": 25162,
-      "sha256": "914de17cbff8e0c5c5eb9c50be9d1c7e3b01b6ddd691427f3632e0336f2de2e1"
+      "bytes": 26496,
+      "sha256": "0f7aef1638cd4a95a757f449df95251b4fb702914d0c4ecaf5191d91db46bafd"
     },
     {
       "path": "tests/integration/fortunes_test.go",
@@ -8373,6 +8513,11 @@
       "path": "tests/integration/identity_guard_review_test.go",
       "bytes": 8183,
       "sha256": "998270edce0471d5b48ac41a1d95ca82d669241cbcd3b3ccc36fc2a6abfb8987"
+    },
+    {
+      "path": "tests/integration/livestream_chat_test.go",
+      "bytes": 20015,
+      "sha256": "ef2d4b6c88e3b8c3373da95cfa544ea21c3d1b4418ac9ed941dca8289bb3e87a"
     },
     {
       "path": "tests/integration/livestreams_test.go",

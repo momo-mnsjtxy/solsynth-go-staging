@@ -5,6 +5,24 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGLiveStreamChatHTTPHistoryAndIdempotency",
+        "TestPGLiveStreamChatTimeoutDeleteAndExpiry",
+        "TestPGLiveStreamChatOutboxRetryRecipientsAndRecordedRevocation",
+        "TestPGLiveStreamChatRollbackPacketBoundsAndGeneration",
+        "TestPGLiveStreamChatVisibilityAndDisableDuringLockWait",
+        "TestPGLiveStreamChatRetryLimitExpiryAndUnconfigured",
+        "TestPGLiveStreamChatOutboxRestartPersistence",
+        "TestPGLiveStreamChatProviderAcceptanceRollbackAndFIFO",
+        "TestPGLiveStreamChatOpposingModeratorsAndParentRevocation",
+        "TestPGBackendLivestreamChatComposition",
+        "TestPGBackendFederatedRenameComposition",
+
+        "TestPGFederatedRenameStableCachedURLsAndCardReplay",
+        "TestPGFederatedRenameExplicitOriginInitialization",
+        "TestPGFederatedRenameClaimsCapAndRetainedOwnership",
+        "TestPGFederatedRenameQueuedDeliveryAndCurrentPrivacy",
+        "TestPGFederatedRenameRollbackAndPrivilegedSharedPolicy",
+        "TestPGFederatedRenameRestartPersistence",
         "TestPGAdminVerificationLifecycleAndPrivacy",
         "TestPGAdminVerificationAuthorityAndRollback",
         "TestPGAdminVerificationCurrentTargetAfterWait",
@@ -392,6 +410,9 @@ EXPECTED = {
         "TestPGTaxonomyTransactionalAudit",
     },
     "after": {
+        "TestPGLiveStreamChatOutboxRestartPersistence",
+
+        "TestPGFederatedRenameRestartPersistence",
         "TestPGAdminExtensionsRestartPersistence",
 
         "TestPGLiveStreamCleanupRestartPersistence",

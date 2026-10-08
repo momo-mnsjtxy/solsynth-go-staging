@@ -2,22 +2,21 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Admin verification/statistics/explicit automod composed locally; livestream runtime/fixture correction in progress",
+  "local_source_checkpoint": "Durable livestream chat and permanent publisher alias/stable federation identity composed locally",
   "last_fully_passed_ci": {
-    "commit": "b8f8890bd57b5650e604da81df8ab5e13eed3295",
-    "run": 37783103970,
-    "before": 338,
-    "after_restart": 47
+    "commit": "3a71a2f9da2a2aa0aa2c94fca76c7b34a6386c6d",
+    "run": 37786451610,
+    "before": 348,
+    "after_restart": 48
   },
   "latest_candidate": {
-    "commit": "a8a85cd06553333f1d38adfb1d2663551bb243e9",
-    "required_before": 348,
-    "required_after_restart": 48,
-    "status": "Failed before restart: redundant media schema fixture installation plus separate composed Start503; corrections pending",
-    "run": 37784162310
+    "commit": "18ee4c8477eecc8a161ded268a12dbffefc6e7c6",
+    "required_before": 359,
+    "required_after_restart": 49,
+    "status": "Published isolated synthetic fixture corrections; actual PostgreSQL pending"
   },
-  "local_required_before": 359,
-  "local_required_after_restart": 49,
+  "local_required_before": 376,
+  "local_required_after_restart": 51,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -791,7 +790,7 @@
         "TestPGBackendPaidNameCardComposition"
       ],
       "unsupported_or_remaining": [
-        "Federation-registered publisher rename remains unavailable pending stable actor alias delivery"
+        "Stable federated publisher aliases now composed candidate; see federation.publisher_aliases"
       ]
     },
     {
@@ -844,7 +843,7 @@
     },
     {
       "source_family": "sphere.livestreams",
-      "local_status": "implemented and composed; actual PG candidate pending",
+      "local_status": "fully validated initial lifecycle in3a71a2f9,348/48",
       "supported_flows": [
         "Canonical publisher stream metadata, visibility and thumbnail linking",
         "Configured LiveKit RTMP/WHIP/native start and scoped viewer/publisher admissions",
@@ -864,7 +863,7 @@
         "TestPGBackendLivestreamComposition"
       ],
       "unsupported_or_remaining": [
-        "Stream chat follow-up in progress",
+        "Stream chat composed candidate; see dedicated flow entry",
         "Configured egress/HLS output/playback policy",
         "Canonical paid awards/order fulfillment",
         "Subscriber notifications/provider webhooks",
@@ -897,6 +896,54 @@
         "Automatic post enforcement/deranking remains separate",
         "Excluded original RPC/model semantics",
         "Original .NET regex features outside RE2 intentionally rejected"
+      ]
+    },
+    {
+      "source_family": "sphere.livestream_chat",
+      "local_status": "implemented and composed; actual PG candidate pending",
+      "supported_flows": [
+        "Canonical authorized history/send/delete/timeout with durable idempotency",
+        "Bounded data outbox with current recipient/session/visibility checks and explicit provider acceptance",
+        "Existing configured fast maintenance handles chat; packet recipient list never broadcasts implicitly"
+      ],
+      "guarded_pg_cases": [
+        "TestPGLiveStreamChatHTTPHistoryAndIdempotency",
+        "TestPGLiveStreamChatTimeoutDeleteAndExpiry",
+        "TestPGLiveStreamChatOutboxRetryRecipientsAndRecordedRevocation",
+        "TestPGLiveStreamChatRollbackPacketBoundsAndGeneration",
+        "TestPGLiveStreamChatVisibilityAndDisableDuringLockWait",
+        "TestPGLiveStreamChatRetryLimitExpiryAndUnconfigured",
+        "TestPGLiveStreamChatOutboxRestartPersistence",
+        "TestPGLiveStreamChatProviderAcceptanceRollbackAndFIFO",
+        "TestPGLiveStreamChatOpposingModeratorsAndParentRevocation",
+        "TestPGBackendLivestreamChatComposition"
+      ],
+      "unsupported_or_remaining": [
+        "No recipient receipt or exactly-once network claim",
+        "Bounded lifetime retention; no purge/redrive API"
+      ]
+    },
+    {
+      "source_family": "federation.publisher_aliases",
+      "local_status": "implemented and composed; actual PG candidate pending",
+      "supported_flows": [
+        "Permanent UUID-bound current/retired publisher handle ownership with atomic paid/admin rename",
+        "Stable actor/key identifiers, cached old URLs and current privacy checks",
+        "Explicit bounded origin-aware initializer; normal startup never migrates identities"
+      ],
+      "guarded_pg_cases": [
+        "TestPGFederatedRenameStableCachedURLsAndCardReplay",
+        "TestPGFederatedRenameExplicitOriginInitialization",
+        "TestPGFederatedRenameClaimsCapAndRetainedOwnership",
+        "TestPGFederatedRenameQueuedDeliveryAndCurrentPrivacy",
+        "TestPGFederatedRenameRollbackAndPrivilegedSharedPolicy",
+        "TestPGFederatedRenameRestartPersistence",
+        "TestPGBackendFederatedRenameComposition"
+      ],
+      "unsupported_or_remaining": [
+        "Remote Move/origin migration",
+        "Remote alias discovery/history enumeration",
+        "Organization federation"
       ]
     }
   ],

@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/jackc/pgx/v5/pgconn"
+	"solsynth.local/go-migration/internal/accountpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/develop"
 	"solsynth.local/go-migration/ports/develop/apps"
@@ -103,7 +104,7 @@ func audit(ctx context.Context, tx *sql.Tx, actor, app, action, target string, n
 }
 func developer(ctx context.Context, q queryer, actor, name string, role int, lock bool) (apps.Developer, error) {
 	var d apps.Developer
-	s := `SELECT d.id::text,d.publisher_id::text,p.name,d.created_at FROM owned_developers d JOIN owned_publishers p ON p.id=d.publisher_id JOIN owned_publisher_members m ON m.publisher_id=p.id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE lower(p.name)=lower($1) AND p.deleted_at IS NULL AND p.type=0 AND m.account_id=$2 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND m.role>=$3 AND NOT a.disabled`
+	s := `SELECT d.id::text,d.publisher_id::text,p.name,d.created_at FROM owned_developers d JOIN owned_publishers p ON p.id=d.publisher_id JOIN owned_publisher_members m ON m.publisher_id=p.id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE ` + accountpg.PublisherNamePredicate("p", "$1") + ` AND p.deleted_at IS NULL AND p.type=0 AND m.account_id=$2 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND m.role>=$3 AND NOT a.disabled`
 	if lock {
 		s += ` FOR UPDATE OF p,m`
 	}
@@ -147,7 +148,7 @@ func (r *Repository) Developers(ctx context.Context, actor, name string, enroll 
 	if enroll {
 		e := r.write(ctx, actor, "developers.create", func(tx *sql.Tx, now time.Time) error {
 			var pub string
-			if e := tx.QueryRowContext(ctx, `SELECT p.id::text FROM owned_publishers p JOIN owned_publisher_members m ON m.publisher_id=p.id WHERE lower(p.name)=lower($1) AND p.deleted_at IS NULL AND p.type=0 AND m.account_id=$2 AND m.role=200 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL FOR UPDATE OF p,m`, name, actor).Scan(&pub); e != nil {
+			if e := tx.QueryRowContext(ctx, `SELECT p.id::text FROM owned_publishers p JOIN owned_publisher_members m ON m.publisher_id=p.id WHERE `+accountpg.PublisherNamePredicate("p", "$1")+` AND p.deleted_at IS NULL AND p.type=0 AND m.account_id=$2 AND m.role=200 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL FOR UPDATE OF p,m`, name, actor).Scan(&pub); e != nil {
 				return apps.ErrForbidden
 			}
 			uid, e := id()
@@ -166,7 +167,7 @@ func (r *Repository) Developers(ctx context.Context, actor, name string, enroll 
 	query := `SELECT d.id::text,d.publisher_id::text,p.name,d.created_at FROM owned_developers d JOIN owned_publishers p ON p.id=d.publisher_id WHERE p.deleted_at IS NULL AND p.type=0`
 	args := []any{}
 	if name != "" {
-		query += ` AND p.shadowbanned_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=p.account_id AND NOT owner.disabled) AND lower(p.name)=lower($1)`
+		query += ` AND p.shadowbanned_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=p.account_id AND NOT owner.disabled) AND ` + accountpg.PublisherNamePredicate("p", "$1") + ``
 		args = append(args, name)
 	} else {
 		if !authority.ValidID(actor) {

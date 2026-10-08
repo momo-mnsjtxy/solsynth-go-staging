@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"solsynth.local/go-migration/internal/accountpg"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/sphere"
@@ -235,7 +236,7 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 	}
 	if o.Collection != "" {
 		var cid string
-		e = tx.QueryRowContext(ctx, `SELECT c.id::text FROM owned_post_collections c JOIN owned_publishers u ON u.id=c.publisher_id WHERE c.deleted_at IS NULL AND u.deleted_at IS NULL AND lower(u.name)=lower($1) AND lower(c.slug)=lower($2)`, o.Publisher, o.Collection).Scan(&cid)
+		e = tx.QueryRowContext(ctx, `SELECT c.id::text FROM owned_post_collections c JOIN owned_publishers u ON u.id=c.publisher_id WHERE c.deleted_at IS NULL AND u.deleted_at IS NULL AND `+accountpg.PublisherNamePredicate("u", "$1")+` AND lower(c.slug)=lower($2)`, o.Publisher, o.Collection).Scan(&cid)
 		if errors.Is(e, sql.ErrNoRows) {
 			return page, timeline.ErrCollectionNotFound
 		}

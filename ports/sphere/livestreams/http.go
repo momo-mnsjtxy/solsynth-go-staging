@@ -205,7 +205,7 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 	if len(parts) == 0 && r.Method == "POST" {
 		allowed["pub"] = true
 	}
-	if r.Method == "GET" && (len(parts) == 0 || len(parts) == 2 && parts[0] == "publisher") {
+	if r.Method == "GET" && (len(parts) == 0 || len(parts) == 2 && (parts[0] == "publisher" || parts[1] == "chat")) {
 		allowed["limit"] = true
 		allowed["offset"] = true
 	}
@@ -219,7 +219,7 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	required := r.Method != "GET" || len(parts) == 2 && parts[1] == "token"
+	required := r.Method != "GET" || len(parts) >= 2 && (parts[1] == "token" || parts[1] == "chat")
 	ctx, actor, e := s.principal(r, required)
 	if e != nil {
 		failure(w, e)
@@ -276,7 +276,11 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		id := parts[0]
-		if len(parts) > 1 && (parts[1] == "egress" || parts[1] == "hls" || parts[1] == "awards" || parts[1] == "chat") {
+		if len(parts) > 1 && parts[1] == "chat" {
+			s.chatHTTP(w, r, ctx, actor, parts, limit, offset)
+			return
+		}
+		if len(parts) > 1 && (parts[1] == "egress" || parts[1] == "hls" || parts[1] == "awards") {
 			failure(w, ErrUnsupported)
 			return
 		}

@@ -17,6 +17,7 @@ import (
 type LivestreamConfig struct {
 	Provider live.Provider
 	Policy   livestreampg.Config
+	Chat     *livestreampg.ChatConfig
 }
 
 func (x *externalModules) configureStreams(db *sql.DB, c Config, v *authority.Verifier, g *authoritypg.TransactionGuard, a *accountpg.Repository, s *socialpg.Repository, m *mediapg.Repository) (http.Handler, error) {
@@ -34,6 +35,11 @@ func (x *externalModules) configureStreams(db *sql.DB, c Config, v *authority.Ve
 	x.streams, err = livestreampg.New(db, g, a, media, s, c.Livestreams.Provider, c.Livestreams.Policy)
 	if err != nil {
 		return nil, err
+	}
+	if c.Livestreams.Chat != nil {
+		if err = x.streams.WithChat(*c.Livestreams.Chat); err != nil {
+			return nil, err
+		}
 	}
 	return (&live.Service{Repository: x.streams, Authority: v, Bind: g.Bind}).Handler(), nil
 }

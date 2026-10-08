@@ -1,0 +1,61 @@
+using DysonNetwork.Shared.Models;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+using DysonNetwork.Shared.Proto;
+using Google.Protobuf.WellKnownTypes;
+using NodaTime;
+using Duration = NodaTime.Duration;
+
+namespace DysonNetwork.Sphere.Models;
+
+public class SnLiveStreamAward : ModelBase
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    public decimal Amount { get; set; }
+
+    public LiveStreamAwardAttitude Attitude { get; set; }
+
+    [MaxLength(4096)]
+    public string? Message { get; set; }
+
+    public Guid LiveStreamId { get; set; }
+
+    [JsonIgnore]
+    public SnLiveStream LiveStream { get; set; } = null!;
+
+    public Guid AccountId { get; set; }
+
+    [MaxLength(128)]
+    public string SenderName { get; set; } = null!;
+
+    [NotMapped]
+    [JsonIgnore]
+    public SnAccount? Sender { get; set; }
+
+    [NotMapped]
+    [JsonIgnore]
+    public int HighlightDurationSeconds => (int)(Amount * 2);
+
+    [NotMapped]
+    [JsonIgnore]
+    public Instant? HighlightedUntil => CreatedAt.Plus(Duration.FromSeconds(HighlightDurationSeconds));
+
+    public DyLiveStreamAward ToProtoValue()
+    {
+        var proto = new DyLiveStreamAward
+        {
+            Id = Id.ToString(),
+            Amount = (double)Amount,
+            Attitude = (DyLiveStreamAwardAttitude)((int)Attitude + 1),
+            LiveStreamId = LiveStreamId.ToString(),
+            AccountId = AccountId.ToString(),
+            CreatedAt = Timestamp.FromDateTimeOffset(CreatedAt.ToDateTimeOffset()),
+            UpdatedAt = Timestamp.FromDateTimeOffset(UpdatedAt.ToDateTimeOffset()),
+        };
+        if (Message != null)
+            proto.Message = Message;
+        return proto;
+    }
+}

@@ -768,7 +768,7 @@ func (r *Repository) List(ctx context.Context, actor string, p surveys.Page) ([]
 		return nil, 0, e
 	}
 	defer tx.Rollback()
-	rows, e := tx.QueryContext(ctx, `SELECT s.id::text FROM owned_surveys s JOIN owned_publishers p ON p.id=s.publisher_id JOIN owned_publisher_members m ON m.publisher_id=p.id WHERE m.account_id=$1 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND s.deleted_at IS NULL AND p.deleted_at IS NULL AND ($2='' OR lower(p.name)=lower($2) OR p.id::text=$2) AND (NOT $3 OR s.status=1 AND (s.ended_at IS NULL OR s.ended_at>CURRENT_TIMESTAMP)) ORDER BY s.created_at DESC,s.id`, actor, strings.TrimSpace(p.Publisher), p.Active)
+	rows, e := tx.QueryContext(ctx, `SELECT s.id::text FROM owned_surveys s JOIN owned_publishers p ON p.id=s.publisher_id JOIN owned_publisher_members m ON m.publisher_id=p.id WHERE m.account_id=$1 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND s.deleted_at IS NULL AND p.deleted_at IS NULL AND ($2='' OR `+accountpg.PublisherNamePredicate("p", "$2")+` OR p.id::text=$2) AND (NOT $3 OR s.status=1 AND (s.ended_at IS NULL OR s.ended_at>CURRENT_TIMESTAMP)) ORDER BY s.created_at DESC,s.id`, actor, strings.TrimSpace(p.Publisher), p.Active)
 	if e != nil {
 		return nil, 0, e
 	}

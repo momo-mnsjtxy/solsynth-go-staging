@@ -36,7 +36,7 @@ func (r *Repository) ObservePostPublisherID(ctx context.Context, tx *sql.Tx, act
 	if len(selector) > 256 {
 		return "", accounts.ErrNotFound
 	}
-	match := `lower(p.name)=lower($1)`
+	match := PublisherNamePredicate("p", "$1")
 	if authority.ValidID(selector) {
 		match = `p.id=$1::uuid`
 	}

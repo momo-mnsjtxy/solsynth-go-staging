@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"html"
+	"net/url"
 	f "solsynth.local/go-migration/ports/federation"
 )
 
@@ -16,7 +17,9 @@ func (r *Repository) Receive(ctx context.Context, name string, v f.Verified) err
 	if e != nil {
 		return e
 	}
-	if !v.ValidFor(r.actorID(p)) {
+	// Verification binds the exact signed request route. An owned handle alias
+	// may reach the same stable actor without granting another actor's proof.
+	if !v.ValidFor(r.config.Origin + "/activitypub/actors/" + url.PathEscape(name)) {
 		return f.ErrSignature
 	}
 	a, k := v.Activity(), v.Remote()

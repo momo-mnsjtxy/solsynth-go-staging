@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/jackc/pgx/v5/pgconn"
+	"solsynth.local/go-migration/internal/accountpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/develop/apps"
 	"solsynth.local/go-migration/ports/develop/bots"
@@ -112,7 +113,7 @@ func (r *Repository) within(ctx context.Context, s apps.Scope, target, permissio
 	}
 	defer tx.Rollback()
 	var owner sql.NullString
-	e = tx.QueryRowContext(ctx, `SELECT pub.account_id::text`+ancestry+` WHERE a.id=$1 AND project.id=$2 AND lower(pub.name)=lower($3) AND `+liveAncestry, s.App, s.Project, s.Developer).Scan(&owner)
+	e = tx.QueryRowContext(ctx, `SELECT pub.account_id::text`+ancestry+` WHERE a.id=$1 AND project.id=$2 AND `+accountpg.PublisherNamePredicate("pub", "$3")+` AND `+liveAncestry, s.App, s.Project, s.Developer).Scan(&owner)
 	if e != nil {
 		return mapped(e)
 	}
@@ -161,7 +162,7 @@ func (r *Repository) within(ctx context.Context, s apps.Scope, target, permissio
 	// Lock order matches canonical app mutations: publisher/member, project, app.
 	var out appScope
 	var currentOwner sql.NullString
-	e = tx.QueryRowContext(ctx, `SELECT pub.id::text,d.id::text,pub.account_id::text`+ancestry+` JOIN owned_publisher_members member ON member.publisher_id=pub.id WHERE a.id=$1 AND project.id=$2 AND lower(pub.name)=lower($3) AND `+liveAncestry+` AND member.account_id=$4 AND member.joined_at IS NOT NULL AND member.revoked_at IS NULL AND member.role>=$5 FOR UPDATE OF pub,member`, s.App, s.Project, s.Developer, s.Actor, role).Scan(&out.publisher, &out.developer, &currentOwner)
+	e = tx.QueryRowContext(ctx, `SELECT pub.id::text,d.id::text,pub.account_id::text`+ancestry+` JOIN owned_publisher_members member ON member.publisher_id=pub.id WHERE a.id=$1 AND project.id=$2 AND `+accountpg.PublisherNamePredicate("pub", "$3")+` AND `+liveAncestry+` AND member.account_id=$4 AND member.joined_at IS NOT NULL AND member.revoked_at IS NULL AND member.role>=$5 FOR UPDATE OF pub,member`, s.App, s.Project, s.Developer, s.Actor, role).Scan(&out.publisher, &out.developer, &currentOwner)
 	if errors.Is(e, sql.ErrNoRows) {
 		return bots.ErrForbidden
 	}

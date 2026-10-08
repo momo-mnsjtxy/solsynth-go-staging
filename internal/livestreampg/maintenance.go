@@ -426,5 +426,10 @@ func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
 		_, x := r.db.ExecContext(ctx, `UPDATE owned_livestream_runs SET attempts=LEAST(attempts+1,30),next_attempt_at=clock_timestamp()+LEAST(60,1<<LEAST(attempts,6))*interval '1 second' WHERE stream_id=$1 AND generation=$2 AND phase<>'done'`, k.id, k.generation)
 		result = errors.Join(result, x)
 	}
+	if r.chat != nil {
+		count, chatError := r.ProcessChatDue(ctx, limit)
+		n += count
+		result = errors.Join(result, chatError)
+	}
 	return n, result
 }

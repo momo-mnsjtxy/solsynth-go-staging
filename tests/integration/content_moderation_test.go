@@ -432,8 +432,15 @@ func TestPGContentModerationFederationWithdrawalRetry(t *testing.T) {
 	if e = json.Unmarshal(transport.requests[before], &a); e != nil || a.Type != "Delete" || bytes.Contains(a.Object, []byte("Synthetic")) {
 		t.Fatal("withdrawal included hidden content", a, e)
 	}
-	if _, e = r.Mutate(x.ctx, x.actor, c.PublisherKind, x.publisher, c.Command{Action: "update", Publisher: &c.PublisherPatch{Name: postString("synthetic-renamed-federated")}}); !errors.Is(e, c.ErrConflict) {
-		t.Fatal("registered actor identity renamed", e)
+	if _, e = r.Mutate(x.ctx, x.actor, c.PublisherKind, x.publisher, c.Command{Action: "update", Publisher: &c.PublisherPatch{Name: postString("renamed-" + x.name)}}); e != nil {
+		t.Fatal("anchored publisher handle rename", e)
+	}
+	var storedActor string
+	if e = x.db.QueryRow(`SELECT actor_uri FROM owned_federation_publishers WHERE publisher_id=$1::uuid`, x.publisher).Scan(&storedActor); e != nil || storedActor != x.actorURI {
+		t.Fatal("rename changed stable actor identity", storedActor, e)
+	}
+	if _, e = x.r.Actor(x.ctx, x.name); !errors.Is(e, federation.ErrNotFound) {
+		t.Fatal("retired alias exposed moderated actor", e)
 	}
 	if _, e = r.Mutate(x.ctx, x.actor, c.PublisherKind, x.publisher, c.Command{Action: "unshadowban"}); e != nil {
 		t.Fatal(e)

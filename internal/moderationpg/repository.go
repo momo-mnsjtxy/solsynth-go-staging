@@ -161,7 +161,7 @@ func (r *Repository) publisher(ctx context.Context, tx *sql.Tx, ref string) (c.P
 	if !validRef(ref) {
 		return p, c.ErrInvalid
 	}
-	e := tx.QueryRowContext(ctx, `SELECT p.id::text,p.type,p.name,p.nick,p.bio,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at,COALESCE(p.shadowban_reason,'none'),p.shadowbanned_at,p.verification FROM owned_publishers p WHERE p.deleted_at IS NULL AND `+selector("p", "name", ref), ref).Scan(&p.ID, &p.Type, &p.Name, &p.Nick, &p.Bio, &p.AccountID, &p.RealmID, &p.CreatedAt, &p.UpdatedAt, &p.ShadowbanReason, &p.ShadowbannedAt, &verification)
+	e := tx.QueryRowContext(ctx, `SELECT p.id::text,p.type,p.name,p.nick,p.bio,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at,COALESCE(p.shadowban_reason,'none'),p.shadowbanned_at,p.verification FROM owned_publishers p WHERE p.deleted_at IS NULL AND `+publisherSelector(ref), ref).Scan(&p.ID, &p.Type, &p.Name, &p.Nick, &p.Bio, &p.AccountID, &p.RealmID, &p.CreatedAt, &p.UpdatedAt, &p.ShadowbanReason, &p.ShadowbannedAt, &verification)
 	if e == nil {
 		p.Verification, e = accounts.DecodeVerification(verification)
 	}
@@ -255,3 +255,10 @@ func (r *Repository) member(ctx context.Context, tx *sql.Tx, actor, realm, targe
 }
 
 var _ c.Repository = (*Repository)(nil)
+
+func publisherSelector(ref string) string {
+	if authority.ValidID(ref) {
+		return `p.id=$1::uuid`
+	}
+	return accountpg.PublisherNamePredicate("p", "$1")
+}

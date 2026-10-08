@@ -22,31 +22,49 @@ import (
 )
 
 type externalFlagSet struct {
-	streams                                     *bool
-	streamTTL, streamLifetime, streamIdle       *time.Duration
-	streamLimit                                 *int
-	calls, federation, send, cloudRevocation    *bool
-	endpoint, keyEnv, secretEnv, federationFile *string
-	tokenTTL, callTTL, maintenance              *time.Duration
+	streamChat                                   *bool
+	streamMessages, streamEvents, streamAttempts *int
+	streamEventTTL, streamSendTimeout            *time.Duration
+	streams                                      *bool
+	streamTTL, streamLifetime, streamIdle        *time.Duration
+	streamLimit                                  *int
+	calls, federation, send, cloudRevocation     *bool
+	endpoint, keyEnv, secretEnv, federationFile  *string
+	tokenTTL, callTTL, maintenance               *time.Duration
 }
 
 func externalFlags(fs *flag.FlagSet) externalFlagSet {
 	return externalFlagSet{
-		streams:         fs.Bool("enable-livestreams", false, "enable canonical livestreams through explicitly configured LiveKit"),
-		streamTTL:       fs.Duration("livestream-token-ttl", time.Minute, "short-lived viewer or publisher token duration"),
-		streamLifetime:  fs.Duration("livestream-max-lifetime", 4*time.Hour, "maximum broadcast lifetime"),
-		streamIdle:      fs.Duration("livestream-idle-grace", 5*time.Minute, "idle ingress grace, 5m through 1h"),
-		streamLimit:     fs.Int("livestream-publisher-limit", 20, "maximum retained streams per publisher"),
-		calls:           fs.Bool("enable-calls", false, "enable canonical room-call signaling with explicitly provisioned LiveKit Cloud credentials"),
-		federation:      fs.Bool("enable-federation", false, "enable the explicitly provisioned ActivityPub subset"),
-		send:            fs.Bool("federation-send", false, "enable queued outbound delivery only to configured pinned HTTPS peers"),
-		cloudRevocation: fs.Bool("livekit-cloud-revocation", false, "assert this deployment supports Cloud revoke_token_ts; self-hosted removal is insufficient"),
-		endpoint:        fs.String("livekit-endpoint", "", "explicit WSS LiveKit endpoint"), keyEnv: fs.String("livekit-api-key-env", "", "explicit environment variable holding the LiveKit API key"), secretEnv: fs.String("livekit-api-secret-env", "", "explicit environment variable holding the raw LiveKit API secret"),
+		streamChat:        fs.Bool("enable-livestream-chat", false, "enable durable canonical livestream chat and configured provider data delivery"),
+		streamMessages:    fs.Int("livestream-chat-message-limit", 100000, "retained messages per stream including deleted messages"),
+		streamEvents:      fs.Int("livestream-chat-event-limit", 200000, "retained durable chat events per stream"),
+		streamAttempts:    fs.Int("livestream-chat-attempts", 3, "bounded provider acceptance attempts"),
+		streamEventTTL:    fs.Duration("livestream-chat-event-ttl", 5*time.Minute, "maximum queued event lifetime"),
+		streamSendTimeout: fs.Duration("livestream-chat-send-timeout", 3*time.Second, "bounded provider data request timeout"),
+		streams:           fs.Bool("enable-livestreams", false, "enable canonical livestreams through explicitly configured LiveKit"),
+		streamTTL:         fs.Duration("livestream-token-ttl", time.Minute, "short-lived viewer or publisher token duration"),
+		streamLifetime:    fs.Duration("livestream-max-lifetime", 4*time.Hour, "maximum broadcast lifetime"),
+		streamIdle:        fs.Duration("livestream-idle-grace", 5*time.Minute, "idle ingress grace, 5m through 1h"),
+		streamLimit:       fs.Int("livestream-publisher-limit", 20, "maximum retained streams per publisher"),
+		calls:             fs.Bool("enable-calls", false, "enable canonical room-call signaling with explicitly provisioned LiveKit Cloud credentials"),
+		federation:        fs.Bool("enable-federation", false, "enable the explicitly provisioned ActivityPub subset"),
+		send:              fs.Bool("federation-send", false, "enable queued outbound delivery only to configured pinned HTTPS peers"),
+		cloudRevocation:   fs.Bool("livekit-cloud-revocation", false, "assert this deployment supports Cloud revoke_token_ts; self-hosted removal is insufficient"),
+		endpoint:          fs.String("livekit-endpoint", "", "explicit WSS LiveKit endpoint"), keyEnv: fs.String("livekit-api-key-env", "", "explicit environment variable holding the LiveKit API key"), secretEnv: fs.String("livekit-api-secret-env", "", "explicit environment variable holding the raw LiveKit API secret"),
 		federationFile: fs.String("federation-config", "", "absolute path to a JSON origin/peer/key-reference configuration; keys are never generated"),
 		tokenTTL:       fs.Duration("call-token-ttl", 2*time.Minute, "short-lived participant token duration, 15s through 5m"), callTTL: fs.Duration("call-max-lifetime", 4*time.Hour, "maximum call lifetime, at most 24h"), maintenance: fs.Duration("external-maintenance-interval", 5*time.Second, "configured call/federation maintenance cadence, 1s through 30s"),
 	}
 }
 func (v externalFlagSet) apply(c *application.Config) error {
+	if *v.streamChat && !*v.streams {
+		return errors.New("livestream chat requires explicit livestream enablement")
+	}
+	if !*v.streamChat && (*v.streamMessages != 100000 || *v.streamEvents != 200000 || *v.streamAttempts != 3 || *v.streamEventTTL != 5*time.Minute || *v.streamSendTimeout != 3*time.Second) {
+		return errors.New("chat limits require explicit chat enablement")
+	}
+	if *v.streamChat && (*v.streamMessages < 1 || *v.streamMessages > 100000 || *v.streamEvents < *v.streamMessages || *v.streamEvents > 200000 || *v.streamAttempts < 1 || *v.streamAttempts > 20 || *v.streamEventTTL < time.Minute || *v.streamEventTTL > 24*time.Hour || *v.streamSendTimeout <= 0 || *v.streamSendTimeout > 5*time.Second) {
+		return errors.New("invalid bounded livestream chat policy")
+	}
 	if *v.maintenance < time.Second || *v.maintenance > 30*time.Second {
 		return errors.New("external maintenance interval must be between 1 and 30 seconds")
 	}
@@ -77,6 +95,9 @@ func (v externalFlagSet) apply(c *application.Config) error {
 		if *v.streams {
 			c.Livestreams = &application.LivestreamConfig{Provider: provider, Policy: livestreampg.Config{TokenTTL: *v.streamTTL, MaxRunDuration: *v.streamLifetime, IdleGrace: *v.streamIdle, MaxStreamsPerPublisher: *v.streamLimit}}
 		}
+	}
+	if *v.streamChat {
+		c.Livestreams.Chat = &livestreampg.ChatConfig{MaxMessagesPerStream: *v.streamMessages, MaxEventsPerStream: *v.streamEvents, MaxAttempts: *v.streamAttempts, EventTTL: *v.streamEventTTL, SendTimeout: *v.streamSendTimeout}
 	}
 	if !*v.federation {
 		if *v.federationFile != "" || *v.send {

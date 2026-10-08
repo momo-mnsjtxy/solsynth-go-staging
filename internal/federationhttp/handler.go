@@ -260,7 +260,11 @@ func (h Handler) webfinger(w http.ResponseWriter, r *http.Request) {
 		fail(w, e)
 		return
 	}
-	write(w, 200, map[string]any{"subject": "acct:" + a.Username + "@" + domain, "links": []map[string]string{{"rel": "self", "type": f.MediaType, "href": a.ID}}}, "application/jrd+json")
+	response := map[string]any{"subject": "acct:" + a.Username + "@" + domain, "links": []map[string]string{{"rel": "self", "type": f.MediaType, "href": a.ID}}}
+	if name != a.Username {
+		response["aliases"] = []string{resource}
+	}
+	write(w, 200, response, "application/jrd+json")
 }
 func (h Handler) private(w http.ResponseWriter, r *http.Request) {
 	if h.Authority == nil {

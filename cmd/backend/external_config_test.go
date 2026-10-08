@@ -118,3 +118,23 @@ func TestLivestreamProviderConfigurationIndependentOfCalls(t *testing.T) {
 		}
 	}
 }
+
+func TestLivestreamChatConfigurationRequiresExplicitStreamProvider(t *testing.T) {
+	for _, args := range [][]string{{"--enable-livestream-chat"}, {"--livestream-chat-attempts=2"}} {
+		var c application.Config
+		if e := parseExternal(t, args...).apply(&c); e == nil {
+			t.Fatal("unconfigured chat accepted")
+		}
+	}
+	t.Setenv("SYNTHETIC_STREAM_CHAT_KEY", "synthetic-only-key")
+	t.Setenv("SYNTHETIC_STREAM_CHAT_SECRET", strings.Repeat("s", 64))
+	args := []string{"--enable-livestreams", "--enable-livestream-chat", "--livekit-endpoint=wss://nonexistent.invalid", "--livekit-api-key-env=SYNTHETIC_STREAM_CHAT_KEY", "--livekit-api-secret-env=SYNTHETIC_STREAM_CHAT_SECRET", "--livekit-cloud-revocation"}
+	var c application.Config
+	if e := parseExternal(t, args...).apply(&c); e != nil || c.Livestreams == nil || c.Livestreams.Chat == nil || c.Calls != nil {
+		t.Fatal("explicit chat config", e)
+	}
+	var bad application.Config
+	if e := parseExternal(t, append(args, "--livestream-chat-send-timeout=6s")...).apply(&bad); e == nil {
+		t.Fatal("unbounded provider send")
+	}
+}

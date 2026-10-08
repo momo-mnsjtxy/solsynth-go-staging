@@ -41,6 +41,9 @@ func explicitInt(value, name string) (int32, error) {
 	return int32(n), nil
 }
 func run(args []string, out io.Writer) error {
+	if len(args) > 0 && args[0] == "initialize-federation-identities" {
+		return initializeFederationIdentities(args[1:], out)
+	}
 	fs := flag.NewFlagSet("backend", flag.ContinueOnError)
 	fs.SetOutput(out)
 	listen := fs.String("listen", "127.0.0.1:8090", "loopback HTTP address behind trusted TLS ingress")

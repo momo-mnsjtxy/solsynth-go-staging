@@ -363,7 +363,7 @@ func (r *Repository) deliver(ctx context.Context, transport f.Transport, d deliv
 	if e != nil {
 		return finish("dead")
 	}
-	if e = f.Sign(request, d.body, r.actorID(p)+"#main-key", signer, r.config.Clock()); e != nil {
+	if e = f.Sign(request, d.body, p.keyID, signer, r.config.Clock()); e != nil {
 		return finish("dead")
 	}
 	code, sendErr := transport.Send(ctx, request)
@@ -385,6 +385,9 @@ func (r *Repository) Ready(ctx context.Context) error {
 	var ok bool
 	e := r.db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name) IS NOT NULL) FROM (VALUES ('owned_federation_publishers'),('owned_federation_peers'),('owned_federation_relationships'),('owned_federation_blocks'),('owned_federation_inbox'),('owned_federation_objects'),('owned_federation_post_state'),('owned_federation_deliveries'),('owned_federation_audit')) x(name)`).Scan(&ok)
 	if e != nil || !ok {
+		return f.ErrUnavailable
+	}
+	if _, e = r.db.ExecContext(ctx, `SELECT identity_handle,actor_uri,key_id FROM owned_federation_publishers LIMIT 0;SELECT folded_name,publisher_id FROM owned_publisher_name_reservations LIMIT 0`); e != nil {
 		return f.ErrUnavailable
 	}
 	return nil

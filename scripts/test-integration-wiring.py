@@ -5,6 +5,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/livestreampg/chat_schema.sql",
+ "internal/accountpg/name_schema.sql",
+ "internal/federationpg/identity_schema.sql",
  "internal/adminpg/schema.sql",
  "internal/livestreampg/schema.sql",
  "internal/moderationpg/schema.sql",
@@ -81,6 +84,10 @@ def check(runner, read_schema=None):
         raise ValueError("all disposable schemas must precede the before phase")
     if not schemas.index("internal/authoritypg/schema.sql") < schemas.index("internal/accountpg/schema.sql"):
         raise ValueError("accounts require the authority schema first")
+    if schemas.index("internal/accountpg/name_schema.sql") <= schemas.index("internal/accountpg/schema.sql"):
+        raise ValueError("publisher reservations require canonical publishers first")
+    if schemas.index("internal/federationpg/identity_schema.sql") <= max(schemas.index("internal/federationpg/schema.sql"), schemas.index("internal/accountpg/name_schema.sql")):
+        raise ValueError("federation anchors require registrations and name reservations first")
     for name in ("walletpg", "application", "postpg"):
         if schemas.index("internal/accountpg/schema.sql") >= schemas.index(f"internal/{name}/schema.sql"):
             raise ValueError("owned dependent schema must follow accounts: " + name)

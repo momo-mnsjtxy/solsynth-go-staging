@@ -145,7 +145,7 @@ func (r *Repository) publisher(ctx context.Context, tx *sql.Tx, actor, selector 
 	if len(selector) == 0 || len(selector) > 256 {
 		return "", false, timeline.ErrPublisherNotFound
 	}
-	match := `lower(u.name)=lower($2)`
+	match := accountpg.PublisherNamePredicate("u", "$2")
 	if authority.ValidID(selector) {
 		match = `u.id=$2::uuid`
 	}

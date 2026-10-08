@@ -4,6 +4,8 @@ package moderationpg
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"solsynth.local/go-migration/internal/accountpg"
 	c "solsynth.local/go-migration/ports/admin/content"
 	"solsynth.local/go-migration/ports/passport/accounts"
 )
@@ -68,18 +70,14 @@ func (r *Repository) mutatePublisher(ctx context.Context, actor, ref string, cmd
 	case "update":
 		v := cmd.Publisher
 		if v.Name != nil && *v.Name != p.Name {
-			var installed bool
-			if e = tx.QueryRowContext(ctx, `SELECT to_regclass('owned_federation_publishers')IS NOT NULL`).Scan(&installed); e != nil {
-				return nil, e
-			}
-			if installed {
-				var registered bool
-				if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_federation_publishers WHERE publisher_id=$1)`, p.ID).Scan(&registered); e != nil {
-					return nil, e
-				}
-				if registered {
+			if e = accountpg.RenamePublisherIdentity(ctx, tx, p.ID, p.Name, *v.Name, now); e != nil {
+				if errors.Is(e, accounts.ErrConflict) || errors.Is(e, accounts.ErrUnsupported) {
 					return nil, c.ErrConflict
 				}
+				return nil, mapped(e)
+			}
+			if e = r.authorize(ctx, tx, actor, permission, true); e != nil {
+				return nil, e
 			}
 			p.Name = *v.Name
 		}

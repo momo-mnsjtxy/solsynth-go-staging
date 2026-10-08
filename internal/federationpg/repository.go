@@ -10,16 +10,17 @@ import (
 	"encoding/json"
 	"errors"
 	"html"
-	"net/url"
 	"strconv"
 	"time"
 
+	"solsynth.local/go-migration/internal/accountpg"
 	"solsynth.local/go-migration/ports/authority"
 	f "solsynth.local/go-migration/ports/federation"
 )
 
 //go:embed schema.sql
-var Schema string
+var baseSchema string
+var Schema = baseSchema + "\n" + IdentitySchema
 
 type TransactionGuard interface {
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
@@ -49,9 +50,11 @@ type queryer interface {
 	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
 }
 type publisher struct {
-	id, name, nick, bio, owner string
-	created                    time.Time
-	enabled, manual            bool
+	id, name, nick, bio, owner      string
+	identityHandle, actorURI, keyID string
+	created                         time.Time
+	enabled, manual                 bool
+	registered                      bool
 }
 
 func mapped(e error) error {
@@ -71,7 +74,7 @@ func newID() (string, error) {
 	return s[:8] + "-" + s[8:12] + "-" + s[12:16] + "-" + s[16:20] + "-" + s[20:], nil
 }
 func (r *Repository) actorID(p publisher) string {
-	return r.config.Origin + "/activitypub/actors/" + url.PathEscape(p.name)
+	return p.actorURI
 }
 func (r *Repository) objectID(id string) string {
 	return r.config.Origin + "/activitypub/objects/" + id
@@ -87,16 +90,19 @@ func (r *Repository) lookupPublisher(ctx context.Context, q queryer, ref string,
 	if ref == "" || len(ref) > 256 {
 		return p, f.ErrNotFound
 	}
-	predicate := `lower(p.name)=lower($1)`
+	predicate := accountpg.PublisherNamePredicate("p", "$1")
 	if byID {
 		predicate = `p.id=$1::uuid`
 	}
-	e := q.QueryRowContext(ctx, `SELECT p.id::text,p.name,p.nick,p.bio,p.account_id::text,p.created_at,COALESCE(f.enabled,false),COALESCE(f.manual,true) FROM owned_publishers p JOIN owned_authority_accounts a ON a.id=p.account_id LEFT JOIN owned_federation_publishers f ON f.publisher_id=p.id WHERE `+predicate+` AND p.type=0 AND p.deleted_at IS NULL AND p.shadowbanned_at IS NULL AND NOT a.disabled`, ref).Scan(&p.id, &p.name, &p.nick, &p.bio, &p.owner, &p.created, &p.enabled, &p.manual)
+	e := q.QueryRowContext(ctx, `SELECT p.id::text,p.name,p.nick,p.bio,p.account_id::text,p.created_at,COALESCE(f.enabled,false),COALESCE(f.manual,true),COALESCE(f.identity_handle,p.name),COALESCE(f.actor_uri,''),COALESCE(f.key_id,''),f.publisher_id IS NOT NULL FROM owned_publishers p JOIN owned_authority_accounts a ON a.id=p.account_id LEFT JOIN owned_federation_publishers f ON f.publisher_id=p.id WHERE `+predicate+` AND p.type=0 AND p.deleted_at IS NULL AND p.shadowbanned_at IS NULL AND NOT a.disabled`, ref).Scan(&p.id, &p.name, &p.nick, &p.bio, &p.owner, &p.created, &p.enabled, &p.manual, &p.identityHandle, &p.actorURI, &p.keyID, &p.registered)
 	if e != nil {
 		return p, mapped(e)
 	}
 	if !f.ValidName(p.name) || enabled && !p.enabled {
 		return p, f.ErrNotFound
+	}
+	if enabled && !r.identityMatches(p) {
+		return p, f.ErrUnavailable
 	}
 	return p, nil
 }
@@ -105,12 +111,15 @@ func (r *Repository) lookupPublisher(ctx context.Context, q queryer, ref string,
 // cannot project an actor or a Note, and still rejects organization publishers.
 func (r *Repository) withdrawalPublisher(ctx context.Context, q queryer, id string) (publisher, error) {
 	var p publisher
-	e := q.QueryRowContext(ctx, `SELECT p.id::text,p.name,p.nick,p.bio,p.account_id::text,p.created_at,f.enabled,f.manual FROM owned_publishers p JOIN owned_federation_publishers f ON f.publisher_id=p.id WHERE p.id=$1 AND p.type=0 AND f.enabled`, id).Scan(&p.id, &p.name, &p.nick, &p.bio, &p.owner, &p.created, &p.enabled, &p.manual)
+	e := q.QueryRowContext(ctx, `SELECT p.id::text,p.name,p.nick,p.bio,p.account_id::text,p.created_at,f.enabled,f.manual,f.identity_handle,COALESCE(f.actor_uri,''),COALESCE(f.key_id,'') FROM owned_publishers p JOIN owned_federation_publishers f ON f.publisher_id=p.id WHERE p.id=$1 AND p.type=0 AND f.enabled`, id).Scan(&p.id, &p.name, &p.nick, &p.bio, &p.owner, &p.created, &p.enabled, &p.manual, &p.identityHandle, &p.actorURI, &p.keyID)
 	if e != nil {
 		return p, mapped(e)
 	}
 	if !f.ValidName(p.name) {
 		return p, f.ErrNotFound
+	}
+	if !r.identityMatches(p) {
+		return p, f.ErrUnavailable
 	}
 	return p, nil
 }
@@ -131,8 +140,10 @@ func (r *Repository) localKey(ctx context.Context, p publisher) (f.PublicKey, er
 	if e != nil {
 		return f.PublicKey{}, e
 	}
-	id := r.actorID(p)
-	return f.PublicKey{ID: id + "#main-key", Owner: id, PEM: pem}, nil
+	if !r.identityMatches(p) {
+		return f.PublicKey{}, f.ErrUnavailable
+	}
+	return f.PublicKey{ID: p.keyID, Owner: p.actorURI, PEM: pem}, nil
 }
 func (r *Repository) Actor(ctx context.Context, name string) (f.Actor, error) {
 	p, e := r.publisherName(ctx, r.db, name, true)
@@ -317,12 +328,26 @@ func (r *Repository) Settings(ctx context.Context, actor, ref string, s f.Settin
 		return e
 	}
 	defer tx.Rollback()
+	if !p.registered {
+		p.actorURI, p.keyID, e = r.identityFor(p.identityHandle)
+		if e != nil {
+			return e
+		}
+	}
+	if s.Enabled && !r.identityMatches(p) {
+		return f.ErrUnavailable
+	}
+	var actorValue, keyValue any
+	if p.actorURI != "" {
+		actorValue, keyValue = p.actorURI, p.keyID
+	}
+
 	if s.Enabled {
 		if _, e = r.localKey(ctx, p); e != nil {
 			return e
 		}
 	}
-	if _, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_publishers(publisher_id,enabled,manual,updated_at) VALUES($1,$2,$3,$4) ON CONFLICT(publisher_id) DO UPDATE SET enabled=EXCLUDED.enabled,manual=EXCLUDED.manual,updated_at=EXCLUDED.updated_at`, p.id, s.Enabled, s.Manual, r.config.Clock()); e != nil {
+	if _, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_publishers(publisher_id,enabled,manual,updated_at,identity_handle,actor_uri,key_id) VALUES($1::uuid,$2::boolean,$3::boolean,$4::timestamptz,$5::text,$6::text,$7::text) ON CONFLICT(publisher_id) DO UPDATE SET enabled=EXCLUDED.enabled,manual=EXCLUDED.manual,updated_at=EXCLUDED.updated_at,actor_uri=EXCLUDED.actor_uri,key_id=EXCLUDED.key_id`, p.id, s.Enabled, s.Manual, r.config.Clock(), p.identityHandle, actorValue, keyValue); e != nil {
 		return e
 	}
 	if !s.Enabled {

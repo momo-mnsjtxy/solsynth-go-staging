@@ -36,6 +36,7 @@ type Repository struct {
 	social     live.SocialProvider
 	provider   live.Provider
 	cfg        Config
+	chat       *ChatConfig
 }
 
 var _ live.Repository = (*Repository)(nil)
@@ -47,13 +48,16 @@ func New(db *sql.DB, g *authoritypg.TransactionGuard, publishers live.PublisherP
 	if provider != nil && (!provider.StrictRevocation() || provider.Name() == "" || provider.Endpoint() == "") {
 		return nil, live.ErrUnconfigured
 	}
-	return &Repository{db, g, publishers, media, social, provider, c}, nil
+	return &Repository{db: db, guard: g, publishers: publishers, media: media, social: social, provider: provider, cfg: c}, nil
 }
 func (r *Repository) Ready(ctx context.Context) error {
 	if e := r.configured(); e != nil {
 		return e
 	}
 	_, e := r.db.ExecContext(ctx, `SELECT id,publisher_id,operation_state FROM owned_livestreams LIMIT 0;SELECT generation,phase,ingress_id,owner_version,permission FROM owned_livestream_runs LIMIT 0;SELECT state,identity,permission FROM owned_livestream_admissions LIMIT 0;SELECT ingress_id,deleted_at FROM owned_livestream_ingresses LIMIT 0;SELECT request_hash FROM owned_livestream_create_keys LIMIT 0;SELECT action FROM owned_livestream_audit LIMIT 0`)
+	if e == nil && r.chat != nil {
+		return r.ChatReady(ctx)
+	}
 	return e
 }
 func (r *Repository) configured() error {
@@ -166,8 +170,8 @@ func observe(ctx context.Context, tx *sql.Tx, pid, sid string) (s scope, e error
 	return
 }
 func same(a, b scope) bool { return a == b }
-func prelock(ctx context.Context, tx *sql.Tx, actor, sid string, s scope, background bool) error {
-	ids := []string{actor, s.owner, s.starter}
+func prelock(ctx context.Context, tx *sql.Tx, actor, sid string, s scope, background bool, extra ...string) error {
+	ids := append([]string{actor, s.owner, s.starter}, extra...)
 	sort.Strings(ids)
 	prior := ""
 	suffix := ""
@@ -203,7 +207,7 @@ func lockScope(ctx context.Context, tx *sql.Tx, s scope, background bool) error 
 	}
 	return tx.QueryRowContext(ctx, `SELECT id::text FROM owned_publishers WHERE id=$1 FOR UPDATE`+suffix, s.publisher).Scan(&found)
 }
-func (r *Repository) locked(ctx context.Context, actor, sid, selector, permission string, editor, includingDeleted bool) (tx *sql.Tx, p authority.Principal, v live.Stream, e error) {
+func (r *Repository) locked(ctx context.Context, actor, sid, selector, permission string, editor, includingDeleted bool, extra ...string) (tx *sql.Tx, p authority.Principal, v live.Stream, e error) {
 	if !authority.ValidID(actor) || sid != "" && !authority.ValidID(sid) {
 		return nil, p, v, live.ErrInvalid
 	}
@@ -233,7 +237,7 @@ func (r *Repository) locked(ctx context.Context, actor, sid, selector, permissio
 	if e != nil {
 		return fail(e)
 	}
-	if e = prelock(ctx, tx, actor, sid, s, false); e != nil {
+	if e = prelock(ctx, tx, actor, sid, s, false, extra...); e != nil {
 		return fail(e)
 	}
 	p, e = r.authorize(ctx, tx, actor, permission)

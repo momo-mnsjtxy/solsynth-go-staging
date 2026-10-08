@@ -115,6 +115,27 @@ func TestHTTPDiscoveryAndBoundaries(t *testing.T) {
 		t.Fatal("identity injection reached repository")
 	}
 }
+
+func TestHTTPWebFingerAliasKeepsStableActor(t *testing.T) {
+	h, _ := testHandler()
+	w := call(h, "GET", "/.well-known/webfinger?resource=acct:retired@local.example.test")
+	if w.Code != http.StatusOK || w.Header().Get("Cache-Control") != "no-store" {
+		t.Fatal(w.Code, w.Header())
+	}
+	var body struct {
+		Subject string   `json:"subject"`
+		Aliases []string `json:"aliases"`
+		Links   []struct {
+			Href string `json:"href"`
+		} `json:"links"`
+	}
+	if e := json.Unmarshal(w.Body.Bytes(), &body); e != nil {
+		t.Fatal(e)
+	}
+	if body.Subject != "acct:alice@local.example.test" || len(body.Aliases) != 1 || body.Aliases[0] != "acct:retired@local.example.test" || len(body.Links) != 1 || body.Links[0].Href != "https://local.example.test/activitypub/actors/alice" {
+		t.Fatal(body)
+	}
+}
 func TestHTTPInboxOnlyAcceptsVerifiedSignatures(t *testing.T) {
 	h, repo := testHandler()
 	key, e := rsa.GenerateKey(rand.Reader, 2048)

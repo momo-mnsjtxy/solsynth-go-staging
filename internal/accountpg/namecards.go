@@ -4,6 +4,7 @@ package accountpg
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/namecards"
 	"time"
@@ -62,21 +63,11 @@ func (r *Repository) RenamePublisherForCard(ctx context.Context, db *sql.DB, tx 
 	if p.Name == name {
 		return "", namecards.ErrUse
 	}
-	var federation sql.NullString
-	if e = tx.QueryRowContext(ctx, `SELECT to_regclass('owned_federation_publishers')::text`).Scan(&federation); e != nil {
-		return "", e
-	}
-	if federation.Valid {
-		var registered bool
-		if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_federation_publishers WHERE publisher_id=$1::uuid)`, id).Scan(&registered); e != nil {
-			return "", e
-		}
-		if registered {
+	if e = RenamePublisherIdentity(ctx, tx, id, p.Name, name, now); e != nil {
+		if errors.Is(e, accounts.ErrUnsupported) {
 			return "", namecards.ErrActorMigration
 		}
-	}
-	if _, e = tx.ExecContext(ctx, `UPDATE owned_publishers SET name=$2::text,updated_at=$3::timestamptz WHERE id=$1::uuid`, id, name, now); e != nil {
-		return "", mapped(e)
+		return "", e
 	}
 	if _, e = r.guard.Authorize(ctx, db, tx, actor, "publishers.update"); e != nil {
 		return "", e

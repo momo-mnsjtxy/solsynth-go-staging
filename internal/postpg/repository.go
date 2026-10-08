@@ -370,7 +370,7 @@ func (r *Repository) GetSlug(ctx context.Context, actor, publisher, slug string)
 	if publisher == "" || len(publisher) > 256 || slug == "" || len(slug) > 4096 {
 		return posts.Post{}, posts.ErrNotFound
 	}
-	return r.detail(ctx, actor, `lower(u.name)=lower($2) AND lower(p.slug)=lower($3)`, publisher, slug)
+	return r.detail(ctx, actor, accountpg.PublisherNamePredicate("u", "$2")+` AND lower(p.slug)=lower($3)`, publisher, slug)
 }
 func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions) ([]posts.Post, int64, error) {
 	if o.Offset < 0 || o.Take < 1 || o.Take > 100 || len(o.Publisher) > 256 || len(o.Realm) > 256 {
@@ -389,7 +389,7 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	defer tx.Rollback()
 	if o.Publisher != "" {
 		var id string
-		e = tx.QueryRowContext(ctx, `SELECT u.id::text FROM owned_publishers u WHERE u.deleted_at IS NULL AND (u.id::text=$1 OR lower(u.name)=lower($1)) AND(u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=u.account_id AND NOT a.disabled))`, o.Publisher).Scan(&id)
+		e = tx.QueryRowContext(ctx, `SELECT u.id::text FROM owned_publishers u WHERE u.deleted_at IS NULL AND (u.id::text=$1 OR `+accountpg.PublisherNamePredicate("u", "$1")+`) AND(u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=u.account_id AND NOT a.disabled))`, o.Publisher).Scan(&id)
 		if e != nil {
 			return nil, 0, mapped(e)
 		}
@@ -411,7 +411,7 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 			}
 		}
 	}
-	where := base + ` AND ` + PublisherPredicate(r.visibility) + ` AND ` + RealmPredicate(r.visibility, false) + ` AND ($2='' OR u.id::text=$2 OR lower(u.name)=lower($2)) AND ($3::integer IS NULL OR p.type=$3)`
+	where := base + ` AND ` + PublisherPredicate(r.visibility) + ` AND ` + RealmPredicate(r.visibility, false) + ` AND ($2='' OR u.id::text=$2 OR ` + accountpg.PublisherNamePredicate("u", "$2") + `) AND ($3::integer IS NULL OR p.type=$3)`
 	realm, e := ResolveRealmFilter(ctx, tx, r.visibility, actor, o.Realm)
 	if e != nil {
 		return nil, 0, e

@@ -585,7 +585,7 @@ func (r *Repository) List(ctx context.Context, actor string, p stickers.Page) ([
 		return nil, 0, e
 	}
 	defer tx.Rollback()
-	rows, e := tx.QueryContext(ctx, `SELECT s.id::text FROM owned_sticker_packs s JOIN owned_publishers p ON p.id=s.publisher_id WHERE s.deleted_at IS NULL AND p.deleted_at IS NULL AND ($1='' OR lower(p.name)=lower($1) OR p.id::text=$1) AND ($2='' OR strpos(lower(s.name||' '||s.description),lower($2))>0) ORDER BY s.created_at DESC,s.id`, p.Publisher, p.Query)
+	rows, e := tx.QueryContext(ctx, `SELECT s.id::text FROM owned_sticker_packs s JOIN owned_publishers p ON p.id=s.publisher_id WHERE s.deleted_at IS NULL AND p.deleted_at IS NULL AND ($1='' OR `+accountpg.PublisherNamePredicate("p", "$1")+` OR p.id::text=$1) AND ($2='' OR strpos(lower(s.name||' '||s.description),lower($2))>0) ORDER BY s.created_at DESC,s.id`, p.Publisher, p.Query)
 	if e != nil {
 		return nil, 0, e
 	}

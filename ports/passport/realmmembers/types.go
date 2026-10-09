@@ -11,6 +11,7 @@ import (
 	b "solsynth.local/go-migration/ports/passport/realmboosts"
 	"solsynth.local/go-migration/ports/passport/social"
 	"strings"
+	"time"
 	"unicode/utf16"
 	"unicode/utf8"
 )
@@ -24,6 +25,7 @@ type Failure struct {
 func (f *Failure) Error() string { return f.Code }
 
 var (
+	ErrQuotaPolicy = &Failure{"REALM_QUOTA_POLICY_UNCONFIGURED", "Realm quota requires a configured account level policy and explicit perk policy.", 503}
 	ErrInvalid     = &Failure{"REALM_MEMBER_INVALID", "Invalid realm member request.", 400}
 	ErrForbidden   = &Failure{"REALM_MEMBER_FORBIDDEN", "Current realm role and permission are required.", 403}
 	ErrNotFound    = &Failure{"PASSPORT_REALM_MEMBER_RESOURCE_NOT_FOUND", "Realm resource not found.", 404}
@@ -54,6 +56,10 @@ type TenureResult struct {
 	Next     *string `json:"next"`
 }
 type Repository interface {
+	Quota(context.Context, string) (Quota, error)
+	UpdateProfile(context.Context, string, string, ProfileRequest) (social.Member, error)
+	DeleteProfile(context.Context, string, string) (social.Member, error)
+	ModerationLogs(context.Context, string, string, int, int) ([]ModerationLog, int64, error)
 	Labels(context.Context, string, string) ([]social.RealmLabel, error)
 	CreateLabel(context.Context, string, string, string, LabelRequest) (social.RealmLabel, error)
 	UpdateLabel(context.Context, string, string, string, LabelRequest) (social.RealmLabel, error)
@@ -176,4 +182,62 @@ func (v *TenureRequest) UnmarshalJSON(data []byte) error {
 	}
 	*v = TenureRequest(p)
 	return nil
+}
+
+// ProfileRequest is a complete nullable replacement, as in the authored PATCH.
+// Omitted fields clear their realm override; the canonical account is unchanged.
+type ProfileRequest struct {
+	Nick *string `json:"nick"`
+	Bio  *string `json:"bio"`
+}
+
+func ValidateProfile(v ProfileRequest) error {
+	if v.Nick != nil && !bounded(*v.Nick, 1024) || v.Bio != nil && !bounded(*v.Bio, 4096) {
+		return ErrInvalid
+	}
+	return nil
+}
+func (v *ProfileRequest) UnmarshalJSON(data []byte) error {
+	if _, e := object(data, "nick", "bio"); e != nil {
+		return e
+	}
+	type plain ProfileRequest
+	var p plain
+	if json.Unmarshal(data, &p) != nil {
+		return ErrInvalid
+	}
+	if e := ValidateProfile(ProfileRequest(p)); e != nil {
+		return e
+	}
+	*v = ProfileRequest(p)
+	return nil
+}
+
+// This projection contains only the canonical realm-removal record. It never
+// joins post bodies, accounts, automatic-rule evidence or reviewer metadata.
+type ModerationLog struct {
+	ID                 string     `json:"id"`
+	RealmID            string     `json:"realm_id"`
+	PostID             string     `json:"post_id"`
+	ModeratorAccountID string     `json:"moderator_account_id"`
+	Reason             *string    `json:"reason"`
+	ModeratedAt        time.Time  `json:"moderated_at"`
+	CreatedAt          time.Time  `json:"created_at"`
+	UpdatedAt          time.Time  `json:"updated_at"`
+	DeletedAt          *time.Time `json:"deleted_at"`
+}
+
+// Quota preserves the authored snake-case response, using explicit owned policy.
+type Quota struct {
+	Total     int64         `json:"total"`
+	Used      int64         `json:"used"`
+	Remaining int64         `json:"remaining"`
+	Level     int           `json:"level"`
+	PerkLevel int           `json:"perk_level"`
+	Records   []QuotaRecord `json:"records"`
+}
+type QuotaRecord struct {
+	ID   string `json:"id"`
+	Slug string `json:"slug"`
+	Name string `json:"name"`
 }

@@ -35,3 +35,18 @@ CREATE TABLE IF NOT EXISTS owned_realm_member_audit (
  target_id uuid NOT NULL,action text NOT NULL CHECK(action IN('label.created','label.updated','label.deleted','label.assigned','label.cleared','tenure.granted')),
  occurred_at timestamptz NOT NULL
 );
+
+-- Realm nick/bio are separate from the account profile and bound to the current
+-- membership incarnation. Leaving and rejoining cannot revive an old override.
+CREATE TABLE IF NOT EXISTS owned_realm_member_profiles (
+ member_id uuid PRIMARY KEY REFERENCES owned_realm_members(id),
+ realm_id uuid NOT NULL REFERENCES owned_realms(id), joined_at timestamptz NOT NULL,
+ nick text CHECK(length(nick)<=1024),bio text CHECK(length(bio)<=4096),
+ updated_at timestamptz NOT NULL,
+ FOREIGN KEY(member_id,realm_id) REFERENCES owned_realm_members(id,realm_id)
+);
+CREATE TABLE IF NOT EXISTS owned_realm_profile_audit (
+ id bigserial PRIMARY KEY,actor_id uuid NOT NULL REFERENCES owned_authority_accounts(id),
+ realm_id uuid NOT NULL REFERENCES owned_realms(id),member_id uuid NOT NULL REFERENCES owned_realm_members(id),
+ action text NOT NULL CHECK(action IN('profile.updated','profile.cleared')),occurred_at timestamptz NOT NULL
+);

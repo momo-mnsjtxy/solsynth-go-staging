@@ -36,3 +36,31 @@ func (r *Repository) MemberPerkInTransaction(ctx context.Context, tx *sql.Tx, ac
 	}
 	return provider.RealmMemberPerkLevel(ctx, r.db, tx, actor, realm, account, r.cfg.Policy.PerkLevels, at)
 }
+
+// ProfilePerkInTransaction uses the same explicit subscription map as boosts,
+// with an actor-only profile scope rather than payer or realm-owner authority.
+func (r *Repository) ProfilePerkInTransaction(ctx context.Context, tx *sql.Tx, actor string, at time.Time) (int, error) {
+	if r == nil || tx == nil || !authority.ValidID(actor) {
+		return 0, b.ErrUnavailable
+	}
+	provider, ok := r.commerce.(interface {
+		RealmProfilePerkLevel(context.Context, *sql.DB, *sql.Tx, string, map[string]int, time.Time) (int, error)
+	})
+	if !ok {
+		return 0, b.ErrUnavailable
+	}
+	return provider.RealmProfilePerkLevel(ctx, r.db, tx, actor, r.cfg.Policy.PerkLevels, at)
+}
+
+func (r *Repository) QuotaPerkInTransaction(ctx context.Context, tx *sql.Tx, actor string, at time.Time) (int, error) {
+	if r == nil || tx == nil || !authority.ValidID(actor) {
+		return 0, b.ErrUnavailable
+	}
+	provider, ok := r.commerce.(interface {
+		RealmQuotaPerkLevel(context.Context, *sql.DB, *sql.Tx, string, map[string]int, time.Time) (int, error)
+	})
+	if !ok {
+		return 0, b.ErrUnavailable
+	}
+	return provider.RealmQuotaPerkLevel(ctx, r.db, tx, actor, r.cfg.Policy.PerkLevels, at)
+}

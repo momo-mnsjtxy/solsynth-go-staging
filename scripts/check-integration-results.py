@@ -5,6 +5,24 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGBackendActivityAuthoredRoutesLifecycle",
+        "TestPGActivityPrivacyIsolationAndCurrentAuthority",
+        "TestPGActivityConcurrentRenewalEndAndCatalogAccounting",
+        "TestPGActivityAuditRollbackAndForgedProof",
+        "TestPGActivityWaitRechecksExpiryPrivacyAndOriginalProof",
+        "TestPGActivityArtworkOwnershipRetentionAndReadProjection",
+        "TestPGActivityBlockPunishmentAndScopeWithdrawal",
+        "TestPGActivitySavedRestartPersistence",
+
+        "TestPGRealmProfileSelfReplacementCanonicalProjectionAndPerkExpiry",
+        "TestPGRealmProfileWaitRechecksMembershipSessionScopeAndPerk",
+        "TestPGRealmProfileAuditRollbackAndSubscriptionContention",
+        "TestPGRealmQuotaConfiguredGrantShapeAndExpiry",
+        "TestPGRealmModerationLogCanonicalRemovalPrivacyAndRevocation",
+        "TestPGRealmQuotaRevalidatesAfterAccountWait",
+        "TestPGRealmProfileAndQuotaPerkExpiresDuringDefinitionWait",
+        "TestPGRealmProfileAndLogRestartPersistence",
+
         "TestPGDeveloperStatisticsCanonicalCountsAndVisibility",
         "TestPGDeveloperCustomOrderAuthorityAndIsolation",
         "TestPGDeveloperCustomOrderConcurrencyAtomicityAndSettlement",
@@ -877,6 +895,10 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGActivitySavedRestartPersistence",
+
+        "TestPGRealmProfileAndLogRestartPersistence",
+
         "TestPGDeveloperCustomOrderSavedRestartPersistence",
 
         "TestPGFederationDeliverySavedRestartPersistence",

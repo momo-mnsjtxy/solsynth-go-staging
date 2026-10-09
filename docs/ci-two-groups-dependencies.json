@@ -26,6 +26,18 @@
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
     },
     {
+      "test": "TestPGActivitySavedRestartPersistence",
+      "source": "tests/integration/activities_test.go",
+      "function_sha256": "7fa25506d4578ab400355e0c60562518d0ebf6b1730cae8c9532ae9881a7a12f",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "activities-state.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Exclusive original ended activity/catalog/stat/event rows and before-target one-hour owner/other proof/publickeys. After verifies original proof with elapsed time, owner-only catalog/stats and idempotent end, unchanged original IDs/accounting. No reseed/issuance or private signer."
+    },
+    {
       "test": "TestPGAdminExtensionsRestartPersistence",
       "source": "tests/integration/admin_extensions_test.go",
       "group_before_and_after": "group-b",
@@ -42,7 +54,7 @@
       "test": "TestPGAffiliationRestartPersistence",
       "source": "tests/integration/affiliation_test.go",
       "function_sha256": "90c9ef6b8d2a4131d9bb996352b6feee226db2c089d92b775094669646dafb1a",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "affiliation-activation.json"
       ],
@@ -65,7 +77,7 @@
       "named_database_markers": {},
       "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
       "function_sha256": "b73456b05611e095c193c3cc3f1c71b92dead61e7f64d663102867bd0911354a",
-      "group_before_and_after": "group-b"
+      "group_before_and_after": "group-a"
     },
     {
       "test": "TestPGAuthorityRestartPersistence",
@@ -1024,7 +1036,19 @@
       "named_database_markers": {},
       "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
       "function_sha256": "f02f05c54a984575b46a5a1f890e77972db877fd4d31ad2cc3b27bd80b6a1cb0",
-      "group_before_and_after": "group-b"
+      "group_before_and_after": "group-a"
+    },
+    {
+      "test": "TestPGRealmProfileAndLogRestartPersistence",
+      "source": "tests/integration/realm_profile_restart_test.go",
+      "function_sha256": "fc22dcf1c9979965926a95229d2b885de7d208c716993331248d97bebd225056",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "realm-profile-log-record.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Exclusive original profile/member/moderation log/audit IDs plus before-target one-hour original proof/publickeys. After only canonical reads with advancing elapsed verifier and original IDs/updatedAt; no credentials/policy/fixture writes."
     },
     {
       "test": "TestPGRealmPublisherRestartPersistence",
@@ -1366,7 +1390,7 @@
     {
       "test": "TestPGArtworkComposedUploadDedupOwnershipAndRemoval",
       "source": "tests/integration/presence_artwork_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "ad43adbeda79dd09f073e46d9ead5c063fb5abf82066956975e11c332f65c40c"
     },
     {
@@ -1374,6 +1398,12 @@
       "source": "tests/integration/backend_account_settings_test.go",
       "group": "group-b",
       "function_sha256": "166279fafb401ae004d521eb6aa8a2ae31d5f767d3e8b50d542b0179ff998fc1"
+    },
+    {
+      "test": "TestPGBackendActivityAuthoredRoutesLifecycle",
+      "source": "tests/integration/activities_test.go",
+      "function_sha256": "1a8c5356b885b82ba9c8dc85fd266b0b9fbf8f7d911dab00195ad32b28ce87d8",
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendAdminExtensionsComposition",
@@ -1774,7 +1804,7 @@
     {
       "test": "TestPGRealmPermissionBackendDTOAndNullClear",
       "source": "tests/integration/realm_permissions_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "649fb752ec68dee61b4f71f49c0c9e691074b75fb5adf2f66a1b35fc961a5f89"
     },
     {
@@ -1798,6 +1828,10 @@
     {
       "source": "tests/integration/accounts_test.go",
       "sha256": "f37ec15c3e93698bcde7d1dc5ff12d794515aa3e74833015ca3ab9c59dd3cd78"
+    },
+    {
+      "source": "tests/integration/activities_test.go",
+      "sha256": "55c7b6680365626121e9d8e8cb1bfb12b2aea329e2ed3a631868371b79528ae5"
     },
     {
       "source": "tests/integration/admin_extensions_test.go",
@@ -2364,6 +2398,14 @@
       "sha256": "38b7546fec99613970573ea710200b4484b6e70ddce145638baa9cbcab3a3f18"
     },
     {
+      "source": "tests/integration/realm_profile_restart_test.go",
+      "sha256": "aa9552e0920cb3dd1c828cad80d0825a4aec57b520937038837285f193bd878f"
+    },
+    {
+      "source": "tests/integration/realm_profile_routes_test.go",
+      "sha256": "e7ca60d62074ebe7cab42e3a15093dca07bdf8c74e9e74de06ad2071aa73984f"
+    },
+    {
       "source": "tests/integration/realm_publishing_test.go",
       "sha256": "3796c8a0bace44780f579db1c9b17e078e3fa964e2af91c11dd2639397c6047c"
     },
@@ -2580,6 +2622,18 @@
     "after": 1,
     "correction_sha256": "de0722dddd05c662929d860aac5cc69ed9124dbdaddefbc22e36ab363027cb4c",
     "scope": "Explicit atomic varchar1024 custom identifier migration/readiness; source publicstats/editorcustomorder wire, exactmills/capturedbeneficiary/idempotency/rollback/conservation/currentauthority tests; original appcredential256limit retained."
+  },
+  "realm_profile_review": {
+    "before": 8,
+    "after": 1,
+    "correction_sha256": "10930f54fa669765f315bd83f0b600a69eb8316270e4204c2e6331e9d9e489b2",
+    "scope": "Canonical self profile/perk and realm-only logs; explicitly configured owned quota, stable missingpolicy503. Both begun/ended paid-cycle eligibility rechecked after all waits with DB/currentpolicy clock; canonical normal-member joinfixture."
+  },
+  "activity_review": {
+    "before": 8,
+    "after": 1,
+    "correction_sha256": "88752c269646cfedf5fb6f10302244f48b523f32db11be997a013aff0cbe22bf",
+    "scope": "Omittedrenewal visibility/type preserved onallaliases, durable authorization generation with oldtokenrejection and current revocation/scope, final artwork/lease fences, owner-only catalogprivacy."
   },
   "quote_independent_security_review": {
     "runtime": "Quote jobs capture independent durable block/security generation; unrelated FollowUndo no longercancels validconsent. Otherpeer lifecycle jobs retainoriginalgeneration. LegacyNULL failclosed, currentquote/account/session/key/owner checks retained.",

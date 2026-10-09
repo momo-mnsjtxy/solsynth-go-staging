@@ -11,6 +11,7 @@ import (
 	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/develop/bots"
 	"solsynth.local/go-migration/ports/passport/accountsettings"
+	"solsynth.local/go-migration/ports/passport/activities"
 	"solsynth.local/go-migration/ports/passport/ipcheck"
 	"solsynth.local/go-migration/ports/passport/namecards"
 	"solsynth.local/go-migration/ports/passport/presence"
@@ -28,6 +29,7 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	activities                                                                                                                                                                                                                                           http.Handler
 	realmMemberHistory                                                                                                                                                                                                                                   bool
 	blogs                                                                                                                                                                                                                                                http.Handler
 	realmMembers                                                                                                                                                                                                                                         http.Handler
@@ -138,6 +140,9 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		var handler http.Handler
+		if activities.Handles(canonical) {
+			handler = h.activities
+		}
 		if presence.RouteMatches(canonical) {
 			handler = h.presence
 		}

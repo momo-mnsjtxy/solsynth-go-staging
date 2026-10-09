@@ -31,8 +31,14 @@ func (r *Repository) EnrichMemberInTransaction(ctx context.Context, tx *sql.Tx, 
 	out.Label = nil
 	out.LabelID = nil
 	out.Progression = nil
+	out.Nick = nil
+	out.Bio = nil
 	if out.JoinedAt == nil || out.LeaveAt != nil {
 		return nil
+	}
+	e := tx.QueryRowContext(ctx, `SELECT p.nick,p.bio FROM owned_realm_member_profiles p JOIN owned_realm_members m ON m.id=p.member_id AND m.realm_id=p.realm_id AND m.joined_at=p.joined_at WHERE m.id=$1::uuid AND m.realm_id=$2::uuid AND m.account_id=$3::uuid AND m.joined_at IS NOT NULL AND m.leave_at IS NULL`, out.ID, out.RealmID, out.AccountID).Scan(&out.Nick, &out.Bio)
+	if e != nil && !errors.Is(e, sql.ErrNoRows) {
+		return e
 	}
 	v, e := label(tx.QueryRowContext(ctx, `SELECT l.id::text,l.realm_id::text,l.name,l.description,l.color,l.icon,l.created_by_account_id::text,l.created_at,l.updated_at FROM owned_realm_label_assignments x JOIN owned_realm_labels l ON l.id=x.label_id AND l.realm_id=x.realm_id JOIN owned_realm_members m ON m.id=x.member_id AND m.realm_id=x.realm_id AND m.joined_at=x.joined_at WHERE m.id=$1::uuid AND m.realm_id=$2::uuid AND m.account_id=$3::uuid AND m.joined_at IS NOT NULL AND m.leave_at IS NULL`, out.ID, out.RealmID, out.AccountID))
 	if e != nil && !errors.Is(e, m.ErrNotFound) {

@@ -108,6 +108,8 @@ type RealmPatch struct {
 	BackgroundID *string `json:"background_id"`
 }
 type Member struct {
+	Nick                 *string            `json:"nick"`
+	Bio                  *string            `json:"bio"`
 	LabelID              *string            `json:"label_id,omitempty"`
 	Label                *RealmLabel        `json:"label,omitempty"`
 	Progression          *MemberProgression `json:"progression,omitempty"`

@@ -34,7 +34,15 @@ func parts(path string) []string {
 }
 func Handles(path string) bool {
 	p := parts(path)
-	return len(p) >= 3 && p[0] == "realms" && (p[2] == "labels" && (len(p) == 3 || len(p) == 4) || len(p) == 4 && p[2] == "progression" && p[3] == "tenure" || p[2] == "members" && (len(p) == 5 && (p[4] == "label" || p[4] == "progression" || p[4] == "experience") || len(p) == 6 && p[4] == "progression" && p[5] == "history"))
+	return quotaRoute(p) || profileRoute(p) || moderationRoute(p) || len(p) >= 3 && p[0] == "realms" && (p[2] == "labels" && (len(p) == 3 || len(p) == 4) || len(p) == 4 && p[2] == "progression" && p[3] == "tenure" || p[2] == "members" && (len(p) == 5 && (p[4] == "label" || p[4] == "progression" || p[4] == "experience") || len(p) == 6 && p[4] == "progression" && p[5] == "history"))
+}
+
+func quotaRoute(p []string) bool { return len(p) == 2 && p[0] == "realms" && p[1] == "quota" }
+func profileRoute(p []string) bool {
+	return len(p) == 5 && p[0] == "realms" && p[2] == "members" && p[3] == "me" && p[4] == "profile"
+}
+func moderationRoute(p []string) bool {
+	return len(p) == 4 && p[0] == "realms" && p[2] == "posts" && p[3] == "moderation-logs"
 }
 
 // ExperienceRoute is the authored array-shaped known-source ledger route.
@@ -97,8 +105,14 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 			return
 		}
 		p := parts(r.URL.EscapedPath())
+		if quotaRoute(p) {
+			serveQuota(w, r, repo, auth)
+			return
+		}
 		allowed := "GET"
-		if p[2] == "labels" {
+		if profileRoute(p) {
+			allowed = "PATCH, DELETE"
+		} else if p[2] == "labels" {
 			if len(p) == 3 {
 				allowed = "GET, POST"
 			} else {
@@ -126,12 +140,13 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 			}
 		}
 		write := r.Method != "GET"
-		actor, e := auth(r, write)
+		required := write || moderationRoute(p)
+		actor, e := auth(r, required)
 		if e != nil {
 			failure(w, e)
 			return
 		}
-		if write && actor == "" {
+		if required && actor == "" {
 			failure(w, authority.ErrInvalid)
 			return
 		}
@@ -141,7 +156,7 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 			return
 		}
 		take, offset := 50, 0
-		if len(p) == 3 && p[2] == "members" {
+		if moderationRoute(p) || len(p) == 3 && p[2] == "members" {
 			take = 20
 		}
 		labelID := ""
@@ -151,13 +166,13 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 				return
 			}
 			switch {
-			case k == "take" && (len(p) == 6 || ExperienceRoute(r.URL.EscapedPath()) || len(p) == 3 && p[2] == "members"):
+			case k == "take" && (moderationRoute(p) || len(p) == 6 || ExperienceRoute(r.URL.EscapedPath()) || len(p) == 3 && p[2] == "members"):
 				take, e = strconv.Atoi(v[0])
 				if e != nil || take < 1 || take > 200 {
 					failure(w, ErrInvalid)
 					return
 				}
-			case k == "offset" && len(p) == 3 && p[2] == "members":
+			case k == "offset" && (moderationRoute(p) || len(p) == 3 && p[2] == "members"):
 				offset, e = strconv.Atoi(v[0])
 				if e != nil || offset < 0 || offset > 1000000 {
 					failure(w, ErrInvalid)
@@ -177,6 +192,27 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 		var out any
 		status := 200
 		switch {
+		case profileRoute(p):
+			if r.Method == "PATCH" {
+				var body ProfileRequest
+				if admin.DecodeStrict(w, r, &body) != nil {
+					failure(w, ErrInvalid)
+					return
+				}
+				out, e = repo.UpdateProfile(r.Context(), actor, p[1], body)
+			} else {
+				if r.ContentLength != 0 {
+					failure(w, ErrInvalid)
+					return
+				}
+				out, e = repo.DeleteProfile(r.Context(), actor, p[1])
+			}
+		case moderationRoute(p):
+			var total int64
+			out, total, e = repo.ModerationLogs(r.Context(), actor, p[1], offset, take)
+			if e == nil {
+				w.Header().Set("X-Total", strconv.FormatInt(total, 10))
+			}
 		case p[2] == "labels" && len(p) == 3 && r.Method == "GET":
 			out, e = repo.Labels(r.Context(), actor, p[1])
 		case p[2] == "labels" && (r.Method == "POST" || r.Method == "PATCH"):
@@ -232,4 +268,39 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 		}
 		admin.Respond(w, status, out)
 	})
+}
+
+func serveQuota(w http.ResponseWriter, r *http.Request, repo Repository, auth Auth) {
+	if r.Method != "GET" {
+		w.Header().Set("Allow", "GET")
+		admin.Respond(w, 405, ErrInvalid)
+		return
+	}
+	if r.URL.RawQuery != "" {
+		failure(w, ErrInvalid)
+		return
+	}
+	for k := range r.Header {
+		k = strings.ToLower(k)
+		if k == "x-account-id" || k == "x-user-id" || k == "x-role" || k == "x-realm-role" || k == "proxy-authorization" || strings.HasPrefix(k, "x-test-") || strings.HasPrefix(k, "x-synthetic-") {
+			failure(w, authority.ErrForbidden)
+			return
+		}
+	}
+	actor, e := auth(r, true)
+	if e != nil {
+		failure(w, e)
+		return
+	}
+	if actor == "" {
+		failure(w, authority.ErrInvalid)
+		return
+	}
+	out, e := repo.Quota(r.Context(), actor)
+	if e != nil {
+		failure(w, e)
+		return
+	}
+	w.Header().Set("X-Realm-Quota-Policy", "owned.configured.grant")
+	admin.Respond(w, 200, out)
 }

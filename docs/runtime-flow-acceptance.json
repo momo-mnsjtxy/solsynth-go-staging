@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Narrow independently reviewed quote security-generation correction plus valid current-intent/ancestor/config/shadowban fixtures. Existing selectors816/97 unchanged; actualPG pending.",
+  "local_source_checkpoint": "Reviewed realm profile, configured quota, realm moderation logs and account activity/catalog routes are integrated. Combined build, vet, unit/race, source, SQL and grouping checks passed. The independently reviewed quote correction is included; actual PostgreSQL validation remains pending.",
   "last_fully_passed_ci": {
     "commit": "8d00c0cee85ebd10328ed5d51fa0e876141bf411",
     "run": 37878791797,
@@ -14,13 +14,13 @@
     "acceptance_limit": "Immutable implementation CI-green; remaining original flows, configured external providers and production rollout are separate."
   },
   "latest_candidate": {
-    "commit": "d9c14c06258e55c5ad340212587b44745bdfb555",
-    "required_before": 811,
-    "required_after_restart": 96,
-    "status": "Published reviewed publisher/federation delivery and pool corrections; actualCI pending."
+    "commit": "32c1cc5225d138f72a66aa30f4a596006649eecd",
+    "required_before": 816,
+    "required_after_restart": 97,
+    "status": "Published narrow, independently reviewed quote security-generation correction and validation fixture repairs; actual CI pending."
   },
-  "local_required_before": 816,
-  "local_required_after_restart": 97,
+  "local_required_before": 832,
+  "local_required_after_restart": 99,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2128,7 +2128,7 @@
     "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
-    "as_of": "2026-10-09T03:23:00Z",
+    "as_of": "2026-10-09T04:09:00Z",
     "authoritative_for": "Current source-backed remaining flow bundles, implementation candidates and operational gaps; no percentage or endpoint-total inference.",
     "families": [
       {
@@ -2686,7 +2686,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last verified756/91 at2e6c2d1.777/786 pendingCI.808 reviewed publisher/federationdispatch integration pendingchecks; poolstarvation follow-up active.",
+    "verification_note": "786/94 at8d00c0c verifiedfullgreen.811/96 and816/97 are newerpendingCI. Activity,realmprofile/quota/logs andsurveynotifications are separateactive/reviewdeliveries.",
     "unimplemented_flow_bundles": [
       {
         "id": "chat_reads_search",
@@ -2915,7 +2915,7 @@
         "families": [
           "passport.accounts_presence"
         ],
-        "remaining": "Rich presence activity leases, session start/end, accumulated catalog and duration/tag statistics have no composed runtime owner.",
+        "remaining": "Ten accountactivity/catalog/session/stat routes integrated pendingPG; friends overview/broadcast and provider/sensoractivity remain unsupported.",
         "source": [
           {
             "path": "DysonNetwork.Passport/Account/PresenceActivityController.cs",
@@ -3044,7 +3044,7 @@
           "passport.social_realms",
           "passport.realm_boosts"
         ],
-        "remaining": "Realm quota/public discovery and member profile customization remain missing; full member status/search and non-boost/non-tenure progression remain incomplete.",
+        "remaining": "Four previously absent quota/profile/log routes integrated pendingPG; complete realm member ordering/status/search, chat/post XP triggers and automatic tenure scheduling remain unsupported.",
         "source": [
           {
             "path": "DysonNetwork.Passport/Realm/RealmController.cs",
@@ -3661,230 +3661,6 @@
     ],
     "implemented_pending_verification": [
       {
-        "id": "passport.realm_boosts",
-        "status": "implemented_CI_green_651c630",
-        "scope": [
-          "Exact source-grounded share purchase through canonical orders/PIN/hold/settlement, once-only XP",
-          "Configured label caps/perk identifiers, source multiplier values, inclusive30-day entitlement",
-          "Live boost-dependent promotion gates including pending elevated invitations; existing roles retained",
-          "Standalone explicit enable/config flags, original-proof restart reconstruction"
-        ],
-        "test_sources": [
-          "tests/integration/realm_boosts_host_test.go",
-          "tests/integration/realm_boosts_test.go"
-        ],
-        "limit": "Offline pass/compiled test registration is not an actual PostgreSQL or restart pass.",
-        "registered_case_examples": [
-          "TestPGBackendRealmBoostRoutes",
-          "TestPGRealmBoostAuthenticatedHTTP",
-          "TestPGRealmBoostAuthorityRevocationAfterWait"
-        ],
-        "verification": "718 before/87 restart exact immutable checkpoint"
-      },
-      {
-        "id": "develop.bot_dispatch",
-        "status": "implemented_CI_green_651c630",
-        "scope": [
-          "Existing ordinary text submission atomically queues enrolled group bot deliveries",
-          "Current developer/owner/sender/session and membership-incarnation checks, no untrusted identity substitution",
-          "Committed bounded leases/attempt fencing; network outside transactions; metadata/forward/encryption suppressed",
-          "Standalone strict allowlisted HTTPS/key-file configuration with public-IP pinned transport; synthetic tests only"
-        ],
-        "test_sources": [
-          "tests/integration/bot_execution_test.go"
-        ],
-        "limit": "Offline pass/compiled test registration is not an actual PostgreSQL or restart pass.",
-        "registered_case_examples": [
-          "TestPGBotExecutionCanonicalSendAndReplay",
-          "TestPGBotExecutionConcurrentWorkersAndRevocationWait",
-          "TestPGBotExecutionEnrollmentRoleAndSessionScope"
-        ],
-        "verification": "718 before/87 restart exact immutable checkpoint"
-      },
-      {
-        "id": "owned.automod_evidence_privacy",
-        "status": "implemented_CI_green_651c630",
-        "scope": [
-          "Ordinary editor gets only whitelisted outcome/penalty/freshness, recursively applied",
-          "Full evidence requires canonical global authority plus current explicit automod.rules.manage and post permission",
-          "Combined final checks cover list/read/inspection/review, expiry/revocation and commit errors; canonical full evidence retained"
-        ],
-        "test_sources": [
-          "tests/integration/post_automod_editor_projection_test.go"
-        ],
-        "limit": "Offline pass/compiled test registration is not an actual PostgreSQL or restart pass.",
-        "registered_case_examples": [
-          "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
-          "TestPGPostAutomodEvidenceGrantExpiryAtResponse",
-          "TestPGPostAutomodEvidenceRevocationAfterAccountWait"
-        ],
-        "verification": "718 before/87 restart exact immutable checkpoint"
-      },
-      {
-        "id": "sphere.blog_domains",
-        "status": "implemented_CI_green_651c630",
-        "scope": [
-          "Strict domain add/list/delete/recheck and bounded pending verification recovery",
-          "Source-supported blog permission and metadata-backed post lifecycle through existing routes",
-          "Exact domain/publisher/policy incarnation and original session deadline fence provider work and scheduled publication",
-          "Server-produced metadata reaches automod before ranking; editor evidence remains sanitized",
-          "Existing admin description search/publication ordering/camelCase aliases restored"
-        ],
-        "test_sources": [
-          "tests/integration/blog_automod_composition_test.go",
-          "tests/integration/blog_posts_test.go",
-          "tests/integration/blog_review_test.go",
-          "tests/integration/post_admin_queries_test.go"
-        ],
-        "limit": "Offline pass/compiled test registration is not an actual PostgreSQL or restart pass.",
-        "registered_case_examples": [
-          "TestPGBlogAutomodUsesPreparedMetadataAndSafeProjection",
-          "TestPGBlogBackendAliasesAndStrictPermissionRequest",
-          "TestPGBlogCreationEditingMediaAndVisibility"
-        ],
-        "verification": "718 before/87 restart exact immutable checkpoint"
-      },
-      {
-        "id": "sphere.federation_discovery",
-        "status": "implemented_CI_green_2e6c2d1",
-        "scope": "Anchored server actor, server collections/key routes, canonical host-meta/WebFinger and publisher key aliases; durable explicit pinned remote observation jobs with current-authority/history fences.",
-        "artifact": "/workspace/shared/federation-discovery-review-delivery",
-        "artifact_sha256": {
-          "correction.patch": "8c4b3119dd74743ae253f588916cd7e0cd3480c36137bf96604d821c465d777e"
-        },
-        "required_restart_cases": [
-          "TestPGFederationDiscoverySavedRestartPersistence"
-        ],
-        "limit": "Actual PostgreSQL/restart not run; final combined grouping/dependency audit is required. Realm review was active at audit cutoff.",
-        "registered_case_examples": [
-          "TestPGBackendFederationDiscoveryComposition",
-          "TestPGFederationDiscoveryConcurrentClaim",
-          "TestPGFederationDiscoveryLifecycleAndIsolation"
-        ],
-        "full_case_set": "/workspace/shared/federation-discovery-review-delivery/manifest.json",
-        "candidate": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e"
-      },
-      {
-        "id": "passport.calendar_media",
-        "status": "implemented_CI_green_2e6c2d1",
-        "scope": "Calendar/notable-day icon/background associations and audience-aware file reads; current projection revalidation and explicitly owned string-kind activity overlay.",
-        "artifact": "/workspace/shared/calendar-media-review-delivery",
-        "artifact_sha256": {
-          "correction.patch": "2c57be607727010a7cd69f21083d58c25ce79f4a000773c56b8dd11db1b9c80c"
-        },
-        "required_restart_cases": [
-          "TestPGCalendarActivityRestartPersistence",
-          "TestPGCalendarMediaRestartPersistence"
-        ],
-        "limit": "Actual PostgreSQL/restart not run; final combined grouping/dependency audit is required. Realm review was active at audit cutoff.",
-        "registered_case_examples": [
-          "TestPGCalendarActivityProjectionWaitRevalidatesPrivacy",
-          "TestPGCalendarActivityRestartPersistence",
-          "TestPGCalendarActivityStringProjectionPrivacyAndTimeZone"
-        ],
-        "full_case_set": "/workspace/shared/calendar-media-review-delivery/pg-cases.json",
-        "candidate": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e"
-      },
-      {
-        "id": "passport.realm_members",
-        "status": "implemented_CI_green_2e6c2d1",
-        "scope": "Label CRUD/assignment/filter/projection and opt-in daily tenure with scoped XP/history/configured levels.",
-        "artifact": "/workspace/shared/realm-member-delivery",
-        "artifact_sha256": {
-          "core.patch": "971188548b0e38e216bebec001da05b9808e7a568e9fb1d0ccff1b35bd8906fe",
-          "shared-wiring.patch": "54bf76942389bbbf84dcef9136002c96b52409d8de2e3cac6cab0e655cb667be"
-        },
-        "required_restart_cases": [
-          "TestPGRealmMemberRestartPersistence"
-        ],
-        "limit": "Actual PostgreSQL/restart not run; final combined grouping/dependency audit is required. Realm review was active at audit cutoff.",
-        "registered_case_examples": [
-          "TestPGRealmLabelsCRUDVisibilityAndCanonicalProjection",
-          "TestPGRealmLabelsConcurrentQuotaAndReplay",
-          "TestPGRealmLabelsMembershipIncarnationAndCurrentRole"
-        ],
-        "full_case_set": "/workspace/shared/realm-member-delivery/integration.json",
-        "candidate": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e"
-      },
-      {
-        "id": "post_typed_composition",
-        "families": [
-          "sphere.posts"
-        ],
-        "remaining": "Source-backed survey/fund/meet/live/calendar/notableday/location references and thumbnail are integrated; canonical client/server compatibility awaits actualPG. See docs/post-composition-continuation.md for owned narrower association scope.",
-        "source": [
-          {
-            "path": "DysonNetwork.Sphere/Post/PostActionController.cs",
-            "blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
-            "methods": "CreatePost@353; UpdatePost@1252",
-            "route_examples": [
-              "POST /api/posts",
-              "PATCH /api/posts/{id:guid}"
-            ]
-          }
-        ],
-        "runtime_owner_or_rejection": [
-          "ports/sphere/posts/http.go:decode",
-          "internal/postpg"
-        ],
-        "current_boundary": "Source request fields and mapping are authored at PostActionController.cs:239-290,535-707,1365-1603. Canonical linked media, realm and explicit reply/forward/chain relations already exist. Standalone survey/fund/meet/calendar implementations do not prove post composition integration.",
-        "next_slice": "Add one typed association at a time through current canonical read/ownership adapters; validate withdrawal and cross-domain lock waits.",
-        "status": "implemented_pending_actual_PG"
-      },
-      {
-        "id": "messager.chat_organization",
-        "status": "integrated_pending_actual_PG",
-        "scope": [
-          "Summary/read-all/literal search with canonical paid-perk proof",
-          "Pin lifecycle and personal groups/membership assignment",
-          "Source-supported millisecond expiry and deterministic snapshots"
-        ],
-        "limits": [
-          "Read-receipt websocket fanout remains unimplemented",
-          "Full upstream entity projections and unretained group service semantics not claimed",
-          "Remote ranked search not implemented"
-        ]
-      },
-      {
-        "id": "chat_pins_folders",
-        "families": [
-          "messager.messages",
-          "messager.rooms"
-        ],
-        "remaining": "Pin/group CRUD and per-account assignment integrated pending actualPG; complete upstream group-service semantics and full entity projections remain documented differences.",
-        "source": [
-          {
-            "path": "DysonNetwork.Messager/Chat/ChatController.cs",
-            "blob": "29e748e8c585ed766c9e20dddfc2eae65509f9a2",
-            "methods": "PinMessage@1868; UnpinMessage@1897; ListPins@1926",
-            "route_examples": [
-              "POST /api/chat/{roomId:guid}/pins",
-              "DELETE /api/chat/{roomId:guid}/pins/{pinId:guid}",
-              "GET /api/chat/{roomId:guid}/pins"
-            ]
-          },
-          {
-            "path": "DysonNetwork.Messager/Chat/ChatRoomController.cs",
-            "blob": "373efa01d468a76ba5085bf5c2b59bede71bd7ec",
-            "methods": "ListGroups@2093; CreateGroup@2104; UpdateGroup@2116; DeleteGroup@2128; MoveToGroup@2140",
-            "route_examples": [
-              "GET /api/chat/groups",
-              "POST /api/chat/groups",
-              "PATCH /api/chat/groups/{groupId:guid}"
-            ],
-            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
-          }
-        ],
-        "runtime_owner_or_rejection": [
-          "ports/messager/rooms/http.go:serveHTTP",
-          "internal/chatpg",
-          "internal/messagerpg"
-        ],
-        "current_boundary": "No pin or personal-group persistence/handler in current canonical owner. Do not confuse personal folders with implemented group chat rooms.",
-        "next_slice": "One bounded transactional bundle: fresh room/target visibility, account-owned folders, pin expiry and saved-state restart.",
-        "status": "implemented_pending_actual_PG"
-      },
-      {
         "id": "publisher.subscription_state",
         "status": "integrated_pending_actual_PG",
         "scope": "Eight source-backed subscriber manager/ownnotify/read/readall/live routes, atomic local outbox",
@@ -3901,6 +3677,18 @@
         "status": "integrated_pending_actual_PG",
         "scope": "Exact public total_custom_apps, authenticated editor custom-order creation with explicit amount/expiry/identifier; canonical merchant capturedbeneficiary and internal settlement path",
         "limits": "Developer quota remains partiallyevidenced/unresearched; no guessed accountwide aggregation. No externalproviderpayments."
+      },
+      {
+        "id": "passport.realm_profile_quota_logs",
+        "status": "integrated_pending_actual_PG",
+        "scope": "Authored selfnick/bioPATCH/DELETE,realm-only moderationlogs, explicitownedquota using configured progression/entitlement/grants",
+        "limits": "Original tierformula notclaimed; missingpolicy stable503. No inventeddefaultquota/perks."
+      },
+      {
+        "id": "passport.activity_catalog",
+        "status": "integrated_pending_actual_PG",
+        "scope": "Ten activity/session/catalog/stat routes andaliases, source-supported lease/endaccounting andownedprivacy/revocation",
+        "limits": "Friends overview/broadcast,provider/sensoractivities andcompletelegacyvisibilitymapping remainunsupported."
       }
     ],
     "owned_contract_differences": [
@@ -4141,16 +3929,255 @@
     },
     "reviewed_pending_integration": [
       {
-        "id": "realm.labels_tenure",
-        "state": "Integrated independently reviewed labels/tenure candidate;756/91 offline checks running, actual PG pending. Original experience route now combines known ledgers; automatic scheduling remains unsupported."
+        "id": "survey.subscription_notifications",
+        "state": "Ten-case delivery independently reviewed, including source realm-owner punishment and privacy correction; integration pending."
+      },
+      {
+        "id": "wallet.reporting",
+        "state": "Five-case reporting delivery under independent review; separate opt-in treasury exchange implementation continues."
+      },
+      {
+        "id": "friends.activity_overview",
+        "state": "Source-backed overview implementation active; friend activity broadcast follows as a separate local replay flow."
+      }
+    ],
+    "implemented_and_CI_green": [
+      {
+        "id": "passport.realm_boosts",
+        "status": "implemented_CI_green_651c630",
+        "scope": [
+          "Exact source-grounded share purchase through canonical orders/PIN/hold/settlement, once-only XP",
+          "Configured label caps/perk identifiers, source multiplier values, inclusive30-day entitlement",
+          "Live boost-dependent promotion gates including pending elevated invitations; existing roles retained",
+          "Standalone explicit enable/config flags, original-proof restart reconstruction"
+        ],
+        "test_sources": [
+          "tests/integration/realm_boosts_host_test.go",
+          "tests/integration/realm_boosts_test.go"
+        ],
+        "limit": "Offline pass/compiled test registration is not an actual PostgreSQL or restart pass.",
+        "registered_case_examples": [
+          "TestPGBackendRealmBoostRoutes",
+          "TestPGRealmBoostAuthenticatedHTTP",
+          "TestPGRealmBoostAuthorityRevocationAfterWait"
+        ],
+        "verification": "718 before/87 restart exact immutable checkpoint"
+      },
+      {
+        "id": "develop.bot_dispatch",
+        "status": "implemented_CI_green_651c630",
+        "scope": [
+          "Existing ordinary text submission atomically queues enrolled group bot deliveries",
+          "Current developer/owner/sender/session and membership-incarnation checks, no untrusted identity substitution",
+          "Committed bounded leases/attempt fencing; network outside transactions; metadata/forward/encryption suppressed",
+          "Standalone strict allowlisted HTTPS/key-file configuration with public-IP pinned transport; synthetic tests only"
+        ],
+        "test_sources": [
+          "tests/integration/bot_execution_test.go"
+        ],
+        "limit": "Offline pass/compiled test registration is not an actual PostgreSQL or restart pass.",
+        "registered_case_examples": [
+          "TestPGBotExecutionCanonicalSendAndReplay",
+          "TestPGBotExecutionConcurrentWorkersAndRevocationWait",
+          "TestPGBotExecutionEnrollmentRoleAndSessionScope"
+        ],
+        "verification": "718 before/87 restart exact immutable checkpoint"
+      },
+      {
+        "id": "owned.automod_evidence_privacy",
+        "status": "implemented_CI_green_651c630",
+        "scope": [
+          "Ordinary editor gets only whitelisted outcome/penalty/freshness, recursively applied",
+          "Full evidence requires canonical global authority plus current explicit automod.rules.manage and post permission",
+          "Combined final checks cover list/read/inspection/review, expiry/revocation and commit errors; canonical full evidence retained"
+        ],
+        "test_sources": [
+          "tests/integration/post_automod_editor_projection_test.go"
+        ],
+        "limit": "Offline pass/compiled test registration is not an actual PostgreSQL or restart pass.",
+        "registered_case_examples": [
+          "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
+          "TestPGPostAutomodEvidenceGrantExpiryAtResponse",
+          "TestPGPostAutomodEvidenceRevocationAfterAccountWait"
+        ],
+        "verification": "718 before/87 restart exact immutable checkpoint"
+      },
+      {
+        "id": "sphere.blog_domains",
+        "status": "implemented_CI_green_651c630",
+        "scope": [
+          "Strict domain add/list/delete/recheck and bounded pending verification recovery",
+          "Source-supported blog permission and metadata-backed post lifecycle through existing routes",
+          "Exact domain/publisher/policy incarnation and original session deadline fence provider work and scheduled publication",
+          "Server-produced metadata reaches automod before ranking; editor evidence remains sanitized",
+          "Existing admin description search/publication ordering/camelCase aliases restored"
+        ],
+        "test_sources": [
+          "tests/integration/blog_automod_composition_test.go",
+          "tests/integration/blog_posts_test.go",
+          "tests/integration/blog_review_test.go",
+          "tests/integration/post_admin_queries_test.go"
+        ],
+        "limit": "Offline pass/compiled test registration is not an actual PostgreSQL or restart pass.",
+        "registered_case_examples": [
+          "TestPGBlogAutomodUsesPreparedMetadataAndSafeProjection",
+          "TestPGBlogBackendAliasesAndStrictPermissionRequest",
+          "TestPGBlogCreationEditingMediaAndVisibility"
+        ],
+        "verification": "718 before/87 restart exact immutable checkpoint"
+      },
+      {
+        "id": "sphere.federation_discovery",
+        "status": "implemented_CI_green_8d00c0c",
+        "scope": "Anchored server actor, server collections/key routes, canonical host-meta/WebFinger and publisher key aliases; durable explicit pinned remote observation jobs with current-authority/history fences.",
+        "artifact": "/workspace/shared/federation-discovery-review-delivery",
+        "artifact_sha256": {
+          "correction.patch": "8c4b3119dd74743ae253f588916cd7e0cd3480c36137bf96604d821c465d777e"
+        },
+        "required_restart_cases": [
+          "TestPGFederationDiscoverySavedRestartPersistence"
+        ],
+        "limit": "Actual PostgreSQL/restart not run; final combined grouping/dependency audit is required. Realm review was active at audit cutoff.",
+        "registered_case_examples": [
+          "TestPGBackendFederationDiscoveryComposition",
+          "TestPGFederationDiscoveryConcurrentClaim",
+          "TestPGFederationDiscoveryLifecycleAndIsolation"
+        ],
+        "full_case_set": "/workspace/shared/federation-discovery-review-delivery/manifest.json",
+        "candidate": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e",
+        "verification": "786before/94restart exactimmutablecheckpoint"
+      },
+      {
+        "id": "passport.calendar_media",
+        "status": "implemented_CI_green_8d00c0c",
+        "scope": "Calendar/notable-day icon/background associations and audience-aware file reads; current projection revalidation and explicitly owned string-kind activity overlay.",
+        "artifact": "/workspace/shared/calendar-media-review-delivery",
+        "artifact_sha256": {
+          "correction.patch": "2c57be607727010a7cd69f21083d58c25ce79f4a000773c56b8dd11db1b9c80c"
+        },
+        "required_restart_cases": [
+          "TestPGCalendarActivityRestartPersistence",
+          "TestPGCalendarMediaRestartPersistence"
+        ],
+        "limit": "Actual PostgreSQL/restart not run; final combined grouping/dependency audit is required. Realm review was active at audit cutoff.",
+        "registered_case_examples": [
+          "TestPGCalendarActivityProjectionWaitRevalidatesPrivacy",
+          "TestPGCalendarActivityRestartPersistence",
+          "TestPGCalendarActivityStringProjectionPrivacyAndTimeZone"
+        ],
+        "full_case_set": "/workspace/shared/calendar-media-review-delivery/pg-cases.json",
+        "candidate": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e",
+        "verification": "786before/94restart exactimmutablecheckpoint"
+      },
+      {
+        "id": "passport.realm_members",
+        "status": "implemented_CI_green_8d00c0c",
+        "scope": "Label CRUD/assignment/filter/projection and opt-in daily tenure with scoped XP/history/configured levels.",
+        "artifact": "/workspace/shared/realm-member-delivery",
+        "artifact_sha256": {
+          "core.patch": "971188548b0e38e216bebec001da05b9808e7a568e9fb1d0ccff1b35bd8906fe",
+          "shared-wiring.patch": "54bf76942389bbbf84dcef9136002c96b52409d8de2e3cac6cab0e655cb667be"
+        },
+        "required_restart_cases": [
+          "TestPGRealmMemberRestartPersistence"
+        ],
+        "limit": "Actual PostgreSQL/restart not run; final combined grouping/dependency audit is required. Realm review was active at audit cutoff.",
+        "registered_case_examples": [
+          "TestPGRealmLabelsCRUDVisibilityAndCanonicalProjection",
+          "TestPGRealmLabelsConcurrentQuotaAndReplay",
+          "TestPGRealmLabelsMembershipIncarnationAndCurrentRole"
+        ],
+        "full_case_set": "/workspace/shared/realm-member-delivery/integration.json",
+        "candidate": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e",
+        "verification": "786before/94restart exactimmutablecheckpoint"
+      },
+      {
+        "id": "post_typed_composition",
+        "families": [
+          "sphere.posts"
+        ],
+        "remaining": "Source-backed survey/fund/meet/live/calendar/notableday/location references and thumbnail are integrated; canonical client/server compatibility awaits actualPG. See docs/post-composition-continuation.md for owned narrower association scope.",
+        "source": [
+          {
+            "path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+            "blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+            "methods": "CreatePost@353; UpdatePost@1252",
+            "route_examples": [
+              "POST /api/posts",
+              "PATCH /api/posts/{id:guid}"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/sphere/posts/http.go:decode",
+          "internal/postpg"
+        ],
+        "current_boundary": "Source request fields and mapping are authored at PostActionController.cs:239-290,535-707,1365-1603. Canonical linked media, realm and explicit reply/forward/chain relations already exist. Standalone survey/fund/meet/calendar implementations do not prove post composition integration.",
+        "next_slice": "Add one typed association at a time through current canonical read/ownership adapters; validate withdrawal and cross-domain lock waits.",
+        "status": "implemented_CI_green_8d00c0c",
+        "verification": "786before/94restart exactimmutablecheckpoint"
+      },
+      {
+        "id": "messager.chat_organization",
+        "status": "implemented_CI_green_8d00c0c",
+        "scope": [
+          "Summary/read-all/literal search with canonical paid-perk proof",
+          "Pin lifecycle and personal groups/membership assignment",
+          "Source-supported millisecond expiry and deterministic snapshots"
+        ],
+        "limits": [
+          "Read-receipt websocket fanout remains unimplemented",
+          "Full upstream entity projections and unretained group service semantics not claimed",
+          "Remote ranked search not implemented"
+        ],
+        "verification": "786before/94restart exactimmutablecheckpoint"
+      },
+      {
+        "id": "chat_pins_folders",
+        "families": [
+          "messager.messages",
+          "messager.rooms"
+        ],
+        "remaining": "Pin/group CRUD and per-account assignment integrated pending actualPG; complete upstream group-service semantics and full entity projections remain documented differences.",
+        "source": [
+          {
+            "path": "DysonNetwork.Messager/Chat/ChatController.cs",
+            "blob": "29e748e8c585ed766c9e20dddfc2eae65509f9a2",
+            "methods": "PinMessage@1868; UnpinMessage@1897; ListPins@1926",
+            "route_examples": [
+              "POST /api/chat/{roomId:guid}/pins",
+              "DELETE /api/chat/{roomId:guid}/pins/{pinId:guid}",
+              "GET /api/chat/{roomId:guid}/pins"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Messager/Chat/ChatRoomController.cs",
+            "blob": "373efa01d468a76ba5085bf5c2b59bede71bd7ec",
+            "methods": "ListGroups@2093; CreateGroup@2104; UpdateGroup@2116; DeleteGroup@2128; MoveToGroup@2140",
+            "route_examples": [
+              "GET /api/chat/groups",
+              "POST /api/chat/groups",
+              "PATCH /api/chat/groups/{groupId:guid}"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/messager/rooms/http.go:serveHTTP",
+          "internal/chatpg",
+          "internal/messagerpg"
+        ],
+        "current_boundary": "No pin or personal-group persistence/handler in current canonical owner. Do not confuse personal folders with implemented group chat rooms.",
+        "next_slice": "One bounded transactional bundle: fresh room/target visibility, account-owned folders, pin expiry and saved-state restart.",
+        "status": "implemented_CI_green_8d00c0c",
+        "verification": "786before/94restart exactimmutablecheckpoint"
       },
       {
         "id": "federation.public_remote_admission",
-        "state": "Independent corrections integrated;768/92 offline and actual PG pending. Configured admission default disabled; outbound POST redesign remains separate."
-      },
-      {
-        "id": "posts.typed_composition",
-        "state": "Independently reviewed corrections integrated,9before/1restart; combined777/93 offline and actual PG pending."
+        "status": "implemented_CI_green_8d00c0c",
+        "scope": "Explicit opt-in origin-bounded first-contact admission, durable actor/key/fingerprint/policy incarnation and disabled-mode tombstone precedence, special-address egress safeguards",
+        "verification": "Twelvecases plus originalstate restart included786/94; allfetch adapters synthetic",
+        "limits": "No live discovery/trust enrollment, automatic remote keyrotation or alias/move acceptance; outbound delivery redesign is newerpending811."
       }
     ]
   },
@@ -4165,16 +4192,16 @@
     "before_failed": 6,
     "after_restart": 0,
     "skipped": 0,
-    "note": "One quote independence runtime regression,fivefixtureissues; no fullpass."
+    "note": "Five inherited811failures (onequote runtime independence regression/four setupfixtures) plus invalidunpaired developer shadowbanfixture. Independentquotefix reviewactive; no newfullgreen."
   },
   "latest_job_log_verified_ci_pass": {
-    "commit": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e",
-    "run": 37876162176,
+    "commit": "8d00c0cee85ebd10328ed5d51fa0e876141bf411",
+    "run": 37878791797,
     "attempt": 1,
-    "before": 756,
-    "after_restart": 91,
+    "before": 786,
+    "after_restart": 94,
     "skipped": 0,
-    "evidence": "All four exact jobs/head/attempt/required steps, independent raw-log named cases exactlyonce; CIaggregate verified both artifactdigests and two actual restartedclusters/processsmokes. LocalZIP recomputation unavailable403/error1010, no retry.",
-    "acceptance_limit": "Immutable CI-green, not all original functionality or production readiness."
+    "evidence": "Allfour exactjobs/head/attempt/steps; independently extracted namedcases exactlyonce from authorizedrawlogs. CIaggregate verified both artifactdigests and actual separateDB/process restarts. LocalZIP recomputation unavailable403/error1010; no retry.",
+    "acceptance_limit": "Immutable implementation CI-green; remaining original flows, configured external providers and production rollout are separate."
   }
 }

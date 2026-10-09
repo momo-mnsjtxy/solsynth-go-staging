@@ -38,6 +38,21 @@ func (r *Repository) RealmMemberPerkLevel(ctx context.Context, db *sql.DB, tx *s
 	if e != nil {
 		return 0, e
 	}
+	return r.realmAccountPerk(ctx, tx, account, levels, at)
+}
+
+// RealmProfilePerkLevel authenticates the actor-only profile boundary. It does
+// not require ownership of the realm or grant member-management rights.
+func (r *Repository) RealmProfilePerkLevel(ctx context.Context, db *sql.DB, tx *sql.Tx, actor string, levels map[string]int, at time.Time) (int, error) {
+	if r == nil || r.db != db || db == nil || tx == nil || r.guard == nil || levels == nil {
+		return 0, c.ErrUnavailable
+	}
+	if _, e := r.guard.Authorize(ctx, db, tx, actor, "realms.members.manage"); e != nil {
+		return 0, e
+	}
+	return r.realmAccountPerk(ctx, tx, actor, levels, at)
+}
+func (r *Repository) realmAccountPerk(ctx context.Context, tx *sql.Tx, account string, levels map[string]int, at time.Time) (int, error) {
 	if len(levels) == 0 {
 		return 0, nil
 	}
@@ -62,14 +77,18 @@ func (r *Repository) RealmMemberPerkLevel(ctx context.Context, db *sql.DB, tx *s
 	if len(subs) > 1000 {
 		return 0, c.ErrUnavailable
 	}
-	result := 0
+	type eligible struct {
+		level      int
+		begin, end time.Time
+	}
+	candidates := []eligible{}
 	for _, p := range subs {
 		s, reason := p.validate()
 		if reason != "" {
 			return 0, c.ErrConflict
 		}
 		level := levels[s.Identifier]
-		if level < 1 || level > 3 || s.AccountID != account || s.AppIdentifier != nil || !s.IsActive || s.IsTesting || s.Status != c.SubscriptionActive || s.BegunAt.After(at) || !s.EndedAt.After(at) {
+		if level < 1 || level > 3 || s.AccountID != account || s.AppIdentifier != nil || !s.IsActive || s.IsTesting || s.Status != c.SubscriptionActive || !s.EndedAt.After(s.BegunAt) {
 			continue
 		}
 		var raw []byte
@@ -87,9 +106,41 @@ func (r *Repository) RealmMemberPerkLevel(ctx context.Context, db *sql.DB, tx *s
 		if d.AppIdentifier != nil || d.ProductID != "" {
 			continue
 		}
-		if level > result {
-			result = level
+		// Keep queued paid cycles until the final observation: a subscription or
+		// definition table wait may cross their start as well as their expiry.
+		candidates = append(candidates, eligible{level, s.BegunAt, s.EndedAt})
+	}
+	// Even NOWAIT row locks can encounter unrelated table/trigger delays. Finish
+	// at a fresh database wall clock after every subscription/definition query.
+	// The supplied policy clock may advance synthetic/maintenance time, but may
+	// never move entitlement time behind the current database observation.
+	var fresh time.Time
+	if e = tx.QueryRowContext(ctx, `SELECT clock_timestamp()`).Scan(&fresh); e != nil {
+		return 0, e
+	}
+	if at.After(fresh) {
+		fresh = at
+	}
+	if current := r.now().UTC(); current.After(fresh) {
+		fresh = current
+	}
+	result := 0
+	for _, candidate := range candidates {
+		if !candidate.begin.After(fresh) && candidate.end.After(fresh) && candidate.level > result {
+			result = candidate.level
 		}
 	}
 	return result, nil
+}
+
+// RealmQuotaPerkLevel is an authenticated self-read. Read-only quota projection
+// must not acquire the mutation scope required by the separate profile boundary.
+func (r *Repository) RealmQuotaPerkLevel(ctx context.Context, db *sql.DB, tx *sql.Tx, actor string, levels map[string]int, at time.Time) (int, error) {
+	if r == nil || r.db != db || db == nil || tx == nil || r.guard == nil || levels == nil {
+		return 0, c.ErrUnavailable
+	}
+	if _, e := r.guard.Authenticate(ctx, db, tx, actor); e != nil {
+		return 0, e
+	}
+	return r.realmAccountPerk(ctx, tx, actor, levels, at)
 }

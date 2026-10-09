@@ -67,7 +67,7 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if r == nil {
 		return m.ErrUnavailable
 	}
-	_, e := r.db.ExecContext(ctx, `SELECT id FROM owned_realm_labels LIMIT 0;SELECT member_id,joined_at FROM owned_realm_label_assignments LIMIT 0;SELECT fingerprint FROM owned_realm_label_requests LIMIT 0;SELECT day,delta FROM owned_realm_tenure_experience LIMIT 0;SELECT id FROM owned_realm_member_audit LIMIT 0`)
+	_, e := r.db.ExecContext(ctx, `SELECT id FROM owned_realm_labels LIMIT 0;SELECT member_id,joined_at FROM owned_realm_label_assignments LIMIT 0;SELECT fingerprint FROM owned_realm_label_requests LIMIT 0;SELECT day,delta FROM owned_realm_tenure_experience LIMIT 0;SELECT id FROM owned_realm_member_audit LIMIT 0;SELECT member_id,nick,bio FROM owned_realm_member_profiles LIMIT 0;SELECT id FROM owned_realm_profile_audit LIMIT 0;SELECT id FROM owned_realm_post_moderation LIMIT 0;SELECT thresholds FROM owned_progression_level_policy LIMIT 0;SELECT delta FROM owned_progression_experience LIMIT 0`)
 	return e
 }
 func (r *Repository) BindAuthority(ctx context.Context, p authority.Principal) context.Context {

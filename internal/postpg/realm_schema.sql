@@ -14,3 +14,8 @@ CREATE TABLE IF NOT EXISTS owned_realm_post_moderation (
  moderator_id uuid NOT NULL REFERENCES owned_authority_accounts(id),reason text CHECK(length(reason)<=4096),
  created_at timestamptz NOT NULL,PRIMARY KEY(realm_id,post_id)
 );
+
+-- Stable authored log identity for both historical and new canonical removals.
+ALTER TABLE owned_realm_post_moderation ADD COLUMN IF NOT EXISTS id uuid NOT NULL DEFAULT gen_random_uuid();
+CREATE UNIQUE INDEX IF NOT EXISTS owned_realm_post_moderation_id ON owned_realm_post_moderation(id);
+CREATE INDEX IF NOT EXISTS owned_realm_post_moderation_order ON owned_realm_post_moderation(realm_id,created_at DESC,id);

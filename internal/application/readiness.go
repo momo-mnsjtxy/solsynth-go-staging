@@ -19,6 +19,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if b == nil || b.db == nil || b.authorityDB == nil {
 		return errors.New("backend unavailable")
 	}
+	if b.postComposition != nil {
+		if e := b.postComposition.Ready(ctx); e != nil {
+			return e
+		}
+	}
 	if b.blogs != nil {
 		if e := b.blogs.Ready(ctx); e != nil {
 			return e

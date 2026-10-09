@@ -110,25 +110,29 @@ type Post struct {
 	LockedAt             *time.Time                    `json:"locked_at"`
 }
 type Patch struct {
-	BlogEmbeds      bool       `json:"-"`
-	RealmID         *string    `json:"realm_id,omitempty"`
-	ClearRealm      bool       `json:"-"`
-	Attachments     *[]string  `json:"attachments"`
-	RepliedPostID   *string    `json:"replied_post_id"`
-	ForwardedPostID *string    `json:"forwarded_post_id"`
-	ChainedPostID   *string    `json:"chained_post_id"`
-	Tags            *[]string  `json:"tags"`
-	Categories      *[]string  `json:"categories"`
-	CollectionIDs   *[]string  `json:"collection_ids"`
-	Title           *string    `json:"title"`
-	Description     *string    `json:"description"`
-	Slug            *string    `json:"slug"`
-	Content         *string    `json:"content"`
-	Visibility      *int       `json:"visibility"`
-	Type            *int       `json:"type"`
-	Language        *string    `json:"language"`
-	DraftedAt       *time.Time `json:"drafted_at"`
-	PublishedAt     *time.Time `json:"published_at"`
+	Embeds          *[]Embed          `json:"-"`
+	EmbedUpdates    map[string]*Embed `json:"-"`
+	ThumbnailID     *string           `json:"thumbnail_id,omitempty"`
+	ThumbnailSet    bool              `json:"-"`
+	BlogEmbeds      bool              `json:"-"`
+	RealmID         *string           `json:"realm_id,omitempty"`
+	ClearRealm      bool              `json:"-"`
+	Attachments     *[]string         `json:"attachments"`
+	RepliedPostID   *string           `json:"replied_post_id"`
+	ForwardedPostID *string           `json:"forwarded_post_id"`
+	ChainedPostID   *string           `json:"chained_post_id"`
+	Tags            *[]string         `json:"tags"`
+	Categories      *[]string         `json:"categories"`
+	CollectionIDs   *[]string         `json:"collection_ids"`
+	Title           *string           `json:"title"`
+	Description     *string           `json:"description"`
+	Slug            *string           `json:"slug"`
+	Content         *string           `json:"content"`
+	Visibility      *int              `json:"visibility"`
+	Type            *int              `json:"type"`
+	Language        *string           `json:"language"`
+	DraftedAt       *time.Time        `json:"drafted_at"`
+	PublishedAt     *time.Time        `json:"published_at"`
 }
 type ListOptions struct {
 	Offset, Take int
@@ -157,6 +161,12 @@ type Auth interface {
 }
 
 func ValidatePatch(p Patch, create bool, now time.Time) error {
+	if _, e := ResolveEmbeds(nil, p); e != nil {
+		return e
+	}
+	if p.ThumbnailID != nil && !authority.ValidID(*p.ThumbnailID) {
+		return ErrInvalid
+	}
 	if p.ClearRealm && p.RealmID != nil || p.RealmID != nil && !authority.ValidID(*p.RealmID) {
 		return ErrInvalid
 	}

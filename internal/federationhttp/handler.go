@@ -320,6 +320,9 @@ func (h Handler) private(w http.ResponseWriter, r *http.Request) {
 	}
 	ref := parts[3]
 	switch parts[4] {
+	case "public-admissions":
+		h.publicAdmission(w, r, p.Account.ID, ref)
+		return
 	case "discovery":
 		h.discovery(w, r, p.Account.ID, ref)
 		return

@@ -247,6 +247,9 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 		if e = r.syncSchedule(ctx, tx, actor, &p, v, "create", now); e != nil {
 			return e
 		}
+		if e = r.finishComposition(ctx, tx, actor, &p); e != nil {
+			return e
+		}
 		if p.Type == posts.Blog {
 			return r.matchBlogPreparation(ctx, tx, actor, p, prepared)
 		}
@@ -408,6 +411,9 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 			return e
 		}
 		if e = r.syncSchedule(ctx, tx, actor, &p, v, action, now); e != nil {
+			return e
+		}
+		if e = r.finishComposition(ctx, tx, actor, &p); e != nil {
 			return e
 		}
 		if p.Type == posts.Blog && p.DeletedAt == nil {

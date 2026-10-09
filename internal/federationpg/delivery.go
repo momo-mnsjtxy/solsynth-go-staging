@@ -382,6 +382,9 @@ func (r *Repository) deliver(ctx context.Context, transport f.Transport, d deliv
 			return finish("cancelled")
 		}
 	}
+	if e = r.publicKeyFence(ctx, tx, k); e != nil {
+		return finish("cancelled")
+	}
 	code, sendErr := transport.Send(ctx, request)
 	status := "pending"
 	if sendErr == nil && code >= 200 && code < 300 {

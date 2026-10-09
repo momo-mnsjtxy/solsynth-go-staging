@@ -5,6 +5,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/postembedpg/schema.sql",
+ "internal/federationpg/public_admission_schema.sql",
  "internal/realmmemberpg/schema.sql",
  "internal/calendarmediapg/schema.sql",
  "internal/blogpg/schema.sql",

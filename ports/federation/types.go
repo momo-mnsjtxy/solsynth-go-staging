@@ -111,10 +111,11 @@ type Relationship struct {
 // RemoteKey is a trusted, preprovisioned binding. Key lookup must not perform
 // discovery based on request data. Revocation/rotation belongs to its provider.
 type RemoteKey struct {
-	Actor     string
-	Inbox     string
-	KeyID     string
-	PublicKey *rsa.PublicKey
+	Incarnation string // empty for legacy operator pins; durable for admitted keys
+	Actor       string
+	Inbox       string
+	KeyID       string
+	PublicKey   *rsa.PublicKey
 }
 type KeyProvider interface {
 	LocalKey(context.Context, string) (crypto.Signer, error) // canonical publisher ID

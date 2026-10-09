@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Correct calendar UTC and discovery deadline and lock-order fixtures",
+  "checkpoint": "Integrate reviewed public admission and canonical post associations",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "a2f11dc00d39418f364b9a320a5766577bd42a09"
+    "remote_parent": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -118,8 +118,8 @@
     },
     {
       "path": "cmd/backend/external_config.go",
-      "bytes": 14741,
-      "sha256": "31642fbb33d3892ff9ef5e006e007f5c4d82caa2025db66551961a51c0a80bce"
+      "bytes": 18456,
+      "sha256": "8c846a87ae652548a5e65c103310a556cb731194f81b1ded656af9b63882bd4d"
     },
     {
       "path": "cmd/backend/external_config_test.go",
@@ -145,6 +145,21 @@
       "path": "cmd/backend/federation_identity_test.go",
       "bytes": 833,
       "sha256": "ee576fed54e12b0fc205548581fccfe28ef5ba48011e22627e5fc31a1e374e5a"
+    },
+    {
+      "path": "cmd/backend/federation_public_admission.go",
+      "bytes": 2391,
+      "sha256": "207a00ffa5cc27dc04aec512acc8a191d6f2c5682819d8bd458e02f8e37b96ae"
+    },
+    {
+      "path": "cmd/backend/federation_public_admission_test.go",
+      "bytes": 5777,
+      "sha256": "ec1141af016e284bd150601deffa5bfa8d20685a162e00a0f57cd58de6c56ce9"
+    },
+    {
+      "path": "cmd/backend/federation_public_revocation.go",
+      "bytes": 2896,
+      "sha256": "e769815788e6b6a55b3108a626c7bfaae8c7b2c83022b254db5db017bea5d0f9"
     },
     {
       "path": "cmd/backend/fortune_config.go",
@@ -198,8 +213,8 @@
     },
     {
       "path": "cmd/backend/main.go",
-      "bytes": 16593,
-      "sha256": "f6cf99a23175d7e1e9cfda6a3543ef0348c7ebb68745a09b503c360496498204"
+      "bytes": 16861,
+      "sha256": "20c3b75503b29adf4d329afcbefba608388550ad3ad3797e2aa755628034f3dc"
     },
     {
       "path": "cmd/backend/passkit_config.go",
@@ -573,8 +588,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 114601,
-      "sha256": "5b2969700e4f9f3650a44a058a1f3d7ea0257ac949eedd01ac4251e8518eb117"
+      "bytes": 120443,
+      "sha256": "206d4525a76952efb2e25a30782d215c678ab7e518de5aea01f7f85e0be2cbae"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -700,6 +715,11 @@
       "path": "docs/federation-discovery-review.md",
       "bytes": 4810,
       "sha256": "96ccfe79d8f2b2fb050888eed14baf1b732e203660578a7ee18849c7d3a13d5f"
+    },
+    {
+      "path": "docs/federation-public-admission.md",
+      "bytes": 14153,
+      "sha256": "e848457e2697101d43b54310aa32c7399bc90f7a89431d20d0dc874d0ed929ac"
     },
     {
       "path": "docs/federation-quotes-continuation.md",
@@ -1587,6 +1607,16 @@
       "sha256": "d8b81e9c585cae1e6494451b62b849ea7992b753c8a7a73c432c1ec8913e8f7f"
     },
     {
+      "path": "docs/post-composition-continuation.md",
+      "bytes": 5789,
+      "sha256": "2168faf2f2fdc2d9d6519e3d96298952db9c6d5a49996922437f10058a0691b9"
+    },
+    {
+      "path": "docs/post-composition-integration.json",
+      "bytes": 2083,
+      "sha256": "87b6709e27c6c5f45d15cb6e6af88818358cdf845ac7ba401718399d3d20c5a9"
+    },
+    {
       "path": "docs/post-interactions-canonical-schema.patch",
       "bytes": 2165,
       "sha256": "82b3ede16ae4040ff1ce5883c1ee8c7a7f72e00ea373dd363de2dec3cf8e23b0"
@@ -1908,8 +1938,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 205859,
-      "sha256": "c6af0b3d63a6839e5d3d3d007571ecedcc5a6b33e7606f301409679813236729"
+      "bytes": 206559,
+      "sha256": "55ae536480ef5e7311a5bfa68e9d71bc641ac618efe6bf291ead9717e6c112c3"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -2005,6 +2035,11 @@
       "path": "docs/wallet-transfer-requests-continuation.md",
       "bytes": 3316,
       "sha256": "fd673454fab2ce4cb0d5179bc22e4ed1f2e6d680be82fc5ec26aedd9094e016e"
+    },
+    {
+      "path": "examples/federation-public-admission.json",
+      "bytes": 387,
+      "sha256": "c205503afe83b31243e80a354bfb6e512a9b1c7e658c5de86de3d31961fb61c1"
     },
     {
       "path": "go.mod",
@@ -2173,8 +2208,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 33062,
-      "sha256": "dc3085daa383ea8f156dc8f367decda52fca06f886da55d2efd16f6ab6ab91f4"
+      "bytes": 33267,
+      "sha256": "a5a694f1c0b3e5ce86d868a57965810dc1046aaef19163e4ef5413d9a4fc03d1"
     },
     {
       "path": "internal/application/blog_routing_test.go",
@@ -2203,8 +2238,8 @@
     },
     {
       "path": "internal/application/external_modules.go",
-      "bytes": 6249,
-      "sha256": "da6909764bff30fbe6e2173af2cb163ad3ac9ff97ed591fa6c3766205cdc26af"
+      "bytes": 7220,
+      "sha256": "36aed8ed053c69aa477a6b5ec160ebac6a84067437a08d80d6ce1797146d6b09"
     },
     {
       "path": "internal/application/external_modules_test.go",
@@ -2303,8 +2338,8 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 9414,
-      "sha256": "01eef0e7bb2285d8a05ad632523c04b667f46830a426d0f801c67bfd6e6f58dc"
+      "bytes": 9515,
+      "sha256": "4b6b352ced94da6279bf79016ad8a11db5248d6c6d384444fbfadb78528d8e60"
     },
     {
       "path": "internal/application/realm_boosts.go",
@@ -3103,13 +3138,23 @@
     },
     {
       "path": "internal/federationhttp/handler.go",
-      "bytes": 9761,
-      "sha256": "441f0c39087c94380dc222c153b008a638f27ab5f02e9b456af2eb3d60494cb5"
+      "bytes": 9842,
+      "sha256": "5d811b6331405e29a3f80dccb11944575ad46883a46484ac136f87052dedf6d5"
     },
     {
       "path": "internal/federationhttp/handler_test.go",
       "bytes": 6471,
       "sha256": "4742f4ca71a51579a08f4fb7f9277b7b4fe8b85431d88f75340fa0d938b0928c"
+    },
+    {
+      "path": "internal/federationhttp/public_admission.go",
+      "bytes": 1582,
+      "sha256": "422ce1e34c52ba7a1c50feb42328caba98f7b1af874d2d598aff83ed825d055e"
+    },
+    {
+      "path": "internal/federationhttp/public_admission_test.go",
+      "bytes": 1967,
+      "sha256": "17e0b1e749eaf7baeb3f32d836fe1d0a39cbb4a2f77b36bf05c40fef81a1e620"
     },
     {
       "path": "internal/federationhttp/quotes.go",
@@ -3123,8 +3168,8 @@
     },
     {
       "path": "internal/federationpg/delivery.go",
-      "bytes": 15395,
-      "sha256": "3843586c4946a4f59f21aae40f433c2204aabdf7e344d38a9c2e434644346249"
+      "bytes": 15476,
+      "sha256": "8f8f9500d47bd93a4b357d8372e8c15e3eee53f2a313d5dff88c0cf09c0ab4cd"
     },
     {
       "path": "internal/federationpg/discovery.go",
@@ -3157,14 +3202,34 @@
       "sha256": "21b1b0b7856557e5704e369762d1593f0d3a951d6890ba06d4424bca5aca16cb"
     },
     {
+      "path": "internal/federationpg/public_admission.go",
+      "bytes": 15731,
+      "sha256": "437b6e78cab6e101cc84675b0e8ffc2cc85a6f128a113cd33c03100cb7eb9c93"
+    },
+    {
+      "path": "internal/federationpg/public_admission_schema.sql",
+      "bytes": 6174,
+      "sha256": "d0629e18be37994315cd20f1f7da729ad555279502dcf4f375d366e4c24744c0"
+    },
+    {
+      "path": "internal/federationpg/public_keys.go",
+      "bytes": 9662,
+      "sha256": "d709e5ba6691a4ef492549497f65ba54063fd248ce6ddf3e332f65877cc49767"
+    },
+    {
+      "path": "internal/federationpg/public_keys_test.go",
+      "bytes": 6876,
+      "sha256": "426c8ffdef716a2c5eabe8e558a6a27fa015c8c91bef8e57feb158b18e07ff2f"
+    },
+    {
       "path": "internal/federationpg/quote_schema.sql",
       "bytes": 1029,
       "sha256": "d54cf0b413f62b16c90a2ec87281196e0b9c3e57973e56a258325eec049a3c31"
     },
     {
       "path": "internal/federationpg/quotes.go",
-      "bytes": 16382,
-      "sha256": "7b4e7699959f796b4471e1d31974776592cb4bf798db38dc364f351cbf531bd8"
+      "bytes": 16513,
+      "sha256": "02fd735d93a468805fa0c0390af90682b8f65ffd4c0400b11abc27f3292b1332"
     },
     {
       "path": "internal/federationpg/relationships.go",
@@ -3173,8 +3238,8 @@
     },
     {
       "path": "internal/federationpg/repository.go",
-      "bytes": 17462,
-      "sha256": "7954f289abb79ef90377814d3f87259eb0c4a11c92ef759f406a08ecd8b9d6e4"
+      "bytes": 17886,
+      "sha256": "f016fff46d495edfc93d8ee8c3c5eda596558fe092689c736bc419e3186d3ff7"
     },
     {
       "path": "internal/federationpg/repository_test.go",
@@ -3752,6 +3817,51 @@
       "sha256": "f4397bac7ee978d22ca00437c6685f9e48efb578acd81bae625cd220aecd0e54"
     },
     {
+      "path": "internal/postembedpg/queries/calendar_event.sql",
+      "bytes": 1111,
+      "sha256": "b6cdedb85aa8491f0997762556ee56ce1d41dc66d2d5071e54b3c233f19bed48"
+    },
+    {
+      "path": "internal/postembedpg/queries/fund.sql",
+      "bytes": 969,
+      "sha256": "5115e64c199a4e4a3fafe047aee1106083391ab47e2613f5fdd0a77226fe0e72"
+    },
+    {
+      "path": "internal/postembedpg/queries/live_stream.sql",
+      "bytes": 1061,
+      "sha256": "93f9effe798e93a801b80717f7559f1dd5cac3e2d639d18a2db9948905c19fbf"
+    },
+    {
+      "path": "internal/postembedpg/queries/meet.sql",
+      "bytes": 1947,
+      "sha256": "477f146417611faee2a4a73636f1a204260881c54b682ad1af685a875a0d04ad"
+    },
+    {
+      "path": "internal/postembedpg/queries/notable_day.sql",
+      "bytes": 150,
+      "sha256": "d3374c79ed38ab423ab7cfca52825dce253605c3cd482d281a20670d12d42126"
+    },
+    {
+      "path": "internal/postembedpg/queries/survey.sql",
+      "bytes": 320,
+      "sha256": "eb6b5704ae356adfc58396cff3b5b23e596d8bbb93e5befc698d34244f5c1801"
+    },
+    {
+      "path": "internal/postembedpg/repository.go",
+      "bytes": 8962,
+      "sha256": "cd946da63cd21aa3c7073a3142dbd1da9373c51e964887f681911fd5ae0cee3a"
+    },
+    {
+      "path": "internal/postembedpg/schema.sql",
+      "bytes": 1013,
+      "sha256": "d79cf43b71da63b5b3cb9f535d8188003fc9e9d5a42631308dc07eca57bee3b4"
+    },
+    {
+      "path": "internal/postembedpg/visibility.go",
+      "bytes": 2222,
+      "sha256": "49774e970a75d3a83921081f3114e0b4fc18ace9cdc411909e964e0f2838b455"
+    },
+    {
       "path": "internal/postmediapg/repository.go",
       "bytes": 7964,
       "sha256": "f03ea9481c81de8b77bb1a518fb83767e8320a4da2f5eaf8316d4ae33cb5d2b1"
@@ -3768,8 +3878,8 @@
     },
     {
       "path": "internal/postpg/associations.go",
-      "bytes": 4517,
-      "sha256": "259de6411bc70bf0eacdd39a49bdbecbbbc46aa6fe4df7529cf6ae7268fb4787"
+      "bytes": 6223,
+      "sha256": "2702242d74f7b7ee6c14afb033eb2cfeb746247ef9f36710b8d07bb664b22133"
     },
     {
       "path": "internal/postpg/automod.go",
@@ -3788,8 +3898,8 @@
     },
     {
       "path": "internal/postpg/blog.go",
-      "bytes": 10592,
-      "sha256": "56e2096a517db82f3e7f6f17c35356e6a48375741290487216dc3d990274da3f"
+      "bytes": 10704,
+      "sha256": "1d5044bd1270dc86017693734814e99abd82f8f93fa56b3a04a6f65a656cfb12"
     },
     {
       "path": "internal/postpg/blog_test.go",
@@ -3818,8 +3928,8 @@
     },
     {
       "path": "internal/postpg/repository.go",
-      "bytes": 19705,
-      "sha256": "ef7f22d8bf7d877e65037ec6dac1e34174b5a167c508e614d8d7618fe6783bdd"
+      "bytes": 19859,
+      "sha256": "e45c5c2e6271a15db752956b81b8dfb0f3dc3490057974ca5db9e207b43c0341"
     },
     {
       "path": "internal/postpg/repository_test.go",
@@ -3828,8 +3938,8 @@
     },
     {
       "path": "internal/postpg/scheduling.go",
-      "bytes": 20203,
-      "sha256": "b2b7b8cd220a59069d2970b70479b504d9958b78b49e7579b612768078e44fc1"
+      "bytes": 20699,
+      "sha256": "3a6676c8fc2e91abc16cc00d2fb14de8bdb1f3179c1a92b04c169a5c0a3317c5"
     },
     {
       "path": "internal/postpg/scheduling_schema.sql",
@@ -4478,8 +4588,8 @@
     },
     {
       "path": "internal/timelinepg/relations.go",
-      "bytes": 8869,
-      "sha256": "1b1ef398132987a9e70b7f0d0ce85a961729d7eb485c67008af15e4af2f4e644"
+      "bytes": 9302,
+      "sha256": "fd698effe24f44e4cedc806428604975aa65a13e57c554ec14ce52e50f06f7d4"
     },
     {
       "path": "internal/timelinepg/repository.go",
@@ -6872,6 +6982,16 @@
       "sha256": "fc8327efeba548f9c7866be0b5d60f727a1d0835c4821f7d54b7184a62bd350f"
     },
     {
+      "path": "ports/federation/admission.go",
+      "bytes": 6152,
+      "sha256": "050d62b3d75290e60625ff13a4497c4164dbf74626863d22889540767ff7882d"
+    },
+    {
+      "path": "ports/federation/admission_test.go",
+      "bytes": 10397,
+      "sha256": "2cc4091545d055ac611d1b6dc9b6c03f4d903464c7594e729df51eab5780c76a"
+    },
+    {
       "path": "ports/federation/discovery-evidence/ActivityPubDiscoveryService.cs",
       "bytes": 50591,
       "sha256": "70a4f7de59a3399c5a07668e970f0e37bc999108889c1d9bbc2c998f44d0333e"
@@ -6898,8 +7018,8 @@
     },
     {
       "path": "ports/federation/discovery_transport.go",
-      "bytes": 3344,
-      "sha256": "c4f4ff477a0d47e8cd9fe7e34a57b87c37d44dc1d0ca373c6e6845ecae915f40"
+      "bytes": 5078,
+      "sha256": "4f988ab06ce3532f01697cb0f6092e27c7ba47a2dd8a44346c609697efaad2e5"
     },
     {
       "path": "ports/federation/quote-evidence/ActivityHandlerService.cs",
@@ -6973,13 +7093,13 @@
     },
     {
       "path": "ports/federation/transport.go",
-      "bytes": 3262,
-      "sha256": "bcd802ace8447987281e964a4cbfb19a073959b5c8e8f40cc824ecdea8cd350f"
+      "bytes": 3368,
+      "sha256": "7e0470b1c499c698b7d7c03ffe850a0d44b1db5ec702c207e045eb593721c677"
     },
     {
       "path": "ports/federation/types.go",
-      "bytes": 5593,
-      "sha256": "cd0db03c1c20f265f4bcdbfadf8ba62ca5a23e284179669b36bfc3065454111b"
+      "bytes": 5682,
+      "sha256": "e8012d04762b38b735054deac6285e9f6c0c74614b4f6428a0bc63a32f16229b"
     },
     {
       "path": "ports/federation/validation.go",
@@ -9383,13 +9503,23 @@
     },
     {
       "path": "ports/sphere/posts/blog.go",
-      "bytes": 2191,
-      "sha256": "15f32c2d3a5d3bd39bb9386420aa549ba108328e429018cbb5e3a244ab2ab83e"
+      "bytes": 2280,
+      "sha256": "8284d8bd06b860ea419fced9615fff3e582ae8e1a429308a0f6ca8c0f802b0c1"
     },
     {
       "path": "ports/sphere/posts/blog_test.go",
       "bytes": 1711,
       "sha256": "b4fb023f66ab676898b8418eda15c4f1d116feee3af09f2e8639e3e67b4c4ff8"
+    },
+    {
+      "path": "ports/sphere/posts/composition.go",
+      "bytes": 4666,
+      "sha256": "f358001e01243b5ec2a895222029f029ccf7e7c74b397d5b058969709929f13e"
+    },
+    {
+      "path": "ports/sphere/posts/composition_test.go",
+      "bytes": 2443,
+      "sha256": "6cf2d3d3cb7555f2469beed84db6a80cf25393f986b975709a86a3cb67b1a3a6"
     },
     {
       "path": "ports/sphere/posts/evidence-inventory.json",
@@ -9398,8 +9528,8 @@
     },
     {
       "path": "ports/sphere/posts/http.go",
-      "bytes": 10206,
-      "sha256": "4892c4f9f64c7dee12e9884c41bc07db9832a68f362d2acc9c2d7f7a3db8d784"
+      "bytes": 12663,
+      "sha256": "5a75192e768bd767129fcff2f9ab04063d87140dd2cfc5839e30272c880740e2"
     },
     {
       "path": "ports/sphere/posts/http_test.go",
@@ -9428,8 +9558,8 @@
     },
     {
       "path": "ports/sphere/posts/types.go",
-      "bytes": 9805,
-      "sha256": "be5c22f963c32040be82a5d1cfc04ba92f4121bdb3147a379ad7faffea4825f7"
+      "bytes": 10291,
+      "sha256": "b1bfb14e1159e4d08451b08b5f21114cc0f337a247ec114d3aa09c3c941a8aa2"
     },
     {
       "path": "ports/sphere/posts/upstream/DYSON-LICENSE.txt",
@@ -10503,8 +10633,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 50212,
-      "sha256": "ca99a13f6b3eec129dd0638de07bf93605c6a1e9adc2099876242451a95572db"
+      "bytes": 51670,
+      "sha256": "894bbffca8600a1c38016b77b1c130131ec1c6601ad5ae4005aea93fa1b672fb"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -10528,13 +10658,13 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 100570,
-      "sha256": "19696ddfe1ce7340013c8ed37fe8740e23e7f3847049ad123c81d7ee97f84327"
+      "bytes": 104503,
+      "sha256": "b37e9b186f2833b425003636d144b480bf04f761a4e9941a426bd1d6025d5155"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 12695,
-      "sha256": "02e6797b6fb05be7327bb8b9487b628cbf7360f058907136d9d4e25816e9508f"
+      "bytes": 12923,
+      "sha256": "ba0ea984f23e148b8bd04b3c9c6297fce6bb21d75225e310da02365ef962a20f"
     },
     {
       "path": "scripts/integration_groups.py",
@@ -10573,8 +10703,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 21289,
-      "sha256": "5f0677e447a8030617d5283ee0b85cfa7360446fecad87241b9785076925063c"
+      "bytes": 21379,
+      "sha256": "1f9348f6dddc6ce3a18a45e74531867a1024d5324b1de09851eab628dabb1f21"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -10942,6 +11072,11 @@
       "sha256": "85738f8a93374287a0ba367e3d86024ef055447a87c2c259959c8f693edb99c7"
     },
     {
+      "path": "tests/integration/backend_federation_public_admission_test.go",
+      "bytes": 4173,
+      "sha256": "b42f8b9db4f0c80dbbf81a5b25e2e84db1d714d1920ef05a50a4f437b50b7b69"
+    },
+    {
       "path": "tests/integration/backend_federation_rename_test.go",
       "bytes": 2288,
       "sha256": "1fa13152bb889083d3a39fe14b61c3ebbcfb88ab0574dc56b956ec3bec09cbad"
@@ -11247,6 +11382,16 @@
       "sha256": "26fb23f810f5a6905a1a5926131f89a556689de28e572790afa37dbbb50ebade"
     },
     {
+      "path": "tests/integration/federation_public_admission_test.go",
+      "bytes": 22725,
+      "sha256": "633633846d4f3d5082ac527826e39da0c95b9789d620604c761961328b74f5da"
+    },
+    {
+      "path": "tests/integration/federation_public_admission_wait_test.go",
+      "bytes": 8801,
+      "sha256": "214a2251006c86035295d78b5131e0fd0a0e555b5aede30527d0d47ca3cf2cfa"
+    },
+    {
       "path": "tests/integration/federation_quotes_test.go",
       "bytes": 22194,
       "sha256": "a5a69c4c6748744a9d07e089d9030468b80491274b65c575071296d4b9911848"
@@ -11405,6 +11550,16 @@
       "path": "tests/integration/post_awards_test.go",
       "bytes": 22075,
       "sha256": "ad8bce5bc4eceaf484f69278f1945413a14f2f593bba69d2e33545cb216bb7eb"
+    },
+    {
+      "path": "tests/integration/post_composition_review_test.go",
+      "bytes": 12011,
+      "sha256": "8260a6cd6ba8d54c72339948d2643325e5338c42e116ed0c68eeac83e9647dc2"
+    },
+    {
+      "path": "tests/integration/post_composition_test.go",
+      "bytes": 20774,
+      "sha256": "6bf323aaf8dd442849cad6ce1e682663055f9ab6a024921e3204e739e7c46517"
     },
     {
       "path": "tests/integration/post_interactions_test.go",

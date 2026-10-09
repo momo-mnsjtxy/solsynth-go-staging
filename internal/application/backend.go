@@ -34,6 +34,7 @@ import (
 	"solsynth.local/go-migration/internal/notificationpg"
 	"solsynth.local/go-migration/internal/oauthpg"
 	"solsynth.local/go-migration/internal/postawardpg"
+	"solsynth.local/go-migration/internal/postembedpg"
 	"solsynth.local/go-migration/internal/postmediapg"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/internal/presencepg"
@@ -140,6 +141,7 @@ type Config struct {
 	Federation                    *FederationConfig
 }
 type Backend struct {
+	postComposition          *postembedpg.Repository
 	blogs                    *blogpg.Repository
 	realmMembers             realmMemberModules
 	realmBoosts              realmBoostModules
@@ -366,7 +368,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		postRepository = postpg.New(db)
 	}
 	postMedia := postmediapg.New(db, interactionRepo).WithVisibility(socialRepo)
-	timelineRepo := timelinepg.NewWithAuthority(db, guard).WithVisibility(socialRepo).WithAssociations(postMedia)
+	postComposition := postembedpg.New(db, postMedia, socialRepo)
+	timelineRepo := timelinepg.NewWithAuthority(db, guard).WithVisibility(socialRepo).WithAssociations(postComposition)
 	timelineHTTP := timeline.NewHandler(timelineRepo, postIdentity{identity})
 	postRepository.WithAssociations(timelineRepo).WithVisibility(socialRepo).WithAutomod(c.PostAutomodReview)
 	timelineRepo.WithAutomod(c.PostAutomodReview)
@@ -588,7 +591,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		return nil, err
 	}
 	h := router{modules{realmMemberHistory: realmMembers.repo != nil, realmMembers: realmMembers.handler, blogs: blogHTTP, realmBoosts: realmBoosts.handler, affiliations: affiliationHTTP, passkit: passkitModule, artwork: bindIdentity(v, bindTransactionAuthority(guard, artworkHTTP)), publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, livestreams: streamHTTP, moderation: moderationHTTP, namecards: extras.cardsHTTP, rewind: extras.rewindHTTP, ipcheck: ipHTTP, accountSettings: settingsHTTP, translation: translationHTTP, autocomplete: autocompleteHTTP, reader: readerHTTP, oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{realmMembers: realmMembers, blogs: blogRepo, realmBoosts: realmBoosts, scheduledPosts: scheduledPosts, affiliations: affiliationRepo, social: socialRepo, passkit: passkitModule, publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, moderation: moderationRepo, moderationSink: notificationRepo, moderationApp: c.NotificationApp, accountExtras: extras, accountSettings: settingsRepo, translation: translationRepo, autocomplete: autocompleteRepo, chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	return &Backend{postComposition: postComposition, realmMembers: realmMembers, blogs: blogRepo, realmBoosts: realmBoosts, scheduledPosts: scheduledPosts, affiliations: affiliationRepo, social: socialRepo, passkit: passkitModule, publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, moderation: moderationRepo, moderationSink: notificationRepo, moderationApp: c.NotificationApp, accountExtras: extras, accountSettings: settingsRepo, translation: translationRepo, autocomplete: autocompleteRepo, chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 
 }
 

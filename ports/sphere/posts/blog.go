@@ -19,7 +19,9 @@ type LinkEmbed struct {
 	reader.Link
 }
 type Metadata struct {
-	Embeds []LinkEmbed `json:"embeds"`
+	Composed  []Embed     `json:"-"`
+	Thumbnail *string     `json:"thumbnail,omitempty"`
+	Embeds    []LinkEmbed `json:"embeds"`
 }
 
 func BlogMetadata(link reader.Link) *Metadata {

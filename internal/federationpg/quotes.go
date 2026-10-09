@@ -46,7 +46,7 @@ func quoteKey(k f.RemoteKey) []byte {
 	return sum[:]
 }
 func sameQuoteKey(a, b f.RemoteKey) bool {
-	return a.Actor == b.Actor && a.KeyID == b.KeyID && len(quoteKey(a)) == 32 && bytes.Equal(quoteKey(a), quoteKey(b))
+	return a.Incarnation == b.Incarnation && a.Inbox == b.Inbox && a.Actor == b.Actor && a.KeyID == b.KeyID && len(quoteKey(a)) == 32 && bytes.Equal(quoteKey(a), quoteKey(b))
 }
 func (r *Repository) quoteID(id string) string {
 	return r.config.Origin + "/quote-authorizations/" + id
@@ -119,6 +119,9 @@ func quotePolicyFailure(tx *sql.Tx, e error) error {
 func (r *Repository) quoteKeyCurrent(ctx context.Context, tx *sql.Tx, g quoteGrant) error {
 	k, e := r.remote(ctx, g.actor)
 	if e != nil {
+		return f.ErrNotFound
+	}
+	if e = r.publicKeyFence(ctx, tx, k); e != nil {
 		return f.ErrNotFound
 	}
 	if k.KeyID != g.key || !bytes.Equal(quoteKey(k), g.fingerprint) {

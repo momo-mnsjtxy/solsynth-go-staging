@@ -7,6 +7,7 @@ import (
 	"crypto"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -34,6 +35,7 @@ type externalFlagSet struct {
 	streamLimit                                  *int
 	calls, federation, send, cloudRevocation     *bool
 	discover                                     *bool
+	admit                                        *bool
 	endpoint, keyEnv, secretEnv, federationFile  *string
 	tokenTTL, callTTL, maintenance               *time.Duration
 }
@@ -55,6 +57,7 @@ func externalFlags(fs *flag.FlagSet) externalFlagSet {
 		calls:             fs.Bool("enable-calls", false, "enable canonical room-call signaling with explicitly provisioned LiveKit Cloud credentials"),
 		federation:        fs.Bool("enable-federation", false, "enable the explicitly provisioned ActivityPub subset"),
 		send:              fs.Bool("federation-send", false, "enable queued outbound delivery only to configured pinned HTTPS peers"),
+		admit:             fs.Bool("federation-admit", false, "enable bounded first-contact admission for explicitly initialized public-origin policies"),
 		discover:          fs.Bool("federation-discover", false, "enable bounded WebFinger/actor observations for explicitly configured pinned targets"),
 		cloudRevocation:   fs.Bool("livekit-cloud-revocation", false, "assert this deployment supports Cloud revoke_token_ts; self-hosted removal is insufficient"),
 		endpoint:          fs.String("livekit-endpoint", "", "explicit WSS LiveKit endpoint"), keyEnv: fs.String("livekit-api-key-env", "", "explicit environment variable holding the LiveKit API key"), secretEnv: fs.String("livekit-api-secret-env", "", "explicit environment variable holding the raw LiveKit API secret"),
@@ -118,12 +121,12 @@ func (v externalFlagSet) apply(c *application.Config) error {
 		c.Livestreams.Chat = &livestreampg.ChatConfig{MaxMessagesPerStream: *v.streamMessages, MaxEventsPerStream: *v.streamEvents, MaxAttempts: *v.streamAttempts, EventTTL: *v.streamEventTTL, SendTimeout: *v.streamSendTimeout}
 	}
 	if !*v.federation {
-		if *v.federationFile != "" || *v.send || *v.discover {
+		if *v.federationFile != "" || *v.send || *v.discover || *v.admit {
 			return errors.New("federation settings require enable-federation")
 		}
 		return nil
 	}
-	cfg, e := loadFederationConfigWithDiscovery(*v.federationFile, *v.send, *v.discover)
+	cfg, e := loadFederationConfigWithAdmission(*v.federationFile, *v.send, *v.discover, *v.admit)
 	if e != nil {
 		return e
 	}
@@ -132,7 +135,11 @@ func (v externalFlagSet) apply(c *application.Config) error {
 }
 
 type federationFile struct {
-	ServerActor *struct {
+	PublicAdmission           []federation.PublicAdmissionPolicy `json:"public_admission"`
+	RetiredRemoteActors       []string                           `json:"retired_remote_actors"`
+	RetiredRemoteKeyIDs       []string                           `json:"retired_remote_key_ids"`
+	RetiredRemoteFingerprints []string                           `json:"retired_remote_key_fingerprints"`
+	ServerActor               *struct {
 		Username      string `json:"username"`
 		Name          string `json:"name"`
 		Summary       string `json:"summary"`
@@ -155,9 +162,11 @@ type federationFile struct {
 	} `json:"remote_keys"`
 }
 type configuredFederationKeys struct {
-	local  map[string]crypto.Signer
-	remote map[string]federation.RemoteKey
-	actors map[string]federation.RemoteKey
+	retiredActors, retiredKeys map[string]bool
+	retiredFingerprints        map[string]bool
+	local                      map[string]crypto.Signer
+	remote                     map[string]federation.RemoteKey
+	actors                     map[string]federation.RemoteKey
 }
 
 func (k configuredFederationKeys) LocalKey(ctx context.Context, id string) (crypto.Signer, error) {
@@ -194,6 +203,9 @@ func loadFederationConfig(name string, send bool) (*application.FederationConfig
 	return loadFederationConfigWithDiscovery(name, send, false)
 }
 func loadFederationConfigWithDiscovery(name string, send, discover bool) (*application.FederationConfig, error) {
+	return loadFederationConfigWithAdmission(name, send, discover, false)
+}
+func loadFederationConfigWithAdmission(name string, send, discover, admit bool) (*application.FederationConfig, error) {
 	invalid := errors.New("invalid explicit federation configuration")
 	if !filepath.IsAbs(name) {
 		return nil, invalid
@@ -214,7 +226,7 @@ func loadFederationConfigWithDiscovery(name string, send, discover bool) (*appli
 		return nil, invalid
 	}
 	policy := federation.Config{Origin: input.Origin, AllowedOrigins: input.AllowedOrigins, MaxAttempts: input.MaxAttempts, DeliveryTimeout: time.Duration(input.DeliveryTimeoutSeconds) * time.Second}
-	if policy.Validate() != nil || len(input.AllowedOrigins) > 128 || len(input.LocalKeys) < 1 && input.ServerActor == nil || len(input.LocalKeys) > 1000 || len(input.RemoteKeys) > 1000 || len(input.DiscoveryTargets) > 128 {
+	if policy.Validate() != nil || len(input.AllowedOrigins) > 128 || len(input.LocalKeys) < 1 && input.ServerActor == nil && len(input.PublicAdmission) == 0 || len(input.LocalKeys) > 1000 || len(input.RemoteKeys) > 1000 || len(input.DiscoveryTargets) > 128 || len(input.RetiredRemoteActors) > 1000 || len(input.RetiredRemoteKeyIDs) > 1000 || len(input.RetiredRemoteFingerprints) > 1000 {
 		return nil, invalid
 	}
 	keys := configuredFederationKeys{local: map[string]crypto.Signer{}, remote: map[string]federation.RemoteKey{}, actors: map[string]federation.RemoteKey{}}
@@ -247,7 +259,53 @@ func loadFederationConfigWithDiscovery(name string, send, discover bool) (*appli
 		keys.remote[bound.KeyID] = bound
 		keys.actors[bound.Actor] = bound
 	}
+	keys.retiredActors = map[string]bool{}
+	keys.retiredKeys = map[string]bool{}
+	keys.retiredFingerprints = map[string]bool{}
+	for _, a := range input.RetiredRemoteActors {
+		if !policy.Allows(a) || keys.retiredActors[a] || keys.actors[a].Actor != "" {
+			return nil, invalid
+		}
+		keys.retiredActors[a] = true
+	}
+	for _, id := range input.RetiredRemoteKeyIDs {
+		u, e := federation.ParseURL(id)
+		if e != nil || u.Fragment == "" || keys.retiredKeys[id] || keys.remote[id].KeyID != "" {
+			return nil, invalid
+		}
+		keys.retiredKeys[id] = true
+	}
+	for _, fingerprint := range input.RetiredRemoteFingerprints {
+		decoded, e := hex.DecodeString(fingerprint)
+		if e != nil || len(decoded) != 32 || strings.ToLower(fingerprint) != fingerprint || keys.retiredFingerprints[fingerprint] {
+			return nil, invalid
+		}
+		for _, pin := range keys.remote {
+			current, e := federation.KeyFingerprint(pin.PublicKey)
+			if e != nil || current == fingerprint {
+				return nil, invalid
+			}
+		}
+		keys.retiredFingerprints[fingerprint] = true
+	}
 	cfg := &application.FederationConfig{Policy: policy, Keys: keys}
+	if len(input.PublicAdmission) > 128 {
+		return nil, invalid
+	}
+	seenOrigins := map[string]bool{}
+	for _, p := range input.PublicAdmission {
+		if p.Validate(policy) != nil || seenOrigins[p.Origin] {
+			return nil, invalid
+		}
+		seenOrigins[p.Origin] = true
+		cfg.PublicAdmission = append(cfg.PublicAdmission, p)
+	}
+	if admit {
+		cfg.AdmissionFetcher, e = federation.NewPublicAdmissionFetcher(policy, cfg.PublicAdmission)
+		if e != nil {
+			return nil, invalid
+		}
+	}
 	if input.ServerActor != nil {
 		if !filepath.IsAbs(input.ServerActor.PublicKeyFile) {
 			return nil, invalid
@@ -302,7 +360,7 @@ func canonicalFederationFields(raw []byte) bool {
 	if json.Unmarshal(raw, &root) != nil {
 		return false
 	}
-	names := []string{"server_actor", "username", "name", "summary", "public_key_file", "discovery_targets", "resource", "actor", "origin", "allowed_origins", "max_attempts", "delivery_timeout_seconds", "local_keys", "publisher_id", "private_key_file", "remote_keys", "inbox", "key_id"}
+	names := []string{"public_admission", "incarnation", "retired_remote_actors", "retired_remote_key_ids", "retired_remote_key_fingerprints", "server_actor", "username", "name", "summary", "public_key_file", "discovery_targets", "resource", "actor", "origin", "allowed_origins", "max_attempts", "delivery_timeout_seconds", "local_keys", "publisher_id", "private_key_file", "remote_keys", "inbox", "key_id"}
 	var walk func(any) bool
 	walk = func(v any) bool {
 		switch x := v.(type) {
@@ -327,4 +385,32 @@ func canonicalFederationFields(raw []byte) bool {
 		return true
 	}
 	return walk(root)
+}
+
+// A standalone static provider explicitly identifies its known and retired pins.
+// Operators must preserve retirement entries; durable admissions and peer rows
+// retain their own reservations even when configuration changes.
+func (k configuredFederationKeys) FirstContact(ctx context.Context, candidate federation.RemoteKey) (bool, error) {
+	if e := ctx.Err(); e != nil {
+		return false, e
+	}
+	if candidate.PublicKey != nil {
+		fingerprint, e := federation.KeyFingerprint(candidate.PublicKey)
+		if e != nil {
+			return false, e
+		}
+		if k.retiredFingerprints[fingerprint] {
+			return false, nil
+		}
+		for _, pin := range k.remote {
+			other, e := federation.KeyFingerprint(pin.PublicKey)
+			if e != nil {
+				return false, e
+			}
+			if fingerprint == other {
+				return false, nil
+			}
+		}
+	}
+	return k.actors[candidate.Actor].Actor == "" && k.remote[candidate.KeyID].KeyID == "" && !k.retiredActors[candidate.Actor] && !k.retiredKeys[candidate.KeyID], nil
 }

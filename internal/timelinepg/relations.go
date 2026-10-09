@@ -242,3 +242,14 @@ func (r *Repository) SupportsPostAttachments() bool {
 	v, ok := r.associations.(interface{ SupportsPostAttachments() bool })
 	return ok && v.SupportsPostAttachments()
 }
+
+func (r *Repository) SupportsPostComposition() bool {
+	v, ok := r.associations.(interface{ SupportsPostComposition() bool })
+	return ok && v.SupportsPostComposition()
+}
+func (r *Repository) CheckPostPublication(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post, lock bool) error {
+	if a, ok := r.associations.(postpg.PublicationAssociation); ok {
+		return a.CheckPostPublication(ctx, tx, actor, p, lock)
+	}
+	return nil
+}

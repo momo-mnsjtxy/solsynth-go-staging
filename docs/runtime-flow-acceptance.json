@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Narrow fixture correction: UTC checkin day, bounded retry before original deadline, synthetic post-job-wait generation probe without inverted grant/account locks; runtime unchanged. Actual PG pending.",
+  "local_source_checkpoint": "Reviewed typed post associations with private live/meet/fund/calendar filtering, canonical final reference/editor checks, original guarded restart proofs; combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL pending.",
   "last_fully_passed_ci": {
     "commit": "651c6302809de83a2682047c5820468befd15b1e",
     "run": 37873421328,
@@ -10,17 +10,17 @@
     "before": 718,
     "after_restart": 87,
     "skipped": 0,
-    "evidence": "Exact all-job/head/attempt/required steps plus independent named raw-job-log cases; CI aggregate verified both artifactdigests and actual cluster/process restarts. Local ZIP recomputation unavailable403/error1010."
+    "evidence": "All four exact jobs/head/attempt/required steps passed. Independent exact named-case verification from authorized raw job logs; CI aggregate verified both attempt-bound artifact digests and two actual restarted clusters/process smokes. Local artifact ZIP recomputation unavailable403/error1010; no bypass or retry.",
+    "acceptance_limit": "CI-green for this immutable implementation, not all original platform functions or production rollout."
   },
   "latest_candidate": {
-    "commit": "0a79937fb769650afb0c446de0bcb7ca0b815afd",
-    "run": 37874181155,
-    "required_before": 742,
-    "required_after_restart": 90,
-    "status": "Running reviewed pinned federation discovery/calendar media checkpoint; narrower corrected718 run37873421328 also running."
+    "commit": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e",
+    "required_before": 756,
+    "required_after_restart": 91,
+    "status": "Published narrow three-fixture correction; runtime unchanged, actual CI pending."
   },
-  "local_required_before": 756,
-  "local_required_after_restart": 91,
+  "local_required_before": 777,
+  "local_required_after_restart": 93,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2128,7 +2128,7 @@
     "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
-    "as_of": "2026-10-09T02:24:00Z",
+    "as_of": "2026-10-09T02:38:00Z",
     "authoritative_for": "Current source-backed remaining flow bundles, implementation candidates and operational gaps; no percentage or endpoint-total inference.",
     "families": [
       {
@@ -2686,7 +2686,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last full CI-green85674a:674 before/84 restart. Explicit-grant718 run37871611271:716/718 before passed,two blog fixture failures,zero skips,no restart. Corrected718 candidate651c630 and reviewed742 candidate0a79937 are running. Actual PG for latest realm integration remains pending.",
+    "verification_note": "Last full CI-green651c630718/87 exact cases,zero skips,real DB/process restarts. Reviewed742/90 and756/91 candidates pending CI; public-admission integration pending offline/PG. Federation outbound POST currently holds SQLlocks; separate lease/fence redesign is active.",
     "unimplemented_flow_bundles": [
       {
         "id": "chat_reads_search",
@@ -3367,30 +3367,6 @@
         "next_slice": "Implement bounded batch/pin and adjacent/reply reads first; attach canonical boost events and richer search separately with privacy and idempotency."
       },
       {
-        "id": "post_typed_composition",
-        "families": [
-          "sphere.posts"
-        ],
-        "remaining": "Post survey/fund/meet/livestream/notable-day/calendar/location/thumbnail associations, non-link embeds, nonempty meta and automatic chain behavior are rejected.",
-        "source": [
-          {
-            "path": "DysonNetwork.Sphere/Post/PostActionController.cs",
-            "blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
-            "methods": "CreatePost@353; UpdatePost@1252",
-            "route_examples": [
-              "POST /api/posts",
-              "PATCH /api/posts/{id:guid}"
-            ]
-          }
-        ],
-        "runtime_owner_or_rejection": [
-          "ports/sphere/posts/http.go:decode",
-          "internal/postpg"
-        ],
-        "current_boundary": "Source request fields and mapping are authored at PostActionController.cs:239-290,535-707,1365-1603. Canonical linked media, realm and explicit reply/forward/chain relations already exist. Standalone survey/fund/meet/calendar implementations do not prove post composition integration.",
-        "next_slice": "Add one typed association at a time through current canonical read/ownership adapters; validate withdrawal and cross-domain lock waits."
-      },
-      {
         "id": "collection_subscriptions_navigation",
         "families": [
           "sphere.posts",
@@ -3724,7 +3700,7 @@
     "implemented_pending_verification": [
       {
         "id": "passport.realm_boosts",
-        "status": "implemented_pending_exact_commit_CI",
+        "status": "implemented_CI_green_651c630",
         "scope": [
           "Exact source-grounded share purchase through canonical orders/PIN/hold/settlement, once-only XP",
           "Configured label caps/perk identifiers, source multiplier values, inclusive30-day entitlement",
@@ -3740,11 +3716,12 @@
           "TestPGBackendRealmBoostRoutes",
           "TestPGRealmBoostAuthenticatedHTTP",
           "TestPGRealmBoostAuthorityRevocationAfterWait"
-        ]
+        ],
+        "verification": "718 before/87 restart exact immutable checkpoint"
       },
       {
         "id": "develop.bot_dispatch",
-        "status": "implemented_pending_exact_commit_CI",
+        "status": "implemented_CI_green_651c630",
         "scope": [
           "Existing ordinary text submission atomically queues enrolled group bot deliveries",
           "Current developer/owner/sender/session and membership-incarnation checks, no untrusted identity substitution",
@@ -3759,11 +3736,12 @@
           "TestPGBotExecutionCanonicalSendAndReplay",
           "TestPGBotExecutionConcurrentWorkersAndRevocationWait",
           "TestPGBotExecutionEnrollmentRoleAndSessionScope"
-        ]
+        ],
+        "verification": "718 before/87 restart exact immutable checkpoint"
       },
       {
         "id": "owned.automod_evidence_privacy",
-        "status": "implemented_pending_exact_commit_CI",
+        "status": "implemented_CI_green_651c630",
         "scope": [
           "Ordinary editor gets only whitelisted outcome/penalty/freshness, recursively applied",
           "Full evidence requires canonical global authority plus current explicit automod.rules.manage and post permission",
@@ -3777,11 +3755,12 @@
           "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
           "TestPGPostAutomodEvidenceGrantExpiryAtResponse",
           "TestPGPostAutomodEvidenceRevocationAfterAccountWait"
-        ]
+        ],
+        "verification": "718 before/87 restart exact immutable checkpoint"
       },
       {
         "id": "sphere.blog_domains",
-        "status": "implemented_pending_exact_commit_CI",
+        "status": "implemented_CI_green_651c630",
         "scope": [
           "Strict domain add/list/delete/recheck and bounded pending verification recovery",
           "Source-supported blog permission and metadata-backed post lifecycle through existing routes",
@@ -3800,7 +3779,8 @@
           "TestPGBlogAutomodUsesPreparedMetadataAndSafeProjection",
           "TestPGBlogBackendAliasesAndStrictPermissionRequest",
           "TestPGBlogCreationEditingMediaAndVisibility"
-        ]
+        ],
+        "verification": "718 before/87 restart exact immutable checkpoint"
       },
       {
         "id": "sphere.federation_discovery",
@@ -3862,6 +3842,31 @@
           "TestPGRealmLabelsMembershipIncarnationAndCurrentRole"
         ],
         "full_case_set": "/workspace/shared/realm-member-delivery/integration.json"
+      },
+      {
+        "id": "post_typed_composition",
+        "families": [
+          "sphere.posts"
+        ],
+        "remaining": "Source-backed survey/fund/meet/live/calendar/notableday/location references and thumbnail are integrated; canonical client/server compatibility awaits actualPG. See docs/post-composition-continuation.md for owned narrower association scope.",
+        "source": [
+          {
+            "path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+            "blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+            "methods": "CreatePost@353; UpdatePost@1252",
+            "route_examples": [
+              "POST /api/posts",
+              "PATCH /api/posts/{id:guid}"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/sphere/posts/http.go:decode",
+          "internal/postpg"
+        ],
+        "current_boundary": "Source request fields and mapping are authored at PostActionController.cs:239-290,535-707,1365-1603. Canonical linked media, realm and explicit reply/forward/chain relations already exist. Standalone survey/fund/meet/calendar implementations do not prove post composition integration.",
+        "next_slice": "Add one typed association at a time through current canonical read/ownership adapters; validate withdrawal and cross-domain lock waits.",
+        "status": "implemented_pending_actual_PG"
       }
     ],
     "owned_contract_differences": [
@@ -4107,11 +4112,11 @@
       },
       {
         "id": "federation.public_remote_admission",
-        "state": "Frozen candidate delivered; independent reservation/restart review in progress; no actual PG acceptance."
+        "state": "Independent corrections integrated;768/92 offline and actual PG pending. Configured admission default disabled; outbound POST redesign remains separate."
       },
       {
         "id": "posts.typed_composition",
-        "state": "Six-case candidate delivered and offline verified; independent review/integration/actual PG pending."
+        "state": "Independently reviewed corrections integrated,9before/1restart; combined777/93 offline and actual PG pending."
       }
     ]
   },
@@ -4133,12 +4138,13 @@
     ]
   },
   "latest_job_log_verified_ci_pass": {
-    "commit": "85674a81584fc05876446b80761f6c27917ed037",
-    "run": 37868140163,
-    "before": 674,
-    "after_restart": 84,
+    "commit": "651c6302809de83a2682047c5820468befd15b1e",
+    "run": 37873421328,
+    "attempt": 1,
+    "before": 718,
+    "after_restart": 87,
     "skipped": 0,
-    "verification": "Exact four jobs/head/attempt and complete independent case sets from authorized job logs; aggregate reports verified artifact digests and two distinct real restarted clusters/process smokes. Local artifact-byte recheck blocked HTTP403/error1010 on supplied unexpired URL.",
-    "known_pending_correction": "Ordinary-editor automod global evidence privacy corrected only in699; passing674 is not production acceptance."
+    "evidence": "All four exact jobs/head/attempt/required steps passed. Independent exact named-case verification from authorized raw job logs; CI aggregate verified both attempt-bound artifact digests and two actual restarted clusters/process smokes. Local artifact ZIP recomputation unavailable403/error1010; no bypass or retry.",
+    "acceptance_limit": "CI-green for this immutable implementation, not all original platform functions or production rollout."
   }
 }

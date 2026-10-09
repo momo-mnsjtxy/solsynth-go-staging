@@ -27,11 +27,13 @@ type CallConfig struct {
 // FederationConfig keeps key provisioning and outbound networking explicit.
 // A nil Transport allows local opt-in/inbox/public reads but leaves delivery pending.
 type FederationConfig struct {
-	Policy    federation.Config
-	Keys      federation.KeyProvider
-	Transport federation.Transport
-	Discovery federation.DiscoveryFeatures
-	Fetcher   federation.Fetcher
+	Policy           federation.Config
+	Keys             federation.KeyProvider
+	Transport        federation.Transport
+	Discovery        federation.DiscoveryFeatures
+	Fetcher          federation.Fetcher
+	PublicAdmission  []federation.PublicAdmissionPolicy
+	AdmissionFetcher federation.Fetcher
 }
 type externalModules struct {
 	streams                                       *livestreampg.Repository
@@ -41,6 +43,8 @@ type externalModules struct {
 	transport                                     federation.Transport
 	fetcher                                       federation.Fetcher
 	discoveryEnabled                              bool
+	admissionEnabled                              bool
+	admissionFetcher                              federation.Fetcher
 	callHTTP, federationPublic, federationPrivate http.Handler
 }
 
@@ -76,13 +80,23 @@ func externalModulesFor(db, authorityDB *sql.DB, c Config, v *authority.Verifier
 		if err != nil {
 			return x, err
 		}
+		if len(c.Federation.PublicAdmission) > 0 {
+			x.federation, err = x.federation.WithPublicAdmission(c.Federation.PublicAdmission)
+			if err != nil {
+				return x, err
+			}
+			x.admissionEnabled = true
+		} else if c.Federation.AdmissionFetcher != nil {
+			return x, errors.New("public admission transport requires explicit origin policies")
+		}
+		x.admissionFetcher = c.Federation.AdmissionFetcher
 		x.transport = c.Federation.Transport
 		x.fetcher = c.Federation.Fetcher
 		x.discoveryEnabled = c.Federation.Discovery.Server != nil || len(c.Federation.Discovery.Targets) > 0
 		if x.fetcher != nil && len(c.Federation.Discovery.Targets) == 0 {
 			return x, errors.New("discovery transport requires configured targets")
 		}
-		handler := federationhttp.Handler{Repository: x.federation, Config: c.Federation.Policy, Keys: c.Federation.Keys, Authority: proofIdentity{identity}}
+		handler := federationhttp.Handler{Repository: x.federation, Config: c.Federation.Policy, Keys: x.federation.Keys(), Authority: proofIdentity{identity}}
 		x.federationPublic = handler
 		x.federationPrivate = bindIdentity(v, bindTransactionAuthority(guard, handler))
 	}
@@ -107,6 +121,11 @@ func (x externalModules) ready(ctx context.Context, db *sql.DB) error {
 		}
 	}
 	if x.federation != nil {
+		if x.admissionEnabled {
+			if e := x.federation.PublicAdmissionReady(ctx); e != nil {
+				return errors.New("public admission schema or policy unavailable")
+			}
+		}
 		if x.discoveryEnabled {
 			if e := x.federation.DiscoveryReady(ctx); e != nil {
 				return errors.New("federation discovery schema or server anchor unavailable")
@@ -138,6 +157,11 @@ func (x externalModules) processDue(ctx context.Context, limit int) (count int, 
 		err = errors.Join(err, e)
 	}
 	if x.federation != nil {
+		if x.admissionFetcher != nil {
+			n, e := x.federation.ProcessPublicAdmissions(ctx, x.admissionFetcher, limit)
+			count += n
+			err = errors.Join(err, e)
+		}
 		if x.fetcher != nil {
 			n, e := x.federation.ProcessDiscoveries(ctx, x.fetcher, limit)
 			count += n

@@ -41,6 +41,12 @@ func explicitInt(value, name string) (int32, error) {
 	return int32(n), nil
 }
 func run(args []string, out io.Writer) error {
+	if len(args) > 0 && args[0] == "revoke-federation-public-admission" {
+		return revokeFederationPublicAdmission(args[1:], out)
+	}
+	if len(args) > 0 && args[0] == "initialize-federation-public-admission" {
+		return initializeFederationPublicAdmission(args[1:], out)
+	}
 	if len(args) > 0 && args[0] == "initialize-federation-server" {
 		return initializeFederationServer(args[1:], out)
 	}

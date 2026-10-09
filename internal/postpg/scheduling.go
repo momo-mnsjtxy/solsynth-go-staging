@@ -257,6 +257,12 @@ func (r *Repository) processSchedule(ctx context.Context, s dueSchedule) (bool, 
 		}
 	}
 	if reason == "" {
+		if e = r.checkComposedPublication(ctx, tx, s.actor, &p, true); e != nil {
+			if !publicationDenial(e) {
+				return false, e
+			}
+			reason = "reference_unavailable"
+		}
 		if e = r.lockPublicationMedia(ctx, tx, p.ID); e != nil {
 			return false, e
 		}
@@ -387,6 +393,12 @@ func (r *Repository) lockPublicationMedia(ctx context.Context, tx *sql.Tx, post 
 // Reacquire only the same planned locks, then check publisher/realm permissions
 // against the fresh snapshot after the file and pending-intent waits.
 func (r *Repository) preparePublication(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post) (string, error) {
+	if e := r.checkComposedPublication(ctx, tx, actor, p, true); e != nil {
+		if publicationDenial(e) {
+			return "reference_unavailable", nil
+		}
+		return "", e
+	}
 	if e := r.lockPublicationMedia(ctx, tx, p.ID); e != nil {
 		return "", e
 	}
@@ -405,6 +417,12 @@ func (r *Repository) preparePublication(ctx context.Context, tx *sql.Tx, actor s
 // It never restores an old schedule's authority; recorded intent additionally
 // passes its own session, revision and policy-stamp checks above.
 func (r *Repository) checkPublication(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post) (string, error) {
+	if e := r.checkComposedPublication(ctx, tx, actor, p, false); e != nil {
+		if publicationDenial(e) {
+			return "reference_unavailable", nil
+		}
+		return "", e
+	}
 	if p.Type == posts.Blog {
 		if r.blogs == nil {
 			return "", blogs.ErrUnavailable

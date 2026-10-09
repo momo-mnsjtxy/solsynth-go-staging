@@ -50,6 +50,12 @@ func (r *Repository) WithAssociations(a AssociationStore) *Repository {
 	return r
 }
 func (r *Repository) applyAssociations(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post, v posts.Patch, create bool) error {
+	if v.HasComposition() {
+		supported, ok := r.associations.(interface{ SupportsPostComposition() bool })
+		if !ok || !supported.SupportsPostComposition() {
+			return posts.ErrUnsupported
+		}
+	}
 	if v.BlogEmbeds && p.Type != posts.Blog {
 		return posts.ErrUnsupported
 	}
@@ -69,6 +75,11 @@ func (r *Repository) applyAssociations(ctx context.Context, tx *sql.Tx, actor st
 	if r.associations != nil {
 		if e := r.associations.Apply(ctx, tx, actor, p, v, create); e != nil {
 			return e
+		}
+		if supported, ok := r.associations.(interface{ SupportsPostComposition() bool }); ok && supported.SupportsPostComposition() && p.DeletedAt == nil {
+			if _, e := r.locked(ctx, tx, actor, p.ID, posts.Patch{}, false); e != nil {
+				return e
+			}
 		}
 		if e := r.associations.Load(ctx, tx, actor, p); e != nil {
 			return e
@@ -117,4 +128,31 @@ func ScanProjection(s interface{ Scan(...any) error }) (posts.Post, error) {
 // caller owns a snapshot; writes must lock publisher then post before calling.
 func ReadInTransaction(ctx context.Context, tx *sql.Tx, actor, id string) (posts.Post, error) {
 	return ReadWithVisibility(ctx, tx, actor, id, nil)
+}
+
+// PublicationAssociation checks live referenced resources without granting any
+// downstream operation. lock=true runs before media locks; false repeats expiry
+// and privacy checks after all blocking work.
+type PublicationAssociation interface {
+	CheckPostPublication(context.Context, *sql.Tx, string, *posts.Post, bool) error
+}
+
+func (r *Repository) checkComposedPublication(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post, lock bool) error {
+	if a, ok := r.associations.(PublicationAssociation); ok {
+		return a.CheckPostPublication(ctx, tx, actor, p, lock)
+	}
+	return nil
+}
+
+// Automod and schedule synchronization can wait after association application.
+// Recheck the same locked scope and live targets immediately before the final
+// original-proof check; a wall-clock deadline must not become a saved grant.
+func (r *Repository) finishComposition(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post) error {
+	if supported, ok := r.associations.(interface{ SupportsPostComposition() bool }); !ok || !supported.SupportsPostComposition() || p.DeletedAt != nil {
+		return nil
+	}
+	if _, e := r.locked(ctx, tx, actor, p.ID, posts.Patch{}, false); e != nil {
+		return e
+	}
+	return r.checkComposedPublication(ctx, tx, actor, p, false)
 }

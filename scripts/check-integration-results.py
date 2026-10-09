@@ -5,6 +5,29 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGPostCompositionCanonicalReferencesAndReplay",
+        "TestPGPostCompositionOwnershipAndAtomicRollback",
+        "TestPGPostCompositionLivePrivacyExpiryAndPublication",
+        "TestPGPostCompositionTargetWaitRechecksLifecycle",
+        "TestPGPostCompositionSavedRestartPersistence",
+        "TestPGBackendPostCompositionAuthoredRoutes",
+        "TestPGPostCompositionCanonicalLivePrivacy",
+        "TestPGPostCompositionFinalWaitsRecheckReferences",
+        "TestPGPostCompositionProofScopeAndMediaWait",
+
+        "TestPGBackendFederationPublicAdmissionComposition",
+        "TestPGFederationPublicAdmissionAtomicAuditRollback",
+        "TestPGFederationPublicAdmissionAuthorityABAAndOriginalDeadline",
+        "TestPGFederationPublicAdmissionConcurrentClaimsAndCollision",
+        "TestPGFederationPublicAdmissionCurrentPolicyAfterAuditWait",
+        "TestPGFederationPublicAdmissionCurrentPolicyAfterJobWait",
+        "TestPGFederationPublicAdmissionLifecycleAndIsolation",
+        "TestPGFederationPublicAdmissionOriginalBoundsAndConfiguration",
+        "TestPGFederationPublicAdmissionRequestWaitABA",
+        "TestPGFederationPublicAdmissionRetryLeaseAndLateResults",
+        "TestPGFederationPublicAdmissionRevocationAndPermanentReservations",
+        "TestPGFederationPublicAdmissionSavedRestartPersistence",
+
         "TestPGRealmLabelsCRUDVisibilityAndCanonicalProjection",
         "TestPGRealmLabelsConcurrentQuotaAndReplay",
         "TestPGRealmLabelsMembershipIncarnationAndCurrentRole",
@@ -812,6 +835,10 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGPostCompositionSavedRestartPersistence",
+
+        "TestPGFederationPublicAdmissionSavedRestartPersistence",
+
         "TestPGRealmMemberRestartPersistence",
 
         "TestPGCalendarActivityRestartPersistence",

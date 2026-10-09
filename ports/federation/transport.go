@@ -40,9 +40,9 @@ func publicAddress(ip net.IP) bool {
 	if a.Is6() && !netip.MustParsePrefix("2000::/3").Contains(a) {
 		return false
 	}
-	// Also exclude shared, benchmarking, documentation, reserved, and translation
-	// space; these are not suitable remote federation destinations.
-	for _, cidr := range []string{"0.0.0.0/8", "100.64.0.0/10", "192.0.0.0/24", "192.0.2.0/24", "192.88.99.0/24", "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24", "240.0.0.0/4", "64:ff9b::/96", "64:ff9b:1::/48", "100::/64", "2001::/23", "2001:db8::/32", "2002::/16", "3fff::/20"} {
+	// Also exclude shared, benchmarking, documentation, reserved, translation
+	// space and Azure's platform virtual IP; none are public peer destinations.
+	for _, cidr := range []string{"0.0.0.0/8", "100.64.0.0/10", "168.63.129.16/32", "192.0.0.0/24", "192.0.2.0/24", "192.31.196.0/24", "192.52.193.0/24", "192.88.99.0/24", "192.175.48.0/24", "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24", "240.0.0.0/4", "64:ff9b::/96", "64:ff9b:1::/48", "100::/64", "2001::/23", "2001:db8::/32", "2002::/16", "2620:4f:8000::/48", "3fff::/20"} {
 		if netip.MustParsePrefix(cidr).Contains(a) {
 			return false
 		}

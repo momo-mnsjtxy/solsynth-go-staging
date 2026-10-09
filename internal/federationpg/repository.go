@@ -32,6 +32,8 @@ type Repository struct {
 	guard            TransactionGuard
 	discoveryTargets map[string]f.DiscoveryTarget
 	server           *f.ServerConfig
+	publicPolicies   map[string]f.PublicAdmissionPolicy
+	pinnedKeys       f.KeyProvider
 }
 
 func New(db *sql.DB, c f.Config, keys f.KeyProvider, guard TransactionGuard) (*Repository, error) {
@@ -42,7 +44,7 @@ func New(db *sql.DB, c f.Config, keys f.KeyProvider, guard TransactionGuard) (*R
 		return nil, e
 	}
 	c.AllowedOrigins = append([]string{}, c.AllowedOrigins...)
-	return &Repository{db: db, config: c, keys: keys, guard: guard}, nil
+	return &Repository{db: db, config: c, keys: keys, pinnedKeys: keys, guard: guard}, nil
 }
 
 var _ f.Repository = (*Repository)(nil)
@@ -396,6 +398,9 @@ func (r *Repository) Relationships(ctx context.Context, actor, ref string, offse
 }
 func marshal(v any) json.RawMessage { b, _ := json.Marshal(v); return b }
 func (r *Repository) ensurePeer(ctx context.Context, tx *sql.Tx, k f.RemoteKey) error {
+	if e := r.publicKeyFence(ctx, tx, k); e != nil {
+		return e
+	}
 	if !r.config.ValidRemote(k) {
 		return f.ErrForbidden
 	}
@@ -441,7 +446,7 @@ func (r *Repository) remote(ctx context.Context, uri string) (f.RemoteKey, error
 	if !r.config.Allows(uri) {
 		return f.RemoteKey{}, f.ErrForbidden
 	}
-	k, e := r.keys.RemoteActor(ctx, uri)
+	k, e := r.Keys().RemoteActor(ctx, uri)
 	k = k.Snapshot()
 	if e != nil || k.Actor != uri || !r.config.ValidRemote(k) {
 		return f.RemoteKey{}, f.ErrForbidden
@@ -455,4 +460,12 @@ func (r *Repository) Config() f.Config {
 	c.AllowedOrigins = append([]string{}, c.AllowedOrigins...)
 	return c
 }
-func (r *Repository) Keys() f.KeyProvider { return r.keys }
+func (r *Repository) Keys() f.KeyProvider {
+	if r.keys == nil {
+		return nil
+	}
+	// Disabling enrollment cannot disable existing permanent reservations.
+	// Construction remains offline; the wrapper reads the optional ledger only
+	// when a remote key is requested and never initializes it.
+	return publicKeys{r}
+}

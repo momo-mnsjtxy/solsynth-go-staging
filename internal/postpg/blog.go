@@ -194,10 +194,10 @@ func (r *Repository) applyBlog(ctx context.Context, tx *sql.Tx, actor string, p 
 	return nil
 }
 func encodeBlog(p posts.Post) (any, error) {
-	if p.Meta == nil {
+	if p.Meta == nil || p.Type != posts.Blog {
 		return nil, nil
 	}
-	return json.Marshal(p.Meta)
+	return json.Marshal(&posts.Metadata{Embeds: p.Meta.Embeds})
 }
 func decodeBlog(p *posts.Post, b []byte) error {
 	if len(b) == 0 {
@@ -206,7 +206,7 @@ func decodeBlog(p *posts.Post, b []byte) error {
 		}
 		return nil
 	}
-	if json.Unmarshal(b, &p.Meta) != nil || p.Meta == nil || len(p.Meta.Embeds) != 1 || p.Meta.Embeds[0].Type != "link" {
+	if json.Unmarshal(b, &p.Meta) != nil || p.Meta == nil || len(p.Meta.Embeds) != 1 || len(p.Meta.Composed) != 0 || p.Meta.Thumbnail != nil || p.Meta.Embeds[0].Type != "link" {
 		return blogs.ErrUnavailable
 	}
 	return validateBlogPreview(p.Content, p.Meta.Embeds[0].Link)

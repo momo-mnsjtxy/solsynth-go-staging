@@ -125,24 +125,87 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 			target = &p.Attachments
 		case "embeds":
 			var a []json.RawMessage
-			if json.Unmarshal(b, &a) != nil {
+			if json.Unmarshal(b, &a) != nil || len(a) > 16 {
 				return p, ErrInvalid
 			}
-			if len(a) > 16 {
-				return p, ErrInvalid
+			if bytes.Equal(bytes.TrimSpace(b), []byte("null")) {
+				break
 			}
+			embeds := []Embed{}
 			for _, raw := range a {
-				var v LinkEmbed
-				d := json.NewDecoder(bytes.NewReader(raw))
-				d.DisallowUnknownFields()
-				if d.Decode(&v) != nil {
+				if !uniqueEmbedObject(raw) {
 					return p, ErrInvalid
 				}
-				if v.Type != "link" {
-					return p, ErrUnsupported
+				var kind struct {
+					Type string `json:"type"`
+				}
+				if json.Unmarshal(raw, &kind) != nil {
+					return p, ErrInvalid
+				}
+				if kind.Type == "link" {
+					var link LinkEmbed
+					d := json.NewDecoder(bytes.NewReader(raw))
+					d.DisallowUnknownFields()
+					if d.Decode(&link) != nil {
+						return p, ErrInvalid
+					}
+					p.BlogEmbeds = true
+				} else {
+					var v Embed
+					d := json.NewDecoder(bytes.NewReader(raw))
+					d.DisallowUnknownFields()
+					if d.Decode(&v) != nil {
+						return p, ErrInvalid
+					}
+					if e := v.Validate(); e != nil {
+						return p, e
+					}
+					embeds = append(embeds, v)
 				}
 			}
-			p.BlogEmbeds = len(a) > 0
+			if p.BlogEmbeds && len(embeds) > 0 {
+				return p, ErrUnsupported
+			}
+			if !p.BlogEmbeds {
+				p.Embeds = &embeds
+			}
+		case "survey_id", "fund_id", "meet_id", "live_stream_id", "notable_day_id", "calendar_event_id":
+			var id *string
+			if json.Unmarshal(b, &id) != nil {
+				return p, ErrInvalid
+			}
+			if p.EmbedUpdates == nil {
+				p.EmbedUpdates = map[string]*Embed{}
+			}
+			kind := strings.TrimSuffix(k, "_id")
+			p.EmbedUpdates[kind] = nil
+			if id != nil {
+				p.EmbedUpdates[kind] = &Embed{Type: kind, ID: *id}
+			}
+		case "location_name", "location_address", "location_wkt":
+			var v *string
+			if json.Unmarshal(b, &v) != nil {
+				return p, ErrInvalid
+			}
+			if p.EmbedUpdates == nil {
+				p.EmbedUpdates = map[string]*Embed{}
+			}
+			loc := p.EmbedUpdates["location"]
+			if loc == nil {
+				loc = &Embed{Type: "location"}
+				p.EmbedUpdates["location"] = loc
+			}
+			switch k {
+			case "location_name":
+				loc.Name = v
+			case "location_address":
+				loc.Address = v
+			case "location_wkt":
+				loc.WKT = v
+			}
+		case "thumbnail_id":
+			p.ThumbnailSet = true
+			target = &p.ThumbnailID
 		case "meta":
 			var m map[string]json.RawMessage
 			if json.Unmarshal(b, &m) != nil {
@@ -159,7 +222,7 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 			if v != nil && *v {
 				return p, ErrUnsupported
 			}
-		case "embed_view", "survey_id", "fund_id", "meet_id", "live_stream_id", "notable_day_id", "calendar_event_id", "location_name", "location_address", "location_wkt", "thumbnail_id":
+		case "embed_view":
 			if !bytes.Equal(bytes.TrimSpace(b), []byte("null")) {
 				return p, ErrUnsupported
 			}
@@ -174,6 +237,15 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 		return p, ErrInvalid
 	}
 	if _, e = d.Token(); e != io.EOF {
+		return p, ErrInvalid
+	}
+	if loc := p.EmbedUpdates["location"]; loc != nil && empty(loc.Name) && empty(loc.Address) && empty(loc.WKT) {
+		p.EmbedUpdates["location"] = nil
+	}
+	if _, e := ResolveEmbeds(nil, p); e != nil {
+		return p, e
+	}
+	if p.ThumbnailID != nil && !authority.ValidID(*p.ThumbnailID) {
 		return p, ErrInvalid
 	}
 	if e := ValidatePatch(Patch{RealmID: p.RealmID, ClearRealm: p.ClearRealm, Tags: p.Tags, Categories: p.Categories, CollectionIDs: p.CollectionIDs, Attachments: p.Attachments}, false, time.Time{}); e != nil {
@@ -423,4 +495,35 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 		}
 		m.ServeHTTP(w, r)
 	})
+}
+
+// Dynamic client embed dictionaries are still strict request objects; repeated
+// keys cannot create different identities in validators and downstream readers.
+func uniqueEmbedObject(raw []byte) bool {
+	d := json.NewDecoder(bytes.NewReader(raw))
+	token, e := d.Token()
+	if e != nil || token != json.Delim('{') {
+		return false
+	}
+	seen := map[string]bool{}
+	for d.More() {
+		token, e = d.Token()
+		if e != nil {
+			return false
+		}
+		key, ok := token.(string)
+		if !ok || seen[key] {
+			return false
+		}
+		seen[key] = true
+		var value json.RawMessage
+		if d.Decode(&value) != nil {
+			return false
+		}
+	}
+	if _, e = d.Token(); e != nil {
+		return false
+	}
+	_, e = d.Token()
+	return e == io.EOF
 }

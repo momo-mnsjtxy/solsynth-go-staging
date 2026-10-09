@@ -1,5 +1,5 @@
 {
-  "base_commit": "fe01ce86ae24db35b45f78b2785a43b53898f034",
+  "base_commit": "8eb29449756e41844cdad87480cf3321e2b53440",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -1509,7 +1509,7 @@
     {
       "test": "TestPGBlogBackendAliasesAndStrictPermissionRequest",
       "source": "tests/integration/blog_posts_test.go",
-      "function_sha256": "3735b019d33357d22060145e8789c99fb16c7aebda6ccabd2bed53ea11939d6f",
+      "function_sha256": "fc49251d0d736974cb800a83f3dcbdc60dd9c6ae502e57f90d927fd9895cf62f",
       "group": "group-a"
     },
     {
@@ -1706,11 +1706,11 @@
     },
     {
       "source": "tests/integration/blog_automod_composition_test.go",
-      "sha256": "b869064a0760acf59ccb9ffcdb21b2085c8ad5b223b8f0a25722347fa0477a80"
+      "sha256": "a0730afd50d923d7cefd2458f2d212751dc0cc265a4a3141d651579a59d70d33"
     },
     {
       "source": "tests/integration/blog_posts_test.go",
-      "sha256": "c172d9d2ef73d1663554956304016bdc33ce9b3c33ff0941f270c90b052fb43b"
+      "sha256": "3ef23c15fb85d3ce8246a38572761bca76e77bbf83db09179380ea66b821274f"
     },
     {
       "source": "tests/integration/blog_review_test.go",
@@ -2211,5 +2211,6 @@
   "thread_implemented_boundary_review": "Previously unsupported thread input now returns404 for unknown canonical root, with zero-message assertion. Encryption/fund/alternate-identity unsupported boundaries retained. Current exact unchanged declaration set.",
   "boost_bot_privacy_review": "Reviewed25 added cases and all modified fixture hashes. Boost10/bot12/editorprivacy3, two new exact restart markers. Explicit canonical schema ordering and composed HTTP/PIN/lease/privacy paths retained. Original developer fixture merely retains its existing config for saved public verification state, no identity behavior change.",
   "blog_composed_review": "Nineteen new cases:18 independently reviewed blog/admin declarations plus composed server-metadata-before-automod/privacy/rankedLatest/scheduled test. Existing source fixtures unchanged except new files. New blog schema atomic after canonical policy/account/social/post dependencies, original saved restart paired exactly.",
-  "bot_issuer_fixture_review": "Scoped bot sessions reuse retained original issuer signing/trust configuration. Same identities, exact scopes and signature verification preserved; only fixture issuer consistency changed."
+  "bot_issuer_fixture_review": "Scoped bot sessions reuse retained original issuer signing/trust configuration. Same identities, exact scopes and signature verification preserved; only fixture issuer consistency changed.",
+  "blog_fixture_contract_review": "Complete canonical messager enum configuration in composed host; blog automod test uses empty authored title to exercise verified preview fallback, preserving nonempty caller-title semantics. Assertions and exact case set retained."
 }

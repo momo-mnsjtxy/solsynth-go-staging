@@ -299,7 +299,7 @@ func TestPGBlogScheduledPublicationRechecksPermissionAndDomainIncarnation(t *tes
 func TestPGBlogBackendAliasesAndStrictPermissionRequest(t *testing.T) {
 	f := newBlogFixture(t)
 	visibility := int32(0)
-	app, e := application.NewPostgres(f.db, f.db, application.Config{Authority: f.config, PublicVisibility: &visibility, MessagerPolicy: &messagerpg.IndependentPolicy{NoneEncryptionMode: 0}, Blogs: &f.configBlog})
+	app, e := application.NewPostgres(f.db, f.db, application.Config{Authority: f.config, PublicVisibility: &visibility, MessagerPolicy: &messagerpg.IndependentPolicy{NoneEncryptionMode: 77, NotifyAll: 10, NotifyMentions: 20, NotifyNone: 30}, Blogs: &f.configBlog})
 	if e != nil {
 		t.Fatal(e)
 	}

@@ -23,7 +23,8 @@ func TestPGBlogAutomodUsesPreparedMetadataAndSafeProjection(t *testing.T) {
 	f = blogPool(t, f)
 	f.posts.WithAutomod(false)
 	verifiedBlogDomain(t, f)
-	p := createBlog(t, f, posts.Patch{Title: postString("Untrusted caller title")})
+	// Empty authored title receives the verified preview fallback before automod.
+	p := createBlog(t, f, posts.Patch{})
 	if p.Title == nil || *p.Title != marker || p.Automod == nil || !p.Automod.Hidden || len(p.Automod.Matches) != 0 || p.Automod.Review != nil {
 		t.Fatal("automod did not evaluate server metadata with safe response", p)
 	}

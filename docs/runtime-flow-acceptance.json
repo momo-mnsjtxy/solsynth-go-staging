@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Bounded canonical matching-grant mode fixes automod evidence Superuser fallback at one fresh proof/account/session/time, preserving ordinary authorization. Bot fixture retains original issuer keys. Parent independently reviewed patch; full718/87 offline verification passed, actualPG pending.",
+  "local_source_checkpoint": "Narrow blog fixture contract correction: complete owned messager enums and preview-title fallback request. Runtime keeps authored title override; no gate relaxation. Full local checks pending, actualPG pending.",
   "last_fully_passed_ci": {
     "commit": "85674a81584fc05876446b80761f6c27917ed037",
     "run": 37868140163,
@@ -14,11 +14,11 @@
     "acceptance_limit": "Known ordinary-editor automod evidence issue corrected in699;674 is CI-green, not production or whole-platform acceptance."
   },
   "latest_candidate": {
-    "commit": "8a9040ec49394d3af7f7d839ddc06e14566eb485",
-    "run": 37870281968,
+    "commit": "370301367488fb8462b231ef65163188ed78ee39",
+    "run": 37871611271,
     "required_before": 718,
     "required_after_restart": 87,
-    "status": "Running; inherits three failures diagnosed in699 until this correction.699 finished696/699before,zero skips,no restart. Two automod tests exposed Superuser fallback despite requested explicit grant; bot scoped test used unrelated issuer key."
+    "status": "Running canonical explicit-grant correction; two blog fixture corrections follow here. Original718 run713/718 before passed, five failures,no restart,zero skips."
   },
   "local_required_before": 718,
   "local_required_after_restart": 87,

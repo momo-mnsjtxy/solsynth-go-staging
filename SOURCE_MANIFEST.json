@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Require current matching grant for global automod evidence",
+  "checkpoint": "Align composed blog fixtures with configured enums and title fallback",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "8a9040ec49394d3af7f7d839ddc06e14566eb485"
+    "remote_parent": "370301367488fb8462b231ef65163188ed78ee39"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -542,8 +542,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 107901,
-      "sha256": "c1325893b44571cb4354979394da787f8b998c8c50f8f2348d94182c3e104865"
+      "bytes": 108170,
+      "sha256": "ae3f16203b09b86011af19cc707b313eb53bfe106f40c78455ab8e4267983a70"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -1852,8 +1852,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 128483,
-      "sha256": "9adb90985e1ce2779c14445c2fc08fee4560aa8f3bcdd4ec303b81781f18164d"
+      "bytes": 128321,
+      "sha256": "5e0ea40caa3cd3eb25dd2fb64a6cee94e35d1bfd34b3925ddbd8a45925faefa6"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -10323,7 +10323,7 @@
     {
       "path": "scripts/integration-groups.json",
       "bytes": 93751,
-      "sha256": "673b91f223483c3384bcdb0582d55e0ece22677a25d3ecfc7ff4209f09f061dc"
+      "sha256": "34cd079f9936f3ffd4a171028f0c97e0a49d321b3ef3dfafbbbea2eafdf3073e"
     },
     {
       "path": "scripts/integration-postgres.sh",
@@ -10822,13 +10822,13 @@
     },
     {
       "path": "tests/integration/blog_automod_composition_test.go",
-      "bytes": 2579,
-      "sha256": "b869064a0760acf59ccb9ffcdb21b2085c8ad5b223b8f0a25722347fa0477a80"
+      "bytes": 2616,
+      "sha256": "a0730afd50d923d7cefd2458f2d212751dc0cc265a4a3141d651579a59d70d33"
     },
     {
       "path": "tests/integration/blog_posts_test.go",
-      "bytes": 22952,
-      "sha256": "c172d9d2ef73d1663554956304016bdc33ce9b3c33ff0941f270c90b052fb43b"
+      "bytes": 23004,
+      "sha256": "3ef23c15fb85d3ce8246a38572761bca76e77bbf83db09179380ea66b821274f"
     },
     {
       "path": "tests/integration/blog_review_test.go",

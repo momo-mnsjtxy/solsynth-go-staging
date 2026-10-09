@@ -525,15 +525,27 @@ func TestPGCouponRealmIssuerAuthority(t *testing.T) {
 			seller := enableCoupons(t, newCommerceFixture(t))
 			buyer := newCommerceFixture(t)
 			buyer.r.WithCouponPolicy(couponPolicy())
-			realm := authorityUUID(t)
-			query(t, seller.db, `INSERT INTO owned_realms(id,slug,name,account_id,created_at,updated_at) VALUES($1,$2,'Synthetic coupon realm',$3,now(),now())`, realm, "coupon-"+realm, seller.actor)
-			query(t, seller.db, `UPDATE owned_publishers SET type=1,account_id=NULL,realm_id=$2 WHERE id=$1`, seller.publisher, realm)
-			query(t, seller.db, `UPDATE wallet_v1.wallets SET account_id=NULL,realm_id=$2 WHERE id=$1`, seller.payee.ID, realm)
 			cp := createCoupon(t, seller, couponRequest(seller, "order", []string{"synthetic-widget"}))
 			o := commerceOrder(t, seller, "realm-coupon", true)
 			o, e := buyer.r.ApplyOrderCoupon(buyer.ctx, buyer.actor, o.ID, cp.ID, false)
 			if e != nil {
 				t.Fatal(e)
+			}
+			// Capture a valid direct-app quote before simulating historical ancestry
+			// conversion. Existing app credentials must then cease authorizing new
+			// issuer operations; buyer-root checkout uses its separate current proof.
+			realm := authorityUUID(t)
+			query(t, seller.db, `INSERT INTO owned_realms(id,slug,name,account_id,created_at,updated_at) VALUES($1,$2,'Synthetic coupon realm',$3,now(),now())`, realm, "coupon-"+realm, seller.actor)
+			query(t, seller.db, `UPDATE owned_publishers SET type=1,account_id=NULL,realm_id=$2 WHERE id=$1`, seller.publisher, realm)
+			query(t, seller.db, `UPDATE wallet_v1.wallets SET account_id=NULL,realm_id=$2 WHERE id=$1`, seller.payee.ID, realm)
+			if _, e = seller.r.CreateCoupon(seller.ctx, couponRequest(seller, "order", []string{"synthetic-widget"}), "denied-realm-issuer"); e == nil {
+				t.Fatal("prior app credential retained unsupported organization issuance")
+			}
+			if _, e = buyer.verifier.Authenticate(buyer.ctx, buyer.token); e != nil {
+				t.Fatal("buyer root proof invalid", e)
+			}
+			if n := commerceCount(t, seller.db, `SELECT count(*) FROM commerce_v1.coupons WHERE app_id=$1`, seller.app); n != 1 {
+				t.Fatal("denied issuance mutated coupons", n)
 			}
 			switch state {
 			case "deleted_realm":

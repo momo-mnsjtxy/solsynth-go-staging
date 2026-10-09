@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Fix anonymous thread reactions and typed owner fixtures",
+  "checkpoint": "Correct historical coupon ancestry and deleted contact fixtures",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "a8a6e600bd7f6c9f2254c47e820b2731d6a4aab9"
+    "remote_parent": "f3113b8355ec346a4f215238ab41a3164e725386"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -507,8 +507,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 102739,
-      "sha256": "49206909a291fc3f53a1ce3482222b4140431748bd2135ea9dd95c57b829078f"
+      "bytes": 103148,
+      "sha256": "cc820ea6938d22495d7e91b2dbcdf0e04b595cf78adbede94c55a71bd6c1afd7"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -1797,8 +1797,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 109089,
-      "sha256": "25c0ddc448380732b518ee30e51cfeeaf2ffebdff59d1e80f2253cbd03f9aded"
+      "bytes": 108551,
+      "sha256": "cbfaac8d4d3141ec84da6732a93998d8f3ef37663a1495eecbf8499939646294"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -9988,7 +9988,7 @@
     {
       "path": "scripts/integration-groups.json",
       "bytes": 86074,
-      "sha256": "058548e53aadc4f3d0bb1c3e36fa5aa2faf5278ace524a72bb7aad6d71668190"
+      "sha256": "8b1a4db64c56368ca070c76b74266214da5817b693371e8bd0550dc0e8e346d4"
     },
     {
       "path": "scripts/integration-postgres.sh",
@@ -10597,8 +10597,8 @@
     },
     {
       "path": "tests/integration/coupon_checkout_test.go",
-      "bytes": 24269,
-      "sha256": "d3dcb255917d5416d969e8898b100768ec28ecdd69ff0fdeb32283fb7c85dd1b"
+      "bytes": 25028,
+      "sha256": "12c4ab4bd2665a6f6d698fae9a8e9869b01eecad4121b42a58cd66b22960fed3"
     },
     {
       "path": "tests/integration/coupon_restart_test.go",
@@ -10947,8 +10947,8 @@
     },
     {
       "path": "tests/integration/shipping_test.go",
-      "bytes": 27410,
-      "sha256": "a2d47af7784f51be8181b0ce391f16490e19abc9c400238fcf59696dbba8568d"
+      "bytes": 27729,
+      "sha256": "123ae60b2ab8d7f08caf793c5ddce49c2948ac10ac7863780ddd63d98fd5f7ff"
     },
     {
       "path": "tests/integration/signin_test.go",

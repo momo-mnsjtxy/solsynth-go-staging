@@ -1,5 +1,5 @@
 {
-  "base_commit": "63e91fb37217f9f50c9798e4b24165c38326f948",
+  "base_commit": "bc8e57409d54623c20c88c052dcc4bffff1807a9",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -1734,7 +1734,7 @@
     },
     {
       "source": "tests/integration/coupon_checkout_test.go",
-      "sha256": "d3dcb255917d5416d969e8898b100768ec28ecdd69ff0fdeb32283fb7c85dd1b"
+      "sha256": "12c4ab4bd2665a6f6d698fae9a8e9869b01eecad4121b42a58cd66b22960fed3"
     },
     {
       "source": "tests/integration/coupon_restart_test.go",
@@ -2010,7 +2010,7 @@
     },
     {
       "source": "tests/integration/shipping_test.go",
-      "sha256": "a2d47af7784f51be8181b0ce391f16490e19abc9c400238fcf59696dbba8568d"
+      "sha256": "123ae60b2ab8d7f08caf793c5ddce49c2948ac10ac7863780ddd63d98fd5f7ff"
     },
     {
       "source": "tests/integration/signin_test.go",
@@ -2116,5 +2116,6 @@
   "owner_sql_fixture_review": "Explicit UUID/text casts on three synthetic owner ancestry INSERTs; exact prior case set retained. Anonymous reaction projection fix covered by existing thread before/restart plus focused local nil-transaction negative control.",
   "anonymous_thread_review": "Existing thread case expanded with anonymous/private denial, malformed nonempty identity denial, equal aggregate reactions and distinct personal reactions. Existing saved restart target unchanged; updated exact fixture/function hashes reviewed.",
   "anonymous_reaction_symbol_review": "New boundary assertion uses canonical thumb_up reaction symbol; exact changed fixture hash reviewed.",
-  "thread_implemented_boundary_review": "Previously unsupported thread input now returns404 for unknown canonical root, with zero-message assertion. Encryption/fund/alternate-identity unsupported boundaries retained. Current exact unchanged declaration set."
+  "thread_implemented_boundary_review": "Previously unsupported thread input now returns404 for unknown canonical root, with zero-message assertion. Encryption/fund/alternate-identity unsupported boundaries retained. Current exact unchanged declaration set.",
+  "coupon_contact_fixture_review": "Two fixture-only changes: deleted/foreign/missing contact errors equally nondisclosing; coupon/order/buyer quote captured under supported direct ancestry before synthetic conversion, then former app credential issuance denied and buyer root remains independently authenticated. Historical settlement still requires current realm owner and immutable captured beneficiary."
 }

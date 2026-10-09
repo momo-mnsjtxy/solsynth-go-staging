@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed opt-in seller-funded fixed-mills coupons and source-compatible ranked automod, preserving Latest bypass and non-enforcing Flag default. Independent review fixes privacy, rollback, quote drift, gift escrow and issuer waits. Actual674/84 pending. Includes reviewed canonical fixture corrections from failed625 candidate; fullgreen remains455/60. Anonymous thread hydration now omits only requester-specific reactions while retaining aggregate counts, current visibility and malformed identity denial. Owner ancestry fixtures use explicit UUID/text casts; implemented thread route missing-root expectation corrected.",
+  "local_source_checkpoint": "Bounded two-fixture correction over674; pending editor automod privacy is separate and prevents acceptance.",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,11 +12,11 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "a8a6e600bd7f6c9f2254c47e820b2731d6a4aab9",
-    "run": 37863667479,
-    "required_before": 642,
-    "required_after_restart": 82,
-    "status": "Failed:632/642 before passed,10 failed,zero skips,no restart. Four inherited625 fixture cases,three UUID/text fixture casts,two anonymous reaction runtime failures,and obsolete501 expectation for now-supported thread input. All corrected in this674 candidate; no fullgreen claim."
+    "commit": "f3113b8355ec346a4f215238ab41a3164e725386",
+    "run": 37866294259,
+    "required_before": 674,
+    "required_after_restart": 84,
+    "status": "Failed aggregate:672/674before passed;groupA339before+38restart passed;groupB333/335before and no restart;zero skips. Two fixture corrections here. Ordinary-editor automod evidence privacy correction is separately pending; this candidate is not acceptance."
   },
   "local_required_before": 674,
   "local_required_after_restart": 84,

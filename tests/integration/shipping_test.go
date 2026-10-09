@@ -156,7 +156,11 @@ func TestPGShippingAddressCRUDAndScopeIsolation(t *testing.T) {
 		t.Fatal("private address published")
 	}
 	settingsCall(t, h, "DELETE", path, f.token, "", 204)
-	settingsCall(t, h, "GET", path, f.token, "", 404)
+	deleted := settingsCall(t, h, "GET", path, f.token, "", 401)
+	missing := settingsCall(t, h, "GET", missingPath, f.token, "", 401)
+	if deleted.Body.String() != missing.Body.String() || strings.Contains(deleted.Body.String(), f.contact.ID) || strings.Contains(deleted.Body.String(), "Synthetic Recipient") {
+		t.Fatal("deleted contact existence or address disclosed")
+	}
 	replacement, e := f.contacts.CreateContact(f.ctx, f.token, signin.ContactInput{Type: 2, Content: "Synthetic Recipient, 2 Test Way, Example Town"})
 	if e != nil || replacement.ID == f.contact.ID {
 		t.Fatal("deleted address identity revived", e)

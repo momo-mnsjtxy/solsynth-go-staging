@@ -29,7 +29,7 @@ type paymentProof struct {
 }
 
 func paymentOperation(purpose, binding string) bool {
-	if purpose != accounts.PaymentTransfer && purpose != accounts.PaymentOrder && purpose != accounts.PaymentFundCreate && purpose != accounts.PaymentFundContribute {
+	if purpose != accounts.PaymentTransfer && purpose != accounts.PaymentOrder && purpose != accounts.PaymentFundCreate && purpose != accounts.PaymentFundContribute && purpose != accounts.PaymentExchange {
 		return false
 	}
 	b, e := hex.DecodeString(binding)

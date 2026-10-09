@@ -29,6 +29,8 @@ type Repository struct {
 	now         func() time.Time
 	authority   *authoritypg.TransactionGuard
 	realmWrites RealmWritePolicy
+	realmReads  RealmReadPolicy
+	exchange    *accounts.ExchangePolicy
 }
 
 func New(db *sql.DB) *Repository { return &Repository{db: db, now: time.Now} }

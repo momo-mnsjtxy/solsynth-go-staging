@@ -50,6 +50,7 @@ func walletHandler(db *sql.DB, id identity, payments *walletpg.PINVerifier, guar
 		repo = walletpg.New(db) // Explicit separate-pool non-atomic opt-in.
 	}
 	repo.WithRealmWritePolicy(canonicalRealmWrites{realms})
+	repo.WithRealmReadPolicy(canonicalRealmWrites{realms})
 	repo.WithPaymentAuthorization(payments)
 	handler := accounts.NewAuthorityHandler(repo, proofIdentity{id}, func(p authority.Principal) accounts.Principal {
 		return accounts.Principal{AccountID: p.Account.ID, SessionID: p.Session.ID}
@@ -78,4 +79,18 @@ func (c canonicalRealmWrites) AuthorizeRealmWrite(ctx context.Context, tx *sql.T
 
 func (a proofIdentity) Require(ctx context.Context, keys ...string) (authority.Principal, error) {
 	return a.require(ctx, keys...)
+}
+
+func (c canonicalRealmWrites) AuthorizeRealmRead(ctx context.Context, tx *sql.Tx, actor, realm string) error {
+	if c.repository == nil {
+		return accounts.ErrUnavailable
+	}
+	_, err := c.repository.RealmRoleForWriteInTransaction(ctx, tx, actor, realm)
+	if errors.Is(err, social.ErrForbidden) || errors.Is(err, social.ErrNotFound) {
+		return accounts.ErrNotFound
+	}
+	if err != nil {
+		return accounts.ErrUnavailable
+	}
+	return nil
 }

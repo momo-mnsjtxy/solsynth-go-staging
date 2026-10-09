@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -38,7 +39,22 @@ func TestPGFederationDeliverySavedRestartPersistence(t *testing.T) {
 		SignedAt                              time.Time
 	}
 	var saved savedState
-	if fixtureRestartPhase(t) == "before" {
+	phase := fixtureRestartPhase(t)
+	// A global delivery worker in another fixture must not consume this saved
+	// ambiguous attempt before the actual restart. Every pool in this test uses
+	// the same isolated schema; the after phase only opens the existing schema.
+	const schema = "federation_delivery_restart_candidate"
+	guardDB := database(t)
+	if phase == "before" {
+		query(t, guardDB, `CREATE SCHEMA `+schema)
+	} else {
+		var exists bool
+		if err := guardDB.QueryRow(`SELECT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname=$1)`, schema).Scan(&exists); err != nil || !exists {
+			t.Fatal("original restart schema missing", err)
+		}
+	}
+	t.Setenv("PG_TEST_DSN", os.Getenv("PG_TEST_DSN")+" search_path="+schema)
+	if phase == "before" {
 		x := newFederationFixtureWithAuthority(t, true, func(c *authority.Config) {
 			initial, wall := c.Now().UTC(), time.Now()
 			c.AccessTTL = time.Hour
@@ -86,13 +102,13 @@ func TestPGFederationDeliverySavedRestartPersistence(t *testing.T) {
 	loadRestartFixture(t, "federation-delivery-restart.json", &saved)
 	db := database(t)
 	for _, item := range []struct {
-		statement string
-		arg       any
-		want      string
+		name, statement string
+		arg             any
+		want            string
 	}{
-		{`SELECT row_to_json(d)::text FROM owned_federation_deliveries d WHERE id=$1`, saved.Delivery, saved.DeliveryRow},
-		{`SELECT row_to_json(s)::text FROM owned_authority_sessions s WHERE id=$1`, saved.Session, saved.SessionRow},
-		{`SELECT row_to_json(p)::text FROM owned_federation_publishers p WHERE publisher_id=$1`, saved.Publisher, saved.PublisherRow},
+		{"delivery", `SELECT row_to_json(d)::text FROM owned_federation_deliveries d WHERE id=$1`, saved.Delivery, saved.DeliveryRow},
+		{"session", `SELECT row_to_json(s)::text FROM owned_authority_sessions s WHERE id=$1`, saved.Session, saved.SessionRow},
+		{"publisher", `SELECT row_to_json(p)::text FROM owned_federation_publishers p WHERE publisher_id=$1`, saved.Publisher, saved.PublisherRow},
 	} {
 		var got string
 		var expected, actual any
@@ -100,7 +116,7 @@ func TestPGFederationDeliverySavedRestartPersistence(t *testing.T) {
 			t.Fatal(e)
 		}
 		if json.Unmarshal([]byte(got), &actual) != nil || json.Unmarshal([]byte(item.want), &expected) != nil || !reflect.DeepEqual(actual, expected) {
-			t.Fatal("original persisted row changed")
+			t.Fatal("original persisted row changed", item.name)
 		}
 	}
 	config := restoreAuthoritySnapshot(t, saved.Authority)

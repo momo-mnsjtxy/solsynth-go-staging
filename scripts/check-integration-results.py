@@ -5,6 +5,18 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGBackendWalletReportingLifecyclePrivacyAndDates",
+        "TestPGWalletReportingOrderPaginationAndSettlement",
+        "TestPGBackendWalletReportingFundsDoNotDoubleCount",
+        "TestPGWalletReportingWaitsForCurrentAuthority",
+        "TestPGBackendWalletReportingRestartPersistence",
+        "TestPGBackendWalletExchangePINReplayAndConservation",
+        "TestPGWalletExchangeAtomicRollbackAndConcurrentLedgerIsolation",
+        "TestPGWalletExchangeCurrentPolicyAndExpiredPaymentProof",
+        "TestPGWalletExchangeRealmGrantExpiresDuringWalletWait",
+        "TestPGBackendWalletExchangeDisabledAndTreasuryLiquidity",
+        "TestPGBackendWalletExchangeOriginalProofRestartPersistence",
+
         "TestPGSurveySubscriptionsAuthoredRoutesAndPrivacy",
         "TestPGSurveyNotificationsAtomicReplayAndRollback",
         "TestPGSurveyNotificationsCurrentAudience",
@@ -906,6 +918,9 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGBackendWalletReportingRestartPersistence",
+        "TestPGBackendWalletExchangeOriginalProofRestartPersistence",
+
         "TestPGSurveySubscriptionsRestartPersistence",
         "TestPGActivitySavedRestartPersistence",
 

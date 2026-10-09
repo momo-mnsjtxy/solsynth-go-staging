@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Add reviewed survey subscription and local notification flows",
+  "checkpoint": "Add reviewed wallet reporting and opt-in treasury exchange; isolate federation restart fixture",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "641a503b1173cb04888f45bbbf5fe0cceb238a52"
+    "remote_parent": "9ed610e11e50b0cf41e00c127aa4d5b38b089195"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -223,8 +223,8 @@
     },
     {
       "path": "cmd/backend/main.go",
-      "bytes": 17018,
-      "sha256": "ae5d476d1574005d27455e79da54a53e91ed6bcf31aa729b93b9ee972310d84e"
+      "bytes": 17625,
+      "sha256": "b0c773dc6c95a2d36759d17ccf61746ec00f345b9cec2354794e6e18cb10e219"
     },
     {
       "path": "cmd/backend/passkit_config.go",
@@ -310,6 +310,16 @@
       "path": "cmd/backend/verification_config.go",
       "bytes": 3700,
       "sha256": "d7ecb0672f0ea2e573b7846a6e43ae82884f0c2f48a117f94f582f117dda56d4"
+    },
+    {
+      "path": "cmd/backend/wallet_exchange_config.go",
+      "bytes": 2476,
+      "sha256": "0730d2f3e50ad5407bd52f5611070af59613afd27c65c0385de41862dcfa954d"
+    },
+    {
+      "path": "cmd/backend/wallet_exchange_config_test.go",
+      "bytes": 4249,
+      "sha256": "43f9d6ffbf832a112295e8d97317e80bdd8d58a98fb0d912384b49d77bb3fcde"
     },
     {
       "path": "cmd/chat-service/main.go",
@@ -618,8 +628,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 133054,
-      "sha256": "c645591fb83aa6652b43249982a48abef6c68ab6d298226878be9916c2510e74"
+      "bytes": 136849,
+      "sha256": "870268d59462c14ef93bbbd61e614ff430d6399dfbd9a4630de6fe95df96770a"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -2003,8 +2013,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 210881,
-      "sha256": "5434badee3cdf72a5a38ae6ab78e228f26eed15221f91731cfab608a19c69a54"
+      "bytes": 211618,
+      "sha256": "9a7f2cb9618e30583fd07da65eae9d37f9fa6baa51e2573619e2fb1ba067e6a5"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -2097,6 +2107,11 @@
       "sha256": "bc397eb7ab77d7a02bce64b1c53d553f56be91286644d6c2ddff4ce8ec31e04f"
     },
     {
+      "path": "docs/wallet-reporting-continuation.md",
+      "bytes": 6535,
+      "sha256": "7ae767d001fad4c3bb24c5f11b77ecc0ea4e13dfa28dba575b7fed5c0c23533d"
+    },
+    {
       "path": "docs/wallet-transactions-continuation.md",
       "bytes": 14449,
       "sha256": "89716665062dca99a0ad1b6654e840884a160fe382542d473466292bdb553471"
@@ -2105,6 +2120,11 @@
       "path": "docs/wallet-transfer-requests-continuation.md",
       "bytes": 3316,
       "sha256": "fd673454fab2ce4cb0d5179bc22e4ed1f2e6d680be82fc5ec26aedd9094e016e"
+    },
+    {
+      "path": "docs/wallet-treasury-exchange.md",
+      "bytes": 8853,
+      "sha256": "3196b802c472630159404b2d083eb451613577ef874f259cf3d903defe96dddb"
     },
     {
       "path": "examples/federation-public-admission.json",
@@ -2313,8 +2333,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 35095,
-      "sha256": "e6dd2a8a66d212469d24d50fee01d5da83471c41a46111f9e3d05d776486a219"
+      "bytes": 35696,
+      "sha256": "d757a9610b850b3998d89c95e3844ae8918aab3ac352864d0e6650db962660c9"
     },
     {
       "path": "internal/application/blog_routing_test.go",
@@ -2423,8 +2443,8 @@
     },
     {
       "path": "internal/application/public.go",
-      "bytes": 1670,
-      "sha256": "5b309bbf146e1748ae450b3f9735eb10a9ce95eee085a911989ee04782082572"
+      "bytes": 2664,
+      "sha256": "b75e83ac2ccd43eda884ace7d270a738ecf685ef27215ccea6a91d7c961607b1"
     },
     {
       "path": "internal/application/public_test.go",
@@ -2448,8 +2468,8 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 10390,
-      "sha256": "1b1551edd17d9f78140e7e1bd7a32b938d4c602b22110db59dcdd19f5cefd09d"
+      "bytes": 10462,
+      "sha256": "1c6b4071e2e1d9231a027bd8666e5f86b8c6fdf9aaf74c42586f6dbe361b0a0d"
     },
     {
       "path": "internal/application/realm_boosts.go",
@@ -2463,8 +2483,8 @@
     },
     {
       "path": "internal/application/router.go",
-      "bytes": 21830,
-      "sha256": "ff5c067707bc68ed6b361d2db95567530792e2ab6b450241666e4c41933585a4"
+      "bytes": 21956,
+      "sha256": "ecf14ce2f7519549e0e3a9fd0aa2c547d68347b017dbcf1944c07fc05ef0db0c"
     },
     {
       "path": "internal/application/router_test.go",
@@ -2503,8 +2523,13 @@
     },
     {
       "path": "internal/application/wallet.go",
-      "bytes": 3069,
-      "sha256": "63a8077ce826a3fd60901cda89edbc48fd1ca5acac63b69b804d486793d79171"
+      "bytes": 3557,
+      "sha256": "8ae631fde4057b41539e090db90a0ae3f5b7481ada70209694130f245bd71011"
+    },
+    {
+      "path": "internal/application/wallet_exchange_test.go",
+      "bytes": 1774,
+      "sha256": "e99e416960207fa06dc836650a97f0fe064e24616dcf2d1e9d8927b292812c1b"
     },
     {
       "path": "internal/apppg/board_discovery.go",
@@ -4892,6 +4917,16 @@
       "sha256": "52e9dae909bebc0f1ca7e4aa75bd213ebee32fb427b6489611c3d79c80ed804b"
     },
     {
+      "path": "internal/walletpg/exchange.go",
+      "bytes": 9808,
+      "sha256": "3a26b4572dd1e29e5a17d295fa28ee21c9fe35770584d1de54a414a98c3a6fc2"
+    },
+    {
+      "path": "internal/walletpg/exchange_schema.sql",
+      "bytes": 4425,
+      "sha256": "e21d0a521a402a8cbaa4c59323708a021133717bb2888a1fdd31335f35c77fdd"
+    },
+    {
       "path": "internal/walletpg/funds.go",
       "bytes": 27273,
       "sha256": "71dd5fadb42bddf44fed65e8c1eb6ec3fa5b7531786951372c79974ebfbaf4a0"
@@ -4908,8 +4943,8 @@
     },
     {
       "path": "internal/walletpg/payment_authorization.go",
-      "bytes": 7604,
-      "sha256": "4c4341ce2cefca03e2415b6592a8bb9cca8015ff3a0edb91386289868c076743"
+      "bytes": 7643,
+      "sha256": "824a62cc2696f182249e606e81fdb04ad9f5350f2b0a0b7f9d0abc4d6a233c48"
     },
     {
       "path": "internal/walletpg/payment_authorization_test.go",
@@ -4952,9 +4987,19 @@
       "sha256": "3f715f10882123ee59c2779c6531f3de7ac45ce79760dcc036289ee2d41f8d0c"
     },
     {
+      "path": "internal/walletpg/reporting.go",
+      "bytes": 11905,
+      "sha256": "a198054198fdab02a357268ca65aa468cdf84d94a684f8291af2e9879aa599ba"
+    },
+    {
+      "path": "internal/walletpg/reporting_test.go",
+      "bytes": 2242,
+      "sha256": "5521bc8ace3884ab70f27a5a9bb6738f2d07fe5e58d239912f3ff0f3d49e6654"
+    },
+    {
       "path": "internal/walletpg/repository.go",
-      "bytes": 12568,
-      "sha256": "78ebaf68eac8f7356a53fd86a8bcd9ad23eaf231681e909a296d093888cd4bc0"
+      "bytes": 12635,
+      "sha256": "79c4e4a490585a7a0f91291179f83dbc52e98f2c7f452c63436ec59cb7d6d477"
     },
     {
       "path": "internal/walletpg/schema.sql",
@@ -10442,6 +10487,16 @@
       "sha256": "88d510ecdfb33caf45023c46b56c35d3701d5c912b910632dbb81f23791f44ae"
     },
     {
+      "path": "ports/wallet/accounts/exchange.go",
+      "bytes": 8063,
+      "sha256": "f11eec2561a2ed778b147be589426114b87ce1169cb32f082d95d90deaaf9d7b"
+    },
+    {
+      "path": "ports/wallet/accounts/exchange_test.go",
+      "bytes": 3349,
+      "sha256": "c090f0edfb747c68a19ba9cd4f7f03295c3959cc5ec887095170cbc0d6d247f9"
+    },
+    {
       "path": "ports/wallet/accounts/fund_service.go",
       "bytes": 4739,
       "sha256": "6ced1c2336d5a355bbed57c04a5be2bf0e3abf813b4128a8fba8f6ca7df00af5"
@@ -10463,8 +10518,8 @@
     },
     {
       "path": "ports/wallet/accounts/http.go",
-      "bytes": 6898,
-      "sha256": "d6573074d01d148611ed7d0498ae43c6b6c394d7a767486e04a70d55fc37d7c9"
+      "bytes": 7251,
+      "sha256": "734de985c28ce9b030cfd71b4da1dc89e0473f90c2105b4168aac0e72fee2cc8"
     },
     {
       "path": "ports/wallet/accounts/http_test.go",
@@ -10500,6 +10555,16 @@
       "path": "ports/wallet/accounts/payment_proof.go",
       "bytes": 420,
       "sha256": "6e803dbb2adc8468a4e0cc7e92d16576a29652cac613ee06a3d28eaf35ff8f42"
+    },
+    {
+      "path": "ports/wallet/accounts/reporting.go",
+      "bytes": 7581,
+      "sha256": "e5777baddf80cec74a0942442a265d40a81f657cb747f451bb60cf80242dfd4b"
+    },
+    {
+      "path": "ports/wallet/accounts/reporting_test.go",
+      "bytes": 2730,
+      "sha256": "4ae6ab80a63be9d9f63987f8f3bcbea590d9acaae0d38673fd97dea9cc2d6f72"
     },
     {
       "path": "ports/wallet/accounts/service.go",
@@ -11018,8 +11083,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 56090,
-      "sha256": "5edcbae7844363f935ed5d23db9595cc14b34cc4a6c811da8b676ab7c3b71e7a"
+      "bytes": 56927,
+      "sha256": "0201b9432daff50ca3968b61ff9fbcb3439c8716765ddf28dd4c93abd477beab"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -11043,13 +11108,13 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 116359,
-      "sha256": "79b14af7d1501fb945ab6f2d67ece20046973397d4b58d53be3236c9b0b7f599"
+      "bytes": 118447,
+      "sha256": "bada7e37c9ef5927253b0399345938c8863061717d18881bd07386b760d737b2"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 13499,
-      "sha256": "54353fb5f67a998d6a847600511bb4f0f614f352ff8161f377f43a31d793462f"
+      "bytes": 13589,
+      "sha256": "30f42bdc3550680553ba7182020c528855fa0e408d3112a0132e0e18e3b65017"
     },
     {
       "path": "scripts/integration_groups.py",
@@ -11088,8 +11153,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 23710,
-      "sha256": "eea54a8a12415d9a778b160f41d7fec6c088eec3d14b6bdc54bf2ed691c5ea1a"
+      "bytes": 23752,
+      "sha256": "fc92e3048063e554522e0b419185942e69ecf31baf0e4c0921a05d74612b9d81"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -11783,8 +11848,8 @@
     },
     {
       "path": "tests/integration/federation_delivery_restart_test.go",
-      "bytes": 7678,
-      "sha256": "b04440cfba6146c047e43455f013244639957c6f767c726cf474748734d17bde"
+      "bytes": 8444,
+      "sha256": "061d5bb5074ff6ef5be7397d5cfc1a16776c1e7097cb331fedaaac5b6c395ac3"
     },
     {
       "path": "tests/integration/federation_discovery_review_test.go",
@@ -12222,6 +12287,11 @@
       "sha256": "22ff163ab9b9754e3d78dc77545b67d60f211d46f7f156d28ec5e1e22d4b019a"
     },
     {
+      "path": "tests/integration/wallet_exchange_test.go",
+      "bytes": 27193,
+      "sha256": "620e3f5e92cce1fa3c3ac6d1b57a4116bfc27d87e2a91fe2efd3da2f9e199c48"
+    },
+    {
       "path": "tests/integration/wallet_funds_test.go",
       "bytes": 26464,
       "sha256": "0a9dd4a21e4d98465a221c4850b3924a12fe8486b2d7a5181a2f82d1b4001bc4"
@@ -12230,6 +12300,11 @@
       "path": "tests/integration/wallet_managed_index_test.go",
       "bytes": 4782,
       "sha256": "b3b10fa3594a915cc5d294094c8bcd30adf4c8d2a00a989f71f2a8f6cea05a7c"
+    },
+    {
+      "path": "tests/integration/wallet_reporting_test.go",
+      "bytes": 14129,
+      "sha256": "46e6298eb2a1033922dc1ffee521121d54193e916145241317fe61eb053a6e20"
     },
     {
       "path": "tests/integration/wallet_test.go",

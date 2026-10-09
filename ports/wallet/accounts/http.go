@@ -141,6 +141,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	suffix := strings.TrimPrefix(path, "/api/wallets")
+	if h.reportingHTTP(w, r, p, suffix) {
+		return
+	}
 	if h.fundHTTP(w, r, p, suffix) {
 		return
 	}
@@ -159,6 +162,15 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		request := CreateTransferRequest{ExpirationHours: 24}
 		if e = decode(w, r, &request, false); e == nil {
 			value, e = h.Service.CreateTransferRequest(ctx, p, request)
+		}
+	case r.Method == "POST" && suffix == "/exchange":
+		var request ExchangeRequest
+		if len(r.Header.Values("Idempotency-Key")) != 1 {
+			e = ErrInvalid
+			break
+		}
+		if e = decode(w, r, &request, false); e == nil {
+			value, e = h.Service.Exchange(ctx, p, request, r.Header.Get("Idempotency-Key"))
 		}
 	case r.Method == "POST" && suffix == "/transfer":
 		var request TransferRequest

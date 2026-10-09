@@ -328,7 +328,7 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			target = h.messager
 		}
 	}
-	if h.public != nil && publicCatalogRoute(canonical) && (service == "wallet" || service == "passport" || service == "api") {
+	if h.public != nil && !(h.wallet != nil && r.Method == "POST" && strings.EqualFold(strings.TrimSuffix(canonical, "/"), "/api/wallets/exchange")) && publicCatalogRoute(canonical) && (service == "wallet" || service == "passport" || service == "api") {
 		target = h.public
 	}
 	if h.accountSettings != nil && (service == "api" || service == "passport") && accountsettings.RouteMatches(canonical) {

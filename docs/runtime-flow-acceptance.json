@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed survey subscription routes and durable local answer notifications are integrated with current audience and source-owner checks. Combined offline and actual PostgreSQL validation pending.",
+  "local_source_checkpoint": "Reviewed wallet statistics, overview, linked order history and opt-in funded treasury exchange integrated. Combined offline checks running; actual PostgreSQL/restart pending.",
   "last_fully_passed_ci": {
     "commit": "8d00c0cee85ebd10328ed5d51fa0e876141bf411",
     "run": 37878791797,
@@ -14,13 +14,13 @@
     "acceptance_limit": "Immutable implementation CI-green; remaining original flows, configured external providers and production rollout are separate."
   },
   "latest_candidate": {
-    "commit": "32c1cc5225d138f72a66aa30f4a596006649eecd",
-    "required_before": 816,
-    "required_after_restart": 97,
-    "status": "Published narrow, independently reviewed quote security-generation correction and validation fixture repairs; actual CI pending."
+    "commit": "9ed610e11e50b0cf41e00c127aa4d5b38b089195",
+    "required_before": 842,
+    "required_after_restart": 100,
+    "status": "Published reviewed survey subscriptions/local notifications candidate; actual CI pending. Inherits known Tombstone cleanup and saved lease-fixture isolation failures from816."
   },
-  "local_required_before": 842,
-  "local_required_after_restart": 100,
+  "local_required_before": 853,
+  "local_required_after_restart": 102,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2128,7 +2128,7 @@
     "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
-    "as_of": "2026-10-09T04:20:00Z",
+    "as_of": "2026-10-09T04:45:00Z",
     "authoritative_for": "Current source-backed remaining flow bundles, implementation candidates and operational gaps; no percentage or endpoint-total inference.",
     "families": [
       {
@@ -3439,35 +3439,6 @@
         "next_slice": "Finish/review remote admission first; then bounded client read/follow adapter. Keep server/realm/private/media crawls and administrative key mutation separate with explicit trust history."
       },
       {
-        "id": "wallet_exchange_analytics",
-        "families": [
-          "wallet.ledger",
-          "wallet.reporting"
-        ],
-        "remaining": "Currency exchange mutation and wallet stats/overview/order-history routes remain missing.",
-        "source": [
-          {
-            "path": "DysonNetwork.Wallet/Payment/WalletController.cs",
-            "blob": "10650f1a12912532d70f6ea422a69557a508a224",
-            "methods": "GetWalletStats@164; GetOrders@429; ExchangeCurrency@656; GetWalletOverview@1275",
-            "route_examples": [
-              "GET /api/wallets/stats",
-              "GET /api/wallets/orders",
-              "POST /api/wallets/exchange"
-            ],
-            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
-          }
-        ],
-        "runtime_owner_or_rejection": [
-          "ports/wallet/accounts/http.go",
-          "ports/wallet/exchangecatalog",
-          "internal/walletpg",
-          "internal/commercepg"
-        ],
-        "current_boundary": "GET exchange catalogue is implemented; POST exchange is not. Canonical transfer/fund/order/PIN flows do not supply these analytics routes.",
-        "next_slice": "Deliver read-only stats/overview/order history first. Exchange requires exact configured rate/rounding, atomic double-entry conservation, fresh PIN/payment authorization and replay policy."
-      },
-      {
         "id": "wallet_financial_admin",
         "families": [
           "wallet.orders_payments",
@@ -3693,8 +3664,38 @@
           "ports/sphere/surveys/http.go",
           "internal/surveypg/repository.go"
         ],
-        "current_boundary": "Survey CRUD/lifecycle/answers/feedback/results are implemented. The three subscription paths are not registered; NotifySubscribers=true is explicitly rejected. Standalone sticker operations are implemented within their documented owned policy; third-party assets/migration remain separate.",
-        "next_slice": "Add idempotent current-audience subscriptions and canonical notification outbox production; retain privacy/withdrawal/answer-anonymity boundaries.",
+        "current_boundary": "All three authored subscription routes are registered; notify_subscribers persists, answer revision queue and local notification projection are transactional and audience-checked. External push, retention administration and per-question attachments remain separate.",
+        "next_slice": "Actual PG/restart validation of842 candidate.",
+        "status": "implemented_pending_actual_PG"
+      },
+      {
+        "id": "wallet_exchange_analytics",
+        "families": [
+          "wallet.ledger",
+          "wallet.reporting"
+        ],
+        "remaining": "Reporting and opt-in canonical funded treasury exchange implemented; original exchange caller needs stable idempotency/PIN integration, mixed-currency total consumers need nullable/per-currency rendering.",
+        "source": [
+          {
+            "path": "DysonNetwork.Wallet/Payment/WalletController.cs",
+            "blob": "10650f1a12912532d70f6ea422a69557a508a224",
+            "methods": "GetWalletStats@164; GetOrders@429; ExchangeCurrency@656; GetWalletOverview@1275",
+            "route_examples": [
+              "GET /api/wallets/stats",
+              "GET /api/wallets/orders",
+              "POST /api/wallets/exchange"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/wallet/accounts/http.go",
+          "ports/wallet/exchangecatalog",
+          "internal/walletpg",
+          "internal/commercepg"
+        ],
+        "current_boundary": "Authored stats/overview/order-history routes wired with final scope/current proof checks. Owned treasury exchange requires existing funded treasury and explicit immutable active policy; absent config disabled. No null-counterparty minting, inferred fee or live transaction.",
+        "next_slice": "Actual PG/restart validation and later client adaptation; no production activation.",
         "status": "implemented_pending_actual_PG"
       }
     ],
@@ -3871,6 +3872,14 @@
           "internal/application/router.go:modules",
           "docs/operation-coverage-plan-parts/rpc_implementations-0001.json",
           "inventory/operation-sources/DysonNetwork.Sphere/Reader/WebReaderGrpcService.cs"
+        ]
+      },
+      {
+        "id": "wallet_funded_treasury_exchange_and_mixed_currency_reports",
+        "difference": "Opt-in existing treasury and exact immutable rates replace source null counterparties. Both funded legs conserve each currency with exact rational remainder. Original exchange caller lacks mandatory stable Idempotency-Key/PIN adaptation; no random server retry identity. Mixed-currency totals are null plus per-currency amounts, not fake conversions. No full original flow compatibility claim.",
+        "evidence": [
+          "docs/wallet-treasury-exchange.md",
+          "docs/wallet-reporting-continuation.md"
         ]
       }
     ],

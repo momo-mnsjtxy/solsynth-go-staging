@@ -30,6 +30,7 @@ import (
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/media"
+	walletaccounts "solsynth.local/go-migration/ports/wallet/accounts"
 	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
 )
 
@@ -76,6 +77,7 @@ func run(args []string, out io.Writer) error {
 	awardSettings := livestreamAwardFlags(fs)
 	publisherSettings := publisherCommerceFlags(fs)
 	postAwardSettings := postAwardFlags(fs)
+	walletExchangeSettings := walletExchangeFlags(fs)
 	realmBoostSettings := realmBoostFlags(fs)
 	realmMemberSettings := realmMemberFlags(fs)
 	botExecutionSettings := botExecutionFlags(fs)
@@ -280,6 +282,9 @@ func run(args []string, out io.Writer) error {
 	if err = postAwardSettings.apply(&appConfig); err != nil {
 		return err
 	}
+	if err = walletExchangeSettings.apply(&appConfig); err != nil {
+		return err
+	}
 	if err = realmBoostSettings.apply(&appConfig); err != nil {
 		return err
 	}
@@ -315,6 +320,15 @@ func run(args []string, out io.Writer) error {
 		return err
 	}
 	if !*serve {
+		if appConfig.WalletExchange != nil {
+			policy, e := walletaccounts.NewExchangePolicy(*appConfig.WalletExchange)
+			if e != nil {
+				return errWalletExchangeConfig
+			}
+			if _, e = fmt.Fprintf(out, "Wallet exchange policy version=%s sha256=%s. Active policy installation and treasury funding are separate operator actions.\n", policy.Config().Version, policy.Digest()); e != nil {
+				return e
+			}
+		}
 		_, err = fmt.Fprintln(out, "Backend configuration validated. No database connection, schema, account, key, grant, listener or transfer was created.")
 		return err
 	}

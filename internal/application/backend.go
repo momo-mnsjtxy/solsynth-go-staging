@@ -94,6 +94,7 @@ import (
 	"solsynth.local/go-migration/ports/sphere/taxonomy"
 	"solsynth.local/go-migration/ports/sphere/timeline"
 	"solsynth.local/go-migration/ports/sphere/translation"
+	walletaccounts "solsynth.local/go-migration/ports/wallet/accounts"
 	"solsynth.local/go-migration/ports/wallet/commerce"
 	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
 	"solsynth.local/go-migration/ports/wallet/merchants"
@@ -102,7 +103,8 @@ import (
 // Config is injected by the embedding application. Enum values are mandatory
 // explicit database-policy decisions; zero is never silently treated as public.
 type Config struct {
-	ChatSearchPerks map[string]int // Explicit canonical subscription-to-perk policy.
+	WalletExchange  *walletaccounts.ExchangeConfig // Explicit opt-in funded treasury policy; no provisioning.
+	ChatSearchPerks map[string]int                 // Explicit canonical subscription-to-perk policy.
 	RealmMembers    *realmmemberpg.Config
 	BotExecution    *BotExecutionConfig
 	RealmBoosts     *realmboostpg.Config
@@ -208,6 +210,17 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	}
 	if c.AppleWallet != nil && authorityDB != db {
 		return nil, errors.New("Apple Wallet requires canonical same-pool authority")
+	}
+	var exchangePolicy *walletaccounts.ExchangePolicy
+	if c.WalletExchange != nil {
+		if authorityDB != db {
+			return nil, errors.New("wallet exchange requires canonical same-pool authority")
+		}
+		var e error
+		exchangePolicy, e = walletaccounts.NewExchangePolicy(*c.WalletExchange)
+		if e != nil {
+			return nil, errors.New("invalid explicit wallet exchange policy")
+		}
 	}
 	aStore := authoritypg.New(authorityDB)
 	v, err := authority.NewVerifier(aStore, c.Authority)
@@ -417,7 +430,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	}
 	ph := posts.NewHandler(postRepository, postIdentity{identity})
 	wh, wallet := walletHandler(db, identity, paymentPIN, guard, socialRepo)
-	wallet.WithClock(c.Authority.Now)
+	wallet.WithClock(c.Authority.Now).WithExchangePolicy(exchangePolicy)
 	var signinHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "SIGNIN_ISSUER_UNCONFIGURED") })
 	var signinService *signin.Service
 	if c.Signin != nil {

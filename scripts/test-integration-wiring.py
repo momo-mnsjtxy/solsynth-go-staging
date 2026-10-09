@@ -27,6 +27,7 @@ REQUIRED_SCHEMAS = {
  "internal/chatmediapg/schema.sql",
  "internal/profilemediapg/schema.sql",
  "internal/walletpg/funds_schema.sql",
+ "internal/walletpg/exchange_schema.sql",
  "internal/postawardpg/schema.sql",
  "internal/sponsorshippg/schema.sql",
  "internal/publisherratingpg/schema.sql",

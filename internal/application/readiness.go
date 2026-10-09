@@ -87,6 +87,9 @@ func (b *Backend) Ready(ctx context.Context) error {
 		return err
 	}
 	if b.wallet != nil {
+		if err := b.wallet.ExchangeReady(ctx); err != nil {
+			return err
+		}
 		if err := b.wallet.FundsReady(ctx); err != nil {
 			return err
 		}

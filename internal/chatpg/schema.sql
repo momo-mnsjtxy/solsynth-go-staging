@@ -102,3 +102,17 @@ BEGIN RAISE EXCEPTION 'chat redirect receipt is immutable'; END; $$;
 DROP TRIGGER IF EXISTS owned_chat_redirects_immutable ON owned_chat_redirects;
 CREATE TRIGGER owned_chat_redirects_immutable BEFORE UPDATE ON owned_chat_redirects
  FOR EACH ROW EXECUTE FUNCTION owned_chat_redirects_immutable();
+
+-- Authored shareable room slug and member nickname continuation. The scope key
+-- tracks the canonical room realm association in the same room transaction.
+ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_slug varchar(128);
+ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_slug_realm_id uuid;
+DO $$ BEGIN IF NOT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='chat_rooms'::regclass AND conname='owned_chat_slug_shape') THEN ALTER TABLE chat_rooms ADD CONSTRAINT owned_chat_slug_shape CHECK(owned_slug IS NULL OR owned_slug ~ '^[a-z0-9]([a-z0-9_.-]*[a-z0-9])?$'); END IF; END $$;
+CREATE UNIQUE INDEX IF NOT EXISTS owned_chat_owner_slug ON chat_rooms(owned_owner_id,owned_slug) WHERE owned_slug IS NOT NULL AND owned_slug_realm_id IS NULL AND deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS owned_chat_realm_slug ON chat_rooms(owned_slug_realm_id,owned_slug) WHERE owned_slug IS NOT NULL AND owned_slug_realm_id IS NOT NULL AND deleted_at IS NULL;
+ALTER TABLE chat_members ADD COLUMN IF NOT EXISTS owned_nick varchar(1024);
+CREATE TABLE IF NOT EXISTS owned_chat_detail_audit(
+ id bigserial PRIMARY KEY, actor_id uuid NOT NULL REFERENCES owned_authority_accounts(id),
+ room_id uuid NOT NULL REFERENCES chat_rooms(id), member_id uuid REFERENCES chat_members(id),
+ message_id uuid REFERENCES chat_messages(id), action text NOT NULL, reason varchar(4096), occurred_at timestamptz NOT NULL
+);

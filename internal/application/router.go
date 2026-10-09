@@ -309,7 +309,7 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			target = h.posts
 		}
 	}
-	if h.accounts != nil && (under(canonical, "/api/publishers") || under(canonical, "/api/accounts") && !boardRoute(canonical) && canonical != "/api/accounts/me/pin-status") && (service == "sphere" || service == "passport" || service == "api") {
+	if h.accounts != nil && (canonical == "/api/account/publishing" || under(canonical, "/api/publishers") || under(canonical, "/api/accounts") && !boardRoute(canonical) && canonical != "/api/accounts/me/pin-status") && (service == "sphere" || service == "passport" || service == "api") {
 		target = h.accounts
 	}
 	if h.blogs != nil && (service == "sphere" || service == "api") && blogshttp.Handles(canonical) {

@@ -105,11 +105,12 @@ import (
 // Config is injected by the embedding application. Enum values are mandatory
 // explicit database-policy decisions; zero is never silently treated as public.
 type Config struct {
-	WalletExchange  *walletaccounts.ExchangeConfig // Explicit opt-in funded treasury policy; no provisioning.
-	ChatSearchPerks map[string]int                 // Explicit canonical subscription-to-perk policy.
-	RealmMembers    *realmmemberpg.Config
-	BotExecution    *BotExecutionConfig
-	RealmBoosts     *realmboostpg.Config
+	WalletExchange   *walletaccounts.ExchangeConfig // Explicit opt-in funded treasury policy; no provisioning.
+	ChatProfilePerks map[string]int                 // Explicit level-2 nickname entitlement; nil fails closed.
+	ChatSearchPerks  map[string]int                 // Explicit canonical subscription-to-perk policy.
+	RealmMembers     *realmmemberpg.Config
+	BotExecution     *BotExecutionConfig
+	RealmBoosts      *realmboostpg.Config
 	// PostAutomodReview enables the owned version-checked review extension.
 	PostAutomodReview             bool
 	AppleWallet                   *passkit.Config
@@ -331,6 +332,13 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+	if c.ChatProfilePerks != nil {
+		perks, e := commerceRepo.ChatProfilePerks(c.ChatProfilePerks)
+		if e != nil {
+			return nil, e
+		}
+		cr.WithProfilePerks(perks)
 	}
 	chatOrganization := chatpg.NewOrganization(cr, mr, chatSearch)
 	mh := (&rooms.Service{Repository: cr, Organization: chatOrganization, Authority: proofIdentity{identity}, Reader: mr}).Handler()
@@ -608,6 +616,9 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 			return nil, err
 		}
 		moderationHTTP = bindIdentity(v, bindTransactionAuthority(guard, content.NewHandler(moderationRepo, postIdentity{identity})))
+	}
+	if external.federation != nil {
+		accountRepo.WithPublishingFederation(external.federation)
 	}
 	streamHTTP, err := external.configureStreams(db, c, v, guard, accountRepo, socialRepo, mediaRepo, commerceRepo)
 	if err != nil {

@@ -24,33 +24,24 @@ func (r *Repository) RequirePostEditor(ctx context.Context, tx *sql.Tx, actor, p
 	if e = r.require(ctx, tx, p.ID, actor, accounts.Editor); e != nil {
 		return accounts.Publisher{}, e
 	}
+	var active bool
+	if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publishers p WHERE p.id=$1 AND `+r.activePublishingOwner("p")+`)`, p.ID).Scan(&active); e != nil {
+		return accounts.Publisher{}, e
+	}
+	if !active {
+		return accounts.Publisher{}, accounts.ErrForbidden
+	}
 	return p, nil
 }
 func (r *Repository) ResolveForPost(ctx context.Context, tx *sql.Tx, actor, selector string) (accounts.Publisher, error) {
 	if tx == nil || !authority.ValidID(actor) {
 		return accounts.Publisher{}, accounts.ErrForbidden
 	}
-	if selector == "" {
-		var id string
-		e := tx.QueryRowContext(ctx, `SELECT default_publisher_id::text FROM owned_publishing_settings WHERE account_id=$1`, actor).Scan(&id)
-		if e == nil {
-			selector = id
-		} else if e != sql.ErrNoRows {
-			return accounts.Publisher{}, e
-		} else {
-			ids, e := r.ListPostPublisherIDs(ctx, tx, actor)
-			if e != nil {
-				return accounts.Publisher{}, e
-			}
-			if len(ids) == 0 {
-				return accounts.Publisher{}, accounts.ErrForbidden
-			}
-			if len(ids) != 1 {
-				return accounts.Publisher{}, accounts.ErrAmbiguous
-			}
-			selector = ids[0]
-		}
+	id, e := r.ObservePostPublisherID(ctx, tx, actor, selector)
+	if e != nil {
+		return accounts.Publisher{}, e
 	}
+	selector = id
 	return r.RequirePostEditor(ctx, tx, actor, selector)
 }
 
@@ -60,7 +51,7 @@ func (r *Repository) ListPostPublisherIDs(ctx context.Context, tx *sql.Tx, actor
 	if tx == nil || !authority.ValidID(actor) {
 		return nil, accounts.ErrForbidden
 	}
-	rows, e := tx.QueryContext(ctx, `SELECT p.id::text FROM owned_publishers p JOIN owned_publisher_members m ON m.publisher_id=p.id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE m.account_id=$1 AND NOT a.disabled AND m.role>=$2 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=p.account_id AND NOT owner.disabled)) AND `+r.publisherMember("p", "$1")+` ORDER BY p.created_at,p.id`, actor, accounts.Editor)
+	rows, e := tx.QueryContext(ctx, `SELECT p.id::text FROM owned_publishers p JOIN owned_publisher_members m ON m.publisher_id=p.id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE m.account_id=$1 AND NOT a.disabled AND m.role>=$2 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND p.deleted_at IS NULL AND `+r.publisherMember("p", "$1")+` AND `+r.publisherVisible("p", "$1")+` AND `+r.activePublishingOwner("p")+` ORDER BY p.created_at,p.id`, actor, accounts.Editor)
 	if e != nil {
 		return nil, e
 	}

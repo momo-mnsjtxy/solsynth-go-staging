@@ -12,14 +12,14 @@ import (
 // Create selection is observed for lock planning, then resolved and authorized
 // again under the complete realm/publisher lock set.
 func (r *Repository) createPublisher(ctx context.Context, tx *sql.Tx, actor, selector string, v posts.Patch) (accounts.Publisher, error) {
-	id, e := r.publishers.ObservePostPublisherID(ctx, tx, actor, selector)
+	id, e := r.publishers.ObservePublishingPublisherID(ctx, tx, actor, selector, v.RepliedPostID != nil)
 	if e != nil {
 		return accounts.Publisher{}, e
 	}
 	if e = r.prelock(ctx, tx, actor, MutationScope{PublisherID: id}, v, true); e != nil {
 		return accounts.Publisher{}, e
 	}
-	actual, e := r.publishers.ObservePostPublisherID(ctx, tx, actor, selector)
+	actual, e := r.publishers.ObservePublishingPublisherID(ctx, tx, actor, selector, v.RepliedPostID != nil)
 	if e != nil {
 		return accounts.Publisher{}, e
 	}

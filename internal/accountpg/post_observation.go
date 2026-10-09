@@ -12,11 +12,18 @@ import (
 // ObservePostPublisherID is only a lock-planning observation. RequirePostEditor
 // must resolve current permission after the planned realm/publisher locks.
 func (r *Repository) ObservePostPublisherID(ctx context.Context, tx *sql.Tx, actor, selector string) (string, error) {
+	return r.ObservePublishingPublisherID(ctx, tx, actor, selector, false)
+}
+func (r *Repository) ObservePublishingPublisherID(ctx context.Context, tx *sql.Tx, actor, selector string, reply bool) (string, error) {
 	if tx == nil || !authority.ValidID(actor) {
 		return "", accounts.ErrForbidden
 	}
 	if selector == "" {
-		e := tx.QueryRowContext(ctx, `SELECT default_publisher_id::text FROM owned_publishing_settings WHERE account_id=$1`, actor).Scan(&selector)
+		column := "default_publisher_id"
+		if reply {
+			column = "default_reply_publisher_id"
+		}
+		e := tx.QueryRowContext(ctx, `SELECT p.id::text FROM owned_publishing_settings s JOIN owned_publishers p ON p.id=s.`+column+` JOIN owned_publisher_members m ON m.publisher_id=p.id AND m.account_id=s.account_id WHERE s.account_id=$1 AND p.deleted_at IS NULL AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND m.role>=50 AND `+r.publisherMember("p", "$1")+` AND `+r.publisherVisible("p", "$1")+` AND `+r.activePublishingOwner("p"), actor).Scan(&selector)
 		if errors.Is(e, sql.ErrNoRows) {
 			ids, e := r.ListPostPublisherIDs(ctx, tx, actor)
 			if e != nil {

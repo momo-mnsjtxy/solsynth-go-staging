@@ -47,6 +47,7 @@ func (p Policy) ValidNotify(n int32) bool {
 
 // Room and Member are explicitly versioned projections, not full legacy DTOs.
 type Room struct {
+	Slug            *string        `json:"slug"`
 	RecoveryOnly    bool           `json:"recovery_only,omitempty"`
 	Picture         map[string]any `json:"picture"`
 	Background      map[string]any `json:"background"`
@@ -71,6 +72,7 @@ type Room struct {
 	DeletedAt       *time.Time     `json:"deleted_at"`
 }
 type Member struct {
+	Nick         *string           `json:"nick"`
 	ConfirmedAt  *time.Time        `json:"confirmed_at"`
 	TimeoutUntil *time.Time        `json:"timeout_until"`
 	TimeoutCause *TimeoutCause     `json:"timeout_cause"`
@@ -85,6 +87,7 @@ type Member struct {
 	Room         *Room             `json:"chat_room,omitempty"`
 }
 type RoomPatch struct {
+	Slug         *string `json:"slug"`
 	PictureID    *string `json:"picture_id"`
 	BackgroundID *string `json:"background_id"`
 	// Removal is available only through the explicit owned media DELETE route.

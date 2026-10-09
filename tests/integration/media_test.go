@@ -46,7 +46,13 @@ func mediaUpload(key, body string, public bool) media.Upload {
 }
 func newMediaFixture(t *testing.T) mediaFixture {
 	t.Helper()
-	db := database(t)
+	return newMediaFixtureInDatabase(t, database(t))
+}
+
+// newMediaFixtureInDatabase keeps all seeds and service pools in the caller's
+// database. Restart fixtures may isolate global maintenance interference.
+func newMediaFixtureInDatabase(t *testing.T, db *sql.DB) mediaFixture {
+	t.Helper()
 	now := &atomic.Int64{}
 	now.Store(time.Now().UTC().Unix())
 	cfg := authorityConfig(t, authorityKeys(t), now)

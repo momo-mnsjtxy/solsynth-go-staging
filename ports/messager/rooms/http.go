@@ -154,6 +154,9 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	if rest != "" {
 		p = strings.Split(strings.TrimPrefix(rest, "/"), "/")
 	}
+	if s.serveDetails(w, r, p) {
+		return
+	}
 	if s.serveOrganization(w, r, p) {
 		return
 	}
@@ -283,7 +286,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			result = map[string]any{"rooms": list}
 		case "POST":
 			var req RoomPatch
-			e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode", "realm_id", "picture_id", "background_id")
+			e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode", "realm_id", "picture_id", "background_id", "slug")
 			if e == nil {
 				result, e = s.Repository.Create(ctx, actor, req)
 			}
@@ -398,7 +401,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 				result, e = s.Repository.Get(ctx, actor, rid)
 			case "PATCH":
 				var req RoomPatch
-				e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode", "realm_id", "picture_id", "background_id")
+				e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode", "realm_id", "picture_id", "background_id", "slug")
 				if e == nil {
 					result, e = s.Repository.Update(ctx, actor, rid, req)
 				}

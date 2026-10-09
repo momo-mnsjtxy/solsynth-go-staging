@@ -28,6 +28,8 @@ func TestGatewayAndDirectRouting(t *testing.T) {
 		{"/api/posts/10000000-0000-4000-8000-000000000001", "posts", "/api/posts/10000000-0000-4000-8000-000000000001"},
 		{"/sphere/publishers/individual", "accounts", "/api/publishers/individual"},
 		{"/passport/accounts/me", "accounts", "/api/accounts/me"},
+		{"/api/account/publishing", "accounts", "/api/account/publishing"},
+		{"/sphere/account/publishing", "accounts", "/api/account/publishing"},
 		{"/stargate/accounts/me", "accounts", "/stargate/accounts/me"},
 		{"/messager/chat/a/sync", "messager", "/api/chat/a/sync"},
 		{"/api/chat/unread", "messager", "/api/chat/unread"},

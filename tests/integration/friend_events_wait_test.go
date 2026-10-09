@@ -22,7 +22,7 @@ func TestPGFriendEventsArtworkWaitChecksOriginalSourceAndReader(t *testing.T) {
 	for _, change := range []string{"source_expiry", "reader_expiry", "artwork_retention"} {
 		t.Run(change, func(t *testing.T) {
 			f := newArtworkFixture(t)
-			at, wall := f.config.Now(), time.Now()
+			at, wall := time.Now().UTC(), time.Now()
 			f.config.Now = func() time.Time { return at.Add(time.Since(wall)) }
 			for _, id := range []string{f.actor, f.other} {
 				if e := authoritypg.New(f.db).ReplacePolicy(context.Background(), id, []authority.Rule{{Pattern: "*"}}, nil); e != nil {
@@ -102,7 +102,22 @@ func TestPGFriendEventsArtworkWaitChecksOriginalSourceAndReader(t *testing.T) {
 			done := make(chan result, 1)
 			go func() { p, e := events.Replay(ctx, f.other, notifications.DefaultApp, 0, 100); done <- result{p, e} }()
 			waitAtomicBlocked(t, locks, pid, "owned_media_files")
-			organizationWaitExpired(t, ctx, f.db, deadline)
+			if change == "reader_expiry" {
+				// The asserted deadline belongs to the original verifier clock,
+				// not merely PostgreSQL wall time. Never infer expiry from a
+				// differently anchored clock or extend the original token.
+				tick := time.NewTicker(5 * time.Millisecond)
+				defer tick.Stop()
+				for !f.config.Now().After(deadline) {
+					select {
+					case <-tick.C:
+					case <-ctx.Done():
+						t.Fatal(ctx.Err())
+					}
+				}
+			} else {
+				organizationWaitExpired(t, ctx, f.db, deadline)
+			}
 			if e = blocker.Commit(); e != nil {
 				t.Fatal(e)
 			}

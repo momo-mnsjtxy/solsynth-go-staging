@@ -25,13 +25,14 @@ var Schema = baseSchema + "\n" + PublisherNamesSchema
 
 // New never migrates or provisions accounts, grants, entitlements or quota.
 type Repository struct {
-	db               *sql.DB
-	now              func() time.Time
-	guard            TransactionGuard
-	requireAuthority bool
-	realms           RealmProvider
-	contacts         PublicContactProvider
-	profileMedia     ProfileMediaStore
+	db                   *sql.DB
+	now                  func() time.Time
+	guard                TransactionGuard
+	requireAuthority     bool
+	realms               RealmProvider
+	contacts             PublicContactProvider
+	profileMedia         ProfileMediaStore
+	publishingFederation PublishingFederation
 }
 
 type PublicContactProvider interface {

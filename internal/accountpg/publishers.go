@@ -106,7 +106,7 @@ func (r *Repository) DeletePublisher(ctx context.Context, actor, ref string) err
 		if _, e = tx.ExecContext(ctx, `UPDATE owned_publisher_members SET revoked_at=$2,updated_at=$2 WHERE publisher_id=$1 AND revoked_at IS NULL`, p.ID, now); e != nil {
 			return e
 		}
-		if _, e = tx.ExecContext(ctx, `DELETE FROM owned_publishing_settings WHERE default_publisher_id=$1`, p.ID); e != nil {
+		if _, e = tx.ExecContext(ctx, clearPublishingPublisher, p.ID, nil, now); e != nil {
 			return e
 		}
 		return audit(ctx, tx, actor, "publishers.delete", p.ID, now)
@@ -212,7 +212,7 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c acco
 			if _, e = tx.ExecContext(ctx, `UPDATE owned_publisher_members SET revoked_at=$3,updated_at=$3 WHERE publisher_id=$1 AND account_id=$2`, p.ID, c.AccountID, now); e != nil {
 				return e
 			}
-			if _, e = tx.ExecContext(ctx, `DELETE FROM owned_publishing_settings WHERE account_id=$1 AND default_publisher_id=$2`, c.AccountID, p.ID); e != nil {
+			if _, e = tx.ExecContext(ctx, clearPublishingPublisher, p.ID, c.AccountID, now); e != nil {
 				return e
 			}
 		case accounts.UpdateRole:

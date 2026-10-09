@@ -7,6 +7,7 @@ python3 scripts/test-source-evidence.py
 python3 scripts/test-integration-guard.py
 python3 scripts/test-integration-groups.py
 python3 scripts/test-integration-wiring.py
+python3 scripts/test-fixture-isolation.py
 python3 scripts/check-postgres-syntax.py
 python3 scripts/verify-coverage-plan.py
 python3 scripts/test-coverage-format.py

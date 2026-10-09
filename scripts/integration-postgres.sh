@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-PG_BIN="${PG_BIN:-/workspace/shared/toolchains/postgres/bin}"
+export PG_BIN="${PG_BIN:-/workspace/shared/toolchains/postgres/bin}"
 GO_BIN="${GO_BIN:-/workspace/shared/toolchains/go/bin/go}"
 root="${PG_TEST_ROOT:-/workspace/shared/solsynth-go-integration}"
 [[ "$root" == /* ]] || { echo 'PG_TEST_ROOT must be absolute' >&2; exit 2; }
 group="${PG_TEST_GROUP:-all}"
 case "$group" in all|group-a|group-b) ;; *) echo 'unknown PG_TEST_GROUP' >&2; exit 2 ;; esac
 python3 scripts/check-integration-groups.py validate
+# Database/template creation is confined to the explicitly authorized private CI.
+[[ "${GITHUB_ACTIONS:-}" == true && "${PG_TEST_PRIVATE_CI:-}" == true ]] || { echo 'Disposable PostgreSQL creation requires authorized private CI' >&2; exit 2; }
+export PG_TEST_CANDIDATE="${GITHUB_SHA:?exact CI candidate required}"
+export PG_TEST_SCHEMA_SHA256
+PG_TEST_SCHEMA_SHA256=$(python3 scripts/fixture_template.py fingerprint)
 umask 077
 mkdir -p "$root"
 run=$(mktemp -d "$root/run.XXXXXXXX")
@@ -150,6 +155,9 @@ start
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/chatpg/organization_schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/activitypg/schema.sql
 "$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/friendeventpg/schema.sql
+# A prepare-only SQL guard must finish and close its source connections above
+# this point. All schema installs precede the empty template; no fixture seeds do.
+python3 scripts/fixture_template.py prepare
 "$GO_BIN" build -o "$run/backend" ./cmd/backend
 export BACKEND_BINARY="$run/backend"
 "$GO_BIN" build -o "$run/passport-board" ./cmd/passport-board

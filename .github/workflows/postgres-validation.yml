@@ -63,6 +63,7 @@ jobs:
           PG_BIN: /usr/lib/postgresql/16/bin
           PG_TEST_ROOT: ${{ runner.temp }}/solsynth-pg
           PG_TEST_GROUP: ${{ matrix.group }}
+          PG_TEST_PRIVATE_CI: ${{ github.event.repository.private }}
           PG_TEST_RESULTS: ${{ runner.temp }}/pg-results
         run: |
           test -x "$PG_BIN/initdb"

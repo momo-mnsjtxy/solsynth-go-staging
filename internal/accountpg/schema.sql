@@ -36,3 +36,13 @@ ALTER TABLE owned_publishers ADD COLUMN IF NOT EXISTS shadowbanned_at timestampt
 ALTER TABLE owned_accounts_profiles ADD COLUMN IF NOT EXISTS verification jsonb CHECK(verification IS NULL OR(jsonb_typeof(verification)='object' AND octet_length(verification::text)<=65536));
 
 ALTER TABLE owned_publishers ADD COLUMN IF NOT EXISTS verification jsonb CHECK(verification IS NULL OR(jsonb_typeof(verification)='object' AND octet_length(verification::text)<=65536));
+
+-- Posting keeps the established internal column name. New nullable choices are
+-- additive; repeat installation never rewrites an existing choice or identity.
+ALTER TABLE owned_publishing_settings ALTER COLUMN default_publisher_id DROP NOT NULL;
+ALTER TABLE owned_publishing_settings ADD COLUMN IF NOT EXISTS id uuid NOT NULL DEFAULT gen_random_uuid();
+CREATE UNIQUE INDEX IF NOT EXISTS owned_publishing_settings_id ON owned_publishing_settings(id);
+ALTER TABLE owned_publishing_settings ADD COLUMN IF NOT EXISTS default_reply_publisher_id uuid REFERENCES owned_publishers(id);
+ALTER TABLE owned_publishing_settings ADD COLUMN IF NOT EXISTS default_fediverse_publisher_id uuid REFERENCES owned_publishers(id);
+ALTER TABLE owned_publishing_settings ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT clock_timestamp();
+ALTER TABLE owned_publishing_settings ADD COLUMN IF NOT EXISTS updated_at timestamptz;

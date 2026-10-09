@@ -5,6 +5,34 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGBackendChatDetailsAuthoredRoutesAndFailClosedPolicy",
+        "TestPGBackendChatDetailsCanonicalProfileConfiguration",
+        "TestPGChatDetailsCanonicalProfilePerkLevelAndExpiry",
+        "TestPGChatDetailsConcurrentSlugAndWaitRevocation",
+        "TestPGChatDetailsModerationAliasesPermissionsTimeoutAndAudit",
+        "TestPGChatDetailsOnlineCanonicalPrivacyAndSessionExpiry",
+        "TestPGChatDetailsOnlineSecondaryPrivacyLockConflict",
+        "TestPGChatDetailsPerkExpiresAfterInitialCheckRollsBack",
+        "TestPGChatDetailsProfileClearAuditRollbackAndOriginalProof",
+        "TestPGChatDetailsProfileWaitRechecksOriginalSessionAndScope",
+        "TestPGChatDetailsRealmScopeCollisionTransferAndRollback",
+        "TestPGChatDetailsSavedRestartPersistence",
+        "TestPGChatDetailsSlugScopeRenameAndNondisclosure",
+
+        "TestPGPublishingSettingsHTTPDefaultsReplyAndNulls",
+        "TestPGPublishingSettingsMembershipAtomicityAndCleanup",
+        "TestPGPublishingSettingsFederationRequiresEnabledActor",
+        "TestPGPublishingSettingsWaitProofMembershipAndAuditRollback",
+        "TestPGPublishingSettingsConcurrentMergeAndUnavailableProof",
+        "TestPGPublishingSettingsAndBatchRequireCurrentRealmMembership",
+        "TestPGPublishingSettingsDeletionPreservesUnrelatedChoices",
+        "TestPGPostBatchHTTPAtomicVisibilityAndDelete",
+        "TestPGPostBatchRejectsPartialUnauthorizedLockedAndDuplicate",
+        "TestPGPostBatchAuditRollbackAndScheduledCancellation",
+        "TestPGPostBatchReversedConcurrencyAndProofWait",
+        "TestPGPostBatchPublicationRightsMediaAndFinalWait",
+        "TestPGPublishingControlsSavedRestartPersistence",
+
         "TestPGFederationCleanupReceiptAmbiguousDispatchAndNeverDispatched",
         "TestPGFederationCleanupReceiptReplayBoundsAndTampering",
         "TestPGFederationCleanupCurrentAuthorityAndBindingFences",
@@ -952,6 +980,10 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGChatDetailsSavedRestartPersistence",
+
+        "TestPGPublishingControlsSavedRestartPersistence",
+
         "TestPGFriendEventsSavedRestartPersistence",
         "TestPGAccountAdminSavedRestartPersistence",
 

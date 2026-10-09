@@ -29,6 +29,7 @@ type Repository struct {
 	associations MessageAssociations
 	roomMedia    RoomMedia
 	textObserver TextMessageObserver
+	profilePerks rooms.ProfileEntitlement
 }
 
 func (r *Repository) WithSocial(p rooms.SocialProvider) *Repository { r.social = p; return r }
@@ -132,13 +133,13 @@ func account(ctx context.Context, tx *sql.Tx, actor string) error {
 	return nil
 }
 
-const roomColumns = `id::text,owned_owner_id::text,owned_name,owned_description,is_public,owned_is_community,encryption_mode,owned_created_at,owned_updated_at,deleted_at,owned_type,owned_relation_guard`
+const roomColumns = `id::text,owned_owner_id::text,owned_name,owned_description,is_public,owned_is_community,encryption_mode,owned_created_at,owned_updated_at,deleted_at,owned_type,owned_relation_guard,owned_slug`
 
 type scanner interface{ Scan(...any) error }
 
 func scanRoom(s scanner) (rooms.Room, error) {
 	var v rooms.Room
-	e := s.Scan(&v.ID, &v.AccountID, &v.Name, &v.Description, &v.IsPublic, &v.IsCommunity, &v.EncryptionMode, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt, &v.Type, &v.RelationGuard)
+	e := s.Scan(&v.ID, &v.AccountID, &v.Name, &v.Description, &v.IsPublic, &v.IsCommunity, &v.EncryptionMode, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt, &v.Type, &v.RelationGuard, &v.Slug)
 	if errors.Is(e, sql.ErrNoRows) {
 		e = rooms.ErrNotFound
 	}
@@ -164,13 +165,13 @@ func (r *Repository) room(ctx context.Context, tx *sql.Tx, rid string, lock bool
 	return v, e
 }
 
-const memberColumns = `id::text,chat_room_id::text,account_id::text,notify,joined_at,leave_at,last_read_at,owned_confirmed_at,owned_timeout_until,owned_timeout_reason,owned_timeout_sender::text,owned_timeout_since`
+const memberColumns = `id::text,chat_room_id::text,account_id::text,notify,joined_at,leave_at,last_read_at,owned_confirmed_at,owned_timeout_until,owned_timeout_reason,owned_timeout_sender::text,owned_timeout_since,owned_nick`
 
 func scanMember(s scanner) (rooms.Member, error) {
 	var v rooms.Member
 	var reason, sender sql.NullString
 	var since sql.NullTime
-	e := s.Scan(&v.ID, &v.ChatRoomID, &v.AccountID, &v.Notify, &v.JoinedAt, &v.LeaveAt, &v.LastReadAt, &v.ConfirmedAt, &v.TimeoutUntil, &reason, &sender, &since)
+	e := s.Scan(&v.ID, &v.ChatRoomID, &v.AccountID, &v.Notify, &v.JoinedAt, &v.LeaveAt, &v.LastReadAt, &v.ConfirmedAt, &v.TimeoutUntil, &reason, &sender, &since, &v.Nick)
 	if sender.Valid && since.Valid {
 		v.TimeoutCause = &rooms.TimeoutCause{SenderID: sender.String, Since: since.Time}
 		if reason.Valid {
@@ -260,9 +261,9 @@ func (r *Repository) Create(ctx context.Context, actor string, p rooms.RoomPatch
 	if community && !public {
 		return rooms.Room{}, rooms.ErrInvalid
 	}
-	v, e := scanRoom(tx.QueryRowContext(ctx, `INSERT INTO chat_rooms(id,is_public,encryption_mode,owned_owner_id,owned_name,owned_description,owned_is_community) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING `+roomColumns, rid, public, r.policy.NoneEncryptionMode, actor, *p.Name, description, community))
+	v, e := scanRoom(tx.QueryRowContext(ctx, `INSERT INTO chat_rooms(id,is_public,encryption_mode,owned_owner_id,owned_name,owned_description,owned_is_community,owned_slug,owned_slug_realm_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING `+roomColumns, rid, public, r.policy.NoneEncryptionMode, actor, *p.Name, description, community, normalizedSlug(p.Slug), p.RealmID))
 	if e != nil {
-		return v, e
+		return v, mapDetailError(e)
 	}
 	_, e = tx.ExecContext(ctx, `INSERT INTO chat_members(id,chat_room_id,account_id,notify,joined_at,last_read_at) VALUES($1,$2,$3,$4,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)`, mid, rid, actor, r.policy.NotifyAll)
 	if e != nil {
@@ -380,6 +381,9 @@ func (r *Repository) Update(ctx context.Context, actor, rid string, p rooms.Room
 			return v, e
 		}
 	}
+	if v.Type == 1 && p.Slug != nil {
+		return v, rooms.ErrInvalid
+	}
 	if v.Type == 1 && (p.RealmID != nil || p.IsPublic != nil && *p.IsPublic || p.IsCommunity != nil && *p.IsCommunity) {
 		return v, rooms.ErrForbidden
 	}
@@ -394,6 +398,9 @@ func (r *Repository) Update(ctx context.Context, actor, rid string, p rooms.Room
 		if _, e = tx.ExecContext(ctx, `UPDATE chat_rooms SET owned_relation_guard=true WHERE id=$1`, rid); e != nil {
 			return v, e
 		}
+	}
+	if p.Slug != nil {
+		v.Slug = normalizedSlug(p.Slug)
 	}
 	if p.Name != nil {
 		v.Name = *p.Name
@@ -410,9 +417,9 @@ func (r *Repository) Update(ctx context.Context, actor, rid string, p rooms.Room
 	if v.IsCommunity && !v.IsPublic {
 		return rooms.Room{}, rooms.ErrInvalid
 	}
-	v, e = scanRoom(tx.QueryRowContext(ctx, `UPDATE chat_rooms SET owned_name=$2,owned_description=$3,is_public=$4,owned_is_community=$5,owned_updated_at=clock_timestamp() WHERE id=$1 RETURNING `+roomColumns, rid, v.Name, v.Description, v.IsPublic, v.IsCommunity))
+	v, e = scanRoom(tx.QueryRowContext(ctx, `UPDATE chat_rooms SET owned_name=$2,owned_description=$3,is_public=$4,owned_is_community=$5,owned_updated_at=clock_timestamp(),owned_slug=$6,owned_slug_realm_id=coalesce($7::uuid,owned_slug_realm_id) WHERE id=$1 RETURNING `+roomColumns, rid, v.Name, v.Description, v.IsPublic, v.IsCommunity, v.Slug, slugRealm(p, v)))
 	if e != nil {
-		return v, e
+		return v, mapDetailError(e)
 	}
 	if e = r.applyRoomMedia(ctx, tx, actor, &v, p, true); e != nil {
 		return v, e

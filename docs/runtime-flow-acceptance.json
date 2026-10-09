@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed friend events, root-bound account administration/badges and opt-in immutable federation cleanup receipts integrated. Activity timestamp alias, canonical exchange routing and survey receipt SQL corrections plus isolated queue/rollback fixtures pass full combined offline verification; actual PG/restart pending.",
+  "local_source_checkpoint": "Reviewed publishing defaults/batch post controls and chat room detail flows integrated; publishing restart strengthened to original saved bearer/public verifier with no after-phase seeding. Full combined offline checks running; actualPG pending.",
   "last_fully_passed_ci": {
     "commit": "8d00c0cee85ebd10328ed5d51fa0e876141bf411",
     "run": 37878791797,
@@ -14,13 +14,14 @@
     "acceptance_limit": "Immutable implementation CI-green; remaining original flows, configured external providers and production rollout are separate."
   },
   "latest_candidate": {
-    "commit": "00d6ba1c357451a3e46797d72c7ecf06f242a670",
-    "required_before": 859,
-    "required_after_restart": 103,
-    "status": "Published original-database restart isolation correction; run37886556917 pending. Earlier853/859 schema-isolation candidates retain known database-wide readiness interference; no acceptance."
+    "commit": "8cb9d7448b9b77d412549746ac81625b666e1510",
+    "run": 37888914261,
+    "required_before": 884,
+    "required_after_restart": 105,
+    "status": "Corrected composed candidate executing actual PostgreSQL; no full-pass claim."
   },
-  "local_required_before": 884,
-  "local_required_after_restart": 105,
+  "local_required_before": 910,
+  "local_required_after_restart": 107,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2128,7 +2129,7 @@
     "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
-    "as_of": "2026-10-09T05:09:00Z",
+    "as_of": "2026-10-09T05:40:00Z",
     "authoritative_for": "Current source-backed remaining flow bundles, implementation candidates and operational gaps; no percentage or endpoint-total inference.",
     "families": [
       {
@@ -2756,33 +2757,6 @@
         ]
       },
       {
-        "id": "chat_room_details",
-        "families": [
-          "messager.rooms"
-        ],
-        "remaining": "Public slug lookup, online-member count, member profile customization and legacy moderation route aliases remain missing.",
-        "source": [
-          {
-            "path": "DysonNetwork.Messager/Chat/ChatRoomController.cs",
-            "blob": "373efa01d468a76ba5085bf5c2b59bede71bd7ec",
-            "methods": "GetChatRoomBySlug@132; UpdateRoomIdentity@1178; ClearRoomIdentity@1202; GetOnlineUsersCount@1223; DeleteMessage@2160; TimeoutUser@2232",
-            "route_examples": [
-              "GET /api/chat/public/{scope}/{chatSlug}",
-              "PATCH /api/chat/{roomId:guid}/members/me/profile",
-              "DELETE /api/chat/{roomId:guid}/members/me/profile"
-            ],
-            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
-          }
-        ],
-        "runtime_owner_or_rejection": [
-          "ports/messager/rooms/http.go",
-          "ports/messager/rooms/types.go",
-          "internal/chatpg"
-        ],
-        "current_boundary": "Room CRUD, invitation/join/leave, notify, direct/realm restrictions and timeouts exist. These additional paths/shapes are absent; slug/read-receipt policy fields remain explicitly unsupported.",
-        "next_slice": "Add read/profile routes against canonical presence/media and current member policy; treat perk-dependent customization as an explicit entitlement decision."
-      },
-      {
         "id": "developer_management_edges",
         "families": [
           "develop.apps_products",
@@ -3187,31 +3161,6 @@
         "next_slice": "Define bounded price/currency/beneficiary policy and connect paid canonical order receipt to once-only issuance."
       },
       {
-        "id": "publishing_settings",
-        "families": [
-          "sphere.posts"
-        ],
-        "remaining": "Original publishing settings GET/PATCH are absent from the composed HTTP surface.",
-        "source": [
-          {
-            "path": "DysonNetwork.Sphere/Account/AccountSettingsController.cs",
-            "blob": "a61c5e30d44f2eb379b82cc6107bfbedb6a825d5",
-            "methods": "GetSettings@33; UpdateSettings@54",
-            "route_examples": [
-              "GET /api/account/publishing",
-              "PATCH /api/account/publishing"
-            ]
-          }
-        ],
-        "runtime_owner_or_rejection": [
-          "internal/application/router.go",
-          "ports/passport/accounts/http.go",
-          "internal/accountpg/schema.sql:owned_publishing_settings"
-        ],
-        "current_boundary": "Canonical publishing-settings state exists but /api/account/publishing is not dispatched and no corresponding handler is registered.",
-        "next_slice": "Expose the source settings envelope through current account authority and validate every setting consumed by post creation."
-      },
-      {
         "id": "publisher_discovery_features_stats",
         "families": [
           "sphere.publishers",
@@ -3293,7 +3242,7 @@
           "sphere.posts",
           "sphere.timeline"
         ],
-        "remaining": "Post pin/unpin, boost/unboost/list, batch delete/visibility, featured/adjacent/reaction-user and pinned/featured-reply reads remain absent.",
+        "remaining": "Atomic bounded batch delete/visibility implemented pendingPG. Pin/unpin and numeric mapping, boost/unboost/list, featured/adjacent/reaction-user and pinned/featured-reply reads remain unimplemented.",
         "source": [
           {
             "path": "DysonNetwork.Sphere/Post/PostActionController.cs",
@@ -3325,8 +3274,8 @@
           "internal/postpg",
           "internal/timelinepg"
         ],
-        "current_boundary": "CRUD/drafts/scheduled publication, reply/forward/chain/thread, reactions/bookmarks, admin moderation, sponsorship/awards and pending blog handling are present. They do not implement the listed user controls. media/shuffle/pinned=true/mentioned and semantic search are explicitly rejected by searchOptions.",
-        "next_slice": "Implement bounded batch/pin and adjacent/reply reads first; attach canonical boost events and richer search separately with privacy and idempotency."
+        "current_boundary": "Canonical sorted realm/publisher/related-post locks, current originalproof/publication/media rights, audit/scheduled cancellation and all-or-nothing lifecycle changes. Pinmode is not guessed.",
+        "next_slice": "ActualPG batchvalidation, then targeted lawful pinmode reconstruction and remainingnavigation/boost flows."
       },
       {
         "id": "collection_subscriptions_navigation",
@@ -3733,6 +3682,68 @@
         "evidence": [
           "docs/federation-cleanup-receipts.md"
         ]
+      },
+      {
+        "id": "chat_room_details",
+        "families": [
+          "messager.rooms"
+        ],
+        "remaining": "Six detail routes and scoped slug writes implemented; complete legacyDTO equivalence and externalpush unclaimed.",
+        "source": [
+          {
+            "path": "DysonNetwork.Messager/Chat/ChatRoomController.cs",
+            "blob": "373efa01d468a76ba5085bf5c2b59bede71bd7ec",
+            "methods": "GetChatRoomBySlug@132; UpdateRoomIdentity@1178; ClearRoomIdentity@1202; GetOnlineUsersCount@1223; DeleteMessage@2160; TimeoutUser@2232",
+            "route_examples": [
+              "GET /api/chat/public/{scope}/{chatSlug}",
+              "PATCH /api/chat/{roomId:guid}/members/me/profile",
+              "DELETE /api/chat/{roomId:guid}/members/me/profile"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/messager/rooms/http.go",
+          "ports/messager/rooms/types.go",
+          "internal/chatpg"
+        ],
+        "current_boundary": "Public scope/slug with fresh alias and owner/realm privacy checks, canonical current online counts, Nick-onlyselfprofile/clear, strictmoderationaliases. PATCHrequires explicit current canonical level2subscription mapping; absentconfigurationfailsclosed. No inventedmediafields.",
+        "next_slice": "ActualPG/restart validation.",
+        "status": "implemented_pending_actual_PG"
+      },
+      {
+        "id": "publishing_settings",
+        "families": [
+          "sphere.posts"
+        ],
+        "remaining": "AuthoredGET/PATCH and posting/reply/fediverse choices implemented; complete excludedDTO equivalence unclaimed.",
+        "source": [
+          {
+            "path": "DysonNetwork.Sphere/Account/AccountSettingsController.cs",
+            "blob": "a61c5e30d44f2eb379b82cc6107bfbedb6a825d5",
+            "methods": "GetSettings@33; UpdateSettings@54",
+            "route_examples": [
+              "GET /api/account/publishing",
+              "PATCH /api/account/publishing"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "internal/application/router.go",
+          "ports/passport/accounts/http.go",
+          "internal/accountpg/schema.sql:owned_publishing_settings"
+        ],
+        "current_boundary": "Null-ignored authored patch semantics, canonical membership/default fallback, distinct reply selection and configured canonical local actor identity validation. No implicit federation activation or signer access.",
+        "next_slice": "ActualPG/restart validation.",
+        "status": "implemented_pending_actual_PG"
+      },
+      {
+        "id": "sphere.atomic_post_batch_controls",
+        "status": "integrated_pending_actual_PG",
+        "evidence": [
+          "docs/publishing-controls-continuation.md",
+          "tests/integration/publishing_controls_test.go"
+        ]
       }
     ],
     "owned_contract_differences": [
@@ -3923,6 +3934,14 @@
         "difference": "No historical receipt backfill or cleanup for never-dispatched content. Explicit repository-only root-owner activation with matching grant and permanent transport incarnation; constructor/readiness/default configuration never activate. Receipt permits only bounded content-free Tombstone, retains current source session/account revocation and original deadline; credential revocation may prevent cleanup. No production activation or live transport.",
         "evidence": [
           "docs/federation-cleanup-receipts.md"
+        ]
+      },
+      {
+        "id": "publishing_and_chat_detail_projection",
+        "difference": "Publishing settings expose the evidenced scalar IDs/timestamps with null-ignored patches; excluded fullSharedDTO parity unclaimed. Chat nickname perk is explicit canonical subscription mapping with no default grant. Publishing default checks canonical actor availability and immutable key-ID anchor, while signer/fingerprint authorization remains at publication.",
+        "evidence": [
+          "docs/publishing-controls-continuation.md",
+          "docs/chat-room-details-continuation.md"
         ]
       }
     ],

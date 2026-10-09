@@ -34,15 +34,25 @@ func compositionPool(db *sql.DB) (*postembedpg.Repository, *timelinepg.Repositor
 	links := postembedpg.New(db, m, v)
 	return links, timelinepg.New(db).WithVisibility(v).WithAssociations(links)
 }
-func newCompositionFixture(t *testing.T, restart ...bool) compositionFixture {
+func newCompositionFixture(t *testing.T) compositionFixture {
 	t.Helper()
-	f := compositionFixture{postMediaFixture: newPostSchedulingFixture(t)}
-	if len(restart) > 0 && restart[0] {
-		// Issue the original bounded credentials before creating any composer
-		// target. The after phase has only public verification material.
-		f.config.AccessTTL, f.config.SessionTTL = time.Hour, time.Hour
-		f.postMediaFixture = postSchedulingAuthority(t, f.postMediaFixture)
-	}
+	return compositionFixtureFromMedia(t, newPostSchedulingFixture(t))
+}
+
+func newRestartCompositionFixture(t *testing.T, db *sql.DB) compositionFixture {
+	t.Helper()
+	f := newPostMediaFixtureInDatabase(t, db)
+	f.config.Now = time.Now
+	// Issue the original bounded credentials before creating any composer
+	// target. The after phase has only public verification material.
+	f.config.AccessTTL, f.config.SessionTTL = time.Hour, time.Hour
+	f = postSchedulingAuthority(t, f)
+	return compositionFixtureFromMedia(t, f)
+}
+
+func compositionFixtureFromMedia(t *testing.T, media postMediaFixture) compositionFixture {
+	t.Helper()
+	f := compositionFixture{postMediaFixture: media}
 	links, timeline := compositionPool(f.db)
 	f.timeline = timeline
 	if e := links.Ready(context.Background()); e != nil {
@@ -336,23 +346,49 @@ func compositionAuthorityState(t *testing.T, db *sql.DB, actor, other string) st
 	}
 	return state
 }
+
+// Capture all persisted composer targets and canonical rows, including original
+// fund terms/status. No after-phase mutation may make an expired target reappear.
+func compositionObjectState(t *testing.T, db *sql.DB, postID string) string {
+	t.Helper()
+	var state string
+	e := db.QueryRow(`SELECT jsonb_build_object(
+ 'post',(SELECT to_jsonb(p) FROM owned_text_posts p WHERE p.id=$1),
+ 'links',(SELECT jsonb_agg(to_jsonb(e) ORDER BY e.kind,e.position) FROM owned_post_embeds e WHERE e.post_id=$1),
+ 'survey',(SELECT jsonb_agg(to_jsonb(s) ORDER BY s.id) FROM owned_surveys s WHERE s.id IN(SELECT target_id FROM owned_post_embeds WHERE post_id=$1 AND kind='survey')),
+ 'fund',(SELECT jsonb_agg(to_jsonb(f) ORDER BY f.id) FROM wallet_v1.funds f WHERE f.id IN(SELECT target_id FROM owned_post_embeds WHERE post_id=$1 AND kind='fund')),
+ 'meet',(SELECT jsonb_agg(to_jsonb(m) ORDER BY m.id) FROM owned_meets m WHERE m.id IN(SELECT target_id FROM owned_post_embeds WHERE post_id=$1 AND kind='meet')),
+ 'stream',(SELECT jsonb_agg(to_jsonb(l) ORDER BY l.id) FROM owned_livestreams l WHERE l.id IN(SELECT target_id FROM owned_post_embeds WHERE post_id=$1 AND kind='live_stream')),
+ 'day',(SELECT jsonb_agg(to_jsonb(d) ORDER BY d.id) FROM owned_notable_days d WHERE d.id IN(SELECT target_id FROM owned_post_embeds WHERE post_id=$1 AND kind='notable_day')),
+ 'event',(SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) FROM owned_calendar_events c WHERE c.id IN(SELECT target_id FROM owned_post_embeds WHERE post_id=$1 AND kind='calendar_event')))::text`, postID).Scan(&state)
+	if e != nil {
+		t.Fatal(e)
+	}
+	return state
+}
+
 func TestPGPostCompositionSavedRestartPersistence(t *testing.T) {
-	db := database(t)
 	type saved struct {
-		PostID, Actor, Other, Token, OtherToken, Content, AuthorityState string
-		Refs                                                             []posts.Embed
-		Authority                                                        restartAuthoritySnapshot
-		Audit                                                            int
+		PostID, Actor, Other, Token, OtherToken, Content, AuthorityState, ObjectState string
+		Database                                                                      isolatedRestartDatabase
+		Refs                                                                          []posts.Embed
+		Authority                                                                     restartAuthoritySnapshot
+		Audit                                                                         int
 	}
 	const marker = "post-composition-state.json"
 	if fixtureRestartPhase(t) == "before" {
-		f := newCompositionFixture(t, true)
+		db, identity := createIsolatedRestartDatabase(t, "composer")
+		f := newRestartCompositionFixture(t, db)
 		p := compositionPost(t, f, f.refs)
-		saveRestartFixture(t, marker, saved{PostID: p.ID, Actor: f.actor, Other: f.other, Token: f.token, OtherToken: f.otherToken, Content: p.Content, Refs: f.refs, Authority: saveAuthoritySnapshot(t, f.config), AuthorityState: compositionAuthorityState(t, db, f.actor, f.other), Audit: commerceCount(t, db, `SELECT count(*) FROM owned_text_post_audit WHERE post_id=$1`, p.ID)})
+		saveRestartFixture(t, marker, saved{Database: identity, ObjectState: compositionObjectState(t, db, p.ID), PostID: p.ID, Actor: f.actor, Other: f.other, Token: f.token, OtherToken: f.otherToken, Content: p.Content, Refs: f.refs, Authority: saveAuthoritySnapshot(t, f.config), AuthorityState: compositionAuthorityState(t, db, f.actor, f.other), Audit: commerceCount(t, db, `SELECT count(*) FROM owned_text_post_audit WHERE post_id=$1`, p.ID)})
 		return
 	}
 	var state saved
 	loadRestartFixture(t, marker, &state)
+	db := openIsolatedRestartDatabase(t, state.Database)
+	if got := compositionObjectState(t, db, state.PostID); got != state.ObjectState {
+		t.Fatal("original composer objects changed across restart")
+	}
 	if got := compositionAuthorityState(t, db, state.Actor, state.Other); got != state.AuthorityState {
 		t.Fatal("original authority changed across restart")
 	}
@@ -406,6 +442,9 @@ func TestPGPostCompositionSavedRestartPersistence(t *testing.T) {
 	}
 	if got := compositionAuthorityState(t, db, state.Actor, state.Other); got != state.AuthorityState {
 		t.Fatal("restart reads mutated authority")
+	}
+	if got := compositionObjectState(t, db, state.PostID); got != state.ObjectState {
+		t.Fatal("restart reads mutated composer objects")
 	}
 }
 

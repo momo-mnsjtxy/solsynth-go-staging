@@ -42,7 +42,12 @@ type postMediaFixture struct {
 
 func newPostMediaFixture(t *testing.T) postMediaFixture {
 	t.Helper()
-	f := postMediaFixture{mediaFixture: newMediaFixture(t)}
+	return newPostMediaFixtureInDatabase(t, database(t))
+}
+
+func newPostMediaFixtureInDatabase(t *testing.T, db *sql.DB) postMediaFixture {
+	t.Helper()
+	f := postMediaFixture{mediaFixture: newMediaFixtureInDatabase(t, db)}
 	for _, id := range []string{f.actor, f.other} {
 		if e := authoritypg.New(f.db).ReplacePolicy(context.Background(), id, []authority.Rule{{Pattern: "*"}}, nil); e != nil {
 			t.Fatal(e)

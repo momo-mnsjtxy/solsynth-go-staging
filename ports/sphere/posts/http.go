@@ -371,6 +371,7 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 			respond(w, 200, out)
 		}
 	}
+	registerBatch(m, repo, identity)
 	m.HandleFunc("GET /api/posts", list(false))
 	m.HandleFunc("GET /api/posts/drafts", list(true))
 	m.HandleFunc("GET /api/posts/{id}", func(w http.ResponseWriter, r *http.Request) {

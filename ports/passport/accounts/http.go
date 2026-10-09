@@ -143,6 +143,10 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	path := strings.TrimSuffix(r.URL.Path, "/")
+	if path == "/api/account/publishing" {
+		s.servePublishing(w, r)
+		return
+	}
 	parts := strings.Split(strings.TrimPrefix(path, "/"), "/")
 	// The read aliases are evidenced by the authored Solian client. Updates use
 	// the separately documented owned endpoint only.

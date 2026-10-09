@@ -94,7 +94,7 @@ func (r *Repository) RelationsReady(ctx context.Context) error {
 			return e
 		}
 	}
-	_, e := r.db.ExecContext(ctx, `SELECT message_id,source_joined_at,request_hash FROM owned_chat_redirects LIMIT 0;SELECT account_low,account_high,room_id FROM owned_chat_direct_pairs LIMIT 0; SELECT room_id,realm_id FROM owned_chat_realm_links LIMIT 0;SELECT action,occurred_at FROM owned_chat_relations_audit LIMIT 0;SELECT owned_relation_guard,owned_type FROM chat_rooms LIMIT 0;SELECT owned_confirmed_at,owned_timeout_until FROM chat_members LIMIT 0`)
+	_, e := r.db.ExecContext(ctx, `SELECT message_id,source_joined_at,request_hash FROM owned_chat_redirects LIMIT 0;SELECT account_low,account_high,room_id FROM owned_chat_direct_pairs LIMIT 0; SELECT room_id,realm_id FROM owned_chat_realm_links LIMIT 0;SELECT action,occurred_at FROM owned_chat_relations_audit LIMIT 0;SELECT owned_relation_guard,owned_type,owned_slug,owned_slug_realm_id FROM chat_rooms LIMIT 0;SELECT owned_confirmed_at,owned_timeout_until,owned_nick FROM chat_members LIMIT 0;SELECT actor_id,room_id,action,reason FROM owned_chat_detail_audit LIMIT 0`)
 	return e
 }
 func canonicalAccount(ctx context.Context, tx *sql.Tx, id string) (*accounts.Account, error) {

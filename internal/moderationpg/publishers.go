@@ -105,7 +105,7 @@ func (r *Repository) mutatePublisher(ctx context.Context, actor, ref string, cmd
 		if _, e = tx.ExecContext(ctx, `UPDATE owned_publisher_members SET revoked_at=$2,updated_at=$2 WHERE publisher_id=$1 AND revoked_at IS NULL`, p.ID, now); e != nil {
 			return nil, e
 		}
-		if _, e = tx.ExecContext(ctx, `DELETE FROM owned_publishing_settings WHERE default_publisher_id=$1`, p.ID); e != nil {
+		if e = accountpg.ClearPublishingPublisher(ctx, tx, p.ID, now); e != nil {
 			return nil, e
 		}
 	}

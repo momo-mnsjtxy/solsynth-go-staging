@@ -4,6 +4,7 @@ package moderationpg
 import (
 	"context"
 	"database/sql"
+	"solsynth.local/go-migration/internal/accountpg"
 	c "solsynth.local/go-migration/ports/admin/content"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/social"
@@ -186,7 +187,7 @@ func (r *Repository) mutateRealm(ctx context.Context, actor, ref string, cmd c.C
 		if _, e = tx.ExecContext(ctx, `UPDATE owned_publisher_members SET revoked_at=$2,updated_at=$2 WHERE publisher_id IN(SELECT id FROM owned_publishers WHERE realm_id=$1)AND revoked_at IS NULL`, v.ID, now); e != nil {
 			return nil, e
 		}
-		if _, e = tx.ExecContext(ctx, `DELETE FROM owned_publishing_settings WHERE default_publisher_id IN(SELECT id FROM owned_publishers WHERE realm_id=$1)`, v.ID); e != nil {
+		if e = accountpg.ClearPublishingRealm(ctx, tx, v.ID, now); e != nil {
 			return nil, e
 		}
 	}

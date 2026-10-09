@@ -73,6 +73,9 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err != nil || !ready {
 		return errors.New("domain schema unavailable")
 	}
+	if _, err := b.db.ExecContext(ctx, `SELECT id,account_id,default_publisher_id,default_reply_publisher_id,default_fediverse_publisher_id,created_at,updated_at FROM owned_publishing_settings LIMIT 0`); err != nil {
+		return errors.New("publishing settings schema unavailable")
+	}
 	err = b.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='owned_text_posts'::regclass AND conname='owned_text_posts_realm_fk' AND convalidated)`).Scan(&ready)
 	if err != nil || !ready {
 		return errors.New("post realm schema unavailable")

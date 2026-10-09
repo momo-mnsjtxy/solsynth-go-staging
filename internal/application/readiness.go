@@ -117,6 +117,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if _, e := b.db.ExecContext(ctx, `SELECT role_level,generation,permission_mask FROM owned_realm_role_permissions LIMIT 0;SELECT allow_mask,deny_mask,membership_since FROM owned_realm_user_permissions LIMIT 0;SELECT owned_realm_permission_mask(NULL::uuid,NULL::uuid)`); e != nil {
 		return errors.New("realm permission schema unavailable")
 	}
+	if b.chatOrganization != nil {
+		if err := b.chatOrganization.Ready(ctx); err != nil {
+			return err
+		}
+	}
 	if b.chat != nil {
 		if err := b.chat.RelationsReady(ctx); err != nil {
 			return err

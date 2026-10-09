@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Integrate reviewed public admission and canonical post associations",
+  "checkpoint": "Add reviewed canonical chat reads search pins and personal groups",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e"
+    "remote_parent": "e05ec1500d9c1ae051b2efc06abc0e2496cac328"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -95,6 +95,16 @@
       "path": "cmd/backend/bot_execution_config_test.go",
       "bytes": 7117,
       "sha256": "a2bb511b585ff86c563f8d5e1e9007d13a86172eac2ea9af70e114d11476f144"
+    },
+    {
+      "path": "cmd/backend/chat_organization.go",
+      "bytes": 1636,
+      "sha256": "ce6c4a4bc803a11fa494b4d8e32dc42c11aff070bbb1f95845afeb8609d4469d"
+    },
+    {
+      "path": "cmd/backend/chat_organization_test.go",
+      "bytes": 850,
+      "sha256": "b3aa04c687d221b04c03727a71443d1c3d69d9feffe3ed61dedc5aaaddb1b1bb"
     },
     {
       "path": "cmd/backend/config.go",
@@ -213,8 +223,8 @@
     },
     {
       "path": "cmd/backend/main.go",
-      "bytes": 16861,
-      "sha256": "20c3b75503b29adf4d329afcbefba608388550ad3ad3797e2aa755628034f3dc"
+      "bytes": 17018,
+      "sha256": "ae5d476d1574005d27455e79da54a53e91ed6bcf31aa729b93b9ee972310d84e"
     },
     {
       "path": "cmd/backend/passkit_config.go",
@@ -552,6 +562,21 @@
       "sha256": "88db0f57c380b0011721ff66f1555a70323dbd4d38dbcb472079a429803163d7"
     },
     {
+      "path": "docs/chat-organization-continuation.md",
+      "bytes": 5613,
+      "sha256": "4f8ea4fe94deb459665e596f854a872b8ff0abf118db8aa343632e4b7f8c5590"
+    },
+    {
+      "path": "docs/chat-organization-integration-cases.json",
+      "bytes": 860,
+      "sha256": "8bbffd571f5c1e89c7f66a71cf343bc8bf9e7ecbc86513d5f501db068a021eff"
+    },
+    {
+      "path": "docs/chat-organization-source-evidence.json",
+      "bytes": 1937,
+      "sha256": "61fa315bf4020a22a6b7eb743b3a660403121a9f7c916aba8b2b0b6c62caeaae"
+    },
+    {
       "path": "docs/chat-relations-continuation.md",
       "bytes": 14405,
       "sha256": "ebfba12f3cc0728a3bc565bceab0ac9f078cf08cbb114348dd82ee1d81b5f0f6"
@@ -588,8 +613,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 120443,
-      "sha256": "206d4525a76952efb2e25a30782d215c678ab7e518de5aea01f7f85e0be2cbae"
+      "bytes": 122022,
+      "sha256": "89a134fac53c6856bf710446ef6922bc726a806b27ed108b43269528c901f08a"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -1938,8 +1963,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 206559,
-      "sha256": "55ae536480ef5e7311a5bfa68e9d71bc641ac618efe6bf291ead9717e6c112c3"
+      "bytes": 207365,
+      "sha256": "eb3f6065f87a19504c7dadd85735a2e2210fcbf875af214b945be388dececc08"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -2208,8 +2233,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 33267,
-      "sha256": "a5a694f1c0b3e5ce86d868a57965810dc1046aaef19163e4ef5413d9a4fc03d1"
+      "bytes": 33721,
+      "sha256": "3c6d4d1d533e188e05d585442f8da7e29d4d4f151ad3e41d7e8bdaf81b4e592a"
     },
     {
       "path": "internal/application/blog_routing_test.go",
@@ -2338,8 +2363,8 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 9515,
-      "sha256": "4b6b352ced94da6279bf79016ad8a11db5248d6c6d384444fbfadb78528d8e60"
+      "bytes": 9624,
+      "sha256": "820aa12bcaedade5315ae8ca1effcc5fb8e9eea769bc4bcd18edb1fc133b593d"
     },
     {
       "path": "internal/application/realm_boosts.go",
@@ -2832,6 +2857,31 @@
       "sha256": "85dba914c1b62ea58c24ea60cca2fc0f2d3e44bb3e1ff3d1f0af9c0b7efd1b70"
     },
     {
+      "path": "internal/chatpg/organization.go",
+      "bytes": 5616,
+      "sha256": "dcdde217a24dfebe143d49efd6f8c72aacab94f9c820e7b945e86e81939b39a9"
+    },
+    {
+      "path": "internal/chatpg/organization_groups.go",
+      "bytes": 7164,
+      "sha256": "d30a9a1a3975dad88e2c07502f0c0c4a750f22a519a41065a4c7705f03a863f4"
+    },
+    {
+      "path": "internal/chatpg/organization_pins.go",
+      "bytes": 7061,
+      "sha256": "60123f0b9473fc9642f292e97b0816645b8a165956e83721cc6002a166b98837"
+    },
+    {
+      "path": "internal/chatpg/organization_reads.go",
+      "bytes": 7850,
+      "sha256": "b48416bd1ca8fad2cb3942d4f20f4fcc907b9feae45b1450ac8fc7fb7f69e6e8"
+    },
+    {
+      "path": "internal/chatpg/organization_schema.sql",
+      "bytes": 2254,
+      "sha256": "85e76138ffaa4e941240cbbb94534ae13dc8f278ed889aad82d065d598b61850"
+    },
+    {
       "path": "internal/chatpg/reactions.go",
       "bytes": 6084,
       "sha256": "16d8a3bbcdaa69f0a0881e261ec7ce556ebb68374f6293ca17e4dc9e0e5e8323"
@@ -2920,6 +2970,11 @@
       "path": "internal/commercepg/catalog_scope.go",
       "bytes": 3042,
       "sha256": "3e5c313328a0ca4dee00478a10b65feb801ed4198818e2a0aae3feea4d5007e0"
+    },
+    {
+      "path": "internal/commercepg/chat_search.go",
+      "bytes": 3428,
+      "sha256": "9462ae49196ffccc206b6b56b0d63660bd688367cc07f01f44269b6a6967f693"
     },
     {
       "path": "internal/commercepg/checkout.go",
@@ -3545,6 +3600,11 @@
       "path": "internal/messagerpg/evidence_test.go",
       "bytes": 1496,
       "sha256": "cfd0048eef0bb0aa1f78720ddd557083de4b21142346528cd05d214cdf61c379"
+    },
+    {
+      "path": "internal/messagerpg/organization.go",
+      "bytes": 1901,
+      "sha256": "d8e32a81c16ecf0705e1e282ed009528ea84563b56ca0073d60a8b839fb0e826"
     },
     {
       "path": "internal/messagerpg/repository.go",
@@ -7418,8 +7478,8 @@
     },
     {
       "path": "ports/messager/rooms/http.go",
-      "bytes": 17559,
-      "sha256": "e5b775b20f2eea154640080359c92f290c53fab0663a58b4056dc38161480102"
+      "bytes": 17763,
+      "sha256": "6dcee4073ae0a1e09325d546030dd63f2130b6665712543034a31487ccb140a1"
     },
     {
       "path": "ports/messager/rooms/http_test.go",
@@ -7440,6 +7500,31 @@
       "path": "ports/messager/rooms/mls_test.go",
       "bytes": 3357,
       "sha256": "0bb055ed31eddc391f4c3e2c1fae716d995203836d190037fba906521cd3d847"
+    },
+    {
+      "path": "ports/messager/rooms/organization.go",
+      "bytes": 5471,
+      "sha256": "aa495dc5f5d85b6ad7ecc97ca8dd336c30ea1d9838698d16f29978940b9ac1a3"
+    },
+    {
+      "path": "ports/messager/rooms/organization_http.go",
+      "bytes": 6065,
+      "sha256": "6beaca1c67acfb8dc8c9ae109e098000b12e30a14b26fa9c6452a06d2fe53e4f"
+    },
+    {
+      "path": "ports/messager/rooms/organization_pin_json.go",
+      "bytes": 1184,
+      "sha256": "aef494b12bf3d91588e69aef92876838ad1e72bd74e4bc830f6d889758491a61"
+    },
+    {
+      "path": "ports/messager/rooms/organization_provenance_test.go",
+      "bytes": 1950,
+      "sha256": "0fbafabb9ef4437ea6ab0c5b879c78b38c855153a55c16fa583a648fbb77bedf"
+    },
+    {
+      "path": "ports/messager/rooms/organization_test.go",
+      "bytes": 7828,
+      "sha256": "09f4f65a1f63b0273ce466daee68ef1034df70a69fab9d4024cf889c01c91f11"
     },
     {
       "path": "ports/messager/rooms/reactions.go",
@@ -10633,8 +10718,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 51670,
-      "sha256": "894bbffca8600a1c38016b77b1c130131ec1c6601ad5ae4005aea93fa1b672fb"
+      "bytes": 52270,
+      "sha256": "53c3b1d1aaa868d5c399b34ad0e9b20713c4282bee2e12dc9566d360085fea11"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -10658,13 +10743,13 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 104503,
-      "sha256": "b37e9b186f2833b425003636d144b480bf04f761a4e9941a426bd1d6025d5155"
+      "bytes": 106114,
+      "sha256": "a6ff3269c1f8ffb13fc44531932ed0cab3b17c36a656853c2753432cf5ee972f"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 12923,
-      "sha256": "ba0ea984f23e148b8bd04b3c9c6297fce6bb21d75225e310da02365ef962a20f"
+      "bytes": 13036,
+      "sha256": "6727dc6b9a08b1a8fa3afed1232c1baf899a9e52749deab8cb2a8fb6ac3ad83f"
     },
     {
       "path": "scripts/integration_groups.py",
@@ -10703,8 +10788,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 21379,
-      "sha256": "1f9348f6dddc6ce3a18a45e74531867a1024d5324b1de09851eab628dabb1f21"
+      "bytes": 21423,
+      "sha256": "d9371d65f34fc4c8673c3190aba9f5cbdf780ff54f91b7d4459c2eb295a37855"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -11245,6 +11330,11 @@
       "path": "tests/integration/chat_mls_test.go",
       "bytes": 22370,
       "sha256": "a6fe8ddcef5dd688e3b37cd0e727f5ba8693192aeef57340a0da95326a946ff7"
+    },
+    {
+      "path": "tests/integration/chat_organization_test.go",
+      "bytes": 39667,
+      "sha256": "845340eccdcd52931ea8e177e3acf9f3a72f4d231ddcdcb6800fd40002a8b79c"
     },
     {
       "path": "tests/integration/chat_preflight_test.go",
@@ -11810,6 +11900,11 @@
       "path": "tests/transactionguard/chat_forward_preflight_test.go",
       "bytes": 1733,
       "sha256": "5e69c0014243bf4f68a44ffab00db9653a2c8462ad9d76d981f02eecd59dd20e"
+    },
+    {
+      "path": "tests/transactionguard/chat_organization_test.go",
+      "bytes": 2813,
+      "sha256": "e5847a7f5bf53f71269c5b84498416ed008c5c4b41c8faa4b4b264e320770135"
     },
     {
       "path": "tests/transactionguard/chat_preflight_test.go",

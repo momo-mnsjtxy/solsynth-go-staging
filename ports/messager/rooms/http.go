@@ -20,10 +20,11 @@ import (
 const ProjectionVersion = "owned-text-room-v1"
 
 type Service struct {
-	Repository Repository
-	Authority  Authority
-	Reader     messager.SyncReader
-	Bind       func(context.Context, authority.Principal) context.Context
+	Repository   Repository
+	Organization OrganizationRepository
+	Authority    Authority
+	Reader       messager.SyncReader
+	Bind         func(context.Context, authority.Principal) context.Context
 }
 
 func (s *Service) Handler() http.Handler { return http.HandlerFunc(s.serveHTTP) }
@@ -152,6 +153,9 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	p := []string{}
 	if rest != "" {
 		p = strings.Split(strings.TrimPrefix(rest, "/"), "/")
+	}
+	if s.serveOrganization(w, r, p) {
+		return
 	}
 	if len(p) == 4 && p[1] == "messages" && p[3] == "thread" {
 		s.serveThread(w, r, p)
@@ -417,7 +421,11 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		case len(p) == 3 && p[1] == "members" && p[2] == "me":
 			switch r.Method {
 			case "GET":
-				result, e = s.Repository.Me(ctx, actor, rid)
+				if s.Organization != nil {
+					result, e = s.Organization.GroupMember(ctx, actor, rid)
+				} else {
+					result, e = s.Repository.Me(ctx, actor, rid)
+				}
 			case "POST":
 				e = empty(w, r)
 				if e == nil {

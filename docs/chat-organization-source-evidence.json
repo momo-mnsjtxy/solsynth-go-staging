@@ -1,0 +1,47 @@
+{
+  "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "license": "AGPL-3.0-only",
+  "scope": "Owned chat organization; no excluded protocol/shared enum/service implementation used",
+  "sources": [
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Messager/Chat/ChatController.cs",
+      "sha256": "22d8a19becdab64fefa234d0213591f49ab3d08458c186b4900609bb02d38c98"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Messager/Chat/ChatRoomController.cs",
+      "sha256": "fbf9898e12c73cb47568035a168203243cab6dbcdd7545cf02861967d6d1d41e"
+    },
+    {
+      "path": "ports/messager/source/ChatService.cs",
+      "sha256": "75a18068893f878c7a5d24529d88415e632f0947894ceea971620ebf1558fb9a"
+    },
+    {
+      "path": "ports/messager/source/DysonNetwork.Messager__Chat__ChatPinService.cs",
+      "sha256": "054790088d92dc10828acd01095497922b16e48ab67e48576b98c9e63eb7b6e2"
+    },
+    {
+      "path": "ports/messager/source/DysonNetwork.Messager__Models__ChatMessagePin.cs",
+      "sha256": "a440d1af63d155fbcd99da0cf50d502d35f085f16b8a655e680f66a0d98c8e6a"
+    },
+    {
+      "path": "internal/messagerpg/source/AppDatabaseModelSnapshot.cs",
+      "sha256": "7968bb5449b4fa25f30ae3a5f7588e2bd851f39a6c7c70a68944b6cbbcfbbdd7"
+    },
+    {
+      "path": "ports/messager/contract-evidence/lib__chat__realtime__message_handler.dart",
+      "sha256": "7cb906dd11414186348cafb5e99fba75d7d1e3972674f44a359152f8e0a99263"
+    },
+    {
+      "path": "ports/messager/source/LICENSE.txt",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "internal/messagerpg/source/LICENSE.txt",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/messager/contract-evidence/lib__chat__messages_notifier.dart",
+      "sha256": "5240bc641d6f31984b960b88c053037799068371e34127882fed6a55ee3859c5"
+    }
+  ]
+}

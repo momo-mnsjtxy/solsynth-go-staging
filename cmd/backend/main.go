@@ -70,6 +70,7 @@ func run(args []string, out io.Writer) error {
 	all := fs.String("messager-notify-all", "", "explicit all-notifications mode stored in database")
 	mentions := fs.String("messager-notify-mentions", "", "explicit mentions-only notification mode")
 	noNotify := fs.String("messager-notify-none", "", "explicit no-notifications mode")
+	chatOrganizationSettings := chatOrganizationFlags(fs)
 	verificationSettings := verificationFlags(fs)
 	externalSettings := externalFlags(fs)
 	awardSettings := livestreamAwardFlags(fs)
@@ -245,6 +246,9 @@ func run(args []string, out io.Writer) error {
 		catalogProviders = []exchangecatalog.Provider{provider}
 	}
 	appConfig := application.Config{PostAutomodReview: *enableAutomodReview, EnableMLSDelivery: *enableMLS, Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
+	if err := applyChatOrganization(&appConfig, *chatOrganizationSettings); err != nil {
+		return err
+	}
 	if *enablePINEnrollment {
 		appConfig.PINEnrollmentPepperID = *pepperID
 	}

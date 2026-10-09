@@ -5,6 +5,16 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGChatOrganizationSummaryReadAllVisibility",
+        "TestPGChatOrganizationSearchLiteralFiltersAndPrivacy",
+        "TestPGChatOrganizationPinsAuthorizationExpiryAndEvents",
+        "TestPGChatOrganizationGroupsOwnershipAssignmentAndDelete",
+        "TestPGChatOrganizationAtomicRollbackAndDuplicateRace",
+        "TestPGChatOrganizationWaitRevocationAndMembershipChange",
+        "TestPGChatOrganizationCanonicalSearchEntitlement",
+        "TestPGBackendChatOrganizationRoutes",
+        "TestPGChatOrganizationRestartPersistence",
+
         "TestPGPostCompositionCanonicalReferencesAndReplay",
         "TestPGPostCompositionOwnershipAndAtomicRollback",
         "TestPGPostCompositionLivePrivacyExpiryAndPublication",
@@ -835,6 +845,8 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGChatOrganizationRestartPersistence",
+
         "TestPGPostCompositionSavedRestartPersistence",
 
         "TestPGFederationPublicAdmissionSavedRestartPersistence",

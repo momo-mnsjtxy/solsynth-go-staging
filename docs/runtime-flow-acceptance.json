@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed typed post associations with private live/meet/fund/calendar filtering, canonical final reference/editor checks, original guarded restart proofs; combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL pending.",
+  "local_source_checkpoint": "Reviewed canonical chat summary/read-all/literal paid-search/pins/personal groups integrated, paid-cycle final wait expiry correction; combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL pending.",
   "last_fully_passed_ci": {
     "commit": "651c6302809de83a2682047c5820468befd15b1e",
     "run": 37873421328,
@@ -14,13 +14,14 @@
     "acceptance_limit": "CI-green for this immutable implementation, not all original platform functions or production rollout."
   },
   "latest_candidate": {
-    "commit": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e",
-    "required_before": 756,
-    "required_after_restart": 91,
-    "status": "Published narrow three-fixture correction; runtime unchanged, actual CI pending."
+    "commit": "e05ec1500d9c1ae051b2efc06abc0e2496cac328",
+    "run": 37876657622,
+    "required_before": 777,
+    "required_after_restart": 93,
+    "status": "Running reviewed public-admission/composer plus three fixture corrections."
   },
-  "local_required_before": 777,
-  "local_required_after_restart": 93,
+  "local_required_before": 786,
+  "local_required_after_restart": 94,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2128,7 +2129,7 @@
     "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
-    "as_of": "2026-10-09T02:38:00Z",
+    "as_of": "2026-10-09T02:55:00Z",
     "authoritative_for": "Current source-backed remaining flow bundles, implementation candidates and operational gaps; no percentage or endpoint-total inference.",
     "families": [
       {
@@ -2694,7 +2695,7 @@
           "messager.messages",
           "messager.rooms"
         ],
-        "remaining": "Chat aggregate/read-all/global-sync/search and subscription/status projections are not exposed by the composed Go host.",
+        "remaining": "Summary/read-all/literal canonical paid-search integrated pending actualPG; room/account subscriptions, chat status/global sync, and read-receipt websocket fanout remain unsupported.",
         "source": [
           {
             "path": "DysonNetwork.Messager/Chat/ChatController.cs",
@@ -2723,44 +2724,6 @@
         ],
         "current_boundary": "Current room reads, per-room sync and total unread are implemented. Other requests fall through CHAT_UNSUPPORTED or do not resolve to a valid room; pure helpers do not constitute these runtime flows.",
         "next_slice": "Start with summary, read-all and literal canonical search using existing membership/visibility rules; separately specify transport subscription/device semantics."
-      },
-      {
-        "id": "chat_pins_folders",
-        "families": [
-          "messager.messages",
-          "messager.rooms"
-        ],
-        "remaining": "Message pins and per-account chat folders/group assignment remain unimplemented.",
-        "source": [
-          {
-            "path": "DysonNetwork.Messager/Chat/ChatController.cs",
-            "blob": "29e748e8c585ed766c9e20dddfc2eae65509f9a2",
-            "methods": "PinMessage@1868; UnpinMessage@1897; ListPins@1926",
-            "route_examples": [
-              "POST /api/chat/{roomId:guid}/pins",
-              "DELETE /api/chat/{roomId:guid}/pins/{pinId:guid}",
-              "GET /api/chat/{roomId:guid}/pins"
-            ]
-          },
-          {
-            "path": "DysonNetwork.Messager/Chat/ChatRoomController.cs",
-            "blob": "373efa01d468a76ba5085bf5c2b59bede71bd7ec",
-            "methods": "ListGroups@2093; CreateGroup@2104; UpdateGroup@2116; DeleteGroup@2128; MoveToGroup@2140",
-            "route_examples": [
-              "GET /api/chat/groups",
-              "POST /api/chat/groups",
-              "PATCH /api/chat/groups/{groupId:guid}"
-            ],
-            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
-          }
-        ],
-        "runtime_owner_or_rejection": [
-          "ports/messager/rooms/http.go:serveHTTP",
-          "internal/chatpg",
-          "internal/messagerpg"
-        ],
-        "current_boundary": "No pin or personal-group persistence/handler in current canonical owner. Do not confuse personal folders with implemented group chat rooms.",
-        "next_slice": "One bounded transactional bundle: fresh room/target visibility, account-owned folders, pin expiry and saved-state restart."
       },
       {
         "id": "chat_voice_placeholders",
@@ -3866,6 +3829,59 @@
         ],
         "current_boundary": "Source request fields and mapping are authored at PostActionController.cs:239-290,535-707,1365-1603. Canonical linked media, realm and explicit reply/forward/chain relations already exist. Standalone survey/fund/meet/calendar implementations do not prove post composition integration.",
         "next_slice": "Add one typed association at a time through current canonical read/ownership adapters; validate withdrawal and cross-domain lock waits.",
+        "status": "implemented_pending_actual_PG"
+      },
+      {
+        "id": "messager.chat_organization",
+        "status": "integrated_pending_actual_PG",
+        "scope": [
+          "Summary/read-all/literal search with canonical paid-perk proof",
+          "Pin lifecycle and personal groups/membership assignment",
+          "Source-supported millisecond expiry and deterministic snapshots"
+        ],
+        "limits": [
+          "Read-receipt websocket fanout remains unimplemented",
+          "Full upstream entity projections and unretained group service semantics not claimed",
+          "Remote ranked search not implemented"
+        ]
+      },
+      {
+        "id": "chat_pins_folders",
+        "families": [
+          "messager.messages",
+          "messager.rooms"
+        ],
+        "remaining": "Pin/group CRUD and per-account assignment integrated pending actualPG; complete upstream group-service semantics and full entity projections remain documented differences.",
+        "source": [
+          {
+            "path": "DysonNetwork.Messager/Chat/ChatController.cs",
+            "blob": "29e748e8c585ed766c9e20dddfc2eae65509f9a2",
+            "methods": "PinMessage@1868; UnpinMessage@1897; ListPins@1926",
+            "route_examples": [
+              "POST /api/chat/{roomId:guid}/pins",
+              "DELETE /api/chat/{roomId:guid}/pins/{pinId:guid}",
+              "GET /api/chat/{roomId:guid}/pins"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Messager/Chat/ChatRoomController.cs",
+            "blob": "373efa01d468a76ba5085bf5c2b59bede71bd7ec",
+            "methods": "ListGroups@2093; CreateGroup@2104; UpdateGroup@2116; DeleteGroup@2128; MoveToGroup@2140",
+            "route_examples": [
+              "GET /api/chat/groups",
+              "POST /api/chat/groups",
+              "PATCH /api/chat/groups/{groupId:guid}"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/messager/rooms/http.go:serveHTTP",
+          "internal/chatpg",
+          "internal/messagerpg"
+        ],
+        "current_boundary": "No pin or personal-group persistence/handler in current canonical owner. Do not confuse personal folders with implemented group chat rooms.",
+        "next_slice": "One bounded transactional bundle: fresh room/target visibility, account-owned folders, pin expiry and saved-state restart.",
         "status": "implemented_pending_actual_PG"
       }
     ],

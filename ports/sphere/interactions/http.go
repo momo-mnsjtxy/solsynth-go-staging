@@ -319,6 +319,75 @@ func NewHandler(repo Repository, auth posts.Auth) http.Handler {
 		}
 		respond(w, 200, out)
 	})
+	for _, action := range []string{"subscribe", "unsubscribe", "subscription"} {
+		method := "POST"
+		if action == "subscription" {
+			method = "GET"
+		}
+		mux.HandleFunc(method+" "+collectionRoot+"/{slug}/"+action, func(w http.ResponseWriter, r *http.Request) {
+			permission := "post.collections.posts.manage"
+			if action == "subscription" {
+				permission = ""
+			}
+			actor, ok := identity(w, r, true, permission)
+			if !ok || !noquery(w, r) {
+				return
+			}
+			if e := emptyBody(w, r); e != nil {
+				failure(w, e)
+				return
+			}
+			publisher, slug := r.PathValue("publisher"), r.PathValue("slug")
+			if action == "unsubscribe" {
+				if e := repo.UnsubscribeCollection(r.Context(), actor, publisher, slug); e != nil {
+					failure(w, e)
+					return
+				}
+				respond(w, 204, nil)
+				return
+			}
+			var out CollectionSubscription
+			var created bool
+			var e error
+			if action == "subscribe" {
+				out, created, e = repo.SubscribeCollection(r.Context(), actor, publisher, slug)
+			} else {
+				out, e = repo.CollectionSubscription(r.Context(), actor, publisher, slug)
+			}
+			if e != nil {
+				failure(w, e)
+				return
+			}
+			status := 200
+			if created {
+				status = 201
+				w.Header().Set("Location", "/api/publishers/"+url.PathEscape(publisher)+"/collections/"+url.PathEscape(slug)+"/subscription")
+			}
+			respond(w, status, out)
+		})
+	}
+	for _, next := range []bool{false, true} {
+		direction := "prev"
+		if next {
+			direction = "next"
+		}
+		mux.HandleFunc("GET "+collectionRoot+"/{slug}/posts/{id}/"+direction, func(w http.ResponseWriter, r *http.Request) {
+			actor, ok := identity(w, r, false, "")
+			if !ok || !noquery(w, r) {
+				return
+			}
+			if !authority.ValidID(r.PathValue("id")) {
+				failure(w, ErrNotFound)
+				return
+			}
+			out, e := repo.AdjacentCollectionPost(r.Context(), actor, r.PathValue("publisher"), r.PathValue("slug"), r.PathValue("id"), next)
+			if e != nil {
+				failure(w, e)
+				return
+			}
+			respond(w, 200, out)
+		})
+	}
 	for _, create := range []bool{true, false} {
 		pattern := "POST " + collectionRoot
 		if !create {
@@ -479,5 +548,6 @@ func NewHandler(repo Repository, auth posts.Auth) http.Handler {
 var RoutePatterns = []string{
 	"POST /api/posts/{id}/reactions", "GET /api/posts/{id}/reactions", "POST /api/posts/{id}/bookmark", "DELETE /api/posts/{id}/bookmark", "GET /api/posts/{id}/bookmark", "GET /api/posts/bookmarks", "GET /api/collections",
 	"GET /api/publishers/{publisher}/collections", "POST /api/publishers/{publisher}/collections", "GET /api/publishers/{publisher}/collections/{slug}", "PATCH /api/publishers/{publisher}/collections/{slug}", "DELETE /api/publishers/{publisher}/collections/{slug}",
+	"POST /api/publishers/{publisher}/collections/{slug}/subscribe", "POST /api/publishers/{publisher}/collections/{slug}/unsubscribe", "GET /api/publishers/{publisher}/collections/{slug}/subscription", "GET /api/publishers/{publisher}/collections/{slug}/posts/{id}/prev", "GET /api/publishers/{publisher}/collections/{slug}/posts/{id}/next",
 	"GET /api/publishers/{publisher}/collections/{slug}/posts", "POST /api/publishers/{publisher}/collections/{slug}/posts", "POST /api/publishers/{publisher}/collections/{slug}/posts/batch", "POST /api/publishers/{publisher}/collections/{slug}/posts/batch/remove", "DELETE /api/publishers/{publisher}/collections/{slug}/posts/{id}", "PUT /api/publishers/{publisher}/collections/{slug}/posts/reorder",
 }

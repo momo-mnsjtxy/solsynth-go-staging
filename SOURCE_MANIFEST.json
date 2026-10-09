@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Type canonical history fixture identity without changing credit assertions",
+  "checkpoint": "Restore collection subscription navigation and private-safe publication notifications",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "3ac0a7d8bdd2034cf0b6a3c32ebe778a786887af"
+    "remote_parent": "f88cd772710039a7db9feb5df1fb1697a5b2bc7f"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -663,13 +663,38 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 156234,
-      "sha256": "9dac5edd2d42e30782023aafc9809059f1b10869af7124d30a1eb22492ec64b4"
+      "bytes": 164163,
+      "sha256": "7fab5784d30047a49f13bece601576267271ed6000ead16e3971c36636100cb0"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
       "bytes": 12803,
       "sha256": "3d5e243268952c76c21726fcb8d2ab33c25ea5ed7de47c21e0b701ff31c84dc3"
+    },
+    {
+      "path": "docs/collection-composed-review.json",
+      "bytes": 3314,
+      "sha256": "2d5b35f6af9b765ed3d477c044ce22dbd961e91455572f329838a14d7d5ad842"
+    },
+    {
+      "path": "docs/collection-publication-notifications-evidence.json",
+      "bytes": 1807,
+      "sha256": "7046cf8a7c46481d2d48cf9849e640b66668e55f3f2e02a36e2e61f7b3e4d727"
+    },
+    {
+      "path": "docs/collection-publication-notifications.md",
+      "bytes": 5950,
+      "sha256": "7787eff67b10d4bc7b1d076d0c44bca294a8b9ca6216ce314ab0c2ced2e17a7e"
+    },
+    {
+      "path": "docs/collection-subscription-navigation-evidence.json",
+      "bytes": 2337,
+      "sha256": "5efb157d62a33cd327159344a8dfe85bbb49d70bb67315522e49314f77fdacd0"
+    },
+    {
+      "path": "docs/collection-subscription-navigation.md",
+      "bytes": 5387,
+      "sha256": "da00d1e79bbf55c9248efa325f72fc03e358cf85f104afc23ff2e6eb8bd9ece3"
     },
     {
       "path": "docs/combined-domain-integration-review.md",
@@ -2073,8 +2098,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 216998,
-      "sha256": "dfa4b55cde6d5004c1e9554d3727baaefd43a7605f5f21f1c1790e307b193425"
+      "bytes": 218747,
+      "sha256": "6a6a27d58ff9abe56b76287cba37732d475e5889ca4ffe1a5e449538e9a31059"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -2443,8 +2468,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 36811,
-      "sha256": "fd1225cc4f7b39748da42dc067916ab264d410ea4493786550c5c2c693e970cf"
+      "bytes": 37357,
+      "sha256": "931749d9c221e1973b8fc9a715834b58e3e844dd0c68c893487a74aceddf8eb6"
     },
     {
       "path": "internal/application/blog_routing_test.go",
@@ -2513,8 +2538,8 @@
     },
     {
       "path": "internal/application/notifications.go",
-      "bytes": 869,
-      "sha256": "26b01881dbba2e54f0973196b69d61f40cbdd8e8f1a0dd07d5e35941e7d416dc"
+      "bytes": 1303,
+      "sha256": "6c1d9ccc5cabdd2a944c1a5abcf1efed0bfeb4d4bc5ff09dfa882523fda9c319"
     },
     {
       "path": "internal/application/passkit.go",
@@ -2578,8 +2603,8 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 10840,
-      "sha256": "d96cad54fef0b0c87384fd4ebbf80481e3ed14622e9863f998696e7f31e307d0"
+      "bytes": 11011,
+      "sha256": "65fb9403fe570a2af274481f2676cf9bc40eb03a22a02b08c8c8a7742b742118"
     },
     {
       "path": "internal/application/realm_boosts.go",
@@ -3183,8 +3208,8 @@
     },
     {
       "path": "internal/collectionadminpg/repository.go",
-      "bytes": 7779,
-      "sha256": "1ce2b4f498805e8b4d709c30acbdd8021e66620dce34a1a4845603cf901d1554"
+      "bytes": 7986,
+      "sha256": "a0fac5713d8cb7f71a3b6b86ed1ff5955aff74addf46ccf7d19498af54bc4fe4"
     },
     {
       "path": "internal/commercepg/activation.go",
@@ -3637,14 +3662,44 @@
       "sha256": "2c16b7ee99ca790a5790355bb38b781639237e359b0f8bfa95878a3a34657187"
     },
     {
+      "path": "internal/interactionpg/collection_dependencies.go",
+      "bytes": 4960,
+      "sha256": "c1e9a45e6a585f0ba12065735df8b7b0c38fda0102b9be7d5dff24c25285482d"
+    },
+    {
+      "path": "internal/interactionpg/collection_navigation.go",
+      "bytes": 3369,
+      "sha256": "f9169b6394f2eab33cf3164de26d8520faf016bedd3d81407599ffa827ad6b25"
+    },
+    {
+      "path": "internal/interactionpg/collection_publication.go",
+      "bytes": 13170,
+      "sha256": "1a1a5af889010abefa8dbcb1767bcea9aa474be4c63a6e7ec9641aa7bdadc1db"
+    },
+    {
+      "path": "internal/interactionpg/collection_publication_dependencies.go",
+      "bytes": 4517,
+      "sha256": "4fc1c562b32f062d6bcb5b1de3d6e128a937b73f58c41eba59e296b104fda278"
+    },
+    {
+      "path": "internal/interactionpg/collection_publication_schema.sql",
+      "bytes": 1554,
+      "sha256": "1f0b435439d4302f2cec12c733ae4e62db7afadea994d42bbe0d096c6bc454e8"
+    },
+    {
+      "path": "internal/interactionpg/collection_subscription.go",
+      "bytes": 9559,
+      "sha256": "5796f598b5bbb194249e9eb5a81853650f31354a0194cacb320693ca0e7f179e"
+    },
+    {
       "path": "internal/interactionpg/collections.go",
-      "bytes": 11651,
-      "sha256": "0c72fddf2d8bf4a01d98925608ae295bca18376a2b3d38f38f6a620c8728746d"
+      "bytes": 11823,
+      "sha256": "071a98089ad84bdecd5504491cd0c7a4e9aa7291f738f92516152f81dd2a3801"
     },
     {
       "path": "internal/interactionpg/repository.go",
-      "bytes": 12810,
-      "sha256": "492bd209c2f662339bda47a80af54aacc6d694279b8765fa8192ff5153760de2"
+      "bytes": 13051,
+      "sha256": "fe673c8a2ae14dc9150a8bb689968d0b277c77d5944322f8a11d1d6202f48478"
     },
     {
       "path": "internal/interactionpg/repository_test.go",
@@ -3653,8 +3708,8 @@
     },
     {
       "path": "internal/interactionpg/schema.sql",
-      "bytes": 2231,
-      "sha256": "2003b8a0f4dd090c1826b72834caa532a2ff49854a6ba33cb0d2fc0d1d18a438"
+      "bytes": 3154,
+      "sha256": "9a5dc9e6dbaa8b1df28717399d0ad9d710fa01a8767de1416177af33e5a50deb"
     },
     {
       "path": "internal/livestreampg/awards.go",
@@ -4092,6 +4147,16 @@
       "sha256": "4efeb782609a3592bd6cca1aa0cd0eb02535ab459a5bb5ad08b9fe576040c75a"
     },
     {
+      "path": "internal/notificationpg/collection_publications.go",
+      "bytes": 1583,
+      "sha256": "c2e03d2fc768518a13f1b9a19d0610cebe5f60cf6db1f71ebc8e55fe8b85c63a"
+    },
+    {
+      "path": "internal/notificationpg/collection_publications_test.go",
+      "bytes": 389,
+      "sha256": "4a5d280ddfe07e38104ee2b24e4a4b121435bc950bbc9cc86b7aa657f8c461b0"
+    },
+    {
       "path": "internal/notificationpg/friend_schema.sql",
       "bytes": 339,
       "sha256": "f7abea95bdb8d8de26cb67a99494a90b620d071f3746cac2b593ceee53d4178d"
@@ -4128,8 +4193,8 @@
     },
     {
       "path": "internal/notificationpg/repository.go",
-      "bytes": 11908,
-      "sha256": "b058063ff7a08132950ee2d0613a0617331f773d901259e4e89349b6a835c41a"
+      "bytes": 14286,
+      "sha256": "5c837e82c955c65d2403221b86432e769a0ce202020f8d3e73ad0e514f4fcb91"
     },
     {
       "path": "internal/notificationpg/repository_test.go",
@@ -4307,6 +4372,16 @@
       "sha256": "2c91eb937b50165ac75e70c86d00c107e29d4539b302160d0213887571a1a892"
     },
     {
+      "path": "internal/postpg/publication.go",
+      "bytes": 1049,
+      "sha256": "07e72158e41508cead9d0092820d09cd71a79047fa31497d99671acf0278b118"
+    },
+    {
+      "path": "internal/postpg/publication_test.go",
+      "bytes": 1450,
+      "sha256": "5b7dc048e54721e5097fe393e252235e24f6529f4384e6b3fec830d924a94d6d"
+    },
+    {
       "path": "internal/postpg/realm_schema.sql",
       "bytes": 1551,
       "sha256": "eabd3ac0cb24a92ac94d39cd908c38243819eb4ac3115013c490bbf5f513435b"
@@ -4318,8 +4393,8 @@
     },
     {
       "path": "internal/postpg/repository.go",
-      "bytes": 19859,
-      "sha256": "e45c5c2e6271a15db752956b81b8dfb0f3dc3490057974ca5db9e207b43c0341"
+      "bytes": 20315,
+      "sha256": "9a9070a90b58c38503760c6ede83280a0e797eff18e71753ff21686cf6281d36"
     },
     {
       "path": "internal/postpg/repository_test.go",
@@ -4328,8 +4403,8 @@
     },
     {
       "path": "internal/postpg/scheduling.go",
-      "bytes": 20699,
-      "sha256": "3a6676c8fc2e91abc16cc00d2fb14de8bdb1f3179c1a92b04c169a5c0a3317c5"
+      "bytes": 21351,
+      "sha256": "cd04ab65df3183dd0f601e2bfc5163b2323bd52046aaa5d0b6218aafa879a42e"
     },
     {
       "path": "internal/postpg/scheduling_schema.sql",
@@ -9922,9 +9997,19 @@
       "sha256": "8b7dd1c3f9ddcab5b1a2383009e0919f321578246f104cc4127696a45f52b57b"
     },
     {
+      "path": "ports/sphere/interactions/collection_source_test.go",
+      "bytes": 1720,
+      "sha256": "e6cccb4bae847105f92979121632a248e7c4881f601d60e154db9ea7496487b0"
+    },
+    {
+      "path": "ports/sphere/interactions/collection_subscription_test.go",
+      "bytes": 4271,
+      "sha256": "2059dc732b47870b18fdc4a066cce77233be0f700588a9bf05d334c1b04aa52f"
+    },
+    {
       "path": "ports/sphere/interactions/http.go",
-      "bytes": 13208,
-      "sha256": "971650f74c42d2814c4ea1373710a1016a3192a1b1dc14cee614736309f1dd0d"
+      "bytes": 15516,
+      "sha256": "49b8c230ef65a6241348bae08d1e80f0062a24d6117e192d27b64209417e58bb"
     },
     {
       "path": "ports/sphere/interactions/http_test.go",
@@ -9988,8 +10073,8 @@
     },
     {
       "path": "ports/sphere/interactions/types.go",
-      "bytes": 5535,
-      "sha256": "5338c33c8466525d9a29947ca83630d7a04e54482a686fe7d82ee75cb6cd6767"
+      "bytes": 6398,
+      "sha256": "fe77766261fc0d7b10f9d956126c029493b0a1061aa78e09c1220513579a1211"
     },
     {
       "path": "ports/sphere/livestreams/awards.go",
@@ -11523,8 +11608,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 61574,
-      "sha256": "b00bca6b08c4a571fc1d8d437f63c0426064d6da195c9d778cf2ecac1541c471"
+      "bytes": 62992,
+      "sha256": "1caaa8be2e0a883743d40102f5a778078cb145ce5fbb5a0ac3bc3536f91a7452"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -11553,13 +11638,13 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 131149,
-      "sha256": "eb610f080b269848e01e491e41ac1a173df7e822e332a44514831cf6949b04c3"
+      "bytes": 134947,
+      "sha256": "afb91b3cc205ec9e5b1eea0a5692ac95ad7cc8e93bee490eaeb8b20051dcabd3"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 14528,
-      "sha256": "49df7dee6d500f6e63a94421c84d81714a4227d20c52ccc9361876d27137cd65"
+      "bytes": 14637,
+      "sha256": "b06c57bd35c051a2bef3660d66d74ddc7802619b2995312b389820b3c9120a37"
     },
     {
       "path": "scripts/integration_groups.py",
@@ -11589,7 +11674,7 @@
     {
       "path": "scripts/test-fixture-isolation.py",
       "bytes": 14408,
-      "sha256": "5bb695c56a478c0fcd8c86eab58ad3811847135528881de83ee3ad3a4cf1b36f"
+      "sha256": "75c38b182b1baee90ca90de4999e6823a55a97c9d20f63ac8d50eac2ddf113f9"
     },
     {
       "path": "scripts/test-integration-groups.py",
@@ -11603,8 +11688,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 24539,
-      "sha256": "1c36d7fd4b412657fcef3ca81bf8dd0f4d30d1fecde5bc63aeaff4a2a80ff828"
+      "bytes": 25095,
+      "sha256": "557cc1f7c6ad9a3a412f6eeef014901eb71f221c0b6bf1b43b1e70884f6b86be"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -12215,6 +12300,16 @@
       "path": "tests/integration/collection_admin_test.go",
       "bytes": 4912,
       "sha256": "56ab80920903d9f67fd97804a2d0a24126f22164e9b5261bdf41c4b4a0891c15"
+    },
+    {
+      "path": "tests/integration/collection_publication_test.go",
+      "bytes": 28609,
+      "sha256": "c82232a05cd03fdceb9403b486f0bb30a998548f7725cbfc87b5b7245dd377cb"
+    },
+    {
+      "path": "tests/integration/collection_subscription_navigation_test.go",
+      "bytes": 29871,
+      "sha256": "c255e71e8d1760bcfe279a9f5295da862a70fc548f0621bd11237981da3f6e67"
     },
     {
       "path": "tests/integration/commerce_maintenance_test.go",

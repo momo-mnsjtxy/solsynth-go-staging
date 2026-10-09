@@ -21,14 +21,21 @@ import (
 )
 
 //go:embed schema.sql
-var Schema string
+var baseSchema string
+
+//go:embed collection_publication_schema.sql
+var CollectionPublicationSchema string
+
+var Schema = baseSchema + "\n" + CollectionPublicationSchema
 
 type Repository struct {
-	db         *sql.DB
-	publishers *accountpg.Repository
-	now        func() time.Time
-	guard      *authoritypg.TransactionGuard
-	visibility postpg.VisibilityProvider
+	db              *sql.DB
+	publishers      *accountpg.Repository
+	now             func() time.Time
+	guard           *authoritypg.TransactionGuard
+	visibility      postpg.VisibilityProvider
+	projection      postpg.AssociationStore
+	notificationApp string
 }
 
 func New(db *sql.DB) *Repository {

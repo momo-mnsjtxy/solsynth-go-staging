@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/interactionpg/collection_publication_schema.sql",
  "internal/accounthistorypg/schema.sql",
  "internal/activitypg/schema.sql", "internal/friendeventpg/schema.sql", "internal/notificationpg/friend_schema.sql",
  "internal/federationpg/delivery_schema.sql",
@@ -134,6 +135,8 @@ def check(runner, read_schema=None):
         raise ValueError("account history migration must be atomic")
     if not schemas.index("internal/authoritypg/schema.sql") < schemas.index("internal/accountpg/schema.sql"):
         raise ValueError("accounts require the authority schema first")
+    if schemas.index("internal/interactionpg/collection_publication_schema.sql") <= schemas.index("internal/interactionpg/schema.sql"):
+        raise ValueError("collection publication intent requires canonical collections first")
     if schemas.index("internal/authoritypg/continuity_schema.sql") <= schemas.index("internal/authoritypg/schema.sql"):
         raise ValueError("session continuity requires canonical authority first")
     if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/authoritypg/continuity_schema.sql' not in runner:
@@ -318,6 +321,9 @@ def main():
     custom_identifier = '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/commercepg/custom_order_identifier.sql'
     commerce = PSQL + "internal/commercepg/schema.sql"
     mutations.append(source.replace(custom_identifier + "\n", "").replace(commerce, custom_identifier + "\n" + commerce))
+    collections = PSQL + "internal/interactionpg/schema.sql"
+    publications = PSQL + "internal/interactionpg/collection_publication_schema.sql"
+    mutations.append(source.replace(publications + "\n", "").replace(collections, publications + "\n" + collections))
     oauth = PSQL + "internal/oauthpg/schema.sql"
     signin = PSQL + "internal/signinpg/schema.sql"
     mutations.append(source.replace(oauth + "\n", "").replace(signin, signin + "\n" + oauth))

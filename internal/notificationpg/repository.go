@@ -27,6 +27,7 @@ var FriendSchema string
 var Schema = baseSchema + "\n" + FriendSchema
 
 type Repository struct {
+	collections CollectionPublicationPolicy
 	friends     notifications.AudienceEventProjector
 	preferences PreferencePolicy
 	roomAccess  rooms.AccessPolicy
@@ -109,11 +110,11 @@ func (r *Repository) List(ctx context.Context, actor, app string, take, offset i
 	}
 	defer tx.Rollback()
 	var total int64
-	e = tx.QueryRowContext(ctx, `SELECT count(*) FROM notification_v1.inbox WHERE account_id=$1 AND app_id=$2 AND dismissed_at IS NULL`, actor, app).Scan(&total)
+	e = tx.QueryRowContext(ctx, `SELECT count(*) FROM notification_v1.inbox WHERE account_id=$1::text::uuid AND app_id=$2 AND dismissed_at IS NULL AND `+r.inboxVisibilitySQL(), actor, app).Scan(&total)
 	if e != nil {
 		return nil, 0, e
 	}
-	rows, e := tx.QueryContext(ctx, `SELECT `+fields+` FROM notification_v1.inbox WHERE account_id=$1 AND app_id=$2 AND dismissed_at IS NULL ORDER BY created_at DESC,id DESC LIMIT $3 OFFSET $4`, actor, app, take, offset)
+	rows, e := tx.QueryContext(ctx, `SELECT `+fields+` FROM notification_v1.inbox WHERE account_id=$1::text::uuid AND app_id=$2 AND dismissed_at IS NULL AND `+r.inboxVisibilitySQL()+` ORDER BY created_at DESC,id DESC LIMIT $3 OFFSET $4`, actor, app, take, offset)
 	if e != nil {
 		return nil, 0, e
 	}
@@ -141,6 +142,30 @@ func (r *Repository) List(ctx context.Context, actor, app string, take, offset i
 			return nil, 0, e
 		}
 	}
+
+	// Marking viewed can wait. Recheck current domain visibility after that wait
+	// and keep only the same rows, preserving the source client's unread shape.
+	visibleIDs := make([]string, 0, len(list))
+	for _, n := range list {
+		visibleIDs = append(visibleIDs, n.ID)
+	}
+	allowed, e := r.visibleInboxIDs(ctx, tx, actor, app, visibleIDs)
+	if e != nil {
+		return nil, 0, e
+	}
+	kept := make([]notifications.Notification, 0, len(list))
+	for _, n := range list {
+		if allowed[n.ID] {
+			kept = append(kept, n)
+		}
+	}
+	list = kept
+	if e = tx.QueryRowContext(ctx, `SELECT count(*) FROM notification_v1.inbox WHERE account_id=$1::text::uuid AND app_id=$2 AND dismissed_at IS NULL AND `+r.inboxVisibilitySQL(), actor, app).Scan(&total); e != nil {
+		return nil, 0, e
+	}
+	if _, e = r.guard.Authenticate(ctx, r.db, tx, actor); e != nil {
+		return nil, 0, e
+	}
 	// Keep the pre-update snapshot: the authored client decrements its unread
 	// counter for exactly those returned rows whose viewed_at was null.
 	if e = tx.Commit(); e != nil {
@@ -155,7 +180,7 @@ func (r *Repository) Unread(ctx context.Context, actor, app string) (int64, erro
 	}
 	defer tx.Rollback()
 	var n int64
-	e = tx.QueryRowContext(ctx, `SELECT count(*) FROM notification_v1.inbox WHERE account_id=$1 AND app_id=$2 AND viewed_at IS NULL AND dismissed_at IS NULL`, actor, app).Scan(&n)
+	e = tx.QueryRowContext(ctx, `SELECT count(*) FROM notification_v1.inbox WHERE account_id=$1::text::uuid AND app_id=$2 AND viewed_at IS NULL AND dismissed_at IS NULL AND `+r.inboxVisibilitySQL(), actor, app).Scan(&n)
 	if e != nil {
 		return 0, e
 	}
@@ -282,7 +307,7 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 		p.Cursor = v.event.Sequence
 		visible := v.audience == "account"
 		if v.audience == "notification" {
-			e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM notification_v1.inbox WHERE id=$1 AND account_id=$2 AND app_id=$3 AND dismissed_at IS NULL)`, v.id, actor, app).Scan(&visible)
+			e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM notification_v1.inbox WHERE account_id=$1::text::uuid AND app_id=$2 AND id=$3 AND dismissed_at IS NULL AND `+r.inboxVisibilitySQL()+`)`, actor, app, v.id).Scan(&visible)
 		}
 		if v.audience == "chat" {
 			e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM chat_members m JOIN chat_rooms r ON r.id=m.chat_room_id WHERE m.account_id=$1 AND r.id=$2 AND m.joined_at IS NOT NULL AND m.joined_at<=$3 AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned AND r.deleted_at IS NULL AND `+r.chatFilter("r.id", "$1")+`)`, actor, v.id, v.event.CreatedAt).Scan(&visible)
@@ -312,6 +337,22 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 				break
 			}
 		}
+
+		// A friend/media wait may outlive another notification's source grant.
+		// Recheck notification visibility with the current statement snapshot.
+		allowed := true
+		for _, v := range items {
+			if v.event.Sequence == event.Sequence && v.audience == "notification" {
+				e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM notification_v1.inbox WHERE account_id=$1::text::uuid AND app_id=$2 AND id=$3 AND dismissed_at IS NULL AND `+r.inboxVisibilitySQL()+`)`, actor, app, v.id).Scan(&allowed)
+				if e != nil {
+					return p, e
+				}
+				break
+			}
+		}
+		if !allowed {
+			continue
+		}
 		if source != nil {
 			fresh, allow, x := r.friends.ProjectAudienceEvent(ctx, tx, actor, *source)
 			if x != nil {
@@ -325,7 +366,29 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 		}
 		final = append(final, event)
 	}
-	p.Events = final
+
+	// All projection waits are now complete. Filter the entire notification
+	// subset in one fresh statement so a later friend's wait cannot preserve an
+	// earlier source grant. The immutable stream cursor still advances.
+	notificationIDs := []string{}
+	eventIDs := map[int64]string{}
+	for _, v := range items {
+		if v.audience == "notification" && v.id != nil {
+			notificationIDs = append(notificationIDs, *v.id)
+			eventIDs[v.event.Sequence] = *v.id
+		}
+	}
+	allowed, e := r.visibleInboxIDs(ctx, tx, actor, app, notificationIDs)
+	if e != nil {
+		return p, e
+	}
+	p.Events = []notifications.Event{}
+	for _, event := range final {
+		id, scoped := eventIDs[event.Sequence]
+		if !scoped || allowed[id] {
+			p.Events = append(p.Events, event)
+		}
+	}
 	if len(items) == 0 {
 		p.Cursor = p.HighWater
 	}

@@ -14,14 +14,14 @@
     "acceptance_limit": "Immutable implementation CI-green; remaining original flows, configured external providers and production rollout are separate."
   },
   "latest_candidate": {
-    "commit": "8cb9d7448b9b77d412549746ac81625b666e1510",
-    "run": 37888914261,
-    "required_before": 884,
-    "required_after_restart": 105,
-    "status": "Corrected composed candidate executing actual PostgreSQL; no full-pass claim."
+    "commit": "f88cd772710039a7db9feb5df1fb1697a5b2bc7f",
+    "run": 37896134479,
+    "required_before": 921,
+    "required_after_restart": 108,
+    "status": "Published narrow fixture corrections; exact runtime validation pending"
   },
-  "local_required_before": 921,
-  "local_required_after_restart": 108,
+  "local_required_before": 940,
+  "local_required_after_restart": 110,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2019,6 +2019,28 @@
         "unmapped_case_names": [],
         "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       }
+    },
+    {
+      "source_family": "sphere.collection_publication_notifications",
+      "local_status": "implemented_local_subset_actual_pg_pending",
+      "supported_flows": [
+        "Canonical publication and scheduled publication atomically snapshot collection subscription incarnations",
+        "Bounded local durable inbox and replay projection with current source, collection, media, owner and recipient policy",
+        "Current inbox/count/replay/transport filtering after revocation; content-free bounded notification payloads"
+      ],
+      "guarded_pg_cases": [
+        "TestPGCollectionPublicationLifecycleAndDeduplication",
+        "TestPGCollectionPublicationDraftScheduleAndEligibility",
+        "TestPGCollectionPublicationCurrentAudienceAndIncarnations",
+        "TestPGCollectionPublicationInboxReplayRevocation",
+        "TestPGCollectionPublicationRollbackNamespaceAndConcurrentWorkers",
+        "TestPGCollectionPublicationWaitRechecksSourcesAndCancellation",
+        "TestPGCollectionPublicationSavedRestartPersistence",
+        "TestPGCollectionPublicationRealmMembershipAndOwnerPolicy",
+        "TestPGCollectionPublicationBoundsAndProofAfterWait",
+        "TestPGCollectionPublicationFinalEnqueueWaitRechecksComposition"
+      ],
+      "remaining_reference": "docs/collection-publication-notifications.md"
     }
   ],
   "additional_cross_service_flows": [
@@ -3308,7 +3330,7 @@
           "sphere.posts",
           "sphere.publishers"
         ],
-        "remaining": "Collection subscribe/unsubscribe/status and adjacent-post navigation remain absent.",
+        "remaining": "Subscription/status/navigation and local publication inbox/replay are implemented pending exact candidate PostgreSQL/restart validation. Organization-owned collection CRUD, artwork, localization and external delivery remain outside this slice.",
         "source": [
           {
             "path": "DysonNetwork.Sphere/Post/PostCollectionController.cs",
@@ -3327,8 +3349,21 @@
           "internal/interactionpg",
           "internal/collectionadminpg"
         ],
-        "current_boundary": "Collection CRUD/media/contents/batch add-remove and admin are implemented. Manual reorder is explicitly rejected by the ORIGINAL controller too; do not count reorder as a missing feature.",
-        "next_slice": "Add subscription records and current-visibility previous/next reads to the same canonical collection owner."
+        "current_boundary": "Five authored collection routes and canonical create/draft/scheduled publication observers are wired. Current nested post/media/collection/subscriber policy filters reads, inbox/count/replay and dispatch. More than4,096 captured subscriptions abort publication atomically. Original manual reorder remains rejected.",
+        "next_slice": "Run exact-commit private PostgreSQL/restart CI for the completed local publication hook; localization, external push delivery, and other subscriber audience families remain separate.",
+        "guarded_pg_cases": [
+          "TestPGCollectionSubscriptionAuthoredHTTPAndIncarnations",
+          "TestPGCollectionNavigationAuthoredOrderingAndHiddenAnchors",
+          "TestPGCollectionNavigationNestedMediaAndCurrentPrivacy",
+          "TestPGCollectionSubscriptionConcurrentAndAuditRollback",
+          "TestPGCollectionSubscriptionWaitRechecksIdentityAndProof",
+          "TestPGCollectionNavigationMediaWaitRechecksProjectionAndProof",
+          "TestPGCollectionNavigationSinglePoolAndRestartPersistence",
+          "TestPGCollectionNavigationRealmPrivacyAndMembership",
+          "TestPGCollectionSubscriptionRenameAndAdminDeleteIsolation"
+        ],
+        "evidence": "docs/collection-subscription-navigation-evidence.json",
+        "verification": "Offline only; no local database server or socket was started. Actual PostgreSQL/restart pending."
       },
       {
         "id": "federation_broader_contracts",
@@ -4289,29 +4324,13 @@
     "Passing configured adapters and owned policies does not establish upstream internal behavior, live provider activation, or production migration readiness."
   ],
   "prior_candidate_result": {
-    "832": {
-      "commit": "641a503b1173cb04888f45bbbf5fe0cceb238a52",
-      "run": 37884733241,
-      "before_pass": 828,
-      "before_fail": 4,
-      "restart": "not reached"
-    },
-    "842": {
-      "commit": "9ed610e11e50b0cf41e00c127aa4d5b38b089195",
-      "run": 37885246903,
-      "before_pass": 831,
-      "before_fail": 11,
-      "restart": "not reached"
-    },
-    "classification": "Activity transition-time pointer alias and survey receipt timestamp inference are runtime defects; failure constraints and queue namespace/wait isolation are fixture defects; foreign-member profile path falls through generic501 despite self route passing. No passing claim until composed rerun.",
-    "853": {
-      "commit": "5717edf4aec8a78a1eef1a2484ffbd64c69c8364",
-      "run": 37885809938,
-      "before_pass": 834,
-      "before_fail": 19,
-      "restart": "not reached",
-      "additional_findings": "Six readiness failures from second schema, canonical exchangePOST earlycatalog intercept, reporting range fixture identical frozen timestamps. Current corrections are unverified in PG."
-    }
+    "commit": "3ac0a7d8bdd2034cf0b6a3c32ebe778a786887af",
+    "run": 37893999382,
+    "before_pass": 915,
+    "before_fail": 6,
+    "restart": "not reached",
+    "skip": 0,
+    "status": "failed; three publishing setup cases and three account-history cases sharing a typed fixture error"
   },
   "latest_job_log_verified_ci_pass": {
     "commit": "8d00c0cee85ebd10328ed5d51fa0e876141bf411",

@@ -23,16 +23,19 @@ type Failure struct {
 func (e *Failure) Error() string { return e.Code }
 
 var (
-	ErrInvalid            = &Failure{"INTERACTION_INVALID_REQUEST", "Invalid interaction request.", 400}
-	ErrNotFound           = &Failure{"INTERACTION_NOT_FOUND", "The requested resource does not exist.", 404}
-	ErrCollectionNotFound = &Failure{"COLLECTION_NOT_FOUND", "Collection not found.", 404}
-	ErrDuplicate          = &Failure{"COLLECTION_ADD_POST_FAILED", "Post already exists in this collection.", 400}
-	ErrCollectionConflict = &Failure{"COLLECTION_CREATE_FAILED", "A collection with this slug already exists.", 400}
-	ErrOrder              = &Failure{"COLLECTION_ORDER_NOT_SUPPORTED", "Manual ordering is not supported. Collection posts are sorted automatically by published date descending.", 400}
-	ErrReorder            = &Failure{"COLLECTION_REORDER_NOT_SUPPORTED", "Manual reordering is not supported. Collection posts are sorted automatically by published date descending.", 400}
-	ErrUnavailable        = &Failure{"INTERACTIONS_UNAVAILABLE", "The interaction dependency is unavailable.", 503}
-	ErrUnsupported        = &Failure{"INTERACTION_FEATURE_UNSUPPORTED", "This feature requires an unavailable provider.", 501}
-	ErrTagUnavailable     = &Failure{"POST_TAG_UNAVAILABLE", "A requested tag is protected, expired or unavailable.", 400}
+	ErrInvalid                        = &Failure{"INTERACTION_INVALID_REQUEST", "Invalid interaction request.", 400}
+	ErrNotFound                       = &Failure{"INTERACTION_NOT_FOUND", "The requested resource does not exist.", 404}
+	ErrCollectionNotFound             = &Failure{"COLLECTION_NOT_FOUND", "Collection not found.", 404}
+	ErrDuplicate                      = &Failure{"COLLECTION_ADD_POST_FAILED", "Post already exists in this collection.", 400}
+	ErrCollectionConflict             = &Failure{"COLLECTION_CREATE_FAILED", "A collection with this slug already exists.", 400}
+	ErrOrder                          = &Failure{"COLLECTION_ORDER_NOT_SUPPORTED", "Manual ordering is not supported. Collection posts are sorted automatically by published date descending.", 400}
+	ErrReorder                        = &Failure{"COLLECTION_REORDER_NOT_SUPPORTED", "Manual reordering is not supported. Collection posts are sorted automatically by published date descending.", 400}
+	ErrUnavailable                    = &Failure{"INTERACTIONS_UNAVAILABLE", "The interaction dependency is unavailable.", 503}
+	ErrUnsupported                    = &Failure{"INTERACTION_FEATURE_UNSUPPORTED", "This feature requires an unavailable provider.", 501}
+	ErrCollectionSubscriptionNotFound = &Failure{"COLLECTION_SUBSCRIPTION_NOT_FOUND", "Subscription not found.", 404}
+	ErrNextCollectionPost             = &Failure{"COLLECTION_POST_NOT_FOUND", "No next post found.", 404}
+	ErrPrevCollectionPost             = &Failure{"COLLECTION_POST_NOT_FOUND", "No previous post found.", 404}
+	ErrTagUnavailable                 = &Failure{"POST_TAG_UNAVAILABLE", "A requested tag is protected, expired or unavailable.", 400}
 )
 
 // Wire attitude values are explicitly assigned in the pinned authored Solian
@@ -62,6 +65,7 @@ type Bookmark struct {
 	AccountID string    `json:"account_id"`
 	CreatedAt time.Time `json:"created_at"`
 }
+type CollectionSubscription = taxonomy.Subscription
 type Collection = posts.Collection
 type CollectionRequest struct {
 	Slug         string  `json:"slug"`
@@ -89,6 +93,10 @@ type Repository interface {
 	AddCollectionPosts(context.Context, string, string, string, []string, bool) error
 	RemoveCollectionPosts(context.Context, string, string, string, []string) error
 	CollectionPosts(context.Context, string, string, string, Page) ([]posts.Post, int64, error)
+	SubscribeCollection(context.Context, string, string, string) (CollectionSubscription, bool, error)
+	UnsubscribeCollection(context.Context, string, string, string) error
+	CollectionSubscription(context.Context, string, string, string) (CollectionSubscription, error)
+	AdjacentCollectionPost(context.Context, string, string, string, string, bool) (posts.Post, error)
 }
 
 func ValidPage(p Page) bool {

@@ -191,6 +191,9 @@ func (r *Repository) DeleteCollection(ctx context.Context, actor, publisher, slu
 		if _, e = tx.ExecContext(ctx, `DELETE FROM owned_post_collection_items WHERE collection_id=$1`, c.ID); e != nil {
 			return e
 		}
+		if _, e = tx.ExecContext(ctx, `UPDATE owned_taxonomy.post_category_subscriptions SET deleted_at=$2,updated_at=$2 WHERE collection_id=$1 AND deleted_at IS NULL`, c.ID, now); e != nil {
+			return e
+		}
 		return audit(ctx, tx, actor, "", c.ID, "collection.delete", now)
 	})
 }
@@ -335,7 +338,7 @@ func (r *Repository) CollectionPosts(ctx context.Context, actor, publisher, slug
 	if e != nil {
 		return nil, 0, e
 	}
-	out, total, e := r.listPosts(ctx, tx, actor, ` AND EXISTS(SELECT 1 FROM owned_post_collection_items i WHERE i.post_id=p.id AND i.collection_id=$2)`, `p.published_at DESC,p.created_at DESC,p.id DESC`, []any{actor, c.ID}, p)
+	out, total, e := r.listPosts(ctx, tx, actor, ` AND EXISTS(SELECT 1 FROM owned_post_collection_items i WHERE i.post_id=p.id AND i.collection_id=$2)`, collectionPostOrder, []any{actor, c.ID}, p)
 	if e != nil {
 		return nil, 0, e
 	}

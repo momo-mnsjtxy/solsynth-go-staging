@@ -28,3 +28,12 @@ func (b *Backend) ProcessSurveyNotifications(ctx context.Context, limit int) (in
 	}
 	return b.surveyNotifications(ctx, limit)
 }
+
+// ProcessCollectionPublicationNotifications runs a bounded local projection step
+// through the same durable worker registered by RunNotifications.
+func (b *Backend) ProcessCollectionPublicationNotifications(ctx context.Context, limit int) (int, error) {
+	if b == nil || b.collectionNotifications == nil {
+		return 0, errors.New("collection publication notifications unavailable")
+	}
+	return b.collectionNotifications(ctx, limit)
+}

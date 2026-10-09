@@ -319,6 +319,9 @@ func (r *Repository) processSchedule(ctx context.Context, s dueSchedule) (bool, 
 		if e = audit(ctx, tx, s.actor, p.ID, "publish", now); e != nil {
 			return false, e
 		}
+		if e = r.recordPublication(ctx, tx, p, false, now); e != nil {
+			return false, e
+		}
 		state = "published"
 	}
 	var failure any
@@ -331,6 +334,23 @@ func (r *Repository) processSchedule(ctx context.Context, s dueSchedule) (bool, 
 	}
 	if e = scheduleAudit(ctx, tx, s.id, s.revision, s.post, s.actor, state, now); e != nil {
 		return false, e
+	}
+	if state == "published" && r.publications != nil {
+		// The publication observer can wait on durable storage. The original
+		// recorded session must still be eligible after that last wait.
+		eligible, e = r.authority.StoredSessionEligible(ctx, r.db, tx, s.actor, s.session, s.version, s.epoch, "posts.create")
+		if e != nil {
+			return false, e
+		}
+		if !eligible {
+			return false, posts.ErrForbidden
+		}
+		if reason, e = r.checkPublication(ctx, tx, s.actor, &p); e != nil {
+			return false, e
+		}
+		if reason != "" {
+			return false, posts.ErrForbidden
+		}
 	}
 	return true, tx.Commit()
 }

@@ -1,0 +1,40 @@
+{
+  "repository": "Solsynth/DysonNetwork",
+  "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "license": "AGPL-3.0-only",
+  "original_base": "ef006ef2ed2fc40f0a6880edfad2ff1abeab2408",
+  "reconstructed_reviewed_base": "28a1be7c4006e727ce86d1e7e9ce26ecb65081a9",
+  "files": [
+    {
+      "path": "ports/sphere/interactions/source/PostService.cs",
+      "bytes": 145621,
+      "sha256": "a8afd1bec596450dea5fa17bbaead101a6c4c8b2a6e799d21323165b0dafa333",
+      "git_blob_sha": "dbacff11ded248680bc34d9fe422cc7e38c49068"
+    },
+    {
+      "path": "ports/sphere/timeline/subscription-source/PublisherSubscriptionService.cs",
+      "bytes": 30961,
+      "sha256": "949074ab7111f04cf4044de6a65d7457b0f9f7915b33842de68a480455312c23",
+      "git_blob_sha": "e1df7a8168b098b0cb166c626ebc7cc83dc339d5"
+    },
+    {
+      "path": "ports/sphere/timeline/subscription-source/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "git_blob_sha": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e"
+    }
+  ],
+  "pg_cases": [
+    "TestPGCollectionPublicationLifecycleAndDeduplication",
+    "TestPGCollectionPublicationDraftScheduleAndEligibility",
+    "TestPGCollectionPublicationCurrentAudienceAndIncarnations",
+    "TestPGCollectionPublicationInboxReplayRevocation",
+    "TestPGCollectionPublicationRollbackNamespaceAndConcurrentWorkers",
+    "TestPGCollectionPublicationWaitRechecksSourcesAndCancellation",
+    "TestPGCollectionPublicationSavedRestartPersistence",
+    "TestPGCollectionPublicationRealmMembershipAndOwnerPolicy",
+    "TestPGCollectionPublicationBoundsAndProofAfterWait",
+    "TestPGCollectionPublicationFinalEnqueueWaitRechecksComposition"
+  ],
+  "actual_postgres": "not run locally; coordinator private disposable CI required"
+}

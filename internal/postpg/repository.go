@@ -34,6 +34,7 @@ type Repository struct {
 	automod       bool
 	automodReview bool
 	scheduling    bool
+	publications  PublicationObserver
 }
 
 func New(db *sql.DB) *Repository {
@@ -247,11 +248,17 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 		if e = r.syncSchedule(ctx, tx, actor, &p, v, "create", now); e != nil {
 			return e
 		}
+		// Durable enqueue can wait; final composition/blog checks must follow it.
+		if e = r.recordPublication(ctx, tx, p, false, now); e != nil {
+			return e
+		}
 		if e = r.finishComposition(ctx, tx, actor, &p); e != nil {
 			return e
 		}
 		if p.Type == posts.Blog {
-			return r.matchBlogPreparation(ctx, tx, actor, p, prepared)
+			if e = r.matchBlogPreparation(ctx, tx, actor, p, prepared); e != nil {
+				return e
+			}
 		}
 		return nil
 	})
@@ -350,6 +357,7 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 		if e != nil {
 			return e
 		}
+		wasPublished := isPublished(p, now)
 		wasDraft := p.DraftedAt != nil
 		switch action {
 		case "update":
@@ -413,11 +421,17 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 		if e = r.syncSchedule(ctx, tx, actor, &p, v, action, now); e != nil {
 			return e
 		}
+		// Durable enqueue can wait; final composition/blog checks must follow it.
+		if e = r.recordPublication(ctx, tx, p, wasPublished, now); e != nil {
+			return e
+		}
 		if e = r.finishComposition(ctx, tx, actor, &p); e != nil {
 			return e
 		}
 		if p.Type == posts.Blog && p.DeletedAt == nil {
-			return r.matchBlogPreparation(ctx, tx, actor, p, prepared)
+			if e = r.matchBlogPreparation(ctx, tx, actor, p, prepared); e != nil {
+				return e
+			}
 		}
 		return nil
 	})

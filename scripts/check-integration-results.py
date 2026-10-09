@@ -5,6 +5,26 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGCollectionNavigationAuthoredOrderingAndHiddenAnchors",
+        "TestPGCollectionNavigationMediaWaitRechecksProjectionAndProof",
+        "TestPGCollectionNavigationNestedMediaAndCurrentPrivacy",
+        "TestPGCollectionNavigationRealmPrivacyAndMembership",
+        "TestPGCollectionNavigationSinglePoolAndRestartPersistence",
+        "TestPGCollectionSubscriptionAuthoredHTTPAndIncarnations",
+        "TestPGCollectionSubscriptionConcurrentAndAuditRollback",
+        "TestPGCollectionSubscriptionRenameAndAdminDeleteIsolation",
+        "TestPGCollectionSubscriptionWaitRechecksIdentityAndProof",
+        "TestPGCollectionPublicationBoundsAndProofAfterWait",
+        "TestPGCollectionPublicationCurrentAudienceAndIncarnations",
+        "TestPGCollectionPublicationDraftScheduleAndEligibility",
+        "TestPGCollectionPublicationFinalEnqueueWaitRechecksComposition",
+        "TestPGCollectionPublicationInboxReplayRevocation",
+        "TestPGCollectionPublicationLifecycleAndDeduplication",
+        "TestPGCollectionPublicationRealmMembershipAndOwnerPolicy",
+        "TestPGCollectionPublicationRollbackNamespaceAndConcurrentWorkers",
+        "TestPGCollectionPublicationSavedRestartPersistence",
+        "TestPGCollectionPublicationWaitRechecksSourcesAndCancellation",
+
         "TestPGAccountHistoryActionsCanonicalAuditSnapshot",
         "TestPGAccountHistoryBlockDisabledAndCurrentSession",
         "TestPGAccountHistoryConnectionMetadataIsolationAndPermission",
@@ -992,6 +1012,9 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGCollectionNavigationSinglePoolAndRestartPersistence",
+        "TestPGCollectionPublicationSavedRestartPersistence",
+
         "TestPGBackendAccountHistorySavedRestartPersistence",
         "TestPGChatDetailsSavedRestartPersistence",
 

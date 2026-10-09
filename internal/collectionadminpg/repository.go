@@ -202,6 +202,9 @@ func (r *Repository) Delete(ctx context.Context, actor, id string) error {
 	if _, e = tx.ExecContext(ctx, `UPDATE owned_post_collections SET deleted_at=$2::timestamptz,updated_at=$2::timestamptz WHERE id=$1::uuid`, id, r.now().UTC()); e != nil {
 		return e
 	}
+	if _, e = tx.ExecContext(ctx, `UPDATE owned_taxonomy.post_category_subscriptions SET deleted_at=$2,updated_at=$2 WHERE collection_id=$1 AND deleted_at IS NULL`, id, r.now().UTC()); e != nil {
+		return e
+	}
 	if e = r.audit(ctx, tx, actor, id, "collection.delete"); e != nil {
 		return e
 	}

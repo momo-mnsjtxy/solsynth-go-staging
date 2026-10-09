@@ -29,6 +29,13 @@ CREATE TABLE owned_post_collection_items (
 CREATE TABLE owned_post_interaction_audit (
  id bigserial PRIMARY KEY,actor_id uuid NOT NULL REFERENCES owned_authority_accounts(id),
  post_id uuid REFERENCES owned_text_posts(id),collection_id uuid REFERENCES owned_post_collections(id),
- action text NOT NULL CHECK(action IN('react','unreact','bookmark','unbookmark','collection.create','collection.update','collection.delete','collection.add','collection.remove','post.associate')),
+ action text NOT NULL CHECK(action IN('react','unreact','bookmark','unbookmark','collection.create','collection.update','collection.delete','collection.add','collection.remove','collection.subscribe','collection.unsubscribe','post.associate')),
  occurred_at timestamptz NOT NULL,CHECK(post_id IS NOT NULL OR collection_id IS NOT NULL)
 );
+
+-- Collection subscriptions share the authored taxonomy subscription identity.
+-- A fresh live incarnation is created after unsubscribe; historical rows remain.
+ALTER TABLE owned_taxonomy.post_category_subscriptions ADD CONSTRAINT owned_collection_subscription_target FOREIGN KEY(collection_id) REFERENCES owned_post_collections(id);
+ALTER TABLE owned_taxonomy.post_category_subscriptions ADD CONSTRAINT owned_collection_subscription_kind CHECK(collection_id IS NULL OR(category_id IS NULL AND tag_id IS NULL));
+CREATE UNIQUE INDEX owned_collection_subscription_live ON owned_taxonomy.post_category_subscriptions(account_id,collection_id) WHERE collection_id IS NOT NULL AND deleted_at IS NULL;
+CREATE INDEX owned_collection_subscriptions_target ON owned_taxonomy.post_category_subscriptions(collection_id,account_id) WHERE collection_id IS NOT NULL AND deleted_at IS NULL;

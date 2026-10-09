@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24" height="24" role="img" aria-label="Flame">
-  <!-- Original geometric flame illustration, created 2026-10-07 for this Go port.
-       SPDX-License-Identifier: AGPL-3.0-only. Not a reproduction of upstream artwork. -->
-  <path fill="currentColor" fill-rule="evenodd" d="M480-880 710-580 790-400 750-220 640-100 480-60 320-100 210-220 170-400 250-580 300-390 370-510 480-880ZM480-460 370-290 395-205 480-165 565-205 590-290 480-460Z"/>
-</svg>

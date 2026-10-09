@@ -5,6 +5,21 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGRealmLabelsCRUDVisibilityAndCanonicalProjection",
+        "TestPGRealmLabelsConcurrentQuotaAndReplay",
+        "TestPGRealmLabelsMembershipIncarnationAndCurrentRole",
+        "TestPGRealmLabelsExpiryAndAuthorityAfterWait",
+        "TestPGRealmLabelsAuditRollbackAndCrossRealmIsolation",
+        "TestPGRealmTenureHistoryReplayAndBoundedProgression",
+        "TestPGRealmTenureCurrentPerkAndConcurrentDeduplication",
+        "TestPGBackendRealmMemberRoutesAndFeatureGates",
+        "TestPGRealmTenureMembershipWaitAndAuditRollback",
+        "TestPGRealmLabelsExpiryPreservesReadsAndBlocksReplay",
+        "TestPGRealmMemberRestartPersistence",
+        "TestPGRealmLabelsUnknownRoleAndMemberPermissionDeny",
+        "TestPGRealmTenurePerkProjectionFailuresAndContention",
+        "TestPGRealmTenureUsesTargetMemberPerk",
+
         "TestPGCalendarActivityProjectionWaitRevalidatesPrivacy",
         "TestPGCalendarActivityRestartPersistence",
         "TestPGCalendarActivityStringProjectionPrivacyAndTimeZone",
@@ -797,6 +812,8 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGRealmMemberRestartPersistence",
+
         "TestPGCalendarActivityRestartPersistence",
         "TestPGCalendarMediaRestartPersistence",
 

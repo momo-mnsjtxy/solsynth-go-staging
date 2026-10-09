@@ -274,6 +274,9 @@ func (r *Repository) Members(ctx context.Context, actor, ref string, offset, tak
 			if e != nil {
 				return e
 			}
+			if e = r.enrichMember(ctx, tx, &out[i]); e != nil {
+				return e
+			}
 		}
 		return nil
 	})
@@ -299,7 +302,10 @@ func (r *Repository) Me(ctx context.Context, actor, ref string) (out social.Memb
 		}
 		out.EffectivePermissions = &perms
 		out.Account, e = account(ctx, tx, actor)
-		return e
+		if e != nil {
+			return e
+		}
+		return r.enrichMember(ctx, tx, &out)
 	})
 	return
 }
@@ -553,6 +559,9 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c soci
 		out.Realm = &v
 		out.Account, e = account(ctx, tx, out.AccountID)
 		if e != nil {
+			return e
+		}
+		if e = r.enrichMember(ctx, tx, &out); e != nil {
 			return e
 		}
 		return audit(ctx, tx, actor, "realms.members."+string(c.Action), out.ID, now)

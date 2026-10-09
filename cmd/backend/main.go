@@ -70,6 +70,7 @@ func run(args []string, out io.Writer) error {
 	publisherSettings := publisherCommerceFlags(fs)
 	postAwardSettings := postAwardFlags(fs)
 	realmBoostSettings := realmBoostFlags(fs)
+	realmMemberSettings := realmMemberFlags(fs)
 	botExecutionSettings := botExecutionFlags(fs)
 	ticketSettings := ticketFlags(fs)
 	fortuneSettings := fortuneFlags(fs)
@@ -270,6 +271,9 @@ func run(args []string, out io.Writer) error {
 		return err
 	}
 	if err = realmBoostSettings.apply(&appConfig); err != nil {
+		return err
+	}
+	if err = realmMemberSettings.apply(&appConfig); err != nil {
 		return err
 	}
 	if err = botExecutionSettings.apply(&appConfig); err != nil {

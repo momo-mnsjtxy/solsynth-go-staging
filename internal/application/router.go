@@ -16,6 +16,7 @@ import (
 	"solsynth.local/go-migration/ports/passport/presence"
 	"solsynth.local/go-migration/ports/passport/progression"
 	"solsynth.local/go-migration/ports/passport/realmboosts"
+	"solsynth.local/go-migration/ports/passport/realmmembers"
 	"solsynth.local/go-migration/ports/passport/rewind"
 	"solsynth.local/go-migration/ports/sphere/autocomplete"
 	"solsynth.local/go-migration/ports/sphere/blogshttp"
@@ -27,7 +28,9 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	realmMemberHistory                                                                                                                                                                                                                                   bool
 	blogs                                                                                                                                                                                                                                                http.Handler
+	realmMembers                                                                                                                                                                                                                                         http.Handler
 	realmBoosts                                                                                                                                                                                                                                          http.Handler
 	affiliations                                                                                                                                                                                                                                         http.Handler
 	artwork                                                                                                                                                                                                                                              http.Handler
@@ -59,6 +62,14 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// between services. Neither a service-name prefix nor traversal is authority.
 	if p == "" || p[0] != '/' || path.Clean(p) != p || strings.Contains(p, "\\") || strings.Contains(p, "//") || r.URL.RawPath != "" && r.URL.EscapedPath() != p {
 		problem(w, 400, "INVALID_ROUTE_PATH")
+		return
+	}
+	if realmmembers.HandlesRequest(r) && (!realmmembers.ExperienceRoute(p) || h.realmMemberHistory) {
+		if h.realmMembers == nil {
+			problem(w, 503, "REALM_MEMBER_UNAVAILABLE")
+			return
+		}
+		h.realmMembers.ServeHTTP(w, r)
 		return
 	}
 	if realmboosts.Handles(p) {

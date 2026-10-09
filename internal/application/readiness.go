@@ -24,6 +24,9 @@ func (b *Backend) Ready(ctx context.Context) error {
 			return e
 		}
 	}
+	if e := b.realmMembers.ready(ctx); e != nil {
+		return e
+	}
 	if e := b.realmBoosts.ready(ctx); e != nil {
 		return e
 	}

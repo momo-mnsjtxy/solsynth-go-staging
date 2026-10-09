@@ -108,17 +108,20 @@ type RealmPatch struct {
 	BackgroundID *string `json:"background_id"`
 }
 type Member struct {
-	EffectivePermissions *RealmPermissions `json:"effective_permissions,omitempty"`
-	ID                   string            `json:"id"`
-	RealmID              string            `json:"realm_id"`
-	AccountID            string            `json:"account_id"`
-	Role                 Role              `json:"role"`
-	JoinedAt             *time.Time        `json:"joined_at"`
-	LeaveAt              *time.Time        `json:"leave_at"`
-	CreatedAt            time.Time         `json:"created_at"`
-	UpdatedAt            time.Time         `json:"updated_at"`
-	Realm                *Realm            `json:"realm,omitempty"`
-	Account              *accounts.Account `json:"account,omitempty"`
+	LabelID              *string            `json:"label_id,omitempty"`
+	Label                *RealmLabel        `json:"label,omitempty"`
+	Progression          *MemberProgression `json:"progression,omitempty"`
+	EffectivePermissions *RealmPermissions  `json:"effective_permissions,omitempty"`
+	ID                   string             `json:"id"`
+	RealmID              string             `json:"realm_id"`
+	AccountID            string             `json:"account_id"`
+	Role                 Role               `json:"role"`
+	JoinedAt             *time.Time         `json:"joined_at"`
+	LeaveAt              *time.Time         `json:"leave_at"`
+	CreatedAt            time.Time          `json:"created_at"`
+	UpdatedAt            time.Time          `json:"updated_at"`
+	Realm                *Realm             `json:"realm,omitempty"`
+	Account              *accounts.Account  `json:"account,omitempty"`
 }
 type MemberAction string
 

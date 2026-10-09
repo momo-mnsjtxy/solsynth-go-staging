@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed pinned federation discovery and calendar media/activity with final audience rechecks; original-token calendar restart proof, no after issuance. Full combined offline checks passed; actual PostgreSQL pending.",
+  "local_source_checkpoint": "Reviewed realm labels/member filtering and scoped daily-tenure progression integrated; combined original experience array route and disabled boost-only fallback, DateStyle-safe reasons and original-token elapsed restart. Actual PostgreSQL pending.",
   "last_fully_passed_ci": {
     "commit": "85674a81584fc05876446b80761f6c27917ed037",
     "run": 37868140163,
@@ -14,14 +14,14 @@
     "acceptance_limit": "Known ordinary-editor automod evidence issue corrected in699;674 is CI-green, not production or whole-platform acceptance."
   },
   "latest_candidate": {
-    "commit": "651c6302809de83a2682047c5820468befd15b1e",
-    "run": 37873421328,
-    "required_before": 718,
-    "required_after_restart": 87,
-    "status": "Running narrow fixture correction. Parent3703013 completed716/718 before with only two corrected blog fixture failures, zero skips, no restart; explicit automod grant/expiry/revocation and original bot issuer regressions passed."
+    "commit": "0a79937fb769650afb0c446de0bcb7ca0b815afd",
+    "run": 37874181155,
+    "required_before": 742,
+    "required_after_restart": 90,
+    "status": "Running reviewed pinned federation discovery/calendar media checkpoint; narrower corrected718 run37873421328 also running."
   },
-  "local_required_before": 742,
-  "local_required_after_restart": 90,
+  "local_required_before": 756,
+  "local_required_after_restart": 91,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2129,7 +2129,7 @@
     "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
-    "as_of": "2026-10-09T02:13:00Z",
+    "as_of": "2026-10-09T02:24:00Z",
     "authoritative_for": "Current source-backed remaining flow bundles, implementation candidates and operational gaps; no percentage or endpoint-total inference.",
     "families": [
       {
@@ -2687,7 +2687,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last full CI-green85674a:674 before/84 restart. Explicit-grant718 run37871611271:716/718 before passed, two blog fixture failures, zero skips, no restart. Grant/expiry/revocation and bot issuer regressions passed. Narrow fixture correction651c630 awaits CI.",
+    "verification_note": "Last full CI-green85674a:674 before/84 restart. Explicit-grant718 run37871611271:716/718 before passed,two blog fixture failures,zero skips,no restart. Corrected718 candidate651c630 and reviewed742 candidate0a79937 are running. Actual PG for latest realm integration remains pending.",
     "unimplemented_flow_bundles": [
       {
         "id": "chat_reads_search",
@@ -3805,7 +3805,7 @@
       },
       {
         "id": "sphere.federation_discovery",
-        "status": "independently_reviewed_pending_integration_and_CI",
+        "status": "integrated_pending_actual_PG",
         "scope": "Anchored server actor, server collections/key routes, canonical host-meta/WebFinger and publisher key aliases; durable explicit pinned remote observation jobs with current-authority/history fences.",
         "artifact": "/workspace/shared/federation-discovery-review-delivery",
         "artifact_sha256": {
@@ -3820,11 +3820,12 @@
           "TestPGFederationDiscoveryConcurrentClaim",
           "TestPGFederationDiscoveryLifecycleAndIsolation"
         ],
-        "full_case_set": "/workspace/shared/federation-discovery-review-delivery/manifest.json"
+        "full_case_set": "/workspace/shared/federation-discovery-review-delivery/manifest.json",
+        "candidate": "0a79937fb769650afb0c446de0bcb7ca0b815afd"
       },
       {
         "id": "passport.calendar_media",
-        "status": "independently_reviewed_pending_integration_and_CI",
+        "status": "integrated_pending_actual_PG",
         "scope": "Calendar/notable-day icon/background associations and audience-aware file reads; current projection revalidation and explicitly owned string-kind activity overlay.",
         "artifact": "/workspace/shared/calendar-media-review-delivery",
         "artifact_sha256": {
@@ -3840,11 +3841,12 @@
           "TestPGCalendarActivityRestartPersistence",
           "TestPGCalendarActivityStringProjectionPrivacyAndTimeZone"
         ],
-        "full_case_set": "/workspace/shared/calendar-media-review-delivery/pg-cases.json"
+        "full_case_set": "/workspace/shared/calendar-media-review-delivery/pg-cases.json",
+        "candidate": "0a79937fb769650afb0c446de0bcb7ca0b815afd"
       },
       {
         "id": "passport.realm_members",
-        "status": "independently_reviewed_pending_integration_CI",
+        "status": "integrated_pending_actual_PG",
         "scope": "Label CRUD/assignment/filter/projection and opt-in daily tenure with scoped XP/history/configured levels.",
         "artifact": "/workspace/shared/realm-member-delivery",
         "artifact_sha256": {
@@ -4102,7 +4104,7 @@
     "reviewed_pending_integration": [
       {
         "id": "realm.labels_tenure",
-        "state": "Independent review passed offline; integration and actual PG pending; automatic tenure scheduling and full historical XP remain unsupported."
+        "state": "Integrated independently reviewed labels/tenure candidate;756/91 offline checks running, actual PG pending. Original experience route now combines known ledgers; automatic scheduling remains unsupported."
       },
       {
         "id": "federation.public_remote_admission",

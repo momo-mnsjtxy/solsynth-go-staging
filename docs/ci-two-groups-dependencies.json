@@ -1,5 +1,5 @@
 {
-  "base_commit": "8eb29449756e41844cdad87480cf3321e2b53440",
+  "base_commit": "e96268b3c7fef9366d758e4b32630521df6d433f",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -129,7 +129,7 @@
       "test": "TestPGBlogSavedRestartPersistence",
       "source": "tests/integration/blog_posts_test.go",
       "function_sha256": "116c7696ed7752195a8283deee265674d9444b1faa8dde0d6670dc6774657b22",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "blog-posts.json"
       ],
@@ -177,7 +177,7 @@
       "test": "TestPGBotExecutionRestartPersistence",
       "source": "tests/integration/bot_execution_test.go",
       "function_sha256": "15857e4c08806b8b48c2c3cffc227c4f16e0b6bc430bd8490f87995b3888f883",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "bot-execution-restart.json"
       ],
@@ -206,7 +206,7 @@
       "test": "TestPGCalendarActivityRestartPersistence",
       "source": "tests/integration/calendar_activity_test.go",
       "function_sha256": "d29978610635f26837f8668a1a62b08b78397d02515bfb060fc31473725c359b",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "calendar-activity.json"
       ],
@@ -220,7 +220,7 @@
       "test": "TestPGCalendarMediaRestartPersistence",
       "source": "tests/integration/calendar_media_test.go",
       "function_sha256": "77902325b8e87cd8a591b03ab5febbfdb75ec05782863c25249f3104a6be0b10",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "calendar-media.json"
       ],
@@ -292,7 +292,7 @@
       "test": "TestPGChatThreadsForwardRestartPersistence",
       "source": "tests/integration/chat_threads_forward_test.go",
       "function_sha256": "b8ce438678999b111ff7ccd778eec1ecc81d313d889bd2702371dd568e82d934",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "chat-thread-forward.json"
       ],
@@ -342,7 +342,7 @@
       "test": "TestPGCouponSavedRestartPersistence",
       "source": "tests/integration/coupon_restart_test.go",
       "function_sha256": "3f1a8a1965279bc55ea7da5e0111e88ba3a66a7f42ba203f1c35aabcaecf3f60",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "coupon-checkout-restart.json"
       ],
@@ -400,7 +400,7 @@
       "test": "TestPGDirectRecoveryPrivacyRestartPersistence",
       "source": "tests/integration/direct_recovery_privacy_test.go",
       "function_sha256": "3f26ff14f07d34ebad9de3d0e92b1d1862fc2c0a98332669062b5d6d3e5ce249",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "direct-recovery-privacy.json"
       ],
@@ -454,7 +454,7 @@
       "test": "TestPGFederationDiscoverySavedRestartPersistence",
       "source": "tests/integration/federation_discovery_test.go",
       "function_sha256": "c92610b9a1ff86db29f13af766943983959042c04abcab8cf78efb7846d2c50b",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "federation-discovery-restart.json"
       ],
@@ -468,7 +468,7 @@
       "test": "TestPGFederationQuoteRestartPersistence",
       "source": "tests/integration/federation_quotes_test.go",
       "function_sha256": "df32f9cd0863f0453f632c78e6cfec1e3b9d50eefc19ece87cb08e310dca90c1",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "federation-quote-restart.json"
       ],
@@ -578,7 +578,7 @@
     {
       "test": "TestPGMLSRestartPersistence",
       "source": "tests/integration/chat_mls_restart_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "b0f33fc222d7ca02237274d8cb489adec31258e507a3f07239fc66d21fe5d5d2",
       "marker_files": [
         "owned-mls-restart.json"
@@ -722,7 +722,7 @@
       "test": "TestPGPasskitRestartPersistence",
       "source": "tests/integration/passkit_test.go",
       "function_sha256": "5e578b0db1dd71e22c14267c5bbd28c2907c58cd1c62bb0a35562d074559f150",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "apple-pass-record.json"
       ],
@@ -750,7 +750,7 @@
       "test": "TestPGPostAutomodSavedDecisionRestartPersistence",
       "source": "tests/integration/post_automod_test.go",
       "function_sha256": "652191a4d7d6ac10ee6967404d2c3fa890c81abb0c630a7018ac3533ccb7073c",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "post-automod-saved.json"
       ],
@@ -817,7 +817,7 @@
       "test": "TestPGPostScheduleSavedRestartPersistence",
       "source": "tests/integration/post_scheduling_test.go",
       "function_sha256": "50ef444f14e89e3bd1f02cd1070f0d9e4a5260c1d79a5a1269ae206c21af1cd5",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "post-scheduling.json"
       ],
@@ -853,7 +853,7 @@
     {
       "test": "TestPGProductStockRestartPersistence",
       "source": "tests/integration/product_stock_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "aeaa4b463e9fc5a15c20bff7ca8f01887e6aa63944c020020e968b3ab8c6709d",
       "marker_files": [
         "product-stock-restart.json"
@@ -918,7 +918,7 @@
       "test": "TestPGRealmBoostRestartPersistence",
       "source": "tests/integration/realm_boosts_test.go",
       "function_sha256": "bafa2ed2698fd0b8560837cdc62f7f07e90f9218131e30c6e5325951f43f1ba6",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "realm-boost-record.json"
       ],
@@ -927,6 +927,18 @@
       ],
       "named_database_markers": {},
       "storage_contract": "Validated phase and exclusive before marker. After reconstructs adapters with saved public authority configuration over original rows; no fixture/account/wallet/enrollment or token issuance. Same original target state across real database and process restart."
+    },
+    {
+      "test": "TestPGRealmMemberRestartPersistence",
+      "source": "tests/integration/realm_members_test.go",
+      "function_sha256": "753a485c68706942ad07608e78da21ad20d3fceffd754bbe31276361aabb3096",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "realm-member-record.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Exclusive before marker saves original label/membership/tenure IDs and public verifier with original one-hour synthetic proof; after reads original state, verifies advancing elapsed-time authority, checks idempotent replay without seeding or credential issuance. Marker excluded from result artifacts."
     },
     {
       "test": "TestPGRealmPermissionRestartPersistence",
@@ -940,7 +952,7 @@
       "named_database_markers": {},
       "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
       "function_sha256": "f02f05c54a984575b46a5a1f890e77972db877fd4d31ad2cc3b27bd80b6a1cb0",
-      "group_before_and_after": "group-a"
+      "group_before_and_after": "group-b"
     },
     {
       "test": "TestPGRealmPublisherRestartPersistence",
@@ -1508,6 +1520,12 @@
       "group": "group-b"
     },
     {
+      "test": "TestPGBackendRealmMemberRoutesAndFeatureGates",
+      "source": "tests/integration/realm_members_test.go",
+      "function_sha256": "168b30d5f3241f0bd31116c999717bdd4ab0076475e819404ef1783e58aed849",
+      "group": "group-a"
+    },
+    {
       "test": "TestPGBackendRefreshContinuesBroadcastChatThenLogoutRevokes",
       "source": "tests/integration/refresh_continuity_test.go",
       "group": "group-a",
@@ -1529,7 +1547,7 @@
       "test": "TestPGBackendShippingAddressCheckout",
       "source": "tests/integration/shipping_test.go",
       "function_sha256": "4610b8e7c43a54626cc9b505db3405092d92b055b6b8d9f0fe442c6bae05604f",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendSigninHTTPProcessRestart",
@@ -1540,7 +1558,7 @@
     {
       "test": "TestPGBackendSubscriptionActivationRoutes",
       "source": "tests/integration/subscription_activation_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "81bf4ee7163be5f5b661325b717615390f5d4530c4f081b7255415708bcc70c3"
     },
     {
@@ -1559,60 +1577,60 @@
       "test": "TestPGBlogBackendAliasesAndStrictPermissionRequest",
       "source": "tests/integration/blog_posts_test.go",
       "function_sha256": "fc49251d0d736974cb800a83f3dcbdc60dd9c6ae502e57f90d927fd9895cf62f",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGCalendarMediaComposedAudienceAndProjection",
       "source": "tests/integration/calendar_media_test.go",
       "function_sha256": "9f732b6b00916cce994f24ec7c6a30954a33b95b0018d2d9fdf7053dfd404709",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGCalendarMediaComposedReadProofWait",
       "source": "tests/integration/calendar_media_test.go",
       "function_sha256": "7e8eaf92ebf83a5ad790512103f808d241a1fbc6f193ee86e6b1fc5614772b62",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGCouponBackendHTTPPolicyAndBinding",
       "source": "tests/integration/coupon_backend_test.go",
       "function_sha256": "6a3208a3bd7ab76b9c4a3da9647d5fd4fadf2d28647d4e6bad442fe345341edf",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGMLSBackendAuthorityAndGatewayComposition",
       "source": "tests/integration/chat_mls_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "de6593c1672b799b0a894b32de15eb889382507cb4262b1114d5f5a561457a9b"
     },
     {
       "test": "TestPGPasskitCompositionRegistrationIsolationAndUpdates",
       "source": "tests/integration/passkit_test.go",
       "function_sha256": "0541ff9a8805dc918debc071efae1ede3d725bf75950886877848c3c02a28f43",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
       "source": "tests/integration/post_automod_editor_projection_test.go",
       "function_sha256": "097c1d4e3a1be5fd20424ebc378f42976b110ddc288c5be48082d5f69aa951cd",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostAutomodRealmAndNestedEvidenceIsolation",
       "source": "tests/integration/post_automod_review_test.go",
       "function_sha256": "ba8660369eeb754de2171e531c990098dfa69054cb4de392472b4cff7d87bacb",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostScheduleBackendProjectionAndDeferredFederation",
       "source": "tests/integration/post_scheduling_test.go",
       "function_sha256": "f7147dd9bf1d0c32009cd630e84c01cfa007661ea20611f7ec85a472de27be6f",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGRealmPermissionBackendDTOAndNullClear",
       "source": "tests/integration/realm_permissions_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "649fb752ec68dee61b4f71f49c0c9e691074b75fb5adf2f66a1b35fc961a5f89"
     },
     {
@@ -2134,6 +2152,10 @@
       "sha256": "f9fee212ae95e6abd7cbcf309f6f83ede883e16f159441d838b61c471b312e97"
     },
     {
+      "source": "tests/integration/realm_members_test.go",
+      "sha256": "68e04b1786b7b4c105bdb2a9841a7a275c50e644c1a83fe7f3e4848ffbca3e1c"
+    },
+    {
       "source": "tests/integration/realm_permissions_membership_review_test.go",
       "sha256": "c1e7b2e134f5a8e98ac108d9056d7bcd6117bacd87f9d29587ceaff96ca84930"
     },
@@ -2302,5 +2324,11 @@
   "blog_composed_review": "Nineteen new cases:18 independently reviewed blog/admin declarations plus composed server-metadata-before-automod/privacy/rankedLatest/scheduled test. Existing source fixtures unchanged except new files. New blog schema atomic after canonical policy/account/social/post dependencies, original saved restart paired exactly.",
   "bot_issuer_fixture_review": "Scoped bot sessions reuse retained original issuer signing/trust configuration. Same identities, exact scopes and signature verification preserved; only fixture issuer consistency changed.",
   "discovery_review": "Eleven reviewed self-contained cases with pinned synthetic transports, durable admission/deadline/ABA/config fencing, composed host and exact saved restart. Atomic discovery migration follows identity/name reservations; all source/composed/restart hashes reviewed.",
-  "calendar_media_review": "Thirteen independent cases and two saved restart pairs, current complete read-set/proof/owner/audience rechecks after file/policy/storage waits, denial closes reader and zeroes metadata. Calendar schema follows media/notableday; new source and composed hashes reviewed."
+  "calendar_media_review": "Thirteen independent cases and two saved restart pairs, current complete read-set/proof/owner/audience rechecks after file/policy/storage waits, denial closes reader and zeroes metadata. Calendar schema follows media/notableday; new source and composed hashes reviewed.",
+  "realm_member_review": {
+    "before": 14,
+    "after": 1,
+    "independent_correction": "b983da25aa0435e29a98d76808ae0a9071f681c38f093078a1bd44d2f7380690",
+    "coordinator_checks": "Combined original experience route array and disabled fallback; original-token elapsed restart; exact registered case/dependency/marker coverage. Actual PG pending."
+  }
 }

@@ -1,0 +1,327 @@
+package proxy
+
+import (
+	"net"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"strings"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"srv.solsynth.dev/sosys/blade/internal/config"
+	discovery "srv.solsynth.dev/sosys/blade/internal/discovery"
+	"srv.solsynth.dev/sosys/blade/internal/logging"
+)
+
+type Proxy struct {
+	serviceURLs map[string]string
+	routes      []config.RouteRule
+	maintenance config.MaintenanceConfig
+	blockedSet  map[string]struct{}
+	registry    *discovery.Registry
+	transport   http.RoundTripper
+}
+
+var defaultProxyTransport = newProxyTransport()
+
+func newProxyTransport() *http.Transport {
+	return &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 100,
+		IdleConnTimeout:     90 * time.Second,
+	}
+}
+
+func New(cfg *config.Config, registries ...*discovery.Registry) *Proxy {
+	serviceURLs := make(map[string]string)
+	for _, name := range cfg.Endpoints.ServiceNames {
+		url := config.GetServiceHttp(name)
+		if url != "" {
+			serviceURLs[name] = url
+		}
+	}
+
+	p := &Proxy{
+		serviceURLs: serviceURLs,
+		routes:      cfg.Routes,
+		maintenance: cfg.Maintenance,
+		blockedSet:  toServiceSet(cfg.Maintenance.Services),
+		transport:   newProxyTransport(),
+	}
+	if len(registries) > 0 {
+		p.registry = registries[0]
+	}
+	return p
+}
+
+func (p *Proxy) Handler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		path := c.Request.URL.Path
+
+		if p.isFullMaintenance() {
+			p.respondMaintenanceBlocked(c, "")
+			return
+		}
+
+		// Check special routes
+		for _, route := range p.routes {
+			matched := false
+			if route.Prefix {
+				matched = strings.HasPrefix(path, route.Path)
+			} else {
+				matched = path == route.Path || strings.HasPrefix(path, route.Path+"/")
+			}
+
+			if matched {
+				if p.isServiceBlocked(route.Service) {
+					p.respondMaintenanceBlocked(c, route.Service)
+					return
+				}
+				p.handleSpecialRoute(c, route)
+				return
+			}
+		}
+
+		// Swagger route
+		if strings.HasPrefix(path, "/swagger/") {
+			parts := strings.SplitN(path[1:], "/", 3)
+			if len(parts) >= 2 {
+				serviceName := parts[1]
+				if p.hasService(c, serviceName) {
+					if p.isServiceBlocked(serviceName) {
+						p.respondMaintenanceBlocked(c, serviceName)
+						return
+					}
+					newPath := "/swagger/" + strings.Join(parts[2:], "/")
+					p.handleProxyWithPath(c, serviceName, newPath)
+					return
+				}
+			}
+		}
+
+		// Default service routing
+		parts := strings.SplitN(path[1:], "/", 2)
+		if len(parts) > 0 {
+			serviceName := parts[0]
+			if p.hasService(c, serviceName) {
+				if p.isServiceBlocked(serviceName) {
+					p.respondMaintenanceBlocked(c, serviceName)
+					return
+				}
+				var newPath string
+				if len(parts) > 1 {
+					newPath = "/api/" + parts[1]
+				} else {
+					newPath = "/api"
+				}
+				p.handleProxyWithPath(c, serviceName, newPath)
+				return
+			}
+		}
+
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "route not found",
+			"code":  "ROUTE_NOT_FOUND",
+		})
+	}
+}
+
+// hasService admits both statically configured services and services that
+// exist only in the discovery registry. This lets a newly registered service
+// become routable without a Blade configuration deployment.
+func (p *Proxy) hasService(c *gin.Context, serviceName string) bool {
+	if _, ok := p.serviceURLs[serviceName]; ok {
+		return true
+	}
+	if p.registry == nil {
+		return false
+	}
+	instances, err := p.registry.List(c.Request.Context(), serviceName)
+	return err == nil && len(instances) > 0
+}
+
+func toServiceSet(services []string) map[string]struct{} {
+	serviceSet := make(map[string]struct{}, len(services))
+	for _, svc := range services {
+		if svc == "" {
+			continue
+		}
+		serviceSet[strings.ToLower(svc)] = struct{}{}
+	}
+	return serviceSet
+}
+
+func (p *Proxy) isFullMaintenance() bool {
+	if !p.maintenance.Enabled {
+		return false
+	}
+	return strings.EqualFold(p.maintenance.Mode, "full")
+}
+
+func (p *Proxy) isServiceBlocked(serviceName string) bool {
+	if !p.maintenance.Enabled {
+		return false
+	}
+	if p.isFullMaintenance() {
+		return true
+	}
+	if !strings.EqualFold(p.maintenance.Mode, "service") {
+		return false
+	}
+	_, blocked := p.blockedSet[strings.ToLower(serviceName)]
+	return blocked
+}
+
+func (p *Proxy) respondMaintenanceBlocked(c *gin.Context, serviceName string) {
+	logEvent := logging.Log.Warn().Str("path", c.Request.URL.Path).Str("mode", p.maintenance.Mode)
+	if serviceName != "" {
+		logEvent = logEvent.Str("service", serviceName)
+	}
+	logEvent.Msg("Request blocked by maintenance mode")
+
+	resp := gin.H{
+		"error": "service under maintenance",
+		"code":  "MAINTENANCE_MODE",
+	}
+	if serviceName != "" {
+		resp["service"] = serviceName
+	}
+	c.JSON(http.StatusServiceUnavailable, resp)
+}
+
+func (p *Proxy) handleSpecialRoute(c *gin.Context, route config.RouteRule) {
+	baseURL := p.serviceURL(c, route.Service)
+	if baseURL == "" {
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"error": "service not available",
+			"code":  "SERVICE_UNAVAILABLE",
+		})
+		return
+	}
+
+	target := baseURL + route.Target
+	if route.Prefix {
+		// Preserve the rest of the path after the prefix
+		path := c.Request.URL.Path
+		suffix := strings.TrimPrefix(path, route.Path)
+		target = baseURL + route.Target + suffix
+	}
+
+	p.proxyRequest(c, target)
+}
+
+func (p *Proxy) handleProxy(c *gin.Context, serviceName string, pathOverride string) {
+	baseURL := p.serviceURL(c, serviceName)
+	if baseURL == "" {
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"error": "service not available",
+			"code":  "SERVICE_UNAVAILABLE",
+		})
+		return
+	}
+
+	target := baseURL
+	if pathOverride != "" {
+		target = target + pathOverride
+	} else {
+		target = target + c.Request.URL.Path
+	}
+
+	p.proxyRequest(c, target)
+}
+
+func (p *Proxy) handleProxyWithPath(c *gin.Context, serviceName string, newPath string) {
+	baseURL := p.serviceURL(c, serviceName)
+	if baseURL == "" {
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"error": "service not available",
+			"code":  "SERVICE_UNAVAILABLE",
+		})
+		return
+	}
+
+	target := baseURL + newPath
+	p.proxyRequest(c, target)
+}
+
+// serviceURL prefers a healthy registered instance and keeps the configured
+// target as a migration-safe fallback for services not yet self-registering.
+func (p *Proxy) serviceURL(c *gin.Context, serviceName string) string {
+	if p.registry != nil {
+		instances, err := p.registry.List(c.Request.Context(), serviceName)
+		if err == nil && len(instances) > 0 {
+			if endpoint, ok := p.registry.ResolveHTTP(c.Request.Context(), serviceName); ok {
+				return endpoint
+			}
+			// A service that has registered owns its routing state. Do not send
+			// traffic back to a static endpoint while all registered instances
+			// are unhealthy.
+			return ""
+		}
+	}
+	return p.serviceURLs[serviceName]
+}
+
+func (p *Proxy) proxyRequest(c *gin.Context, target string) {
+	targetURL, err := url.Parse(target)
+	if err != nil || targetURL.Host == "" {
+		logging.Log.Error().
+			Err(err).
+			Str("target", target).
+			Msg("Invalid proxy target URL")
+		c.JSON(http.StatusBadGateway, gin.H{
+			"error": "invalid upstream target",
+			"code":  "UPSTREAM_TARGET_INVALID",
+		})
+		return
+	}
+
+	director := func(req *http.Request) {
+		originalPath := req.URL.Path
+
+		req.URL.Scheme = targetURL.Scheme
+		if req.URL.Scheme == "" {
+			req.URL.Scheme = "http"
+		}
+		req.URL.Host = targetURL.Host
+		req.URL.Path = targetURL.Path
+		if req.URL.Path == "" {
+			req.URL.Path = "/"
+		}
+		req.URL.RawPath = targetURL.RawPath
+
+		if targetURL.RawQuery != "" {
+			if req.URL.RawQuery != "" {
+				req.URL.RawQuery = targetURL.RawQuery + "&" + req.URL.RawQuery
+			} else {
+				req.URL.RawQuery = targetURL.RawQuery
+			}
+		}
+
+		req.Host = req.URL.Host
+
+		logging.Log.Debug().
+			Str("original", originalPath).
+			Str("target", req.URL.Path).
+			Str("query", req.URL.RawQuery).
+			Str("host", req.URL.Host).
+			Msg("Proxying request")
+	}
+
+	transport := p.transport
+	if transport == nil {
+		transport = defaultProxyTransport
+	}
+
+	proxy := &httputil.ReverseProxy{
+		Director:  director,
+		Transport: transport,
+	}
+
+	proxy.ServeHTTP(c.Writer, c.Request)
+}

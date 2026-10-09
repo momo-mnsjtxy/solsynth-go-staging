@@ -1,0 +1,11 @@
+{
+  "commit": "7911a4bbabbf9540b8a44fa1b12bb0b3dfb7af60",
+  "tree": "833c4b08ffda23ac7de8bd3413b5d460fdb9643b",
+  "run": 37764765732,
+  "job": 113269585298,
+  "conclusion": "success",
+  "required_before_passed": 279,
+  "required_after_restart_passed": 39,
+  "skipped": 0,
+  "scope": "Synthetic disposable PostgreSQL16, build/vet/race and real process checks; no full original parity or production readiness claim"
+}

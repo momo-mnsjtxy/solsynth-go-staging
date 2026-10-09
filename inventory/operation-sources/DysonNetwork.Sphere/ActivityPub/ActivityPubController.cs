@@ -1,0 +1,847 @@
+using System.Text.Json.Serialization;
+using DysonNetwork.Sphere.Models;
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Networking;
+using DysonNetwork.Sphere.ActivityPub.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using NodaTime;
+using Swashbuckle.AspNetCore.Annotations;
+
+namespace DysonNetwork.Sphere.ActivityPub;
+
+[ApiController]
+[Route("activitypub/actors/{username}")]
+public class ActivityPubController : ControllerBase
+{
+    private readonly AppDatabase _db;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<ActivityPubController> _logger;
+    private readonly ActivityHandlerService _activityHandler;
+    private readonly IKeyService _keyService;
+    private readonly ActivityRenderer _objFactory;
+
+    public ActivityPubController(
+        AppDatabase db,
+        IConfiguration configuration,
+        ILogger<ActivityPubController> logger,
+        ActivityHandlerService activityHandler,
+        IKeyService keyService,
+        ActivityRenderer objFactory
+    )
+    {
+        _db = db;
+        _configuration = configuration;
+        _logger = logger;
+        _activityHandler = activityHandler;
+        _keyService = keyService;
+        _objFactory = objFactory;
+    }
+
+    private string Domain => _configuration["ActivityPub:Domain"] ?? "localhost";
+
+    private string SiteUrl
+    {
+        get
+        {
+            var siteUrl = _configuration["SiteUrl"];
+            return string.IsNullOrWhiteSpace(siteUrl) ? $"https://{Domain}" : siteUrl.TrimEnd('/');
+        }
+    }
+
+    private bool IsWebRequest()
+    {
+        var accept = Request.Headers.Accept.ToString();
+        var userAgent = Request.Headers.UserAgent.ToString();
+
+        if (accept.Contains("application/activity+json", StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (accept.Contains("application/ld+json", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return userAgent.Contains("Mozilla", StringComparison.OrdinalIgnoreCase)
+            || accept.Contains("text/html", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private RedirectResult RedirectToWebUi(string path)
+    {
+        var target = $"{SiteUrl}{path}";
+        _logger.LogDebug("Redirecting non-ActivityPub request {Path} to {Target}", Request.Path, target);
+        return Redirect(target);
+    }
+
+    [HttpGet("")]
+    [Produces("application/activity+json")]
+    [ProducesResponseType(typeof(ActivityPubActor), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [SwaggerOperation(
+        Summary = "Get ActivityPub actor",
+        Description = "Returns the ActivityPub actor (user) profile in JSON-LD format",
+        OperationId = "GetActivityPubActor"
+    )]
+    public async Task<ActionResult<ActivityPubActor>> GetActor(string username)
+    {
+        if (IsWebRequest())
+            return RedirectToWebUi($"/publishers/{Uri.EscapeDataString(username)}");
+
+        var publisher = await _db
+            .Publishers.Include(p => p.Members)
+            .FirstOrDefaultAsync(p => p.Name.ToLower() == username.ToLowerInvariant());
+
+        if (publisher == null)
+            return NotFound();
+
+        var actorUrl = $"https://{Domain}/activitypub/actors/{username}";
+        var inboxUrl = $"{actorUrl}/inbox";
+        var outboxUrl = $"{actorUrl}/outbox";
+        var followersUrl = $"{actorUrl}/followers";
+        var followingUrl = $"{actorUrl}/following";
+        var assetsBaseUrl = _configuration["ActivityPub:FileBaseUrl"] ?? $"https://{Domain}/files";
+
+        var publicKeyPem = await GetPublicKeyAsync(publisher);
+
+        var actor = new ActivityPubActor
+        {
+            Context =
+            [
+                "https://www.w3.org/ns/activitystreams",
+                "https://w3id.org/security/v1",
+                new Dictionary<string, object>
+                {
+                    ["toot"] = "http://joinmastodon.org/ns#",
+                    ["featured"] = new Dictionary<string, object>
+                    {
+                        ["@id"] = "toot:featured",
+                        ["@type"] = "@id",
+                    },
+                },
+            ],
+            Id = actorUrl,
+            Type = publisher.ActorType ?? "Person",
+            Name = publisher.Nick,
+            PreferredUsername = publisher.Name,
+            Summary = publisher.Bio,
+            Inbox = inboxUrl,
+            Outbox = outboxUrl,
+            Featured = $"{actorUrl}/featured",
+            Followers = followersUrl,
+            Following = followingUrl,
+            Published = publisher.CreatedAt,
+            Url = $"https://{Domain}/publishers/{publisher.Name}",
+            Icon =
+                publisher.Picture is { } icon && icon.ResolveUrl(assetsBaseUrl) is { } iconUrl
+                    ? new ActivityPubImage
+                    {
+                        Type = "Image",
+                        MediaType = icon.MimeType,
+                        Url = iconUrl,
+                    }
+                    : null,
+            Image =
+                publisher.Background is { } header && header.ResolveUrl(assetsBaseUrl) is { } headerUrl
+                    ? new ActivityPubImage
+                    {
+                        Type = "Image",
+                        MediaType = header.MimeType,
+                        Url = headerUrl,
+                    }
+                    : null,
+            PublicKey = new ActivityPubPublicKey
+            {
+                Id = $"{actorUrl}#main-key",
+                Owner = actorUrl,
+                PublicKeyPem = publicKeyPem,
+            },
+            ManuallyApprovesFollowers = publisher.IsLocked,
+            Discoverable = publisher.IsDiscoverable,
+            Bot = publisher.IsBot,
+        };
+
+        return Ok(actor);
+    }
+
+    [HttpPost("inbox")]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+    [SwaggerOperation(
+        Summary = "Receive ActivityPub activities",
+        Description = "Endpoint for receiving ActivityPub activities (Create, Follow, Like, etc.) from remote servers",
+        OperationId = "ReceiveActivity"
+    )]
+    public async Task<IActionResult> PostInbox(
+        string username,
+        [FromBody] Dictionary<string, object> activity
+    )
+    {
+        var contentType = Request.ContentType;
+        if (!IsValidActivityPubContentType(contentType))
+        {
+            _logger.LogWarning("Invalid Content-Type for inbox: {ContentType}", contentType);
+            return StatusCode(
+                StatusCodes.Status406NotAcceptable,
+                ApiError.WithStatus(406, $"Content-Type '{contentType}' not acceptable. Accepted types: application/activity+json, application/ld+json", code: "ACTIVITYPUB_INVALID_CONTENT_TYPE")
+            );
+        }
+
+        var activityType = activity.GetValueOrDefault("type")?.ToString();
+
+        if (string.IsNullOrEmpty(activityType))
+        {
+            _logger.LogWarning("Missing activity type");
+            return BadRequest(new ApiError { Code = "ACTIVITYPUB_MISSING_ACTIVITY_TYPE", Message = "Missing activity type", Status = 400 });
+        }
+
+        var result = await _activityHandler.ProcessActivityAsync(HttpContext, username, activity);
+
+        return result switch
+        {
+            ActivityResult.Success => Accepted(),
+            ActivityResult.Rejected => Unauthorized(),
+            ActivityResult.BadRequest => BadRequest(),
+            ActivityResult.NotFound => NotFound(),
+            ActivityResult.NotSupported => StatusCode(
+                422,
+                ApiError.WithStatus(422, "Unsupported activity type", code: "ACTIVITYPUB_UNSUPPORTED_ACTIVITY_TYPE")
+            ),
+            _ => Accepted(),
+        };
+    }
+
+    [HttpGet("/activitypub/objects/{id:guid}")]
+    [Produces("application/activity+json")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetObject(Guid id)
+    {
+        if (IsWebRequest())
+            return RedirectToWebUi($"/posts/{id}");
+
+        var post = await _db
+            .Posts.Include(p => p.Publisher)
+            .Include(p => p.Tags)
+            .FirstOrDefaultAsync(p =>
+                p.Id == id
+                && p.PublisherId != Guid.Empty
+                && p.FediverseUri == null
+                && p.DraftedAt == null
+                && p.Visibility == PostVisibility.Public
+            );
+
+        if (post?.Publisher is null)
+            return NotFound();
+
+        var actorUrl = $"https://{Domain}/activitypub/actors/{post.Publisher.Name}";
+        var postObject = await _objFactory.CreatePostObject(post, actorUrl);
+        if (!postObject.ContainsKey("@context"))
+            postObject["@context"] = "https://www.w3.org/ns/activitystreams";
+        postObject["url"] = $"https://{Domain}/posts/{post.Id}";
+
+        return Ok(postObject);
+    }
+
+    [HttpGet("outbox")]
+    [Produces("application/activity+json")]
+    [ProducesResponseType(typeof(ActivityPubCollection), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ActivityPubCollectionPage), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [SwaggerOperation(
+        Summary = "Get ActivityPub outbox",
+        Description = "Returns the actor's outbox collection containing their public activities (posts and boosts)",
+        OperationId = "GetActorOutbox"
+    )]
+    public async Task<IActionResult> GetOutbox(string username, [FromQuery] string? page)
+    {
+        if (IsWebRequest())
+            return RedirectToWebUi($"/publishers/{Uri.EscapeDataString(username)}");
+
+        if (!TryParseCollectionPage(page, out var pageNumber))
+            return BadRequest(new ApiError { Code = "ACTIVITYPUB_INVALID_PAGE", Message = "Page must be a positive integer or 'true'.", Status = 400 });
+
+        var publisher = await _db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == username.ToLowerInvariant());
+
+        if (publisher == null)
+            return NotFound();
+
+        var actor = await _db.FediverseActors.FirstOrDefaultAsync(a =>
+            a.Id == publisher.Id && a.Uri != null
+        );
+
+        var actorUrl = $"https://{Domain}/activitypub/actors/{username}";
+        var outboxUrl = $"{actorUrl}/outbox";
+
+        var posts = await _db
+            .Posts.Include(p => p.Publisher)
+            .Include(p => p.Tags)
+            .Where(p =>
+                p.PublisherId == publisher.Id
+                && p.DraftedAt == null
+                && p.Visibility == PostVisibility.Public
+            )
+            .ToListAsync();
+
+        List<SnBoost>? boosts = null;
+        if (actor != null)
+        {
+            boosts = await _db
+                .Boosts.Include(b => b.Post)
+                .Include(b => b.Post)
+                .ThenInclude(p => p.Tags)
+                .Where(b => b.PublisherId == actor.Id)
+                .Where(b => b.Post.DraftedAt == null)
+                .Where(b => b.Post.Visibility == PostVisibility.Public)
+                .ToListAsync();
+        }
+        var totalItems = posts.Count + (boosts?.Count ?? 0);
+
+        if (pageNumber.HasValue)
+        {
+            const int pageSize = 20;
+            var skip = (pageNumber.Value - 1) * pageSize;
+
+            var createActivities = posts
+                .Select(post => new OutboxItem
+                {
+                    Id = $"https://{Domain}/activitypub/objects/{post.Id}/activity",
+                    Type = "Create",
+                    Actor = actorUrl,
+                    Published = post.PublishedAt ?? post.CreatedAt,
+                    PostId = post.Id,
+                    IsBoost = false,
+                })
+                .ToList();
+
+            var announceActivities = (boosts ?? [])
+                .Select(boost => new OutboxItem
+                {
+                    Id =
+                        boost.ActivityPubUri
+                        ?? $"https://{Domain}/activitypub/objects/{boost.Id}/activity",
+                    Type = "Announce",
+                    Actor = actorUrl,
+                    Published = boost.BoostedAt,
+                    PostId = boost.PostId,
+                    BoostId = boost.Id,
+                    BoostedAt = boost.BoostedAt,
+                    IsBoost = true,
+                })
+                .ToList();
+
+            var allItems = createActivities
+                .Concat(announceActivities)
+                .OrderByDescending(i => i.Published)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToList();
+
+            var items = new List<object>();
+            foreach (var item in allItems)
+            {
+                var post =
+                    posts.FirstOrDefault(p => p.Id == item.PostId)
+                    ?? boosts?.FirstOrDefault(b => b.Id == item.BoostId)?.Post;
+
+                if (post == null)
+                {
+                    items.Add(new Dictionary<string, object>());
+                    continue;
+                }
+
+                var postObject = await _objFactory.CreatePostObject(post, actorUrl);
+                postObject["url"] = $"https://{Domain}/posts/{post.Id}";
+
+                if (item.IsBoost)
+                {
+                    postObject["_boostedAt"] = (object?)item.BoostedAt?.ToDateTimeOffset().ToString("O") ?? string.Empty;
+                    if (item.BoostId.HasValue)
+                    {
+                        postObject["_boostId"] = item.BoostId.Value.ToString();
+                    }
+                }
+
+                items.Add(new Dictionary<string, object>
+                {
+                    ["id"] = item.Id,
+                    ["type"] = item.Type,
+                    ["actor"] = item.Actor,
+                    ["published"] = item.Published.ToDateTimeOffset(),
+                    ["to"] = new[] { ActivityRenderer.PublicTo },
+                    ["cc"] = new[] { $"{actorUrl}/followers" },
+                    ["object"] = postObject,
+                });
+            }
+
+            var collectionPage = new ActivityPubCollectionPage
+            {
+                Context = ["https://www.w3.org/ns/activitystreams"],
+                Id = $"{outboxUrl}?page={pageNumber.Value}",
+                Type = "OrderedCollectionPage",
+                TotalItems = totalItems,
+                PartOf = outboxUrl,
+                OrderedItems = items,
+                Next =
+                    skip + pageSize < totalItems
+                        ? $"{outboxUrl}?page={pageNumber.Value + 1}"
+                        : null,
+                Prev =
+                    pageNumber.Value > 1
+                        ? $"{outboxUrl}?page={pageNumber.Value - 1}"
+                        : null,
+            };
+
+            return Ok(collectionPage);
+        }
+        else
+        {
+            var collection = new ActivityPubCollection
+            {
+                Context = ["https://www.w3.org/ns/activitystreams"],
+                Id = outboxUrl,
+                Type = "OrderedCollection",
+                TotalItems = totalItems,
+                First = $"{outboxUrl}?page=1",
+            };
+
+            return Ok(collection);
+        }
+    }
+
+    [HttpGet("followers")]
+    [Produces("application/activity+json")]
+    [ProducesResponseType(typeof(ActivityPubCollection), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ActivityPubCollectionPage), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [SwaggerOperation(
+        Summary = "Get ActivityPub followers",
+        Description = "Returns the actor's followers collection with pagination support",
+        OperationId = "GetActorFollowers"
+    )]
+    public async Task<IActionResult> GetFollowers(string username, [FromQuery] int? page)
+    {
+        if (IsWebRequest())
+            return RedirectToWebUi($"/publishers/{Uri.EscapeDataString(username)}");
+
+        var publisher = await _db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == username.ToLowerInvariant());
+
+        if (publisher == null)
+            return NotFound();
+
+        var actorUrl = $"https://{Domain}/activitypub/actors/{username}";
+        var followersUrl = $"{actorUrl}/followers";
+
+        var relationshipsQuery = _db
+            .PublisherSubscriptions.Include(r => r.FollowerPublisher)
+            .Where(r =>
+                r.PublisherId == publisher.Id && r.State == PublisherSubscriptionState.Accepted && r.EndedAt == null && !r.IsBlocking
+            );
+
+        var totalItems = await relationshipsQuery.CountAsync();
+
+        if (page.HasValue)
+        {
+            const int pageSize = 40;
+            var skip = (page.Value - 1) * pageSize;
+
+            var actorUris = await relationshipsQuery
+                .OrderByDescending(r => r.FollowedAt)
+                .Skip(skip)
+                .Take(pageSize)
+                .Select(r => r.FollowerPublisher!.Uri)
+                .ToListAsync();
+
+            var collectionPage = new ActivityPubCollectionPage
+            {
+                Context = ["https://www.w3.org/ns/activitystreams"],
+                Id = $"{followersUrl}?page={page.Value}",
+                Type = "OrderedCollectionPage",
+                TotalItems = totalItems,
+                PartOf = followersUrl,
+                OrderedItems = actorUris.Cast<object>().ToList(),
+            };
+
+            return Ok(collectionPage);
+        }
+        else
+        {
+            var collection = new ActivityPubCollection
+            {
+                Context = ["https://www.w3.org/ns/activitystreams"],
+                Id = followersUrl,
+                Type = "OrderedCollection",
+                TotalItems = totalItems,
+                First = $"{followersUrl}?page=1",
+            };
+
+            return Ok(collection);
+        }
+    }
+
+    [HttpGet("following")]
+    [Produces("application/activity+json")]
+    [ProducesResponseType(typeof(ActivityPubCollection), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ActivityPubCollectionPage), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [SwaggerOperation(
+        Summary = "Get ActivityPub following",
+        Description = "Returns the actors that this actor follows with pagination support",
+        OperationId = "GetActorFollowing"
+    )]
+    public async Task<IActionResult> GetFollowing(string username, [FromQuery] int? page)
+    {
+        if (IsWebRequest())
+            return RedirectToWebUi($"/publishers/{Uri.EscapeDataString(username)}");
+
+        var publisher = await _db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == username.ToLowerInvariant());
+
+        if (publisher == null)
+            return NotFound();
+
+        var actorUrl = $"https://{Domain}/activitypub/actors/{username}";
+        var followingUrl = $"{actorUrl}/following";
+
+        var relationshipsQuery = _db
+            .PublisherSubscriptions.Include(r => r.Publisher)
+            .Where(r =>
+                r.FollowerPublisherId == publisher.Id && r.State == PublisherSubscriptionState.Accepted && r.EndedAt == null && !r.IsBlocking
+            );
+
+        var totalItems = await relationshipsQuery.CountAsync();
+
+        if (page.HasValue)
+        {
+            const int pageSize = 40;
+            var skip = (page.Value - 1) * pageSize;
+
+            var actorUris = await relationshipsQuery
+                .OrderByDescending(r => r.FollowedAt)
+                .Skip(skip)
+                .Take(pageSize)
+                .Select(r => r.Publisher.Uri)
+                .ToListAsync();
+
+            var collectionPage = new ActivityPubCollectionPage
+            {
+                Context = ["https://www.w3.org/ns/activitystreams"],
+                Id = $"{followingUrl}?page={page.Value}",
+                Type = "OrderedCollectionPage",
+                TotalItems = totalItems,
+                PartOf = followingUrl,
+                OrderedItems = actorUris.Cast<object>().ToList(),
+            };
+
+            return Ok(collectionPage);
+        }
+        else
+        {
+            var collection = new ActivityPubCollection
+            {
+                Context = ["https://www.w3.org/ns/activitystreams"],
+                Id = followingUrl,
+                Type = "OrderedCollection",
+                TotalItems = totalItems,
+                First = $"{followingUrl}?page=1",
+            };
+
+            return Ok(collection);
+        }
+    }
+
+    private async Task<string> GetPublicKeyAsync(SnPublisher publisher)
+    {
+        var actor = await _db.FediverseActors.FirstOrDefaultAsync(a =>
+            a.Id == publisher.Id && a.Uri != null
+        );
+
+        if (actor == null)
+        {
+            _logger.LogWarning("No actor found for publisher: {PublisherId}", publisher.Id);
+            return string.Empty;
+        }
+
+        var key = await _keyService.GetKeyForActorAsync(actor.Id);
+        if (key != null && !string.IsNullOrEmpty(key.KeyPem))
+        {
+            _logger.LogInformation("Using existing key for publisher: {PublisherId}", publisher.Id);
+            return key.KeyPem;
+        }
+
+        _logger.LogInformation(
+            "Generating new key pair for publisher: {PublisherId} ({Name})",
+            publisher.Id,
+            publisher.Name
+        );
+
+        var newKey = await _keyService.GetOrCreateKeyForActorAsync(actor);
+
+        _logger.LogInformation(
+            "Saved new key pair to database for publisher: {PublisherId}",
+            publisher.Id
+        );
+
+        return newKey.KeyPem;
+    }
+
+    [HttpGet("featured")]
+    [Produces("application/activity+json")]
+    [ProducesResponseType(typeof(ActivityPubCollection), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ActivityPubCollectionPage), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [SwaggerOperation(
+        Summary = "Get featured posts",
+        Description = "Returns the actor's pinned posts and top performing posts",
+        OperationId = "GetActorFeatured"
+    )]
+    public async Task<IActionResult> GetFeatured(string username, [FromQuery] int? page)
+    {
+        if (IsWebRequest())
+            return RedirectToWebUi($"/publishers/{Uri.EscapeDataString(username)}");
+
+        var publisher = await _db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == username.ToLowerInvariant());
+
+        if (publisher == null)
+            return NotFound();
+
+        var actorUrl = $"https://{Domain}/activitypub/actors/{username}";
+        var featuredUrl = $"{actorUrl}/featured";
+
+        var pinnedPostsQuery = _db.Posts.Where(p =>
+            p.PublisherId == publisher.Id
+            && p.PinMode == PostPinMode.PublisherPage
+            && p.DraftedAt == null
+            && p.Visibility == PostVisibility.Public
+        );
+
+        var featuredPosts = await pinnedPostsQuery
+            .OrderByDescending(p => p.PublishedAt ?? p.CreatedAt)
+            .ToListAsync();
+
+        var totalItems = featuredPosts.Count;
+
+        if (page.HasValue)
+        {
+            const int pageSize = 20;
+            var skip = (page.Value - 1) * pageSize;
+
+            var postsPage = featuredPosts.Skip(skip).Take(pageSize).ToList();
+
+            var items = postsPage
+                .Select(post => (object)$"https://{Domain}/activitypub/objects/{post.Id}")
+                .ToList();
+
+            var collectionPage = new ActivityPubCollectionPage
+            {
+                Context = ["https://www.w3.org/ns/activitystreams"],
+                Id = $"{featuredUrl}?page={page.Value}",
+                Type = "OrderedCollectionPage",
+                TotalItems = totalItems,
+                PartOf = featuredUrl,
+                OrderedItems = items.Cast<object>().ToList(),
+                Next = skip + pageSize < totalItems ? $"{featuredUrl}?page={page.Value + 1}" : null,
+                Prev = page.Value > 1 ? $"{featuredUrl}?page={page.Value - 1}" : null,
+            };
+
+            return Ok(collectionPage);
+        }
+        else
+        {
+            var items = featuredPosts
+                .Select(post => (object)$"https://{Domain}/activitypub/objects/{post.Id}")
+                .ToList();
+
+            var collection = new ActivityPubCollection
+            {
+                Context = ["https://www.w3.org/ns/activitystreams"],
+                Id = featuredUrl,
+                Type = "OrderedCollection",
+                TotalItems = totalItems,
+                OrderedItems = items,
+            };
+
+            return Ok(collection);
+        }
+    }
+
+    private static bool IsValidActivityPubContentType(string? contentType)
+    {
+        if (string.IsNullOrEmpty(contentType))
+            return false;
+
+        var normalized = contentType.ToLowerInvariant().Trim();
+        return normalized switch
+        {
+            "application/activity+json" => true,
+            "application/ld+json" => true,
+            var s when s.StartsWith("application/activity+json;") => true,
+            var s when s.StartsWith("application/ld+json;") && s.Contains("profile") => true,
+            _ => false,
+        };
+    }
+
+    private static bool TryParseCollectionPage(string? page, out int? pageNumber)
+    {
+        if (page is null)
+        {
+            pageNumber = null;
+            return true;
+        }
+
+        if (page.Equals("true", StringComparison.OrdinalIgnoreCase))
+        {
+            pageNumber = 1;
+            return true;
+        }
+
+        if (int.TryParse(page, out var parsed) && parsed > 0)
+        {
+            pageNumber = parsed;
+            return true;
+        }
+
+        pageNumber = null;
+        return false;
+    }
+}
+
+public class ActivityPubActor
+{
+    [JsonPropertyName("@context")]
+    public List<object> Context { get; set; } = [];
+
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
+
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("preferredUsername")]
+    public string? PreferredUsername { get; set; }
+
+    [JsonPropertyName("summary")]
+    public string? Summary { get; set; }
+
+    [JsonPropertyName("inbox")]
+    public string? Inbox { get; set; }
+
+    [JsonPropertyName("outbox")]
+    public string? Outbox { get; set; }
+
+    [JsonPropertyName("featured")]
+    public string? Featured { get; set; }
+
+    [JsonPropertyName("followers")]
+    public string? Followers { get; set; }
+
+    [JsonPropertyName("following")]
+    public string? Following { get; set; }
+
+    [JsonPropertyName("published")]
+    public Instant? Published { get; set; }
+
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
+
+    [JsonPropertyName("icon")]
+    public ActivityPubImage? Icon { get; set; }
+
+    [JsonPropertyName("image")]
+    public ActivityPubImage? Image { get; set; }
+
+    [JsonPropertyName("publicKey")]
+    public ActivityPubPublicKey? PublicKey { get; set; }
+
+    [JsonPropertyName("manuallyApprovesFollowers")]
+    public bool? ManuallyApprovesFollowers { get; set; }
+
+    [JsonPropertyName("discoverable")]
+    public bool? Discoverable { get; set; }
+
+    [JsonPropertyName("bot")]
+    public bool? Bot { get; set; }
+}
+
+public class ActivityPubPublicKey
+{
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    [JsonPropertyName("owner")]
+    public string? Owner { get; set; }
+
+    [JsonPropertyName("publicKeyPem")]
+    public string? PublicKeyPem { get; set; }
+}
+
+public class ActivityPubImage
+{
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
+
+    [JsonPropertyName("mediaType")]
+    public string? MediaType { get; set; }
+
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
+}
+
+public class ActivityPubCollection
+{
+    [JsonPropertyName("@context")]
+    public List<object> Context { get; set; } = [];
+
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
+
+    [JsonPropertyName("totalItems")]
+    public int TotalItems { get; set; }
+
+    [JsonPropertyName("first")]
+    public string? First { get; set; }
+
+    [JsonPropertyName("orderedItems")]
+    public List<object>? OrderedItems { get; set; }
+}
+
+public class ActivityPubCollectionPage
+{
+    [JsonPropertyName("@context")]
+    public List<object> Context { get; set; } = [];
+
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
+
+    [JsonPropertyName("totalItems")]
+    public int TotalItems { get; set; }
+
+    [JsonPropertyName("partOf")]
+    public string? PartOf { get; set; }
+
+    [JsonPropertyName("orderedItems")]
+    public List<object>? OrderedItems { get; set; }
+
+    [JsonPropertyName("next")]
+    public string? Next { get; set; }
+
+    [JsonPropertyName("prev")]
+    public string? Prev { get; set; }
+}
+
+public class OutboxItem
+{
+    public string Id { get; set; } = null!;
+    public string Type { get; set; } = null!;
+    public string Actor { get; set; } = null!;
+    public Instant Published { get; set; }
+    public Guid PostId { get; set; }
+    public bool IsBoost { get; set; }
+    public Guid? BoostId { get; set; }
+    public Instant? BoostedAt { get; set; }
+}

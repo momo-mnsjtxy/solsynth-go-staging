@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "checked_on": "2026-10-08",
+  "status": "passed",
+  "scope": "Evidence/artifact integrity only; no implementation runtime validation",
+  "checks": {
+    "pinned_entrypoint_readmes": 2,
+    "official_website_page_records": 12,
+    "suki_repository_source_reads": 0,
+    "generated_schema_or_iframe_reads": 0,
+    "production_api_requests": 0,
+    "full_website_page_copies_retained": 0
+  },
+  "files": [
+    {
+      "file": "docs/public-api-documentation-audit.md",
+      "bytes": 9685,
+      "sha256": "bdb72e27b09c1da5fea2a2f13d87ed20241cd952fc7064f0360e653f9e6d6853"
+    },
+    {
+      "file": "inventory/public-doc-evidence/entrypoints.json",
+      "bytes": 1957,
+      "sha256": "3a2b3e57577c730f9ea9737bfbea09d5cdec3b755b1f9431cc351b458a881c9a"
+    },
+    {
+      "file": "inventory/public-doc-evidence/page-observations.json",
+      "bytes": 10895,
+      "sha256": "324695d13cdc71433c2366c08e103e647afda209ed4686c1c2eac5cbe8ea0792"
+    },
+    {
+      "file": "inventory/public-doc-evidence/search-log.json",
+      "bytes": 1944,
+      "sha256": "b023e817b3c2f0f3b4cb914c20502b4fc7841d41ff9dbe3420b4006c6903861e"
+    }
+  ]
+}

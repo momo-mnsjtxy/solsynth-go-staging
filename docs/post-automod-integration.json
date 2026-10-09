@@ -1,0 +1,34 @@
+{
+  "base": "657eb35c8c6d5fb21baa97f21508ffd3476a0d86",
+  "schema_order": [
+    "Existing authoritypg.Schema and accountpg.Schema",
+    "Updated postpg.Schema (adds decision/revision/event evidence)",
+    "Existing socialpg.Schema + postpg.RealmSchema + moderationpg.Schema",
+    "Existing adminpg.Schema (durable rules/generation)"
+  ],
+  "before": [
+    "TestPGBackendPostAutomodCompositionAndExplicitReview",
+    "TestPGPostAutomodWriteDecisionsPrivacyAndPublish",
+    "TestPGPostAutomodRankedHideDerankFlagAndLatestContract",
+    "TestPGPostAutomodCurrentRuleEditsRemovalAndExpiry",
+    "TestPGPostAutomodOptionalReviewReplayAndInvalidation",
+    "TestPGPostAutomodRuleGenerationWaitUsesCurrentRules",
+    "TestPGPostAutomodAuditRollbackAndUnboundedDelete",
+    "TestPGPostAutomodExpiryAfterGenerationWait",
+    "TestPGPostAutomodSavedDecisionRestartPersistence"
+  ],
+  "after": [
+    "TestPGPostAutomodSavedDecisionRestartPersistence"
+  ],
+  "scheduling_overlay_before": [
+    "TestPGPostAutomodScheduledPublicationCurrentRulesAndReplay",
+    "TestPGPostAutomodScheduledGenerationWaitRechecksSession"
+  ],
+  "scheduling_dependencies": [
+    "post-scheduling.patch",
+    "post-scheduling-review correction.patch",
+    "post-automod source + host patches",
+    "Existing postpg.SchedulingSchema after all canonical dependencies"
+  ],
+  "actual_postgres": "Not executed locally. Coordinator must register and run these declarations in private PostgreSQL 16 CI. No runner, grouping or guard file is changed."
+}

@@ -1,0 +1,537 @@
+using System.Globalization;
+using System.Text.Json;
+using Microsoft.AspNetCore.RateLimiting;
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
+using System.Text.Json.Serialization;
+using DysonNetwork.Passport.Account;
+using DysonNetwork.Passport.Account.Presences;
+using DysonNetwork.Passport.Affiliation;
+using DysonNetwork.Passport.Credit;
+using DysonNetwork.Passport.DomainTrust;
+using DysonNetwork.Passport.Leveling;
+using DysonNetwork.Passport.Mailer;
+using DysonNetwork.Passport.Meet;
+using DysonNetwork.Passport.Nearby;
+using DysonNetwork.Passport.Nfc;
+using DysonNetwork.Passport.NameChangeCard;
+using DysonNetwork.Passport.Progression;
+using DysonNetwork.Passport.Realm;
+using DysonNetwork.Passport.Rewind;
+using DysonNetwork.Passport.Ticket;
+using DysonNetwork.Passport.Examination;
+using DysonNetwork.Shared.Cache;
+using DysonNetwork.Shared.Data;
+using DysonNetwork.Shared.EventBus;
+using DysonNetwork.Shared.Geometry;
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Pagination;
+using DysonNetwork.Shared.Queue;
+using DysonNetwork.Shared.Registry;
+using DysonNetwork.Shared.Localization;
+using Microsoft.EntityFrameworkCore;
+using DysonNetwork.Shared.Proto;
+using WebSocketPacket = DysonNetwork.Shared.Models.WebSocketPacket;
+
+namespace DysonNetwork.Passport.Startup;
+
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddAppServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+        services.Configure<BadgesOptions>(configuration.GetSection("Badges"));
+        services.Configure<AccountActivationOptions>(configuration.GetSection("AccountActivation"));
+        services.Configure<AffiliationPurchaseOptions>(configuration.GetSection("AffiliationPurchase"));
+        services.Configure<NameChangeCardOptions>(configuration.GetSection("NameChangeCard"));
+
+        services.AddDbContext<AppDatabase>();
+        services.AddHttpContextAccessor();
+
+        services.AddHttpClient();
+
+        // Register gRPC services
+        services.AddGrpc(options =>
+        {
+            options.EnableDetailedErrors = true; // Will be adjusted in Program.cs
+            options.MaxReceiveMessageSize = 16 * 1024 * 1024; // 16MB
+            options.MaxSendMessageSize = 16 * 1024 * 1024; // 16MB
+        });
+        services.AddGrpcReflection();
+
+        services.AddControllers().AddPaginationValidationFilter().AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
+            options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+            options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.SnakeCaseLower;
+
+            options.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
+        });
+
+        // Configure rate limiting
+        services.AddRateLimiter(options =>
+        {
+            options.AddFixedWindowLimiter("captcha", opt =>
+            {
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.PermitLimit = 5; // 5 attempts per minute
+                opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+                opt.QueueLimit = 2;
+            });
+        });
+
+        services.Configure<RequestLocalizationOptions>(options =>
+        {
+            var supportedCultures = new[]
+            {
+                new CultureInfo("en-US"),
+                new CultureInfo("zh-Hans"),
+            };
+
+            options.SupportedCultures = supportedCultures;
+            options.SupportedUICultures = supportedCultures;
+        });
+
+        return services;
+    }
+
+    public static IServiceCollection AddAppAuthentication(this IServiceCollection services)
+    {
+        services.AddAuthorization();
+
+        return services;
+    }
+
+    public static IServiceCollection AddAppFlushHandlers(this IServiceCollection services)
+    {
+        services.AddSingleton<FlushBufferService>();
+        services.AddScoped<DomainValidationMetricFlushHandler>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddAppBusinessServices(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddSingleton<ILocalizationService, JsonLocalizationService>(sp =>
+        {
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var resourceNamespace = "DysonNetwork.Passport.Resources.Locales";
+            return new JsonLocalizationService(assembly, resourceNamespace);
+        });
+        services.AddScoped<Shared.Templating.ITemplateService, Shared.Templating.DotLiquidTemplateService>(sp =>
+        {
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var resourceNamespace = "DysonNetwork.Passport.Resources.Templates";
+            return new Shared.Templating.DotLiquidTemplateService(assembly, resourceNamespace);
+        });
+        services.Configure<GeoOptions>(configuration.GetSection("GeoIP"));
+        services.Configure<AppleWalletOptions>(configuration.GetSection("AppleWallet"));
+        services.AddScoped<GeoService>();
+        services.AddScoped<EmailService>();
+        services.AddScoped<ActionLogService>();
+        services.AddScoped<AccountService>();
+        services.AddScoped<AccountBoardService>();
+        services.AddScoped<ApplePassService>();
+        services.AddScoped<AccountEventService>();
+        services.AddSingleton<CheckInFortuneScheduler>();
+        services.AddScoped<PresenceArtworkService>();
+        services.AddScoped<NotableDaysService>();
+        services.AddScoped<NotableDaysSeedService>();
+        services.AddScoped<RelationshipService>();
+        services.AddScoped<MagicSpellService>();
+        services.AddScoped<AccountUsernameService>();
+        services.AddScoped<SocialCreditService>();
+        services.AddScoped<ExperienceService>();
+        services.AddScoped<RealmService>();
+        services.AddScoped<RealmQuotaService>();
+        services.AddScoped<RealmExperienceService>();
+        services.AddScoped<AffiliationSpellService>();
+        services.AddScoped<NameChangeCardService>();
+        services.AddScoped<ProgressionSeedService>();
+        services.AddScoped<ProgressionService>();
+        services.AddScoped<TestService>();
+
+        services.AddScoped<SteamPresenceService>();
+        services.AddScoped<IPresenceService, SteamPresenceService>();
+        services.AddScoped<LastFmPresenceService>();
+        services.AddScoped<IPresenceService, LastFmPresenceService>();
+
+        services.AddGrpcClientWithSharedChannel<DyAccountService.DyAccountServiceClient>(
+            "https://_grpc.stargate",
+            "DyAccountService");
+        services.AddGrpcClientWithSharedChannel<DyPublisherService.DyPublisherServiceClient>(
+            "https://_grpc.sphere",
+            "DyPublisherService");
+        services.AddGrpcClientWithSharedChannel<DyProfileService.DyProfileServiceClient>(
+            "https://_grpc.passport",
+            "DyProfileService");
+        services.AddScoped<RemoteAccountContactService>();
+        services.AddScoped<RemoteAccountConnectionService>();
+        services.AddGrpcClientWithSharedChannel<DyActionLogService.DyActionLogServiceClient>(
+            "https://_grpc.stargate",
+            "DyActionLogService");
+        services.AddSingleton<RemoteActionLogService>();
+
+        services.AddScoped<PassRewindService>();
+        services.AddScoped<AccountRewindService>();
+        services.AddScoped<TicketService>();
+        services.AddScoped<TicketOnCallService>();
+        services.AddScoped<MeetService>();
+        services.AddScoped<NearbyService>();
+        services.AddScoped<NfcService>();
+        services.AddSingleton<MeetSubscriptionHub>();
+        services.AddSingleton<MeetExpirationScheduler>();
+        services.AddHostedService<MeetLifecycleHostedService>();
+        services.AddScoped<LocationPinService>();
+        services.AddSingleton<LocationPinSubscriptionHub>();
+        services.AddHostedService<LocationPinLifecycleHostedService>();
+        services.Configure<DomainBlockSettings>(configuration.GetSection("DomainBlock"));
+        services.AddScoped<DomainTrustService>();
+        services.AddEventBus()
+            .AddFileMetadataReferenceListener<AppDatabase>()
+            .AddListener<AccountCreatedEvent>(async (evt, ctx) =>
+            {
+                var spells = ctx.ServiceProvider.GetRequiredService<MagicSpellService>();
+                var affiliationSpells = ctx.ServiceProvider.GetRequiredService<AffiliationSpellService>();
+                var tests = ctx.ServiceProvider.GetRequiredService<TestService>();
+                var logger = ctx.ServiceProvider.GetRequiredService<ILogger<EventBus>>();
+                var email = ctx.ServiceProvider.GetRequiredService<EmailService>();
+                var localizer = ctx.ServiceProvider.GetRequiredService<ILocalizationService>();
+                
+                logger.LogInformation("Handling account creation event for @{UserName}", evt.Name);
+
+                if (evt.ActivatedAt is null &&
+                    !string.IsNullOrWhiteSpace(evt.PrimaryEmail) &&
+                    evt.PrimaryEmailContactId.HasValue)
+                {
+                    var spell = await spells.CreateMagicSpell(
+                        new SnAccount
+                        {
+                            Id = evt.AccountId,
+                            Name = evt.Name,
+                            Nick = evt.Nick,
+                            Language = evt.Language,
+                            Region = evt.Region
+                        },
+                        MagicSpellType.ContactVerification,
+                        new Dictionary<string, object>
+                        {
+                            { "contact_method", evt.PrimaryEmail! },
+                            { "contact_id", evt.PrimaryEmailContactId.Value.ToString() }
+                        },
+                        preventRepeat: true
+                    );
+                    await spells.NotifyMagicSpell(spell, true);
+                }
+
+                if (!string.IsNullOrWhiteSpace(evt.PrimaryEmail))
+                {
+                    try
+                    {
+                        var recipientName = string.IsNullOrWhiteSpace(evt.Nick) ? evt.Name : evt.Nick;
+                        await email.SendTemplatedEmailAsync(
+                            recipientName,
+                            evt.PrimaryEmail,
+                            localizer.Get("welcomeEmailTitle", evt.Language),
+                            "Welcome",
+                            new
+                            {
+                                nick = recipientName,
+                                site_url = configuration.GetValue<string>("SiteUrl"),
+                                activation_url = $"{configuration.GetValue<string>("SiteUrl")?.TrimEnd('/')}/accounts/me/activation"
+                            },
+                            evt.Language
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Failed to send welcome email for account {AccountId}", evt.AccountId);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(evt.AffiliationSpell))
+                {
+                    var inviteUse = evt.ActivatedAt is null
+                        ? await affiliationSpells.ConsumeRegistrationInvite(evt.AffiliationSpell, evt.AccountId, ctx.CancellationToken)
+                        : new AffiliationInviteUseResult();
+                    if (inviteUse.Consumed && inviteUse.SkipsTests)
+                        await tests.TryActivateAccount(evt.AccountId, ctx.CancellationToken);
+                }
+
+                logger.LogInformation("Handled account created event for {AccountId}", evt.AccountId);
+            })
+            .AddListener<PaymentOrderEvent>(
+                PaymentOrderEventBase.Type,
+                async (evt, ctx) =>
+                {
+                    if (evt.ProductIdentifier == "affiliations.registration-invite")
+                    {
+                        var affiliationSpells = ctx.ServiceProvider.GetRequiredService<AffiliationSpellService>();
+                        var purchaseEvt = JsonSerializer.Deserialize<PaymentOrderAffiliationPurchaseEvent>(
+                            JsonSerializer.Serialize(evt, InfraObjectCoder.SerializerOptions), InfraObjectCoder.SerializerOptions);
+                        if (purchaseEvt?.Meta is not null)
+                            await affiliationSpells.FulfillRegistrationInvitePurchase(purchaseEvt.Meta.PurchaseId, purchaseEvt.OrderId, ctx.CancellationToken);
+                        return;
+                    }
+                    if (evt.ProductIdentifier == "passport.name-change-card")
+                    {
+                        var cardService = ctx.ServiceProvider.GetRequiredService<NameChangeCardService>();
+                        var purchaseEvt = JsonSerializer.Deserialize<PaymentOrderNameChangeCardEvent>(
+                            JsonSerializer.Serialize(evt, InfraObjectCoder.SerializerOptions), InfraObjectCoder.SerializerOptions);
+                        if (purchaseEvt?.Meta is not null)
+                            await cardService.Fulfill(purchaseEvt.Meta.PurchaseId, purchaseEvt.OrderId, ctx.CancellationToken);
+                        return;
+                    }
+                    if (evt.ProductIdentifier != "realms.boost") return;
+
+                    var logger = ctx.ServiceProvider.GetRequiredService<ILogger<EventBus>>();
+                    var db = ctx.ServiceProvider.GetRequiredService<AppDatabase>();
+                    var experience = ctx.ServiceProvider.GetRequiredService<RealmExperienceService>();
+
+                    var boostEvt = JsonSerializer.Deserialize<PaymentOrderRealmBoostEvent>(
+                        JsonSerializer.Serialize(evt, InfraObjectCoder.SerializerOptions),
+                        InfraObjectCoder.SerializerOptions
+                    );
+                    if (boostEvt?.Meta == null) return;
+
+                    if (await db.RealmBoostContributions.AnyAsync(c => c.OrderId == boostEvt.OrderId, ctx.CancellationToken))
+                    {
+                        logger.LogDebug("Skipping duplicate realm boost order {OrderId}", boostEvt.OrderId);
+                        return;
+                    }
+
+                    var realm = await db.Realms.FirstOrDefaultAsync(r => r.Id == boostEvt.Meta.RealmId, ctx.CancellationToken);
+                    if (realm is null) return;
+
+                    var currency = RealmBoostPolicy.NormalizeCurrency(boostEvt.Meta.Currency);
+                    var amount = decimal.Parse(boostEvt.Meta.Amount, CultureInfo.InvariantCulture);
+                    db.RealmBoostContributions.Add(new SnRealmBoostContribution
+                    {
+                        RealmId = boostEvt.Meta.RealmId,
+                        AccountId = boostEvt.Meta.AccountId,
+                        Currency = currency,
+                        Amount = amount,
+                        OrderId = boostEvt.OrderId,
+                        TransactionId = Guid.Empty
+                    });
+
+                    var cutoff = RealmBoostPolicy.GetActiveCutoff(SystemClock.Instance.GetCurrentInstant());
+                    var activeContributions = await db.RealmBoostContributions
+                        .Where(c => c.RealmId == boostEvt.Meta.RealmId && c.CreatedAt >= cutoff)
+                        .ToListAsync(ctx.CancellationToken);
+                    realm.BoostPoints = activeContributions.Sum(c => c.Shares) +
+                        RealmBoostPolicy.GetSharesForAmount(currency, amount);
+                    await db.SaveChangesAsync(ctx.CancellationToken);
+
+                    var boostXp = boostEvt.Meta.Shares * RealmExperienceService.BoostShareXp;
+                    var xpRecord = await experience.AddRecord(
+                        boostEvt.Meta.RealmId,
+                        boostEvt.Meta.AccountId,
+                        "realm.boost.purchase",
+                        boostEvt.OrderId.ToString(),
+                        boostXp,
+                        cooldown: null,
+                        cancellationToken: ctx.CancellationToken
+                    );
+
+                    if (xpRecord is not null)
+                    {
+                        logger.LogDebug(
+                            "Granted realm boost XP for order {OrderId} to {RealmId}/{AccountId}",
+                            boostEvt.OrderId,
+                            boostEvt.Meta.RealmId,
+                            boostEvt.Meta.AccountId
+                        );
+                    }
+                },
+                opts =>
+                {
+                    opts.UseJetStream = true;
+                    opts.StreamName = "payment_events";
+                    opts.ConsumerName = "passport_realm_boost_orders";
+                    opts.MaxRetries = 3;
+                })
+            .AddListener<RealmActivityEvent>(
+                RealmActivityEvent.SubjectPrefix + ">",
+                async (evt, ctx) =>
+                {
+                    var experience = ctx.ServiceProvider.GetRequiredService<RealmExperienceService>();
+                    var logger = ctx.ServiceProvider.GetRequiredService<ILogger<EventBus>>();
+
+                    var cooldown = evt.ActivityType == "chat_message"
+                        ? NodaTime.Duration.FromMinutes(1)
+                        : (NodaTime.Duration?)null;
+
+                    var record = await experience.AddRecord(
+                        evt.RealmId,
+                        evt.AccountId,
+                        $"realm.activity.{evt.ActivityType}",
+                        evt.ReferenceId,
+                        evt.Delta,
+                        cooldown,
+                        ctx.CancellationToken
+                    );
+
+                    if (record is not null)
+                        logger.LogDebug("Recorded realm activity XP {ActivityType} for {RealmId}/{AccountId}", evt.ActivityType, evt.RealmId, evt.AccountId);
+                },
+                opts =>
+                {
+                    opts.UseJetStream = true;
+                    opts.StreamName = "realm_activity_events";
+                    opts.ConsumerName = "passport_realm_activity_xp";
+                    opts.MaxRetries = 3;
+                })
+            .AddListener<ActionLogTriggeredEvent>(
+                ActionLogTriggeredEvent.SubjectPrefix + ">",
+                async (evt, ctx) =>
+                {
+                    var progression = ctx.ServiceProvider.GetRequiredService<ProgressionService>();
+                    await progression.HandleActionLogAsync(evt, ctx.CancellationToken);
+                },
+                opts =>
+                {
+                    opts.UseJetStream = true;
+                    opts.StreamName = "action_log_events";
+                    opts.ConsumerName = "passport_progression_action_logs";
+                    opts.MaxRetries = 3;
+                })
+            .AddListener<LocationPinUpdatedEvent>(
+                LocationPinUpdatedEvent.SubjectPrefix + ">",
+                async (evt, ctx) =>
+                {
+                    var subscriptions = ctx.ServiceProvider.GetRequiredService<LocationPinSubscriptionHub>();
+                    var db = ctx.ServiceProvider.GetRequiredService<AppDatabase>();
+
+                    var pin = await db.LocationPins.FirstOrDefaultAsync(p => p.Id == evt.PinId, ctx.CancellationToken);
+                    if (pin == null) return;
+
+                    pin.Account = ctx.ServiceProvider.GetRequiredService<AccountService>().GetAccount(pin.AccountId).Result;
+
+                    await subscriptions.PublishAsync("pin_updated", pin, ctx.CancellationToken);
+                },
+                opts =>
+                {
+                    opts.UseJetStream = true;
+                    opts.StreamName = "locationpin_events";
+                    opts.ConsumerName = "passport_locationpin_updates";
+                    opts.MaxRetries = 3;
+                })
+            .AddListener<WebSocketConnectedEvent>(
+                "websocket_connected",
+                async (evt, ctx) =>
+                {
+                    var accountEvents = ctx.ServiceProvider.GetRequiredService<AccountEventService>();
+                    await accountEvents.UpdateWebSocketConnectionState(
+                        evt.AccountId,
+                        evt.DeviceId,
+                        isConnected: true,
+                        idleSince: null,
+                        updateIdleSince: true
+                    );
+                    await HandleWebSocketStatusChanged(evt.AccountId, evt.DeviceId, evt.Timestamp, ctx);
+                },
+                opts =>
+                {
+                    opts.UseJetStream = true;
+                    opts.StreamName = "websocket_connections";
+                    opts.ConsumerName = "passport_websocket_connected_status";
+                    opts.MaxRetries = 3;
+                })
+            .AddListener<WebSocketDisconnectedEvent>(
+                "websocket_disconnected",
+                async (evt, ctx) =>
+                {
+                    if (!evt.IsOffline) return;
+                    var accountEvents = ctx.ServiceProvider.GetRequiredService<AccountEventService>();
+                    await accountEvents.UpdateWebSocketConnectionState(
+                        evt.AccountId,
+                        evt.DeviceId,
+                        isConnected: false
+                    );
+                    await HandleWebSocketStatusChanged(evt.AccountId, evt.DeviceId, evt.Timestamp, ctx);
+                },
+                opts =>
+                {
+                    opts.UseJetStream = true;
+                    opts.StreamName = "websocket_connections";
+                    opts.ConsumerName = "passport_websocket_disconnected_status";
+                    opts.MaxRetries = 3;
+                })
+            .AddListener<WebSocketPacketEvent>(
+                WebSocketPacketEvent.SubjectPrefix + "passport",
+                async (evt, ctx) =>
+                {
+                    var packet = WebSocketPacket.FromBytes(evt.PacketBytes);
+                    if (packet.Type != "status.idle") return;
+
+                    var accountEvents = ctx.ServiceProvider.GetRequiredService<AccountEventService>();
+                    await accountEvents.UpdateWebSocketConnectionState(
+                        evt.AccountId,
+                        evt.DeviceId,
+                        isConnected: true,
+                        idleSince: ResolveIdleSince(packet, evt.Timestamp),
+                        updateIdleSince: true
+                    );
+                    await HandleWebSocketStatusChanged(evt.AccountId, evt.DeviceId, evt.Timestamp, ctx);
+                },
+                opts =>
+                {
+                    opts.UseJetStream = false;
+                });
+
+        return services;
+    }
+
+    private static Instant? ResolveIdleSince(WebSocketPacket packet, Instant timestamp)
+    {
+        if (packet.Data is null) return timestamp;
+
+        var element = packet.GetData<JsonElement>();
+        return element.ValueKind switch
+        {
+            JsonValueKind.True => timestamp,
+            JsonValueKind.False => null,
+            JsonValueKind.Object when element.TryGetProperty("is_idle", out var isIdle)
+                && isIdle.ValueKind is JsonValueKind.True or JsonValueKind.False
+                    => isIdle.GetBoolean() ? timestamp : null,
+            _ => timestamp
+        };
+    }
+
+    private static async Task HandleWebSocketStatusChanged(Guid accountId, string deviceId, Instant timestamp, EventContext ctx)
+    {
+        var accountEvents = ctx.ServiceProvider.GetRequiredService<AccountEventService>();
+        var relationships = ctx.ServiceProvider.GetRequiredService<RelationshipService>();
+        var ws = ctx.ServiceProvider.GetRequiredService<RemoteWebSocketService>();
+        var logger = ctx.ServiceProvider.GetRequiredService<ILogger<EventBus>>();
+
+        var previousStatus = await accountEvents.GetPreviousStatus(accountId);
+        accountEvents.PurgeStatusCache(accountId);
+        // The broadcast audience is the account's own friends, who are allowed
+        // to see device presence, so skip the viewer relationship check.
+        var currentStatus = await accountEvents.GetStatus(accountId, includeDevicePresence: true);
+
+        if (previousStatus is not null && BroadcastEventHandler.StatusesEqual(previousStatus, currentStatus))
+            return;
+
+        var friendIds = await relationships.ListAccountFriends(accountId);
+        if (friendIds.Count == 0) return;
+
+        await ws.PushWebSocketPacketToUsers(
+            friendIds.Select(id => id.ToString()).ToList(),
+            WebSocketPacketType.AccountStatusUpdated,
+            InfraObjectCoder.ConvertObjectToByteString(new Dictionary<string, object>
+            {
+                ["account_id"] = accountId,
+                ["status"] = currentStatus,
+                ["device_id"] = deviceId,
+                ["timestamp"] = timestamp
+            }).ToByteArray()
+        );
+
+        logger.LogDebug("Broadcast account status update for {AccountId} to {FriendCount} friends", accountId, friendIds.Count);
+    }
+}

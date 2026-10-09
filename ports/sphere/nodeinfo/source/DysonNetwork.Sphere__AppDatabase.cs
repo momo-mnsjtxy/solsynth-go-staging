@@ -1,0 +1,406 @@
+using System.Linq.Expressions;
+using DysonNetwork.Sphere.Models;
+using DysonNetwork.Shared.Data;
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Sphere.ActivityPub;
+using DysonNetwork.Sphere.ActivityPub.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using NodaTime;
+using Pgvector.EntityFrameworkCore;
+using Quartz;
+
+namespace DysonNetwork.Sphere;
+
+public class AppDatabase(
+    DbContextOptions<AppDatabase> options,
+    IConfiguration configuration
+) : DbContext(options)
+{
+    public DbSet<SnPublisher> Publishers { get; set; } = null!;
+    public DbSet<SnPublisherMember> PublisherMembers { get; set; } = null!;
+    public DbSet<SnPublisherSubscription> PublisherSubscriptions { get; set; } = null!;
+    public DbSet<SnPublisherFeature> PublisherFeatures { get; set; } = null!;
+    public DbSet<SnPublisherRatingRecord> PublisherRatingRecords { get; set; } = null!;
+
+    public DbSet<SnPost> Posts { get; set; } = null!;
+    public DbSet<SnPostIndex> PostIndices { get; set; } = null!;
+    public DbSet<SnPostBookmark> PostBookmarks { get; set; } = null!;
+    public DbSet<SnPostWatchPreference> PostWatchPreferences { get; set; } = null!;
+    public DbSet<SnPostReaction> PostReactions { get; set; } = null!;
+    public DbSet<SnPostAward> PostAwards { get; set; } = null!;
+    public DbSet<SnPostTag> PostTags { get; set; } = null!;
+    public DbSet<SnPostCategory> PostCategories { get; set; } = null!;
+    public DbSet<SnPostCollection> PostCollections { get; set; } = null!;
+    public DbSet<SnPostCollectionItem> PostCollectionItems { get; set; } = null!;
+    public DbSet<SnPostFeaturedRecord> PostFeaturedRecords { get; set; } = null!;
+    public DbSet<SnPostSponsorBid> PostSponsorBids { get; set; } = null!;
+    public DbSet<SnPostSponsorPlacement> PostSponsorPlacements { get; set; } = null!;
+    public DbSet<SnPostAggregatedStats> PostAggregatedStats { get; set; } = null!;
+    public DbSet<SnPostCategorySubscription> PostCategorySubscriptions { get; set; } = null!;
+    public DbSet<SnPostInterestProfile> PostInterestProfiles { get; set; } = null!;
+    public DbSet<SnDiscoveryPreference> DiscoveryPreferences { get; set; } = null!;
+    public DbSet<SnPublishingSettings> PublishingSettings { get; set; } = null!;
+    public DbSet<SnPublisherVerifiedDomain> PublisherVerifiedDomains { get; set; } = null!;
+    public DbSet<SnAutomodRule> AutomodRules { get; set; } = null!;
+
+    public DbSet<SnSurvey> Surveys { get; set; } = null!;
+    public DbSet<SnSurveyQuestion> SurveyQuestions { get; set; } = null!;
+    public DbSet<SnSurveyAnswer> SurveyAnswers { get; set; } = null!;
+    public DbSet<SnSurveySubscription> SurveySubscriptions { get; set; } = null!;
+
+    public DbSet<SnSticker> Stickers { get; set; } = null!;
+    public DbSet<StickerPack> StickerPacks { get; set; } = null!;
+    public DbSet<StickerPackOwnership> StickerPackOwnerships { get; set; } = null!;
+
+    public DbSet<SnRealmPostModerationLog> RealmPostModerationLogs { get; set; } = null!;
+
+    public DbSet<SnFediverseInstance> FediverseInstances { get; set; } = null!;
+    public DbSet<SnFediverseModerationRule> FediverseModerationRules { get; set; } = null!;
+    public DbSet<SnFediverseKey> FediverseKeys { get; set; } = null!;
+    public DbSet<SnActivityPubDelivery> ActivityPubDeliveries { get; set; } = null!;
+    public DbSet<DeliveryDeadLetter> DeliveryDeadLetters { get; set; } = null!;
+    public DbSet<SnBoost> Boosts { get; set; } = null!;
+    public DbSet<SnQuoteAuthorization> QuoteAuthorizations { get; set; } = null!;
+
+    public DbSet<SnLiveStream> LiveStreams { get; set; } = null!;
+    public DbSet<SnLiveStreamChatMessage> LiveStreamChatMessages { get; set; } = null!;
+    public DbSet<SnLiveStreamAward> LiveStreamAwards { get; set; } = null!;
+
+    /// <summary>
+    /// Publishers that participate in the fediverse: remote actors (<see cref="PublisherType.Fediverse"/>)
+    /// and local publishers that have ActivityPub enabled (a <see cref="SnPublisher.Uri"/> is set).
+    /// </summary>
+    public IQueryable<SnPublisher> FediverseActors =>
+        Publishers.Where(p => p.Type == PublisherType.Fediverse || p.Uri != null);
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseNpgsql(
+            configuration.GetConnectionString("App"),
+            opt => opt
+                .ConfigureDataSource(optSource => optSource.EnableDynamicJson())
+                .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                .UseNodaTime()
+                .UseVector()
+        ).UseSnakeCaseNamingConvention();
+
+        base.OnConfiguring(optionsBuilder);
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.HasPostgresExtension("vector");
+        modelBuilder.HasPostgresExtension("pg_trgm");
+
+        modelBuilder.Ignore<SnAccount>();
+        modelBuilder.Ignore<SnAccountRelationship>();
+        modelBuilder.Ignore<SnRealmMember>();
+        modelBuilder.Ignore<SnCloudFileReferenceObject>();
+
+        modelBuilder.Ignore<SnAccountProfile>();
+        modelBuilder.Ignore<SnAccountContact>();
+        modelBuilder.Ignore<SnAccountBadge>();
+        modelBuilder.Ignore<SnAccountAuthFactor>();
+        modelBuilder.Ignore<SnAccountConnection>();
+        modelBuilder.Ignore<SnAccountStatus>();
+
+        modelBuilder.Ignore<SnAuthSession>();
+        modelBuilder.Ignore<SnAuthChallenge>();
+        modelBuilder.Ignore<SnAuthClient>();
+
+        modelBuilder.Ignore<SnRealm>();
+        modelBuilder.Ignore<SnRealmLabel>();
+        modelBuilder.Ignore<SnRealmBoostContribution>();
+        modelBuilder.Ignore<SnRealmExperienceRecord>();
+
+        modelBuilder.Entity<SnPublisherMember>()
+            .HasKey(pm => new { pm.PublisherId, pm.AccountId });
+        modelBuilder.Entity<SnPublisherMember>()
+            .HasOne(pm => pm.Publisher)
+            .WithMany(p => p.Members)
+            .HasForeignKey(pm => pm.PublisherId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SnPublisherSubscription>()
+            .HasOne(ps => ps.Publisher)
+            .WithMany(p => p.Subscriptions)
+            .HasForeignKey(ps => ps.PublisherId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SnPublisherSubscription>()
+            .HasOne(ps => ps.FollowerPublisher)
+            .WithMany()
+            .HasForeignKey(ps => ps.FollowerPublisherId)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<SnPublisherSubscription>()
+            .HasIndex(ps => new { ps.AccountId, ps.PublisherId, ps.EndedAt });
+        modelBuilder.Entity<SnPublisherSubscription>()
+            .HasIndex(ps => new { ps.FollowerPublisherId, ps.PublisherId, ps.State, ps.EndedAt });
+
+        modelBuilder.Entity<SnPublisherRatingRecord>()
+            .HasOne(r => r.Publisher)
+            .WithMany(p => p.RatingRecords)
+            .HasForeignKey(r => r.PublisherId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SnPublisherVerifiedDomain>()
+            .HasOne(d => d.Publisher)
+            .WithMany()
+            .HasForeignKey(d => d.PublisherId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SnPublisher>()
+            .HasIndex(p => new { p.Uri, p.DeletedAt })
+            .IsUnique()
+            .HasFilter("uri IS NOT NULL");
+
+        modelBuilder.Entity<SnPublisher>()
+            .HasOne(p => p.Instance)
+            .WithMany()
+            .HasForeignKey(p => p.InstanceId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<SnPost>()
+            .HasOne(p => p.RepliedPost)
+            .WithMany()
+            .HasForeignKey(p => p.RepliedPostId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<SnPost>()
+            .HasOne(p => p.ForwardedPost)
+            .WithMany()
+            .HasForeignKey(p => p.ForwardedPostId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<SnPost>()
+            .HasOne(p => p.ChainedPost)
+            .WithMany()
+            .HasForeignKey(p => p.ChainedPostId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<SnPost>()
+            .HasOne(p => p.Publisher)
+            .WithMany(p => p.Posts)
+            .HasForeignKey(p => p.PublisherId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SnPost>()
+            .HasOne(p => p.QuoteAuthorization)
+            .WithMany()
+            .HasForeignKey(p => p.QuoteAuthorizationId)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<SnPost>()
+            .HasMany(p => p.Tags)
+            .WithMany(t => t.Posts)
+            .UsingEntity(j => j.ToTable("post_tag_links"));
+
+        modelBuilder.Entity<SnPostTag>()
+            .HasOne(t => t.OwnerPublisher)
+            .WithMany()
+            .HasForeignKey(t => t.OwnerPublisherId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<SnPost>()
+            .HasMany(p => p.Categories)
+            .WithMany(c => c.Posts)
+            .UsingEntity(j => j.ToTable("post_category_links"));
+
+        modelBuilder.Entity<SnPostIndex>()
+            .HasIndex(i => i.PostId)
+            .IsUnique();
+        modelBuilder.Entity<SnPostIndex>()
+            .HasOne(i => i.Post)
+            .WithMany()
+            .HasForeignKey(i => i.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SnPostBookmark>()
+            .HasIndex(b => new { b.AccountId, b.PostId, b.DeletedAt })
+            .IsUnique();
+        modelBuilder.Entity<SnPostBookmark>()
+            .HasOne(b => b.Post)
+            .WithMany(p => p.Bookmarks)
+            .HasForeignKey(b => b.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SnSurveySubscription>()
+            .HasIndex(s => new { s.AccountId, s.SurveyId, s.DeletedAt })
+            .IsUnique();
+        modelBuilder.Entity<SnSurveySubscription>()
+            .HasOne(s => s.Survey)
+            .WithMany()
+            .HasForeignKey(s => s.SurveyId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SnPostCollection>()
+            .HasIndex(c => new { c.PublisherId, c.Slug, c.DeletedAt })
+            .IsUnique();
+        modelBuilder.Entity<SnPostCollection>()
+            .HasOne(c => c.Publisher)
+            .WithMany(p => p.Collections)
+            .HasForeignKey(c => c.PublisherId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SnPostCollectionItem>()
+            .HasIndex(i => new { i.CollectionId, i.PostId, i.DeletedAt })
+            .IsUnique();
+        modelBuilder.Entity<SnPostCollectionItem>()
+            .HasIndex(i => new { i.CollectionId, i.Order });
+        modelBuilder.Entity<SnPostCollectionItem>()
+            .HasOne(i => i.Collection)
+            .WithMany(c => c.Items)
+            .HasForeignKey(i => i.CollectionId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SnPostCollectionItem>()
+            .HasOne(i => i.Post)
+            .WithMany(p => p.CollectionItems)
+            .HasForeignKey(i => i.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SnPostSponsorBid>()
+            .HasOne(b => b.Post)
+            .WithMany()
+            .HasForeignKey(b => b.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SnPostSponsorBid>()
+            .HasIndex(b => b.ExpiresAt);
+
+        modelBuilder.Entity<SnPostSponsorPlacement>()
+            .HasOne(p => p.Post)
+            .WithMany()
+            .HasForeignKey(p => p.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SnPostAggregatedStats>()
+            .HasOne(s => s.Post)
+            .WithMany()
+            .HasForeignKey(s => s.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SnPostAggregatedStats>()
+            .HasIndex(s => s.PostId)
+            .IsUnique();
+
+        modelBuilder.Entity<SnPostCategorySubscription>()
+            .HasIndex(s => s.CollectionId);
+        modelBuilder.Entity<SnPostCategorySubscription>()
+            .HasOne(s => s.Collection)
+            .WithMany()
+            .HasForeignKey(s => s.CollectionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SnBoost>()
+            .HasOne(b => b.Post)
+            .WithMany()
+            .HasForeignKey(b => b.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SnBoost>()
+            .HasOne(b => b.Publisher)
+            .WithMany()
+            .HasForeignKey(b => b.PublisherId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SnPostReaction>()
+            .HasOne(r => r.Publisher)
+            .WithMany()
+            .HasForeignKey(r => r.PublisherId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<SnQuoteAuthorization>()
+            .HasOne(q => q.Publisher)
+            .WithMany()
+            .HasForeignKey(q => q.PublisherId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SnQuoteAuthorization>()
+            .HasOne(q => q.TargetPost)
+            .WithMany()
+            .HasForeignKey(q => q.TargetPostId)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<SnQuoteAuthorization>()
+            .HasOne(q => q.QuotePost)
+            .WithMany()
+            .HasForeignKey(q => q.QuotePostId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<SnPublishingSettings>()
+            .HasOne(s => s.DefaultPostingPublisher)
+            .WithMany()
+            .HasForeignKey(s => s.DefaultPostingPublisherId)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<SnPublishingSettings>()
+            .HasOne(s => s.DefaultReplyPublisher)
+            .WithMany()
+            .HasForeignKey(s => s.DefaultReplyPublisherId)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<SnPublishingSettings>()
+            .HasOne(s => s.DefaultFediversePublisher)
+            .WithMany()
+            .HasForeignKey(s => s.DefaultFediversePublisherId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.ApplySoftDeleteFilters();
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        this.ApplyAuditableAndSoftDelete();
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+}
+
+public class AppDatabaseRecyclingJob(AppDatabase db, ILogger<AppDatabaseRecyclingJob> logger) : IJob
+{
+    public async Task Execute(IJobExecutionContext context)
+    {
+        var now = SystemClock.Instance.GetCurrentInstant();
+
+        logger.LogInformation("Deleting soft-deleted records...");
+
+        var threshold = now - Duration.FromDays(7);
+
+        var entityTypes = db.Model.GetEntityTypes()
+            .Where(t => typeof(ModelBase).IsAssignableFrom(t.ClrType) && t.ClrType != typeof(ModelBase))
+            .Select(t => t.ClrType);
+
+        foreach (var entityType in entityTypes)
+        {
+            var set = (IQueryable)db.GetType().GetMethod(nameof(DbContext.Set), Type.EmptyTypes)!
+                .MakeGenericMethod(entityType).Invoke(db, null)!;
+            var parameter = Expression.Parameter(entityType, "e");
+            var property = Expression.Property(parameter, nameof(ModelBase.DeletedAt));
+            var condition = Expression.LessThan(property, Expression.Constant(threshold, typeof(Instant?)));
+            var notNull = Expression.NotEqual(property, Expression.Constant(null, typeof(Instant?)));
+            var finalCondition = Expression.AndAlso(notNull, condition);
+            var lambda = Expression.Lambda(finalCondition, parameter);
+
+            var queryable = set.Provider.CreateQuery(
+                Expression.Call(
+                    typeof(Queryable),
+                    "Where",
+                    [entityType],
+                    set.Expression,
+                    Expression.Quote(lambda)
+                )
+            );
+
+            var toListAsync = typeof(EntityFrameworkQueryableExtensions)
+                .GetMethod(nameof(EntityFrameworkQueryableExtensions.ToListAsync))!
+                .MakeGenericMethod(entityType);
+
+            var items = await (dynamic)toListAsync.Invoke(null, [queryable, CancellationToken.None])!;
+            db.RemoveRange(items);
+        }
+
+        await db.SaveChangesAsync();
+    }
+}
+
+public class AppDatabaseFactory : IDesignTimeDbContextFactory<AppDatabase>
+{
+    public AppDatabase CreateDbContext(string[] args)
+    {
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json")
+            .Build();
+
+        var optionsBuilder = new DbContextOptionsBuilder<AppDatabase>();
+        return new AppDatabase(optionsBuilder.Options, configuration);
+    }
+}

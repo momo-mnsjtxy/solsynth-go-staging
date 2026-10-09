@@ -1,13 +1,5 @@
 # Focused HTTP alternative check
 
-Current correction (delegated recovery report, 2026-10-07): the permission key is
-`post.subscriptions.manage`. Historical statements below that the spelling is
-unresolved are superseded; its source proof is in the recovery work, which this
-checkout has not yet recovered. Current-version identity checks, authoritative
-permission evaluation, Redis missing/failure/version/epoch behavior, credential
-precedence and exact errors remain unresolved. Do not enable access from the key
-alone. No production authentication is implemented.
-
 Checked 2026-10-07 using only previously obtained licensed source evidence and
 the existing local contract inventory. No network retrieval, live authentication
 request, denied-source workaround or auth implementation was performed in this
@@ -23,8 +15,8 @@ contracts or separately licensed public documentation may be used.
 
 No already-observed HTTP authority endpoint supplies both verified account
 identity and the PostSubscriptionsManage authorization decision with sufficient
-request/response/error/revocation semantics. Missing gRPC descriptors cannot
-currently be avoided by switching to a verified HTTP equivalent.
+request/response/error/revocation semantics. This is a narrow HTTP conclusion, not a claim that no lawful authentication
+contract exists: owned docs now establish a local-JWT/Redis baseline.
 
 ### Observed identity candidate
 
@@ -73,16 +65,20 @@ session state and change the existing workflow. It is not an acceptable substitu
 - No obtained source establishes an HTTP introspection or userinfo route with
   full access-token validation semantics
 - No obtained source establishes an HTTP permission-evaluation route, its input
-  identity/session binding, or PostSubscriptionsManage's exact wire key
-- A permissions catalog, even if one exists, would not itself prove that this
-  principal/session is allowed to perform the operation
+  identity/session binding; its exact wire key is now documented as
+  post.subscriptions.manage
+- Owned PERMISSIONS.md establishes GET /.well-known/permissions as a public key
+  catalog; it does not prove that this principal/session may perform the operation
 - Blade's WebSocket upgrade authentication does not return a reusable HTTP
   permission decision and is not an introspection substitute
 - OAuth/OIDC standards do not establish which optional endpoints this deployment
   implements or how native fleet tokens map to those endpoints
 
-The earlier contract report remains authoritative about unresolved issuer,
-audience, key discovery, cookies/API keys, permission/error and revocation rules.
+The updated CONTRACT.md resolves the documented JWT lanes/claims/configuration,
+cookie names, exact permission key, API errors and cache structure. Remaining
+gaps are current-generation consistency, precise Redis missing/outage/version
+semantics and authoritative permission-evaluator inputs/results. See its pinned
+owned-document links and dated reassessment.
 
 ## Smallest additional document request
 
@@ -97,8 +93,8 @@ excluded unlicensed protocol repository. Production credentials are unnecessary.
    current account/session identity; accepted header/cookie scheme and minimal
    success/error JSON schema
 2. Exact method/path for evaluating PostSubscriptionsManage for that same
-   authenticated account/session; its exact permission wire value, request
-   fields and allowed/denied/dependency-error response schema
+   authenticated account/session; request fields and allowed/denied/dependency-error
+   response schema. The permission wire value is already post.subscriptions.manage
 
 One documented endpoint can cover both if that is the actual supported contract.
 Do not invent a new endpoint solely to fit this checklist.
@@ -107,7 +103,7 @@ Do not invent a new endpoint solely to fit this checklist.
 
 Use separately licensed client call sites or public documentation that independently
 establish the actual authority operation, credential metadata, returned account/
-session identity, permission-decision input, exact permission wire value and
+session identity, permission-decision input and
 failure behavior. The helper name AuthenticateRequest does not establish a
 network RPC method or wire encoding. If eligible sources do not provide enough
 information, leave the adapter absent; do not fill the gap by copying or exporting
@@ -127,9 +123,14 @@ the unlicensed protocol repository.
 No local authorization cache is needed initially. If the contract explicitly
 requires caching, its validity/version/invalidation rules must also be supplied.
 
-## Short question for the user
+## Smallest current clarification
 
-有没有另外获得许可的接口文档或客户端调用示例，能说明“校验访问令牌并返回当前账号/会话”和“检查 PostSubscriptionsManage”的方法、路径、请求响应、错误及权限字符串？我们不会使用或请你导出那个无许可证仓库的协议定义，也不需要真实令牌、密码或生产数据。没有合适资料时，真实认证接入会继续保持关闭。
+The owned docs already provide the permission key and a JWT/Redis validation
+baseline. The remaining request is current deployment/version behavior: confirm
+which validation flow applies; Redis raw key/value/missing-state/epoch semantics;
+and an independently documented permission-evaluator input/decision contract.
+Synthetic expiry/revocation/denial fixtures would resolve stale examples. No real
+credentials or excluded protocol exports are needed.
 
 ## Implementation decision
 

@@ -48,10 +48,9 @@ and one refreshed preparation/retry both returned `download failed`. No bytes
 were available for hash verification or comparison; no alternate URL or access
 route was attempted. Therefore the unpublished anonymous exchange catalog and
 badge discovery increment is **not integrated here** and was not reimplemented.
-It remains available in the source conversation's saved recovery artifact.
+That was the historical result for the main baseline. On 2026-10-08 the separately preserved, hash-verified local recovery snapshot was integrated in this continuation, retaining the newer main policy and Develop work. See the README evidence chronology.
 
-The delegated report confirms `post.subscriptions.manage`; the recovery source
-proof is not present locally. Current identity validation, Redis failure/version/
+The later retained owned-source documentation in `internal/auth/source-docs` independently confirms `post.subscriptions.manage`; the earlier delegated-only limitation has been resolved. Current identity validation, Redis failure/version/
 epoch rules, credential precedence, authoritative permission evaluation and exact
 errors remain unresolved. Protected development routes continue to deny by
 default. There was no production access, original-organization write, deployment,

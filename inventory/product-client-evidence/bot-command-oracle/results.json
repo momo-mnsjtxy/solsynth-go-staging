@@ -1,0 +1,116 @@
+[
+  {
+    "name": "empty",
+    "input": "[]",
+    "accepted": true,
+    "output": "[]"
+  },
+  {
+    "name": "null-list-fallback",
+    "input": "null",
+    "accepted": true,
+    "output": "[]"
+  },
+  {
+    "name": "optional-omitted",
+    "input": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022}]",
+    "accepted": true,
+    "output": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022usage\u0022:null,\u0022parameters\u0022:null}]"
+  },
+  {
+    "name": "explicit-nulls",
+    "input": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022usage\u0022:null,\u0022parameters\u0022:null}]",
+    "accepted": true,
+    "output": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022usage\u0022:null,\u0022parameters\u0022:null}]"
+  },
+  {
+    "name": "empty-parameters",
+    "input": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022usage\u0022:\u0022/help\u0022,\u0022parameters\u0022:[]}]",
+    "accepted": true,
+    "output": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022usage\u0022:\u0022/help\u0022,\u0022parameters\u0022:[]}]"
+  },
+  {
+    "name": "parameters",
+    "input": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022usage\u0022:\u0022/help [topic]\u0022,\u0022parameters\u0022:[{\u0022name\u0022:\u0022topic\u0022,\u0022required\u0022:false},{\u0022name\u0022:\u0022count\u0022,\u0022description\u0022:\u0022Count\u0022,\u0022required\u0022:true,\u0022type\u0022:\u0022int\u0022}]}]",
+    "accepted": true,
+    "output": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022usage\u0022:\u0022/help [topic]\u0022,\u0022parameters\u0022:[{\u0022name\u0022:\u0022topic\u0022,\u0022description\u0022:null,\u0022required\u0022:false,\u0022type\u0022:null},{\u0022name\u0022:\u0022count\u0022,\u0022description\u0022:\u0022Count\u0022,\u0022required\u0022:true,\u0022type\u0022:\u0022int\u0022}]}]"
+  },
+  {
+    "name": "unknown-command-field",
+    "input": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022secret\u0022:\u0022fixture\u0022}]",
+    "accepted": false,
+    "output": null
+  },
+  {
+    "name": "unknown-parameter-field",
+    "input": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022parameters\u0022:[{\u0022name\u0022:\u0022topic\u0022,\u0022required\u0022:false,\u0022extra\u0022:1}]}]",
+    "accepted": false,
+    "output": null
+  },
+  {
+    "name": "pascal-case",
+    "input": "[{\u0022Name\u0022:\u0022help\u0022,\u0022Description\u0022:\u0022Help\u0022}]",
+    "accepted": false,
+    "output": null
+  },
+  {
+    "name": "missing-name",
+    "input": "[{\u0022description\u0022:\u0022Help\u0022}]",
+    "accepted": false,
+    "output": null
+  },
+  {
+    "name": "null-name",
+    "input": "[{\u0022name\u0022:null,\u0022description\u0022:\u0022Help\u0022}]",
+    "accepted": false,
+    "output": null
+  },
+  {
+    "name": "missing-description",
+    "input": "[{\u0022name\u0022:\u0022help\u0022}]",
+    "accepted": false,
+    "output": null
+  },
+  {
+    "name": "wrong-usage",
+    "input": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022usage\u0022:3}]",
+    "accepted": false,
+    "output": null
+  },
+  {
+    "name": "missing-required",
+    "input": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022parameters\u0022:[{\u0022name\u0022:\u0022topic\u0022}]}]",
+    "accepted": false,
+    "output": null
+  },
+  {
+    "name": "null-required",
+    "input": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022parameters\u0022:[{\u0022name\u0022:\u0022topic\u0022,\u0022required\u0022:null}]}]",
+    "accepted": false,
+    "output": null
+  },
+  {
+    "name": "wrong-required",
+    "input": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022parameters\u0022:[{\u0022name\u0022:\u0022topic\u0022,\u0022required\u0022:\u0022false\u0022}]}]",
+    "accepted": false,
+    "output": null
+  },
+  {
+    "name": "null-command",
+    "input": "[null]",
+    "accepted": false,
+    "output": null
+  },
+  {
+    "name": "null-parameter",
+    "input": "[{\u0022name\u0022:\u0022help\u0022,\u0022description\u0022:\u0022Help\u0022,\u0022parameters\u0022:[null]}]",
+    "accepted": false,
+    "output": null
+  },
+  {
+    "name": "non-array",
+    "input": "{}",
+    "accepted": false,
+    "output": null
+  }
+]

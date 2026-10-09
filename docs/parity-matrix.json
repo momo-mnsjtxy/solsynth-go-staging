@@ -1,5 +1,5 @@
 {
-  "scope": "Checkpoint: development PostWatch slice, tested PostgreSQL preference adapter, disabled watcher/board compatibility candidates, and bounded domain policies; no production service parity",
+  "scope": "Locally combined policy/Develop baseline, recovered catalog/badge slices, miniapp packages and Sphere NodeInfo candidates; whole backend parity remains incomplete",
   "baseline": "Solsynth/DysonNetwork@4ee2d0cebb9da8284a92483fee6dce795bf6947c",
   "license_policy": "Reuse requires verified applicable permission. The excluded unlicensed protocol repository, its schemas, descriptor exports and generated bindings must not be used even as interface-only evidence. Independently derived eligible licensed client/server evidence is separate; no strict clean-room claim follows source inspection.",
   "counts": {
@@ -7,11 +7,11 @@
     "production_services_completed": 0,
     "cross_platform_gates_pending": 9,
     "full_endpoint_count": null,
-    "local_http_operations": 2,
+    "local_http_operations": 13,
     "controller_files_enumerated": 98,
     "partial_board_services": 1,
     "additional_policy_modules": 5,
-    "synthetic_candidate_http_operations": 1
+    "synthetic_candidate_http_operations": 8
   },
   "ports": [
     {
@@ -148,5 +148,124 @@
       "PaginationValidationFilter and ApiError details",
       "Migration/rollback and existing-client differential verification"
     ]
+  },
+  "anonymous_local_operations": [
+    {
+      "operations": [
+        "GET /api/wallets/exchange"
+      ],
+      "scope": "Immutable UTF-8 startup configuration snapshots; no funds POST",
+      "verification": "tests/contract/exchange-oracle/validation.json"
+    },
+    {
+      "operations": [
+        "GET /.well-known/badges",
+        "GET /.well-known/badges/icons/{iconName}"
+      ],
+      "scope": "23-entry manifest and configured SVG directory; original whatshot artwork and explicit containment hardening",
+      "verification": "tests/contract/badges-oracle/validation.json"
+    }
+  ],
+  "database_validation": {
+    "run": "https://github.com/momo-mnsjtxy/solsynth-go-staging/actions/runs/37632714563",
+    "head": "0735ebb3f1553d3658d944705c6d32eecf2dd541",
+    "required_before_restart": 15,
+    "required_after_restart": 2,
+    "passed": true,
+    "local_socket_limit": "AF_UNIX EPERM remains; ordinary local Go suite skips database cases"
+  },
+  "recovery_integration": {
+    "main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
+    "recovery": "187 locally verified blobs; remote recovery commit blocked pending publication approval",
+    "publication": "local-only combined snapshot; no combined CI run"
+  },
+  "continuation_candidates": [
+    {
+      "family": "Develop miniapp package download",
+      "operations": [
+        "GET /api/miniapps/{slug}/package"
+      ],
+      "status": "local synthetic compatibility candidate; real PG/HTTP process validation pending",
+      "implementation": [
+        "ports/develop/packages.go",
+        "ports/develop/packages_http.go",
+        "ports/develop/packages_storage.go",
+        "internal/developpg/packages.go",
+        "cmd/develop-discovery"
+      ],
+      "gates": [
+        "production identity/permission/global filters",
+        "Minio/S3 storage parity",
+        "full MVC binding/error parity"
+      ]
+    },
+    {
+      "family": "Sphere NodeInfo and host-meta",
+      "operations": [
+        "GET /.well-known/nodeinfo",
+        "GET /.well-known/nodeinfo/2.0",
+        "GET /.well-known/nodeinfo/2.1",
+        "GET /.well-known/host-meta"
+      ],
+      "status": "local synthetic compatibility candidate; real PG/HTTP process validation pending",
+      "implementation": [
+        "ports/sphere/nodeinfo",
+        "internal/nodeinfopg",
+        "cmd/nodeinfo"
+      ],
+      "gates": [
+        "production identity/permission/global filters",
+        "Fediverse enum mapping",
+        "gateway path discrepancy",
+        "full MVC routing/error parity"
+      ]
+    },
+    {
+      "family": "Develop bot commands",
+      "operations": [
+        "GET /api/bots/{botId}/commands"
+      ],
+      "status": "local documented-model/synthetic storage candidate; actual PG/CI not run",
+      "implementation": [
+        "ports/develop/bot_commands.go",
+        "internal/developpg/bot_commands.go",
+        "cmd/develop-discovery"
+      ],
+      "gates": [
+        "production authority/global filters",
+        "complete original model/storage conventions",
+        "exact-commit DB/process validation"
+      ]
+    },
+    {
+      "family": "Wallet product catalog",
+      "operations": [
+        "GET /api/wallet-products/catalog"
+      ],
+      "status": "local configured projection candidate with independent framework oracle; actual process/CI not run",
+      "implementation": [
+        "ports/wallet/productcatalog",
+        "cmd/solsynth-go"
+      ],
+      "gates": [
+        "missing-configuration currency constant",
+        "production global HTTP policy",
+        "host/configuration lifecycle and exact-commit process validation"
+      ]
+    }
+  ],
+  "continuation_verification": {
+    "local": "build, vet, unit and race passed; explicit DB tests skipped without DSN",
+    "source_integrity": "441 retained entries, 11 mutation checks, missing-file rejection",
+    "database": "30 required before cases and 6 post-restart assertions wired; not executed on this tree",
+    "process_http": "Develop, recovered catalogs/badges, packages and NodeInfo checks wired; not run locally due socket restrictions",
+    "publication": "awaiting exact upload approval; no bypass",
+    "independent_framework": "original reference suites reproduced; wallet 388 cases / 383 config-reachable plus 2967 naming facts; bot 19 selected-policy documented-model cases"
+  },
+  "expanded_research": {
+    "identity": "docs/identity-client-contract-audit.md",
+    "gateway": "docs/identity-blade-contract-audit.md",
+    "product_and_bots": "docs/product-client-contract-audit.md",
+    "limit": "Scoped complete source reads and targeted indexed search do not prove all external clients/documents exhausted; Socommon unaccessed under prior boundary"
   }
 }

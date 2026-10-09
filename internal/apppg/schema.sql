@@ -1,0 +1,15 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+-- Independently authored canonical schema. Apply after authoritypg/accountpg and board storage.
+CREATE TABLE IF NOT EXISTS owned_developers(id uuid PRIMARY KEY,publisher_id uuid NOT NULL UNIQUE REFERENCES owned_publishers(id),created_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS owned_dev_projects(id uuid PRIMARY KEY,developer_id uuid NOT NULL REFERENCES owned_developers(id),slug text NOT NULL,name text NOT NULL,description text,created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL,deleted_at timestamptz);
+CREATE UNIQUE INDEX IF NOT EXISTS owned_dev_projects_slug ON owned_dev_projects(developer_id,lower(slug));
+CREATE TABLE IF NOT EXISTS owned_custom_apps(id uuid PRIMARY KEY,project_id uuid NOT NULL REFERENCES owned_dev_projects(id),slug text NOT NULL,name text NOT NULL,description text,status integer NOT NULL CHECK(status IN(0,1,2)),links jsonb,oauth_config jsonb,created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL,deleted_at timestamptz);
+CREATE UNIQUE INDEX IF NOT EXISTS owned_custom_apps_slug ON owned_custom_apps(lower(slug));
+CREATE TABLE IF NOT EXISTS owned_app_products(id uuid PRIMARY KEY,app_id uuid NOT NULL REFERENCES owned_custom_apps(id),identifier text NOT NULL,document jsonb NOT NULL CHECK(jsonb_typeof(document)='object'),created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL,deleted_at timestamptz,UNIQUE(app_id,identifier));
+CREATE TABLE IF NOT EXISTS owned_app_widgets(app_id uuid NOT NULL REFERENCES owned_custom_apps(id),key text NOT NULL,manifest jsonb NOT NULL CHECK(jsonb_typeof(manifest)='object'),created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL,PRIMARY KEY(app_id,key));
+CREATE UNIQUE INDEX IF NOT EXISTS owned_app_widgets_folded_key ON owned_app_widgets(app_id,lower(key));
+CREATE TABLE IF NOT EXISTS owned_app_secrets(id uuid PRIMARY KEY,app_id uuid NOT NULL REFERENCES owned_custom_apps(id),secret_hash bytea NOT NULL CHECK(octet_length(secret_hash)=32),description text,scopes jsonb NOT NULL CHECK(jsonb_typeof(scopes)='array'),expires_at timestamptz NOT NULL,created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL,revoked_at timestamptz,CHECK(expires_at>created_at));
+CREATE TABLE IF NOT EXISTS owned_app_consents(account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),app_id uuid NOT NULL REFERENCES owned_custom_apps(id),scopes jsonb NOT NULL CHECK(jsonb_typeof(scopes)='array'),expires_at timestamptz NOT NULL,created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL,revoked_at timestamptz,PRIMARY KEY(account_id,app_id));
+ALTER TABLE owned_custom_apps ADD COLUMN IF NOT EXISTS oauth_epoch bigint NOT NULL DEFAULT 1 CHECK(oauth_epoch>0);
+ALTER TABLE owned_app_consents ADD COLUMN IF NOT EXISTS version bigint NOT NULL DEFAULT 1 CHECK(version>0);
+CREATE TABLE IF NOT EXISTS owned_apps_audit(id bigserial PRIMARY KEY,actor_id uuid REFERENCES owned_authority_accounts(id),app_id uuid REFERENCES owned_custom_apps(id),action text NOT NULL,target_id uuid NOT NULL,occurred_at timestamptz NOT NULL);

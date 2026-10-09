@@ -1,0 +1,17 @@
+# Timeline publisher lock correction
+
+Base: continuation `5149232bb967f507c19f8f968dd129b7ddb1ee7b`, with the separately delivered realm-name projection correction retained in the audit tree. No schema migration is needed.
+
+Opposite-direction replies previously locked each writer's source publisher for update, then the other publisher for share. Two transactions could hold one publisher each and deadlock. The optional `postpg.AssociationPrelocker` now runs after the transaction's proof and actor locks and before its source publisher lock. Timeline resolves referenced post publishers and locks every distinct publisher in canonical UUID order, using the final UPDATE mode for the source and SHARE for targets. It then locks target posts in ID order and rechecks their publisher ancestry. The original editor, active-account, target visibility, draft/locked state, relation validation and audit checks remain in place.
+
+For creation, source selection is observed for lock planning, then resolved again after the locks are acquired. A changed result fails without taking an additional publisher lock. Default-publisher, missing-membership and ambiguous-selection behavior is preserved. Updates, publication and deletion recheck the actual locked post's publisher ID against the observed source. Canonical APIs keep these IDs immutable; the recheck also rejects unexpected imported or fixture ancestry changes.
+
+Canonical publisher lookup now follows the existing account lookup policy: a valid UUID selector resolves only an ID, while other selectors use case-insensitive names. A UUID-shaped name cannot shadow a canonical ID or cause a late lock on another publisher. Current publisher creation already rejects UUID-shaped names; the regression fixture also covers preexisting/imported rows. This policy is shared by planning and editor authorization. The application already composes timeline as the outer association adapter, so no host or media-wrapper change is required.
+
+## Guarded integration coverage
+
+- `TestPGTimelineOppositePublisherRepliesAndRollback`: two signed writers use independent SQL pools, start opposing replies while the smallest publisher is held, and both must be observed waiting. A third transaction successfully locks the larger publisher NOWAIT, proving neither writer acquired it early. Both replies then commit. The same schedule repeats with a NOT VALID synthetic CHECK failing the final canonical audit for one writer; that exact constraint error is required, the other writer succeeds, and post/relation/taxonomy/audit counts prove rollback.
+- `TestPGTimelinePrelocksRecheckSourceAndTarget`: source-name change, source ancestry change and target privacy change are committed during observed publisher waits. Every stale write is rejected and stored content/audit/relation state remains unchanged.
+- `TestPGTimelinePublisherUUIDSelectorCollision`: canonical ID, normal name, explicit default, missing-default ambiguity and a preexisting UUID-shaped name exercise identical planning and editor lookup semantics.
+
+The source changes add no production provider, socket, user data or external action. Full `go test ./...` and focused race/build tests passed in the isolated tree. PostgreSQL tests skip without the guarded disposable DSN; these concurrency and SQL assertions still require the parent's real PostgreSQL runner. The parent's merchant fixture label correction is untouched.

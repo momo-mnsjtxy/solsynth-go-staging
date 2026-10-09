@@ -1,0 +1,126 @@
+{
+  "source_policy": "Complete licensed authored root controllers, services, callers and locally authored models. No excluded Shared/Spec/generated SDK contents, dictionary, fortune corpus, artwork or external provider data. Referenced pre-existing snapshots stay in their canonical provenance locations.",
+  "files": [
+    {
+      "file": "ports/passport/namecards/source/NameChangeCardService.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/NameChangeCard/NameChangeCardService.cs",
+      "git_blob": "df26b825d34a1ebafa797e361a6ea16635fe403d",
+      "sha256": "d898affa8551f641ebd17bd8a27005afef005f17ea307f18b3e3687a02ab6849",
+      "bytes": 6461,
+      "license": "AGPL-3.0-only",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/NameChangeCard/NameChangeCardService.cs"
+    },
+    {
+      "file": "ports/passport/namecards/source/NameChangeCardOptions.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/NameChangeCard/NameChangeCardOptions.cs",
+      "git_blob": "19dd5362b175b1b0893658e9e1c28937d030a023",
+      "sha256": "b9a43ea6cc1bfe818aaf0e070a9350c6b5995b3769287c14e0a8c5e4cbe044c0",
+      "bytes": 287,
+      "license": "AGPL-3.0-only",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/NameChangeCard/NameChangeCardOptions.cs"
+    },
+    {
+      "file": "ports/passport/namecards/source/SnNameChangeCardPurchase.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/NameChangeCard/SnNameChangeCardPurchase.cs",
+      "git_blob": "b57eaa5f4cff57c058f27cc4fd32c0e794ef1a67",
+      "sha256": "1e4a46958365682e5134c8b983970d062b32c8baf6dd57c4886a9a679ca68907",
+      "bytes": 675,
+      "license": "AGPL-3.0-only",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/NameChangeCard/SnNameChangeCardPurchase.cs"
+    },
+    {
+      "file": "ports/passport/namecards/source/PaymentOrderNameChangeCardEvent.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/Startup/PaymentOrderNameChangeCardEvent.cs",
+      "git_blob": "b519598edb41b971e17eafe47d5821800f2a89c5",
+      "sha256": "3c2174ee534e2e8798f6e8a47f6f14087c49843610215ea79a96ab29b73ecb93",
+      "bytes": 381,
+      "license": "AGPL-3.0-only",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Startup/PaymentOrderNameChangeCardEvent.cs"
+    },
+    {
+      "file": "ports/passport/namecards/source/Solian_name_change_card_sheet.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "lib/accounts/widgets/name_change_card_sheet.dart",
+      "git_blob": "f4129814864f6d432a4f9ee19dbf1c3e3bf9af69",
+      "sha256": "7e1d7b62351db1b2c89bb1df885f92c1b76cb169cbc286c1441772fd4e5156e4",
+      "bytes": 20131,
+      "license": "AGPL-3.0-only",
+      "url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/widgets/name_change_card_sheet.dart"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Passport/NameChangeCard/NameChangeCardController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/NameChangeCard/NameChangeCardController.cs",
+      "git_blob": "bc535968ac619e0f6dbd16d9edf8e4ea1185419e",
+      "sha256": "5240da83125b27be04a44c3f21ee9ebbaa9403c1e444906a7ae823fd7d791f36",
+      "bytes": 3120,
+      "license": "AGPL-3.0-only",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/NameChangeCard/NameChangeCardController.cs"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Passport/Realm/RealmController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/Realm/RealmController.cs",
+      "git_blob": "70ba45891ecb476e5d41c54beca1bfbd40777f10",
+      "sha256": "b325fdea25d5d4f191fc465e7dff36a9c6289c57d8909046a1c6a63806e9bc74",
+      "bytes": 58324,
+      "license": "AGPL-3.0-only",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmController.cs"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Sphere/Publisher/PublisherController.cs",
+      "git_blob": "0095ae0f7cbc5702659301ab48c0129b411450ba",
+      "sha256": "27f586249fd911cbe552e788f3e19016a5e206b28ea386e0aa1f8bf826358ed9",
+      "bytes": 55901,
+      "license": "AGPL-3.0-only",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Publisher/PublisherController.cs"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherServiceGrpc.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Sphere/Publisher/PublisherServiceGrpc.cs",
+      "git_blob": "a94e884ce85f774aa0fd6bfed5e2271a755f5ddb",
+      "sha256": "ae63950d550efa598c62528234adb6e622ae512c2f433bb04d3c229c58310a8e",
+      "bytes": 6961,
+      "license": "AGPL-3.0-only",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Publisher/PublisherServiceGrpc.cs"
+    },
+    {
+      "file": "ports/passport/namecards/source/DYSON-LICENSE.txt",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "LICENSE.txt",
+      "git_blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "license": "AGPL-3.0-only",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/LICENSE.txt"
+    },
+    {
+      "file": "ports/passport/namecards/source/SOLIAN-LICENSE.txt",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "LICENSE.txt",
+      "git_blob": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+      "bytes": 34522,
+      "license": "AGPL-3.0-only",
+      "url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/LICENSE.txt"
+    }
+  ]
+}

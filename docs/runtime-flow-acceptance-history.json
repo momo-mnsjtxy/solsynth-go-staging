@@ -1,0 +1,123 @@
+{
+  "status": "Historical checkpoint descriptions only; superseded by runtime-flow-acceptance.json current_remaining. These old remaining labels are not current work items.",
+  "prior_remaining_acceptance_groups": [
+    {
+      "group": "messaging",
+      "state": "Direct/realm lifecycle fully validated294/41; remaining message/role families explicit below",
+      "remaining": [
+        "E2EE/media message types, reactions and original system-message compatibility",
+        "Custom fine-grained roles and bot automatic confirmation/execution"
+      ],
+      "source_controllers": [
+        "ChatController",
+        "ChatRoomController",
+        "RealmChatController"
+      ]
+    },
+    {
+      "group": "content utilities",
+      "state": "Reader/translation/autocomplete fully validated315/44",
+      "remaining": [
+        "Internal article/gRPC contracts and original PerkLevel migration mapping"
+      ],
+      "source_controllers": [
+        "WebReaderController",
+        "TranslationController",
+        "AutocompletionController"
+      ]
+    },
+    {
+      "group": "live and commercial content",
+      "state": "Livestream ingress/lifecycle composed candidate348/48; remaining contracts partially researched",
+      "remaining": [
+        "Livestream chat, egress/HLS access-controlled output/playback, awards and subscriber delivery",
+        "Ads/sponsorship, publisher subscriptions and ratings"
+      ],
+      "source_controllers": [
+        "LiveStreamController",
+        "AdsController",
+        "PublisherSubscriptionController",
+        "PublisherPublicController"
+      ]
+    },
+    {
+      "group": "account extensions",
+      "state": "Profiles/contacts/preferences and IP checks validated; paid names/rewind fully validated327/46",
+      "remaining": [
+        "PassKit, affiliation spells, domain trust and presence artwork",
+        "Remaining admin contacts/statistics, media/security modes and original SDK preference encoding",
+        "Rewind optional action-telemetry/tokenizer providers and original DTO compatibility gaps"
+      ],
+      "source_controllers": [
+        "PassKitController",
+        "AffiliationSpellController",
+        "DomainTrustController",
+        "PresenceArtworkController",
+        "AccountSettingsController",
+        "AccountAdminController",
+        "AccountStatsAdminController"
+      ]
+    },
+    {
+      "group": "administration and moderation",
+      "state": "Global post/publisher/realm moderation and scoped realm removal fully validated338/47",
+      "remaining": [
+        "Verification marks, aggregate service statistics and automod rule CRUD/test in active next slice",
+        "Automatic moderation enforcement, post collection administration and custom realm permission overrides"
+      ],
+      "source_controllers": [
+        "AutomodController",
+        "PostAdminController",
+        "PostStatsAdminController",
+        "PostCollectionAdminController",
+        "PublisherAdminController",
+        "RealmAdminController"
+      ]
+    },
+    {
+      "group": "federation",
+      "state": "partial",
+      "remaining": [
+        "Broader actor/realm/quote/follow/moderation/key-management and remote discovery contracts; media plane"
+      ],
+      "source_controllers": [
+        "ActivityPubRealmController",
+        "ActivityPubFollowController",
+        "FediverseModerationController",
+        "FediverseKeyController",
+        "FediverseKeyAdminController",
+        "QuoteAuthorizationController",
+        "ServerActorController",
+        "WebFingerController"
+      ]
+    },
+    {
+      "group": "wallet and providers",
+      "state": "partial",
+      "remaining": [
+        "PIN enrollment, remaining product/payment administration, coupons/addresses/fulfillment/payouts/provider settlement",
+        "Provider-specific recurring fulfillment and production adapter configuration"
+      ],
+      "source_controllers": [
+        "WalletController",
+        "PaymentAdminController",
+        "WalletProductAdminController",
+        "WalletStatsAdminController",
+        "SubscriptionController"
+      ]
+    },
+    {
+      "group": "migration and deployment",
+      "state": "not validated",
+      "remaining": [
+        "Original data migration/rollback, original external contracts, configured provider end-to-end and production operational acceptance"
+      ],
+      "source_controllers": []
+    }
+  ],
+  "prior_global_remaining": [
+    "Remaining groups are explicit uncompleted functionality, not evidence that their contracts are unavailable",
+    "Core moderation and paid name-card/rewind validated; livestream ingress/lifecycle candidate published; follow-up chat, actor aliases and admin extensions active",
+    "Live provider transmissions and production deployment require separate authorization; configured adapter code and synthetic tests proceed independently"
+  ]
+}

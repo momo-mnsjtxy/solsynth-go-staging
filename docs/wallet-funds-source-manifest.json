@@ -1,0 +1,69 @@
+{
+  "scope": "owned wallet funds, red packets and raising",
+  "inputs": [
+    {
+      "file": "DysonNetwork.Wallet__Payment__PaymentService.cs",
+      "path": "DysonNetwork.Wallet/Payment/PaymentService.cs",
+      "blob": "1d599181db3e6482b21e1e86463739d3cf2dadd1",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/PaymentService.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "license": "AGPL-3.0-only",
+      "sha256": "055dbb24b268c12936e5b02b9558526461ab993de94ca6d24ac8c13a61d173bb",
+      "bytes": 76079
+    },
+    {
+      "file": "Solian__lib__wallets__wallet.dart",
+      "path": "lib/wallets/wallet.dart",
+      "blob": "5bf5f18c0da2ed8b29fec35acedab4391d6fee92",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/wallets/wallet.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "license": "AGPL-3.0-only",
+      "sha256": "9a771af72f874c2595b4cf1ff4f750b56d78a8ba9560bfba7a9599ed9505c50a",
+      "bytes": 180770
+    },
+    {
+      "file": "Solian__lib__wallets__transaction_detail.dart",
+      "path": "lib/wallets/transaction_detail.dart",
+      "blob": "d057f96004fbcdc66f480f5b08c4f8d250a05ac5",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/wallets/transaction_detail.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "license": "AGPL-3.0-only",
+      "sha256": "9471749ea06c25f342de360a8598dc80501ed431452da91bcbb0d91658035121",
+      "bytes": 19842
+    },
+    {
+      "file": "DysonNetwork.Wallet__Payment__WalletController.cs",
+      "path": "DysonNetwork.Wallet/Payment/WalletController.cs",
+      "blob": "10650f1a12912532d70f6ea422a69557a508a224",
+      "sha256": "66b05f979b09fd732cebf07b24e830836fd46a38980f45c7019dbd1d69562030",
+      "bytes": 61958,
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/WalletController.cs",
+      "license": "AGPL-3.0-only"
+    }
+  ],
+  "input_policy": "Retained licensed authored sources only. No excluded protocol/generated/shared or cancelled repositories.",
+  "source_defects_corrected": [
+    "cent-vs-mill split over-allocation",
+    "zero-placeholder expiry refunds",
+    "invited raising contributor rejection",
+    "nil-payer/payee receipt failure after deductions"
+  ],
+  "owned_extensions": [
+    "immutable canonical reservations and allocation-linked managed receipts",
+    "atomic success payout to captured creator-owned beneficiary wallet",
+    "one-use real-hold refunds on expiry/cancel",
+    "optional contribution pin_code through canonical transaction-bound proof",
+    "optional actor-owned payer_wallet_id selection",
+    "creator-only cancel route",
+    "open raising participant cap"
+  ],
+  "unimplemented_client_routes": [
+    "/funds/recipients",
+    "/funds/{id}/order"
+  ]
+}

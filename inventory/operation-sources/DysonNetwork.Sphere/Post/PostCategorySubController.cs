@@ -1,0 +1,49 @@
+using DysonNetwork.Shared.Capabilities;
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Networking;
+using DysonNetwork.Shared.Proto;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace DysonNetwork.Sphere.Post;
+
+[Route(("/api/categories"))]
+[ApiController]
+[ApiFeature("posts.categories.subscriptions", Revision = 1)]
+public class PostCategorySubController(AppDatabase db) : ControllerBase
+{
+    /// <summary>
+    /// Get all subscriptions of categories, tags, and collections for the current user
+    /// </summary>
+    /// <returns>List of active subscription</returns>
+    [HttpGet("subscriptions")]
+    [Authorize]
+    public async Task<ActionResult<List<SnPostCategorySubscription>>> ListCategoriesSubscription(
+        [FromQuery] int offset = 0,
+        [FromQuery] int take = 20
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var pubQuery = db.PostCategorySubscriptions
+            .Include(ps => ps.Tag)
+            .Include(ps => ps.Category)
+            .Include(ps => ps.Collection)
+            .ThenInclude(c => c!.Publisher)
+            .Where(ps => ps.AccountId == accountId)
+            .OrderByDescending(ps => ps.CreatedAt)
+            .AsQueryable();
+
+        var totalCount = await pubQuery.CountAsync();
+        var subscriptions = await pubQuery
+            .Take(take)
+            .Skip(offset)
+            .ToListAsync();
+
+        Response.Headers["X-Total"] = totalCount.ToString();
+
+        return Ok(subscriptions);
+    }
+}

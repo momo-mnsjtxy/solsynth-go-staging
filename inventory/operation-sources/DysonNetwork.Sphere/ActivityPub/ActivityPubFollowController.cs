@@ -1,0 +1,469 @@
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Networking;
+using DysonNetwork.Shared.Proto;
+using DysonNetwork.Sphere.ActivityPub.Services;
+using DysonNetwork.Sphere.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using NodaTime;
+
+namespace DysonNetwork.Sphere.ActivityPub;
+
+public class FediverseActorWithFollowStatus : SnPublisher
+{
+    public bool IsFollowing { get; set; }
+
+    public static FediverseActorWithFollowStatus FromActor(
+        SnPublisher actor,
+        bool isFollowing = false
+    )
+    {
+        return new FediverseActorWithFollowStatus
+        {
+            Id = actor.Id,
+            Type = actor.Type,
+            Uri = actor.Uri,
+            Username = actor.Username,
+            DisplayName = actor.DisplayName,
+            Bio = actor.Bio,
+            InboxUri = actor.InboxUri,
+            OutboxUri = actor.OutboxUri,
+            FollowersUri = actor.FollowersUri,
+            FollowingUri = actor.FollowingUri,
+            FeaturedUri = actor.FeaturedUri,
+            PublicKeyId = actor.PublicKeyId,
+            PublicKey = actor.PublicKey,
+            Metadata = actor.Metadata,
+            Picture = actor.Picture,
+            Background = actor.Background,
+            IsBot = actor.IsBot,
+            IsLocked = actor.IsLocked,
+            IsDiscoverable = actor.IsDiscoverable,
+            InstanceId = actor.InstanceId,
+            Instance = actor.Instance,
+            LastFetchedAt = actor.LastFetchedAt,
+            LastActivityAt = actor.LastActivityAt,
+            IsFollowing = isFollowing,
+        };
+    }
+}
+
+[ApiController]
+[Route("/api/activitypub")]
+[Authorize]
+public class ActivityPubFollowController(
+    AppDatabase db,
+    IActorDiscoveryService discSrv,
+    IConfiguration configuration,
+    ILogger<ActivityPubFollowController> logger
+) : ControllerBase
+{
+    private string Domain => configuration["ActivityPub:Domain"] ?? "localhost";
+
+    [HttpGet("following")]
+    public async Task<ActionResult<List<FediverseActorWithFollowStatus>>> GetFollowing(
+        [FromQuery] int take = 50,
+        [FromQuery] int offset = 0
+    )
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser == null)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db
+            .Publishers.Include(p => p.Members)
+            .Where(p => p.Members.Any(m => m.AccountId == currentUser))
+            .FirstOrDefaultAsync();
+
+        if (publisher == null)
+        {
+            Response.Headers.Append("X-Total", "0");
+            return Ok(new List<FediverseActorWithFollowStatus>());
+        }
+
+        var totalCount = await db.PublisherSubscriptions.CountAsync(r =>
+            r.FollowerPublisherId == publisher.Id && r.State == PublisherSubscriptionState.Accepted && r.EndedAt == null && !r.IsBlocking
+        );
+
+        var actors = await db
+            .PublisherSubscriptions.Include(r => r.Publisher)
+            .ThenInclude(a => a.Instance)
+            .Where(r =>
+                r.FollowerPublisherId == publisher.Id && r.State == PublisherSubscriptionState.Accepted && r.EndedAt == null && !r.IsBlocking
+            )
+            .OrderByDescending(r => r.FollowedAt)
+            .Skip(offset)
+            .Take(take)
+            .Select(r => r.Publisher)
+            .ToListAsync();
+
+        var result = actors.Select(a => FediverseActorWithFollowStatus.FromActor(a, true)).ToList();
+
+        Response.Headers.Append("X-Total", totalCount.ToString());
+        return Ok(result);
+    }
+
+    [HttpGet("followers")]
+    public async Task<ActionResult<List<FediverseActorWithFollowStatus>>> GetFollowers(
+        [FromQuery] int take = 50,
+        [FromQuery] int offset = 0
+    )
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser == null)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db
+            .Publishers.Include(p => p.Members)
+            .Where(p => p.Members.Any(m => m.AccountId == currentUser))
+            .FirstOrDefaultAsync();
+
+        if (publisher == null)
+        {
+            Response.Headers.Append("X-Total", "0");
+            return Ok(new List<FediverseActorWithFollowStatus>());
+        }
+
+        var totalCount = await db.PublisherSubscriptions.CountAsync(r =>
+            r.PublisherId == publisher.Id && r.State == PublisherSubscriptionState.Accepted && r.EndedAt == null && !r.IsBlocking
+        );
+
+        var actors = await db
+            .PublisherSubscriptions.Include(r => r.FollowerPublisher)
+            .ThenInclude(a => a.Instance)
+            .Where(r =>
+                r.PublisherId == publisher.Id && r.State == PublisherSubscriptionState.Accepted && r.EndedAt == null && !r.IsBlocking
+            )
+            .OrderByDescending(r => r.FollowedAt ?? r.CreatedAt)
+            .Skip(offset)
+            .Take(take)
+            .Select(r => r.FollowerPublisher!)
+            .ToListAsync();
+
+        var result = await GetActorsWithFollowStatusAsync(actors, publisher.Id);
+
+        Response.Headers.Append("X-Total", totalCount.ToString());
+        return Ok(result);
+    }
+
+    [HttpGet("search")]
+    public async Task<ActionResult<List<FediverseActorWithFollowStatus>>> SearchRemoteUsers(
+        [FromQuery] string query,
+        [FromQuery] int limit = 20
+    )
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return BadRequest(new ApiError { Code = "FEDIVERSE_SEARCH_QUERY_REQUIRED", Message = "Query is required", Status = 400 });
+
+        var actors = await discSrv.SearchActorsAsync(query, limit, includeRemoteDiscovery: true);
+
+        var currentUser = GetCurrentUser();
+        if (currentUser == null)
+            return Ok(actors.Select(a => FediverseActorWithFollowStatus.FromActor(a)).ToList());
+
+        var publisher = await db
+            .Publishers.Include(p => p.Members)
+            .Where(p => p.Members.Any(m => m.AccountId == currentUser))
+            .FirstOrDefaultAsync();
+
+        if (publisher == null)
+            return Ok(actors.Select(a => FediverseActorWithFollowStatus.FromActor(a)).ToList());
+
+        var result = await GetActorsWithFollowStatusAsync(actors, publisher.Id);
+
+        return Ok(result);
+    }
+
+    [HttpGet("relationships")]
+    public async Task<ActionResult<RelationshipsSummary>> GetRelationships()
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser == null)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var publisher = await db
+            .Publishers.Include(p => p.Members)
+            .Where(p => p.Members.Any(m => m.AccountId == currentUser))
+            .FirstOrDefaultAsync();
+
+        if (publisher == null)
+            return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 404 });
+
+        var actorUrl = $"https://{Domain}/activitypub/actors/{publisher.Name}";
+
+        var followingCount = await db.PublisherSubscriptions.CountAsync(r =>
+            r.FollowerPublisherId == publisher.Id && r.State == PublisherSubscriptionState.Accepted && r.EndedAt == null && !r.IsBlocking
+        );
+
+        var followersCount = await db.PublisherSubscriptions.CountAsync(r =>
+            r.PublisherId == publisher.Id && r.State == PublisherSubscriptionState.Accepted && r.EndedAt == null && !r.IsBlocking
+        );
+
+        var pendingCount = await db.PublisherSubscriptions.CountAsync(r =>
+            r.FollowerPublisherId == publisher.Id && r.State == PublisherSubscriptionState.Pending
+        );
+
+        var relationships = await db
+            .PublisherSubscriptions.Include(r => r.Publisher)
+            .Where(r => r.FollowerPublisherId == publisher.Id)
+            .OrderByDescending(r => r.FollowedAt ?? r.CreatedAt)
+            .Take(20)
+            .ToListAsync();
+
+        return Ok(
+            new RelationshipsSummary
+            {
+                ActorUri = actorUrl,
+                FollowingCount = followingCount,
+                FollowersCount = followersCount,
+                PendingCount = pendingCount,
+                Relationships = relationships
+                    .Select(r => new RelationshipSummaryItem
+                    {
+                        Actor = r.Publisher,
+                        State = r.State,
+                        IsFollowing = true,
+                        FollowedAt = r.FollowedAt,
+                        TargetPublisherUri = r.Publisher.Uri,
+                        Username = r.Publisher.Username,
+                        DisplayName = r.Publisher.DisplayName,
+                    })
+                    .ToList(),
+            }
+        );
+    }
+
+    [HttpGet("check/{username}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ActorCheckResult>> CheckActor(string username)
+    {
+        var actorUrl = GetActorUrl(username);
+
+        var existingActor = await db
+            .FediverseActors.Include(snFediverseActor => snFediverseActor.Instance)
+            .FirstOrDefaultAsync(a => a.Uri == actorUrl);
+
+        if (existingActor != null)
+        {
+            return Ok(
+                new ActorCheckResult
+                {
+                    Exists = true,
+                    Actor = existingActor,
+                    ActorUri = existingActor.Uri,
+                    Username = existingActor.Username,
+                    DisplayName = existingActor.DisplayName,
+                    Bio = existingActor.Bio,
+                    AvatarUrl = existingActor.Picture?.Url,
+                    InstanceDomain = existingActor.Instance.Domain,
+                    PublicKeyExists = !string.IsNullOrEmpty(existingActor.PublicKey),
+                    LastActivityAt = existingActor.LastActivityAt,
+                    IsLocal = false,
+                }
+            );
+        }
+
+        try
+        {
+            var httpClient = new HttpClient();
+            var response = await httpClient.GetAsync(actorUrl);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return Ok(
+                    new ActorCheckResult
+                    {
+                        Exists = false,
+                        ActorUri = actorUrl,
+                        Error = $"Actor not accessible: {response.StatusCode}",
+                    }
+                );
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var actorData = System.Text.Json.JsonDocument.Parse(json);
+
+            var preferredUsername = actorData
+                .RootElement.GetProperty("preferredUsername")
+                .GetString();
+            var displayName = actorData.RootElement.TryGetProperty("name", out var nameProp)
+                ? nameProp.GetString()
+                : null;
+            var bio = actorData.RootElement.TryGetProperty("summary", out var bioProp)
+                ? bioProp.GetString()
+                : null;
+            var avatarUrl = actorData.RootElement.TryGetProperty("icon", out var iconProp)
+                ? iconProp.GetProperty("url").GetString()
+                : null;
+            var publicKeyPem = actorData
+                .RootElement.GetProperty("publicKey")
+                .GetProperty("publicKeyPem")
+                .GetString();
+
+            var domain = ExtractDomain(actorUrl);
+            var instance = await db.FediverseInstances.FirstOrDefaultAsync(i => i.Domain == domain);
+
+            if (instance == null)
+            {
+                instance = new SnFediverseInstance { Domain = domain, Name = domain };
+                db.FediverseInstances.Add(instance);
+                await db.SaveChangesAsync();
+                await discSrv.FetchInstanceMetadataAsync(instance);
+            }
+
+            var actor = await discSrv.GetOrCreateActorWithDataAsync(
+                actorUrl,
+                username,
+                instance.Id
+            );
+
+            actor.DisplayName = displayName;
+            actor.Bio = bio;
+            actor.Picture = string.IsNullOrWhiteSpace(avatarUrl)
+                ? null
+                : SnCloudFileReferenceObject.FromExternalUrl(avatarUrl);
+            if (!string.IsNullOrEmpty(publicKeyPem))
+            {
+                actor.PublicKey = publicKeyPem;
+            }
+            await db.SaveChangesAsync();
+
+            return Ok(
+                new ActorCheckResult
+                {
+                    Exists = true,
+                    Actor = actor,
+                    ActorUri = actorUrl,
+                    Username = username,
+                    DisplayName = displayName,
+                    Bio = bio,
+                    AvatarUrl = avatarUrl,
+                    InstanceDomain = domain,
+                    PublicKeyExists = !string.IsNullOrEmpty(publicKeyPem),
+                    IsDiscoverable = true,
+                    IsLocal = false,
+                    LastActivityAt = SystemClock.Instance.GetCurrentInstant(),
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to check actor {ActorUri}", actorUrl);
+            return Ok(
+                new ActorCheckResult
+                {
+                    Exists = false,
+                    ActorUri = actorUrl,
+                    Error = ex.Message,
+                }
+            );
+        }
+    }
+
+    private async Task<List<FediverseActorWithFollowStatus>> GetActorsWithFollowStatusAsync(
+        List<SnPublisher> actors,
+        Guid publisherId
+    )
+    {
+        if (actors.Count == 0)
+            return new List<FediverseActorWithFollowStatus>();
+
+        var actorIds = actors.Select(a => a.Id).ToList();
+
+        var userActor = await db
+            .FediverseActors.Where(a => a.Id == publisherId && a.Uri != null)
+            .FirstOrDefaultAsync();
+
+        if (userActor == null)
+            return actors.Select(a => FediverseActorWithFollowStatus.FromActor(a, false)).ToList();
+
+        var followingActorIds = await db
+            .PublisherSubscriptions.Where(r =>
+                r.FollowerPublisherId == userActor.Id
+                && actorIds.Contains(r.PublisherId)
+                && r.State == PublisherSubscriptionState.Accepted
+                && r.EndedAt == null
+                && !r.IsBlocking
+            )
+            .Select(r => r.PublisherId)
+            .ToListAsync();
+
+        var result = actors
+            .Select(actor =>
+            {
+                var isFollowing = followingActorIds.Contains(actor.Id);
+                return FediverseActorWithFollowStatus.FromActor(actor, isFollowing);
+            })
+            .ToList();
+
+        return result;
+    }
+
+    private Guid? GetCurrentUser()
+    {
+        HttpContext.Items.TryGetValue("CurrentUser", out var currentUser);
+        if (currentUser is not DyAccount user)
+            return null;
+        return Guid.Parse(user.Id);
+    }
+
+    private string ExtractDomain(string actorUri)
+    {
+        var uri = new Uri(actorUri);
+        return uri.Host;
+    }
+
+    private string GetActorUrl(string username)
+    {
+        return $"https://{Domain}/activitypub/actors/{username}";
+    }
+}
+
+public class FollowRequest
+{
+    public string TargetPublisherUri { get; set; } = string.Empty;
+}
+
+public class UnfollowRequest
+{
+    public string TargetPublisherUri { get; set; } = string.Empty;
+}
+
+public class RelationshipsSummary
+{
+    public string ActorUri { get; set; } = string.Empty;
+    public int FollowingCount { get; set; }
+    public int FollowersCount { get; set; }
+    public int PendingCount { get; set; }
+    public List<RelationshipSummaryItem> Relationships { get; set; } = new();
+}
+
+public class RelationshipSummaryItem
+{
+    public SnPublisher Actor { get; set; } = null!;
+    public PublisherSubscriptionState State { get; set; }
+    public bool IsFollowing { get; set; }
+    public Instant? FollowedAt { get; set; }
+    public string TargetPublisherUri { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public string? DisplayName { get; set; }
+}
+
+public class ActorCheckResult
+{
+    public bool Exists { get; set; }
+    public SnPublisher? Actor { get; set; }
+    public string ActorUri { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public string? DisplayName { get; set; }
+    public string? Bio { get; set; }
+    public string? AvatarUrl { get; set; }
+    public string? InstanceDomain { get; set; }
+    public bool PublicKeyExists { get; set; }
+    public bool IsLocal { get; set; }
+    public bool IsDiscoverable { get; set; }
+    public Instant? LastActivityAt { get; set; }
+    public string? Error { get; set; }
+}
+

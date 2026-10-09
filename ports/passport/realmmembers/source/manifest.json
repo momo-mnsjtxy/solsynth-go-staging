@@ -1,0 +1,48 @@
+{
+  "license": "AGPL-3.0-only",
+  "scope": "Complete pinned authored quota service, client model/caller, serialization configuration and root licenses; no imported or generated model definitions.",
+  "files": [
+    {
+      "file": "RealmQuotaService.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmQuotaService.cs",
+      "blob": "cd0f9eaae5c3131516a235cbf1decd9a2703bee4",
+      "sha256": "4b742f8704467c5169752c023779de2e5eb97799fa2fd2a93ec0213c839940ab",
+      "bytes": 1094
+    },
+    {
+      "file": "Solian__realm_quota_info.dart",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/realms/models/realm_quota_info.dart",
+      "blob": "a4041b7d68ce64667ab774939429147a0f9a3a94",
+      "sha256": "8be1bb38edfd50a6749aad007bdfe31f44697f89d9f812821f37af9874816aef",
+      "bytes": 519
+    },
+    {
+      "file": "Solian__realm_form_content.dart",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/realms/widgets/realm_form_content.dart",
+      "blob": "df345e9ae9b1c0854450a3679346d06616936c89",
+      "sha256": "6f774f41566c5755412edb7cad0c5fd19262cb2b9b07cadc10c9572f9951255e",
+      "bytes": 12660
+    },
+    {
+      "file": "Solian__build.yaml",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/build.yaml",
+      "blob": "60c987cd0cc36c304e225a7f230f85e230dbf5be",
+      "sha256": "1d3437a0b27a0f0e9ad55d7c6be036788a6fe5550e3bd4dd9eed5b2d9d10cf89",
+      "bytes": 140
+    },
+    {
+      "file": "DysonNetwork-LICENSE.txt",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/LICENSE",
+      "blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523
+    },
+    {
+      "file": "Solian-LICENSE.txt",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/LICENSE",
+      "blob": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+      "bytes": 34522
+    }
+  ]
+}

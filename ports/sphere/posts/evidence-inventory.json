@@ -1,0 +1,2683 @@
+{
+  "schema_version": 1,
+  "prepared_on": "2026-10-08",
+  "scope": "Historical complete controller inventory plus complete authored PostService evidence for the owned scheduled-publication continuation. No full model/provider parity claim.",
+  "files": [
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs",
+      "sha256": "d61b58a6c60f3bbecbdabfc7f9e0cad131605c3a5238097203d69bd978a16145",
+      "license": "AGPL-3.0-only"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostActionController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs",
+      "sha256": "aa30f0451fdd8d6575f7e756f1fc597673c5e415914c58b5dd0440a93c68f285",
+      "license": "AGPL-3.0-only"
+    },
+    {
+      "file": "ports/sphere/posts/upstream/lib__posts__compose.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/posts/compose.dart",
+      "sha256": "6e9e2b9af3ea57f352c6967db3b3e7aaadfee6fc9fb216f8429f09b7c013e167",
+      "license": "AGPL-3.0-only",
+      "provenance_note": "Retained by interrupted predecessor; this continuation used retained bytes only."
+    },
+    {
+      "file": "ports/sphere/posts/upstream/lib__posts__pods__post_list.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/posts/pods/post_list.dart",
+      "sha256": "3463d828640b447b69f45384cba1a2a3970a6d0c8b5abe24f454f82df106c144",
+      "license": "AGPL-3.0-only",
+      "provenance_note": "Retained by interrupted predecessor; this continuation used retained bytes only."
+    },
+    {
+      "file": "ports/sphere/posts/upstream/lib__posts__screens__compose.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/posts/screens/compose.dart",
+      "sha256": "40dee726ca8afbe5028554befa0f4b32c2b6507500e721587ba6bb8efbdc7953",
+      "license": "AGPL-3.0-only",
+      "provenance_note": "Retained by interrupted predecessor; this continuation used retained bytes only."
+    },
+    {
+      "file": "ports/sphere/posts/upstream/lib__posts__widgets__compose__compose_settings_sheet.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/posts/widgets/compose/compose_settings_sheet.dart",
+      "sha256": "39ef211a4084fe3cbd7be73c1a3eb88e37edb94dac1873ce991cb709c040e6f0",
+      "license": "AGPL-3.0-only",
+      "provenance_note": "Retained by interrupted predecessor; this continuation used retained bytes only."
+    },
+    {
+      "file": "ports/sphere/posts/upstream/lib__posts__widgets__compose__compose_shared.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/posts/widgets/compose/compose_shared.dart",
+      "sha256": "ff9442f5af030b43cddbea0df585467d75d12568894c9af2b755cb83235291c4",
+      "license": "AGPL-3.0-only",
+      "provenance_note": "Retained by interrupted predecessor; this continuation used retained bytes only."
+    },
+    {
+      "file": "ports/sphere/posts/upstream/lib__posts__widgets__compose__compose_state_utils.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/posts/widgets/compose/compose_state_utils.dart",
+      "sha256": "5556cdcdb5886aabb3683b57cfa914c1a47e936c647ca32c2cbfc0ae4ee98eff",
+      "license": "AGPL-3.0-only",
+      "provenance_note": "Retained by interrupted predecessor; this continuation used retained bytes only."
+    },
+    {
+      "file": "ports/sphere/posts/upstream/DYSON-LICENSE.txt",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "license": "AGPL-3.0-only"
+    },
+    {
+      "file": "ports/sphere/posts/upstream/SOLIAN-LICENSE.txt",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+      "license": "AGPL-3.0-only"
+    },
+    {
+      "file": "ports/sphere/posts/scheduling-evidence/PostService.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostService.cs",
+      "sha256": "a8afd1bec596450dea5fa17bbaead101a6c4c8b2a6e799d21323165b0dafa333",
+      "git_blob": "dbacff11ded248680bc34d9fe422cc7e38c49068",
+      "bytes": 145621,
+      "license": "AGPL-3.0-only"
+    }
+  ],
+  "operations": [
+    {
+      "id": "sphere:PostController.ListFeaturedPosts@275:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "ListFeaturedPosts",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"featured\")]",
+      "attribute_line": 275,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "featured",
+      "service_route_candidates": [
+        "/api/posts/featured"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L275",
+      "signature": "public async Task<ActionResult<List<SnPost>>> ListFeaturedPosts()",
+      "action_end_line": 283,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.GetCurrentSponsoredPost@285:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "GetCurrentSponsoredPost",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"sponsor/current\")]",
+      "attribute_line": 285,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "sponsor/current",
+      "service_route_candidates": [
+        "/api/posts/sponsor/current"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L285",
+      "signature": "public async Task<ActionResult> GetCurrentSponsoredPost()",
+      "action_end_line": 291,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [],
+        "current_user_reference": false,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-SCHEMA",
+        "G-AUTHORITY",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.GetSponsorLeaderboard@293:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "GetSponsorLeaderboard",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"sponsor/leaderboard\")]",
+      "attribute_line": 293,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "sponsor/leaderboard",
+      "service_route_candidates": [
+        "/api/posts/sponsor/leaderboard"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L293",
+      "signature": "public async Task<ActionResult> GetSponsorLeaderboard([FromQuery] int take = 20)",
+      "action_end_line": 298,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [],
+        "current_user_reference": false,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-SCHEMA",
+        "G-AUTHORITY",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.GetPostSponsorship@300:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "GetPostSponsorship",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/sponsor\")]",
+      "attribute_line": 300,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/sponsor",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/sponsor"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L300",
+      "signature": "public async Task<ActionResult> GetPostSponsorship(Guid id)",
+      "action_end_line": 305,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [],
+        "current_user_reference": false,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-SCHEMA",
+        "G-AUTHORITY",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.GetPostSponsorHistory@307:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "GetPostSponsorHistory",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/sponsor/history\")]",
+      "attribute_line": 307,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/sponsor/history",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/sponsor/history"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L307",
+      "signature": "public async Task<ActionResult> GetPostSponsorHistory(Guid id)",
+      "action_end_line": 332,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[Authorize]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "NotFound",
+          "Ok",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          401
+        ],
+        "direct_db_members": [
+          "Posts",
+          "Publishers"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.ListDrafts@334:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "ListDrafts",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"drafts\")]",
+      "attribute_line": 334,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "drafts",
+      "service_route_candidates": [
+        "/api/posts/drafts"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L334",
+      "signature": "public async Task<ActionResult<List<SnPost>>> ListDrafts( [FromQuery] int offset = 0, [FromQuery] int take = 20, [FromQuery(Name = \"pub\")] string? pubName = null )",
+      "action_end_line": 390,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[Authorize]",
+          "[AskPermission(PermissionKeys.PostsView)]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "NotFound",
+          "Ok",
+          "StatusCode",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          401,
+          403
+        ],
+        "direct_db_members": [],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "bounded_text_subset",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.ListBookmarks@392:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "ListBookmarks",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"bookmarks\")]",
+      "attribute_line": 392,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "bookmarks",
+      "service_route_candidates": [
+        "/api/posts/bookmarks"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L392",
+      "signature": "public async Task<ActionResult<List<SnPost>>> ListBookmarks( [FromQuery] int offset = 0, [FromQuery] int take = 20, [FromQuery(Name = \"order\")] string? order = null )",
+      "action_end_line": 470,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[Authorize]",
+          "[AskPermission(PermissionKeys.PostsBookmark)]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "Ok",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          401
+        ],
+        "direct_db_members": [
+          "PostBookmarks",
+          "Posts"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.ListPosts@472:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "ListPosts",
+      "http_method": "GET",
+      "attribute": "[HttpGet]",
+      "attribute_line": 472,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": null,
+      "service_route_candidates": [
+        "/api/posts"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L472",
+      "signature": "public async Task<ActionResult<List<SnPost>>> ListPosts( [FromQuery] int offset = 0, [FromQuery] int take = 20, [FromQuery(Name = \"pub\")] string? pubName = null, [FromQuery(Name = \"realm\")] string? realmName = null, [FromQuery(Name = \"type\")] int? type = null, [FromQuery(Name = \"categories\")] List<string>? categories = null, [FromQuery(Name = \"tags\")] List<string>? tags = null, [FromQuery(Name = \"query\")] string? queryTerm = null, [FromQuery(Name = \"media\")] bool onlyMedia = false, [FromQuery(Name = \"shuffle\")] bool shuffle = false, [FromQuery(Name = \"replies\")] bool? includeReplies = null, [FromQuery(Name = \"pinned\")] bool? pinned = null, [FromQuery(Name = \"order\")] string? order = null, [FromQuery(Name = \"orderDesc\")] bool orderDesc = true, [FromQuery(Name = \"periodStart\")] int? periodStartTime = null, [FromQuery(Name = \"periodEnd\")] int? periodEndTime = null, [FromQuery(Name = \"mentioned\")] string? mentioned = null, [FromQuery(Name = \"searchEngine\")] string? searchEngine = null )",
+      "action_end_line": 856,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "AUTHENTICATION_REQUIRED",
+          "POST_PINNED_FILTER_REQUIRES_PARAM",
+          "PUBLISHER_GATEKEPT"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NotFound",
+          "Ok",
+          "StatusCode"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401,
+          403,
+          503
+        ],
+        "direct_db_members": [
+          "PostIndices",
+          "PublisherSubscriptions",
+          "Publishers"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "bounded_text_subset",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.GetPost@880:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "GetPost",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{publisherName}/{slug}\")]",
+      "attribute_line": 880,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{publisherName}/{slug}",
+      "service_route_candidates": [
+        "/api/posts/{publisherName}/{slug}"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L880",
+      "signature": "public async Task<ActionResult<SnPost>> GetPost(string publisherName, string slug)",
+      "action_end_line": 954,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "NotFound",
+          "Ok",
+          "StatusCode"
+        ],
+        "explicit_status_numbers": [
+          403
+        ],
+        "direct_db_members": [
+          "Posts",
+          "PublisherSubscriptions"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "bounded_text_subset",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.GetPost@956:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "GetPost",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}\")]",
+      "attribute_line": 956,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L956",
+      "signature": "public async Task<ActionResult<SnPost>> GetPost(Guid id)",
+      "action_end_line": 1026,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "NotFound",
+          "Ok",
+          "StatusCode"
+        ],
+        "explicit_status_numbers": [
+          403
+        ],
+        "direct_db_members": [
+          "PublisherSubscriptions"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "bounded_text_subset",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.GetPrevPost@1028:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "GetPrevPost",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/prev\")]",
+      "attribute_line": 1028,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/prev",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/prev"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L1028",
+      "signature": "public async Task<ActionResult<SnPost>> GetPrevPost( Guid id, [FromQuery(Name = \"pub\")] string? pubName = null, [FromQuery(Name = \"realm\")] string? realmName = null, [FromQuery(Name = \"type\")] int? type = null, [FromQuery(Name = \"categories\")] List<string>? categories = null, [FromQuery(Name = \"tags\")] List<string>? tags = null, [FromQuery(Name = \"query\")] string? queryTerm = null, [FromQuery(Name = \"media\")] bool onlyMedia = false, [FromQuery(Name = \"replies\")] bool? includeReplies = null, [FromQuery(Name = \"pinned\")] bool? pinned = null, [FromQuery(Name = \"periodStart\")] int? periodStartTime = null, [FromQuery(Name = \"periodEnd\")] int? periodEndTime = null )",
+      "action_end_line": 1196,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_CURRENT_NOT_FOUND",
+          "POST_PINNED_FILTER_REQUIRES_PARAM",
+          "POST_PREV_NOT_FOUND"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NotFound",
+          "Ok",
+          "StatusCode"
+        ],
+        "explicit_status_numbers": [
+          400,
+          403,
+          404
+        ],
+        "direct_db_members": [
+          "Posts",
+          "PublisherSubscriptions"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.GetNextPost@1198:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "GetNextPost",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/next\")]",
+      "attribute_line": 1198,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/next",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/next"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L1198",
+      "signature": "public async Task<ActionResult<SnPost>> GetNextPost( Guid id, [FromQuery(Name = \"pub\")] string? pubName = null, [FromQuery(Name = \"realm\")] string? realmName = null, [FromQuery(Name = \"type\")] int? type = null, [FromQuery(Name = \"categories\")] List<string>? categories = null, [FromQuery(Name = \"tags\")] List<string>? tags = null, [FromQuery(Name = \"query\")] string? queryTerm = null, [FromQuery(Name = \"media\")] bool onlyMedia = false, [FromQuery(Name = \"replies\")] bool? includeReplies = null, [FromQuery(Name = \"pinned\")] bool? pinned = null, [FromQuery(Name = \"periodStart\")] int? periodStartTime = null, [FromQuery(Name = \"periodEnd\")] int? periodEndTime = null )",
+      "action_end_line": 1366,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_CURRENT_NOT_FOUND",
+          "POST_NEXT_NOT_FOUND",
+          "POST_PINNED_FILTER_REQUIRES_PARAM"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NotFound",
+          "Ok",
+          "StatusCode"
+        ],
+        "explicit_status_numbers": [
+          400,
+          403,
+          404
+        ],
+        "direct_db_members": [
+          "Posts",
+          "PublisherSubscriptions"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.GetReactions@1368:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "GetReactions",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/reactions\")]",
+      "attribute_line": 1368,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/reactions",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/reactions"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L1368",
+      "signature": "public async Task<ActionResult<List<SnPostReaction>>> GetReactions( Guid id, [FromQuery] string? symbol = null, [FromQuery] int offset = 0, [FromQuery] int take = 20, [FromQuery(Name = \"order\")] string? order = null )",
+      "action_end_line": 1410,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [
+          "PostReactions"
+        ],
+        "current_user_reference": false,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-SCHEMA",
+        "G-AUTHORITY",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.ListUserReactions@1412:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "ListUserReactions",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"reactions/users/{name}\")]",
+      "attribute_line": 1412,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "reactions/users/{name}",
+      "service_route_candidates": [
+        "/api/posts/reactions/users/{name}"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L1412",
+      "signature": "public async Task<ActionResult<List<UserReactionListingItem>>> ListUserReactions( string name, [FromQuery] int offset = 0, [FromQuery] int take = 20, [FromQuery(Name = \"order\")] string? order = null )",
+      "action_end_line": 1518,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "NotFound",
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [
+          "PostReactions",
+          "Posts"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.GetFeaturedReply@1520:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "GetFeaturedReply",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/replies/featured\")]",
+      "attribute_line": 1520,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/replies/featured",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/replies/featured"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L1520",
+      "signature": "public async Task<ActionResult<SnPost>> GetFeaturedReply(Guid id)",
+      "action_end_line": 1557,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "NotFound",
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [
+          "Posts"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.ListPinnedReplies@1559:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "ListPinnedReplies",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/replies/pinned\")]",
+      "attribute_line": 1559,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/replies/pinned",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/replies/pinned"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L1559",
+      "signature": "public async Task<ActionResult<List<SnPost>>> ListPinnedReplies(Guid id)",
+      "action_end_line": 1593,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [
+          "Posts"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.ListReplies@1595:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "ListReplies",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/replies\")]",
+      "attribute_line": 1595,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/replies",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/replies"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L1595",
+      "signature": "public async Task<ActionResult<List<SnPost>>> ListReplies( Guid id, [FromQuery] int offset = 0, [FromQuery] int take = 20, [FromQuery(Name = \"order\")] string? order = null, [FromQuery(Name = \"orderDesc\")] bool orderDesc = true )",
+      "action_end_line": 1659,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "NotFound",
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [
+          "Posts"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.ListThreadedReplies@1661:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "ListThreadedReplies",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/replies/threaded\")]",
+      "attribute_line": 1661,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/replies/threaded",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/replies/threaded"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L1661",
+      "signature": "public async Task<ActionResult<List<ThreadedReplyNode>>> ListThreadedReplies( Guid id, [FromQuery] int offset = 0, [FromQuery] int take = 20, [FromQuery(Name = \"order\")] string? order = null, [FromQuery(Name = \"orderDesc\")] bool orderDesc = true )",
+      "action_end_line": 1769,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "NotFound",
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [
+          "Posts"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.GetThread@1779:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "GetThread",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/thread\")]",
+      "attribute_line": 1779,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/thread",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/thread"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L1779",
+      "signature": "public async Task<ActionResult<PostThreadResponse>> GetThread( Guid id, [FromQuery] bool ancestors = true, [FromQuery] int ancestorLimit = 50, [FromQuery] int take = 20 )",
+      "action_end_line": 2008,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "NotFound",
+          "Ok",
+          "StatusCode"
+        ],
+        "explicit_status_numbers": [
+          403
+        ],
+        "direct_db_members": [
+          "Database",
+          "Posts",
+          "PublisherSubscriptions"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.GetChain@2016:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "GetChain",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/chain\")]",
+      "attribute_line": 2016,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/chain",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/chain"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L2016",
+      "signature": "public async Task<ActionResult<List<SnPost>>> GetChain(Guid id)",
+      "action_end_line": 2070,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "NotFound",
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostController.ListForwards@2072:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostController",
+      "action": "ListForwards",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/forwards\")]",
+      "attribute_line": 2072,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/forwards",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/forwards"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "source_blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostController.cs#L2072",
+      "signature": "public async Task<ActionResult<List<SnPost>>> ListForwards( Guid id, [FromQuery] int offset = 0, [FromQuery] int take = 20 )",
+      "action_end_line": 2134,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "NotFound",
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [
+          "Posts"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.CheckBlogCreatePermission@309:POST",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "CheckBlogCreatePermission",
+      "http_method": "POST",
+      "attribute": "[HttpPost(\"blog/check-permission\")]",
+      "attribute_line": 309,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "blog/check-permission",
+      "service_route_candidates": [
+        "/api/posts/blog/check-permission"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L309",
+      "signature": "public async Task<ActionResult> CheckBlogCreatePermission( [FromBody] BlogPermissionCheckRequest request, [FromQuery(Name = \"pub\")] string? pubName )",
+      "action_end_line": 351,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[Authorize]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_BLOG_PERMISSION_CHECK_FAILED",
+          "POST_URL_REQUIRED",
+          "PUBLISHER_NOT_FOUND",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "Ok",
+          "StatusCode",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401,
+          403
+        ],
+        "direct_db_members": [],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.CreatePost@353:POST",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "CreatePost",
+      "http_method": "POST",
+      "attribute": "[HttpPost]",
+      "attribute_line": 353,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": null,
+      "service_route_candidates": [
+        "/api/posts"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L353",
+      "signature": "public async Task<ActionResult<SnPost>> CreatePost( [FromBody] PostRequest request, [FromQuery(Name = \"pub\")] string? pubName )",
+      "action_end_line": 777,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[AskPermission(\"posts.create\")]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_BLOG_INVALID_URL",
+          "POST_BLOG_PERMISSION_CHECK_FAILED",
+          "POST_CHAIN_CONFLICT",
+          "POST_CHAIN_DIFFERENT_PUBLISHER",
+          "POST_CHAIN_TARGET_NOT_FOUND",
+          "POST_CONTENT_REQUIRED",
+          "POST_CREATE_FAILED",
+          "POST_DRAFT_PUBLISH_CONFLICT",
+          "POST_FORWARD_BLOCKED",
+          "POST_FORWARD_TARGET_NOT_FOUND",
+          "POST_FUND_INVALID_ID",
+          "POST_FUND_NOT_FOUND",
+          "POST_FUND_NOT_OWNER",
+          "POST_LIVE_STREAM_EMBED_FAILED",
+          "POST_LIVE_STREAM_NOT_FOUND",
+          "POST_LIVE_STREAM_NOT_OWNER",
+          "POST_REPLY_BLOCKED",
+          "POST_REPLY_TARGET_NOT_FOUND",
+          "POST_SURVEY_EMBED_FAILED",
+          "POST_THUMBNAIL_NOT_IN_ATTACHMENTS",
+          "POST_THUMBNAIL_NOT_SUPPORTED",
+          "POST_VISIBILITY_REQUIRES_PUBLISHER",
+          "PUBLISHER_NOT_FOUND",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "StatusCode",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401,
+          403
+        ],
+        "direct_db_members": [
+          "PostCollections",
+          "Posts"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": [
+          "PublishAsync"
+        ]
+      },
+      "implementation_status": "bounded_text_subset",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.ReactPost@804:POST",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "ReactPost",
+      "http_method": "POST",
+      "attribute": "[HttpPost(\"{id:guid}/reactions\")]",
+      "attribute_line": 804,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/reactions",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/reactions"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L804",
+      "signature": "public async Task<ActionResult<SnPostReaction>> ReactPost( Guid id, [FromBody] PostReactionRequest request )",
+      "action_end_line": 879,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[Authorize]",
+          "[AskPermission(\"posts.react\")]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_REACTION_BLOCKED",
+          "POST_REACTION_SUBSCRIPTION_REQUIRED",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NoContent",
+          "NotFound",
+          "Ok",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401
+        ],
+        "direct_db_members": [
+          "PostReactions"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.BookmarkPost@881:POST",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "BookmarkPost",
+      "http_method": "POST",
+      "attribute": "[HttpPost(\"{id:guid}/bookmark\")]",
+      "attribute_line": 881,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/bookmark",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/bookmark"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L881",
+      "signature": "public async Task<ActionResult<SnPostBookmark>> BookmarkPost(Guid id)",
+      "action_end_line": 931,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[AskPermission(PermissionKeys.PostsBookmark)]",
+          "[Authorize]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "NotFound",
+          "Ok",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          401
+        ],
+        "direct_db_members": [
+          "PostBookmarks",
+          "SaveChangesAsync"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": [
+          "SaveChangesAsync"
+        ]
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.UnbookmarkPost@933:DELETE",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "UnbookmarkPost",
+      "http_method": "DELETE",
+      "attribute": "[HttpDelete(\"{id:guid}/bookmark\")]",
+      "attribute_line": 933,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/bookmark",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/bookmark"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L933",
+      "signature": "public async Task<ActionResult> UnbookmarkPost(Guid id)",
+      "action_end_line": 963,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[AskPermission(PermissionKeys.PostsBookmark)]",
+          "[Authorize]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "NoContent",
+          "NotFound",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          401
+        ],
+        "direct_db_members": [
+          "PostBookmarks",
+          "SaveChangesAsync"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": [
+          "SaveChangesAsync"
+        ]
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.GetBookmarkStatus@965:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "GetBookmarkStatus",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/bookmark\")]",
+      "attribute_line": 965,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/bookmark",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/bookmark"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L965",
+      "signature": "public async Task<ActionResult<SnPostBookmark?>> GetBookmarkStatus(Guid id)",
+      "action_end_line": 978,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[Authorize]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "Ok",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          401
+        ],
+        "direct_db_members": [
+          "PostBookmarks"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.GetPostAwards@988:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "GetPostAwards",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/awards\")]",
+      "attribute_line": 988,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/awards",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/awards"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L988",
+      "signature": "public async Task<ActionResult<SnPostAward>> GetPostAwards( Guid id, [FromQuery] int offset = 0, [FromQuery] int take = 20 )",
+      "action_end_line": 1003,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [
+          "PostAwards"
+        ],
+        "current_user_reference": false,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-SCHEMA",
+        "G-AUTHORITY",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.GetPendingPostAwards@1005:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "GetPendingPostAwards",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/awards/pending\")]",
+      "attribute_line": 1005,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/awards/pending",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/awards/pending"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L1005",
+      "signature": "public async Task<ActionResult> GetPendingPostAwards(Guid id)",
+      "action_end_line": 1021,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [
+          "PostAwards"
+        ],
+        "current_user_reference": false,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-SCHEMA",
+        "G-AUTHORITY",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.AwardPost@1028:POST",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "AwardPost",
+      "http_method": "POST",
+      "attribute": "[HttpPost(\"{id:guid}/awards\")]",
+      "attribute_line": 1028,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/awards",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/awards"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L1028",
+      "signature": "public async Task<ActionResult<PostAwardResponse>> AwardPost( Guid id, [FromBody] PostAwardRequest request )",
+      "action_end_line": 1084,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[AskPermission(PermissionKeys.PostsAward)]",
+          "[Authorize]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_AWARD_BLOCKED",
+          "POST_AWARD_NEUTRAL_NOT_ALLOWED",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NotFound",
+          "Ok",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401
+        ],
+        "direct_db_members": [],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.SponsorPost@1097:POST",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "SponsorPost",
+      "http_method": "POST",
+      "attribute": "[HttpPost(\"{id:guid}/sponsor\")]",
+      "attribute_line": 1097,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/sponsor",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/sponsor"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L1097",
+      "signature": "public async Task<ActionResult<PostSponsorResponse>> SponsorPost( Guid id, [FromBody] PostSponsorRequest request )",
+      "action_end_line": 1132,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[AskPermission(PermissionKeys.PostsSponsor)]",
+          "[Authorize]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_SPONSOR_CREATE_FAILED",
+          "POST_SPONSOR_DELETED",
+          "POST_SPONSOR_MINIMUM_BID",
+          "POST_SPONSOR_NOT_PUBLIC",
+          "POST_SPONSOR_SHADOWBANNED",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NotFound",
+          "Ok",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401
+        ],
+        "direct_db_members": [],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.PinPost@1139:POST",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "PinPost",
+      "http_method": "POST",
+      "attribute": "[HttpPost(\"{id:guid}/pin\")]",
+      "attribute_line": 1139,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/pin",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/pin"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L1139",
+      "signature": "public async Task<ActionResult<SnPost>> PinPost(Guid id, [FromBody] PostPinRequest request)",
+      "action_end_line": 1194,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[AskPermission(PermissionKeys.PostsPin)]",
+          "[Authorize]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_PIN_FAILED",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NotFound",
+          "Ok",
+          "StatusCode",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401,
+          403
+        ],
+        "direct_db_members": [],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.UnpinPost@1196:DELETE",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "UnpinPost",
+      "http_method": "DELETE",
+      "attribute": "[HttpDelete(\"{id:guid}/pin\")]",
+      "attribute_line": 1196,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/pin",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/pin"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L1196",
+      "signature": "public async Task<ActionResult<SnPost>> UnpinPost(Guid id)",
+      "action_end_line": 1250,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[AskPermission(PermissionKeys.PostsPin)]",
+          "[Authorize]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_UNPIN_FAILED",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NotFound",
+          "Ok",
+          "StatusCode",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401,
+          403
+        ],
+        "direct_db_members": [],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.UpdatePost@1252:PATCH",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "UpdatePost",
+      "http_method": "PATCH",
+      "attribute": "[HttpPatch(\"{id:guid}\")]",
+      "attribute_line": 1252,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L1252",
+      "signature": "public async Task<ActionResult<SnPost>> UpdatePost( Guid id, [FromBody] PostRequest request, [FromQuery(Name = \"pub\")] string? pubName )",
+      "action_end_line": 1662,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_BLOG_PERMISSION_CHECK_FAILED",
+          "POST_CONTENT_REQUIRED",
+          "POST_DRAFT_PUBLISH_CONFLICT",
+          "POST_FUND_INVALID_ID",
+          "POST_FUND_NOT_FOUND",
+          "POST_FUND_NOT_OWNER",
+          "POST_LIVE_STREAM_EMBED_FAILED",
+          "POST_LIVE_STREAM_NOT_FOUND",
+          "POST_LIVE_STREAM_NOT_OWNER",
+          "POST_PUBLISH_FAILED",
+          "POST_SURVEY_EMBED_FAILED",
+          "POST_THUMBNAIL_NOT_IN_ATTACHMENTS",
+          "POST_THUMBNAIL_NOT_SUPPORTED",
+          "POST_VISIBILITY_REQUIRES_PUBLISHER",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NotFound",
+          "Ok",
+          "StatusCode",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401,
+          403,
+          423
+        ],
+        "direct_db_members": [],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "bounded_text_subset",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.DeletePost@1664:DELETE",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "DeletePost",
+      "http_method": "DELETE",
+      "attribute": "[HttpDelete(\"{id:guid}\")]",
+      "attribute_line": 1664,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L1664",
+      "signature": "public async Task<ActionResult<SnPost>> DeletePost(Guid id)",
+      "action_end_line": 1706,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "NoContent",
+          "NotFound",
+          "StatusCode",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          401,
+          403,
+          423
+        ],
+        "direct_db_members": [],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "bounded_text_subset",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.BatchDeletePosts@1708:POST",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "BatchDeletePosts",
+      "http_method": "POST",
+      "attribute": "[HttpPost(\"batch/delete\")]",
+      "attribute_line": 1708,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "batch/delete",
+      "service_route_candidates": [
+        "/api/posts/batch/delete"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L1708",
+      "signature": "public async Task<ActionResult> BatchDeletePosts([FromBody] BatchDeleteRequest request)",
+      "action_end_line": 1762,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[AskPermission(PermissionKeys.PostsBatchDelete)]",
+          "[Authorize]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_BATCH_EMPTY",
+          "POST_BATCH_NOT_FOUND",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NoContent",
+          "StatusCode",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401,
+          403,
+          423
+        ],
+        "direct_db_members": [],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.BatchUpdateVisibility@1764:POST",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "BatchUpdateVisibility",
+      "http_method": "POST",
+      "attribute": "[HttpPost(\"batch/visibility\")]",
+      "attribute_line": 1764,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "batch/visibility",
+      "service_route_candidates": [
+        "/api/posts/batch/visibility"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L1764",
+      "signature": "public async Task<ActionResult> BatchUpdateVisibility([FromBody] BatchVisibilityRequest request)",
+      "action_end_line": 1830,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[AskPermission(PermissionKeys.PostsBatchDelete)]",
+          "[Authorize]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_BATCH_EMPTY",
+          "POST_BATCH_NOT_FOUND",
+          "POST_DRAFT_PUBLISH_CONFLICT",
+          "POST_PUBLISH_PAST_NOT_ALLOWED",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NoContent",
+          "StatusCode",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401,
+          403,
+          423
+        ],
+        "direct_db_members": [
+          "SaveChangesAsync"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": [
+          "SaveChangesAsync"
+        ]
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.PublishDraft@1832:POST",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "PublishDraft",
+      "http_method": "POST",
+      "attribute": "[HttpPost(\"{id:guid}/publish\")]",
+      "attribute_line": 1832,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/publish",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/publish"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L1832",
+      "signature": "public async Task<ActionResult<SnPost>> PublishDraft(Guid id)",
+      "action_end_line": 1882,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[Authorize]",
+          "[AskPermission(\"posts.create\")]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_NOT_A_DRAFT",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NotFound",
+          "Ok",
+          "StatusCode",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401,
+          403
+        ],
+        "direct_db_members": [],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "bounded_text_subset",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.BoostPost@1889:POST",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "BoostPost",
+      "http_method": "POST",
+      "attribute": "[HttpPost(\"{id:guid}/boost\")]",
+      "attribute_line": 1889,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/boost",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/boost"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L1889",
+      "signature": "public async Task<ActionResult<SnBoost>> BoostPost( Guid id, [FromBody] BoostRequest? request )",
+      "action_end_line": 1993,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[Authorize]",
+          "[AskPermission(\"posts.boost\")]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_ALREADY_BOOSTED",
+          "POST_BOOST_ACTOR_NOT_FOUND",
+          "POST_BOOST_BLOCKED",
+          "POST_BOOST_PUBLISHER_REQUIRED",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NotFound",
+          "Ok",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401
+        ],
+        "direct_db_members": [
+          "Boosts",
+          "FediverseActors",
+          "PublishingSettings",
+          "SaveChangesAsync"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": [
+          "SaveChangesAsync"
+        ]
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.UnboostPost@1995:DELETE",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "UnboostPost",
+      "http_method": "DELETE",
+      "attribute": "[HttpDelete(\"{id:guid}/boost\")]",
+      "attribute_line": 1995,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/boost",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/boost"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L1995",
+      "signature": "public async Task<IActionResult> UnboostPost(Guid id)",
+      "action_end_line": 2060,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[AskPermission(PermissionKeys.PostsBoost)]",
+          "[Authorize]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_UNBOOST_ACTOR_NOT_FOUND",
+          "POST_UNBOOST_PUBLISHER_REQUIRED",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NoContent",
+          "NotFound",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401
+        ],
+        "direct_db_members": [
+          "Boosts",
+          "FediverseActors",
+          "Posts",
+          "PublishingSettings",
+          "SaveChangesAsync"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": [
+          "SaveChangesAsync"
+        ]
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.GetPostBoosts@2062:GET",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "GetPostBoosts",
+      "http_method": "GET",
+      "attribute": "[HttpGet(\"{id:guid}/boosts\")]",
+      "attribute_line": 2062,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/boosts",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/boosts"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L2062",
+      "signature": "public async Task<ActionResult<List<SnBoost>>> GetPostBoosts( Guid id, [FromQuery] int offset = 0, [FromQuery] int take = 20 )",
+      "action_end_line": 2081,
+      "declared_authorization": {
+        "controller": [],
+        "action": [],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [],
+        "response_helpers": [
+          "Ok"
+        ],
+        "explicit_status_numbers": [],
+        "direct_db_members": [
+          "Boosts"
+        ],
+        "current_user_reference": false,
+        "explicit_side_effect_signals": []
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-SCHEMA",
+        "G-AUTHORITY",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    },
+    {
+      "id": "sphere:PostActionController.ModeratePostInRealm@2083:POST",
+      "service": "Sphere",
+      "family": "sphere.posts",
+      "controller": "PostActionController",
+      "action": "ModeratePostInRealm",
+      "http_method": "POST",
+      "attribute": "[HttpPost(\"{id:guid}/realm/moderate\")]",
+      "attribute_line": 2083,
+      "controller_routes": [
+        "/api/posts"
+      ],
+      "action_template": "{id:guid}/realm/moderate",
+      "service_route_candidates": [
+        "/api/posts/{id:guid}/realm/moderate"
+      ],
+      "route_status": "retained_licensed_source_observation_not_full_runtime_parity",
+      "gateway_aliases": "Unified host owns /sphere alias; standalone uses /api only.",
+      "source_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "source_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs#L2083",
+      "signature": "public async Task<ActionResult> ModeratePostInRealm(Guid id, [FromBody] ModeratePostRequest request)",
+      "action_end_line": 2144,
+      "declared_authorization": {
+        "controller": [],
+        "action": [
+          "[Authorize]",
+          "[AskPermission(\"posts.moderate\")]"
+        ],
+        "global_policy": "unresolved; no attribute does not establish public access"
+      },
+      "observed": {
+        "literal_error_codes": [
+          "POST_ALREADY_REMOVED_FROM_REALM",
+          "POST_NOT_IN_REALM",
+          "UNAUTHORIZED"
+        ],
+        "response_helpers": [
+          "BadRequest",
+          "NotFound",
+          "Ok",
+          "StatusCode",
+          "Unauthorized"
+        ],
+        "explicit_status_numbers": [
+          400,
+          401,
+          403
+        ],
+        "direct_db_members": [
+          "Posts",
+          "RealmPostModerationLogs",
+          "SaveChangesAsync"
+        ],
+        "current_user_reference": true,
+        "explicit_side_effect_signals": [
+          "SaveChangesAsync"
+        ]
+      },
+      "implementation_status": "unsupported",
+      "next_action": "See docs/post-lifecycle-continuation.md for supported owned contract, differences and required providers.",
+      "required_release_gates": [
+        "G-ROUTING",
+        "G-JSON",
+        "G-AUTH",
+        "G-RECOVERY",
+        "G-AUTHORITY",
+        "G-SCHEMA",
+        "G-EVENTS",
+        "G-STORAGE"
+      ]
+    }
+  ],
+  "excluded_sources_not_retrieved": [
+    "NeTo/Spec",
+    "DysonNetwork.Shared",
+    "SoSYS",
+    "Socommon",
+    "Stargate"
+  ]
+}

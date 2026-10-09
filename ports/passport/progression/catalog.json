@@ -1,0 +1,2064 @@
+[
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "initial-post",
+      "title": "Initial Commit",
+      "summary": "Say hello to the Solar Network world!",
+      "icon": "ink",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 100,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 100,
+        "source_points": 10,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "expert-post",
+      "title": "Better than 陆游 (Luyou)",
+      "summary": "Wrote posts more than 陆游.\n*Luyou* wrote over 9300+ poems in his life.",
+      "icon": "ink",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 200,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 9362,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 9362,
+        "source_points": 100,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.post.expert",
+          "label": "Better than 陆游",
+          "caption": "Created over 9362 posts",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "initial-reaction",
+      "title": "People have emotion",
+      "summary": "React to a post for the first time.",
+      "icon": "spark",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 101,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.react"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 50,
+        "source_points": 5,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "initial-realm-join",
+      "title": "Horizons, broadened.",
+      "summary": "Join a realm.",
+      "icon": "globe",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 103,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "realm.join"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 100,
+        "source_points": 10,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "initial-publisher",
+      "title": "Startup Company",
+      "summary": "Not backed by y combinator.\nCreate a publisher.",
+      "icon": "flag",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 102,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "publisher.create"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 100,
+        "source_points": 10,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "initial-chat",
+      "title": "Gugugaga",
+      "summary": "Use chat for the first time.",
+      "icon": "message-circle",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 104,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "chat.use"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 100,
+        "source_points": 5,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "initial-featured-post",
+      "title": "Editor's Pick",
+      "summary": "Get one of your posts featured.",
+      "icon": "sparkles",
+      "series_identifier": "featured-post",
+      "series_title": "Featured Posts",
+      "series_order": 1,
+      "sort_order": 105,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.featured"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 150,
+        "source_points": 15,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.post.featured",
+          "label": "Editor's Pick",
+          "caption": "Created a post that got featured.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "streak-post-3",
+      "title": "Three-day Build",
+      "summary": "Create posts for 3 days in a row.",
+      "icon": "calendar-heart",
+      "series_identifier": "post-streak",
+      "series_title": "Posting Streak",
+      "series_order": 1,
+      "sort_order": 106,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 3,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create"
+        ],
+        "mode": "streak",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 200,
+        "source_points": 20,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "streak-post-7",
+      "title": "One-week Columnist",
+      "summary": "Create posts for 7 days in a row.",
+      "icon": "calendar-range",
+      "series_identifier": "post-streak",
+      "series_title": "Posting Streak",
+      "series_order": 2,
+      "sort_order": 107,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 7,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create"
+        ],
+        "mode": "streak",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 500,
+        "source_points": 35,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "streak-post-30",
+      "title": "Serial Publisher",
+      "summary": "Create posts for 30 days in a row.",
+      "icon": "calendar-fold",
+      "series_identifier": "post-streak",
+      "series_title": "Posting Streak",
+      "series_order": 3,
+      "sort_order": 108,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 30,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create"
+        ],
+        "mode": "streak",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 3000,
+        "source_points": 90,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.post.streak.30",
+          "label": "Serial Publisher",
+          "caption": "Created posts for 30 days in a row.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "streak-login-7",
+      "title": "Daily Standup",
+      "summary": "Stay active for 7 days in a row.",
+      "icon": "sunrise",
+      "series_identifier": "activity-streak",
+      "series_title": "Activity Streak",
+      "series_order": 1,
+      "sort_order": 109,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 7,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "account.active"
+        ],
+        "mode": "streak",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 250,
+        "source_points": 20,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "streak-login-30",
+      "title": "Always Online",
+      "summary": "Stay active for 30 days in a row.",
+      "icon": "sun-medium",
+      "series_identifier": "activity-streak",
+      "series_title": "Activity Streak",
+      "series_order": 2,
+      "sort_order": 110,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 30,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "account.active"
+        ],
+        "mode": "streak",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 1200,
+        "source_points": 60,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "streak-login-365",
+      "title": "Still Here",
+      "summary": "Stay active for 365 days in a row.",
+      "icon": "sun",
+      "series_identifier": "activity-streak",
+      "series_title": "Activity Streak",
+      "series_order": 3,
+      "sort_order": 210,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 365,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "account.active"
+        ],
+        "mode": "streak",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 12000,
+        "source_points": 365,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.login.streak.365",
+          "label": "Still Here",
+          "caption": "Logged in for 365 days in a row.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "expert-featured-post",
+      "title": "Hall of Fame",
+      "summary": "Get 100 of your posts featured.",
+      "icon": "sparkles",
+      "series_identifier": "featured-post",
+      "series_title": "Featured Posts",
+      "series_order": 2,
+      "sort_order": 205,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 100,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.featured"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 5000,
+        "source_points": 100,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.post.featured.expert",
+          "label": "Hall of Fame",
+          "caption": "Created 100 featured posts.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "stellar-supporter-1",
+      "title": "Supporter",
+      "summary": "Purchase one eligible month of the Stellar Program.",
+      "icon": "badge-cent",
+      "series_identifier": "stellar-supporter",
+      "series_title": "Stellar Supporter",
+      "series_order": 1,
+      "sort_order": 120,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "stellar.support_month"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 120,
+        "source_points": 12,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "stellar-supporter-3",
+      "title": "Backer",
+      "summary": "Purchase 3 eligible months of the Stellar Program.",
+      "icon": "gem",
+      "series_identifier": "stellar-supporter",
+      "series_title": "Stellar Supporter",
+      "series_order": 2,
+      "sort_order": 121,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 3,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "stellar.support_month"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 360,
+        "source_points": 24,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "stellar-supporter-6",
+      "title": "Patron",
+      "summary": "Purchase 6 eligible months of the Stellar Program.",
+      "icon": "medal",
+      "series_identifier": "stellar-supporter",
+      "series_title": "Stellar Supporter",
+      "series_order": 3,
+      "sort_order": 122,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 6,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "stellar.support_month"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 900,
+        "source_points": 48,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "stellar-supporter-9",
+      "title": "Celestial Patron",
+      "summary": "Purchase 9 eligible months of the Stellar Program.",
+      "icon": "orbit",
+      "series_identifier": "stellar-supporter",
+      "series_title": "Stellar Supporter",
+      "series_order": 4,
+      "sort_order": 123,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 9,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "stellar.support_month"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 1500,
+        "source_points": 72,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "stellar-supporter-12",
+      "title": "Mega Supporter",
+      "summary": "Purchase 12 eligible months of the Stellar Program.",
+      "icon": "crown",
+      "series_identifier": "stellar-supporter",
+      "series_title": "Stellar Supporter",
+      "series_order": 5,
+      "sort_order": 124,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 12,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "stellar.support_month"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 2400,
+        "source_points": 120,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.stellar.supporter.12",
+          "label": "Mega Supporter",
+          "caption": "Purchased 12 eligible months of the Stellar Program.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "expert-chat",
+      "title": "Never touch grass",
+      "summary": "Use chat over 10k times.",
+      "icon": "messages-square",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 201,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 10000,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "chat.use"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 180,
+        "source_points": 18,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.chat.expert",
+          "label": "No-life's Otaku",
+          "caption": "I can't believe some one spend for 10k minutes chatting on the Solar Network.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "first-avatar",
+      "title": "Picture Perfect",
+      "summary": "Set your profile picture for the first time.",
+      "icon": "image",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 110,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "account.avatar"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 50,
+        "source_points": 5,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.account.avatar",
+          "label": "Picture Perfect",
+          "caption": "Set a profile picture for the first time.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "first-connection",
+      "title": "Getting Connected",
+      "summary": "Link an external account for the first time.",
+      "icon": "link",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 111,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "account.connection_link"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 50,
+        "source_points": 5,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "first-push",
+      "title": "Always Informed",
+      "summary": "Enable push notifications for the first time.",
+      "icon": "bell",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 112,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "account.push_enable"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 30,
+        "source_points": 3,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "friends-1",
+      "title": "It Takes Two",
+      "summary": "Make your first friend.",
+      "icon": "user-plus",
+      "series_identifier": "friend-count",
+      "series_title": "Friend Count",
+      "series_order": 1,
+      "sort_order": 130,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "relationship.friend_established"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 50,
+        "source_points": 5,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "friends-5",
+      "title": "Social Butterfly",
+      "summary": "Make 5 friends.",
+      "icon": "users",
+      "series_identifier": "friend-count",
+      "series_title": "Friend Count",
+      "series_order": 2,
+      "sort_order": 131,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 5,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "relationship.friend_established"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 150,
+        "source_points": 15,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "friends-20",
+      "title": "People Person",
+      "summary": "Make 20 friends.",
+      "icon": "users-round",
+      "series_identifier": "friend-count",
+      "series_title": "Friend Count",
+      "series_order": 3,
+      "sort_order": 132,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 20,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "relationship.friend_established"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 500,
+        "source_points": 40,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "friends-50",
+      "title": "Community Pillar",
+      "summary": "Make 50 friends.",
+      "icon": "heart-handshake",
+      "series_identifier": "friend-count",
+      "series_title": "Friend Count",
+      "series_order": 4,
+      "sort_order": 133,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 50,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "relationship.friend_established"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 1200,
+        "source_points": 80,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.friends.50",
+          "label": "Community Pillar",
+          "caption": "Made 50 friends on the Solar Network.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "friends-100",
+      "title": "The Connector",
+      "summary": "Make 100 friends.",
+      "icon": "network",
+      "series_identifier": "friend-count",
+      "series_title": "Friend Count",
+      "series_order": 5,
+      "sort_order": 134,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 100,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "relationship.friend_established"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 3000,
+        "source_points": 150,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.friends.100",
+          "label": "The Connector",
+          "caption": "Made 100 friends on the Solar Network.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "first-bookmark",
+      "title": "Read Later",
+      "summary": "Bookmark a post for the first time.",
+      "icon": "bookmark",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 113,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.bookmark"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 20,
+        "source_points": 2,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "first-boost",
+      "title": "Signal Boost",
+      "summary": "Boost a post for the first time.",
+      "icon": "repeat",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 114,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.boost"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 30,
+        "source_points": 3,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "first-topical-post",
+      "title": "Well Structured",
+      "summary": "Publish a post with both categories and tags.",
+      "icon": "layout-grid",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 116,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create_topical"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 75,
+        "source_points": 8,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.post.topical.first",
+          "label": "Well Structured",
+          "caption": "Published a post with both categories and tags.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "topical-post-10",
+      "title": "Curator",
+      "summary": "Publish 10 posts with both categories and tags.",
+      "icon": "layout-list",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 117,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 10,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create_topical"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 150,
+        "source_points": 15,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "topical-post-50",
+      "title": "Organizer",
+      "summary": "Publish 50 posts with both categories and tags.",
+      "icon": "layout-template",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 118,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 50,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create_topical"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 500,
+        "source_points": 50,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.post.topical.50",
+          "label": "Organizer",
+          "caption": "Published 50 posts with both categories and tags.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "expert-reaction",
+      "title": "Empath",
+      "summary": "React to 1000 posts.",
+      "icon": "heart",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 202,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1000,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.react"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 300,
+        "source_points": 30,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.reaction.expert",
+          "label": "Empath",
+          "caption": "Reacted to 1000 posts on the Solar Network.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "gots-fired-5",
+      "title": "炎上",
+      "summary": "Have a publisher post receive many downvotes in a single day.",
+      "icon": "flame",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 122,
+      "hidden": true,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 5,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.react"
+        ],
+        "mode": "daily_count",
+        "meta_equals": {
+          "reaction": "thumb_down",
+          "post_kind": "publisher"
+        }
+      },
+      "reward": {
+        "experience": 75,
+        "source_points": 8,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.post.downvote.5",
+          "label": "炎上",
+          "caption": "Received repeated downvotes on a publisher post in one day.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "gots-fired-20",
+      "title": "炎上",
+      "summary": "Have a publisher post receive a lot of downvotes in a single day.",
+      "icon": "fire-extinguisher",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 123,
+      "hidden": true,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 20,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.react"
+        ],
+        "mode": "daily_count",
+        "meta_equals": {
+          "reaction": "thumb_down",
+          "post_kind": "publisher"
+        }
+      },
+      "reward": {
+        "experience": 250,
+        "source_points": 25,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.post.downvote.20",
+          "label": "炎上",
+          "caption": "Received a lot of downvotes on publisher posts.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "profile-complete",
+      "title": "Fully Realized",
+      "summary": "Complete your profile with name, bio, avatar, birthday, location, and pronouns.",
+      "icon": "user-check",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 124,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "account.profile_complete"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 100,
+        "source_points": 10,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.account.profile_complete",
+          "label": "Fully Realized",
+          "caption": "Completed their profile.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "first-2fa",
+      "title": "Fort Knox",
+      "summary": "Enable two-factor authentication.",
+      "icon": "shield-check",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 125,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "auth.factor_enable"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 80,
+        "source_points": 8,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "first-chatroom",
+      "title": "Room Hopper",
+      "summary": "Join a chatroom for the first time.",
+      "icon": "door-open",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 126,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "chatroom.join"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 30,
+        "source_points": 3,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "chatroom-10",
+      "title": "Regular",
+      "summary": "Join 10 different chatrooms.",
+      "icon": "meeting",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 204,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 10,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "chatroom.join"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 200,
+        "source_points": 20,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "bookmark-10",
+      "title": "Librarian",
+      "summary": "Bookmark 10 posts.",
+      "icon": "bookmark",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 205,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 10,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.bookmark"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 100,
+        "source_points": 10,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "boost-50",
+      "title": "Signal Tower",
+      "summary": "Boost 50 posts.",
+      "icon": "repeat",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 206,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 50,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.boost"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 250,
+        "source_points": 25,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.boost.50",
+          "label": "Signal Tower",
+          "caption": "Boosted 50 posts on the Solar Network.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "realm-join-10",
+      "title": "Globe Trotter",
+      "summary": "Join 10 realms.",
+      "icon": "globe",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 207,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 10,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "realm.join"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 300,
+        "source_points": 30,
+        "source_points_currency": null,
+        "badge": null
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "streak-post-90",
+      "title": "Quarterly Author",
+      "summary": "Create posts for 90 days in a row.",
+      "icon": "calendar-check",
+      "series_identifier": "post-streak",
+      "series_title": "Posting Streak",
+      "series_order": 4,
+      "sort_order": 208,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 90,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create"
+        ],
+        "mode": "streak",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 8000,
+        "source_points": 200,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.post.streak.90",
+          "label": "Quarterly Author",
+          "caption": "Created posts for 90 days in a row.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "streak-post-365",
+      "title": "Daily Devotee",
+      "summary": "Create posts for 365 days in a row.",
+      "icon": "calendar-heart",
+      "series_identifier": "post-streak",
+      "series_title": "Posting Streak",
+      "series_order": 5,
+      "sort_order": 209,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 365,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create"
+        ],
+        "mode": "streak",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 36500,
+        "source_points": 500,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.post.streak.365",
+          "label": "Daily Devotee",
+          "caption": "Created posts for 365 days in a row.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "streak-login-90",
+      "title": "Perennial",
+      "summary": "Stay active for 90 days in a row.",
+      "icon": "sunrise",
+      "series_identifier": "activity-streak",
+      "series_title": "Activity Streak",
+      "series_order": 4,
+      "sort_order": 212,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 90,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "account.active"
+        ],
+        "mode": "streak",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 5000,
+        "source_points": 120,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.login.streak.90",
+          "label": "Perennial",
+          "caption": "Stayed active for 90 days in a row.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "hidden-night-owl",
+      "title": "Night Owl",
+      "summary": "Create a post between midnight and 4am.",
+      "icon": "moon",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 900,
+      "hidden": true,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 50,
+        "source_points": 5,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.hidden.night_owl",
+          "label": "Night Owl",
+          "caption": "Posted between midnight and 4am.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "hidden-speed-friend",
+      "title": "Instant Connection",
+      "summary": "Accept a friend request within 60 seconds.",
+      "icon": "zap",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 901,
+      "hidden": true,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "relationship.friend_accept"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 50,
+        "source_points": 5,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.hidden.speed_friend",
+          "label": "Instant Connection",
+          "caption": "Accepted a friend request within 60 seconds.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "achievement",
+    "definition": {
+      "identifier": "hidden-social-butterfly-day",
+      "title": "Social Butterfly (Day)",
+      "summary": "Make 5 friends in a single day.",
+      "icon": "butterfly",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 902,
+      "hidden": true,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 5,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "relationship.friend_established"
+        ],
+        "mode": "streak",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 200,
+        "source_points": 20,
+        "source_points_currency": null,
+        "badge": {
+          "type": "progression.hidden.social_butterfly_day",
+          "label": "Social Butterfly",
+          "caption": "Made 5 friends in a single day.",
+          "meta": {}
+        }
+      }
+    }
+  },
+  {
+    "kind": "quest",
+    "definition": {
+      "identifier": "daily-post",
+      "title": "Daily Dispatch",
+      "summary": "Publish one post today.",
+      "icon": "calendar",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 10,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 25,
+        "source_points": 2,
+        "source_points_currency": null,
+        "badge": null
+      },
+      "schedule": {
+        "repeatability": "daily"
+      }
+    }
+  },
+  {
+    "kind": "quest",
+    "definition": {
+      "identifier": "daily-react",
+      "title": "Give Credit",
+      "summary": "React to 3 posts today.",
+      "icon": "heart",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 11,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 3,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.react"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 15,
+        "source_points": 2,
+        "source_points_currency": null,
+        "badge": null
+      },
+      "schedule": {
+        "repeatability": "daily"
+      }
+    }
+  },
+  {
+    "kind": "quest",
+    "definition": {
+      "identifier": "daily-chat",
+      "title": "Say Something",
+      "summary": "Send a chat message today.",
+      "icon": "message-circle",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 12,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "chat.use"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 10,
+        "source_points": 1,
+        "source_points_currency": null,
+        "badge": null
+      },
+      "schedule": {
+        "repeatability": "daily"
+      }
+    }
+  },
+  {
+    "kind": "quest",
+    "definition": {
+      "identifier": "weekly-post-5",
+      "title": "Weekly Writer",
+      "summary": "Create 5 posts this week.",
+      "icon": "pen-line",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 20,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 5,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 100,
+        "source_points": 10,
+        "source_points_currency": null,
+        "badge": null
+      },
+      "schedule": {
+        "repeatability": "weekly"
+      }
+    }
+  },
+  {
+    "kind": "quest",
+    "definition": {
+      "identifier": "weekly-react-20",
+      "title": "Appreciator",
+      "summary": "React to 20 posts this week.",
+      "icon": "sparkles",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 21,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 20,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.react"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 80,
+        "source_points": 8,
+        "source_points_currency": null,
+        "badge": null
+      },
+      "schedule": {
+        "repeatability": "weekly"
+      }
+    }
+  },
+  {
+    "kind": "quest",
+    "definition": {
+      "identifier": "weekly-friend-1",
+      "title": "Make a Friend",
+      "summary": "Make a new friend this week.",
+      "icon": "user-plus",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 22,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "relationship.friend_established"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 50,
+        "source_points": 5,
+        "source_points_currency": null,
+        "badge": null
+      },
+      "schedule": {
+        "repeatability": "weekly"
+      }
+    }
+  },
+  {
+    "kind": "quest",
+    "definition": {
+      "identifier": "weekly-boost-3",
+      "title": "Amplifier",
+      "summary": "Boost 3 posts this week.",
+      "icon": "repeat",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 23,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 3,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.boost"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 60,
+        "source_points": 6,
+        "source_points_currency": null,
+        "badge": null
+      },
+      "schedule": {
+        "repeatability": "weekly"
+      }
+    }
+  },
+  {
+    "kind": "quest",
+    "definition": {
+      "identifier": "monthly-post-20",
+      "title": "Chronicler",
+      "summary": "Create 20 posts this month.",
+      "icon": "book-open",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 30,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 20,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "post.create"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 300,
+        "source_points": 30,
+        "source_points_currency": null,
+        "badge": null
+      },
+      "schedule": {
+        "repeatability": "monthly"
+      }
+    }
+  },
+  {
+    "kind": "quest",
+    "definition": {
+      "identifier": "monthly-realm-join",
+      "title": "Explorer",
+      "summary": "Join a new realm this month.",
+      "icon": "compass",
+      "series_identifier": null,
+      "series_title": null,
+      "series_order": null,
+      "sort_order": 31,
+      "hidden": false,
+      "is_enabled": true,
+      "is_seed_managed": true,
+      "is_progress_enabled": true,
+      "target_count": 1,
+      "available_from": null,
+      "available_until": null,
+      "trigger": {
+        "actions": [
+          "realm.join"
+        ],
+        "mode": "count",
+        "meta_equals": {}
+      },
+      "reward": {
+        "experience": 100,
+        "source_points": 10,
+        "source_points_currency": null,
+        "badge": null
+      },
+      "schedule": {
+        "repeatability": "monthly"
+      }
+    }
+  }
+]

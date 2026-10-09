@@ -1,0 +1,59 @@
+{
+  "status": "Locally reviewed case registration and restart dependency metadata; runtime PostgreSQL execution remains pending private CI",
+  "base_commit": "53c097b8c0ef1c0aba73f8c3b93af1533782862f",
+  "added_cases": [
+    "TestPGAccountHistoryActionsCanonicalAuditSnapshot",
+    "TestPGAccountHistoryBlockDisabledAndCurrentSession",
+    "TestPGAccountHistoryConnectionMetadataIsolationAndPermission",
+    "TestPGAccountHistoryCreditDecayImmutableProvenance",
+    "TestPGAccountHistoryOriginalProofAfterAccountWait",
+    "TestPGAccountHistoryPublicWaitObservesPrivacyAndRename",
+    "TestPGAccountTimelineArtworkWaitRechecksProofAndRetention",
+    "TestPGAccountTimelineStablePaginationPrivacyAndTimeBounds",
+    "TestPGBackendAccountHistoryAuthoredRoutes",
+    "TestPGBackendAccountHistoryForgedChannels",
+    "TestPGBackendAccountHistorySavedRestartPersistence"
+  ],
+  "removed_cases": [],
+  "totals": {
+    "group-a": {
+      "before": 463,
+      "after": 58,
+      "estimated_before_seconds": 1498.79
+    },
+    "group-b": {
+      "before": 458,
+      "after": 50,
+      "estimated_before_seconds": 1498.78
+    }
+  },
+  "next_step": "Integrate the bounded patches, regenerate grouping for the full composed candidate, then run exact-commit private PostgreSQL/restart CI without skips.",
+  "reviewed_items": [
+    "case:TestPGAccountHistoryActionsCanonicalAuditSnapshot",
+    "case:TestPGAccountHistoryBlockDisabledAndCurrentSession",
+    "case:TestPGAccountHistoryConnectionMetadataIsolationAndPermission",
+    "case:TestPGAccountHistoryCreditDecayImmutableProvenance",
+    "case:TestPGAccountHistoryOriginalProofAfterAccountWait",
+    "case:TestPGAccountHistoryPublicWaitObservesPrivacyAndRename",
+    "case:TestPGAccountTimelineArtworkWaitRechecksProofAndRetention",
+    "case:TestPGAccountTimelineStablePaginationPrivacyAndTimeBounds",
+    "case:TestPGBackendAccountHistoryAuthoredRoutes",
+    "case:TestPGBackendAccountHistoryForgedChannels",
+    "case:TestPGBackendAccountHistorySavedRestartPersistence",
+    "dependency:TestPGBackendAccountHistoryAuthoredRoutes",
+    "dependency:TestPGBackendAccountHistoryForgedChannels",
+    "dependency:TestPGBackendAccountHistorySavedRestartPersistence",
+    "fixture-source:tests/integration/account_history_test.go"
+  ],
+  "review_notes": [
+    "All eleven tests call guarded disposable database fixtures; no network or provider calls.",
+    "Restart reads exactly saved original responses and credentials, restores only public verifier and elapsed clock, and never seeds or issues in after phase.",
+    "New schema installation occurs only in explicit disposable runner after dependency schemas.",
+    "Composed fixtures use backendApp/artworkApp current readiness; new source file and function hashes are captured.",
+    "Deterministic greedy assignments regenerated under the unchanged grouping guards; paired restart/process dependencies remain in their assigned clusters.",
+    "Independent lock-order correction preserves authored public historical events across source logout/session expiry and ended/expired activity leases; no generic source-session eligibility gate is accepted for history.",
+    "Extended existing cases test original-source logout/expiry persistence, current privacy withdrawal, explicit historical event redaction and source-session expiry during the media-file wait. No post-target/restart credential issuance is used to establish a passing read.",
+    "Failed-audit injection is fixture-scoped NOT VALID and asserts the original profile plus prior canonical history survive. Only the reviewed account_history_test.go source hash changes; all eleven names, assignments and the unchanged restart function remain."
+  ],
+  "composed_base": "408d51d2281795383c58233d4de9b17457a64150"
+}

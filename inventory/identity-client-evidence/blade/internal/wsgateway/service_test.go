@@ -1,0 +1,417 @@
+package wsgateway
+
+import (
+	"context"
+	"net/http"
+	"net/http/httptest"
+	"reflect"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/google/uuid"
+	"golang.org/x/net/websocket"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	dyauth "src.solsynth.dev/sosys/go/pkg/auth"
+	gen "src.solsynth.dev/sosys/go/proto"
+)
+
+func testWSConn(t *testing.T) *websocket.Conn {
+	t.Helper()
+	srv := httptest.NewServer(websocket.Server{Handler: func(*websocket.Conn) {}})
+	t.Cleanup(srv.Close)
+	wsURL := "ws" + strings.TrimPrefix(srv.URL, "http")
+	conn, err := websocket.Dial(wsURL, "", "http://test/")
+	if err != nil {
+		t.Fatalf("failed to dial test websocket: %v", err)
+	}
+	t.Cleanup(func() { _ = conn.Close() })
+	return conn
+}
+
+type stubTokenAuthenticator struct {
+	result    *dyauth.AuthResult
+	err       error
+	lastToken string
+}
+
+func (s *stubTokenAuthenticator) Authenticate(_ context.Context, tokenInfo dyauth.TokenInfo, _ *http.Request) (*dyauth.AuthResult, error) {
+	s.lastToken = tokenInfo.Token
+	return s.result, s.err
+}
+
+func TestServiceNormalizeDeviceID_UsesProvidedValue(t *testing.T) {
+	svc := NewService(Config{}, nil, nil, nil, nil, nil, nil)
+
+	got := svc.normalizeDeviceID("  device-123  ")
+	if got != "device-123" {
+		t.Fatalf("expected trimmed device id, got %q", got)
+	}
+}
+
+func TestServiceNormalizeDeviceID_GeneratesUUIDWhenMissing(t *testing.T) {
+	svc := NewService(Config{}, nil, nil, nil, nil, nil, nil)
+
+	got := svc.normalizeDeviceID("   ")
+	if _, err := uuid.Parse(got); err != nil {
+		t.Fatalf("expected generated UUID, got %q: %v", got, err)
+	}
+}
+
+func TestServiceTryAddUniqueDevice_RejectsDuplicateDeviceID(t *testing.T) {
+	svc := NewService(Config{}, nil, nil, nil, nil, nil, nil)
+	account1 := &gen.DyAccount{Id: "u1"}
+	account2 := &gen.DyAccount{Id: "u2"}
+
+	svc.connections[connectionKey{namespace: svc.cfg.DefaultNamespace, accountID: "u1", deviceID: "d1"}] = &wsConnection{
+		namespace: svc.cfg.DefaultNamespace,
+		account:   account1,
+		deviceID:  "d1",
+		probe: func() bool {
+			return true
+		},
+	}
+	if _, ok := svc.TryAddUniqueDevice(svc.cfg.DefaultNamespace, account2, "d1", nil); ok {
+		t.Fatal("expected duplicate device id to be rejected")
+	}
+}
+
+func TestServiceTryAddUniqueDevice_AcceptsDifferentDeviceID(t *testing.T) {
+	svc := NewService(Config{}, nil, nil, nil, nil, nil, nil)
+	account1 := &gen.DyAccount{Id: "u1"}
+	account2 := &gen.DyAccount{Id: "u2"}
+
+	if _, ok := svc.TryAddUniqueDevice(svc.cfg.DefaultNamespace, account1, "d1", nil); !ok {
+		t.Fatal("expected first connection to be accepted")
+	}
+	if _, ok := svc.TryAddUniqueDevice(svc.cfg.DefaultNamespace, account2, "d2", nil); !ok {
+		t.Fatal("expected different device id to be accepted")
+	}
+}
+
+func TestServiceTryAddUniqueDevice_ReplacesStaleDuplicateDeviceID(t *testing.T) {
+	svc := NewService(Config{}, nil, nil, nil, nil, nil, nil)
+	account1 := &gen.DyAccount{Id: "u1"}
+	account2 := &gen.DyAccount{Id: "u2"}
+
+	svc.connections[connectionKey{namespace: svc.cfg.DefaultNamespace, accountID: "u1", deviceID: "d1"}] = &wsConnection{
+		namespace: svc.cfg.DefaultNamespace,
+		account:   account1,
+		deviceID:  "d1",
+		probe: func() bool {
+			return false
+		},
+	}
+	if _, ok := svc.TryAddUniqueDevice(svc.cfg.DefaultNamespace, account2, "d1", nil); !ok {
+		t.Fatal("expected stale duplicate device id to be replaced")
+	}
+
+	accounts := svc.GetAccountsByDevice(svc.cfg.DefaultNamespace, "d1")
+	if len(accounts) != 1 || accounts[0] != "u2" {
+		t.Fatalf("expected device d1 to belong only to u2 after replacement, got %#v", accounts)
+	}
+}
+
+func TestServiceGetAccountConnections_ExcludesDeviceIDs(t *testing.T) {
+	svc := NewService(Config{}, nil, nil, nil, nil, nil, nil)
+	svc.connections[connectionKey{namespace: svc.cfg.DefaultNamespace, accountID: "u1", deviceID: "d1"}] = &wsConnection{
+		namespace: svc.cfg.DefaultNamespace,
+		account:   &gen.DyAccount{Id: "u1"},
+		deviceID:  "d1",
+	}
+	svc.connections[connectionKey{namespace: svc.cfg.DefaultNamespace, accountID: "u1", deviceID: "d2"}] = &wsConnection{
+		namespace: svc.cfg.DefaultNamespace,
+		account:   &gen.DyAccount{Id: "u1"},
+		deviceID:  "d2",
+	}
+	svc.connections[connectionKey{namespace: svc.cfg.DefaultNamespace, accountID: "u2", deviceID: "d3"}] = &wsConnection{
+		namespace: svc.cfg.DefaultNamespace,
+		account:   &gen.DyAccount{Id: "u2"},
+		deviceID:  "d3",
+	}
+
+	got := svc.getAccountConnections(svc.cfg.DefaultNamespace, "u1", []string{" d2 ", "", "missing"})
+	if len(got) != 1 {
+		t.Fatalf("expected 1 included connection, got %d", len(got))
+	}
+	if got[0].deviceID != "d1" {
+		t.Fatalf("expected d1 to receive packet, got %q", got[0].deviceID)
+	}
+}
+
+func TestServiceSendPacketToAccountsExcept_SelectsAllMatchingConnections(t *testing.T) {
+	svc := NewService(Config{}, nil, nil, nil, nil, nil, nil)
+	for _, c := range []struct {
+		acct string
+		dev  string
+	}{
+		{"u1", "d1"}, {"u1", "d2"}, {"u2", "d3"},
+	} {
+		svc.connections[connectionKey{namespace: svc.cfg.DefaultNamespace, accountID: c.acct, deviceID: c.dev}] = &wsConnection{
+			namespace: svc.cfg.DefaultNamespace,
+			account:   &gen.DyAccount{Id: c.acct},
+			deviceID:  c.dev,
+			conn:      testWSConn(t),
+			outbound:  make(chan Packet, outboundQueueSize),
+			priority:  make(chan Packet, priorityQueueSize),
+			done:      make(chan struct{}),
+		}
+	}
+
+	packet := &gen.DyWebSocketPacket{Type: "messages.new"}
+	svc.SendPacketToAccountsExcept(svc.cfg.DefaultNamespace, []string{" u1 ", "", "u1", "u2"}, packet, []string{"d2"})
+
+	got := map[string]int{}
+	for key, conn := range svc.connections {
+		got[key.deviceID] = len(conn.outbound)
+	}
+	if got["d1"] != 1 {
+		t.Fatalf("expected d1 to have 1 packet, got %d", got["d1"])
+	}
+	if got["d2"] != 0 {
+		t.Fatalf("expected excluded d2 to have 0 packets, got %d", got["d2"])
+	}
+	if got["d3"] != 1 {
+		t.Fatalf("expected d3 to have 1 packet, got %d", got["d3"])
+	}
+
+	for _, conn := range svc.connections {
+		close(conn.done)
+	}
+}
+
+func TestServiceDisconnectSession_MatchesSessionID(t *testing.T) {
+	svc := NewService(Config{}, nil, nil, nil, nil, nil, nil)
+	done := make(chan struct{})
+	svc.connections[connectionKey{namespace: svc.cfg.DefaultNamespace, accountID: "u1", deviceID: "d1"}] = &wsConnection{
+		namespace: svc.cfg.DefaultNamespace,
+		account:   &gen.DyAccount{Id: "u1"},
+		sessionID: "s1",
+		deviceID:  "d1",
+		done:      done,
+	}
+
+	disconnected := svc.DisconnectSession("", "s1", "", "", "logged out")
+	if disconnected != 1 {
+		t.Fatalf("expected 1 disconnected connection, got %d", disconnected)
+	}
+	if svc.GetAccountIsConnected("", "u1") {
+		t.Fatal("expected connection to be removed after disconnect")
+	}
+
+	select {
+	case <-done:
+	default:
+		t.Fatal("expected connection close signal after disconnect")
+	}
+}
+
+func TestServiceDisconnectSession_FallsBackToAccountAndDevicePrefix(t *testing.T) {
+	svc := NewService(Config{}, nil, nil, nil, nil, nil, nil)
+	done := make(chan struct{})
+	svc.connections[connectionKey{namespace: svc.cfg.DefaultNamespace, accountID: "u1", deviceID: "device-1+watch"}] = &wsConnection{
+		namespace: svc.cfg.DefaultNamespace,
+		account:   &gen.DyAccount{Id: "u1"},
+		deviceID:  "device-1+watch",
+		done:      done,
+	}
+
+	disconnected := svc.DisconnectSession("", "", "u1", "device-1", "logged out")
+	if disconnected != 1 {
+		t.Fatalf("expected fallback disconnect to match watch suffix, got %d", disconnected)
+	}
+
+	select {
+	case <-done:
+	default:
+		t.Fatal("expected connection close signal after fallback disconnect")
+	}
+}
+
+func TestServiceReauthenticateConnection_RefreshesExpiry(t *testing.T) {
+	newExpiry := time.Now().Add(10 * time.Minute).UTC()
+	authenticator := &stubTokenAuthenticator{
+		result: &dyauth.AuthResult{
+			Account: &gen.DyAccount{Id: "u1"},
+			Session: &gen.DyAuthSession{
+				Id:        "s2",
+				AccountId: "u1",
+				ExpiredAt: timestamppb.New(newExpiry),
+			},
+		},
+	}
+	svc := NewService(Config{}, nil, nil, nil, authenticator, nil, nil)
+	entry := &wsConnection{
+		account:   &gen.DyAccount{Id: "u1"},
+		sessionID: "s1",
+		deviceID:  "d1",
+		expiresAt: time.Now().Add(-time.Minute).UTC(),
+		tokenInfo: dyauth.TokenInfo{Token: "token-1", Type: dyauth.TokenTypeAuthKey},
+		authReq:   &http.Request{Header: make(http.Header)},
+		done:      make(chan struct{}),
+	}
+
+	if err := svc.reauthenticateConnection(context.Background(), entry); err != nil {
+		t.Fatalf("expected reauthentication to succeed, got %v", err)
+	}
+	if authenticator.lastToken != "token-1" {
+		t.Fatalf("expected original token to be reused, got %q", authenticator.lastToken)
+	}
+	if got := entry.getSessionID(); got != "s2" {
+		t.Fatalf("expected session id to refresh to s2, got %q", got)
+	}
+
+	entry.metaMu.RLock()
+	gotExpiry := entry.expiresAt
+	entry.metaMu.RUnlock()
+	if !gotExpiry.Equal(newExpiry) {
+		t.Fatalf("expected expiry %v, got %v", newExpiry, gotExpiry)
+	}
+}
+
+func TestServiceReauthenticateConnection_IgnoresUnixEpochExpiry(t *testing.T) {
+	authenticator := &stubTokenAuthenticator{
+		result: &dyauth.AuthResult{
+			Account: &gen.DyAccount{Id: "u1"},
+			Session: &gen.DyAuthSession{
+				Id:        "s2",
+				AccountId: "u1",
+				ExpiredAt: timestamppb.New(time.Unix(0, 0).UTC()),
+			},
+		},
+	}
+	svc := NewService(Config{}, nil, nil, nil, authenticator, nil, nil)
+	entry := &wsConnection{
+		account:   &gen.DyAccount{Id: "u1"},
+		sessionID: "s1",
+		deviceID:  "d1",
+		expiresAt: time.Now().Add(time.Minute).UTC(),
+		tokenInfo: dyauth.TokenInfo{Token: "token-1", Type: dyauth.TokenTypeAuthKey},
+		authReq:   &http.Request{Header: make(http.Header)},
+		done:      make(chan struct{}),
+	}
+
+	if err := svc.reauthenticateConnection(context.Background(), entry); err != nil {
+		t.Fatalf("expected unix epoch expiry to be treated as unset, got %v", err)
+	}
+
+	entry.metaMu.RLock()
+	gotExpiry := entry.expiresAt
+	entry.metaMu.RUnlock()
+	if !gotExpiry.IsZero() {
+		t.Fatalf("expected expiry to be cleared for unix epoch sentinel, got %v", gotExpiry)
+	}
+}
+
+func TestSupportsSessionReauth(t *testing.T) {
+	if !supportsSessionReauth(dyauth.TokenInfo{Token: "user-token", Type: dyauth.TokenTypeAuthKey}) {
+		t.Fatal("expected auth key to support session reauth")
+	}
+	if supportsSessionReauth(dyauth.TokenInfo{Token: "api-key-token", Type: dyauth.TokenTypeApiKey}) {
+		t.Fatal("expected api key to skip session reauth")
+	}
+
+	queryAPIKeyToken := "header.eyJzdWIiOiI0MmQxYzM5OS1lOGM5LTQ5MjQtOWRmYy05NTkyMTZlYTZhYzUiLCJqdGkiOiI4NTliNzUwZi00MmZiLTQ3ZmMtODkzNy0yNGUwYmZjYzQyZGMiLCJzaWQiOiI4NTliNzUwZi00MmZiLTQ3ZmMtODkzNy0yNGUwYmZjYzQyZGMiLCJ0eXBlIjoiYXBpX2tleSIsImFwaV9rZXlfaWQiOiIzNzRjMGMwZi0yN2I1LTQ4MDYtYmM4MC01NTVkYzA3ZjdlNmEiLCJhY2NvdW50X2lkIjoiNDJkMWMzOTktZThjOS00OTI0LTlkZmMtOTU5MjE2ZWE2YWM1IiwidmVyIjoiMiIsImVwb2NoIjoiMCIsIm5iZiI6MTc3OTcyOTc1OCwiZXhwIjoxNzgyMzIxNzU4LCJpc3MiOiJzb2xhci1uZXR3b3JrIiwiYXVkIjoiaHR0cHM6Ly9zb2xpYW4uYXBwIn0.signature"
+	if supportsSessionReauth(dyauth.TokenInfo{Token: queryAPIKeyToken, Type: dyauth.TokenTypeAuthKey}) {
+		t.Fatal("expected API key JWT to skip session reauth even when extracted as auth key")
+	}
+}
+
+func TestServiceTryAdd_APIKeyDisablesReauthAndExpiry(t *testing.T) {
+	svc := NewService(Config{}, nil, nil, nil, nil, nil, nil)
+	expiry := time.Now().Add(10 * time.Minute).UTC()
+	entry, _ := svc.TryAdd(SessionAuthContext{
+		Account: &gen.DyAccount{Id: "u1"},
+		Session: &gen.DyAuthSession{
+			Id:        "s1",
+			AccountId: "u1",
+			ExpiredAt: timestamppb.New(expiry),
+		},
+		TokenInfo: dyauth.TokenInfo{Token: "api-key-token", Type: dyauth.TokenTypeApiKey},
+	}, svc.cfg.DefaultNamespace, "d1", nil, nil)
+
+	if entry.supportsReauth() {
+		t.Fatal("expected api key connection to disable reauth")
+	}
+
+	if waitFor, ok := entry.nextReauthWait(); ok || waitFor != 0 {
+		t.Fatalf("expected api key connection to skip reauth wait, got wait=%v ok=%v", waitFor, ok)
+	}
+
+	entry.metaMu.RLock()
+	gotExpiry := entry.expiresAt
+	entry.metaMu.RUnlock()
+	if !gotExpiry.IsZero() {
+		t.Fatalf("expected api key connection expiry to be cleared, got %v", gotExpiry)
+	}
+}
+
+// stubPresenceStore implements PresenceStore plus the optional account→device
+// index so the service's presence path can be exercised without Redis.
+type stubPresenceStore struct {
+	accountDevices map[string][]string
+}
+
+func (s *stubPresenceStore) Register(context.Context, string, string, string, string) error {
+	return nil
+}
+func (s *stubPresenceStore) Refresh(context.Context, string, string, string, string) error {
+	return nil
+}
+func (s *stubPresenceStore) Remove(context.Context, string, string, string, string) error {
+	return nil
+}
+
+func (s *stubPresenceStore) AccountConnected(context.Context, string, string) (bool, error) {
+	return false, nil
+}
+
+func (s *stubPresenceStore) DeviceConnected(context.Context, string, string) (bool, error) {
+	return false, nil
+}
+
+func (s *stubPresenceStore) DevicesConnected(context.Context, string, []string) (map[string]bool, error) {
+	return map[string]bool{}, nil
+}
+
+func (s *stubPresenceStore) AccountDeviceIDs(_ context.Context, _, accountID string) ([]string, error) {
+	return s.accountDevices[accountID], nil
+}
+
+func (s *stubPresenceStore) AccountsDeviceIDs(_ context.Context, _ string, accountIDs []string) (map[string][]string, error) {
+	devices := make(map[string][]string, len(accountIDs))
+	for _, accountID := range accountIDs {
+		devices[accountID] = s.accountDevices[accountID]
+	}
+	return devices, nil
+}
+
+func TestServiceConnectedDeviceIDsPrefersPresenceStore(t *testing.T) {
+	svc := NewService(Config{}, nil, nil, nil, nil, nil, nil)
+	svc.SetPresence(&stubPresenceStore{accountDevices: map[string][]string{
+		"remote-acc": {"remote-device"},
+	}})
+	svc.connections[connectionKey{namespace: svc.cfg.DefaultNamespace, accountID: "remote-acc", deviceID: "local-device"}] = &wsConnection{
+		namespace: svc.cfg.DefaultNamespace,
+		account:   &gen.DyAccount{Id: "remote-acc"},
+		deviceID:  "local-device",
+	}
+
+	if got := svc.GetUserConnectedDeviceIDs("", "remote-acc"); !reflect.DeepEqual(got, []string{"remote-device"}) {
+		t.Fatalf("expected devices from the presence store, got %#v", got)
+	}
+
+	devices := svc.GetUsersConnectedDeviceIDs("", []string{"remote-acc", "offline-acc"})
+	if !reflect.DeepEqual(devices["remote-acc"], []string{"remote-device"}) {
+		t.Fatalf("expected devices from the presence store, got %#v", devices["remote-acc"])
+	}
+	if entry, ok := devices["offline-acc"]; !ok || len(entry) != 0 {
+		t.Fatalf("expected an empty entry for the offline account, got %#v", entry)
+	}
+
+	// Without a presence store the replica-local connections answer instead.
+	svc.SetPresence(nil)
+	if got := svc.GetUserConnectedDeviceIDs("", "remote-acc"); !reflect.DeepEqual(got, []string{"local-device"}) {
+		t.Fatalf("expected local fallback devices, got %#v", got)
+	}
+}

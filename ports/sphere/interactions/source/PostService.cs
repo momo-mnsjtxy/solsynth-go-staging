@@ -1,0 +1,3824 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using DysonNetwork.Sphere.Models;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using AngleSharp.Html.Parser;
+using DysonNetwork.Shared.Cache;
+using DysonNetwork.Shared.Data;
+using DysonNetwork.Shared.Localization;
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Models.Embed;
+using DysonNetwork.Shared.Proto;
+using DysonNetwork.Shared.Registry;
+using DysonNetwork.Sphere.ActivityPub;
+using DysonNetwork.Sphere.ActivityPub.Services;
+using DysonNetwork.Sphere.Publisher;
+using DysonNetwork.Sphere.Reader;
+using Markdig;
+using Microsoft.EntityFrameworkCore;
+using NodaTime;
+using Npgsql;
+using Pgvector;
+using PostContentType = DysonNetwork.Shared.Models.PostContentType;
+
+namespace DysonNetwork.Sphere.Post;
+
+public partial class PostService(
+    AppDatabase db,
+    IServiceProvider serviceProvider,
+    ILocalizationService localizer,
+    IServiceScopeFactory factory,
+    FlushBufferService flushBuffer,
+    ICacheService cache,
+    ILogger<PostService> logger,
+    DyFileService.DyFileServiceClient files,
+    PublisherService ps,
+    PostTagService tagService,
+    WebReaderService reader,
+    DyProfileService.DyProfileServiceClient accounts,
+    ActivityRenderer objFactory,
+    RemoteActionLogService actionLogs
+)
+{
+    private sealed class ThreadReplyCountResult
+    {
+        [Column("ancestor_id")] public Guid AncestorId { get; set; }
+
+        [Column("count")] public int Count { get; set; }
+    }
+
+    private const int PositiveReactionWeight = 2;
+    private const int NeutralReactionWeight = 1;
+    private const int NegativeReactionWeight = -2;
+    private const double PositiveInterestScore = 2.0;
+    private const double NeutralInterestScore = 1.0;
+    private const double NegativeInterestScore = -2.0;
+    private const double ReplyInterestScore = 1.5;
+    private const double ViewInterestScore = 0.2;
+    private const double PublisherViewInterestMultiplier = 0.15;
+    private const double PublisherReplyInterestMultiplier = 0.75;
+    private const string PublisherDefaultTagsMetaKey = "default_post_tags";
+    private const string PublisherDefaultCategoriesMetaKey = "default_post_categories";
+    private const string PostAutoTaggingMetaKey = "auto_tagging";
+
+    private static int GetReactionWeight(PostReactionAttitude attitude) =>
+        attitude switch
+        {
+            PostReactionAttitude.Positive => PositiveReactionWeight,
+            PostReactionAttitude.Neutral => NeutralReactionWeight,
+            PostReactionAttitude.Negative => NegativeReactionWeight,
+            _ => 0,
+        };
+
+    private static string? GetEmojiForSymbol(string symbol) =>
+        symbol switch
+        {
+            "thumb_up" => "👍",
+            "thumb_down" => "👎",
+            "heart" => "❤️",
+            "laugh" => "😂",
+            "clap" => "👏",
+            "party" => "🎉",
+            "pray" => "🙏",
+            "cry" => "😭",
+            "hello" => "👋",
+            "shock" => "😱",
+            "speechless" => "😶",
+            "salute" => "🫡",
+            "confuse" => "😕",
+            "angry" => "😡",
+            _ => null,
+        };
+
+    private static double ClampInterestScore(double score) => Math.Clamp(score, -100d, 100d);
+
+    private static double AdjustInterestDeltaForTarget(
+        double scoreDelta,
+        string signalType,
+        PostInterestKind kind
+    )
+    {
+        if (kind != PostInterestKind.Publisher)
+            return scoreDelta;
+
+        if (signalType.Equals("view", StringComparison.OrdinalIgnoreCase))
+            return scoreDelta * PublisherViewInterestMultiplier;
+
+        if (signalType.Equals("reply", StringComparison.OrdinalIgnoreCase))
+            return scoreDelta * PublisherReplyInterestMultiplier;
+
+        return scoreDelta;
+    }
+
+    private static string NormalizeTopicSlug(string value) => value.Trim().ToLowerInvariant();
+
+    private static List<string> NormalizeTopicSlugs(IEnumerable<string> values) =>
+        values
+            .Where(e => !string.IsNullOrWhiteSpace(e))
+            .Select(NormalizeTopicSlug)
+            .Distinct()
+            .ToList();
+
+    private static string NormalizeTopicText(string? value) =>
+        Regex.Replace(value?.ToLowerInvariant() ?? string.Empty, @"[\s\-_\.]+", " ").Trim();
+
+    private static List<string> ExtractStringList(object? value)
+    {
+        return value switch
+        {
+            null => [],
+            List<string> items => NormalizeTopicSlugs(items),
+            string[] items => NormalizeTopicSlugs(items),
+            IEnumerable<object> items => NormalizeTopicSlugs(
+                items.Select(x => x?.ToString() ?? string.Empty)
+            ),
+            JsonElement { ValueKind: JsonValueKind.Array } element => NormalizeTopicSlugs(
+                element
+                    .EnumerateArray()
+                    .Where(x => x.ValueKind == JsonValueKind.String)
+                    .Select(x => x.GetString() ?? string.Empty)
+            ),
+            JsonElement { ValueKind: JsonValueKind.String } element => NormalizeTopicSlugs(
+                [element.GetString() ?? string.Empty]
+            ),
+            _ => [],
+        };
+    }
+
+    private static List<string> GetPublisherTopicDefaults(SnPublisher? publisher, string key) =>
+        publisher?.Meta is not null && publisher.Meta.TryGetValue(key, out var value)
+            ? ExtractStringList(value)
+            : [];
+
+    private async Task<SnPublisher?> GetPublisherForPostAsync(SnPost post)
+    {
+        if (post.Publisher is not null)
+            return post.Publisher;
+        if (post.PublisherId == Guid.Empty)
+            return null;
+
+        return await db.Publishers.FirstOrDefaultAsync(p => p.Id == post.PublisherId);
+    }
+
+    private async Task<List<SnPostTag>> ResolveTagsAsync(
+        IEnumerable<string> slugs,
+        SnPublisher? publisher = null
+    )
+    {
+        var normalizedSlugs = NormalizeTopicSlugs(slugs);
+        if (normalizedSlugs.Count == 0)
+            return [];
+
+        var existingTags = await db
+            .PostTags.Where(e => normalizedSlugs.Contains(e.Slug))
+            .ToListAsync();
+        var existingSlugs = existingTags.Select(t => t.Slug).ToHashSet();
+        var missingSlugs = normalizedSlugs.Where(slug => !existingSlugs.Contains(slug)).ToList();
+
+        var newTags = missingSlugs.Select(slug => new SnPostTag { Slug = slug }).ToList();
+        if (newTags.Count > 0)
+        {
+            await db.PostTags.AddRangeAsync(newTags);
+            await db.SaveChangesAsync();
+        }
+
+        var allTags = existingTags.Concat(newTags).ToList();
+
+        foreach (var tag in allTags)
+        {
+            if (!tagService.IsTagAvailable(tag))
+                throw new InvalidOperationException(
+                    $"Tag '{tag.Slug}' is an event tag that has expired."
+                );
+            if (
+                tag.IsProtected
+                && tag.OwnerPublisherId is not null
+                && publisher is not null
+                && tag.OwnerPublisherId.Value != publisher.Id
+            )
+                throw new InvalidOperationException(
+                    $"Tag '{tag.Slug}' is protected and can only be used by its owner."
+                );
+        }
+
+        return allTags;
+    }
+
+    private async Task<List<SnPostCategory>> ResolveCategoriesAsync(IEnumerable<string> slugs)
+    {
+        var normalizedSlugs = NormalizeTopicSlugs(slugs);
+        if (normalizedSlugs.Count == 0)
+            return [];
+
+        return await db.PostCategories.Where(e => normalizedSlugs.Contains(e.Slug)).ToListAsync();
+    }
+
+    private static string BuildInferenceText(SnPost post)
+    {
+        return string.Join(
+            '\n',
+            new[] { post.Title, post.Description, post.Content }.Where(x =>
+                !string.IsNullOrWhiteSpace(x)
+            )
+        );
+    }
+
+    private static string BuildPostIndexText(SnPost post) =>
+        string.Join(
+            '\n',
+            new[] { post.Title, post.Description, post.Content }.Where(x =>
+                !string.IsNullOrWhiteSpace(x)
+            )
+        );
+
+    private static string ComputePostIndexHash(string sourceText)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(sourceText));
+        return Convert.ToHexString(hash);
+    }
+
+    private void QueuePostIndex(Guid postId)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await IndexPostAsync(postId);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error indexing post {PostId}", postId);
+            }
+        });
+    }
+
+    public async Task IndexPostAsync(Guid postId, CancellationToken cancellationToken = default)
+    {
+        using var scope = factory.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDatabase>();
+        var embeddingClient =
+            scope.ServiceProvider.GetRequiredService<DyEmbeddingService.DyEmbeddingServiceClient>();
+
+        var post = await dbContext.Posts.FirstOrDefaultAsync(
+            p => p.Id == postId,
+            cancellationToken
+        );
+        if (post is null)
+            return;
+
+        var now = SystemClock.Instance.GetCurrentInstant();
+        if (
+            post.DraftedAt is not null
+            || post.PublishedAt is null
+            || post.PublishedAt.Value > now
+            || post.Visibility != PostVisibility.Public
+        )
+            return;
+
+        var sourceText = BuildPostIndexText(post);
+        if (string.IsNullOrWhiteSpace(sourceText))
+            return;
+
+        var sourceHash = ComputePostIndexHash(sourceText);
+        var existingIndex = await dbContext.PostIndices.FirstOrDefaultAsync(
+            i => i.PostId == postId,
+            cancellationToken
+        );
+        if (existingIndex is not null && existingIndex.SourceHash == sourceHash)
+            return;
+
+        var embeddingResponse = await embeddingClient.GenerateEmbeddingAsync(
+            new DyGenerateEmbeddingRequest { Text = sourceText },
+            cancellationToken: cancellationToken
+        );
+        var embeddingValues = embeddingResponse.Embedding.ToArray();
+        if (embeddingValues.Length == 0)
+        {
+            logger.LogWarning("Embedding service returned no values for post {PostId}", postId);
+            return;
+        }
+
+        var embedding = new Vector(embeddingValues);
+        if (existingIndex is null)
+        {
+            dbContext.PostIndices.Add(
+                new SnPostIndex
+                {
+                    PostId = postId,
+                    SourceText = sourceText,
+                    SourceHash = sourceHash,
+                    Embedding = embedding,
+                    IndexedAt = now,
+                }
+            );
+        }
+        else
+        {
+            existingIndex.SourceText = sourceText;
+            existingIndex.SourceHash = sourceHash;
+            existingIndex.Embedding = embedding;
+            existingIndex.IndexedAt = now;
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task BackfillPublicPostIndicesAsync(CancellationToken cancellationToken = default)
+    {
+        var postIds = await db
+            .Posts.Where(p =>
+                p.DraftedAt == null
+                && p.PublishedAt != null
+                && p.PublishedAt <= SystemClock.Instance.GetCurrentInstant()
+                && p.Visibility == PostVisibility.Public
+            )
+            .OrderBy(p => p.CreatedAt)
+            .Select(p => p.Id)
+            .ToListAsync(cancellationToken);
+
+        if (postIds.Count == 0)
+            return;
+
+        foreach (var postId in postIds)
+        {
+            try
+            {
+                await IndexPostAsync(postId, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to index post {PostId} during backfill, skipping", postId);
+            }
+        }
+    }
+
+    private async Task<List<string>> InferMatchingTopicSlugsAsync(
+        string source,
+        bool categories,
+        int take = 5
+    )
+    {
+        var normalizedSource = NormalizeTopicText(source);
+        if (string.IsNullOrWhiteSpace(normalizedSource))
+            return [];
+
+        if (categories)
+        {
+            var candidates = await db
+                .PostCategories.Select(x => new { x.Slug, x.Name })
+                .ToListAsync();
+            return candidates
+                .Where(x =>
+                    normalizedSource.Contains(NormalizeTopicText(x.Slug))
+                    || (
+                        !string.IsNullOrWhiteSpace(x.Name)
+                        && normalizedSource.Contains(NormalizeTopicText(x.Name))
+                    )
+                )
+                .Select(x => x.Slug)
+                .Distinct()
+                .Take(take)
+                .ToList();
+        }
+
+        var tagCandidates = await db.PostTags.Select(x => new { x.Slug, x.Name }).ToListAsync();
+        return tagCandidates
+            .Where(x =>
+                normalizedSource.Contains(NormalizeTopicText(x.Slug))
+                || (
+                    !string.IsNullOrWhiteSpace(x.Name)
+                    && normalizedSource.Contains(NormalizeTopicText(x.Name))
+                )
+            )
+            .Select(x => x.Slug)
+            .Distinct()
+            .Take(take)
+            .ToList();
+    }
+
+    private async Task<List<string>> GetDerivedPublisherTopicSlugsAsync(
+        Guid publisherId,
+        bool categories,
+        int take = 3
+    )
+    {
+        var posts = await db
+            .Posts.Where(p => p.PublisherId == publisherId && p.DraftedAt == null)
+            .Where(p => p.PublishedAt != null)
+            .Include(p => p.Tags)
+            .Include(p => p.Categories)
+            .OrderByDescending(p => p.PublishedAt)
+            .Take(40)
+            .ToListAsync();
+
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var scores = new Dictionary<string, double>();
+        foreach (var post in posts)
+        {
+            var topicItems = categories
+                ? post.Categories.Select(x => x.Slug)
+                : post.Tags.Select(x => x.Slug);
+            var topicSlugs = NormalizeTopicSlugs(topicItems);
+            if (topicSlugs.Count == 0)
+                continue;
+
+            var ageDays = Math.Max(0, (now - (post.PublishedAt ?? post.CreatedAt)).TotalDays);
+            var recencyWeight = Math.Exp(-ageDays / 30d);
+            var engagementWeight =
+                1d
+                + Math.Max(0, post.ReactionScore) / 4d
+                + Math.Max(0, post.RepliesCount) / 2d
+                + (double)post.AwardedScore / 20d;
+            var score = Math.Max(0.25d, recencyWeight * engagementWeight);
+
+            foreach (var slug in topicSlugs)
+                scores[slug] = scores.GetValueOrDefault(slug, 0d) + score;
+        }
+
+        return scores.OrderByDescending(x => x.Value).Select(x => x.Key).Take(take).ToList();
+    }
+
+    private async Task ApplyAutomaticTopicsAsync(
+        SnPost post,
+        List<string>? tags,
+        List<string>? categories
+    )
+    {
+        var sources = new List<string>();
+        var publisher = await GetPublisherForPostAsync(post);
+        var inferenceText = BuildInferenceText(post);
+
+        if (tags is null && post.Tags.Count == 0)
+        {
+            var tagSlugs = await InferMatchingTopicSlugsAsync(inferenceText, categories: false);
+            if (tagSlugs.Count > 0)
+                sources.Add("content-tags");
+
+            if (publisher is not null && tagSlugs.Count < 2)
+            {
+                var defaultTags = GetPublisherTopicDefaults(publisher, PublisherDefaultTagsMetaKey);
+                if (defaultTags.Count > 0)
+                    sources.Add("publisher-default-tags");
+                tagSlugs = tagSlugs.Concat(defaultTags).Distinct().ToList();
+            }
+
+            if (post.PublisherId != Guid.Empty && tagSlugs.Count < 2)
+            {
+                var derivedTags = await GetDerivedPublisherTopicSlugsAsync(
+                    post.PublisherId,
+                    categories: false
+                );
+                if (derivedTags.Count > 0)
+                    sources.Add("publisher-derived-tags");
+                tagSlugs = tagSlugs.Concat(derivedTags).Distinct().ToList();
+            }
+
+            post.Tags = await ResolveTagsAsync(tagSlugs);
+        }
+
+        if (categories is null && post.Categories.Count == 0)
+        {
+            var categorySlugs = await InferMatchingTopicSlugsAsync(inferenceText, categories: true);
+            if (categorySlugs.Count > 0)
+                sources.Add("content-categories");
+
+            if (publisher is not null && categorySlugs.Count < 2)
+            {
+                var defaultCategories = GetPublisherTopicDefaults(
+                    publisher,
+                    PublisherDefaultCategoriesMetaKey
+                );
+                if (defaultCategories.Count > 0)
+                    sources.Add("publisher-default-categories");
+                categorySlugs = categorySlugs.Concat(defaultCategories).Distinct().ToList();
+            }
+
+            if (post.PublisherId != Guid.Empty && categorySlugs.Count < 2)
+            {
+                var derivedCategories = await GetDerivedPublisherTopicSlugsAsync(
+                    post.PublisherId,
+                    categories: true
+                );
+                if (derivedCategories.Count > 0)
+                    sources.Add("publisher-derived-categories");
+                categorySlugs = categorySlugs.Concat(derivedCategories).Distinct().ToList();
+            }
+
+            post.Categories = await ResolveCategoriesAsync(categorySlugs);
+        }
+
+        if (sources.Count == 0)
+            return;
+
+        post.Metadata ??= new Dictionary<string, object>();
+        post.Metadata[PostAutoTaggingMetaKey] = new Dictionary<string, object>
+        {
+            ["tags"] = post.Tags.Select(x => x.Slug).ToList(),
+            ["categories"] = post.Categories.Select(x => x.Slug).ToList(),
+            ["sources"] = sources.Distinct().ToList(),
+            ["applied_at"] = DateTime.UtcNow.ToString("O"),
+        };
+    }
+
+    public async Task ApplyInterestSignalsAsync(IReadOnlyList<PostInterestSignal> signals)
+    {
+        if (signals.Count == 0)
+            return;
+
+        var aggregatedSignals = signals
+            .GroupBy(x => new { x.AccountId, x.PostId })
+            .Select(g => new
+            {
+                g.Key.AccountId,
+                g.Key.PostId,
+                ScoreDelta = g.Sum(x => x.ScoreDelta),
+                InteractionCount = g.Count(),
+                LastInteractedAt = g.Max(x => x.OccurredAt),
+                SignalType = g.OrderByDescending(x => x.OccurredAt).First().SignalType,
+            })
+            .ToList();
+
+        var postIds = aggregatedSignals.Select(x => x.PostId).Distinct().ToList();
+        var posts = await db
+            .Posts.Where(p => postIds.Contains(p.Id))
+            .Include(p => p.Tags)
+            .Include(p => p.Categories)
+            .ToDictionaryAsync(p => p.Id);
+        var postCollectionMap = await db.PostCollectionItems
+            .Where(i => postIds.Contains(i.PostId))
+            .Select(i => new { i.PostId, i.CollectionId })
+            .ToListAsync();
+
+        var accountIds = aggregatedSignals.Select(x => x.AccountId).Distinct().ToList();
+        var tagIds = posts.Values.SelectMany(p => p.Tags.Select(x => x.Id)).Distinct().ToList();
+        var categoryIds = posts
+            .Values.SelectMany(p => p.Categories.Select(x => x.Id))
+            .Distinct()
+            .ToList();
+        var publisherIds = posts
+            .Values.Where(p => p.PublisherId != Guid.Empty)
+            .Select(p => p.PublisherId)
+            .Distinct()
+            .ToList();
+        var collectionIds = postCollectionMap
+            .Select(x => x.CollectionId)
+            .Distinct()
+            .ToList();
+
+        var existingProfiles = await db
+            .PostInterestProfiles.Where(p => accountIds.Contains(p.AccountId))
+            .Where(p =>
+                (p.Kind == PostInterestKind.Tag && tagIds.Contains(p.ReferenceId))
+                || (p.Kind == PostInterestKind.Category && categoryIds.Contains(p.ReferenceId))
+                || (p.Kind == PostInterestKind.Publisher && publisherIds.Contains(p.ReferenceId))
+                || (p.Kind == PostInterestKind.Collection && collectionIds.Contains(p.ReferenceId))
+            )
+            .ToListAsync();
+
+        var profileMap = existingProfiles.ToDictionary(
+            x => (x.AccountId, x.Kind, x.ReferenceId),
+            x => x
+        );
+
+        foreach (var signal in aggregatedSignals)
+        {
+            if (!posts.TryGetValue(signal.PostId, out var post))
+                continue;
+
+            var postCollectionIds = postCollectionMap
+                .Where(x => x.PostId == signal.PostId)
+                .Select(x => x.CollectionId)
+                .Distinct()
+                .ToList();
+            var targets = new List<(PostInterestKind Kind, Guid ReferenceId)>();
+            targets.AddRange(post.Tags.Select(x => (PostInterestKind.Tag, x.Id)));
+            targets.AddRange(post.Categories.Select(x => (PostInterestKind.Category, x.Id)));
+            if (post.PublisherId != Guid.Empty)
+                targets.Add((PostInterestKind.Publisher, post.PublisherId));
+            targets.AddRange(postCollectionIds.Select(x => (PostInterestKind.Collection, x)));
+
+            foreach (var target in targets.Distinct())
+            {
+                var key = (signal.AccountId, target.Kind, target.ReferenceId);
+                if (!profileMap.TryGetValue(key, out var profile))
+                {
+                    profile = new SnPostInterestProfile
+                    {
+                        AccountId = signal.AccountId,
+                        Kind = target.Kind,
+                        ReferenceId = target.ReferenceId,
+                    };
+                    profileMap[key] = profile;
+                    db.PostInterestProfiles.Add(profile);
+                }
+
+                var adjustedDelta = AdjustInterestDeltaForTarget(
+                    signal.ScoreDelta,
+                    signal.SignalType,
+                    target.Kind
+                );
+                profile.Score = ClampInterestScore(profile.Score + adjustedDelta);
+                profile.InteractionCount += signal.InteractionCount;
+                profile.LastInteractedAt = signal.LastInteractedAt;
+                profile.LastSignalType = signal.SignalType;
+            }
+        }
+
+        var newProfiles = profileMap.Values.Where(p => !existingProfiles.Contains(p)).ToList();
+
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+        {
+            db.ChangeTracker.Clear();
+
+            foreach (var profile in newProfiles)
+            {
+                await UpsertInterestProfileAsync(db, profile);
+            }
+        }
+    }
+
+    private static bool IsUniqueConstraintViolation(DbUpdateException ex)
+    {
+        return ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505";
+    }
+
+    private static async Task UpsertInterestProfileAsync(
+        AppDatabase db,
+        SnPostInterestProfile profile
+    )
+    {
+        const string sql = """
+                           INSERT INTO post_interest_profiles (id, account_id, kind, reference_id, score, interaction_count, last_interacted_at, last_signal_type, created_at, updated_at)
+                           VALUES (@Id, @AccountId, @Kind, @ReferenceId, @Score, @InteractionCount, @LastInteractedAt, @LastSignalType, @CreatedAt, @UpdatedAt)
+                           ON CONFLICT (account_id, kind, reference_id) DO UPDATE SET
+                               score = EXCLUDED.score,
+                               interaction_count = EXCLUDED.interaction_count,
+                               last_interacted_at = EXCLUDED.last_interacted_at,
+                               last_signal_type = EXCLUDED.last_signal_type,
+                               updated_at = EXCLUDED.updated_at
+                           """;
+        await db.Database.ExecuteSqlRawAsync(
+            sql,
+            new NpgsqlParameter("@Id", profile.Id),
+            new NpgsqlParameter("@AccountId", profile.AccountId),
+            new NpgsqlParameter("@Kind", (int)profile.Kind),
+            new NpgsqlParameter("@ReferenceId", profile.ReferenceId),
+            new NpgsqlParameter("@Score", profile.Score),
+            new NpgsqlParameter("@InteractionCount", profile.InteractionCount),
+            new NpgsqlParameter(
+                "@LastInteractedAt",
+                profile.LastInteractedAt ?? (object)DBNull.Value
+            ),
+            new NpgsqlParameter("@LastSignalType", profile.LastSignalType ?? (object)DBNull.Value),
+            new NpgsqlParameter("@CreatedAt", profile.CreatedAt),
+            new NpgsqlParameter("@UpdatedAt", profile.UpdatedAt)
+        );
+    }
+
+    private static List<SnPost> TruncatePostContent(List<SnPost> input)
+    {
+        const int maxLength = 256;
+        const int embedMaxLength = 80;
+        var parser = new HtmlParser();
+        foreach (var item in input)
+        {
+            if (item.Content?.Length > maxLength)
+            {
+                string plainText;
+                if (item.ContentType == PostContentType.Markdown)
+                {
+                    plainText = Markdown.ToPlainText(item.Content);
+                }
+                else if (item.ContentType == PostContentType.Html)
+                {
+                    var document = parser.ParseDocument(item.Content);
+                    plainText = document.Body?.TextContent.Trim() ?? "";
+                }
+                else
+                {
+                    continue;
+                }
+
+                if (plainText.Length > maxLength)
+                {
+                    item.Content = plainText.Substring(0, maxLength);
+                    item.IsTruncated = true;
+                }
+            }
+
+            // Truncate replied post content with shorter embed length
+            if (item.RepliedPost?.Content != null && item.Content?.Length > embedMaxLength)
+            {
+                string plainText;
+                if (item.ContentType == PostContentType.Markdown)
+                {
+                    plainText = Markdown.ToPlainText(item.RepliedPost.Content);
+                }
+                else if (item.ContentType == PostContentType.Html)
+                {
+                    var document = parser.ParseDocument(item.RepliedPost.Content);
+                    plainText = document.Body?.TextContent.Trim() ?? "";
+                }
+                else
+                {
+                    continue;
+                }
+
+                if (plainText.Length > embedMaxLength)
+                {
+                    item.RepliedPost.Content = plainText.Substring(0, embedMaxLength);
+                    item.RepliedPost.IsTruncated = true;
+                }
+            }
+
+            // Truncate forwarded post content with shorter embed length
+            if (item.ForwardedPost?.Content != null && item.Content?.Length > embedMaxLength)
+            {
+                string plainText;
+                if (item.ContentType == PostContentType.Markdown)
+                {
+                    plainText = Markdown.ToPlainText(item.ForwardedPost.Content);
+                }
+                else if (item.ContentType == PostContentType.Html)
+                {
+                    var document = parser.ParseDocument(item.ForwardedPost.Content);
+                    plainText = document.Body?.TextContent.Trim() ?? "";
+                }
+                else
+                {
+                    continue;
+                }
+
+                if (plainText.Length > embedMaxLength)
+                {
+                    item.ForwardedPost.Content = plainText.Substring(0, embedMaxLength);
+                    item.ForwardedPost.IsTruncated = true;
+                }
+            }
+        }
+
+        return input;
+    }
+
+    private static List<SnPost> EscapeMarkdownHeadings(List<SnPost> input)
+    {
+        foreach (var post in input)
+        {
+            EscapeMarkdownHeadings(post);
+            if (post.RepliedPost != null)
+                EscapeMarkdownHeadings(post.RepliedPost);
+            if (post.ForwardedPost != null)
+                EscapeMarkdownHeadings(post.ForwardedPost);
+        }
+
+        return input;
+    }
+
+    private static void EscapeMarkdownHeadings(SnPost post)
+    {
+        if (post.Type != PostType.Moment || post.ContentType != PostContentType.Markdown)
+            return;
+
+        var content = post.Content;
+        if (string.IsNullOrEmpty(content))
+            return;
+
+        var lines = content.Split('\n');
+        var inFencedCodeBlock = false;
+        var fenceMarker = string.Empty;
+
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var line = lines[i];
+            var trimmedStart = line.TrimStart();
+
+            if (trimmedStart.Length > 0 && trimmedStart[0] is '`' or '~')
+            {
+                var marker = trimmedStart[0];
+                var runLength = 0;
+                while (runLength < trimmedStart.Length && trimmedStart[runLength] == marker)
+                    runLength++;
+
+                if (runLength >= 3)
+                {
+                    if (!inFencedCodeBlock)
+                    {
+                        inFencedCodeBlock = true;
+                        fenceMarker = new string(marker, runLength);
+                    }
+                    else if (
+                        trimmedStart.StartsWith(fenceMarker, StringComparison.Ordinal)
+                        && trimmedStart[fenceMarker.Length..].Trim().Length == 0
+                    )
+                    {
+                        inFencedCodeBlock = false;
+                        fenceMarker = string.Empty;
+                    }
+                }
+
+                continue;
+            }
+
+            if (inFencedCodeBlock)
+                continue;
+
+            var index = 0;
+            while (index < line.Length && index < 3 && line[index] == ' ')
+                index++;
+            var hashStart = index;
+            while (index < line.Length && line[index] == '#' && index - hashStart < 6)
+                index++;
+            if (
+                index - hashStart is >= 1 and <= 6
+                && (index == line.Length || char.IsWhiteSpace(line[index]))
+            )
+                lines[i] = line.Insert(hashStart, "\\");
+        }
+
+        post.Content = string.Join('\n', lines);
+    }
+
+    public (string? title, string? content) ChopPostForNotification(SnPost post, String locale)
+    {
+        var content = !string.IsNullOrEmpty(post.Description)
+            ? post.Description?.Length >= 40
+                ? post.Description[..37] + "..."
+                : post.Description
+            : post.Content?.Length >= 100
+                ? string.Concat(post.Content.AsSpan(0, 97), "...")
+                : post.Content;
+        var title =
+            post.Title
+            ?? (post.Description?.Length >= 10 ? post.Description[..10] + "..." : post.Description);
+        var mediaCount = post.Attachments.Count;
+        var hasTextContent =
+            !string.IsNullOrWhiteSpace(post.Content)
+            || !string.IsNullOrWhiteSpace(post.Description);
+        if (!hasTextContent && mediaCount > 0)
+            title ??= localizer.Get(
+                "postSharedMedia",
+                locale: locale,
+                args: new { count = mediaCount }
+            );
+        if (string.IsNullOrWhiteSpace(content) && mediaCount > 0)
+            content = localizer.Get(
+                "postSharedMedia",
+                locale: locale,
+                args: new { count = mediaCount }
+            );
+        return (title, content);
+    }
+
+    public Dictionary<string, object?> BuildPostNotificationMeta(
+        SnPost post,
+        String locale,
+        string? avatarId = null,
+        Dictionary<string, object?>? extraMeta = null
+    )
+    {
+        var (title, content) = ChopPostForNotification(post, locale);
+        var data = new Dictionary<string, object?>
+        {
+            ["post_id"] = post.Id.ToString(),
+            ["post_title"] = title,
+            ["post_content"] = content,
+        };
+
+        if (post.PublisherId != Guid.Empty)
+            data["publisher_id"] = post.PublisherId.ToString();
+
+        if (post.RepliedPostId.HasValue)
+            data["replied_post_id"] = post.RepliedPostId.Value.ToString();
+
+        if (post.ForwardedPostId.HasValue)
+            data["forwarded_post_id"] = post.ForwardedPostId.Value.ToString();
+
+        if (post.Publisher is not null)
+        {
+            data["publisher_name"] = post.Publisher.Name;
+            data["publisher_nick"] = post.Publisher.Nick;
+            avatarId ??= post.Publisher.Picture?.Id;
+        }
+
+        if (!string.IsNullOrWhiteSpace(avatarId))
+        {
+            data["pfp"] = avatarId;
+            data["avatar"] = avatarId;
+        }
+
+        if (post.Attachments.Count > 0)
+        {
+            var imageAttachments = post
+                .Attachments.Where(p => p.MimeType?.StartsWith("image/") ?? false)
+                .Select(p => p.Url ?? p.Id)
+                .ToList();
+
+            if (imageAttachments.Count > 0)
+                data["images"] = imageAttachments;
+
+            var firstImage = post.Attachments.FirstOrDefault(p =>
+                p.MimeType?.StartsWith("image/") ?? false
+            );
+            if (firstImage is not null)
+                data["image"] = firstImage.Url ?? firstImage.Id;
+        }
+
+        if (post.Tags.Count > 0)
+            data["tags"] = post.Tags.Select(x => x.Slug).ToList();
+
+        if (post.Categories.Count > 0)
+            data["categories"] = post.Categories.Select(x => x.Slug).ToList();
+
+        if (extraMeta is not null)
+        {
+            foreach (var (key, value) in extraMeta)
+            {
+                if (value is not null)
+                    data[key] = value;
+            }
+        }
+
+        return data;
+    }
+
+    public DyPushNotification BuildPostNotification(
+        string locale,
+        string topic,
+        string title,
+        SnPost post,
+        string? subtitle = null,
+        string? body = null,
+        bool isSavable = true,
+        string? avatarId = null,
+        Dictionary<string, object?>? extraMeta = null
+    )
+    {
+        var (postTitle, postContent) = ChopPostForNotification(post, locale);
+        var notificationSubtitle = !string.IsNullOrWhiteSpace(subtitle) ? subtitle : postTitle;
+        var notificationBody = !string.IsNullOrWhiteSpace(body) ? body : postContent;
+        var notification = new DyPushNotification
+        {
+            Topic = topic ?? string.Empty,
+            Title = title ?? string.Empty,
+            Subtitle = notificationSubtitle ?? string.Empty,
+            Body = notificationBody ?? string.Empty,
+            Meta = InfraObjectCoder.ConvertObjectToByteString(
+                BuildPostNotificationMeta(post, locale, avatarId, extraMeta)
+            ),
+            IsSavable = isSavable,
+            ActionUri = $"/posts/{post.Id}",
+        };
+
+        return notification;
+    }
+
+    private async Task NotifyPostWatchersAsync(
+        SnPost post,
+        IReadOnlyCollection<Guid> watchPostIds,
+        PostWatchEvent evt,
+        Func<DyAccount, DyPushNotification> notificationFactory,
+        Guid? excludeAccountId = null
+    )
+    {
+        using var scope = factory.CreateScope();
+        var scopedAccounts = scope.ServiceProvider.GetRequiredService<
+            DyProfileService.DyProfileServiceClient
+        >();
+        var ring = scope.ServiceProvider.GetRequiredService<DyRingService.DyRingServiceClient>();
+        var watches = scope.ServiceProvider.GetRequiredService<PostWatchService>();
+
+        var watcherIds = await watches.ResolveWatcherAccountIdsAsync(watchPostIds, evt);
+        if (excludeAccountId.HasValue)
+            watcherIds = watcherIds.Where(id => id != excludeAccountId.Value).ToList();
+        if (watcherIds.Count == 0)
+            return;
+
+        var queryRequest = new DyGetAccountBatchRequest();
+        queryRequest.Id.AddRange(watcherIds.Select(id => id.ToString()));
+        var queryResponse = await scopedAccounts.GetAccountBatchAsync(queryRequest);
+
+        // Filter out blocked and muted accounts
+        if (post.Publisher?.AccountId.HasValue == true)
+        {
+            var remoteAccounts = scope.ServiceProvider.GetRequiredService<RemoteAccountService>();
+            var blockedIds = await remoteAccounts.ListAllBlockedAccountIds(post.Publisher.AccountId.Value);
+            var mutedIds = await remoteAccounts.ListMutedAccountIds(post.Publisher.AccountId.Value);
+            var hiddenIds = blockedIds.Concat(mutedIds).ToHashSet();
+            if (hiddenIds.Count > 0)
+            {
+                var filtered = queryResponse.Accounts.Where(a => !hiddenIds.Contains(Guid.Parse(a.Id))).ToList();
+                queryResponse.Accounts.Clear();
+                queryResponse.Accounts.AddRange(filtered);
+            }
+        }
+
+        foreach (var account in queryResponse.Accounts)
+        {
+            if (account is null)
+                continue;
+
+            await ring.SendPushNotificationToUserAsync(
+                new DySendPushNotificationToUserRequest
+                {
+                    UserId = account.Id,
+                    Notification = notificationFactory(account),
+                }
+            );
+        }
+    }
+
+    private static bool HasMeaningfulPublishedEdit(
+        string? previousTitle,
+        string? previousDescription,
+        string? previousContent,
+        PostVisibility previousVisibility,
+        Instant? previousDraftedAt,
+        Instant? previousPublishedAt,
+        IReadOnlyList<string> previousAttachmentIds,
+        SnPost post,
+        IReadOnlyList<string> currentAttachmentIds,
+        bool wasPublished,
+        bool isPublished
+    )
+    {
+        if (!wasPublished || !isPublished)
+            return false;
+
+        if (!string.Equals(previousTitle, post.Title, StringComparison.Ordinal))
+            return true;
+        if (!string.Equals(previousDescription, post.Description, StringComparison.Ordinal))
+            return true;
+        if (!string.Equals(previousContent, post.Content, StringComparison.Ordinal))
+            return true;
+        if (previousVisibility != post.Visibility)
+            return true;
+        if (previousDraftedAt != post.DraftedAt)
+            return true;
+        if (previousPublishedAt != post.PublishedAt)
+            return true;
+
+        return !previousAttachmentIds.SequenceEqual(currentAttachmentIds, StringComparer.Ordinal);
+    }
+
+    public Task NotifyPostReactionWatchersAsync(
+        SnPost post,
+        SnPostReaction reaction,
+        DyAccount sender
+    )
+    {
+        return NotifyPostWatchersAsync(
+            post,
+            [post.Id],
+            PostWatchEvent.Reactions,
+            account => BuildPostNotification(
+                locale: account.Language,
+                topic: "posts.watch.reactions",
+                title: $"{sender.Nick} reacted to a post you watch",
+                body: $"{sender.Nick} reacted with {reaction.Symbol}",
+                post: post,
+                avatarId: sender.Profile?.Picture?.Id,
+                extraMeta: new Dictionary<string, object?>
+                {
+                    ["notification_type"] = "post_watch",
+                    ["watch_event_type"] = "reaction",
+                    ["reaction"] = reaction.Symbol,
+                    ["reaction_attitude"] = reaction.Attitude.ToString().ToLowerInvariant(),
+                    ["actor_id"] = sender.Id,
+                    ["actor_name"] = sender.Nick,
+                }
+            ),
+            excludeAccountId: Guid.Parse(sender.Id)
+        );
+    }
+
+    public Task NotifyPostReplyWatchersAsync(SnPost replyPost, Guid? excludeAccountId = null)
+    {
+        if (replyPost.RepliedPostId is null)
+            return Task.CompletedTask;
+
+        var actorName = replyPost.Publisher?.Nick ?? replyPost.Publisher?.Name ?? "Someone";
+        return NotifyPostWatchersAsync(
+            replyPost,
+            [replyPost.RepliedPostId.Value],
+            PostWatchEvent.Replies,
+            account => BuildPostNotification(
+                locale: account.Language,
+                topic: "posts.watch.replies",
+                title: $"{actorName} replied to a post you watch",
+                body: ChopPostForNotification(replyPost, account.Language).content,
+                post: replyPost,
+                avatarId: replyPost.Publisher?.Picture?.Id,
+                extraMeta: new Dictionary<string, object?>
+                {
+                    ["notification_type"] = "post_watch",
+                    ["watch_event_type"] = "reply",
+                    ["actor_publisher_id"] = replyPost.Publisher?.Id.ToString(),
+                    ["actor_publisher_name"] = replyPost.Publisher?.Name,
+                    ["actor_publisher_nick"] = replyPost.Publisher?.Nick,
+                }
+            ),
+            excludeAccountId: excludeAccountId ?? replyPost.Publisher?.AccountId
+        );
+    }
+
+    public Task NotifyPostChainWatchersAsync(
+        SnPost chainedPost,
+        IReadOnlyCollection<Guid> chainPostIds,
+        Guid? excludeAccountId = null
+    )
+    {
+        var actorName = chainedPost.Publisher?.Nick ?? chainedPost.Publisher?.Name ?? "Someone";
+        return NotifyPostWatchersAsync(
+            chainedPost,
+            chainPostIds,
+            PostWatchEvent.Chains,
+            account => BuildPostNotification(
+                locale: account.Language,
+                topic: "posts.watch.chains",
+                title: $"{actorName} added a new post to a chain you watch",
+                body: ChopPostForNotification(chainedPost, account.Language).content,
+                post: chainedPost,
+                avatarId: chainedPost.Publisher?.Picture?.Id,
+                extraMeta: new Dictionary<string, object?>
+                {
+                    ["notification_type"] = "post_watch",
+                    ["watch_event_type"] = "chain",
+                    ["chain_head_id"] = chainedPost.ChainedPostId?.ToString(),
+                    ["actor_publisher_id"] = chainedPost.Publisher?.Id.ToString(),
+                    ["actor_publisher_name"] = chainedPost.Publisher?.Name,
+                    ["actor_publisher_nick"] = chainedPost.Publisher?.Nick,
+                }
+            ),
+            excludeAccountId: excludeAccountId ?? chainedPost.Publisher?.AccountId
+        );
+    }
+
+    public Task NotifyPostForwardWatchersAsync(
+        SnPost post,
+        SnPublisher actorPublisher,
+        Guid? excludeAccountId = null
+    )
+    {
+        var actorName = actorPublisher.Nick ?? actorPublisher.Name;
+        return NotifyPostWatchersAsync(
+            post,
+            [post.Id],
+            PostWatchEvent.Forwards,
+            account => BuildPostNotification(
+                locale: account.Language,
+                topic: "posts.watch.forwards",
+                title: $"{actorName} shared a post you watch",
+                body: $"{actorName} boosted this post",
+                post: post,
+                avatarId: actorPublisher.Picture?.Id,
+                extraMeta: new Dictionary<string, object?>
+                {
+                    ["notification_type"] = "post_watch",
+                    ["watch_event_type"] = "forward",
+                    ["actor_publisher_id"] = actorPublisher.Id.ToString(),
+                    ["actor_publisher_name"] = actorPublisher.Name,
+                    ["actor_publisher_nick"] = actorPublisher.Nick,
+                }
+            ),
+            excludeAccountId: excludeAccountId ?? actorPublisher.AccountId
+        );
+    }
+
+    public Task NotifyPostEditWatchersAsync(SnPost post, Guid? excludeAccountId = null)
+    {
+        var actorName = post.Publisher?.Nick ?? post.Publisher?.Name ?? "The author";
+        return NotifyPostWatchersAsync(
+            post,
+            [post.Id],
+            PostWatchEvent.Edits,
+            account => BuildPostNotification(
+                locale: account.Language,
+                topic: "posts.watch.edits",
+                title: $"{actorName} edited a post you watch",
+                body: "The original post has new edits.",
+                post: post,
+                avatarId: post.Publisher?.Picture?.Id,
+                extraMeta: new Dictionary<string, object?>
+                {
+                    ["notification_type"] = "post_watch",
+                    ["watch_event_type"] = "edit",
+                }
+            ),
+            excludeAccountId: excludeAccountId
+        );
+    }
+
+    private async Task BroadcastPostUpdateAsync(SnPost post, string eventType)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var scopedWs = scope.ServiceProvider.GetRequiredService<RemoteWebSocketService>();
+        var scopedPost = scope.ServiceProvider.GetRequiredService<PostService>();
+
+        try
+        {
+            // Get all connected Solian (Island) users
+            var connectedUserIds = await scopedWs.GetAllConnectedUserIds(WebSocketNamespaces.Solian);
+            if (connectedUserIds.Count == 0)
+                return;
+
+            // Filter users based on visibility
+            List<string> targetUserIds;
+            if (post.Visibility == PostVisibility.Public)
+            {
+                // Public posts go to all connected users
+                targetUserIds = connectedUserIds;
+            }
+            else
+            {
+                // For non-public posts, we need to filter based on visibility
+                targetUserIds = await scopedPost.FilterUsersByPostVisibility(
+                    post,
+                    connectedUserIds
+                );
+            }
+
+            if (targetUserIds.Count == 0)
+                return;
+
+            // Preload necessary post data. Realtime broadcasts must not count
+            // as views, otherwise every create/edit/delete push inflates the
+            // post's view counter.
+            post = await scopedPost.LoadPostInfo(post, trackViews: false);
+
+            // Serialize the post to JSON
+            var postData = JsonSerializer.Serialize(
+                post,
+                InfraObjectCoder.SerializerOptionsWithoutIgnore
+            );
+            var postBytes = Encoding.UTF8.GetBytes(postData);
+
+            // Push to all target users
+            await scopedWs.PushWebSocketPacketToUsers(targetUserIds, eventType, postBytes);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Error broadcasting post update for post {PostId}",
+                post.Id.ToString()
+            );
+        }
+    }
+
+    private async Task BroadcastReactionUpdateAsync(SnPostReaction reaction, string eventType)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var scopedWs = scope.ServiceProvider.GetRequiredService<RemoteWebSocketService>();
+        var scopedPost = scope.ServiceProvider.GetRequiredService<PostService>();
+        var scopedDb = scope.ServiceProvider.GetRequiredService<AppDatabase>();
+
+        try
+        {
+            // Get all connected Solian (Island) users
+            var onlineUsers = await scopedWs.GetAllConnectedUserIds(WebSocketNamespaces.Solian);
+            if (onlineUsers.Count == 0)
+                return;
+
+            // Get the post to check visibility
+            var post = await scopedDb.Posts.FindAsync(reaction.PostId);
+            if (post == null)
+                return;
+
+            // Filter users based on visibility
+            List<string> targetUserIds;
+            if (post.Visibility == PostVisibility.Public)
+            {
+                // Public posts go to all connected users
+                targetUserIds = onlineUsers;
+            }
+            else
+            {
+                // For non-public posts, we need to filter based on visibility
+                targetUserIds = await scopedPost.FilterUsersByPostVisibility(post, onlineUsers);
+            }
+
+            if (targetUserIds.Count == 0)
+                return;
+
+            // Serialize the reaction to JSON
+            var reactionData = JsonSerializer.Serialize(
+                reaction,
+                InfraObjectCoder.SerializerOptionsWithoutIgnore
+            );
+            var reactionBytes = Encoding.UTF8.GetBytes(reactionData);
+
+            // Push to all target users
+            await scopedWs.PushWebSocketPacketToUsers(targetUserIds, eventType, reactionBytes);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Error broadcasting reaction update for post {PostId}",
+                reaction.PostId.ToString()
+            );
+        }
+    }
+
+    /// <summary>
+    /// Re-broadcasts every post whose attachment list references the given
+    /// file as a <c>post.updated</c> packet. The filesystem reference listener
+    /// has already rewritten the attachment snapshots inside the post rows, so
+    /// the pushed payload carries the refreshed file status (thumbnail,
+    /// compression, upload state).
+    /// </summary>
+    /// <returns>The number of posts broadcast.</returns>
+    public async Task<int> BroadcastFileAttachmentUpdateAsync(string fileId)
+    {
+        if (string.IsNullOrWhiteSpace(fileId))
+            return 0;
+
+        var postIds = await db.Database.SqlQuery<Guid>(
+            $"""
+            SELECT id AS "Value" FROM posts
+            WHERE attachments @> jsonb_build_array(jsonb_build_object('id', {fileId}))
+              AND deleted_at IS NULL
+            """).ToListAsync();
+
+        var broadcast = 0;
+        foreach (var postId in postIds)
+        {
+            try
+            {
+                var post = await db.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+                if (post is null)
+                    continue;
+                await BroadcastPostUpdateAsync(post, "post.updated");
+                broadcast++;
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to broadcast attachment update for post {PostId} (file {FileId})", postId, fileId);
+            }
+        }
+        return broadcast;
+    }
+
+    private async Task<List<string>> FilterUsersByPostVisibility(
+        SnPost post,
+        List<string> connectedUserIds
+    )
+    {
+        var filteredUserIds = new List<string>();
+        var publisherId = post.PublisherId;
+
+        var publisherMembers = await ps.GetPublisherMembers(publisherId);
+        var memberAccountIds = publisherMembers.Select(m => m.AccountId.ToString()).ToHashSet();
+
+        var postsRequireFollow = await ps.HasPostsRequireFollowFlag(publisherId);
+        HashSet<string>? followerAccountIds = null;
+        if (postsRequireFollow || post.Visibility == PostVisibility.QuietPublic)
+        {
+            var followerRequests = await db
+                .PublisherSubscriptions.Where(r =>
+                    r.PublisherId == publisherId
+                    && r.State == PublisherSubscriptionState.Accepted
+                    && r.EndedAt == null
+                    && r.AccountId != null
+                )
+                .Select(r => r.AccountId!.Value.ToString())
+                .ToListAsync();
+            followerAccountIds = followerRequests.ToHashSet();
+        }
+
+        HashSet<string>? friendAccountIds = null;
+        if (post.Visibility == PostVisibility.Friends)
+        {
+            var queryRequest = new DyGetAccountBatchRequest();
+            queryRequest.Id.AddRange(
+                publisherMembers
+                    .Where(m => m.AccountId != Guid.Empty)
+                    .Select(m => m.AccountId.ToString())
+            );
+            var queryResponse = await accounts.GetAccountBatchAsync(queryRequest);
+
+            friendAccountIds = new HashSet<string>();
+            foreach (var member in queryResponse.Accounts)
+            {
+                if (member == null)
+                    continue;
+                var friendsResponse = await accounts.ListFriendsAsync(
+                    new DyListRelationshipSimpleRequest { RelatedId = member.Id }
+                );
+                foreach (var friendId in friendsResponse.AccountsId)
+                {
+                    friendAccountIds.Add(friendId);
+                }
+            }
+        }
+
+        HashSet<string>? closeFriendAccountIds = null;
+        if (post.Visibility == PostVisibility.CloseFriendsOnly)
+        {
+            using var scope = serviceProvider.CreateScope();
+            var remoteAccounts = scope.ServiceProvider.GetRequiredService<RemoteAccountService>();
+            var publisherAccountId = post.Publisher?.AccountId;
+            if (publisherAccountId.HasValue)
+            {
+                var closeFriendIds = await remoteAccounts.ListCloseFriendAccountIds(publisherAccountId.Value);
+                closeFriendAccountIds = closeFriendIds.Select(id => id.ToString()).ToHashSet();
+            }
+        }
+
+        foreach (var userId in connectedUserIds)
+        {
+            var isMember = memberAccountIds.Contains(userId);
+
+            switch (post.Visibility)
+            {
+                case PostVisibility.Private:
+                {
+                    if (isMember)
+                        filteredUserIds.Add(userId);
+                    continue;
+                }
+                case PostVisibility.Friends:
+                {
+                    if (isMember || (friendAccountIds != null && friendAccountIds.Contains(userId)))
+                        filteredUserIds.Add(userId);
+                    continue;
+                }
+                case PostVisibility.CloseFriendsOnly:
+                {
+                    if (isMember || (closeFriendAccountIds != null && closeFriendAccountIds.Contains(userId)))
+                        filteredUserIds.Add(userId);
+                    continue;
+                }
+                case PostVisibility.QuietPublic:
+                {
+                    if (isMember || (followerAccountIds != null && followerAccountIds.Contains(userId)))
+                        filteredUserIds.Add(userId);
+                    continue;
+                }
+                case PostVisibility.Unlisted:
+                case PostVisibility.Public:
+                {
+                    if (postsRequireFollow)
+                    {
+                        if (
+                            isMember
+                            || (followerAccountIds != null && followerAccountIds.Contains(userId))
+                        )
+                            filteredUserIds.Add(userId);
+                    }
+                    else
+                    {
+                        filteredUserIds.Add(userId);
+                    }
+
+                    continue;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        return filteredUserIds;
+    }
+
+    private List<string> ExtractMentions(string content)
+    {
+        if (string.IsNullOrEmpty(content))
+            return new List<string>();
+
+        var matches = GetMentionRegex().Matches(content);
+        var mentions = new List<string>();
+
+        foreach (Match match in matches)
+        {
+            var username = match.Groups[1].Value;
+            if (
+                !string.IsNullOrEmpty(username)
+                && !mentions.Contains(username, StringComparer.OrdinalIgnoreCase)
+            )
+            {
+                mentions.Add(username);
+            }
+        }
+
+        return mentions;
+    }
+
+    private async Task SendMentionNotificationsAsync(SnPost post)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(post.Content))
+                return;
+
+            var mentions = ExtractMentions(post.Content);
+            if (mentions.Count == 0)
+                return;
+
+            // Limit to 16 mentions maximum
+            if (mentions.Count > 16)
+            {
+                logger.LogWarning(
+                    "Post {PostId} has {MentionCount} mentions, limiting to 16",
+                    post.Id,
+                    mentions.Count
+                );
+                mentions = mentions.Take(16).ToList();
+            }
+
+            using var scope = factory.CreateScope();
+            var scopedDb = scope.ServiceProvider.GetRequiredService<AppDatabase>();
+            var nty = scope.ServiceProvider.GetRequiredService<DyRingService.DyRingServiceClient>();
+            var accountsClient =
+                scope.ServiceProvider.GetRequiredService<DyAccountService.DyAccountServiceClient>();
+            var remoteAccounts = scope.ServiceProvider.GetRequiredService<RemoteAccountService>();
+
+            var sender = post.Publisher;
+
+            foreach (var username in mentions)
+            {
+                try
+                {
+                    // Find publisher by name/username
+                    var lowerUsername = username.ToLowerInvariant();
+                    var mentionedPublisher = await scopedDb
+                        .Publishers.Include(p => p.Members)
+                        .FirstOrDefaultAsync(p => p.Name.ToLower() == lowerUsername);
+
+                    if (mentionedPublisher == null)
+                        continue;
+                    if (mentionedPublisher.IsShadowbanned)
+                        continue;
+
+                    // Skip mention if either user has blocked the other
+                    if (sender?.AccountId is not null && mentionedPublisher.AccountId is not null)
+                    {
+                        var isBlocked = await remoteAccounts.IsBlockedEitherDirection(
+                            sender.AccountId.Value, mentionedPublisher.AccountId.Value);
+                        if (isBlocked)
+                            continue;
+                    }
+
+                    // Get all member accounts of the mentioned publisher
+                    var memberIds = mentionedPublisher
+                        .Members.Select(m => m.AccountId.ToString())
+                        .ToList();
+                    if (memberIds.Count == 0)
+                        continue;
+
+                    // Get account details for language preferences
+                    var queryRequest = new DyGetAccountBatchRequest();
+                    queryRequest.Id.AddRange(memberIds);
+                    var queryResponse = await accountsClient.GetAccountBatchAsync(queryRequest);
+
+                    foreach (var member in queryResponse.Accounts)
+                    {
+                        if (member == null)
+                            continue;
+
+                        var (title, body) = ChopPostForNotification(post, member.Language);
+
+                        await nty.SendPushNotificationToUserAsync(
+                            new DySendPushNotificationToUserRequest
+                            {
+                                UserId = member.Id,
+                                Notification = BuildPostNotification(
+                                    member.Language,
+                                    topic: "posts.mentions.new",
+                                    title: localizer.Get(
+                                        "postMentionTitle",
+                                        locale: member.Language,
+                                        args: new { user = sender!.Nick }
+                                    ),
+                                    body: localizer.Get(
+                                        "postMentionBody",
+                                        locale: member.Language,
+                                        args: new { user = sender!.Nick, content = body }
+                                    ),
+                                    post: post,
+                                    extraMeta: new Dictionary<string, object?>
+                                    {
+                                        ["notification_type"] = "mention",
+                                        ["mentioned_publisher_id"] =
+                                            mentionedPublisher.Id.ToString(),
+                                        ["mentioned_publisher_name"] = mentionedPublisher.Name,
+                                    }
+                                ),
+                            }
+                        );
+                    }
+
+                    logger.LogInformation(
+                        "Sent mention notification for post {PostId} to publisher {PublisherName} ({MemberCount} members)",
+                        post.Id,
+                        username,
+                        memberIds.Count
+                    );
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(
+                        ex,
+                        "Error sending mention notification to {Username} for post {PostId}",
+                        username,
+                        post.Id
+                    );
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Error processing mention notifications for post {PostId}",
+                post.Id
+            );
+        }
+    }
+
+    public async Task<SnPost> PostAsync(
+        SnPost post,
+        List<string>? attachments = null,
+        List<string>? tags = null,
+        List<string>? categories = null,
+        DyAccount? actor = null,
+        bool autoChain = true
+    )
+    {
+        if (post.Empty)
+            throw new InvalidOperationException("Cannot create a post with barely no content.");
+
+        if (post.DraftedAt is not null)
+        {
+            if (post.PublishedAt is not null)
+                throw new InvalidOperationException("Cannot set both draftedAt and publishedAt.");
+        }
+        else if (post.PublishedAt is not null)
+        {
+            if (post.PublishedAt.Value.ToDateTimeUtc() < DateTime.UtcNow)
+                throw new InvalidOperationException(
+                    "Cannot create the post which published in the past."
+                );
+        }
+        else
+        {
+            post.PublishedAt = Instant.FromDateTimeUtc(DateTime.UtcNow);
+        }
+
+        if (attachments is not null)
+        {
+            var queryRequest = new DyGetFileBatchRequest();
+            queryRequest.Ids.AddRange(attachments);
+            var queryResponse = await files.GetFileBatchAsync(queryRequest);
+
+            post.Attachments = queryResponse
+                .Files.Select(SnCloudFileReferenceObject.FromProtoValue)
+                .ToList();
+            // Re-order the list to match the id list places
+            post.Attachments = attachments
+                .Select(id => post.Attachments.First(a => a.Id == id))
+                .ToList();
+        }
+
+        if (tags is not null)
+        {
+            var publisher = await GetPublisherForPostAsync(post);
+            post.Tags = await ResolveTagsAsync(tags, publisher);
+        }
+
+        if (categories is not null)
+        {
+            post.Categories = await ResolveCategoriesAsync(categories);
+            if (post.Categories.Count != NormalizeTopicSlugs(categories).Count)
+                throw new InvalidOperationException(
+                    "Categories contains one or more categories that wasn't exists."
+                );
+        }
+
+        await ApplyAutomaticTopicsAsync(post, tags, categories);
+
+        db.Posts.Add(post);
+        await db.SaveChangesAsync();
+
+        var now = DateTime.UtcNow;
+        var isPublishedNow =
+            post.DraftedAt is null
+            && post.PublishedAt is not null
+            && post.PublishedAt.Value.ToDateTimeUtc() <= now;
+
+        if (isPublishedNow && autoChain && post.ChainedPostId == null
+            && post.RepliedPostId == null && post.ForwardedPostId == null
+            && post.Type == PostType.Moment && post.PublisherId != Guid.Empty)
+        {
+            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+            var windowMinutes =
+                int.TryParse(configuration["Posts:AutoChainWindowMinutes"], out var w) ? w : 5;
+
+            var latest = await db.Posts
+                .Where(p => p.PublisherId == post.PublisherId
+                    && p.Id != post.Id
+                    && p.DraftedAt == null
+                    && p.PublishedAt != null
+                    && p.PublishedAt >= post.PublishedAt!.Value - Duration.FromMinutes(windowMinutes)
+                    && p.PublishedAt < post.PublishedAt.Value
+                    && p.RepliedPostId == null
+                    && p.ForwardedPostId == null)
+                .OrderByDescending(p => p.PublishedAt)
+                .FirstOrDefaultAsync();
+
+            if (latest is not null)
+            {
+                // Flat chain: children always point at the chain head.
+                var head = latest.ChainedPostId is null
+                    ? latest
+                    : await db.Posts.FirstAsync(p => p.Id == latest.ChainedPostId.Value);
+                post.ChainedPostId = head.Id;
+                post.ChainedPost = head;
+                await db.SaveChangesAsync();
+            }
+        }
+
+        if (isPublishedNow)
+            _ = Task.Run(async () =>
+            {
+                using var scope = factory.CreateScope();
+                var pubSub =
+                    scope.ServiceProvider.GetRequiredService<PublisherSubscriptionService>();
+                await pubSub.NotifySubscriberPost(post);
+            });
+
+        if (isPublishedNow && post.RepliedPostId is not null)
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await NotifyPostReplyWatchersAsync(post);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(
+                        ex,
+                        "Error when sending post reply watch notifications for post {PostId}",
+                        post.Id
+                    );
+                }
+            });
+
+        if (isPublishedNow && post.ChainedPostId is not null)
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var scope = factory.CreateScope();
+                    var watches = scope.ServiceProvider.GetRequiredService<PostWatchService>();
+                    var chainPostIds = await watches.GetChainPostIdsAsync(post.ChainedPostId.Value);
+                    await NotifyPostChainWatchersAsync(post, chainPostIds);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(
+                        ex,
+                        "Error when sending post chain watch notifications for post {PostId}",
+                        post.Id
+                    );
+                }
+            });
+
+        if (isPublishedNow && post.RepliedPost is not null)
+        {
+            _ = Task.Run(async () =>
+            {
+                var sender = post.Publisher;
+                using var scope = factory.CreateScope();
+                var pub = scope.ServiceProvider.GetRequiredService<PublisherService>();
+                var nty =
+                    scope.ServiceProvider.GetRequiredService<DyRingService.DyRingServiceClient>();
+                var notifyTargets =
+                    scope.ServiceProvider.GetRequiredService<DyAccountService.DyAccountServiceClient>();
+                try
+                {
+                    var members = await pub.GetPublisherMembers(
+                        post.RepliedPost!.PublisherId
+                    );
+                    var queryRequest = new DyGetAccountBatchRequest();
+                    queryRequest.Id.AddRange(members.Select(m => m.AccountId.ToString()));
+                    var queryResponse = await notifyTargets.GetAccountBatchAsync(queryRequest);
+                    foreach (var member in queryResponse.Accounts)
+                    {
+                        if (member is null)
+                            continue;
+                        await nty.SendPushNotificationToUserAsync(
+                            new DySendPushNotificationToUserRequest
+                            {
+                                UserId = member.Id,
+                                Notification = BuildPostNotification(
+                                    locale: member.Language,
+                                    topic: "post.replies",
+                                    title: localizer.Get(
+                                        "postReplyTitle",
+                                        locale: member.Language,
+                                        args: new { user = sender!.Nick }
+                                    ),
+                                    body: ChopPostForNotification(post, member.Language).content,
+                                    post: post,
+                                    extraMeta: new Dictionary<string, object?>
+                                    {
+                                        ["notification_type"] = "reply",
+                                    }
+                                ),
+                            }
+                        );
+                    }
+                }
+                catch (Exception err)
+                {
+                    logger.LogError(
+                        $"Error when sending post reactions notification: {err.Message} {err.StackTrace}"
+                    );
+                }
+            });
+        }
+
+        if (isPublishedNow && post.RepliedPostId.HasValue && actor is not null)
+        {
+            flushBuffer.Enqueue(
+                new PostInterestSignal
+                {
+                    AccountId = Guid.Parse(actor.Id),
+                    PostId = post.RepliedPostId.Value,
+                    ScoreDelta = ReplyInterestScore,
+                    SignalType = "reply",
+                    OccurredAt = Instant.FromDateTimeUtc(DateTime.UtcNow),
+                }
+            );
+        }
+
+        if (isPublishedNow)
+        {
+            // Send mention notifications in the background
+            _ = Task.Run(async () => await SendMentionNotificationsAsync(post));
+
+            if (post.Type != PostType.Blog)
+                _ = Task.Run(async () => await CreateLinkPreviewAsync(post));
+        }
+
+        if (isPublishedNow && post.Visibility == PostVisibility.Public && post.Type != PostType.Blog)
+            QueuePostIndex(post.Id);
+
+        // Send ActivityPub Create activity in background for public posts
+        if (isPublishedNow && post.Visibility == PostVisibility.Public)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var scope = factory.CreateScope();
+                    var deliveryService =
+                        scope.ServiceProvider.GetRequiredService<ActivityPubDeliveryService>();
+                    await deliveryService.SendCreateActivityAsync(post);
+                }
+                catch (Exception err)
+                {
+                    logger.LogError(
+                        $"Error when sending ActivityPub Create activity: {err.Message}"
+                    );
+                }
+            });
+        }
+
+        if (isPublishedNow)
+        {
+            // Broadcast real-time update to connected clients
+            _ = Task.Run(async () => await BroadcastPostUpdateAsync(post, "post.created"));
+        }
+
+        return post;
+    }
+
+    public async Task<SnPost> UpdatePostAsync(
+        SnPost post,
+        List<string>? attachments = null,
+        List<string>? tags = null,
+        List<string>? categories = null,
+        Instant? draftedAt = null,
+        Instant? publishedAt = null
+    )
+    {
+        if (post.Empty)
+            throw new InvalidOperationException("Cannot edit a post to barely no content.");
+
+        post.EditedAt = Instant.FromDateTimeUtc(DateTime.UtcNow);
+        var now = SystemClock.Instance.GetCurrentInstant();
+
+        if (draftedAt is not null && publishedAt is not null)
+            throw new InvalidOperationException("Cannot set both draftedAt and publishedAt.");
+
+        if (publishedAt is not null)
+        {
+            // User cannot set the published at to the past to prevent scam,
+            // But we can just let the controller set the published at, because when no changes to
+            // the published at will blocked the update operation
+            if (publishedAt.Value < now)
+            {
+                if (post.DraftedAt is not null)
+                    publishedAt = now;
+                else
+                    throw new InvalidOperationException("Cannot set the published at to the past.");
+            }
+
+            post.PublishedAt = publishedAt;
+            post.DraftedAt = null;
+        }
+
+        if (draftedAt is not null)
+        {
+            post.DraftedAt = draftedAt;
+            post.PublishedAt = null;
+        }
+
+        var entity = db.Entry(post);
+        var previousTitle = entity.Property(e => e.Title).OriginalValue;
+        var previousDescription = entity.Property(e => e.Description).OriginalValue;
+        var previousContent = entity.Property(e => e.Content).OriginalValue;
+        var previousVisibility = entity.Property(e => e.Visibility).OriginalValue;
+        var previousDraftedAt = entity.Property(e => e.DraftedAt).OriginalValue;
+        var previousPublishedAt = entity.Property(e => e.PublishedAt).OriginalValue;
+        var previousAttachmentIds = post.Attachments
+            .Select(a => a.Id)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .ToList();
+
+        var wasPublished =
+            previousDraftedAt is null
+            && previousPublishedAt is not null
+            && previousPublishedAt.Value <= now;
+        var isPublished =
+            post.DraftedAt is null && post.PublishedAt is not null && post.PublishedAt.Value <= now;
+        var previousIndexText = string.Join(
+            '\n',
+            new[] { previousTitle, previousDescription, previousContent }.Where(x =>
+                !string.IsNullOrWhiteSpace(x)
+            )
+        );
+        var currentIndexText = BuildPostIndexText(post);
+        var shouldReindex =
+            isPublished
+            && post.Visibility == PostVisibility.Public
+            && post.Type != PostType.Blog
+            && (
+                !wasPublished
+                || previousVisibility != PostVisibility.Public
+                || !string.Equals(previousIndexText, currentIndexText, StringComparison.Ordinal)
+            );
+
+        if (attachments is not null)
+        {
+            // Update post attachments by getting files from database
+            var queryRequest = new DyGetFileBatchRequest();
+            queryRequest.Ids.AddRange(attachments);
+            var queryResponse = await files.GetFileBatchAsync(queryRequest);
+
+            post.Attachments = queryResponse
+                .Files.Select(SnCloudFileReferenceObject.FromProtoValue)
+                .ToList();
+        }
+
+        if (tags is not null)
+        {
+            var publisher = await GetPublisherForPostAsync(post);
+            post.Tags = await ResolveTagsAsync(tags, publisher);
+        }
+
+        if (categories is not null)
+        {
+            post.Categories = await ResolveCategoriesAsync(categories);
+            if (post.Categories.Count != NormalizeTopicSlugs(categories).Count)
+                throw new InvalidOperationException(
+                    "Categories contains one or more categories that wasn't exists."
+                );
+        }
+
+        await ApplyAutomaticTopicsAsync(post, tags, categories);
+
+        var currentAttachmentIds = post.Attachments
+            .Select(a => a.Id)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .ToList();
+        var shouldNotifyPostWatchersAboutEdit = HasMeaningfulPublishedEdit(
+            previousTitle,
+            previousDescription,
+            previousContent,
+            previousVisibility,
+            previousDraftedAt,
+            previousPublishedAt,
+            previousAttachmentIds,
+            post,
+            currentAttachmentIds,
+            wasPublished,
+            isPublished
+        );
+
+        db.Update(post);
+        await db.SaveChangesAsync();
+
+        if (!wasPublished && isPublished)
+        {
+            _ = Task.Run(async () =>
+            {
+                using var scope = factory.CreateScope();
+                var pubSub =
+                    scope.ServiceProvider.GetRequiredService<PublisherSubscriptionService>();
+                await pubSub.NotifySubscriberPost(post);
+            });
+
+            if (post.RepliedPostId is not null)
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await NotifyPostReplyWatchersAsync(post);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(
+                            ex,
+                            "Error when sending post reply watch notifications for post {PostId}",
+                            post.Id
+                        );
+                    }
+                });
+
+            if (post.ChainedPostId is not null)
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        using var scope = factory.CreateScope();
+                        var watches = scope.ServiceProvider.GetRequiredService<PostWatchService>();
+                        var chainPostIds = await watches.GetChainPostIdsAsync(post.ChainedPostId.Value);
+                        await NotifyPostChainWatchersAsync(post, chainPostIds);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(
+                            ex,
+                            "Error when sending post chain watch notifications for post {PostId}",
+                            post.Id
+                        );
+                    }
+                });
+
+            if (post.RepliedPost is not null)
+            {
+                _ = Task.Run(async () =>
+                {
+                    var sender = post.Publisher;
+                    using var scope = factory.CreateScope();
+                    var pub = scope.ServiceProvider.GetRequiredService<PublisherService>();
+                    var nty =
+                        scope.ServiceProvider.GetRequiredService<DyRingService.DyRingServiceClient>();
+                    var notifyTargets =
+                        scope.ServiceProvider.GetRequiredService<DyAccountService.DyAccountServiceClient>();
+                    try
+                    {
+                        var members = await pub.GetPublisherMembers(
+                            post.RepliedPost!.PublisherId
+                        );
+                        var queryRequest = new DyGetAccountBatchRequest();
+                        queryRequest.Id.AddRange(members.Select(m => m.AccountId.ToString()));
+                        var queryResponse = await notifyTargets.GetAccountBatchAsync(queryRequest);
+                        foreach (var member in queryResponse.Accounts)
+                        {
+                            if (member is null)
+                                continue;
+                            await nty.SendPushNotificationToUserAsync(
+                                new DySendPushNotificationToUserRequest
+                                {
+                                    UserId = member.Id,
+                                    Notification = BuildPostNotification(
+                                        locale: member.Language,
+                                        topic: "post.replies",
+                                        title: localizer.Get(
+                                            "postReplyTitle",
+                                            locale: member.Language,
+                                            args: new { user = sender!.Nick }
+                                        ),
+                                        body: ChopPostForNotification(
+                                            post,
+                                            member.Language
+                                        ).content,
+                                        post: post,
+                                        extraMeta: new Dictionary<string, object?>
+                                        {
+                                            ["notification_type"] = "reply",
+                                        }
+                                    ),
+                                }
+                            );
+                        }
+                    }
+                    catch (Exception err)
+                    {
+                        logger.LogError(
+                            $"Error when sending post reactions notification: {err.Message} {err.StackTrace}"
+                        );
+                    }
+                });
+            }
+
+            // Send mention notifications in the background on publish.
+            _ = Task.Run(async () => await SendMentionNotificationsAsync(post));
+        }
+
+        if (isPublished)
+        {
+            if (post.Type != PostType.Blog)
+                _ = Task.Run(async () => await CreateLinkPreviewAsync(post));
+        }
+
+        if (shouldNotifyPostWatchersAboutEdit)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await NotifyPostEditWatchersAsync(post, post.Publisher?.AccountId);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(
+                        ex,
+                        "Error when sending subscribed post edit notifications for post {PostId}",
+                        post.Id
+                    );
+                }
+            });
+        }
+
+        if (shouldReindex)
+            QueuePostIndex(post.Id);
+
+        // Send ActivityPub activity in background for published public posts
+        if (isPublished && post.Visibility == PostVisibility.Public)
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var scope = factory.CreateScope();
+                    var deliveryService =
+                        scope.ServiceProvider.GetRequiredService<ActivityPubDeliveryService>();
+                    if (wasPublished)
+                        await deliveryService.SendUpdateActivityAsync(post);
+                    else
+                        await deliveryService.SendCreateActivityAsync(post);
+                }
+                catch (Exception err)
+                {
+                    logger.LogError(
+                        $"Error when sending ActivityPub Update activity: {err.Message}"
+                    );
+                }
+            });
+
+        if (isPublished)
+        {
+            // Broadcast real-time update to connected clients
+            _ = Task.Run(async () =>
+                await BroadcastPostUpdateAsync(post, wasPublished ? "post.updated" : "post.created")
+            );
+        }
+
+        return post;
+    }
+
+    [GeneratedRegex(@"(?<!\]\()https?://[^\s<]+", RegexOptions.IgnoreCase)]
+    private static partial Regex GetLinkRegex();
+
+    [GeneratedRegex(@"@(\w+)", RegexOptions.IgnoreCase)]
+    private static partial Regex GetMentionRegex();
+
+    private static List<string> ExtractPreviewUrls(string content, int maxLinks)
+    {
+        var urls = new List<string>();
+        foreach (Match match in GetLinkRegex().Matches(content))
+        {
+            var normalizedUrl = NormalizePreviewUrl(match.Value);
+            if (
+                normalizedUrl is null
+                || urls.Contains(normalizedUrl, StringComparer.OrdinalIgnoreCase)
+            )
+                continue;
+
+            urls.Add(normalizedUrl);
+            if (urls.Count >= maxLinks)
+                break;
+        }
+
+        return urls;
+    }
+
+    private static string? NormalizePreviewUrl(string? rawUrl)
+    {
+        if (string.IsNullOrWhiteSpace(rawUrl))
+            return null;
+
+        var url = rawUrl.Trim().TrimEnd('.', ',', ';', ':', '!', '?');
+        while (url.Length > 0 && ")]}>\"'".Contains(url[^1]))
+        {
+            var trailing = url[^1];
+            if (trailing == ')' && url.Count(c => c == '(') >= url.Count(c => c == ')'))
+                break;
+
+            url = url[..^1];
+        }
+
+        return
+            Uri.TryCreate(url, UriKind.Absolute, out var uri)
+            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+                ? uri.ToString()
+                : null;
+    }
+
+    private async Task<SnPost> PreviewPostLinkAsync(SnPost item)
+    {
+        if (item.Type != PostType.Moment && item.Type != PostType.Blog || string.IsNullOrEmpty(item.Content))
+            return item;
+
+        var urls = item.Type == PostType.Blog
+            ? NormalizePreviewUrl(item.Content) is { } previewUrl ? [previewUrl] : []
+            : ExtractPreviewUrls(item.Content, maxLinks: 3);
+        if (urls.Count == 0)
+            return item;
+
+        // Initialize meta dictionary if null
+        item.Metadata ??= new Dictionary<string, object>();
+        if (
+            !item.Metadata.TryGetValue("embeds", out var existingEmbeds)
+            || existingEmbeds is not List<EmbeddableBase>
+        )
+            item.Metadata["embeds"] = new List<Dictionary<string, object>>();
+        var embeds = (List<Dictionary<string, object>>)item.Metadata["embeds"];
+
+        foreach (var url in urls)
+        {
+            try
+            {
+                // Check if this URL is already in the embed list
+                var urlAlreadyEmbedded = embeds.Any(e =>
+                    e.TryGetValue("Url", out var originalUrl) && (string)originalUrl == url
+                );
+                if (urlAlreadyEmbedded)
+                    continue;
+
+                // Preview the link
+                var linkEmbed = await reader.GetLinkPreviewAsync(url);
+                embeds.Add(EmbeddableBase.ToDictionary(linkEmbed));
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        item.Metadata["embeds"] = embeds;
+        return item;
+    }
+
+    /// <summary>
+    /// Process link previews for a post in background
+    /// This method is designed to be called from a background task
+    /// </summary>
+    /// <param name="post">The post to process link previews for</param>
+    private async Task CreateLinkPreviewAsync(SnPost post)
+    {
+        try
+        {
+            // Create a new scope for database operations
+            using var scope = factory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDatabase>();
+
+            // Preview the links in the post
+            var updatedPost = await PreviewPostLinkAsync(post);
+
+            // If embeds were added, update the post in the database
+            if (
+                updatedPost.Metadata != null
+                && updatedPost.Metadata.TryGetValue("embeds", out var embeds)
+                && embeds is List<Dictionary<string, object>> { Count: > 0 } embedsList
+            )
+            {
+                // Get a fresh copy of the post from the database
+                var dbPost = await dbContext.Posts.FindAsync(post.Id);
+                if (dbPost != null)
+                {
+                    // Update the metadata field with the new embeds
+                    dbPost.Metadata ??= new Dictionary<string, object>();
+                    dbPost.Metadata["embeds"] = embedsList;
+
+                    // Save changes to the database
+                    dbContext.Update(dbPost);
+                    await dbContext.SaveChangesAsync();
+
+                    logger.LogDebug(
+                        "Updated post {PostId} with {EmbedCount} link previews",
+                        post.Id,
+                        embedsList.Count
+                    );
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log errors but don't rethrow - this is a background task
+            logger.LogError(ex, "Error processing link previews for post {PostId}", post.Id);
+        }
+    }
+
+    public async Task DeletePostAsync(SnPost post)
+    {
+        var now = SystemClock.Instance.GetCurrentInstant();
+        await using var transaction = await db.Database.BeginTransactionAsync();
+        try
+        {
+            await db
+                .PostReactions.Where(r => r.PostId == post.Id)
+                .ExecuteUpdateAsync(p => p.SetProperty(x => x.DeletedAt, now));
+            await db
+                .Posts.Where(p => p.RepliedPostId == post.Id)
+                .ExecuteUpdateAsync(p => p.SetProperty(x => x.RepliedGone, true));
+            await db
+                .Posts.Where(p => p.ForwardedPostId == post.Id)
+                .ExecuteUpdateAsync(p => p.SetProperty(x => x.ForwardedGone, true));
+            await db
+                .Posts.Where(p => p.ChainedPostId == post.Id)
+                .ExecuteUpdateAsync(p => p.SetProperty(x => x.ChainedPostId, (Guid?)null));
+
+            db.Posts.Remove(post);
+            await db.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+
+        _ = Task.Run(async () => await BroadcastPostUpdateAsync(post, "post.deleted"));
+
+        // Send ActivityPub Delete activity in background for public posts
+        if (post.Visibility == PostVisibility.Public)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var scope = factory.CreateScope();
+                    var deliveryService =
+                        scope.ServiceProvider.GetRequiredService<ActivityPubDeliveryService>();
+                    await deliveryService.SendDeleteActivityAsync(post);
+                }
+                catch (Exception err)
+                {
+                    logger.LogError(
+                        $"Error when sending ActivityPub Delete activity: {err.Message}"
+                    );
+                }
+            });
+        }
+    }
+
+    public async Task<SnPost> RemovePostFromRealmAsync(SnPost post, Guid moderatorAccountId, string? reason)
+    {
+        // Make post private
+        post.Visibility = PostVisibility.Private;
+        
+        // Remove realm link
+        post.RealmId = null;
+        
+        // Update post
+        db.Posts.Update(post);
+        await db.SaveChangesAsync();
+        
+        // Send notification to post author
+        if (post.Publisher?.AccountId != null)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var scope = factory.CreateScope();
+                    var nty = scope.ServiceProvider.GetRequiredService<DyRingService.DyRingServiceClient>();
+                    var accounts = scope.ServiceProvider.GetRequiredService<DyAccountService.DyAccountServiceClient>();
+                    var localizer = scope.ServiceProvider.GetRequiredService<ILocalizationService>();
+                    
+                    var account = await accounts.GetAccountAsync(new DyGetAccountRequest { Id = post.Publisher.AccountId.ToString() });
+                    if (account != null)
+                    {
+                        await nty.SendPushNotificationToUserAsync(
+                            new DySendPushNotificationToUserRequest
+                            {
+                                UserId = account.Id,
+                                Notification = new DyPushNotification
+                                {
+                                    Topic = "post.moderation",
+                                    Title = localizer.Get("postRemovedFromRealmTitle", account.Language),
+                                    Body = localizer.Get("postRemovedFromRealmBody", locale: account.Language, args: new { reason = reason ?? "No reason provided" }),
+                                    ActionUri = $"/posts/{post.Id}",
+                                    IsSavable = true
+                                }
+                            }
+                        );
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error sending post moderation notification");
+                }
+            });
+        }
+        
+        return post;
+    }
+
+    public async Task<SnPost> PinPostAsync(SnPost post, DyAccount currentUser, PostPinMode pinMode)
+    {
+        var accountId = Guid.Parse(currentUser.Id);
+        if (post.ChainedPostId != null)
+            throw new InvalidOperationException(
+                "Chained posts cannot be pinned."
+            );
+        if (post.RepliedPostId != null)
+        {
+            if (pinMode != PostPinMode.ReplyPage)
+                throw new InvalidOperationException(
+                    "Replies can only be pinned in the reply page."
+                );
+            if (post.RepliedPost == null)
+                throw new ArgumentNullException(nameof(post.RepliedPost));
+
+            if (
+                !await ps.IsMemberWithRole(
+                    post.RepliedPost!.PublisherId,
+                    accountId,
+                    PublisherMemberRole.Editor
+                )
+            )
+                throw new InvalidOperationException(
+                    "Only editors of original post can pin replies."
+                );
+
+            post.PinMode = pinMode;
+        }
+        else
+        {
+            if (
+                post.PublisherId == Guid.Empty
+                || !await ps.IsMemberWithRole(
+                    post.PublisherId,
+                    accountId,
+                    PublisherMemberRole.Editor
+                )
+            )
+                throw new InvalidOperationException("Only editors can pin replies.");
+
+            post.PinMode = pinMode;
+        }
+
+        db.Update(post);
+        await db.SaveChangesAsync();
+
+        return post;
+    }
+
+    public async Task<SnPost> UnpinPostAsync(SnPost post, DyAccount currentUser)
+    {
+        var accountId = Guid.Parse(currentUser.Id);
+        if (post.RepliedPostId != null)
+        {
+            if (post.RepliedPost == null)
+                throw new ArgumentNullException(nameof(post.RepliedPost));
+
+            if (
+                !await ps.IsMemberWithRole(
+                    post.RepliedPost!.PublisherId,
+                    accountId,
+                    PublisherMemberRole.Editor
+                )
+            )
+                throw new InvalidOperationException(
+                    "Only editors of original post can unpin replies."
+                );
+        }
+        else
+        {
+            if (
+                post.PublisherId == Guid.Empty
+                || !await ps.IsMemberWithRole(
+                    post.PublisherId,
+                    accountId,
+                    PublisherMemberRole.Editor
+                )
+            )
+                throw new InvalidOperationException("Only editors can unpin posts.");
+        }
+
+        post.PinMode = null;
+        db.Update(post);
+        await db.SaveChangesAsync();
+
+        return post;
+    }
+
+    /// <summary>
+    /// Calculate the total number of votes for a post.
+    /// This function helps you save the new reactions.
+    /// </summary>
+    /// <param name="post">Post that modifying</param>
+    /// <param name="reaction">The new / target reaction adding / removing</param>
+    /// <param name="op">The original poster account of this post</param>
+    /// <param name="isRemoving">Indicate this operation is adding / removing</param>
+    /// <param name="isSelfReact">Indicate this reaction is by the original post himself</param>
+    /// <param name="sender">The account that creates this reaction</param>
+    public async Task<bool> ModifyPostVotes(
+        SnPost post,
+        SnPostReaction reaction,
+        DyAccount sender,
+        bool isRemoving,
+        bool isSelfReact
+    )
+    {
+        var hasMatchingReaction =
+            reaction.AccountId.HasValue
+            && await db.Set<SnPostReaction>()
+                .AnyAsync(r =>
+                    r.PostId == post.Id
+                    && r.Symbol == reaction.Symbol
+                    && r.AccountId == reaction.AccountId.Value
+                );
+
+        if (isRemoving)
+        {
+            if (!hasMatchingReaction)
+                return true;
+
+            await db
+                .PostReactions.Where(r =>
+                    r.PostId == post.Id
+                    && r.Symbol == reaction.Symbol
+                    && reaction.AccountId.HasValue
+                    && r.AccountId == reaction.AccountId.Value
+                )
+                .ExecuteDeleteAsync();
+        }
+        else if (!hasMatchingReaction)
+        {
+            db.PostReactions.Add(reaction);
+        }
+
+        if (!hasMatchingReaction && isRemoving)
+            return true;
+
+        if (!isSelfReact && hasMatchingReaction == isRemoving)
+        {
+            var weight = GetReactionWeight(reaction.Attitude);
+            var reactionDelta = isRemoving ? -weight : weight;
+            post.ReactionScore += reactionDelta;
+
+            switch (reaction.Attitude)
+            {
+                case PostReactionAttitude.Positive:
+                    post.Upvotes += isRemoving ? -1 : 1;
+                    break;
+                case PostReactionAttitude.Negative:
+                    post.Downvotes += isRemoving ? -1 : 1;
+                    break;
+            }
+        }
+
+        await db.SaveChangesAsync();
+
+        // Broadcast reaction update to connected clients
+        _ = Task.Run(async () =>
+            await BroadcastReactionUpdateAsync(
+                reaction,
+                isRemoving ? "post.reaction.removed" : "post.reaction.added"
+            )
+        );
+
+        if (isSelfReact)
+            return isRemoving;
+
+        if (reaction.AccountId.HasValue && hasMatchingReaction == isRemoving)
+        {
+            var interestDelta = isRemoving
+                ? -GetReactionWeight(reaction.Attitude)
+                : GetReactionWeight(reaction.Attitude);
+            flushBuffer.Enqueue(
+                new PostInterestSignal
+                {
+                    AccountId = reaction.AccountId.Value,
+                    PostId = post.Id,
+                    ScoreDelta = interestDelta,
+                    SignalType = $"reaction:{reaction.Attitude.ToString().ToLowerInvariant()}",
+                    OccurredAt = Instant.FromDateTimeUtc(DateTime.UtcNow),
+                }
+            );
+        }
+
+        // Send ActivityPub Like/Undo activities if post's publisher has actor
+        if (post.PublisherId != Guid.Empty)
+        {
+            var accountId = Guid.Parse(sender.Id);
+            SnPublisher? accountPublisher = null;
+            var settings = await db.PublishingSettings.FirstOrDefaultAsync(s =>
+                s.AccountId == accountId
+            );
+            if (settings?.DefaultFediversePublisherId != null)
+            {
+                accountPublisher = await db
+                    .Publishers.Where(p =>
+                        p.Id == settings.DefaultFediversePublisherId
+                        && p.Members.Any(m => m.AccountId == accountId)
+                    )
+                    .FirstOrDefaultAsync();
+            }
+
+            if (accountPublisher == null)
+            {
+                accountPublisher = await db
+                    .Publishers.Where(p => p.Members.Any(m => m.AccountId == accountId))
+                    .FirstOrDefaultAsync();
+            }
+
+            var accountActor = accountPublisher is null
+                ? null
+                : await objFactory.GetLocalActorAsync(accountPublisher.Id);
+            var publisherActor = await objFactory.GetLocalActorAsync(post.PublisherId);
+
+            if (accountActor != null && publisherActor != null)
+            {
+                var emoji = GetEmojiForSymbol(reaction.Symbol);
+                if (emoji != null)
+                {
+                    if (!isRemoving)
+                    {
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                using var scope = factory.CreateScope();
+                                var deliveryService =
+                                    scope.ServiceProvider.GetRequiredService<ActivityPubDeliveryService>();
+                                var activityId = $"{accountActor.Uri}/reactions/{Guid.NewGuid()}";
+                                await deliveryService.SendEmojiReactionActivityAsync(
+                                    accountActor,
+                                    post.Id,
+                                    emoji,
+                                    publisherActor,
+                                    activityId
+                                );
+                                reaction.FediverseUri = activityId;
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogError(
+                                    $"Error sending ActivityPub EmojiReact: {ex.Message}"
+                                );
+                            }
+                        });
+                    }
+                    else
+                    {
+                        var existingReaction = await db.PostReactions.FirstOrDefaultAsync(r =>
+                            r.PostId == post.Id
+                            && r.Symbol == reaction.Symbol
+                            && r.AccountId == reaction.AccountId
+                        );
+                        var undoActivityId = existingReaction?.FediverseUri;
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                using var scope = factory.CreateScope();
+                                var deliveryService =
+                                    scope.ServiceProvider.GetRequiredService<ActivityPubDeliveryService>();
+                                await deliveryService.SendUndoEmojiReactionActivityAsync(
+                                    accountActor,
+                                    post.Id,
+                                    emoji,
+                                    publisherActor,
+                                    undoActivityId ?? ""
+                                );
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogError(
+                                    $"Error sending ActivityPub Undo EmojiReact: {ex.Message}"
+                                );
+                            }
+                        });
+                    }
+                }
+            }
+            else
+            {
+                logger.LogWarning(
+                    "Seems {PublisherName} didn't enable actor, skipping delivery of EmojiReact activity...",
+                    accountPublisher?.Name
+                );
+            }
+        }
+
+        if (isRemoving)
+            return isRemoving;
+
+        _ = Task.Run(async () =>
+        {
+            using var scope = factory.CreateScope();
+            var pub = scope.ServiceProvider.GetRequiredService<PublisherService>();
+            var nty = scope.ServiceProvider.GetRequiredService<DyRingService.DyRingServiceClient>();
+            var accountsScoped =
+                scope.ServiceProvider.GetRequiredService<DyAccountService.DyAccountServiceClient>();
+            try
+            {
+                if (post.PublisherId == Guid.Empty)
+                    return;
+                var members = await pub.GetPublisherMembers(post.PublisherId);
+                var queryRequest = new DyGetAccountBatchRequest();
+                queryRequest.Id.AddRange(members.Select(m => m.AccountId.ToString()));
+                var queryResponse = await accountsScoped.GetAccountBatchAsync(queryRequest);
+                foreach (var member in queryResponse.Accounts)
+                {
+                    if (member is null)
+                        continue;
+
+                    await nty.SendPushNotificationToUserAsync(
+                        new DySendPushNotificationToUserRequest
+                        {
+                            UserId = member.Id,
+                            Notification = BuildPostNotification(
+                                locale: member.Language,
+                                topic: "posts.reactions.new",
+                                title: localizer.Get(
+                                    "postReactTitle",
+                                    locale: member.Language,
+                                    args: new { user = sender.Nick }
+                                ),
+                                body: string.IsNullOrWhiteSpace(post.Title)
+                                    ? localizer.Get(
+                                        "postReactBody",
+                                        locale: member.Language,
+                                        args: new { user = sender.Nick, reaction = reaction.Symbol }
+                                    )
+                                    : localizer.Get(
+                                        "postReactContentBody",
+                                        locale: member.Language,
+                                        args: new
+                                        {
+                                            user = sender.Nick,
+                                            reaction = reaction.Symbol,
+                                            title = post.Title,
+                                        }
+                                    ),
+                                post: post,
+                                avatarId: sender.Profile?.Picture?.Id,
+                                extraMeta: new Dictionary<string, object?>
+                                {
+                                    ["notification_type"] = "reaction",
+                                    ["reaction"] = reaction.Symbol,
+                                    ["reaction_attitude"] = reaction
+                                        .Attitude.ToString()
+                                        .ToLowerInvariant(),
+                                    ["actor_id"] = sender.Id,
+                                    ["actor_name"] = sender.Nick,
+                                }
+                            ),
+                        }
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                    $"Error when sending post reactions notification: {ex.Message} {ex.StackTrace}"
+                );
+            }
+        });
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await NotifyPostReactionWatchersAsync(post, reaction, sender);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                    ex,
+                    "Error when sending subscribed post reaction notifications for post {PostId}",
+                    post.Id
+                );
+            }
+        });
+
+        return isRemoving;
+    }
+
+    public async Task<Dictionary<string, int>> GetPostReactionMap(Guid postId)
+    {
+        return await db.Set<SnPostReaction>()
+            .Where(r => r.PostId == postId)
+            .GroupBy(r => r.Symbol)
+            .ToDictionaryAsync(g => g.Key, g => g.Count());
+    }
+
+    public async Task<Dictionary<Guid, Dictionary<string, int>>> GetPostReactionMapBatch(
+        List<Guid> postIds
+    )
+    {
+        return await db.Set<SnPostReaction>()
+            .Where(r => postIds.Contains(r.PostId))
+            .GroupBy(r => r.PostId)
+            .ToDictionaryAsync(
+                g => g.Key,
+                g => g.GroupBy(r => r.Symbol).ToDictionary(sg => sg.Key, sg => sg.Count())
+            );
+    }
+
+    private async Task<Dictionary<Guid, Dictionary<string, bool>>> GetPostReactionMadeMapBatch(
+        List<Guid> postIds,
+        Guid accountId
+    )
+    {
+        var reactions = await db.Set<SnPostReaction>()
+            .Where(r => postIds.Contains(r.PostId) && r.AccountId == accountId)
+            .Select(r => new { r.PostId, r.Symbol })
+            .ToListAsync();
+
+        return postIds.ToDictionary(
+            postId => postId,
+            postId =>
+                reactions.Where(r => r.PostId == postId).ToDictionary(r => r.Symbol, _ => true)
+        );
+    }
+
+    private async Task<HashSet<Guid>> GetPostBookmarkMapBatch(List<Guid> postIds, Guid accountId)
+    {
+        return (
+            await db
+                .PostBookmarks.Where(b => postIds.Contains(b.PostId) && b.AccountId == accountId)
+                .Select(b => b.PostId)
+                .ToListAsync()
+        ).ToHashSet();
+    }
+
+    /// <summary>
+    /// Increases the view count for a post.
+    /// Uses the flush buffer service to batch database updates for better performance.
+    /// </summary>
+    /// <param name="postId">The ID of the post to mark as viewed</param>
+    /// <param name="viewerId">Optional viewer ID for unique view counting (anonymous if null)</param>
+    /// <param name="isDetailView">When using with detail view, the interest will increase. It should be set to true only in the GET with post id situation</param>
+    /// <returns>Task representing the asynchronous operation</returns>
+    public async Task IncreaseViewCount(
+        Guid postId,
+        string? viewerId = null,
+        bool isDetailView = false
+    )
+    {
+        // Check if this view is already counted in cache to prevent duplicate counting
+        if (!string.IsNullOrEmpty(viewerId))
+        {
+            var cacheKey = $"post:view:{postId}:{viewerId}";
+            var (found, _) = await cache.GetAsyncWithStatus<bool>(cacheKey);
+
+            if (found)
+            {
+                // Already viewed by this user recently, don't count again
+                return;
+            }
+
+            // Mark as viewed in cache for 1 hour to prevent duplicate counting
+            await cache.SetAsync(cacheKey, true, TimeSpan.FromHours(1));
+        }
+
+        // Always increment view count
+        flushBuffer.Enqueue(
+            new PostViewInfo
+            {
+                PostId = postId,
+                ViewerId = viewerId,
+                ViewedAt = Instant.FromDateTimeUtc(DateTime.UtcNow),
+            }
+        );
+
+        // Only fire interest signal on detail page views
+        if (
+            isDetailView
+            && !string.IsNullOrEmpty(viewerId)
+            && Guid.TryParse(viewerId, out var accountId)
+        )
+        {
+            var interestCacheKey =
+                $"post:interest:view:{postId}:{viewerId}:{DateTime.UtcNow:yyyyMMdd}";
+            var (interestFound, _) = await cache.GetAsyncWithStatus<bool>(interestCacheKey);
+            if (!interestFound)
+            {
+                await cache.SetAsync(interestCacheKey, true, TimeSpan.FromDays(1));
+                flushBuffer.Enqueue(
+                    new PostInterestSignal
+                    {
+                        AccountId = accountId,
+                        PostId = postId,
+                        ScoreDelta = ViewInterestScore,
+                        SignalType = "view",
+                        OccurredAt = Instant.FromDateTimeUtc(DateTime.UtcNow),
+                    }
+                );
+            }
+        }
+    }
+
+    public async Task IncreaseViewCounts(IEnumerable<Guid> postIds, string? viewerId = null)
+    {
+        await Task.WhenAll(postIds.Distinct().Select(postId => IncreaseViewCount(postId, viewerId)));
+    }
+
+    private async Task<List<SnPost>> LoadPubsAndActors(List<SnPost> posts)
+    {
+        var publisherIds = posts
+            .SelectMany<SnPost, Guid>(e =>
+                [
+                    e.PublisherId,
+                    e.RepliedPost?.PublisherId ?? Guid.Empty,
+                    e.ForwardedPost?.PublisherId ?? Guid.Empty,
+                ]
+            )
+            .Where(e => e != Guid.Empty)
+            .Distinct()
+            .ToList();
+        if (publisherIds.Count == 0)
+            return posts;
+
+        var publishers = await db
+            .Publishers.Where(e => publisherIds.Contains(e.Id))
+            .ToDictionaryAsync(e => e.Id);
+
+        foreach (var post in posts)
+        {
+            if (
+                post.PublisherId != Guid.Empty
+                && publishers.TryGetValue(post.PublisherId, out var publisher)
+            )
+                post.Publisher = PublisherSnapshot.Clone(publisher);
+
+            if (
+                post.RepliedPost?.PublisherId != null
+                && publishers.TryGetValue(
+                    post.RepliedPost!.PublisherId,
+                    out var repliedPublisher
+                )
+            )
+                post.RepliedPost.Publisher = PublisherSnapshot.Clone(repliedPublisher);
+
+            if (
+                post.ForwardedPost?.PublisherId != null
+                && publishers.TryGetValue(
+                    post.ForwardedPost!.PublisherId,
+                    out var forwardedPublisher
+                )
+            )
+                post.ForwardedPost.Publisher = PublisherSnapshot.Clone(forwardedPublisher);
+
+        }
+
+        await ps.LoadIndividualPublisherAccounts(publishers.Values);
+        foreach (var post in posts)
+        {
+            if (post.Publisher?.AccountId is not null && post.PublisherId != Guid.Empty)
+                post.Publisher.Account = publishers[post.PublisherId].Account;
+
+            if (post.RepliedPost?.Publisher?.AccountId is not null && post.RepliedPost != null)
+                post.RepliedPost.Publisher.Account = publishers[post.RepliedPost!.PublisherId].Account;
+
+            if (post.ForwardedPost?.Publisher?.AccountId is not null && post.ForwardedPost != null)
+                post.ForwardedPost.Publisher.Account = publishers[post.ForwardedPost!.PublisherId].Account;
+        }
+
+        var postPublishers = posts
+            .SelectMany(p => new[] { p.Publisher, p.RepliedPost?.Publisher, p.ForwardedPost?.Publisher })
+            .Where(p => p is not null)
+            .Cast<SnPublisher>()
+            .ToList();
+        await ps.HydratePublisherRealmIdentity(postPublishers, posts);
+
+        return posts;
+    }
+
+    private async Task<List<SnPost>> LoadChainedChildrenAsync(
+        List<SnPost> posts,
+        DyAccount? currentUser,
+        bool truncate,
+        List<Guid>? preloadedFriendIds = null,
+        List<SnPublisher>? preloadedPublishers = null
+    )
+    {
+        var headIds = posts.Where(p => p.ChainedPostId == null).Select(p => p.Id).ToList();
+        if (headIds.Count == 0)
+            return posts;
+
+        var children = await db.Posts
+            .Where(p => p.ChainedPostId != null && headIds.Contains(p.ChainedPostId.Value))
+            .Include(p => p.ForwardedPost)
+            .Include(p => p.Categories)
+            .Include(p => p.Tags)
+            .AsNoTracking()
+            .OrderBy(p => p.PublishedAt)
+            .ToListAsync();
+
+        if (children.Count == 0)
+            return posts;
+
+        // Recurse for publishers/actors/interactive; children carry ChainedPostId
+        // so this does not recurse further into chained grandchildren.
+        children = await LoadPostInfo(children, currentUser, truncate, trackViews: false, preloadedFriendIds, preloadedPublishers);
+
+        var byHead = children
+            .GroupBy(p => p.ChainedPostId!.Value)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        // Visibility gate per child, mirroring the RepliedPost gate in LoadInteractive.
+        List<SnPublisher> publishers = [];
+        List<Guid> userFriends = [];
+        if (currentUser is not null)
+        {
+            if (preloadedFriendIds is not null && preloadedPublishers is not null)
+            {
+                userFriends = preloadedFriendIds;
+                publishers = preloadedPublishers;
+            }
+            else
+            {
+                var friendsResponse = await accounts.ListFriendsAsync(
+                    new DyListRelationshipSimpleRequest { AccountId = currentUser.Id }
+                );
+                userFriends = friendsResponse.AccountsId.Select(Guid.Parse).ToList();
+                publishers = await ps.GetUserPublishers(Guid.Parse(currentUser.Id));
+            }
+        }
+
+        foreach (var post in posts)
+        {
+            if (post.ChainedPostId != null)
+                continue;
+            if (!byHead.TryGetValue(post.Id, out var list))
+                continue;
+
+            var visible = list
+                .Where(c => CanViewPost(c, currentUser, publishers, userFriends))
+                .ToList();
+            post.ChainedPosts = visible;
+            post.ChainedCount = visible.Count;
+        }
+
+        return posts;
+    }
+
+    private async Task<List<SnPost>> LoadInteractive(
+        List<SnPost> posts,
+        DyAccount? currentUser = null,
+        bool trackViews = true,
+        List<Guid>? preloadedFriendIds = null,
+        List<SnPublisher>? preloadedPublishers = null
+    )
+    {
+        if (posts.Count == 0)
+            return posts;
+
+        var postsId = posts.Select(e => e.Id).ToList();
+
+        var reactionMaps = await GetPostReactionMapBatch(postsId);
+        var reactionMadeMap = currentUser is not null
+            ? await GetPostReactionMadeMapBatch(postsId, Guid.Parse(currentUser.Id))
+            : new Dictionary<Guid, Dictionary<string, bool>>();
+        var bookmarkedPostIds = currentUser is not null
+            ? await GetPostBookmarkMapBatch(postsId, Guid.Parse(currentUser.Id))
+            : [];
+        var repliesCountMap = await GetPostRepliesCountBatch(postsId);
+        var threadRepliesCountMap = await GetPostThreadRepliesCountBatch(postsId);
+
+        // Load user friends if the current user exists
+        List<SnPublisher> publishers = [];
+        List<Guid> userFriends = [];
+        if (currentUser is not null)
+        {
+            if (preloadedFriendIds is not null && preloadedPublishers is not null)
+            {
+                userFriends = preloadedFriendIds;
+                publishers = preloadedPublishers;
+            }
+            else
+            {
+                var friendsResponse = await accounts.ListFriendsAsync(
+                    new DyListRelationshipSimpleRequest { AccountId = currentUser.Id }
+                );
+                userFriends = friendsResponse.AccountsId.Select(Guid.Parse).ToList();
+                publishers = await ps.GetUserPublishers(Guid.Parse(currentUser.Id));
+            }
+        }
+
+        foreach (var post in posts)
+        {
+            // Set reaction count
+            post.ReactionsCount = reactionMaps.TryGetValue(post.Id, out var count)
+                ? count
+                : new Dictionary<string, int>();
+
+            // Set reaction made status
+            post.ReactionsMade = reactionMadeMap.TryGetValue(post.Id, out var made) ? made : [];
+            post.IsBookmarked = bookmarkedPostIds.Contains(post.Id);
+
+            // Set reply count
+            post.RepliesCount = repliesCountMap.GetValueOrDefault(post.Id, 0);
+            post.ThreadRepliesCount = threadRepliesCountMap.GetValueOrDefault(post.Id, 0);
+
+            // Check visibility for replied post
+            if (post.RepliedPost != null)
+            {
+                if (!CanViewPost(post.RepliedPost, currentUser, publishers, userFriends))
+                {
+                    post.RepliedPost = null;
+                    post.RepliedGone = true;
+                }
+            }
+
+            // Check visibility for forwarded post
+            if (post.ForwardedPost != null)
+            {
+                if (!CanViewPost(post.ForwardedPost, currentUser, publishers, userFriends))
+                {
+                    post.ForwardedPost = null;
+                    post.ForwardedGone = true;
+                }
+            }
+
+            // Track view for each post in the list (without interest signal)
+            if (trackViews)
+            {
+                if (currentUser != null)
+                    await IncreaseViewCount(post.Id, currentUser.Id);
+                else
+                    await IncreaseViewCount(post.Id);
+            }
+        }
+
+        return posts;
+    }
+
+    private bool CanViewPost(
+        SnPost post,
+        DyAccount? currentUser,
+        List<SnPublisher> publishers,
+        List<Guid> userFriends
+    )
+    {
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var publishersId = publishers.Select(e => e.Id).ToList();
+
+        // Check if post is deleted
+        if (post.DeletedAt != null)
+            return false;
+
+        if (currentUser is null)
+        {
+            // Anonymous user can only view public posts that are published
+            return post.DraftedAt is null
+                   && post.PublishedAt != null
+                   && now >= post.PublishedAt
+                   && post.Visibility == PostVisibility.Public;
+        }
+
+        // Check publication status - either published or user is member
+        var isPublished =
+            post.DraftedAt is null && post.PublishedAt != null && now >= post.PublishedAt;
+        var isMember = post.PublisherId != Guid.Empty && publishersId.Contains(post.PublisherId);
+        if (!isPublished && !isMember)
+            return false;
+
+        // Check visibility
+        if (post.Visibility == PostVisibility.Private && !isMember)
+            return false;
+
+        if (
+            post.Visibility == PostVisibility.Friends
+            && !(
+                post.Publisher is not null
+                && post.Publisher.AccountId.HasValue
+                && userFriends.Contains(post.Publisher.AccountId.Value)
+                || isMember
+            )
+        )
+            return false;
+
+        // Public and Unlisted are allowed
+        return true;
+    }
+
+    private async Task<Dictionary<Guid, int>> GetPostRepliesCountBatch(List<Guid> postIds)
+    {
+        return await db
+            .Posts.Where(p => p.RepliedPostId != null && postIds.Contains(p.RepliedPostId.Value))
+            .GroupBy(p => p.RepliedPostId!.Value)
+            .ToDictionaryAsync(g => g.Key, g => g.Count());
+    }
+
+    private async Task<Dictionary<Guid, int>> GetPostThreadRepliesCountBatch(List<Guid> postIds)
+    {
+        if (postIds.Count == 0)
+            return [];
+
+        var postIdsParameter = new NpgsqlParameter<Guid[]>("postIds", postIds.ToArray());
+
+        var results = await db
+            .Database.SqlQueryRaw<ThreadReplyCountResult>(
+                """
+                WITH RECURSIVE reply_tree AS (
+                    SELECT replied_post_id AS ancestor_id, id AS descendant_id
+                    FROM posts
+                    WHERE replied_post_id = ANY (@postIds) AND deleted_at IS NULL
+                    UNION ALL
+                    SELECT reply_tree.ancestor_id, posts.id AS descendant_id
+                    FROM posts
+                    INNER JOIN reply_tree ON posts.replied_post_id = reply_tree.descendant_id
+                    WHERE posts.deleted_at IS NULL
+                )
+                SELECT ancestor_id, COUNT(*)::int AS count
+                FROM reply_tree
+                GROUP BY ancestor_id
+                """,
+                postIdsParameter
+            )
+            .ToListAsync();
+
+        return results.ToDictionary(x => x.AncestorId, x => x.Count);
+    }
+
+    public async Task<List<SnPost>> LoadPostInfo(
+        List<SnPost> posts,
+        DyAccount? currentUser = null,
+        bool truncate = false,
+        bool trackViews = true,
+        List<Guid>? preloadedFriendIds = null,
+        List<SnPublisher>? preloadedPublishers = null
+    )
+    {
+        if (posts.Count == 0)
+            return posts;
+
+        posts = await LoadPubsAndActors(posts);
+        posts = await LoadInteractive(posts, currentUser, trackViews, preloadedFriendIds, preloadedPublishers);
+        posts = await LoadChainedChildrenAsync(posts, currentUser, truncate, preloadedFriendIds, preloadedPublishers);
+
+        if (truncate)
+            posts = TruncatePostContent(posts);
+
+        posts = EscapeMarkdownHeadings(posts);
+
+        return posts;
+    }
+
+    public async Task<SnPost> LoadPostInfo(
+        SnPost post,
+        DyAccount? currentUser = null,
+        bool truncate = false,
+        bool trackViews = true,
+        List<Guid>? preloadedFriendIds = null,
+        List<SnPublisher>? preloadedPublishers = null
+    )
+    {
+        // Convert single post to list, process it, then return the single post
+        var posts = await LoadPostInfo([post], currentUser, truncate, trackViews, preloadedFriendIds, preloadedPublishers);
+        return posts.First();
+    }
+
+    private const string FeaturedPostCacheKey = "posts:featured";
+
+    public async Task<List<SnPost>> ListFeaturedPostsAsync(DyAccount? currentUser = null)
+    {
+        // Check cache first for featured post IDs
+        var featuredIds = await cache.GetAsync<List<Guid>>(FeaturedPostCacheKey);
+
+        if (featuredIds is null)
+        {
+            // The previous day the highest rated posts
+            var today = SystemClock.Instance.GetCurrentInstant();
+            var periodStart = today
+                .InUtc()
+                .Date.AtStartOfDayInZone(DateTimeZone.Utc)
+                .ToInstant()
+                .Minus(Duration.FromDays(1));
+            var periodEnd = today.InUtc().Date.AtStartOfDayInZone(DateTimeZone.Utc).ToInstant();
+
+            var postsInPeriod = await db
+                .Posts.Where(e => e.Visibility == PostVisibility.Public)
+                .Where(e => e.CreatedAt >= periodStart && e.CreatedAt < periodEnd)
+                .Where(e => e.FediverseUri == null)
+                .Where(e =>
+                    e.Publisher == null
+                    || (
+                        e.Publisher.GatekeptFollows != true
+                        && (
+                            e.Publisher.ShadowbanReason == null
+                            || e.Publisher.ShadowbanReason == PublisherShadowbanReason.None
+                        )
+                    )
+                )
+                .Where(e =>
+                    e.ShadowbanReason == null || e.ShadowbanReason == PostShadowbanReason.None
+                )
+                .Select(e => e.Id)
+                .ToListAsync();
+
+            var reactionScores = await db
+                .PostReactions.Where(e => postsInPeriod.Contains(e.PostId))
+                .GroupBy(e => e.PostId)
+                .Select(e => new
+                {
+                    PostId = e.Key,
+                    Score = e.Sum(r => r.Attitude == PostReactionAttitude.Positive ? 1 : -1),
+                })
+                .ToDictionaryAsync(e => e.PostId, e => e.Score);
+
+            var repliesCounts = await db
+                .Posts.Where(p =>
+                    p.RepliedPostId != null && postsInPeriod.Contains(p.RepliedPostId.Value)
+                )
+                .GroupBy(p => p.RepliedPostId!.Value)
+                .ToDictionaryAsync(g => g.Key, g => g.Count());
+
+            // Load awardsScores for postsInPeriod
+            var awardsScores = await db
+                .Posts.Where(p => postsInPeriod.Contains(p.Id))
+                .ToDictionaryAsync(p => p.Id, p => p.AwardedScore);
+
+            var reactSocialPoints = postsInPeriod
+                .Select(postId => new
+                {
+                    PostId = postId,
+                    Count = (reactionScores.GetValueOrDefault(postId, 0))
+                            + (repliesCounts.GetValueOrDefault(postId, 0))
+                            + (
+                                awardsScores.TryGetValue(postId, out var awardScore)
+                                    ? (int)(awardScore / 10)
+                                    : 0
+                            ),
+                })
+                .OrderByDescending(e => e.Count)
+                .Take(5)
+                .ToDictionary(e => e.PostId, e => e.Count);
+
+            featuredIds = reactSocialPoints.Select(e => e.Key).ToList();
+
+            await cache.SetAsync(FeaturedPostCacheKey, featuredIds, TimeSpan.FromHours(4));
+
+            // Create featured record
+            var existingFeaturedPostIds = await db
+                .PostFeaturedRecords.Where(r => featuredIds.Contains(r.PostId))
+                .Select(r => r.PostId)
+                .ToListAsync();
+
+            var records = reactSocialPoints
+                .Where(p => !existingFeaturedPostIds.Contains(p.Key))
+                .Select(e => new SnPostFeaturedRecord { PostId = e.Key, SocialCredits = e.Value })
+                .ToList();
+
+            if (records.Count != 0)
+            {
+                db.PostFeaturedRecords.AddRange(records);
+                await db.SaveChangesAsync();
+
+                var featuredPosts = await db
+                    .Posts.Where(p => records.Select(r => r.PostId).Contains(p.Id))
+                    .Include(p => p.Publisher)
+                    .ToListAsync();
+
+                foreach (
+                    var featuredPost in featuredPosts.Where(p => p.Publisher?.AccountId is not null)
+                )
+                {
+                    var record = records.First(r => r.PostId == featuredPost.Id);
+                    actionLogs.CreateActionLog(
+                        featuredPost.Publisher!.AccountId!.Value,
+                        ActionLogType.PostFeatured,
+                        new Dictionary<string, object>
+                        {
+                            ["post_id"] = featuredPost.Id,
+                            ["publisher_id"] = featuredPost.PublisherId,
+                            ["social_credits"] = record.SocialCredits,
+                        }
+                    );
+                }
+            }
+        }
+
+        var posts = await db
+            .Posts.Where(e => featuredIds.Contains(e.Id))
+            .Include(e => e.ForwardedPost)
+            .Include(e => e.RepliedPost)
+            .Include(e => e.Categories)
+            .Include(e => e.Publisher)
+            .Include(e => e.FeaturedRecords)
+            .Where(e => e.Publisher == null || e.Publisher.GatekeptFollows != true)
+            .Take(featuredIds.Count)
+            .ToListAsync();
+        posts = posts.OrderBy(e => featuredIds.IndexOf(e.Id)).ToList();
+        posts = await LoadPostInfo(posts, currentUser, true);
+
+        var sponsoredPost = await serviceProvider.GetRequiredService<SponsorService>()
+            .GetCurrentSponsoredPostAsync();
+        if (sponsoredPost is not null)
+        {
+            if (currentUser is not null)
+                sponsoredPost = await LoadPostInfo([sponsoredPost], currentUser, true).ContinueWith(t => t.Result.FirstOrDefault());
+            sponsoredPost!.Sponsored = true;
+            posts.Insert(0, sponsoredPost);
+        }
+
+        return posts;
+    }
+
+    public async Task<SnPostAward> AwardPost(
+        Guid postId,
+        Guid accountId,
+        decimal amount,
+        PostReactionAttitude attitude,
+        string? message
+    )
+    {
+        var post = await db.Posts.Where(p => p.Id == postId).FirstOrDefaultAsync();
+        if (post is null)
+            throw new InvalidOperationException("Post not found");
+
+        var award = new SnPostAward
+        {
+            Amount = amount,
+            Attitude = attitude,
+            Message = message,
+            PostId = postId,
+            AccountId = accountId,
+        };
+
+        db.PostAwards.Add(award);
+        await db.SaveChangesAsync();
+
+        // Create merchant settlement via gRPC for positive awards (tips)
+        if (attitude == PostReactionAttitude.Positive && post.PublisherId != Guid.Empty)
+        {
+            _ = Task.Run(async () =>
+            {
+                using var scope = factory.CreateScope();
+                var merchantRpc = scope.ServiceProvider.GetRequiredService<RemoteMerchantService>();
+                try
+                {
+                    await merchantRpc.CreateMerchantSettlementAsync(
+                        publisherId: post.PublisherId.ToString(),
+                        currency: "points",
+                        amount: amount.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        awardId: award.Id.ToString());
+                }
+                catch (Exception ex)
+                {
+                    var errLogger = scope.ServiceProvider.GetRequiredService<ILogger<PostService>>();
+                    errLogger.LogError(ex, "Failed to create merchant settlement for award {AwardId}", award.Id);
+                }
+            });
+        }
+
+        var delta = award.Attitude == PostReactionAttitude.Positive ? amount : -amount;
+
+        await db
+            .Posts.Where(p => p.Id == postId)
+            .ExecuteUpdateAsync(s =>
+                s.SetProperty(p => p.AwardedScore, p => p.AwardedScore + delta)
+            );
+
+        _ = Task.Run(async () =>
+        {
+            using var scope = factory.CreateScope();
+            var pub = scope.ServiceProvider.GetRequiredService<PublisherService>();
+            var nty = scope.ServiceProvider.GetRequiredService<DyRingService.DyRingServiceClient>();
+            var accounts =
+                scope.ServiceProvider.GetRequiredService<DyAccountService.DyAccountServiceClient>();
+            var accountsHelper = scope.ServiceProvider.GetRequiredService<RemoteAccountService>();
+            try
+            {
+                var sender = await accountsHelper.GetAccount(accountId);
+
+                if (post.PublisherId == Guid.Empty)
+                    return;
+                var members = await pub.GetPublisherMembers(post.PublisherId);
+                var queryRequest = new DyGetAccountBatchRequest();
+                queryRequest.Id.AddRange(members.Select(m => m.AccountId.ToString()));
+                var queryResponse = await accounts.GetAccountBatchAsync(queryRequest);
+                foreach (var member in queryResponse.Accounts)
+                {
+                    if (member is null)
+                        continue;
+
+                    await nty.SendPushNotificationToUserAsync(
+                        new DySendPushNotificationToUserRequest
+                        {
+                            UserId = member.Id,
+                            Notification = BuildPostNotification(
+                                locale: member.Language,
+                                topic: "posts.awards.new",
+                                title: localizer.Get(
+                                    "postAwardedTitle",
+                                    locale: member.Language,
+                                    args: new { user = sender.Nick }
+                                ),
+                                body: string.IsNullOrWhiteSpace(post.Title)
+                                    ? localizer.Get(
+                                        "postAwardedBody",
+                                        locale: member.Language,
+                                        args: new { user = sender.Nick, amount }
+                                    )
+                                    : localizer.Get(
+                                        "postAwardedContentBody",
+                                        locale: member.Language,
+                                        args: new
+                                        {
+                                            user = sender.Nick,
+                                            amount,
+                                            title = post.Title,
+                                        }
+                                    ),
+                                post: post,
+                                avatarId: sender.Profile?.Picture?.Id,
+                                extraMeta: new Dictionary<string, object?>
+                                {
+                                    ["notification_type"] = "award",
+                                    ["amount"] = amount,
+                                    ["award_attitude"] = award
+                                        .Attitude.ToString()
+                                        .ToLowerInvariant(),
+                                    ["actor_id"] = sender.Id,
+                                    ["actor_name"] = sender.Nick,
+                                }
+                            ),
+                        }
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                    $"Error when sending post awarded notification: {ex.Message} {ex.StackTrace}"
+                );
+            }
+        });
+
+        return award;
+    }
+
+    public enum PostVisibilityResult
+    {
+        Visible,
+        NotVisible,
+        Gatekept,
+    }
+
+    public async Task<PostVisibilityResult> CheckPostVisibilityAsync(
+        SnPost post,
+        DyAccount? currentUser
+    )
+    {
+        var now = SystemClock.Instance.GetCurrentInstant();
+
+        if (post.DraftedAt != null)
+        {
+            if (currentUser == null)
+                return PostVisibilityResult.NotVisible;
+
+            if (
+                post.Publisher?.AccountId == null
+                || post.Publisher.AccountId.Value != Guid.Parse(currentUser.Id)
+            )
+                return PostVisibilityResult.NotVisible;
+        }
+
+        if (post.PublishedAt == null || post.PublishedAt > now)
+            return PostVisibilityResult.NotVisible;
+
+        if (post.Visibility == PostVisibility.Private)
+        {
+            if (currentUser == null)
+                return PostVisibilityResult.NotVisible;
+
+            if (
+                post.Publisher?.AccountId == null
+                || post.Publisher.AccountId.Value != Guid.Parse(currentUser.Id)
+            )
+                return PostVisibilityResult.NotVisible;
+        }
+
+        if (post.Visibility == PostVisibility.Friends)
+        {
+            if (currentUser == null)
+                return PostVisibilityResult.NotVisible;
+
+            if (
+                post.Publisher?.AccountId != null
+                && post.Publisher.AccountId.Value == Guid.Parse(currentUser.Id)
+            )
+                return PostVisibilityResult.Visible;
+        }
+
+        if (post.PublisherId != Guid.Empty)
+        {
+            var publisher = post.Publisher;
+            if (publisher == null)
+            {
+                publisher = await db
+                    .Publishers.AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.Id == post.PublisherId);
+            }
+
+            if (publisher?.IsGatekept == true)
+            {
+                if (currentUser == null)
+                    return PostVisibilityResult.Gatekept;
+
+                var accountId = Guid.Parse(currentUser.Id);
+                var isSubscribed = await db.PublisherSubscriptions.AnyAsync(s =>
+                    s.PublisherId == post.PublisherId
+                    && s.AccountId == accountId
+                    && s.EndedAt == null
+                    && s.State == PublisherSubscriptionState.Accepted
+                    && !s.IsBlocking
+                );
+
+                if (!isSubscribed)
+                    return PostVisibilityResult.Gatekept;
+            }
+        }
+
+        return PostVisibilityResult.Visible;
+    }
+
+    public void EnsurePostVisible(SnPost post, DyAccount? currentUser)
+    {
+        var result = CheckPostVisibilityAsync(post, currentUser).GetAwaiter().GetResult();
+        switch (result)
+        {
+            case PostVisibilityResult.NotVisible:
+                throw new InvalidOperationException("Post is not visible to this user");
+            case PostVisibilityResult.Gatekept:
+                throw new InvalidOperationException(
+                    "Post is from a gatekept publisher and user is not subscribed"
+                );
+        }
+    }
+}
+
+public static class PostQueryExtensions
+{
+    public static IQueryable<SnPost> FilterWithVisibility(
+        this IQueryable<SnPost> source,
+        DyAccount? currentUser,
+        List<Guid> userFriends,
+        List<SnPublisher> publishers,
+        bool isListing = false,
+        HashSet<Guid>? gatekeptPublisherIds = null,
+        HashSet<Guid>? followerPublisherIds = null,
+        HashSet<Guid>? blockedAccountIds = null,
+        HashSet<Guid>? mutedAccountIds = null,
+        HashSet<Guid>? closeFriendPublisherIds = null,
+        bool showQuietPublic = false,
+        HashSet<Guid>? blockedPublisherIds = null,
+        HashSet<Guid>? mutedPublisherIds = null
+    )
+    {
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var publishersId = publishers.Select(e => e.Id).ToList();
+
+        if (isListing)
+            source = source.Where(e => e.DraftedAt == null);
+
+        source = isListing switch
+        {
+            true when currentUser is not null => source.Where(e =>
+                e.Visibility != Shared.Models.PostVisibility.Unlisted
+                || (e.PublisherId != Guid.Empty && publishersId.Contains(e.PublisherId))
+            ),
+            true => source.Where(e => e.Visibility != Shared.Models.PostVisibility.Unlisted),
+            _ => source,
+        };
+
+        if (currentUser is null)
+        {
+            if (gatekeptPublisherIds != null && gatekeptPublisherIds.Count > 0)
+            {
+                source = source.Where(e =>
+                    !(e.PublisherId != Guid.Empty && gatekeptPublisherIds.Contains(e.PublisherId))
+                );
+            }
+
+            return source
+                .Where(e => e.DraftedAt == null)
+                .Where(e => e.PublishedAt != null && now >= e.PublishedAt)
+                .Where(e => e.Visibility == Shared.Models.PostVisibility.Public);
+        }
+
+        var result = source
+            .Where(e =>
+                (e.DraftedAt == null && e.PublishedAt != null && now >= e.PublishedAt)
+                || (e.PublisherId != Guid.Empty && publishersId.Contains(e.PublisherId))
+            )
+            .Where(e =>
+                e.Visibility != Shared.Models.PostVisibility.Private
+                || publishersId.Contains(e.PublisherId)
+            )
+            .Where(e =>
+                e.Visibility != Shared.Models.PostVisibility.Friends
+                || (
+                    e.Publisher!.AccountId != null
+                    && userFriends.Contains(e.Publisher.AccountId.Value)
+                )
+                || publishersId.Contains(e.PublisherId)
+            )
+            .Where(e =>
+                e.Visibility != Shared.Models.PostVisibility.CloseFriendsOnly
+                || publishersId.Contains(e.PublisherId)
+                || (
+                    closeFriendPublisherIds != null
+                    && e.PublisherId != Guid.Empty
+                    && closeFriendPublisherIds.Contains(e.PublisherId)
+                )
+            )
+            .Where(e =>
+                e.Visibility != Shared.Models.PostVisibility.QuietPublic
+                || showQuietPublic
+                || publishersId.Contains(e.PublisherId)
+                || (
+                    followerPublisherIds != null
+                    && e.PublisherId != Guid.Empty
+                    && followerPublisherIds.Contains(e.PublisherId)
+                )
+            );
+
+        if (
+            gatekeptPublisherIds != null
+            && gatekeptPublisherIds.Count > 0
+            && followerPublisherIds != null
+        )
+        {
+            result = result.Where(e =>
+                !(e.PublisherId != Guid.Empty && gatekeptPublisherIds.Contains(e.PublisherId))
+                || publishersId.Contains(e.PublisherId)
+                || followerPublisherIds.Contains(e.PublisherId)
+            );
+        }
+
+        if (blockedAccountIds is { Count: > 0 })
+        {
+            result = result.Where(e =>
+                e.Publisher == null
+                || e.Publisher.AccountId == null
+                || !blockedAccountIds.Contains(e.Publisher.AccountId.Value)
+            );
+        }
+
+        if (mutedAccountIds is { Count: > 0 })
+        {
+            result = result.Where(e =>
+                e.Publisher == null
+                || e.Publisher.AccountId == null
+                || !mutedAccountIds.Contains(e.Publisher.AccountId.Value)
+            );
+        }
+
+        if (blockedPublisherIds is { Count: > 0 })
+        {
+            result = result.Where(e =>
+                e.PublisherId == Guid.Empty || !blockedPublisherIds.Contains(e.PublisherId)
+            );
+        }
+
+        if (mutedPublisherIds is { Count: > 0 })
+        {
+            result = result.Where(e =>
+                e.PublisherId == Guid.Empty || !mutedPublisherIds.Contains(e.PublisherId)
+            );
+        }
+
+        return result;
+    }
+}

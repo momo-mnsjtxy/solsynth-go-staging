@@ -1,3 +1,15 @@
 .cache/
 coverage.out
 *.test
+/tests/contract/exchange-oracle/bin/
+/tests/contract/exchange-oracle/obj/
+/tests/contract/badges-oracle/bin/
+/tests/contract/badges-oracle/obj/
+
+__pycache__/
+/tests/contract/recovery-regression-oracle/bin/
+/tests/contract/recovery-regression-oracle/obj/
+/tests/contract/wallet-product-oracle/bin/
+/tests/contract/wallet-product-oracle/obj/
+/inventory/product-client-evidence/bot-command-oracle/bin/
+/inventory/product-client-evidence/bot-command-oracle/obj/

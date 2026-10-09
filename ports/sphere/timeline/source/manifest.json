@@ -1,0 +1,112 @@
+{
+  "files": [
+    {
+      "file": "Solian__lib__posts__screens__publisher_profile.dart",
+      "path": "lib/posts/screens/publisher_profile.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "blob": "082e102c1ed8984cc4ed1ce50368624314e1489a",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/posts/screens/publisher_profile.dart",
+      "license": "AGPL-3.0-only",
+      "bytes": 72089,
+      "sha256": "abee1f58f8c6fd0bd52b49656df11714ffa50a5a35ec7974bb25cc78b6724fc4"
+    },
+    {
+      "file": "Solian__lib__creators__screens__hub.dart",
+      "path": "lib/creators/screens/hub.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "blob": "277331371745f361935074813a9c6d47558b0058",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/creators/screens/hub.dart",
+      "license": "AGPL-3.0-only",
+      "bytes": 87311,
+      "sha256": "cf4378855b34489589215dacdaff465b3e5327fcf3af7be8db821d00d7406e29"
+    },
+    {
+      "file": "Solian__lib__discovery__widgets__subscribed_publishers_strip.dart",
+      "path": "lib/discovery/widgets/subscribed_publishers_strip.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "blob": "98ca7f18c0d01b02f3fba4eb703472f37e7c2705",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/discovery/widgets/subscribed_publishers_strip.dart",
+      "license": "AGPL-3.0-only",
+      "bytes": 14879,
+      "sha256": "78a13a7be40dc0e6b00070fad3355e63939987003f23cffae7afc28e2ef5ea0d"
+    },
+    {
+      "file": "Solian__lib__discovery__explore.dart",
+      "path": "lib/discovery/explore.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "blob": "39e2d626877c96194e5c7a37042bdbe910b20388",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/discovery/explore.dart",
+      "license": "AGPL-3.0-only",
+      "bytes": 45349,
+      "sha256": "c98a5ddec3bbb8c775653f8e3abd6f57ffc0f3ca6eacf3f0f94b7d04432d387f"
+    },
+    {
+      "file": "Solian__lib__discovery__discovery_feedback_service.dart",
+      "path": "lib/discovery/discovery_feedback_service.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "blob": "84ac4e726cafad45c973c18fb681adb612caed2a",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/discovery/discovery_feedback_service.dart",
+      "license": "AGPL-3.0-only",
+      "bytes": 4316,
+      "sha256": "99079183f63174b4ae4de622dabfa8b707fac2eb717ebad0fb34529e24250f3e"
+    },
+    {
+      "file": "Solian__lib__discovery__widgets__discovery_profile_sheet.dart",
+      "path": "lib/discovery/widgets/discovery_profile_sheet.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "blob": "ac074a8f504b0879e3863fbf1356df730f8c076b",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/discovery/widgets/discovery_profile_sheet.dart",
+      "license": "AGPL-3.0-only",
+      "bytes": 15793,
+      "sha256": "85c9ad10703940d0ac72defcbeb10a6537954d563e71378857b6d7f226c4d5ab"
+    },
+    {
+      "file": "Solian__lib__posts__posts_pod.dart",
+      "path": "lib/posts/posts_pod.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "blob": "8f6cd22ecd85dec73b1dfcea16004844dc0ffa35",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/posts/posts_pod.dart",
+      "license": "AGPL-3.0-only",
+      "bytes": 13215,
+      "sha256": "db51439528b8fc539f4698ca5bb16c087e8059cfd346ad624399e262c6a08ea0"
+    },
+    {
+      "file": "Solian__test__discovery__explore_refresh_test.dart",
+      "path": "test/discovery/explore_refresh_test.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "blob": "ecdbb51c42bb85a676410a8791cb51012d7dea3a",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/discovery/explore_refresh_test.dart",
+      "license": "AGPL-3.0-only",
+      "bytes": 8978,
+      "sha256": "0405cd9418ad84358ae3d221c6a1f1bfa7fbc070178c33de0716c97ac7f3291c"
+    },
+    {
+      "file": "DYSON-LICENSE.txt",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "license": "AGPL-3.0-only"
+    },
+    {
+      "file": "SOLIAN-LICENSE.txt",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+      "bytes": 34522,
+      "license": "AGPL-3.0-only"
+    }
+  ],
+  "excluded_sources_not_read": [
+    "NeTo/Spec",
+    "DysonNetwork.Shared",
+    "SDK-generated definitions",
+    "SoSYS",
+    "Socommon",
+    "Stargate"
+  ]
+}

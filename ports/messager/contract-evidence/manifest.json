@@ -34,5 +34,11 @@
     "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/e2ee_message_service.dart",
     "blob": "e1b41340a7b74f8ef0fc2034994be01f7e4973bf",
     "sha256": "764787db80c6e0d22f8156c2c987f52ef4c484e8e51e0f6a7b089028d4130d36"
+  },
+  {
+    "file": "lib__chat__send__message_sender.dart",
+    "source": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/send/message_sender.dart",
+    "blob": "0618441204e9fab475a749cde535642b1a07a449",
+    "sha256": "0dc79d3e7275c830645b596b40cabb6ab3c051c4c5139a8180ff2a70bc09b539"
   }
 ]

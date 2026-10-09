@@ -1,0 +1,78 @@
+{
+  "license": "AGPL-3.0-only",
+  "scope": "Licensed authored activity methods/callers only; excerpt hashes are not original blob identities.",
+  "files": [
+    {
+      "file": "AccountEventService.activities.excerpt.cs",
+      "sha256": "3840f8c6efd52660f8bad6a5b655a4f550d2f74b2967a567e1156d99bb9c7896",
+      "blob": "3e3d0e21d80cf8941d8759ee0212458d36456c7f",
+      "bytes": 28679,
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_path": "DysonNetwork.Passport/Account/AccountEventService.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountEventService.cs",
+      "original_blob": "1f9891d9bfc97ffbc7306213e0d7f5a10d63b4ce",
+      "retained_line_ranges": [
+        [
+          1587,
+          1805
+        ],
+        [
+          1884,
+          2473
+        ]
+      ]
+    },
+    {
+      "file": "DYSON-LICENSE.txt",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "bytes": 34523,
+      "kind": "Root AGPL license retained from existing verified package"
+    },
+    {
+      "file": "SOLIAN-LICENSE.txt",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+      "blob": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+      "bytes": 34522,
+      "kind": "Root AGPL license retained from existing verified package"
+    },
+    {
+      "file": "Solian__activity_rpc.http.excerpt.dart",
+      "sha256": "cf91e7dc551b7adcb1ed5a2650ed40239f496bff124afa7d69efc60ccae8314f",
+      "blob": "634d8f9a637cc75b6a154005b6d96d8648c44d98",
+      "bytes": 2837,
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_path": "lib/activity/activity_rpc.dart",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/activity/activity_rpc.dart",
+      "original_blob": "ecb94ff418046d23a1776185d9d3852728503f24",
+      "retained_line_ranges": [
+        [
+          425,
+          447
+        ],
+        [
+          477,
+          487
+        ],
+        [
+          587,
+          636
+        ]
+      ]
+    },
+    {
+      "file": "Solian__sn_presence_activity_test.dart",
+      "sha256": "aaf8659e1cf5bbc8f76618ea40dc708e1435a9e5fb80c1793780928bb118bf8e",
+      "blob": "d9d594a2b5eca67989af9aa540243bb08cc23b6c",
+      "bytes": 3157,
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_path": "test/accounts/sn_presence_activity_test.dart",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/test/accounts/sn_presence_activity_test.dart",
+      "original_blob": "d9d594a2b5eca67989af9aa540243bb08cc23b6c",
+      "retained_line_ranges": null
+    }
+  ]
+}

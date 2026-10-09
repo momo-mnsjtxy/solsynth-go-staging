@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "prepared_on": "2026-10-08",
+  "scope": "Owned text support cases and separate authored Passport exam/attempt lifecycle. No exam-to-support-ticket conversion, live notification, automatic account enablement, or second permission/XP authority.",
+  "source_policy": "Licensed authored root-repository files only. No Shared submodule model definitions, generated SDK, Spec schema, appsettings, provider secrets or third-party assets fetched. SnTest.cs is authored inside Passport/Examination, not Shared.",
+  "files": [
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Passport/Ticket/TicketController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Ticket/TicketController.cs",
+      "sha256": "a262d121c12c329e6a327bc9c762d27ac35532f6da102d11fd44c1b20400d7b0",
+      "git_blob": "a01879f5d3f73b24905c6acc3165f94e33098a4e",
+      "license": "AGPL-3.0-only",
+      "scope": "retained authored controller"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Passport/Ticket/TicketOnCallAdminController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Ticket/TicketOnCallAdminController.cs",
+      "sha256": "ec161f7bfdf4b5cdf7743d20ef0bd2c980bf49b9102c8d1f3b84b467745bc90f",
+      "git_blob": "8a244d4480ebe2c800ce567ad7631026d3743cab",
+      "license": "AGPL-3.0-only",
+      "scope": "retained authored controller"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Passport/Examination/TestAdminController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestAdminController.cs",
+      "sha256": "1ba9a850d2c680fa4fde68637457f25d20ccab88ccd400d2cc509cb4c1ccf5f9",
+      "git_blob": "bcd87bf5056863bd4d1700ee301b8959c93fca50",
+      "license": "AGPL-3.0-only",
+      "scope": "retained authored controller"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Passport/Examination/TestController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestController.cs",
+      "sha256": "c3b5ba0842e60988c5b95b095f62d84cea015cda4db35a63c76e90053782afbb",
+      "git_blob": "4d98f0c8cc6b8994498d366da8ace9d298f2c179",
+      "license": "AGPL-3.0-only",
+      "scope": "retained authored controller"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Passport/Examination/TestQuestionAdminController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestQuestionAdminController.cs",
+      "sha256": "fd6799c5b098fc989a879cad06281edf060a59c3796f2f358fe71ec2646c0d4c",
+      "git_blob": "ee24882f1e1bf62fbf2c651dd539c886382d8645",
+      "license": "AGPL-3.0-only",
+      "scope": "retained authored controller"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Passport/Examination/TestQuestionGroupAdminController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestQuestionGroupAdminController.cs",
+      "sha256": "b68c6c479c46d4a1b8749c8d7d66bc43ad90fef387971c2f0bf93d3402dc27a6",
+      "git_blob": "add4eba04f333378b499919921351a6aab7333b3",
+      "license": "AGPL-3.0-only",
+      "scope": "retained authored controller"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Passport/Examination/TestTrialAdminController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestTrialAdminController.cs",
+      "sha256": "4551489dfdc89c76367b51c14e68d900bce3d623092928dd318ee6c674f6c96f",
+      "git_blob": "270eb266f18118f568f96e8ab94807d99e8672a5",
+      "license": "AGPL-3.0-only",
+      "scope": "retained authored controller"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Passport/Examination/TestTrialController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestTrialController.cs",
+      "sha256": "cc0ffa4548666324fc6ed5662aeba22fa0ca64b104dcdba4d9591c3801cfca2c",
+      "git_blob": "78f10333fe85dfdd1894da85003173381e35e2a4",
+      "license": "AGPL-3.0-only",
+      "scope": "retained authored controller"
+    },
+    {
+      "file": "ports/passport/tickets/source/TestService.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/TestService.cs",
+      "sha256": "708a44537478dfab5ce3d073ad3cb4d81065521d33d35ea5ee6bd42045b718f4",
+      "git_blob": "e4ff78086ce68fa99e5d66ad1d2af0dbe431c80a",
+      "license": "AGPL-3.0-only",
+      "scope": "authored root-repository source, exact blob hash verified"
+    },
+    {
+      "file": "ports/passport/tickets/source/SnTest.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Examination/SnTest.cs",
+      "sha256": "5f012104638b4d70fd8da8083f0bdaef59244fbc745658b4cb62e0391e9b4325",
+      "git_blob": "b8722720077f5128df0f53717e32ae18cb42250a",
+      "license": "AGPL-3.0-only",
+      "scope": "authored root-repository source, exact blob hash verified"
+    },
+    {
+      "file": "ports/passport/tickets/source/TicketService.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Ticket/TicketService.cs",
+      "sha256": "dafb11fd756600094ad0cddee67f7e578895e5cd73154d0b47289bb592711ff0",
+      "git_blob": "99d7d5442cb3e5d11591aa2f5a2dd771566db302",
+      "license": "AGPL-3.0-only",
+      "scope": "authored root-repository source, exact blob hash verified"
+    },
+    {
+      "file": "ports/passport/tickets/source/TicketOnCallService.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Ticket/TicketOnCallService.cs",
+      "sha256": "5d936a5324b08631392c8ddfcae37d4eaac85704b40f1282d3c7d498637f664b",
+      "git_blob": "3139bc5387d1921bf626e3fc48e011e679b3441c",
+      "license": "AGPL-3.0-only",
+      "scope": "authored root-repository source, exact blob hash verified"
+    },
+    {
+      "file": "ports/passport/tickets/source/PASSPORT_TESTS_AND_ACTIVATION.md",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/PASSPORT_TESTS_AND_ACTIVATION.md",
+      "sha256": "9a0155f4f71ffc6e28309dd12a3622064a9ecec43a59adb27f9c11acce9ec343",
+      "git_blob": "4fe2ac781fef9799b0917bdca6bf1a5c93ac0e6c",
+      "license": "AGPL-3.0-only",
+      "scope": "authored root-repository source, exact blob hash verified"
+    },
+    {
+      "file": "ports/passport/tickets/source/Solian_abuse_report_service.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/abuse_report_service.dart",
+      "sha256": "c795527910acc5f1457a7ce37e840d3b82b1f4e41c7199abf459c8cafd98e6e7",
+      "git_blob": "f0f7ab79e28c56684858dd759703a3236ea9138f",
+      "license": "AGPL-3.0-only",
+      "scope": "authored root-repository source, exact blob hash verified"
+    },
+    {
+      "file": "ports/passport/tickets/source/Solian_ticket_detail.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/tickets/screens/ticket_detail.dart",
+      "sha256": "be704163d9c2e3d2a02c55854a3528525b75cbce4188c6ab129907d2e4e2ecdb",
+      "git_blob": "b9c0e49ac3ebe6abf22b3c4e443849f2a246b310",
+      "license": "AGPL-3.0-only",
+      "scope": "authored root-repository source, exact blob hash verified"
+    }
+  ]
+}

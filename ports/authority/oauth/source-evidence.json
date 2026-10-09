@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "base": "2e6e25f0a9ba31659119b5981338c08edde7bd43",
+  "implementation": "owned-oauth-v1",
+  "source_boundary": "Authored retained Solian callers/models and existing licensed app configuration. Server lifecycle, schemas and policies are independently authored. No excluded Stargate server, SoSYS, NeTo/Spec, generated SDK/protocol source or unlicensed definitions consulted.",
+  "license_evidence": {
+    "repository": "Solsynth/Solian",
+    "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+    "path": "LICENSE.txt",
+    "blob": "bae94e189e62df1b8d5bd11435d954b25bee9d7b"
+  },
+  "files": [
+    {
+      "path": "ios/SolianWatchApp/Services/StandaloneAuthService.swift",
+      "git_blob_sha": "e4ac4a0c3b4ad368cd0fcc81edbc269b5e9ff55c",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Services/StandaloneAuthService.swift",
+      "upstream_path": "ios/SolianWatchApp/Services/StandaloneAuthService.swift",
+      "bytes": 20527,
+      "sha256": "3e4625dcf7725f6e9adabb0c7b65aad27e1655fef1ecbdd272ea2a1ed415a333",
+      "license": "AGPL-3.0 (repository LICENSE.txt)",
+      "source_kind": "Eligible authored client source/test/config, not excluded generated protocol definitions",
+      "local_file": "inventory/identity-client-evidence/solian/ios/SolianWatchApp/Services/StandaloneAuthService.swift",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1"
+    },
+    {
+      "path": "lib/accounts/models/authorized_app.dart",
+      "git_blob_sha": "95ecc7b88e402cf3d54a32292c64af4646471567",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/models/authorized_app.dart",
+      "upstream_path": "lib/accounts/models/authorized_app.dart",
+      "bytes": 916,
+      "sha256": "bb623dbd7e6c84e2bf992c4a1d89987a84a7419208cf2e9dd4d15e13bb169f81",
+      "license": "AGPL-3.0 (repository LICENSE.txt)",
+      "source_kind": "Eligible authored client source/test/config, not excluded generated protocol definitions",
+      "local_file": "inventory/identity-client-evidence/solian/lib/accounts/models/authorized_app.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1"
+    },
+    {
+      "path": "lib/accounts/widgets/account/account_authorized_apps.dart",
+      "git_blob_sha": "5a2738ce72342b9b06a3cc708d07bca03752a38d",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/widgets/account/account_authorized_apps.dart",
+      "upstream_path": "lib/accounts/widgets/account/account_authorized_apps.dart",
+      "bytes": 16656,
+      "sha256": "9ab5ef789a420352c203d767a1eb7afb38d9df7cf33191f9378bb9d00655290c",
+      "license": "AGPL-3.0 (repository LICENSE.txt)",
+      "source_kind": "Eligible authored client source/test/config, not excluded generated protocol definitions",
+      "local_file": "inventory/identity-client-evidence/solian/lib/accounts/widgets/account/account_authorized_apps.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1"
+    },
+    {
+      "path": "lib/auth/authorize_screen.dart",
+      "git_blob_sha": "4071f4080bbf1e95eb2b33fc1ccd4c91311bc75a",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/authorize_screen.dart",
+      "upstream_path": "lib/auth/authorize_screen.dart",
+      "bytes": 20086,
+      "sha256": "fb35b53394fab8f986c8d5f6fd26c38ea907764230bafe0524c2824ce1322d96",
+      "license": "AGPL-3.0 (repository LICENSE.txt)",
+      "source_kind": "Eligible authored client source/test/config, not excluded generated protocol definitions",
+      "local_file": "inventory/identity-client-evidence/solian/lib/auth/authorize_screen.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1"
+    },
+    {
+      "path": "lib/auth/models/authorize_client_info.dart",
+      "git_blob_sha": "c28dd0e4d1cb144666011f52ec42d6879cc53709",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/models/authorize_client_info.dart",
+      "upstream_path": "lib/auth/models/authorize_client_info.dart",
+      "bytes": 2119,
+      "sha256": "b1cf674996a3b890140450517379a7dfc401cc3475f30f25ea1c7fa13a33fc67",
+      "license": "AGPL-3.0 (repository LICENSE.txt)",
+      "source_kind": "Eligible authored client source/test/config, not excluded generated protocol definitions",
+      "local_file": "inventory/identity-client-evidence/solian/lib/auth/models/authorize_client_info.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1"
+    },
+    {
+      "path": "lib/auth/widgets/auth_consent.dart",
+      "git_blob_sha": "3203e04f7aa921ef01673615aaed9896d2d893ac",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/auth/widgets/auth_consent.dart",
+      "upstream_path": "lib/auth/widgets/auth_consent.dart",
+      "bytes": 31035,
+      "sha256": "0af822354c4165375749deb13def3eb2a5b4f45384f6f287b5d171b7e493f10d",
+      "license": "AGPL-3.0 (repository LICENSE.txt)",
+      "source_kind": "Eligible authored client source/test/config, not excluded generated protocol definitions",
+      "local_file": "inventory/identity-client-evidence/solian/lib/auth/widgets/auth_consent.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1"
+    },
+    {
+      "path": "lib/developers/models/custom_app.dart",
+      "git_blob_sha": "77208a82a9f8ebef6be639754c8206961201f939",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/developers/models/custom_app.dart",
+      "upstream_path": "lib/developers/models/custom_app.dart",
+      "bytes": 2153,
+      "sha256": "2b2f3024e22b6d37e423020cd2b298b7cbbf12fd37fdb84a38d2b721ddcb76ae",
+      "license": "AGPL-3.0 (repository LICENSE.txt)",
+      "source_kind": "Eligible authored client source/test/config, not excluded generated protocol definitions",
+      "local_file": "inventory/identity-client-evidence/solian/lib/developers/models/custom_app.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1"
+    }
+  ],
+  "standards": [
+    {
+      "title": "RFC 6749 OAuth 2.0 Authorization Framework",
+      "url": "https://www.rfc-editor.org/rfc/rfc6749.html",
+      "used": "Authorization-code binding, client authentication, one-use code behavior, form/token errors"
+    },
+    {
+      "title": "RFC 7636 Proof Key for Code Exchange",
+      "url": "https://www.rfc-editor.org/rfc/rfc7636.html",
+      "used": "S256 verifier grammar and challenge binding"
+    },
+    {
+      "title": "RFC 9700 OAuth 2.0 Security Best Current Practice",
+      "url": "https://www.rfc-editor.org/rfc/rfc9700.html",
+      "used": "Exact redirects, PKCE, replay-family revocation"
+    },
+    {
+      "title": "OpenID Connect Core 1.0 incorporating errata set 2",
+      "url": "https://openid.net/specs/openid-connect-core-1_0.html",
+      "used": "Code flow, nonce, ID-token and userinfo claim semantics"
+    }
+  ],
+  "standards_read_date": "2026-10-08"
+}

@@ -1,0 +1,341 @@
+[
+  {
+    "identifier": "progression.post.expert",
+    "achievement_identifier": "expert-post",
+    "label": "Better than 陆游",
+    "caption": "Created over 9362 posts",
+    "icon": "draw",
+    "color": "#6366f1",
+    "localization_key": "badge.post_expert",
+    "category": "post",
+    "icon_url": null,
+    "series": null,
+    "hidden": false
+  },
+  {
+    "identifier": "progression.post.featured",
+    "achievement_identifier": "initial-featured-post",
+    "label": "Editor's Pick",
+    "caption": "Created a post that got featured.",
+    "icon": "recommend",
+    "color": "#f59e0b",
+    "localization_key": "badge.post_featured",
+    "category": "post",
+    "icon_url": null,
+    "series": {
+      "identifier": "featured-post",
+      "title": "Featured Posts",
+      "order": 1
+    },
+    "hidden": false
+  },
+  {
+    "identifier": "progression.post.streak.30",
+    "achievement_identifier": "streak-post-30",
+    "label": "Serial Publisher",
+    "caption": "Created posts for 30 days in a row.",
+    "icon": "calendar-add-on",
+    "color": "#f97316",
+    "localization_key": "badge.post_streak_30",
+    "category": "streak",
+    "icon_url": null,
+    "series": {
+      "identifier": "post-streak",
+      "title": "Posting Streak",
+      "order": 3
+    },
+    "hidden": false
+  },
+  {
+    "identifier": "progression.post.streak.90",
+    "achievement_identifier": "streak-post-90",
+    "label": "Quarterly Author",
+    "caption": "Created posts for 90 days in a row.",
+    "icon": "draw",
+    "color": "#ea580c",
+    "localization_key": "badge.post_streak_90",
+    "category": "streak",
+    "icon_url": null,
+    "series": {
+      "identifier": "post-streak",
+      "title": "Posting Streak",
+      "order": 4
+    },
+    "hidden": false
+  },
+  {
+    "identifier": "progression.post.streak.365",
+    "achievement_identifier": "streak-post-365",
+    "label": "Daily Devotee",
+    "caption": "Created posts for 365 days in a row.",
+    "icon": "calendar-add-on",
+    "color": "#dc2626",
+    "localization_key": "badge.post_streak_365",
+    "category": "streak",
+    "icon_url": null,
+    "series": {
+      "identifier": "post-streak",
+      "title": "Posting Streak",
+      "order": 5
+    },
+    "hidden": false
+  },
+  {
+    "identifier": "progression.login.streak.365",
+    "achievement_identifier": "streak-login-365",
+    "label": "Still Here",
+    "caption": "Logged in for 365 days in a row.",
+    "icon": "calendar-add-on",
+    "color": "#eab308",
+    "localization_key": "badge.login_streak_365",
+    "category": "streak",
+    "icon_url": null,
+    "series": {
+      "identifier": "activity-streak",
+      "title": "Activity Streak",
+      "order": 3
+    },
+    "hidden": false
+  },
+  {
+    "identifier": "progression.login.streak.90",
+    "achievement_identifier": "streak-login-90",
+    "label": "Perennial",
+    "caption": "Stayed active for 90 days in a row.",
+    "icon": "calendar-add-on",
+    "color": "#facc15",
+    "localization_key": "badge.login_streak_90",
+    "category": "streak",
+    "icon_url": null,
+    "series": {
+      "identifier": "activity-streak",
+      "title": "Activity Streak",
+      "order": 4
+    },
+    "hidden": false
+  },
+  {
+    "identifier": "progression.post.featured.expert",
+    "achievement_identifier": "expert-featured-post",
+    "label": "Hall of Fame",
+    "caption": "Created 100 featured posts.",
+    "icon": "recommend",
+    "color": "#d97706",
+    "localization_key": "badge.post_featured_expert",
+    "category": "post",
+    "icon_url": null,
+    "series": {
+      "identifier": "featured-post",
+      "title": "Featured Posts",
+      "order": 2
+    },
+    "hidden": false
+  },
+  {
+    "identifier": "progression.stellar.supporter.12",
+    "achievement_identifier": "stellar-supporter-12",
+    "label": "Mega Supporter",
+    "caption": "Purchased 12 eligible months of the Stellar Program.",
+    "icon": "volunteer-activism",
+    "color": "#a855f7",
+    "localization_key": "badge.stellar_supporter_12",
+    "category": "supporter",
+    "icon_url": null,
+    "series": {
+      "identifier": "stellar-supporter",
+      "title": "Stellar Supporter",
+      "order": 5
+    },
+    "hidden": false
+  },
+  {
+    "identifier": "progression.chat.expert",
+    "achievement_identifier": "expert-chat",
+    "label": "No-life's Otaku",
+    "caption": "I can't believe some one spend for 10k minutes chatting on the Solar Network.",
+    "icon": "do-not-step",
+    "color": "#8b5cf6",
+    "localization_key": "badge.chat_expert",
+    "category": "chat",
+    "icon_url": null,
+    "series": null,
+    "hidden": false
+  },
+  {
+    "identifier": "progression.account.avatar",
+    "achievement_identifier": "first-avatar",
+    "label": "Picture Perfect",
+    "caption": "Set a profile picture for the first time.",
+    "icon": "face",
+    "color": "#22c55e",
+    "localization_key": "badge.account_avatar",
+    "category": "account",
+    "icon_url": null,
+    "series": null,
+    "hidden": false
+  },
+  {
+    "identifier": "progression.friends.50",
+    "achievement_identifier": "friends-50",
+    "label": "Community Pillar",
+    "caption": "Made 50 friends on the Solar Network.",
+    "icon": "diversity-2",
+    "color": "#ec4899",
+    "localization_key": "badge.friends_50",
+    "category": "social",
+    "icon_url": null,
+    "series": {
+      "identifier": "friend-count",
+      "title": "Friend Count",
+      "order": 4
+    },
+    "hidden": false
+  },
+  {
+    "identifier": "progression.friends.100",
+    "achievement_identifier": "friends-100",
+    "label": "The Connector",
+    "caption": "Made 100 friends on the Solar Network.",
+    "icon": "diversity-2",
+    "color": "#f43f5e",
+    "localization_key": "badge.friends_100",
+    "category": "social",
+    "icon_url": null,
+    "series": {
+      "identifier": "friend-count",
+      "title": "Friend Count",
+      "order": 5
+    },
+    "hidden": false
+  },
+  {
+    "identifier": "progression.post.topical.first",
+    "achievement_identifier": "first-topical-post",
+    "label": "Well Structured",
+    "caption": "Published a post with both categories and tags.",
+    "icon": "shapes",
+    "color": "#14b8a6",
+    "localization_key": "badge.post_topical_first",
+    "category": "post",
+    "icon_url": null,
+    "series": null,
+    "hidden": false
+  },
+  {
+    "identifier": "progression.post.topical.50",
+    "achievement_identifier": "topical-post-50",
+    "label": "Organizer",
+    "caption": "Published 50 posts with both categories and tags.",
+    "icon": "shapes",
+    "color": "#0d9488",
+    "localization_key": "badge.post_topical_50",
+    "category": "post",
+    "icon_url": null,
+    "series": null,
+    "hidden": false
+  },
+  {
+    "identifier": "progression.reaction.expert",
+    "achievement_identifier": "expert-reaction",
+    "label": "Empath",
+    "caption": "Reacted to 1000 posts on the Solar Network.",
+    "icon": "bolt-boost",
+    "color": "#e11d48",
+    "localization_key": "badge.reaction_expert",
+    "category": "social",
+    "icon_url": null,
+    "series": null,
+    "hidden": false
+  },
+  {
+    "identifier": "progression.post.downvote.5",
+    "achievement_identifier": "gots-fired-5",
+    "label": "炎上",
+    "caption": "Received repeated downvotes on a publisher post in one day.",
+    "icon": "whatshot",
+    "color": "#7c2d12",
+    "localization_key": "badge.post_downvote_5",
+    "category": "hidden",
+    "icon_url": null,
+    "series": null,
+    "hidden": true
+  },
+  {
+    "identifier": "progression.post.downvote.20",
+    "achievement_identifier": "gots-fired-20",
+    "label": "炎上",
+    "caption": "Received a lot of downvotes on publisher posts.",
+    "icon": "whatshot",
+    "color": "#991b1b",
+    "localization_key": "badge.post_downvote_20",
+    "category": "hidden",
+    "icon_url": null,
+    "series": null,
+    "hidden": true
+  },
+  {
+    "identifier": "progression.account.profile_complete",
+    "achievement_identifier": "profile-complete",
+    "label": "Fully Realized",
+    "caption": "Completed their profile.",
+    "icon": "badge",
+    "color": "#16a34a",
+    "localization_key": "badge.account_profile_complete",
+    "category": "account",
+    "icon_url": null,
+    "series": null,
+    "hidden": false
+  },
+  {
+    "identifier": "progression.boost.50",
+    "achievement_identifier": "boost-50",
+    "label": "Signal Tower",
+    "caption": "Boosted 50 posts on the Solar Network.",
+    "icon": "bolt-boost",
+    "color": "#0ea5e9",
+    "localization_key": "badge.boost_50",
+    "category": "post",
+    "icon_url": null,
+    "series": null,
+    "hidden": false
+  },
+  {
+    "identifier": "progression.hidden.night_owl",
+    "achievement_identifier": "hidden-night-owl",
+    "label": "Night Owl",
+    "caption": "Posted between midnight and 4am.",
+    "icon": "moon-stars",
+    "color": "#1e1b4b",
+    "localization_key": "badge.hidden_night_owl",
+    "category": "hidden",
+    "icon_url": null,
+    "series": null,
+    "hidden": true
+  },
+  {
+    "identifier": "progression.hidden.speed_friend",
+    "achievement_identifier": "hidden-speed-friend",
+    "label": "Instant Connection",
+    "caption": "Accepted a friend request within 60 seconds.",
+    "icon": "diversity-2",
+    "color": "#7c3aed",
+    "localization_key": "badge.hidden_speed_friend",
+    "category": "hidden",
+    "icon_url": null,
+    "series": null,
+    "hidden": true
+  },
+  {
+    "identifier": "progression.hidden.social_butterfly_day",
+    "achievement_identifier": "hidden-social-butterfly-day",
+    "label": "Social Butterfly",
+    "caption": "Made 5 friends in a single day.",
+    "icon": "volunteer-activism",
+    "color": "#c026d3",
+    "localization_key": "badge.hidden_social_butterfly_day",
+    "category": "hidden",
+    "icon_url": null,
+    "series": null,
+    "hidden": true
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "repository": "Solsynth/DysonNetwork",
+  "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "license": "AGPL-3.0-only",
+  "license_file": "DYSON-LICENSE.txt",
+  "license_sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+  "files": [
+    {
+      "file": "MLS_DELIVERY_SERVICE.md",
+      "path": "docs/MLS_DELIVERY_SERVICE.md",
+      "blob": "c564a478276aa337a98efeb9ed87ea5d268e9df2",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/MLS_DELIVERY_SERVICE.md",
+      "bytes": 7657,
+      "sha256": "331ce18c8fb0bc3bfbdcf3911f2b7e02bc5ea8fce0bfea63994bd5159f4774c7"
+    },
+    {
+      "file": "E2EE_KEY_PACKAGE_STATUS.md",
+      "path": "docs/E2EE_KEY_PACKAGE_STATUS.md",
+      "blob": "9a69aec333f21a00817a5df2f576ab6becb93bf2",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/E2EE_KEY_PACKAGE_STATUS.md",
+      "bytes": 3772,
+      "sha256": "cf3bd24c3235306764627673a245b27ec537451284ce061c330e32ceec3f9977"
+    },
+    {
+      "file": "CHAT_MLS_CLIENT_MIGRATION.md",
+      "path": "docs/CHAT_MLS_CLIENT_MIGRATION.md",
+      "blob": "90eca77b3b8796446f5b07b47600b8a86ad94cd2",
+      "source": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/CHAT_MLS_CLIENT_MIGRATION.md",
+      "bytes": 2841,
+      "sha256": "067f3fd4ad1b87d3c52cef9b32ba53cbaf5e93f5d727b07489a7e578de62d4b2"
+    }
+  ]
+}

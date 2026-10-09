@@ -1,0 +1,663 @@
+using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
+using DysonNetwork.Shared.Auth;
+using DysonNetwork.Shared.Capabilities;
+using DysonNetwork.Shared.Data;
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Networking;
+using DysonNetwork.Shared.Proto;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace DysonNetwork.Sphere.Sticker;
+
+[ApiController]
+[Route("/api/stickers")]
+[ApiFeature("stickers", Revision = 1)]
+[ApiFeature("stickers.packs", Revision = 1)]
+public class StickerController(
+    AppDatabase db,
+    StickerService st,
+    Publisher.PublisherService ps,
+    DyFileService.DyFileServiceClient files
+) : ControllerBase
+{
+    private static readonly Regex AlphanumericRegex = new(@"^[a-zA-Z0-9]+$");
+    private static bool IsAlphanumeric(string value) => AlphanumericRegex.IsMatch(value);
+
+    private async Task<IActionResult> _CheckStickerPackPermissions(
+        Guid packId,
+        DyAccount currentUser,
+        Shared.Models.PublisherMemberRole requiredRole
+    )
+    {
+        var pack = await db.StickerPacks
+            .Include(p => p.Publisher)
+            .FirstOrDefaultAsync(p => p.Id == packId);
+
+        if (pack is null)
+            return NotFound(new ApiError { Code = "STICKER_PACK_NOT_FOUND", Message = "Sticker pack not found", Status = 404 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        if (!await ps.IsMemberWithRole(pack.PublisherId, accountId, requiredRole))
+            return StatusCode(403, ApiError.Unauthorized("You are not a member of this publisher", forbidden: true));
+
+        return Ok();
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<List<StickerPack>>> ListStickerPacks(
+        [FromQuery] int offset = 0,
+        [FromQuery] int take = 20,
+        [FromQuery(Name = "pub")] string? pubName = null,
+        [FromQuery(Name = "order")] string? order = null,
+        [FromQuery(Name = "query")] string? query = null
+    )
+    {
+        Shared.Models.SnPublisher? publisher = null;
+        if (pubName is not null)
+        {
+            publisher = await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == pubName.ToLowerInvariant());
+            if (publisher is null)
+                return NotFound(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found.", Status = 404 });
+        }
+
+        var queryable = db.StickerPacks
+            .If(publisher is not null, q => q.Where(f => f.PublisherId == publisher!.Id));
+
+        if (order is not null)
+        {
+            queryable = order switch
+            {
+                "usage" => queryable.OrderByDescending(p => p.Popularity),
+                _ => queryable.OrderByDescending(p => p.CreatedAt)
+            };
+        }
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            queryable = queryable.Where(p =>
+                EF.Functions.ILike(p.Name, $"%{query}%") ||
+                EF.Functions.ILike(p.Description, $"%{query}%")
+            );
+        }
+
+        var totalCount = await queryable
+            .CountAsync();
+        var packs = await queryable
+            .Skip(offset)
+            .Take(take)
+            .Include(e => e.Stickers.OrderBy(s => s.Order).Take(8))
+            .Include(e => e.Publisher)
+            .ToListAsync();
+
+        Response.Headers["X-Total"] = totalCount.ToString();
+        return Ok(packs);
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<ActionResult<List<StickerPackOwnership>>> ListStickerPacksOwned()
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var ownerships = await db.StickerPackOwnerships
+            .Where(o => o.AccountId == accountId)
+            .Include(o => o.Pack)
+                .ThenInclude(p => p.Stickers.OrderBy(s => s.Order))
+            .Include(o => o.Pack)
+                .ThenInclude(p => p.Publisher)
+            .OrderBy(o => o.Order)
+            .ToListAsync();
+
+        return Ok(ownerships);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<StickerPack>> GetStickerPack(Guid id)
+    {
+        var pack = await db.StickerPacks
+            .Include(e => e.Publisher)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (pack is null) return NotFound();
+        return Ok(pack);
+    }
+
+    [HttpGet("by-prefix/{prefix}")]
+    public async Task<ActionResult<StickerPack>> GetStickerPackByPrefix(string prefix)
+    {
+        var pack = await db.StickerPacks
+            .Include(e => e.Publisher)
+            .FirstOrDefaultAsync(p => p.Prefix == prefix);
+
+        if (pack is null) return NotFound();
+        return Ok(pack);
+    }
+
+    public class StickerPackRequest
+    {
+        public string? IconId { get; set; }
+        [MaxLength(1024)] public string? Name { get; set; }
+        [MaxLength(4096)] public string? Description { get; set; }
+        [MaxLength(128)] public string? Prefix { get; set; }
+    }
+
+    [HttpPost]
+    [AskPermission("stickers.packs.create")]
+    public async Task<ActionResult<StickerPack>> CreateStickerPack(
+        [FromBody] StickerPackRequest request,
+        [FromQuery(Name = "pub")] string? publisherName = null
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser) return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        if (string.IsNullOrEmpty(request.Name))
+            return BadRequest(new ApiError { Code = "STICKER_PACK_NAME_REQUIRED", Message = "Name is required", Status = 400 });
+        if (string.IsNullOrEmpty(request.Prefix))
+            return BadRequest(new ApiError { Code = "STICKER_PACK_PREFIX_REQUIRED", Message = "Prefix is required", Status = 400 });
+        if (!IsAlphanumeric(request.Prefix))
+            return BadRequest(new ApiError { Code = "STICKER_PACK_PREFIX_INVALID", Message = "Prefix must only contain ASCII characters", Status = 400 });
+
+        var accountId = Guid.Parse(currentUser.Id);
+        if (publisherName is null)
+            return BadRequest(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 400 });
+
+        var publisher =
+            await db.Publishers.FirstOrDefaultAsync(p => p.Name.ToLower() == publisherName.ToLowerInvariant() && p.AccountId == accountId);
+        if (publisher == null)
+            return BadRequest(new ApiError { Code = "PUBLISHER_NOT_FOUND", Message = "Publisher not found", Status = 400 });
+
+        var pack = new StickerPack
+        {
+            Name = request.Name!,
+            Description = request.Description ?? string.Empty,
+            Prefix = request.Prefix!,
+            PublisherId = publisher.Id
+        };
+
+        if (request.IconId is not null)
+        {
+            var file = await files.GetFileAsync(new DyGetFileRequest { Id = request.IconId });
+            if (file is null)
+                return BadRequest(new ApiError { Code = "STICKER_ICON_NOT_FOUND", Message = "Icon not found.", Status = 400 });
+
+            pack.Icon = SnCloudFileReferenceObject.FromProtoValue(file);
+        }
+
+        db.StickerPacks.Add(pack);
+        await db.SaveChangesAsync();
+
+        return Ok(pack);
+    }
+
+    [HttpPatch("{id:guid}")]
+    [AskPermission(PermissionKeys.StickersPacksUpdate)]
+    public async Task<ActionResult<StickerPack>> UpdateStickerPack(Guid id, [FromBody] StickerPackRequest request)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var pack = await db.StickerPacks
+            .Include(p => p.Publisher)
+            .FirstOrDefaultAsync(p => p.Id == id);
+        if (pack is null)
+            return NotFound();
+
+        var accountId = Guid.Parse(currentUser.Id);
+        var member = await db.PublisherMembers
+            .FirstOrDefaultAsync(m => m.AccountId == accountId && m.PublisherId == pack.PublisherId);
+        if (member is null)
+            return StatusCode(403, ApiError.Unauthorized("You are not a member of this publisher", forbidden: true));
+        if (member.Role < PublisherMemberRole.Editor)
+            return StatusCode(403, ApiError.Unauthorized("You need to be at least an editor to update sticker packs", forbidden: true));
+
+        if (request.Name is not null)
+            pack.Name = request.Name;
+        if (request.Description is not null)
+            pack.Description = request.Description;
+        if (request.Prefix is not null)
+        {
+            if (!IsAlphanumeric(request.Prefix))
+                return BadRequest(new ApiError { Code = "STICKER_PACK_PREFIX_INVALID", Message = "Prefix must only contain ASCII characters", Status = 400 });
+            pack.Prefix = request.Prefix;
+        }
+
+        if (request.IconId is not null)
+        {
+            var file = await files.GetFileAsync(new DyGetFileRequest { Id = request.IconId });
+            if (file is null)
+                return BadRequest(new ApiError { Code = "STICKER_ICON_NOT_FOUND", Message = "Icon not found.", Status = 400 });
+
+            pack.Icon = SnCloudFileReferenceObject.FromProtoValue(file);
+
+        }
+
+        db.StickerPacks.Update(pack);
+        await db.SaveChangesAsync();
+        return Ok(pack);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteStickerPack(Guid id)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var pack = await db.StickerPacks
+            .Include(p => p.Publisher)
+            .FirstOrDefaultAsync(p => p.Id == id);
+        if (pack is null)
+            return NotFound();
+
+        var accountId = Guid.Parse(currentUser.Id);
+        var member = await db.PublisherMembers
+            .FirstOrDefaultAsync(m => m.AccountId == accountId && m.PublisherId == pack.PublisherId);
+        if (member is null)
+            return StatusCode(403, ApiError.Unauthorized("You are not a member of this publisher", forbidden: true));
+        if (member.Role < PublisherMemberRole.Editor)
+            return StatusCode(403, ApiError.Unauthorized("You need to be an editor to delete sticker packs", forbidden: true));
+
+        await st.DeleteStickerPackAsync(pack);
+        return NoContent();
+    }
+
+    [HttpGet("{packId:guid}/content")]
+    public async Task<ActionResult<List<SnSticker>>> ListStickers(Guid packId)
+    {
+        var stickers = await db.Stickers
+            .Where(s => s.Pack.Id == packId)
+            .Include(e => e.Pack)
+            .OrderBy(e => e.Order)
+            .ToListAsync();
+
+        return Ok(stickers);
+    }
+
+    [HttpGet("lookup/{identifier}")]
+    public async Task<ActionResult<SnSticker>> GetStickerByIdentifier(string identifier)
+    {
+        var sticker = await st.LookupStickerByIdentifierAsync(identifier, true);
+
+        if (sticker is null) return NotFound();
+        return Ok(sticker);
+    }
+
+    [HttpGet("lookup/{identifier}/open")]
+    public async Task<ActionResult<SnSticker>> OpenStickerByIdentifier(string identifier)
+    {
+        var sticker = await st.LookupStickerByIdentifierAsync(identifier, true);
+
+        if (sticker?.Image is null) return NotFound();
+        return Redirect($"/drive/files/{sticker.Image.Id}?original=true");
+    }
+
+    [HttpPost("lookup/batch")]
+    public async Task<ActionResult<List<SnStickerBatchLookupItem>>> LookupStickersByPlaceholderBatch(
+        [FromBody] BatchStickerLookupRequest request
+    )
+    {
+        var placeholders = request.Placeholders
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Take(100)
+            .ToList();
+
+        var stickers = await st.LookupStickersByIdentifiersAsync(placeholders, true);
+        return Ok(stickers);
+    }
+
+    [HttpGet("search")]
+    public async Task<ActionResult<List<SnSticker>>> SearchSticker(
+        [FromQuery] string query,
+        [FromQuery] int take = 10,
+        [FromQuery] int offset = 0
+    )
+    {
+        var queryable = db.Stickers
+            .Include(s => s.Pack)
+            .Where(s => EF.Functions.Like(s.Pack.Prefix + "+" + s.Slug, $"{query}%"))
+            .OrderByDescending(s => s.CreatedAt)
+            .AsQueryable();
+
+        var totalCount = await queryable.CountAsync();
+        Response.Headers["X-Total"] = totalCount.ToString();
+
+        var stickers = await queryable.Take(take).Skip(offset).ToListAsync();
+        return Ok(stickers);
+    }
+
+    [HttpGet("{packId:guid}/content/{id:guid}")]
+    public async Task<ActionResult<SnSticker>> GetSticker(Guid packId, Guid id)
+    {
+        var sticker = await db.Stickers
+            .Where(s => s.PackId == packId && s.Id == id)
+            .Include(e => e.Pack)
+            .FirstOrDefaultAsync();
+        if (sticker is null) return NotFound();
+
+        return Ok(sticker);
+    }
+
+    public class StickerRequest
+    {
+        [MaxLength(128)] public string? Slug { get; set; } = null!;
+        [MaxLength(1024)] public string? Name { get; set; }
+        public string? ImageId { get; set; }
+        public StickerSize? Size { get; set; }
+        public StickerMode? Mode { get; set; }
+    }
+
+    public class BatchStickerLookupRequest
+    {
+        public List<string> Placeholders { get; set; } = [];
+    }
+
+    public class BatchStickerRenderingSettingsRequest
+    {
+        public List<Guid> StickerIds { get; set; } = [];
+        public StickerSize? Size { get; set; }
+        public StickerMode? Mode { get; set; }
+    }
+
+    [HttpPatch("{packId:guid}/content/{id:guid}")]
+    public async Task<IActionResult> UpdateSticker(Guid packId, Guid id, [FromBody] StickerRequest request)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var permissionCheck =
+            await _CheckStickerPackPermissions(packId, currentUser, PublisherMemberRole.Editor);
+        if (permissionCheck is not OkResult)
+            return permissionCheck;
+
+        var sticker = await db.Stickers
+            .Include(s => s.Pack)
+            .ThenInclude(p => p.Publisher)
+            .FirstOrDefaultAsync(e => e.Id == id && e.Pack.Id == packId);
+
+        if (sticker is null)
+            return NotFound();
+
+        if (request.Slug is not null)
+        {
+            if (!IsAlphanumeric(request.Slug))
+                return BadRequest(new ApiError { Code = "STICKER_SLUG_INVALID", Message = "Slug must only contain ASCII characters", Status = 400 });
+            sticker.Slug = request.Slug;
+        }
+        if (request.Name is not null)
+            sticker.Name = request.Name;
+        if (request.Size is not null)
+            sticker.Size = request.Size.Value;
+        if (request.Mode is not null)
+            sticker.Mode = request.Mode.Value;
+
+        if (request.ImageId is not null)
+        {
+            var file = await files.GetFileAsync(new DyGetFileRequest { Id = request.ImageId });
+            if (file is null)
+                return BadRequest(new ApiError { Code = "STICKER_IMAGE_NOT_FOUND", Message = "Image not found", Status = 400 });
+            sticker.Image = SnCloudFileReferenceObject.FromProtoValue(file);
+        }
+
+        sticker = await st.UpdateStickerAsync(sticker);
+        return Ok(sticker);
+    }
+
+    [HttpPatch("{packId:guid}/content/batch/rendering-settings")]
+    public async Task<IActionResult> BatchUpdateStickerRenderingSettings(
+        Guid packId,
+        [FromBody] BatchStickerRenderingSettingsRequest request
+    )
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var permissionCheck =
+            await _CheckStickerPackPermissions(packId, currentUser, PublisherMemberRole.Editor);
+        if (permissionCheck is not OkResult)
+            return permissionCheck;
+
+        if (request.StickerIds.Count == 0)
+            return BadRequest(new ApiError { Code = "STICKER_IDS_REQUIRED", Message = "sticker_ids is required.", Status = 400 });
+        if (request.Size is null && request.Mode is null)
+            return BadRequest(new ApiError { Code = "STICKER_SIZE_OR_MODE_REQUIRED", Message = "At least one of size or mode is required.", Status = 400 });
+
+        var stickerIds = request.StickerIds
+            .Distinct()
+            .Take(MaxStickersPerPack)
+            .ToList();
+
+        var stickers = await db.Stickers
+            .Include(s => s.Pack)
+            .Where(s => s.PackId == packId && stickerIds.Contains(s.Id))
+            .ToListAsync();
+
+        if (stickers.Count != stickerIds.Count)
+            return BadRequest(new ApiError { Code = "STICKERS_NOT_FOUND", Message = "One or more stickers were not found in this pack.", Status = 400 });
+
+        foreach (var sticker in stickers)
+        {
+            if (request.Size is not null)
+                sticker.Size = request.Size.Value;
+            if (request.Mode is not null)
+                sticker.Mode = request.Mode.Value;
+        }
+
+        db.Stickers.UpdateRange(stickers);
+        await db.SaveChangesAsync();
+        await st.PurgeStickerCachesAsync(stickers);
+
+        return Ok(stickers);
+    }
+
+    [HttpDelete("{packId:guid}/content/{id:guid}")]
+    public async Task<IActionResult> DeleteSticker(Guid packId, Guid id)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var permissionCheck =
+            await _CheckStickerPackPermissions(packId, currentUser, PublisherMemberRole.Editor);
+        if (permissionCheck is not OkResult)
+            return permissionCheck;
+
+        var sticker = await db.Stickers
+            .Include(s => s.Pack)
+            .ThenInclude(p => p.Publisher)
+            .FirstOrDefaultAsync(e => e.Id == id && e.Pack.Id == packId);
+
+        if (sticker is null)
+            return NotFound();
+
+        await st.DeleteStickerAsync(sticker);
+        return NoContent();
+    }
+
+    public const int MaxStickersPerPack = 24;
+
+    [HttpPost("{packId:guid}/content")]
+    [AskPermission("stickers.create")]
+    public async Task<IActionResult> CreateSticker(Guid packId, [FromBody] StickerRequest request)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        if (string.IsNullOrWhiteSpace(request.Slug))
+            return BadRequest(new ApiError { Code = "STICKER_SLUG_REQUIRED", Message = "Slug is required.", Status = 400 });
+        if (!IsAlphanumeric(request.Slug))
+            return BadRequest(new ApiError { Code = "STICKER_SLUG_INVALID", Message = "Slug must only contain ASCII characters", Status = 400 });
+        if (request.ImageId is null)
+            return BadRequest(new ApiError { Code = "STICKER_IMAGE_REQUIRED", Message = "Image is required.", Status = 400 });
+
+        var permissionCheck =
+            await _CheckStickerPackPermissions(packId, currentUser, PublisherMemberRole.Editor);
+        if (permissionCheck is not OkResult)
+            return permissionCheck;
+
+        var pack = await db.StickerPacks
+            .Include(p => p.Publisher)
+            .FirstOrDefaultAsync(e => e.Id == packId);
+        if (pack is null)
+            return BadRequest(new ApiError { Code = "STICKER_PACK_NOT_FOUND", Message = "Sticker pack was not found.", Status = 400 });
+
+        var stickersCount = await db.Stickers.CountAsync(s => s.PackId == packId);
+        if (stickersCount >= MaxStickersPerPack)
+            return BadRequest(new ApiError { Code = "STICKER_PACK_CAPACITY_REACHED", Message = $"Sticker pack has reached maximum capacity of {MaxStickersPerPack} stickers.", Status = 400 });
+
+        var file = await files.GetFileAsync(new DyGetFileRequest { Id = request.ImageId });
+        if (file is null)
+            return BadRequest(new ApiError { Code = "STICKER_IMAGE_NOT_FOUND", Message = "Image not found.", Status = 400 });
+
+        var sticker = new SnSticker
+        {
+            Slug = request.Slug,
+            Name = request.Name ?? request.Slug,
+            Image = SnCloudFileReferenceObject.FromProtoValue(file),
+            Size = request.Size ?? StickerSize.Auto,
+            Mode = request.Mode ?? StickerMode.Sticker,
+            Pack = pack
+        };
+
+        sticker = await st.CreateStickerAsync(sticker);
+        return Ok(sticker);
+    }
+
+    [HttpGet("{packId:guid}/own")]
+    [Authorize]
+    public async Task<ActionResult<StickerPackOwnership>> GetStickerPackOwnership(Guid packId)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var ownership = await db.StickerPackOwnerships
+            .Where(p => p.PackId == packId && p.AccountId == accountId)
+            .FirstOrDefaultAsync();
+        if (ownership is null) return NotFound();
+        return Ok(ownership);
+    }
+
+    [HttpPost("{packId:guid}/own")]
+    [AskPermission(PermissionKeys.StickersPacksOwn)]
+    [Authorize]
+    public async Task<ActionResult<StickerPackOwnership>> AcquireStickerPack([FromRoute] Guid packId)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var pack = await db.StickerPacks
+            .Where(p => p.Id == packId)
+            .FirstOrDefaultAsync();
+        if (pack is null) return NotFound();
+
+        var existingOwnership = await db.StickerPackOwnerships
+            .Where(p => p.PackId == packId && p.AccountId == Guid.Parse(currentUser.Id))
+            .FirstOrDefaultAsync();
+        if (existingOwnership is not null) return Ok(existingOwnership);
+
+        var ownership = new StickerPackOwnership
+        {
+            PackId = packId,
+            AccountId = Guid.Parse(currentUser.Id)
+        };
+        db.StickerPackOwnerships.Add(ownership);
+        await db.SaveChangesAsync();
+
+        return Ok(ownership);
+    }
+
+    [HttpDelete("{packId:guid}/own")]
+    [AskPermission(PermissionKeys.StickersPacksOwn)]
+    [Authorize]
+    public async Task<IActionResult> ReleaseStickerPack([FromRoute] Guid packId)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var ownership = await db.StickerPackOwnerships
+            .Where(p => p.PackId == packId && p.AccountId == accountId)
+            .FirstOrDefaultAsync();
+        if (ownership is null) return NotFound();
+
+        db.Remove(ownership);
+        await db.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    public class OrderItemRequest
+    {
+        public Guid Id { get; set; }
+        public int Order { get; set; }
+    }
+
+    public class ReorderRequest
+    {
+        public List<OrderItemRequest> Items { get; set; } = [];
+    }
+
+    [HttpPatch("me/order")]
+    [AskPermission(PermissionKeys.StickersPacksOrder)]
+    [Authorize]
+    public async Task<IActionResult> ReorderOwnedStickerPacks([FromBody] ReorderRequest request)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+        var accountId = Guid.Parse(currentUser.Id);
+
+        var ownershipIds = request.Items.Select(i => i.Id).ToList();
+        var ownerships = await db.StickerPackOwnerships
+            .Where(o => ownershipIds.Contains(o.Id) && o.AccountId == accountId)
+            .ToListAsync();
+
+        if (ownerships.Count != ownershipIds.Count)
+            return BadRequest(new ApiError { Code = "STICKERS_OWNERSHIP_NOT_FOUND", Message = "One or more ownership IDs were not found.", Status = 400 });
+
+        foreach (var ownership in ownerships)
+        {
+            var item = request.Items.First(i => i.Id == ownership.Id);
+            ownership.Order = item.Order;
+        }
+
+        db.StickerPackOwnerships.UpdateRange(ownerships);
+        await db.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    [HttpPatch("{packId:guid}/content/order")]
+    [AskPermission(PermissionKeys.StickersContentUpdate)]
+    [Authorize]
+    public async Task<IActionResult> ReorderStickers(Guid packId, [FromBody] ReorderRequest request)
+    {
+        if (HttpContext.Items["CurrentUser"] is not DyAccount currentUser)
+            return Unauthorized(new ApiError { Code = "UNAUTHORIZED", Message = "Authentication is required.", Status = 401 });
+
+        var permissionCheck =
+            await _CheckStickerPackPermissions(packId, currentUser, PublisherMemberRole.Editor);
+        if (permissionCheck is not OkResult)
+            return permissionCheck;
+
+        var stickerIds = request.Items.Select(i => i.Id).ToList();
+        var stickers = await db.Stickers
+            .Where(s => stickerIds.Contains(s.Id) && s.PackId == packId)
+            .ToListAsync();
+
+        if (stickers.Count != stickerIds.Count)
+            return BadRequest(new ApiError { Code = "STICKERS_NOT_FOUND", Message = "One or more sticker IDs were not found in this pack.", Status = 400 });
+
+        foreach (var sticker in stickers)
+        {
+            var item = request.Items.First(i => i.Id == sticker.Id);
+            sticker.Order = item.Order;
+        }
+
+        db.Stickers.UpdateRange(stickers);
+        await db.SaveChangesAsync();
+
+        return Ok();
+    }
+}

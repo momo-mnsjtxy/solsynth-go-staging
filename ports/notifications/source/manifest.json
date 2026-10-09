@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "policy": "Licensed authored Solian callers/models and authored HTTP documentation only; no excluded protocol definitions, generated bindings or unlicensed gateway source. Pinned Dyson root tree contained no Ring/notification controller implementation. No controller-level parity claimed.",
+  "files": [
+    {
+      "file": "Solian__lib__notifications__notification.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "upstream_path": "lib/notifications/notification.dart",
+      "git_blob_sha": "c0a79ba0a7a4891b0bcdcfe0cf71104a3901486a",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/notifications/notification.dart",
+      "kind": "complete authored source",
+      "bytes": 12353,
+      "sha256": "488cdd9ff0ca2fb6276c62f07842a495f737cc7a45ddcf2a2acde971a22e7c09"
+    },
+    {
+      "file": "Solian__ios__SolianWatchApp__Services__NetworkService.swift",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "upstream_path": "ios/SolianWatchApp/Services/NetworkService.swift",
+      "git_blob_sha": "fbefe1976c14e883ed041360e0038707cc8be47e",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Services/NetworkService.swift",
+      "kind": "complete authored source",
+      "bytes": 113289,
+      "sha256": "4dce0a5cb6f1b8b9ac3bd99da6160454333cccdd10d2425633b0794f1ce68dcd"
+    },
+    {
+      "file": "Solian__ios__SolianWatchApp__Models__Models.swift",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "upstream_path": "ios/SolianWatchApp/Models/Models.swift",
+      "git_blob_sha": "33ab300bd334e5ad0b2d473a3c7b57304d519d90",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/ios/SolianWatchApp/Models/Models.swift",
+      "kind": "complete authored source",
+      "bytes": 84523,
+      "sha256": "6c85316dae35bdf17c19b5f9590e2f9593be37921621e1bb40967e1279b73ad4"
+    },
+    {
+      "file": "Solian__lib__core__websocket.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "upstream_path": "lib/core/websocket.dart",
+      "git_blob_sha": "f319bb7161aa661f9e5e64bd40bb45d80f47ff2b",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/websocket.dart",
+      "kind": "complete authored source",
+      "bytes": 20446,
+      "sha256": "a48483f3a399d4f4b8d6e9b16580c02314acdc232d487dfd25b83ef3598cfa8b"
+    },
+    {
+      "file": "Solian__lib__core__config.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "upstream_path": "lib/core/config.dart",
+      "git_blob_sha": "c0fc67cfed2452babab99fe29359352e58a6ca78",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/config.dart",
+      "kind": "complete authored source",
+      "bytes": 35146,
+      "sha256": "82dc53987f2d05568322a3c30704f493983be576858e8edb9b0f99dea36d97cb"
+    },
+    {
+      "file": "SOLIAN-LICENSE.txt",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "upstream_path": "LICENSE.txt",
+      "git_blob_sha": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/LICENSE.txt",
+      "kind": "complete authored source",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "file": "DYSON-LICENSE.txt",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "upstream_path": "LICENSE.txt",
+      "git_blob_sha": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/LICENSE.txt",
+      "kind": "complete license",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "file": "DysonNetwork__MULTI_TENANT_NOTIFICATIONS__http-excerpt.md",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "upstream_path": "docs/MULTI_TENANT_NOTIFICATIONS.md",
+      "upstream_git_blob_sha": "be0e0fe879c8b976756ecc091eeb4c507dfe4421",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/MULTI_TENANT_NOTIFICATIONS.md",
+      "kind": "authored HTTP documentation excerpt only",
+      "extraction": "Beginning '### Notification Endpoints' through before '### SOP Endpoints'; no protocol definitions retained or used.",
+      "bytes": 727,
+      "sha256": "42b2f8c1ebaf7815fd16a0a0028fc9e52c3b54f97b57569a33f61aad68a71b97"
+    }
+  ]
+}

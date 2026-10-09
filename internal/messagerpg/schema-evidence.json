@@ -1,0 +1,424 @@
+{
+  "repository": "Solsynth/DysonNetwork",
+  "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "path": "DysonNetwork.Messager/Migrations/AppDatabaseModelSnapshot.cs",
+  "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Migrations/AppDatabaseModelSnapshot.cs",
+  "license": "AGPL-3.0-only; root license retained in source/LICENSE.txt",
+  "git_blob_sha1": "170bc4adff3fbaf97b1b720b26fe99f0d75aff16",
+  "sha256": "7968bb5449b4fa25f30ae3a5f7588e2bd851f39a6c7c70a68944b6cbbcfbbdd7",
+  "bytes": 33930,
+  "entities": {
+    "SnChatRoom": {
+      "start_line": 540,
+      "table": "chat_rooms",
+      "columns": [
+        {
+          "property": "Id",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "id"
+        },
+        {
+          "property": "AccountId",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "account_id"
+        },
+        {
+          "property": "Background",
+          "clr_type": "SnCloudFileReferenceObject",
+          "sql_type": "jsonb",
+          "column": "background"
+        },
+        {
+          "property": "CreatedAt",
+          "clr_type": "Instant",
+          "sql_type": "timestamp with time zone",
+          "column": "created_at"
+        },
+        {
+          "property": "DeletedAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "deleted_at"
+        },
+        {
+          "property": "Description",
+          "clr_type": "string",
+          "sql_type": "character varying(4096)",
+          "column": "description"
+        },
+        {
+          "property": "E2eePolicy",
+          "clr_type": "Dictionary<string, object>",
+          "sql_type": "jsonb",
+          "column": "e2ee_policy"
+        },
+        {
+          "property": "EncryptionMode",
+          "clr_type": "int",
+          "sql_type": "integer",
+          "column": "encryption_mode"
+        },
+        {
+          "property": "IsCommunity",
+          "clr_type": "bool",
+          "sql_type": "boolean",
+          "column": "is_community"
+        },
+        {
+          "property": "IsPublic",
+          "clr_type": "bool",
+          "sql_type": "boolean",
+          "column": "is_public"
+        },
+        {
+          "property": "IsReadReceiptsPublic",
+          "clr_type": "bool",
+          "sql_type": "boolean",
+          "column": "is_read_receipts_public"
+        },
+        {
+          "property": "MlsGroupId",
+          "clr_type": "string",
+          "sql_type": "character varying(256)",
+          "column": "mls_group_id"
+        },
+        {
+          "property": "Name",
+          "clr_type": "string",
+          "sql_type": "character varying(1024)",
+          "column": "name"
+        },
+        {
+          "property": "Picture",
+          "clr_type": "SnCloudFileReferenceObject",
+          "sql_type": "jsonb",
+          "column": "picture"
+        },
+        {
+          "property": "RealmId",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "realm_id"
+        },
+        {
+          "property": "Slug",
+          "clr_type": "string",
+          "sql_type": "character varying(128)",
+          "column": "slug"
+        },
+        {
+          "property": "Type",
+          "clr_type": "int",
+          "sql_type": "integer",
+          "column": "type"
+        },
+        {
+          "property": "UpdatedAt",
+          "clr_type": "Instant",
+          "sql_type": "timestamp with time zone",
+          "column": "updated_at"
+        }
+      ]
+    },
+    "SnChatMember": {
+      "start_line": 272,
+      "table": "chat_members",
+      "columns": [
+        {
+          "property": "Id",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "id"
+        },
+        {
+          "property": "AccountId",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "account_id"
+        },
+        {
+          "property": "BreakUntil",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "break_until"
+        },
+        {
+          "property": "ChatGroupId",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "chat_group_id"
+        },
+        {
+          "property": "ChatRoomId",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "chat_room_id"
+        },
+        {
+          "property": "ConfirmedAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "confirmed_at"
+        },
+        {
+          "property": "CreatedAt",
+          "clr_type": "Instant",
+          "sql_type": "timestamp with time zone",
+          "column": "created_at"
+        },
+        {
+          "property": "DeletedAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "deleted_at"
+        },
+        {
+          "property": "InvitedById",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "invited_by_id"
+        },
+        {
+          "property": "JoinedAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "joined_at"
+        },
+        {
+          "property": "LastReadAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "last_read_at"
+        },
+        {
+          "property": "LeaveAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "leave_at"
+        },
+        {
+          "property": "Nick",
+          "clr_type": "string",
+          "sql_type": "character varying(1024)",
+          "column": "nick"
+        },
+        {
+          "property": "Notify",
+          "clr_type": "int",
+          "sql_type": "integer",
+          "column": "notify"
+        },
+        {
+          "property": "TimeoutCause",
+          "clr_type": "ChatTimeoutCause",
+          "sql_type": "jsonb",
+          "column": "timeout_cause"
+        },
+        {
+          "property": "TimeoutUntil",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "timeout_until"
+        },
+        {
+          "property": "UpdatedAt",
+          "clr_type": "Instant",
+          "sql_type": "timestamp with time zone",
+          "column": "updated_at"
+        },
+        {
+          "property": "Username",
+          "clr_type": "string",
+          "sql_type": "character varying(256)",
+          "column": "username"
+        }
+      ]
+    },
+    "SnChatMessage": {
+      "start_line": 364,
+      "table": "chat_messages",
+      "columns": [
+        {
+          "property": "Id",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "id"
+        },
+        {
+          "property": "Attachments",
+          "clr_type": "List<SnCloudFileReferenceObject>",
+          "sql_type": "jsonb",
+          "column": "attachments"
+        },
+        {
+          "property": "ChatRoomId",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "chat_room_id"
+        },
+        {
+          "property": "ClientMessageId",
+          "clr_type": "string",
+          "sql_type": "character varying(128)",
+          "column": "client_message_id"
+        },
+        {
+          "property": "Content",
+          "clr_type": "string",
+          "sql_type": "character varying(4096)",
+          "column": "content"
+        },
+        {
+          "property": "CreatedAt",
+          "clr_type": "Instant",
+          "sql_type": "timestamp with time zone",
+          "column": "created_at"
+        },
+        {
+          "property": "DeletedAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "deleted_at"
+        },
+        {
+          "property": "EditedAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "edited_at"
+        },
+        {
+          "property": "EncryptionMeta",
+          "clr_type": "SnChatEncryptionMeta",
+          "sql_type": "jsonb",
+          "column": "encryption_meta"
+        },
+        {
+          "property": "ForwardedMessageId",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "forwarded_message_id"
+        },
+        {
+          "property": "MembersMentioned",
+          "clr_type": "string",
+          "sql_type": "jsonb",
+          "column": "members_mentioned"
+        },
+        {
+          "property": "Meta",
+          "clr_type": "Dictionary<string, object>",
+          "sql_type": "jsonb",
+          "column": "meta"
+        },
+        {
+          "property": "ReactionsCount",
+          "clr_type": "Dictionary<string, int>",
+          "sql_type": "jsonb",
+          "column": "reactions_count"
+        },
+        {
+          "property": "RepliedMessageId",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "replied_message_id"
+        },
+        {
+          "property": "RoomSequence",
+          "clr_type": "long",
+          "sql_type": "bigint",
+          "column": "room_sequence"
+        },
+        {
+          "property": "SenderId",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "sender_id"
+        },
+        {
+          "property": "ThreadId",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "thread_id"
+        },
+        {
+          "property": "ThreadRootId",
+          "clr_type": "Guid?",
+          "sql_type": "uuid",
+          "column": "thread_root_id"
+        },
+        {
+          "property": "Type",
+          "clr_type": "string",
+          "sql_type": "character varying(1024)",
+          "column": "type"
+        },
+        {
+          "property": "UpdatedAt",
+          "clr_type": "Instant",
+          "sql_type": "timestamp with time zone",
+          "column": "updated_at"
+        }
+      ]
+    },
+    "SnChatReaction": {
+      "start_line": 491,
+      "table": "chat_reactions",
+      "columns": [
+        {
+          "property": "Id",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "id"
+        },
+        {
+          "property": "Attitude",
+          "clr_type": "int",
+          "sql_type": "integer",
+          "column": "attitude"
+        },
+        {
+          "property": "CreatedAt",
+          "clr_type": "Instant",
+          "sql_type": "timestamp with time zone",
+          "column": "created_at"
+        },
+        {
+          "property": "DeletedAt",
+          "clr_type": "Instant?",
+          "sql_type": "timestamp with time zone",
+          "column": "deleted_at"
+        },
+        {
+          "property": "MessageId",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "message_id"
+        },
+        {
+          "property": "SenderId",
+          "clr_type": "Guid",
+          "sql_type": "uuid",
+          "column": "sender_id"
+        },
+        {
+          "property": "Symbol",
+          "clr_type": "string",
+          "sql_type": "character varying(256)",
+          "column": "symbol"
+        },
+        {
+          "property": "UpdatedAt",
+          "clr_type": "Instant",
+          "sql_type": "timestamp with time zone",
+          "column": "updated_at"
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Owned migration snapshot establishes table/column storage, not shared model serialization, global filter behavior, or enum values.",
+    "No excluded protocol/schema/generated binding or denied repository was read."
+  ]
+}

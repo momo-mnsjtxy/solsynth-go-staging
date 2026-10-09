@@ -1,0 +1,41 @@
+{
+  "base": "726485cc2668b3ad9e2b5aff9e715ec9c182c5a0",
+  "sources": [
+    {
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Sphere/Publisher/PublisherService.cs",
+      "git_blob_sha": "1cc5f897afbf44a801487aa1cb38b02bedadb411",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Publisher/PublisherService.cs",
+      "license": "AGPL-3.0-only",
+      "retention": "Read authored source through licensed pinned repository; full bytes are not copied into this slice."
+    },
+    {
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Sphere/Post/PostService.cs",
+      "git_blob_sha": "dbacff11ded248680bc34d9fe422cc7e38c49068",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostService.cs",
+      "license": "AGPL-3.0-only",
+      "retention": "Read authored source through licensed pinned repository; full bytes are not copied into this slice."
+    },
+    {
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/Realm/RealmService.cs",
+      "git_blob_sha": "f7aed2430a446667f88da621794f6ed960a49f8c",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmService.cs",
+      "license": "AGPL-3.0-only",
+      "retention": "Read authored source through licensed pinned repository; full bytes are not copied into this slice."
+    }
+  ],
+  "retained_evidence": [
+    "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherController.cs",
+    "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherPublicController.cs",
+    "inventory/operation-sources/DysonNetwork.Sphere/Post/PostActionController.cs",
+    "inventory/operation-sources/DysonNetwork.Sphere/Post/PostController.cs",
+    "inventory/operation-sources/DysonNetwork.Passport/Realm/RealmController.cs",
+    "ports/sphere/posts/upstream/lib__posts__widgets__compose__compose_settings_sheet.dart"
+  ],
+  "boundary": "Authored licensed controllers/services and authored Solian caller only. No excluded Shared definitions, generated bindings, SoSYS/Spec/NeTo source was read."
+}

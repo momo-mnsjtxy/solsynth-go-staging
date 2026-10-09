@@ -1,0 +1,82 @@
+{
+  "source_policy": "Retained licensed authored controller/caller/permission documentation plus licensed EF snapshot. No Shared submodule, protocol/schema/generated binding or canceled Socommon implementation was read. The scalar publishing response is explicitly owned; complete DTO parity remains unclaimed.",
+  "files": [
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Sphere/Account/AccountSettingsController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Sphere/Account/AccountSettingsController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Account/AccountSettingsController.cs",
+      "bytes": 5228,
+      "sha256": "e0918ad9b859c6733e25edb45d2140f7e58224a10b00528a8ff0a428f6b8eb80",
+      "git_blob": "a61c5e30d44f2eb379b82cc6107bfbedb6a825d5",
+      "license": "AGPL-3.0-only"
+    },
+    {
+      "file": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostActionController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostActionController.cs",
+      "bytes": 89250,
+      "sha256": "aa30f0451fdd8d6575f7e756f1fc597673c5e415914c58b5dd0440a93c68f285",
+      "git_blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+      "license": "AGPL-3.0-only"
+    },
+    {
+      "file": "ports/sphere/nodeinfo/source/DysonNetwork.Sphere__Migrations__AppDatabaseModelSnapshot.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Sphere/Migrations/AppDatabaseModelSnapshot.cs",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Migrations/AppDatabaseModelSnapshot.cs",
+      "bytes": 150920,
+      "sha256": "1516fbd348413b0c0cd8b102bf5bbbf454032f1874f5c09558a370bfa271fcf6",
+      "git_blob": "97288c526bb8dd7c120fd9157d56069663487b4b",
+      "license": "AGPL-3.0-only"
+    },
+    {
+      "file": "ports/passport/accountsettings/source/Solian_account_settings.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "lib/accounts/screens/me/account_settings.dart",
+      "url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/me/account_settings.dart",
+      "bytes": 110795,
+      "sha256": "882a100553775ad46523b293ed62fd8bc9e9d0d17a8ded905600f45ce6bccc7c",
+      "git_blob": "e080bacee8675239162c20f13c5890f4ff738e8d",
+      "license": "AGPL-3.0-only"
+    },
+    {
+      "file": "ports/sphere/locations/source/PERMISSIONS.md",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "docs/PERMISSIONS.md",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/PERMISSIONS.md",
+      "bytes": 11160,
+      "sha256": "91467075de43d41e87e41a998f07a8bab35a265eae206644dbb2d0e49b2b11ae",
+      "git_blob": "4cd01e581d0872799f3968ab102d8abf4577df05",
+      "license": "AGPL-3.0-only"
+    },
+    {
+      "file": "ports/passport/accountsettings/source/DYSON-LICENSE.txt",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "LICENSE.txt",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "git_blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "license": "AGPL-3.0-only"
+    },
+    {
+      "file": "ports/passport/accountsettings/source/SOLIAN-LICENSE.txt",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "LICENSE.txt",
+      "url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+      "git_blob": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+      "license": "AGPL-3.0-only"
+    }
+  ]
+}

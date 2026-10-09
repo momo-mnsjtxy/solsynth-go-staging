@@ -1,0 +1,60 @@
+{
+  "repository": "Solsynth/Solian",
+  "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+  "source_url": "https://api.github.com/repos/Solsynth/Solian/git/trees/4b0034730ac442538d9c51f5cf4130db5eed2ab3?recursive=1",
+  "listing": {
+    "sha": "4b0034730ac442538d9c51f5cf4130db5eed2ab3",
+    "url": "https://api.github.com/repos/Solsynth/Solian/git/trees/4b0034730ac442538d9c51f5cf4130db5eed2ab3",
+    "tree": [
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "77e14904c76fc5c1c611913ef6fdefcb12af0e6b",
+        "size": 7314,
+        "url": "https://api.github.com/repos/Solsynth/Solian/git/blobs/77e14904c76fc5c1c611913ef6fdefcb12af0e6b"
+      },
+      {
+        "path": "iap_service.dart",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "79551d9a2aec2112f077f424db9d3719ba1cafbe",
+        "size": 7383,
+        "url": "https://api.github.com/repos/Solsynth/Solian/git/blobs/79551d9a2aec2112f077f424db9d3719ba1cafbe"
+      },
+      {
+        "path": "iap_service.g.dart",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f3625f7da8971709ca26c202cfabacda57f887dc",
+        "size": 9335,
+        "url": "https://api.github.com/repos/Solsynth/Solian/git/blobs/f3625f7da8971709ca26c202cfabacda57f887dc"
+      },
+      {
+        "path": "order_detail.dart",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "dfa3e4b628d8c35f73a8006a69b78b5bec8fccd2",
+        "size": 16256,
+        "url": "https://api.github.com/repos/Solsynth/Solian/git/blobs/dfa3e4b628d8c35f73a8006a69b78b5bec8fccd2"
+      },
+      {
+        "path": "payment_overlay.dart",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6c893ab7ae82ecbd18179be2f47ddb57d306b388",
+        "size": 34744,
+        "url": "https://api.github.com/repos/Solsynth/Solian/git/blobs/6c893ab7ae82ecbd18179be2f47ddb57d306b388"
+      },
+      {
+        "path": "quota_purchase_sheet.dart",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d6500d41582f947afde8e6f2091f29ffd1568423",
+        "size": 21761,
+        "url": "https://api.github.com/repos/Solsynth/Solian/git/blobs/d6500d41582f947afde8e6f2091f29ffd1568423"
+      }
+    ],
+    "truncated": false
+  }
+}

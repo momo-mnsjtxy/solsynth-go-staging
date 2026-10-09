@@ -4,8 +4,8 @@
 // ffd0838e5f04cb40bea311a39118ebeedad210c1 JSON projections; see README.md.
 //
 // Package board is a source-derived, transport-independent Passport board port.
-// No HTTP handler, permission evaluator, protobuf adapter or database driver is
-// included. See README.md for compatibility boundaries and licensed provenance.
+// HTTP and persistence adapters are supplied by adjacent packages. See README.md
+// for compatibility boundaries and licensed provenance.
 package board
 
 import (
@@ -217,7 +217,7 @@ func (s Service) validateLayout(ctx context.Context, items []Item) error {
 	orders := map[int32]bool{}
 	for _, item := range items {
 		if orders[item.Order] {
-			return fmt.Errorf("Duplicate board order '%d' is not allowed.", item.Order)
+			return invalid(fmt.Sprintf("Duplicate board order '%d' is not allowed.", item.Order))
 		}
 		orders[item.Order] = true
 	}
@@ -233,10 +233,10 @@ func (s Service) validateLayout(ctx context.Context, items []Item) error {
 			item.CustomAppWidgetKey = nil
 		case CustomApp:
 			if item.CustomAppID == nil {
-				return errors.New("Custom app board widgets require custom_app_id.")
+				return invalid("Custom app board widgets require custom_app_id.")
 			}
 			if item.CustomAppWidgetKey == nil || strings.TrimSpace(*item.CustomAppWidgetKey) == "" {
-				return errors.New("Custom app board widgets require custom_app_widget_key.")
+				return invalid("Custom app board widgets require custom_app_widget_key.")
 			}
 			if s.Catalog == nil {
 				return dependency("catalog")
@@ -246,15 +246,15 @@ func (s Service) validateLayout(ctx context.Context, items []Item) error {
 				return err
 			}
 			if widget == nil {
-				return errors.New("Board widget is not configured for this app.")
+				return invalid("Board widget is not configured for this app.")
 			}
 			if !widget.Enabled {
-				return errors.New("Board widget is disabled for this app.")
+				return invalid("Board widget is disabled for this app.")
 			}
 			if !widget.AllowMultiple {
 				key := instanceKey(item.CustomAppID, item.CustomAppWidgetKey)
 				if singletons[key] {
-					return fmt.Errorf("Custom app widget '%s:%s' can only appear once.", *item.CustomAppID, *item.CustomAppWidgetKey)
+					return invalid(fmt.Sprintf("Custom app widget '%s:%s' can only appear once.", *item.CustomAppID, *item.CustomAppWidgetKey))
 				}
 				singletons[key] = true
 			}
@@ -265,7 +265,7 @@ func (s Service) validateLayout(ctx context.Context, items []Item) error {
 			}
 			item.Payload = Payload{}
 		default:
-			return fmt.Errorf("Unsupported board item kind '%d'.", item.Kind)
+			return invalid(fmt.Sprintf("Unsupported board item kind '%d'.", item.Kind))
 		}
 	}
 	return nil
@@ -308,13 +308,13 @@ func (s Service) updateAppPayload(ctx context.Context, accountID, itemID, appID,
 		return Item{}, err
 	}
 	if item.Kind != CustomApp {
-		return Item{}, errors.New("Only custom app board items can be updated through this endpoint.")
+		return Item{}, invalid("Only custom app board items can be updated through this endpoint.")
 	}
 	if item.CustomAppID == nil || *item.CustomAppID != appID {
-		return Item{}, errors.New("Board item does not belong to the specified custom app.")
+		return Item{}, invalid("Board item does not belong to the specified custom app.")
 	}
 	if item.CustomAppWidgetKey == nil || !strings.EqualFold(*item.CustomAppWidgetKey, widgetKey) {
-		return Item{}, errors.New("Board item does not belong to the specified custom app widget.")
+		return Item{}, invalid("Board item does not belong to the specified custom app widget.")
 	}
 	normalized, err := s.Normalizer.Normalize(ctx, copyPayload(payload))
 	if err != nil {
@@ -360,7 +360,7 @@ func (s Service) updateAdminPayload(ctx context.Context, accountID, itemID strin
 		normalized, err = s.Normalizer.Normalize(ctx, copyPayload(payload))
 	case CustomApp:
 		if item.CustomAppID == nil {
-			return Item{}, errors.New("Custom app board item is missing custom_app_id.")
+			return Item{}, invalid("Custom app board item is missing custom_app_id.")
 		}
 		if s.Catalog == nil {
 			return Item{}, dependency("catalog")
@@ -371,7 +371,7 @@ func (s Service) updateAdminPayload(ctx context.Context, accountID, itemID strin
 		}
 		normalized, err = s.Catalog.Validate(ctx, *item.CustomAppID, key, copyPayload(payload))
 	default:
-		return Item{}, fmt.Errorf("Unsupported board item kind '%d'.", item.Kind)
+		return Item{}, invalid(fmt.Sprintf("Unsupported board item kind '%d'.", item.Kind))
 	}
 	if err != nil {
 		return Item{}, err

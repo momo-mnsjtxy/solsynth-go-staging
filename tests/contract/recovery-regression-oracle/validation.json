@@ -1,0 +1,29 @@
+{
+  "scope": "Benign JSON configuration syntax and badge literal-route casing regressions",
+  "executed_date": "2026-10-08",
+  "dotnet_sdk": "10.0.401",
+  "dotnet_runtime": "10.0.12",
+  "aspnet_core_runtime": "10.0.12",
+  "go": "1.26.4 linux/amd64",
+  "source_revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "executed_configuration_cases": 10,
+  "executed_mvc_route_cases": 6,
+  "checks": {
+    "independent_reference": "passed",
+    "independent_reference_reproduction": "passed",
+    "go_differential_race": "passed"
+  },
+  "files_sha256": {
+    "cases.json": "5e388671219d7a0b7e4c1393a58dd34287f2bec0a469aafe30c38a1970355133",
+    "expected.json": "da8c3ba61ff41c6f5b36d866b8003eb9c25ea01a034a1cc3849053ad9d3422e8",
+    "Program.cs": "009e40d32c09ae587c70e9f329a7871899bcf4abaf06163e46a5aa1923dd197d",
+    "RegressionOracle.csproj": "f29b0d200cd0ab63b8445debd23a0d5a60d52f0f2424769ed0363662e8f54567",
+    "../badges-oracle/BadgesDiscoveryController.cs": "272a64743b7954f51d12c1eb47f92a31db4561612e39166cc6d39434ad9330f5",
+    "../badges-oracle/ApiError.cs": "9ab8bf4992c2ad746cadd1293447a62772f3e80bae123d1099fe7c3038c665b4"
+  },
+  "not_claimed": [
+    "Production middleware parity",
+    "Whole-platform parity",
+    "Remote CI validation"
+  ]
+}

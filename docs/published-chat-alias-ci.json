@@ -1,0 +1,10 @@
+{
+  "commit": "5e695228fab2e3c4eb956851731e09dcad15d04a",
+  "run_id": 37792619865,
+  "job_id": 113363710934,
+  "conclusion": "success",
+  "postgres_before": 376,
+  "postgres_after_restart": 51,
+  "skips": 0,
+  "evidence_status": "Previously verified full green before exact source recovery; reconstructed deltas await their own CI"
+}

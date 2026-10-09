@@ -14,6 +14,7 @@ import (
 	"io"
 	"time"
 
+	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/board"
 )
 
@@ -29,9 +30,15 @@ var (
 // semantics. Every cooperating writer uses the same per-account advisory lock;
 // concurrent legacy/external writers are explicitly unsupported.
 type Repository struct {
-	db         *sql.DB
-	testPolicy bool
-	now        func() time.Time
+	db               *sql.DB
+	testPolicy       bool
+	now              func() time.Time
+	guard            TransactionGuard
+	requireAuthority bool
+}
+
+type TransactionGuard interface {
+	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
 }
 
 func New(db *sql.DB) *Repository { return &Repository{db: db} }
@@ -41,10 +48,31 @@ func New(db *sql.DB) *Repository { return &Repository{db: db} }
 // IDs; injected current time for new IDs/updates. This is not verified EF parity.
 // A nil clock selects time.Now. Never wire this constructor into a public server.
 func NewForCompatibilityTests(db *sql.DB, now func() time.Time) *Repository {
+	r := NewWithIndependentPolicy(db, now)
+	r.requireAuthority = false
+	return r
+}
+
+// NewWithIndependentPolicy explicitly selects the authored storage policy:
+// active means deleted_at IS NULL, supplied IDs are preserved, retained active
+// IDs retain created_at, updates use the injected UTC clock, and cooperating
+// writers serialize by account. It is an independently selected architecture,
+// not an emulation of excluded shared hooks. Authentication is outside this
+// repository and must still fail closed unless a verified authority is supplied.
+func NewWithIndependentPolicy(db *sql.DB, now func() time.Time) *Repository {
 	if now == nil {
 		now = time.Now
 	}
-	return &Repository{db: db, testPolicy: true, now: now}
+	return &Repository{db: db, testPolicy: true, now: now, requireAuthority: true}
+}
+
+// NewWithAuthority joins the HTTP caller's original authority proof to each
+// board mutation. The account lock is acquired before the board lock and held
+// through commit, matching app payload writes. A nil guard fails closed.
+func NewWithAuthority(db *sql.DB, guard TransactionGuard, now func() time.Time) *Repository {
+	r := NewWithIndependentPolicy(db, now)
+	r.guard, r.requireAuthority = guard, true
+	return r
 }
 
 var _ board.Repository = (*Repository)(nil)
@@ -93,11 +121,29 @@ func (r *Repository) WithinAccount(ctx context.Context, account string, fn func(
 	if fn == nil {
 		return errors.New("boardpg: transaction callback required")
 	}
+	if r.requireAuthority && r.guard == nil {
+		return board.ErrDependency
+	}
 	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
+	if r.requireAuthority {
+		if _, err = r.guard.Authorize(ctx, r.db, tx, account, "accounts.profile.board"); err != nil {
+			var failure *authority.Failure
+			if errors.As(err, &failure) {
+				if failure.Status == 401 {
+					return board.ErrUnauthenticated
+				}
+				if failure.Status == 403 || failure.Status == 423 {
+					return board.ErrForbidden
+				}
+				return board.ErrDependency
+			}
+			return err
+		}
+	}
 	if _, err = tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtextextended('solsynth.board:' || $1::text, 0))`, account); err != nil {
 		return err
 	}

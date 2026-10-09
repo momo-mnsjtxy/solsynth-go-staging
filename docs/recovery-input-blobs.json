@@ -1,0 +1,1311 @@
+[
+  {
+    "path": ".github/workflows/postgres-validation.yml",
+    "size": 1759,
+    "sha": "c50b6f04fd4ac8476f053d261473cad2ec09e12f",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": ".gitignore",
+    "size": 172,
+    "sha": "0af415b65c5f45af4b9c881401c6225c8c61da4f",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "LICENSE.txt",
+    "size": 34524,
+    "sha": "2beb9e16309456b1f4244480f4fe6890324a5064",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "NOTICE.md",
+    "size": 1816,
+    "sha": "93136f7a51de3ec99475efadc05d70a4d60e57bf",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "README.md",
+    "size": 13263,
+    "sha": "fe662edf4dd6b538cb7585232bf7d81cc7932e03",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "cmd/solsynth-go/badges_test.go",
+    "size": 2766,
+    "sha": "d0ad14ebdd3aa792f77d03c1766a2038fde7ca1e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "cmd/solsynth-go/exchange_test.go",
+    "size": 4578,
+    "sha": "f3f7fff7f06fe9501231bbfe4f068ff47e5602f4",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "cmd/solsynth-go/main.go",
+    "size": 6223,
+    "sha": "76fef584f5c39ae60cbef9e0847c8abd21e7d816",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "cmd/solsynth-go/main_test.go",
+    "size": 782,
+    "sha": "81e2537913121046732dfa96d80f130402f062e6",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/architecture.md",
+    "size": 3317,
+    "sha": "2bf50a93f3c5653a9696374bc9d3c9435885b85d",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/badges-live-smoke-result.json",
+    "size": 472,
+    "sha": "f7aee660d9dc74b138471efe51e7ba6ba8b4f47b",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/checkpoint.md",
+    "size": 5573,
+    "sha": "2668aa75767954d85e283a471bc0c1d4b3cd0d1e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/ci-postgres-validation.md",
+    "size": 3097,
+    "sha": "653a49133635b08cc4be13974c9a63c107f7ee24",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/ci-result-2026-10-07.json",
+    "size": 1220,
+    "sha": "4dd7d9eb75dc1d17f685edd0693adc6cc2d77654",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/compatibility-inventory.md",
+    "size": 7630,
+    "sha": "c7463dddc412df1433fa0931822044238afef6ce",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/exchange-live-smoke-result.json",
+    "size": 735,
+    "sha": "f9d0cfbd6e0e6b38bd6931729ae497e5fc73f5ef",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/live-smoke-result.json",
+    "size": 921,
+    "sha": "f8ce3243d183659426fb8091b361f5e9331cc8ee",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/local-final-checkpoint.json",
+    "size": 1490,
+    "sha": "a91f2f1080cd5a3bb8aae7e4547d3509bf21d489",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/messager-parity.json",
+    "size": 43217,
+    "sha": "c4c3e85e8bdebfd9e9f3805dbff95a1d9737493e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/parity-matrix.json",
+    "size": 7091,
+    "sha": "56be6ae03d8fc5bee042f786558aef528703fac0",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/postgres-integration-result.json",
+    "size": 1949,
+    "sha": "c1c2c9dfcdc0175fb7bc75e86140279ed626fa42",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/postwatch-review-probes.jsonl",
+    "size": 3987,
+    "sha": "7d1b575610f293f463dd3f46f3421fd14ded3fbb",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/postwatch-review.md",
+    "size": 9305,
+    "sha": "bb052c38ab4c6c92da9b39831372fadcdb36e2c2",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/remaining-services-inventory.json",
+    "size": 92286,
+    "sha": "3e3cc45180b0bdd8aa235eec45dcc3f0ea7c1a1a",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "docs/verification-result.json",
+    "size": 3497,
+    "sha": "98f3ac4d59da5dccb68369490b680cde71fef2ff",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "go.mod",
+    "size": 352,
+    "sha": "7686ca460cef3fc4014143922bb20e0863d791a9",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "go.sum",
+    "size": 2301,
+    "sha": "c0e505b7a6c10b920077e51de130e882621556ff",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/auth/CONTRACT.md",
+    "size": 12965,
+    "sha": "ec217b91af2f9ca9d5f57625c39b9c099fc9fba2",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/auth/HTTP_RECONSTRUCTION.md",
+    "size": 7492,
+    "sha": "7d37f7a188062ff8a7050ed397ab55fd8f848ef2",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/auth/LICENSE_SCOPE_AUDIT.md",
+    "size": 2948,
+    "sha": "cfa8232fd25735883dd2235890d15ca5cbec859e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/boardpg/README.md",
+    "size": 6151,
+    "sha": "195f8e927b66b5c52c40e304bb36e0a52f987317",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/boardpg/repository.go",
+    "size": 10962,
+    "sha": "060d79f13a6df4254d1d1ed25f856699b3cd4f32",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/boardpg/repository_test.go",
+    "size": 2942,
+    "sha": "2e5204699296d0f54ff6d40e9333b7db20bcd436",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/boardpg/schema-evidence.json",
+    "size": 569,
+    "sha": "e091fc7d3eb406852ae3c4b6afc96718b973a588",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/boardpg/testdata/schema.sql",
+    "size": 1035,
+    "sha": "b64b6fef2fc69ebffe0ebed49989349a3425e568",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/watchpg/README.md",
+    "size": 6284,
+    "sha": "a561b9c1ea6034e7318a6eb0403cc40c583a5b98",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/watchpg/WATCHER-COMPATIBILITY.md",
+    "size": 5368,
+    "sha": "d98db11a87cacd51157682e9ee201ecf6329d3e9",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/watchpg/repository.go",
+    "size": 9282,
+    "sha": "31f68c1d5e1646beab802be34167668cd9c71bcf",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/watchpg/repository_test.go",
+    "size": 2626,
+    "sha": "2d778389ae918b4650aeedba9562d9ea33114df4",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/watchpg/testdata/20260927043440_ReplacePostSubscriptionsWithWatchPreferences.cs",
+    "size": 4194,
+    "sha": "25ca8f82c8dbcaefedc302291e2133c903328ad6",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/watchpg/testdata/schema.sql",
+    "size": 919,
+    "sha": "f8b7df6ebdeb499e72b2205cf08254c20489b9e2",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/watchpg/testdata/watchers-projection.sql",
+    "size": 1045,
+    "sha": "1a68065d68ad1e67be67e9d56beb8e2801f3578a",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/watchpg/watcher-schema-evidence.json",
+    "size": 4442,
+    "sha": "efcd51e97d7b9525d10b6928e7808bd8a0d08e84",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/watchpg/watchers.go",
+    "size": 4913,
+    "sha": "44fbbf62dd2ef020cfc42594319b5ff975207f42",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/watchpg/watchers_test.go",
+    "size": 2534,
+    "sha": "393fb45b7eeb45ee0044c337e9b1aa70409a8773",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/watchstore/store.go",
+    "size": 4068,
+    "sha": "b504795c1da9f79b51f15ec25d1ddd5e9ce896df",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "internal/watchstore/store_test.go",
+    "size": 2705,
+    "sha": "efcb511e9f270f42cfe8012360d523117bcec789",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "inventory/cross-forge-summary.json",
+    "size": 1497,
+    "sha": "b4a45b26e2fd8f995af864a1fd97edfe52cd4ed5",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "inventory/dyson-contract-files.json",
+    "size": 70508,
+    "sha": "7b2b8f9dd653d34b7169fce16113dc783f513c13",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "inventory/dyson-service-registrations.json",
+    "size": 18011,
+    "sha": "fefd8d7263084056ffc30c680680738bd946f8df",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "inventory/github-repositories.json",
+    "size": 12654,
+    "sha": "ba165e1eedb6c2a1ec7260974c101c3e1bd1ff27",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "inventory/license-audit.json",
+    "size": 13864,
+    "sha": "7c7399355fed63c84d67f84afc4d8ca29aed792e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "inventory/sosys-page-2.html",
+    "size": 32756,
+    "sha": "482fe52d7e23d5716bb7d0d51d8997ac4fd8765b",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "inventory/sosys-repositories.json",
+    "size": 4735,
+    "sha": "bf8fda6445547175e9d574a4747f9f19bd61b4a9",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "inventory/sosys.html",
+    "size": 70689,
+    "sha": "2f739a3c8fd1ce833e9000826fe7a96b0d447572",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/PARITY.md",
+    "size": 4444,
+    "sha": "13c5e12510ac72b242bf486b7c1d72be6b14c11f",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/README.md",
+    "size": 3407,
+    "sha": "179154a6d7b3dd4358041294640d27cd74dfe704",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/ROOM-SYNC-CONTRACT.md",
+    "size": 10082,
+    "sha": "361150cc79577ab43bb331eda20890c2c9c237a2",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/SERVICE-MAP.md",
+    "size": 3697,
+    "sha": "df3be107728cc8b363bfe628daf7eb33bf36c3d2",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/contract-evidence/LICENSE.txt",
+    "size": 34522,
+    "sha": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/contract-evidence/lib__chat__data__message_repository.dart",
+    "size": 8348,
+    "sha": "09e1c05eb2bdae706fc77a8a57d193a4fab26b4c",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/contract-evidence/lib__chat__e2ee_message_service.dart",
+    "size": 8037,
+    "sha": "e1b41340a7b74f8ef0fc2034994be01f7e4973bf",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/contract-evidence/lib__chat__messages_notifier.dart",
+    "size": 100459,
+    "sha": "6daba14ab2cdad6fa45b76018b209fe18f39d8ba",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/contract-evidence/lib__chat__realtime__message_handler.dart",
+    "size": 24930,
+    "sha": "2138d835b1a13b920a9878a4cadf7b4ac48f7103",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/contract-evidence/lib__data__message.dart",
+    "size": 9216,
+    "sha": "c907f587241ce1981e2da1c5998997914542a72a",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/contract-evidence/manifest.json",
+    "size": 1925,
+    "sha": "c4c53312526a40fa6260025ba680e35a63c54018",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/recovery.go",
+    "size": 3633,
+    "sha": "0e9bb01cd3f8bc3fe0888b13ee803f742d9f59d0",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/recovery_test.go",
+    "size": 3142,
+    "sha": "371fa47f3897474b2f2defb3c7034d2b3cdbf793",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/ChatController.cs",
+    "size": 82984,
+    "sha": "29e748e8c585ed766c9e20dddfc2eae65509f9a2",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/ChatService.cs",
+    "size": 118936,
+    "sha": "e23ae267ecc68bd6481108a51cefe073d6cf0cc5",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__AppDatabase.cs",
+    "size": 12070,
+    "sha": "b7246f208ff15c3f24ec261960b7298a5f46a5b4",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Chat__ChatController.cs",
+    "size": 82984,
+    "sha": "29e748e8c585ed766c9e20dddfc2eae65509f9a2",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Chat__ChatPinService.cs",
+    "size": 4989,
+    "sha": "5466b7f8de8445a070dae835c9fbecfa9de886f5",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Chat__ChatRoomController.cs",
+    "size": 95014,
+    "sha": "373efa01d468a76ba5085bf5c2b59bede71bd7ec",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Chat__PlaceholderExpirationJob.cs",
+    "size": 458,
+    "sha": "fb1cfe8d8cc6b56c4236b75d93eeb1de61d228fc",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Chat__RealmChatController.cs",
+    "size": 1357,
+    "sha": "b89f39a81abe2fbe09fa2c7b768eedce62b23307",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Chat__RealtimeCallController.cs",
+    "size": 26465,
+    "sha": "6115c8788b3faea80d18d7a1f4168e93ec062232",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Chat__Realtime__IRealtimeService.cs",
+    "size": 3175,
+    "sha": "9cba7f105bd46f908ae20bfbe048f12fecb99fbe",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Chat__Voice__ChatVoiceCleanupJob.cs",
+    "size": 470,
+    "sha": "42482a40dc13a83154f094716f833e1486029177",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Models__ChatMessagePin.cs",
+    "size": 591,
+    "sha": "557e99a57de5df00a767c51b97a1cc0ab3d876de",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Models__ChatRoomCounter.cs",
+    "size": 160,
+    "sha": "2395dce306bd3ef200af0c41cae4a777f892459e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Models__RealtimeCall.cs",
+    "size": 1476,
+    "sha": "2ac6fbe19ac613918aadd7d679019f6ad816a194",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Rewind__MessagerRewindServiceGrpc.cs",
+    "size": 6615,
+    "sha": "f9b66568b5b1cfa48fd666d14759f73131d2992e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Startup__ApplicationConfiguration.cs",
+    "size": 584,
+    "sha": "ea99e58e9417b67f0ee50701474524b21f77f961",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Startup__ScheduledJobsConfiguration.cs",
+    "size": 1581,
+    "sha": "ae17400b8908d419bbd3bf4f0c36acdc4f1ed442",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/DysonNetwork.Messager__Startup__ServiceCollectionExtensions.cs",
+    "size": 50182,
+    "sha": "0458fed23dec249f8bfc6e8e3baf4d486c5979b9",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/LICENSE.txt",
+    "size": 34523,
+    "sha": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/messager/source/manifest.json",
+    "size": 5170,
+    "sha": "fc40b4985ca37591f2a2c2dc4289c079ca098512",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/LICENSE.txt",
+    "size": 34524,
+    "sha": "2beb9e16309456b1f4244480f4fe6890324a5064",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/README.md",
+    "size": 4326,
+    "sha": "e76950778294f92e28a90ca5df2ec95f172acd0e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/APACHE-2.0.txt",
+    "size": 11358,
+    "sha": "d645695673349e3947e8e5ae42332d0ac3164cd7",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/ORIGINAL-ART.md",
+    "size": 553,
+    "sha": "8ef7a5d264ea7d8fa3bdcad5883b32462dfc766e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/PROVENANCE.json",
+    "size": 6704,
+    "sha": "ce58c6f4f25a8a980405937f149da8c707a78fed",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/badge.svg",
+    "size": 928,
+    "sha": "f53c0ecd4d301c124cd2f865b076bbc8dc03772f",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/bolt-boost.svg",
+    "size": 498,
+    "sha": "966a69cd4713aa5a136f16e1e52a305faa85fc5b",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/calendar-add-on.svg",
+    "size": 623,
+    "sha": "29befa41aa9811417464259557adeadd8e142039",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/diversity-2.svg",
+    "size": 1752,
+    "sha": "a8422ed40738377e02afe8c821453cc3ca3003f4",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/do-not-step.svg",
+    "size": 842,
+    "sha": "0a399e0b484ca9d968b963e99f69ac766de83694",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/draw.svg",
+    "size": 966,
+    "sha": "32875da0d6294b6deaa66764ae837f2420daed5f",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/face.svg",
+    "size": 1085,
+    "sha": "3a740c20ff923c074bbe60dfa5989a3074913b00",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/moon-stars.svg",
+    "size": 720,
+    "sha": "b674f79af47a3bbaf1cc40f9893c470a3b01d8fc",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/recommend.svg",
+    "size": 817,
+    "sha": "e69f99753618afa8a858f2fff5f0b2293a4cedc5",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/repeat.svg",
+    "size": 501,
+    "sha": "0e5a1cba4bf24fcb06352502850a1c2cc77adc1f",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/shapes.svg",
+    "size": 813,
+    "sha": "551903721d943f32719eeb2217176ea988b34060",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/volunteer-activism.svg",
+    "size": 961,
+    "sha": "d914e5e4a78f016e1d4f624c1f4d05cb9071f309",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/assets/whatshot.svg",
+    "size": 516,
+    "sha": "4c2cfaafb8127fec1a4663d20087b01eb1b9f27e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/handler.go",
+    "size": 5665,
+    "sha": "1bfbf6be9ced6c06c760a3c97142b4247dd14c85",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/handler_test.go",
+    "size": 6437,
+    "sha": "d22b819874e886fab1dc01b024e91d2a3a93ce77",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/manifest.json",
+    "size": 9717,
+    "sha": "4f1196f2c03c44e30a8e28647e42fcc302cf6541",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/badgediscovery/source/BadgesDiscoveryController.cs",
+    "size": 8139,
+    "sha": "c8cd49db800a99a45b39d644bddaf8adc9e06215",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/board/LICENSE.txt",
+    "size": 34524,
+    "sha": "2beb9e16309456b1f4244480f4fe6890324a5064",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/board/README.md",
+    "size": 5489,
+    "sha": "78c8684137d146729566db70fcd4af7590a3f207",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/board/board.go",
+    "size": 14722,
+    "sha": "fc5fd665421d6ce09ebf7a0111ce8d549840bc38",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/board/board_test.go",
+    "size": 16857,
+    "sha": "8330043d1add3e33cad9137573a5daa4b081e356",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/board/schema.json",
+    "size": 1716,
+    "sha": "d4f55dbab44eabab413f9f06362361cefdae24c0",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/board/transaction_test.go",
+    "size": 2439,
+    "sha": "c700e6dd9cf93887c2c66162258b1834a4a0c7b8",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/username/ARCHITECTURE.md",
+    "size": 6148,
+    "sha": "ff53448e848f8e5eef6301266db96a4b52b5501e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/username/BOARD_INTERFACE_SPEC.md",
+    "size": 13165,
+    "sha": "590df05f6456fce200dc1776db726691b4f856df",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/username/LICENSE.txt",
+    "size": 34524,
+    "sha": "2beb9e16309456b1f4244480f4fe6890324a5064",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/username/PROVENANCE.md",
+    "size": 3818,
+    "sha": "ec0c3a5fff03ba7c77efde47f342f428b3b48014",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/username/parity.json",
+    "size": 80453,
+    "sha": "d1fa83d79dda1b0d1a12afcad626db39e5203d86",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/username/source/AccountUsernameService.cs",
+    "size": 3406,
+    "sha": "931a4d828d2c1350ed3f5dce8fcdc2c9ff7f1a19",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/username/source/SOLIAN-LICENSE.txt",
+    "size": 34523,
+    "sha": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/username/username.go",
+    "size": 3538,
+    "sha": "8a3324b597847556c73ae0abce8c2d40af6e1a5f",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/passport/username/username_test.go",
+    "size": 5293,
+    "sha": "3b27e03419cbb117c2ff46e4e70ee463364af078",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/PROVENANCE.md",
+    "size": 7974,
+    "sha": "df6a460d4fca88c006e2b249dea3960cf4ce0c38",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/parity.json",
+    "size": 77563,
+    "sha": "bc00a237629a2734fa0f7367079dca51a1d9cc19",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/ranking.go",
+    "size": 5597,
+    "sha": "52b31af801d3ce40b9c5f15ec982539b5816aa03",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/ranking_test.go",
+    "size": 4524,
+    "sha": "ec37a27c073b463b50aed90565be7636f1ed21c9",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/source-manifest.json",
+    "size": 1178,
+    "sha": "01e3f50025ee65c99b49994db30d10856cf32cc8",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/upstream/LICENSE.txt",
+    "size": 34523,
+    "sha": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/upstream/PostWatch.cs",
+    "size": 1515,
+    "sha": "e46f2975a08f6fb6d86e9eb1dd7ed05d1625c161",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/upstream/PostWatchController.cs",
+    "size": 3695,
+    "sha": "49d865ead26cf66123b24bcd4765bbe06507132e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/upstream/PostWatchService.cs",
+    "size": 5777,
+    "sha": "65e9df08f03e862084bd771ee0a0dcb7f50580a2",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/upstream/TimelineService.cs",
+    "size": 91521,
+    "sha": "6e4acb1f1470cd33ce9f773902af0d16bec0999b",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/watch.go",
+    "size": 8194,
+    "sha": "42cfbf47dddcc400340c98c499b575ac71982218",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/watch_http.go",
+    "size": 3761,
+    "sha": "f01865742a3475f263294929584bd8f4c5fe3db2",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/sphere/watch_test.go",
+    "size": 9711,
+    "sha": "1009377f2ecb715b3a25055860a71c074253118d",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/PROVENANCE.md",
+    "size": 6473,
+    "sha": "e36c7193b3d9b39b80280ba84a708cf1b1668f5c",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/casing.go",
+    "size": 1873,
+    "sha": "f477617566043ca6ccd25b2a47e03ec067bf71e3",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/casing_oracle_test.go",
+    "size": 839,
+    "sha": "01b2f43755bcdc359f11368b74ffdbbed6b23bd0",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/catalog.go",
+    "size": 2869,
+    "sha": "e6ec3867031c2ad27008a886338b2cbcbeaa4b32",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/catalog_test.go",
+    "size": 7171,
+    "sha": "88917789175751c71e9391244c656c6256e3b166",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/config.go",
+    "size": 5665,
+    "sha": "6840efda59642a23c773066577d26a3959f4bbc6",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/decimal.go",
+    "size": 3171,
+    "sha": "e01355ebca504fd0d3bdbb534127b66b45e12e8a",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/http.go",
+    "size": 1389,
+    "sha": "a28ff4d5565eab38f78620247a52fa3549f3b640",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/sort.go",
+    "size": 2159,
+    "sha": "02cac17e86323f6f37183a6215980ec26c7dfea9",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/upstream/LICENSE-AGPL.txt",
+    "size": 34523,
+    "sha": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/upstream/LICENSE-MIT.txt",
+    "size": 1117,
+    "sha": "74dd8fbae5a10dc2e6d8e645f80c4e4645deeab6",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/upstream/SHARED_API_ERRORS.md",
+    "size": 5254,
+    "sha": "129e74f6870ac375b3f800e273d0c5e1aa9f1c5f",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "ports/wallet/exchangecatalog/upstream/WalletController.cs",
+    "size": 61958,
+    "sha": "10650f1a12912532d70f6ea422a69557a508a224",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "scripts/check-integration-results.py",
+    "size": 1861,
+    "sha": "4ee1f9a3e5a87e45848af3125648d677714ced93",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "scripts/integration-postgres.sh",
+    "size": 2131,
+    "sha": "f23f366d8751e919805ac68b95117da44175483e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "scripts/verify.sh",
+    "size": 980,
+    "sha": "f47798fa02911f8130c63c7b277d78a8e4496f32",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/badges-oracle/ApiError.cs",
+    "size": 834,
+    "sha": "a29bc30a20011632300e91640d2569dab778de36",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/badges-oracle/BadgesDiscoveryController.cs",
+    "size": 8263,
+    "sha": "2886819d7173a09080978caa6a3a79e61dd90f64",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/badges-oracle/BadgesOracle.csproj",
+    "size": 291,
+    "sha": "1eec208fc56d06d19d03a0e1ca237eefee2c4c8a",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/badges-oracle/LICENSE.txt",
+    "size": 34523,
+    "sha": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/badges-oracle/NuGet.Config",
+    "size": 74,
+    "sha": "cdf4c5e66b7fc93d6bade0b449831b3ff7b3ac6a",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/badges-oracle/Program.cs",
+    "size": 2949,
+    "sha": "b989a55f8985ed6acd0a9fd21a68921fb31f52fc",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/badges-oracle/README.md",
+    "size": 2332,
+    "sha": "049696b678b95cc21aaf2dbf816e15844d56c8bc",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/badges-oracle/cases.json",
+    "size": 5276,
+    "sha": "a6380425369909c28a10d9b06ee7cee42bb8e9b7",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/badges-oracle/expected.json",
+    "size": 113323,
+    "sha": "d89d8f5036b8ab91b0d5a138a0b482bb6e9f68e3",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/badges-oracle/validation.json",
+    "size": 1217,
+    "sha": "b5c2df9513519edc61d96a3b967d7e95de0d418c",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/badges-oracle/verify.sh",
+    "size": 934,
+    "sha": "4543da253e65beb5ae304b3bc2d9445a527a1cbd",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/badges_discovery_test.go",
+    "size": 3242,
+    "sha": "4acc392ed7123c184ae3287f7d8f14b462ed63fe",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/domain_test.go",
+    "size": 3860,
+    "sha": "9a87d4bb23ad3e40ce0842bad880a6e1c71b1ba2",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange-oracle/ExchangeOracle.csproj",
+    "size": 321,
+    "sha": "40512f3914f673d7488ed42f43c037d49205d75d",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange-oracle/LICENSE.txt",
+    "size": 34524,
+    "sha": "2beb9e16309456b1f4244480f4fe6890324a5064",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange-oracle/MvcProbe.cs",
+    "size": 1940,
+    "sha": "027799fb52af0c7ab294493aabc74bf4ca227ea8",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange-oracle/NuGet.Config",
+    "size": 74,
+    "sha": "cdf4c5e66b7fc93d6bade0b449831b3ff7b3ac6a",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange-oracle/Program.cs",
+    "size": 4649,
+    "sha": "2b57a1d495ebcf316456484ab4b2c0d8bc0819f9",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange-oracle/README.md",
+    "size": 3380,
+    "sha": "3867d76e5aebe70987e7888be16ae4bf80657812",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange-oracle/cases.json",
+    "size": 608419,
+    "sha": "ed8dc1bd1f2518f064ce393773b4fbd8a44bf1da",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange-oracle/expected.json",
+    "size": 600304,
+    "sha": "2b7979cf349e61c41a36548e4d234ad4066861bd",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange-oracle/mvc-methods.json",
+    "size": 946,
+    "sha": "8afc1eee64d34bd2b2663f8313a90b869c052494",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange-oracle/unicode-map.json",
+    "size": 18363,
+    "sha": "cc0098a07728a28bfbf86be36dd0fe8f46fc2057",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange-oracle/validation.json",
+    "size": 1445,
+    "sha": "12a10a29185b10efa6af293651c389d6afd0d5c8",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange-oracle/verify.sh",
+    "size": 1242,
+    "sha": "a576ce512250dacb92c46c4f293d6c1a18fbf518",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/exchange_catalog_test.go",
+    "size": 4561,
+    "sha": "04dc5a03be8c2e64002c534d01683cc14b8e71e4",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/watch_http_binding_test.go",
+    "size": 5088,
+    "sha": "1d8fb20cb2833f5f7243805ab6d62499887bc32a",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/contract/watch_persistence_test.go",
+    "size": 3437,
+    "sha": "539dedad9789f010aed93795cd44a9ea93fe5b8e",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/integration/board_test.go",
+    "size": 14630,
+    "sha": "6a757ce2951c998d3637e19a74eb51e489b104c6",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/integration/schema.sql",
+    "size": 751,
+    "sha": "7dbb629625f93e9b929ca20b311fb0df389d3719",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/integration/watchers_test.go",
+    "size": 6985,
+    "sha": "638e72b7c5441e7132785501992ef36f9745b7d7",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "tests/integration/watchpg_test.go",
+    "size": 8617,
+    "sha": "d6634b734fe5a022383b9de704ca9cab9cf99a51",
+    "mode": "100644",
+    "type": "blob"
+  },
+  {
+    "path": "SOURCE_MANIFEST.json",
+    "size": 33118,
+    "sha": "df68f548a6be1088fd03595a4eda79e5ec39dba3",
+    "mode": "100644",
+    "type": "blob"
+  }
+]

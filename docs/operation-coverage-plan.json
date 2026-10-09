@@ -1,0 +1,792 @@
+{
+  "format": "lossless-operation-plan-parts-v1",
+  "canonical_sha256": "bd314e3873b1dac73bb4f7c35227e027dfbb24473b64f86f952d917723ac499a",
+  "canonical_git_blob": "099039583a28a56fee87fb1888ee3a24a638cd89",
+  "canonical_bytes": 2051969,
+  "measurement": {
+    "controller_files": 98,
+    "controller_class_declarations": 99,
+    "static_http_attributes": 818,
+    "by_service": {
+      "Develop": 63,
+      "Messager": 74,
+      "Passport": 255,
+      "Sphere": 331,
+      "Wallet": 95
+    },
+    "local_http_operations": 13,
+    "synthetic_candidate_http_operations": 8,
+    "runtime_verified_endpoint_total": null,
+    "full_backend_completion_percentage": null,
+    "production_services_completed": 0,
+    "rpc_named_files": 23,
+    "rpc_implementation_files": 22,
+    "rpc_override_declarations": 99,
+    "job_named_files": 25,
+    "literal_scheduled_job_registrations": 34,
+    "database_files": 5,
+    "dbset_declarations": 136,
+    "migration_named_files": 261
+  },
+  "reassemble": "python3 inventory/operation-sources/coverage_format.py --assemble docs/operation-coverage-plan.json --output /tmp/operation-coverage-plan.json",
+  "parts_directory": "operation-coverage-plan-parts",
+  "fields": [
+    {
+      "key": "schema_version",
+      "kind": "value",
+      "parts": [
+        {
+          "file": "schema_version.json",
+          "bytes": 2,
+          "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+        }
+      ]
+    },
+    {
+      "key": "prepared_on",
+      "kind": "value",
+      "parts": [
+        {
+          "file": "prepared_on.json",
+          "bytes": 13,
+          "sha256": "74aaaeadb6d246dd4bd7d762391d475deb9abf9ac831df65bbe91635586b7ff1"
+        }
+      ]
+    },
+    {
+      "key": "baseline",
+      "kind": "value",
+      "parts": [
+        {
+          "file": "baseline.json",
+          "bytes": 122,
+          "sha256": "3fc05d56be3c8932b25621e90797349f9b30af4e3455ac61c656cc36d80bc2d9"
+        }
+      ]
+    },
+    {
+      "key": "scope",
+      "kind": "value",
+      "parts": [
+        {
+          "file": "scope.json",
+          "bytes": 209,
+          "sha256": "6f720069d64dd0a31a20d3dcd315878c5bcf9e6b8540337a0206c3abd2a70338"
+        }
+      ]
+    },
+    {
+      "key": "measurement",
+      "kind": "value",
+      "parts": [
+        {
+          "file": "measurement.json",
+          "bytes": 568,
+          "sha256": "201edebc68d698b717897f95d502fecaa2dca07dc9657dfe06f217bcc121cc6a"
+        }
+      ]
+    },
+    {
+      "key": "methodology",
+      "kind": "value",
+      "parts": [
+        {
+          "file": "methodology.json",
+          "bytes": 1195,
+          "sha256": "bebb016ac1c7d5db75a59f853d7779cc3f76cd6457ee9acd3c6cc7a1421e5619"
+        }
+      ]
+    },
+    {
+      "key": "public_documentation_followup",
+      "kind": "value",
+      "parts": [
+        {
+          "file": "public_documentation_followup.json",
+          "bytes": 467,
+          "sha256": "ed3e07a260adbdefffc644e28bf1f6b4bfb667d5050507ec7b70d5a23c8533e3"
+        }
+      ]
+    },
+    {
+      "key": "current_checkpoint",
+      "kind": "value",
+      "parts": [
+        {
+          "file": "current_checkpoint.json",
+          "bytes": 2051,
+          "sha256": "50aee70ecaee9155e3764347dc94410bd3eb33fde8280162dd01a4113254be8c"
+        }
+      ]
+    },
+    {
+      "key": "production_blocker_groups",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "production_blocker_groups-0001.json",
+          "bytes": 3007,
+          "sha256": "50c7aab6487ac63675c99e3f105976f87c6c1b4600799aec47e77231c3811eb0"
+        }
+      ]
+    },
+    {
+      "key": "gates",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "gates-0001.json",
+          "bytes": 3919,
+          "sha256": "3eb605378a247c42c862e98aef4bb3afa46254e1d423f5935b3c62308a0d2fa5"
+        }
+      ]
+    },
+    {
+      "key": "phases",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "phases-0001.json",
+          "bytes": 3309,
+          "sha256": "f0a2ef2771bfd7f173c99aca86eba4ef80379ee22e126aacefc4927064b0580b"
+        }
+      ]
+    },
+    {
+      "key": "families",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "families-0001.json",
+          "bytes": 44384,
+          "sha256": "fc25c60bf3b64f9c410292bd8100dfaa49c154ffeb0af9be9fe305de1aba4a12"
+        },
+        {
+          "file": "families-0002.json",
+          "bytes": 28546,
+          "sha256": "09e3444d09f178eb3248acf5cabb2198505ab076b55b334fec58fc19c731057d"
+        }
+      ]
+    },
+    {
+      "key": "independent_next_implementations",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "independent_next_implementations-0001.json",
+          "bytes": 4712,
+          "sha256": "1d23aef6c40a74216b68e7772e347e6a86c9f52038c2b1970284d2aae3a9e791"
+        }
+      ]
+    },
+    {
+      "key": "cross_backend_work",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "cross_backend_work-0001.json",
+          "bytes": 1705,
+          "sha256": "8ebca3b604fab7ecd1f5baf5eb6c9b8600639e74908b7e159740aa23f183afc8"
+        }
+      ]
+    },
+    {
+      "key": "http_operations",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "http_operations-0001-AppProductController.json",
+          "bytes": 8705,
+          "sha256": "f6a45277c625c3cfe119a17a264ba8e7595a9b37c84e6e5f18d212175044bb63"
+        },
+        {
+          "file": "http_operations-0002-BoardPublicController.json",
+          "bytes": 1562,
+          "sha256": "ad23920e711ff94c269d95ced69096c68d5e446e2dec5599a36f892fd178e769"
+        },
+        {
+          "file": "http_operations-0003-BotAccountController.json",
+          "bytes": 23891,
+          "sha256": "90c1bf985544d2d6f7ae38d8f000c2e81fe46e4816de0d1243d147005f2ed682"
+        },
+        {
+          "file": "http_operations-0004-BotAccountPublicController.json",
+          "bytes": 6466,
+          "sha256": "430bc79387909437dc339b76b0c672ee43851d94a16e9022793771c96dbe399a"
+        },
+        {
+          "file": "http_operations-0005-CustomAppController.json",
+          "bytes": 31683,
+          "sha256": "a9a02f003d6683164680f8767dd9c40bd028fde3ac52d258fb259b99296c84ba"
+        },
+        {
+          "file": "http_operations-0006-CustomAppPublicController.json",
+          "bytes": 6463,
+          "sha256": "d1336177a5b49daa28c034ebb2857a9974142eacbdf6705feba9b3ae9fc04a76"
+        },
+        {
+          "file": "http_operations-0007-DevelopQuotaController.json",
+          "bytes": 1517,
+          "sha256": "111e121842f5e372bd80518ea091a981ea76b28f949b8798b1f078a95fd517ed"
+        },
+        {
+          "file": "http_operations-0008-DeveloperController.json",
+          "bytes": 6343,
+          "sha256": "c0f2889618d0296549eb4c437862cd14ba8d700e0e2fd36a60c7e686177aaf42"
+        },
+        {
+          "file": "http_operations-0009-MiniAppController.json",
+          "bytes": 11085,
+          "sha256": "8a39250d014ff104fd5022df0a3dcad7eb080363d3adfbb741b9f8caf7a4ebbf"
+        },
+        {
+          "file": "http_operations-0010-MiniAppPublicController.json",
+          "bytes": 4705,
+          "sha256": "0837d646c6cc043ae5fa85e94636d9736e7ee08609bc94edaf9a84cf8677e40a"
+        },
+        {
+          "file": "http_operations-0011-DevProjectController.json",
+          "bytes": 8182,
+          "sha256": "20403c5c18cf541e36e241fd4ac5ae8a4fb098430cec5850b850a658f1b4da90"
+        },
+        {
+          "file": "http_operations-0012-ChatController.json",
+          "bytes": 44908,
+          "sha256": "023eda5180e67f073bcfa0f0477e186fa2c186f8b5e5c5b94aecfbb2242ffbb4"
+        },
+        {
+          "file": "http_operations-0013-ChatController.json",
+          "bytes": 1542,
+          "sha256": "51ccf91d48d43c52abcb010703117d07a9e856cd35769b631ce91ef33060e31e"
+        },
+        {
+          "file": "http_operations-0014-ChatRoomController.json",
+          "bytes": 44872,
+          "sha256": "36f2cbe952cc79c51548287961954a83b5bb14129a4ccd48373b86eb616dc537"
+        },
+        {
+          "file": "http_operations-0015-ChatRoomController.json",
+          "bytes": 14760,
+          "sha256": "314f5e5e9c5d6d0d988c644dca3d259e1126cab76008d08b2e84d6ddc9fe39ee"
+        },
+        {
+          "file": "http_operations-0016-RealmChatController.json",
+          "bytes": 1532,
+          "sha256": "e9dcc685e090c72d1f21e358ce9086530acad7f6df944cb277f15c5c6b52b087"
+        },
+        {
+          "file": "http_operations-0017-RealtimeCallController.json",
+          "bytes": 15205,
+          "sha256": "38808d81f70ebb0dbdc54079361fce611676a87e97d5e729f91a153d0ba2df55"
+        },
+        {
+          "file": "http_operations-0018-AccountAdminController.json",
+          "bytes": 36925,
+          "sha256": "624f35bcd6c76fe8cac29ae37d99a64f1032ec2eea2ffa9bac15893b38a5fdaf"
+        },
+        {
+          "file": "http_operations-0019-AccountController.json",
+          "bytes": 15196,
+          "sha256": "d1a87ec2a770c89f93d53c6d5e82087793c0a95c2558c76cbebf1a34a012186e"
+        },
+        {
+          "file": "http_operations-0020-AccountCurrentController.json",
+          "bytes": 18213,
+          "sha256": "16cc2418cfb0cce65ffce17077c5865fc53437c5314519846af6a819eb3fa3ce"
+        },
+        {
+          "file": "http_operations-0021-AccountEventController.json",
+          "bytes": 36202,
+          "sha256": "663a802f8ef6e300060143928fb8b3271977d071c3cd631500be8af6829d4658"
+        },
+        {
+          "file": "http_operations-0022-AccountPublicController.json",
+          "bytes": 4681,
+          "sha256": "49f6deccf637c1dd82b549edead29c4782c345695f6737d98e5bb5ed63ade4c8"
+        },
+        {
+          "file": "http_operations-0023-AccountStatsAdminController.json",
+          "bytes": 1597,
+          "sha256": "dff20bbd22db67ec4f89007bee33dcb2eb5505c330642bf9f5b352a1356c0f82"
+        },
+        {
+          "file": "http_operations-0024-FortuneSayingController.json",
+          "bytes": 2968,
+          "sha256": "651a370751d322e3106a2214d96b4e72b44a76ad995a70f87e605ccb868bc403"
+        },
+        {
+          "file": "http_operations-0025-FriendsController.json",
+          "bytes": 1563,
+          "sha256": "9f83460888f501b2e63b928706f3e7b9082affe6165f6820ef59b1429efed44a"
+        },
+        {
+          "file": "http_operations-0026-NotableDaysController.json",
+          "bytes": 8304,
+          "sha256": "965c058dc5ae55710cbbb15fc4f3fee271d05ee8e4b012e32cc162e86fadca3d"
+        },
+        {
+          "file": "http_operations-0027-PassKitController.json",
+          "bytes": 10546,
+          "sha256": "55b67f736ecd248bb77389f0c37baff09fdbd629af3d670f07082d18f7997434"
+        },
+        {
+          "file": "http_operations-0028-PresenceActivityController.json",
+          "bytes": 17726,
+          "sha256": "914a882e759c6fe50813229e0dd6bd92826ce6bf2c4cb092565912be0aa941db"
+        },
+        {
+          "file": "http_operations-0029-PresenceArtworkController.json",
+          "bytes": 3445,
+          "sha256": "7653b185be3deffdc7254efb9950cbc8d9ac503d3c19f90c200ee88edd7ba4af"
+        },
+        {
+          "file": "http_operations-0030-AffiliationSpellController.json",
+          "bytes": 13711,
+          "sha256": "9d6d2c1dc1b9881da3920bb3be4875d3766af251760305f98cefee819f4820db"
+        },
+        {
+          "file": "http_operations-0031-DomainTrustController.json",
+          "bytes": 14389,
+          "sha256": "ae9305e88517f2fe7667716bd6eb1688e5a3ac6c2249497357292535025fc6f8"
+        },
+        {
+          "file": "http_operations-0032-TestAdminController.json",
+          "bytes": 17991,
+          "sha256": "59295d615747f9ddba248ba0fd8880ded07971e0d3953dbf214598057900c5a9"
+        },
+        {
+          "file": "http_operations-0033-TestController.json",
+          "bytes": 11200,
+          "sha256": "0e44835401143396845d2613be32a8b60d4a880b85d94c8f7070463808fe80f7"
+        },
+        {
+          "file": "http_operations-0034-TestQuestionAdminController.json",
+          "bytes": 11790,
+          "sha256": "b3bf94c5b296819d8a004ca8e70c8b6d110f72ce523b2f8f8620b1435749cac6"
+        },
+        {
+          "file": "http_operations-0035-TestQuestionGroupAdminController.json",
+          "bytes": 6766,
+          "sha256": "6f4c7de6a448831f64b3f12edb1f108254a5d56b9d54da6d273e0d5e646135e9"
+        },
+        {
+          "file": "http_operations-0036-TestTrialAdminController.json",
+          "bytes": 4886,
+          "sha256": "4f9fb1a56b8fb1cf4039bb7bf3f1f5f1c6bc6c355803971a191b70563dac7721"
+        },
+        {
+          "file": "http_operations-0037-TestTrialController.json",
+          "bytes": 3202,
+          "sha256": "c84b05c7761363c653267fafe8fc9de8f24a4ca6931841c1e58515369eb39196"
+        },
+        {
+          "file": "http_operations-0038-IpCheckController.json",
+          "bytes": 2996,
+          "sha256": "08c99966f113e1e6a4b201dd0334bca5a83ac7467562e0504ac484815a826713"
+        },
+        {
+          "file": "http_operations-0039-LocationPinController.json",
+          "bytes": 13078,
+          "sha256": "d6702bee94cc50b06b002948ca047df04df8e945eff828cd98637b1a9d876b3d"
+        },
+        {
+          "file": "http_operations-0040-MeetController.json",
+          "bytes": 18110,
+          "sha256": "2dc013021cb1c276779e66906c4f221f4f42dd15959799c3d3f998242fb29b2b"
+        },
+        {
+          "file": "http_operations-0041-NameChangeCardController.json",
+          "bytes": 4874,
+          "sha256": "46b4d1679cbbe7433cac4209db07b3cb79d9c8c6b101523a4c7bd24063648ef8"
+        },
+        {
+          "file": "http_operations-0042-NearbyController.json",
+          "bytes": 3328,
+          "sha256": "937e1f924234eb1262d1526a60d046bd9cd7224d51c9063b88ef9991385ff35a"
+        },
+        {
+          "file": "http_operations-0043-NfcAdminController.json",
+          "bytes": 3266,
+          "sha256": "8c252909c4ccb8cb4ad30d881dbb696023c673a80f8b025d6fc4c87ffc061b80"
+        },
+        {
+          "file": "http_operations-0044-NfcController.json",
+          "bytes": 14360,
+          "sha256": "a6665bd07031944dcf4faccae7fb6917196757e7f70ac3c0ef3faf216b0a6305"
+        },
+        {
+          "file": "http_operations-0045-BadgesDiscoveryController.json",
+          "bytes": 3076,
+          "sha256": "8dcb8024b12c3e3cfe1d696b194852cdd42d41add4b5ce81cbf5691fe03d771a"
+        },
+        {
+          "file": "http_operations-0046-ProgressionAdminController.json",
+          "bytes": 17166,
+          "sha256": "534bc8b65e705b62126e966d33e6cb6ddda6456e239947ae06b7dad6b0707fdc"
+        },
+        {
+          "file": "http_operations-0047-ProgressionController.json",
+          "bytes": 6385,
+          "sha256": "ac48b005fd379a991899abc8b6fd7d34ec26cefcaf52774e4bb27c999aa40800"
+        },
+        {
+          "file": "http_operations-0048-RealmAdminController.json",
+          "bytes": 15596,
+          "sha256": "59b682196ff1feefefec3982dcf35c7e441de239ca3e65cd69191d91616b5be7"
+        },
+        {
+          "file": "http_operations-0049-RealmController.json",
+          "bytes": 44059,
+          "sha256": "c2a4d81981a91929de7ce9ea5b217e50f14ba100616af7b9697bed0538a1bce2"
+        },
+        {
+          "file": "http_operations-0050-RealmController.json",
+          "bytes": 10202,
+          "sha256": "e2c773d8a794d4b5720e5512f31c64a2b507d2788711e58285e90223578d7c59"
+        },
+        {
+          "file": "http_operations-0051-RealmPublicController.json",
+          "bytes": 1560,
+          "sha256": "7330da6e0cdae082d8f9205ed35bafc37457728326b143a262c3cbdf0fa21121"
+        },
+        {
+          "file": "http_operations-0052-AccountRewindController.json",
+          "bytes": 6614,
+          "sha256": "5243904aef11902136a6887232380c95007e1f2194090ad291d55c64320ad120"
+        },
+        {
+          "file": "http_operations-0053-TicketController.json",
+          "bytes": 16462,
+          "sha256": "b48eccc38f9c21a1c4f7a0dd23b49e4d401df663568ad055bb73072a49330c82"
+        },
+        {
+          "file": "http_operations-0054-TicketOnCallAdminController.json",
+          "bytes": 4931,
+          "sha256": "52c049256579be30ecede2b509b4d11446cb67c4a850ee213f6ad08f061ae800"
+        },
+        {
+          "file": "http_operations-0055-AccountSettingsController.json",
+          "bytes": 3337,
+          "sha256": "5df5ed0447aeee6774cf4bbeca8e2be586c19b1cc16cf5a61c32e0d91ca7f26e"
+        },
+        {
+          "file": "http_operations-0056-ActivityPubController.json",
+          "bytes": 11161,
+          "sha256": "9f0b78fa708c2cf2f6da49e2488a029a00114d555b2d2ade9a1f84cd8538e067"
+        },
+        {
+          "file": "http_operations-0057-ActivityPubFollowController.json",
+          "bytes": 8402,
+          "sha256": "1fac50bf65e34d7ee6f2f7d85ef25de1a1a6316afbe1ec05edb39631629f00e8"
+        },
+        {
+          "file": "http_operations-0058-ActivityPubRealmController.json",
+          "bytes": 6663,
+          "sha256": "c53b7249c17de3073bec8ad934f75bcd55d257fa4c05f33127c3e0bf3d4c50c4"
+        },
+        {
+          "file": "http_operations-0059-FediverseActorController.json",
+          "bytes": 17132,
+          "sha256": "777b9377b8685283ca3031120bf06603b17124abce664294927b86581320b581"
+        },
+        {
+          "file": "http_operations-0060-FediverseKeyAdminController.json",
+          "bytes": 11588,
+          "sha256": "2579d16365cca4ce816f2c68e8fd8ffb4dc6ec815763720a81669adb96506959"
+        },
+        {
+          "file": "http_operations-0061-FediverseKeyController.json",
+          "bytes": 3186,
+          "sha256": "ad92bc0daaac3e817b835a7cf901575221f0c280b4057d22263e7acff947cb5d"
+        },
+        {
+          "file": "http_operations-0062-FediverseModerationController.json",
+          "bytes": 21233,
+          "sha256": "c87e70f7ac7b0369ec02c93c4e893afa7de0961dfacb6b34e4706f3eb20d33d8"
+        },
+        {
+          "file": "http_operations-0063-NodeInfoController.json",
+          "bytes": 4308,
+          "sha256": "bb00ba9d4f18e13839ad4edb570a1614c71087e66552407c0a44c7f1583baae6"
+        },
+        {
+          "file": "http_operations-0064-QuoteAuthorizationController.json",
+          "bytes": 5070,
+          "sha256": "1e2e725641379fe2a4d3443dd58311d5a0751550dfbdf44e96c57535a8e56dea"
+        },
+        {
+          "file": "http_operations-0065-ServerActorController.json",
+          "bytes": 7615,
+          "sha256": "20113b8fbf4f77eb19f48ed34f78492e70fb91abab48a23163343d940c070ca6"
+        },
+        {
+          "file": "http_operations-0066-WebFingerController.json",
+          "bytes": 3160,
+          "sha256": "770381814c0d68c00d32e4ad1f71788ae101daea5d518678a27ee91510a4292f"
+        },
+        {
+          "file": "http_operations-0067-AutocompletionController.json",
+          "bytes": 1595,
+          "sha256": "e865fdec880848d5a97d2408409085542fed9ad5dd880ebfe9f9455908dec0ea"
+        },
+        {
+          "file": "http_operations-0068-AutomodController.json",
+          "bytes": 10956,
+          "sha256": "d345974d0275b752e207b29c2f95801c0cacb969272c92331a50dee228fedf68"
+        },
+        {
+          "file": "http_operations-0069-LiveStreamController.json",
+          "bytes": 38346,
+          "sha256": "ec3a7a86e9b8761932062e585502174138d7f5997019600240d1c8ad3430743c"
+        },
+        {
+          "file": "http_operations-0070-AdsController.json",
+          "bytes": 1549,
+          "sha256": "6317a19cd15205b212a9872a4626fe8991cfcf841c6fa5aeb0f01c9323a7d876"
+        },
+        {
+          "file": "http_operations-0071-PostActionController.json",
+          "bytes": 36085,
+          "sha256": "494f87954e58bf576203bc24230d12fa113c7deef4b12c8018feda587e8a703f"
+        },
+        {
+          "file": "http_operations-0072-PostAdminController.json",
+          "bytes": 19670,
+          "sha256": "b0a406a59b14dae4abb023b62ac39da03b87168836dae5e0b08dfece00051919"
+        },
+        {
+          "file": "http_operations-0073-PostCategoryAdminController.json",
+          "bytes": 8335,
+          "sha256": "c62b1985065fd79e45affaf92ed49370da4fb07c8cb5bf13af9356fba005d83c"
+        },
+        {
+          "file": "http_operations-0074-PostCategoryController.json",
+          "bytes": 15028,
+          "sha256": "e31a49ff4e2336cf0f452770ee755444d0c49e7a540df401ce5f4a063bf6caa6"
+        },
+        {
+          "file": "http_operations-0075-PostCategorySubController.json",
+          "bytes": 1663,
+          "sha256": "56b5ad29c6ba77f6377ed7363f68d6baaa2ed5e367318a375ad1c1afd6a7ecdb"
+        },
+        {
+          "file": "http_operations-0076-PostCollectionAdminController.json",
+          "bytes": 6728,
+          "sha256": "1ab819038c92a67032953096eaf4e2d60f28d2f9b49224dff99057e64bab0e53"
+        },
+        {
+          "file": "http_operations-0077-PostCollectionController.json",
+          "bytes": 29115,
+          "sha256": "6075fa34dbfc303338421a39a87b3c4778013d79af6bf424204a8d76a5ec9d47"
+        },
+        {
+          "file": "http_operations-0078-PostController.json",
+          "bytes": 35084,
+          "sha256": "b8bc10d2d7a86d0d8b79f193da89bc292ede251ca56aa08857bddf8cef021c1b"
+        },
+        {
+          "file": "http_operations-0079-PostStatsAdminController.json",
+          "bytes": 1589,
+          "sha256": "a5005ba954fd9147cb5bfd1000e39189a7e3e29a19ff259efa0a42e352e09bf6"
+        },
+        {
+          "file": "http_operations-0080-PostTagController.json",
+          "bytes": 42317,
+          "sha256": "a8969e7d64e6b28672039c4c5d46b2c0791f724c07907cfb469a2f21178b3a4c"
+        },
+        {
+          "file": "http_operations-0081-PostWatchController.json",
+          "bytes": 3161,
+          "sha256": "eb5f69671aaa79fe4b65dcf7efe34db556f05036e9cb797b7f0bf4b58809f4f4"
+        },
+        {
+          "file": "http_operations-0082-PublisherAdminController.json",
+          "bytes": 13840,
+          "sha256": "859f81e0edede02b17bd955422b7d63d6f8cfb3535c1608cbb6b49453de8d4b1"
+        },
+        {
+          "file": "http_operations-0083-PublisherController.json",
+          "bytes": 43623,
+          "sha256": "6dc40e15f0ec4b8e7a4648fde2271b09f29cde65fe0d41f2c45fa9f56053ba60"
+        },
+        {
+          "file": "http_operations-0084-PublisherController.json",
+          "bytes": 10366,
+          "sha256": "13d186801542e705634f71329fb204a271fa782567d1d8744e1fc7c65145e8b2"
+        },
+        {
+          "file": "http_operations-0085-PublisherPublicController.json",
+          "bytes": 14174,
+          "sha256": "27ce58754147386b6b42b1967483192e180773ad6e211ce2a5a4fd644a0e989b"
+        },
+        {
+          "file": "http_operations-0086-PublisherSubscriptionController.json",
+          "bytes": 39042,
+          "sha256": "0b3f301f1beb41e9fd6474ecb2eb76bf1c849c26c31ee6f003f9f0ecdb684a28"
+        },
+        {
+          "file": "http_operations-0087-WebReaderController.json",
+          "bytes": 4659,
+          "sha256": "915fe7d69bf9e0f86edefa71aa38aba4880206e0f52b1761b1ca7343a53f14fc"
+        },
+        {
+          "file": "http_operations-0088-StickerController.json",
+          "bytes": 36450,
+          "sha256": "9605268eb531642dd0fd7740ae8c06295731e3b2313c2d01be81f6765656d8da"
+        },
+        {
+          "file": "http_operations-0089-SurveyController.json",
+          "bytes": 23365,
+          "sha256": "dc89da1533e808e38dfc80baca6159b52e6e9f58a91376dbd2129378a18e2025"
+        },
+        {
+          "file": "http_operations-0090-TimelineController.json",
+          "bytes": 1799,
+          "sha256": "9b4ae6ccc4d9ea651624725b412febcb4381d3d6560e70ffb9b1222e69d3c6be"
+        },
+        {
+          "file": "http_operations-0091-TimelineDiscoveryController.json",
+          "bytes": 10129,
+          "sha256": "641cb55211e5b4d913c2dfac8ccd03db44b801a13d48e092eb420bbff6f483f6"
+        },
+        {
+          "file": "http_operations-0092-TranslationController.json",
+          "bytes": 1626,
+          "sha256": "aeca46e13257945681716be7888c63cdbef017bf5d875a6f924b000de6be1783"
+        },
+        {
+          "file": "http_operations-0093-MerchantController.json",
+          "bytes": 15039,
+          "sha256": "72f8c840d3e1560812ca481249f48408e132daadc13181f0a68f762e16cbabf9"
+        },
+        {
+          "file": "http_operations-0094-OrderController.json",
+          "bytes": 13405,
+          "sha256": "e45a6be308e5b4cd701979a08badb586a46a9dadf6438b378dbb9c2781c0e666"
+        },
+        {
+          "file": "http_operations-0095-PaymentAdminController.json",
+          "bytes": 12628,
+          "sha256": "f4fcbacda4d70c22e52746838aac7ff7dda9cf7eb59f6872b1c14698b78590e0"
+        },
+        {
+          "file": "http_operations-0096-SubscriptionAdminController.json",
+          "bytes": 14062,
+          "sha256": "4ca4fb52fa1b254473e18cb6b5adc098812a4aaa5e4f637d76daf00f79bc5b9b"
+        },
+        {
+          "file": "http_operations-0097-SubscriptionController.json",
+          "bytes": 35391,
+          "sha256": "c9e65eba00c8e1f661e9ffb049d92580eeb747ad5ceb6a31e50fb7a9f7830a24"
+        },
+        {
+          "file": "http_operations-0098-SubscriptionGiftController.json",
+          "bytes": 15102,
+          "sha256": "326252a01d61f1870f822f9b8ef3bda28ee7e5517c25d1ae833e3c2b08c1cd24"
+        },
+        {
+          "file": "http_operations-0099-WalletController.json",
+          "bytes": 43703,
+          "sha256": "9c8a4b54e75812b39a13b14b2b5b9a00b58b42bb3ae87a56737439e8480a752c"
+        },
+        {
+          "file": "http_operations-0100-WalletController.json",
+          "bytes": 1660,
+          "sha256": "8a822094b90d3fc96d86e1a01cd0c07adeb4c9d514e0d821381e6b4bc4296db9"
+        },
+        {
+          "file": "http_operations-0101-WalletProductAdminController.json",
+          "bytes": 3372,
+          "sha256": "6d7131eb898add3c9e12977570fcbd86d8cfeb46aab94640585d6b79aeb6b65f"
+        },
+        {
+          "file": "http_operations-0102-WalletProductController.json",
+          "bytes": 5104,
+          "sha256": "c7a902b32df9960fe2cad9c778b8aa5de697e8f5f0b0891e265d90b6a00b60a9"
+        },
+        {
+          "file": "http_operations-0103-WalletStatsAdminController.json",
+          "bytes": 1615,
+          "sha256": "fba755b2479c156c0dfb5c3d3bd38400f030b05f0bc705a78bb6f4d7f2c48aa4"
+        }
+      ]
+    },
+    {
+      "key": "controller_index",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "controller_index-0001.json",
+          "bytes": 37591,
+          "sha256": "2a7098a4a8ff2a5f642d74d3ab03ed91af311e7ee90db75d423c9319af9d998c"
+        }
+      ]
+    },
+    {
+      "key": "rpc_implementations",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "rpc_implementations-0001.json",
+          "bytes": 34632,
+          "sha256": "26336e7c0d76e09e7716ef852ca61ac088975615d04fe24159ccc046404d1483"
+        }
+      ]
+    },
+    {
+      "key": "job_sources",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "job_sources-0001.json",
+          "bytes": 9441,
+          "sha256": "ffe99bcb65dd77109dd813eb63ae68dc6a5e7a55bb06ae91fc3ae0b5dacdcba6"
+        }
+      ]
+    },
+    {
+      "key": "scheduled_job_registrations",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "scheduled_job_registrations-0001.json",
+          "bytes": 11338,
+          "sha256": "2a832a622fe95ec0cac42280f59db2176bd25a6ca60244a571763ee165df1d1f"
+        }
+      ]
+    },
+    {
+      "key": "databases",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "databases-0001.json",
+          "bytes": 10847,
+          "sha256": "70bccbb3cda41b581a700e3eab1da4d0392cb3d311e18505b0025a3986a1d040"
+        }
+      ]
+    },
+    {
+      "key": "acceptance",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "acceptance-0001.json",
+          "bytes": 1295,
+          "sha256": "e1d5cce486e36695fb890fd38bd347b20f157c644810f84ee5baadbaf1d1ae21"
+        }
+      ]
+    },
+    {
+      "key": "evidence",
+      "kind": "list",
+      "parts": [
+        {
+          "file": "evidence-0001.json",
+          "bytes": 263,
+          "sha256": "a11295c77c6f7078f1edc510417d6efea17a62e7acdb6f9fa92a62dc413e5efc"
+        }
+      ]
+    }
+  ]
+}

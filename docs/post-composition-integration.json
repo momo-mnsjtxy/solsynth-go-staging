@@ -1,0 +1,46 @@
+{
+  "base_commit": "8eb29449756e41844cdad87480cf3321e2b53440",
+  "status": "independent offline verification passed; actual PostgreSQL and restart pending coordinator",
+  "offline": {
+    "command": "GOPATH=/workspace/shared/go GOCACHE=/workspace/shared/go-build GO_BIN=/workspace/shared/toolchains/go/bin/go PYTHONPATH=/workspace/shared/postgres-syntax-parser bash scripts/verify.sh",
+    "build": "passed",
+    "vet": "passed",
+    "normal_tests": "passed",
+    "race_tests": "passed",
+    "source_integrity": "523 pinned snapshots passed",
+    "static_sql": "95 SQL files, 26 PL/pgSQL bodies parsed; 2616 static call argument counts checked",
+    "postgres": "not executed; no DSN, no sockets, no providers",
+    "review_log": "/workspace/shared/post-composer-independent-verification-final.log"
+  },
+  "required_before": [
+    "TestPGPostCompositionCanonicalReferencesAndReplay",
+    "TestPGPostCompositionOwnershipAndAtomicRollback",
+    "TestPGPostCompositionLivePrivacyExpiryAndPublication",
+    "TestPGPostCompositionTargetWaitRechecksLifecycle",
+    "TestPGPostCompositionSavedRestartPersistence",
+    "TestPGBackendPostCompositionAuthoredRoutes",
+    "TestPGPostCompositionCanonicalLivePrivacy",
+    "TestPGPostCompositionFinalWaitsRecheckReferences",
+    "TestPGPostCompositionProofScopeAndMediaWait"
+  ],
+  "required_after": [
+    "TestPGPostCompositionSavedRestartPersistence"
+  ],
+  "restart_marker": "post-composition-state.json",
+  "migration": "internal/postembedpg/schema.sql",
+  "shared_delta": [
+    "internal/application/backend.go",
+    "internal/application/readiness.go",
+    "scripts/integration-postgres.sh",
+    "scripts/check-integration-results.py",
+    "scripts/integration-groups.json",
+    "scripts/test-integration-wiring.py",
+    "docs/ci-two-groups-dependencies.json"
+  ],
+  "review_base_commit": "7cf3b1515b669d5533d8e1e4e21d8781efeb7fa4",
+  "review_helper_dependency": {
+    "commit": "e96268b",
+    "file": "tests/integration/restart_authority_snapshot_test.go",
+    "delivery": "already coordinator-owned; excluded from correction patch"
+  }
+}

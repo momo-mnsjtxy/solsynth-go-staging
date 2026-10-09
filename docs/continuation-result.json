@@ -1,0 +1,180 @@
+{
+  "recorded_at": "2026-10-08T01:52:04.220613+00:00",
+  "scope": "Local continuation checkpoint, not completed backend parity or a production release",
+  "inputs": {
+    "remote_main": "fcb3449501070745bbce4a0a3ba43a4df9ccf9bc",
+    "main_blobs_verified": 163,
+    "local_recovery_blobs_verified": 187,
+    "recovery_remote_commit": "0b129f4dd77a5ab3f96c57282cd48fe9bf1efede",
+    "recovery_publication": "verified 187 paths/blobs on private recovery branch; continuation publication and exact-tree CI next",
+    "recovery_remote_tree": "332cb49fc9254c53ffb044ad4c48cfa8582401c7"
+  },
+  "changes": [
+    "Reconciled both code histories without overwriting newer policy/app discovery work",
+    "Miniapp package download real SQL lookup, atomic counter and explicit synthetic local ZIP storage candidate",
+    "NodeInfo three-route real SQL statistics candidate",
+    "Config-only host-meta route candidate with documented XML escaping",
+    "Corrected recovered JSON trailing-comma and badge route-casing regressions",
+    "Comprehensive operation/RPC/job/schema acceptance map and current auth contract audit",
+    "Expanded complete scoped authored Solian/Blade client and official public document research",
+    "Real SQL bot-command read candidate from owned documented DTOs",
+    "Real wallet-product configuration projection; 383 reachable independently executed framework cases and frozen2967 BMP naming facts",
+    "Fixed Unicode-equivalent hierarchy segment merging; no UTF8 prefix slicing"
+  ],
+  "production_services_completed": 0,
+  "local_http_operations": 13,
+  "synthetic_candidate_http_operations": 8,
+  "checks": {
+    "source_integrity_entries": 436,
+    "source_integrity_mutation_rejections": 11,
+    "source_integrity_missing_file_rejection": "passed",
+    "pg_result_guard": "30 required before /6 after; fail/missing/skip/declaration checks passed",
+    "build": "passed",
+    "vet": "passed",
+    "unit": "passed",
+    "race": "passed",
+    "race_top_level_counts": {
+      "pass": 182,
+      "skip": 30
+    },
+    "race_counts_including_subtests": {
+      "pass": 2573,
+      "skip": 30
+    },
+    "shell_syntax": "passed",
+    "python_syntax": "passed",
+    "workflow_yaml": "parsed",
+    "diff_whitespace": "Authored Go/Python/shell/YAML/Markdown/JSON staged changes pass; retained exact upstream snapshots preserve their original whitespace and are not reformatted",
+    "public_document_artifacts": "factual public-page summaries, URLs and bounded search metadata verified; no unlicensed Suki repository or generated exports used"
+  },
+  "independent_oracles": {
+    "original_exchange_catalog_fixtures_reproduced": 1793,
+    "exchange_mvc_cases_reproduced": 6,
+    "exchange_scalar_map_reproduced": 1475,
+    "original_badge_mvc_cases_reproduced": 34,
+    "new_regression_cases_reproduced": 16,
+    "limitations": "bounded source/framework .NET comparisons only; no full original service, real S3 or client end-to-end run",
+    "wallet_product_reference_cases_reproduced": 388,
+    "wallet_product_configuration_cases_compared": 383,
+    "wallet_product_direct_diagnostics": 5,
+    "wallet_product_bmp_naming_facts": 2967,
+    "bot_documented_model_cases": 19,
+    "all_reference_wrapper": "scripts/verify-dotnet-oracles.sh independently reran every retained reference with certificate generation disabled before .NET processes"
+  },
+  "database": {
+    "combined_actual_execution": "not_run",
+    "required_before_cases": 30,
+    "required_post_restart_cases": 6,
+    "unit_invocation_skips": [
+      "TestPGBoardRoundTripIsolation",
+      "TestPGBoardAtomicRollback",
+      "TestPGBoardTransactionConcurrency",
+      "TestPGBoardPolicyAndErrors",
+      "TestPGBoardRestartPersistence",
+      "TestPGDevelopBotCommandsPayloads",
+      "TestPGDevelopBotCommandsPolicyAndErrors",
+      "TestPGDevelopBotCommandsRestartPersistence",
+      "TestPGDevelopPackageDownloadBranches",
+      "TestPGDevelopPackagePolicyAndFailures",
+      "TestPGDevelopPackageAtomicCounter",
+      "TestPGDevelopPackageRestartPersistence",
+      "TestPGDevelopDiscoveryPagingAndCounts",
+      "TestPGDevelopDiscoverySearch",
+      "TestPGDevelopDiscoveryPolicyAndReadOnly",
+      "TestPGDevelopDiscoveryRestartPersistence",
+      "TestPGNodeInfoCountsAndHTTP",
+      "TestPGNodeInfoPolicyAndReadOnly",
+      "TestPGNodeInfoFailurePropagation",
+      "TestPGNodeInfoRestartPersistence",
+      "TestPGWatcherRecipientsAndPreferences",
+      "TestPGWatcherSoftDeleteAssumptions",
+      "TestPGWatcherOneHopChains",
+      "TestPGWatcherInputErrors",
+      "TestPGOriginalSchemaAndIsolation",
+      "TestPGIndependentServicePatchConcurrency",
+      "TestPGSoftDeleteAndDuplicateLiveRows",
+      "TestPGTransactionRollbackAndCancellation",
+      "TestPGRestartPersistence",
+      "TestPGIdentityAndTimestampPreservation"
+    ],
+    "blocker": "Local sockets disallowed; exact-tree publication approved and pending remote CI execution"
+  },
+  "process_http": {
+    "combined_actual_execution": "not_run",
+    "wired_scripts": [
+      "scripts/verify-develop-http.py",
+      "scripts/verify-catalog-http.py",
+      "scripts/verify-candidate-http.py"
+    ],
+    "scope": "disposable data, loopback only, no redirect following; live port/process success not inferred from handler tests"
+  },
+  "grouped_blockers": [
+    {
+      "area": "publication_and_validation",
+      "needed": "Publish approved tested continuation to verified private recovery branch, then run actual30-case PostgreSQL/6 restart/process suite"
+    },
+    {
+      "area": "current_authority",
+      "needed": "Eligible current token/session/revocation/cache-miss/outage/version/epoch semantics, credential precedence and permission authority decision contract; known key and generic JWT/error docs are already retained"
+    },
+    {
+      "area": "shared_transport_and_data",
+      "needed": "Eligible complete response DTO/enum/gateway/filter/audit contracts and synthetic fixtures; excluded unlicensed schemas/generated code remain unusable"
+    },
+    {
+      "area": "remaining_platform_work",
+      "needed": "Implement/test remaining domain persistence, message/event/job/storage/provider behavior and migration/rollback after their scoped contracts are resolved; static inventory is not feature completion"
+    },
+    {
+      "area": "content_rights",
+      "needed": "Verified corpus/asset permission or specifically approved replacement content; Fortune corpus remains excluded"
+    }
+  ],
+  "not_performed": [
+    "Continuation remote publication at this record time; recovery snapshot publication verified separately",
+    "Production deployment",
+    "Production requests or data migration",
+    "Real finance/provider/account operations",
+    "Excluded protocol/model source reuse",
+    "Bypass of SoSYS or publication denials"
+  ],
+  "evidence_files": [
+    "docs/operation-coverage-plan.json",
+    "docs/operation-coverage-plan.md",
+    "docs/identity-resolution-audit.md",
+    "docs/continuation-review.md",
+    "docs/main-input-blobs.json",
+    "docs/recovery-input-blobs.json",
+    "tests/contract/recovery-regression-oracle/validation.json",
+    "docs/identity-client-contract-audit.md",
+    "docs/identity-blade-contract-audit.md",
+    "docs/product-client-contract-audit.md",
+    "docs/wallet-product-contract-review.md",
+    "tests/contract/wallet-product-oracle/validation.json",
+    "docs/public-api-documentation-audit.md"
+  ],
+  "local_logs_sha256": {
+    ".cache/continued-verification.log": "5fe1c3a2646cc3eb03f63309d8ba9aa79761110c0ff3eefcbfb467adf294629a",
+    ".cache/continued-race.jsonl": "d76705acb2f480c4b96c57aa403ed5a2bce287477b83285e0600418408331a68",
+    ".cache/continued-oracle-verification.log": "93bbfbd932f8043f75f2c3854ab97badb66d97e1c6b2a7999143daf55772d702"
+  },
+  "research_limit": "The operation map inventories permitted server declarations and selected licensed caller/model evidence; it does not claim exhaustive full-client or public-document contract research for every family. Unresearched contracts remain distinct from unavailable contracts.",
+  "previous_local_checkpoint": "673646732f52d0c5d99575a76093aebb1ecd8a34",
+  "environment_note": "An earlier independently authored bot-model oracle build emitted a .NET first-run development-certificate notice. No certificate material was inspected, trusted, used or exported. All subsequent .NET runs explicitly disable certificate generation and use disposable tool homes; tool homes/certificate stores are outside repository and publication.",
+  "coverage_artifact_format": {
+    "format": "lossless-operation-plan-parts-v1",
+    "parts": 125,
+    "largest_part_bytes": 44908,
+    "index_bytes": 27987,
+    "original_canonical_blob": "099039583a28a56fee87fb1888ee3a24a638cd89",
+    "verification": "reassembled byte-for-byte identical to ac50657 original 818-record JSON; immutable ac50657 retained",
+    "reason": "bounded publication requests after 2MB tree-content call stalled and was interrupted"
+  },
+  "publication_safety": {
+    "report": "docs/publication-safety-review.json",
+    "omitted_deployment_snapshots": 5,
+    "omitted_credential_blob_checks": "both absent from private staging (404)",
+    "matching_values_in_completed_uploaded_blobs": 0,
+    "runtime_source_removed": false
+  }
+}

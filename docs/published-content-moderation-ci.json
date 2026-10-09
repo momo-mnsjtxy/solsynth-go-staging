@@ -1,0 +1,11 @@
+{
+  "commit": "b8f8890bd57b5650e604da81df8ab5e13eed3295",
+  "tree": "6fd43d7738676550feab08bcd19eb17b739e7589",
+  "run": 37783103970,
+  "job": 113330904282,
+  "conclusion": "success",
+  "required_before_passed": 338,
+  "required_after_restart_passed": 47,
+  "skipped": 0,
+  "scope": "Canonical global/scoped moderation, current read/media/nested visibility, durable local notification/federation withdrawal and composed HTTP; all prior disposable PG/process checks"
+}

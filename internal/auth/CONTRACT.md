@@ -1,13 +1,5 @@
 # PostWatch authentication adapter: proposal and unresolved contract
 
-Current correction (delegated recovery report, 2026-10-07): the permission key is
-`post.subscriptions.manage`. Historical statements below that the spelling is
-unresolved are superseded; its source proof is in the recovery work, which this
-checkout has not yet recovered. Current-version identity checks, authoritative
-permission evaluation, Redis missing/failure/version/epoch behavior, credential
-precedence and exact errors remain unresolved. Do not enable access from the key
-alone. No production authentication is implemented.
-
 Status: research only. No authentication implementation, credentials, RPC wire
 guesses, live-account probes or deployment changes accompany this document.
 Production parity is not established.
@@ -30,6 +22,7 @@ They do not derive identity from request body, query, arbitrary account headers
 or an unsigned JWT payload.
 
 PUT additionally declares AskPermission(PermissionKeys.PostSubscriptionsManage).
+The owned PERMISSIONS.md registry verifies its wire value: post.subscriptions.manage.
 GET has no corresponding permission attribute in this controller.
 
 Source:
@@ -78,9 +71,10 @@ Licensed Solian revision ffd0838e5f04cb40bea311a39118ebeedad210c1:
 
 [Solian networking](https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/core/network.dart)
 
-No cookie-based HTTP authentication names, precedence or settings are established
-by the inspected client. The absence of cookies in this client does not prove
-that server/browser integrations do not support them.
+The client does not establish cookie precedence. The subsequently inspected owned
+PASS_TOKEN_ENDPOINTS.md documents AuthToken and RefreshToken cookies, refresh
+body-to-cookie fallback, and cookie deletion on logout. Current extraction
+precedence and cookie security flags remain unverified.
 
 ### Known session/revocation behavior
 
@@ -101,34 +95,56 @@ revocation contract.
 
 [Blade revocation consumer](https://github.com/Solsynth/Blade/blob/dbded8c29f1cba55dd67086c786ac4e7432096ca/internal/wsgateway/revocation_nats.go)
 
-## Exact unresolved requirements
+## Owned-document reassessment, 2026-10-07
 
-| Requirement | Known | Missing input |
-|---|---|---|
-| PostSubscriptionsManage | Symbolic C# permission name on PUT | Authoritative exact wire string and permission-evaluation contract |
-| Current account | Middleware-provided DyAccount.Id UUID | Auth RPC/protocol, required input metadata, trusted endpoint configuration |
-| JWT verification | README says RS256 and fleet RSA keys | Issuer, audience, key lookup/rotation, allowed claims/clock skew, session epoch/account-version validation |
-| Key discovery | None established | Whether a JWKS/discovery route applies to these access tokens; exact verified URL/configuration |
-| Introspection | Blade invokes shared gRPC authenticator | Service full name, RPC method, numbered message fields, response and failure semantics |
-| Cookies/API keys | Shared token extractor is used elsewhere | Supported schemes, names, precedence, applicability to PostWatch |
-| Permission errors | Attribute present | Exact denied/error response code/status/detail and dependency-failure behavior |
-| Authentication errors | Explicit controller unauthenticated case 401 UNAUTHORIZED; client expects 401 TOKEN_EXPIRED | Distinction among expired, revoked, invalid, disabled-account and unavailable-auth cases |
-| Refresh | Client POST and README rotation/grace | Complete authoritative refresh contract; should remain handled by identity service |
-| Cache/revocation | README names session cache and event; Blade consumer projection observed | TTL/version checks, reliable invalidation and stale-result behavior for HTTP requests |
-| RPC transport trust | Blade has configurable TLS settings | Selected deployment endpoint, trusted CA/server identity and caller authentication |
+Earlier claims that no lawful auth contract or exact permission value existed
+were too broad and are superseded by these owned AGPL docs at the same pinned
+revision. No links into the excluded Shared/protocol repository were followed.
 
-Organization-scoped licensed source searches found PostSubscriptionsManage only
-as a symbolic use in PostWatchController; no exact wire-value declaration was
-found. A search for a plausible dotted spelling found no evidence. No guessed
-string is approved.
+- [PERMISSIONS.md](https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/PERMISSIONS.md): exact post.subscriptions.manage key; OAuth prefix wildcard/full scopes, groups, timed nodes, punishment-based denial precedence; public GET /.well-known/permissions is a key catalog, not an account authorization decision
+- [UNIFIED_JWT_AUTH.md](https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/UNIFIED_JWT_AUTH.md): RS256 Bearer user and Bot API-key lanes; required iss/aud/sub/jti/sid/exp/iat/nbf/token_use/ver claims; signature, issuer, audience, expiry/not-before and Redis revocation/version checks; configured public key path rather than an established JWKS dependency
+- [PASS_TOKEN_ENDPOINTS.md](https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/PASS_TOKEN_ENDPOINTS.md): access/refresh separation, refresh-cookie fallback, session extension only during refresh, cookies and rejection of token_use=refresh as ordinary API credentials
+- [SHARED_API_ERRORS.md](https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/SHARED_API_ERRORS.md): code/message, optional status/detail/traceId/errors/meta, omitted nulls, camelCase traceId, standard 401 UNAUTHORIZED and 403 FORBIDDEN
+- [SHARED_CACHE_CONTRACT.md](https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/SHARED_CACHE_CONTRACT.md): dyson-prefixed hash data/codec/type/cached_at envelope; TTL-based expiry; malformed cache treated as miss; group/reverse-index removal and leased owner-token locks
+- [AUTH_SESSION_REVOKED_EVENT.md](https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/AUTH_SESSION_REVOKED_EVENT.md): auth.session.revoked subject, auth_session_events stream, explicit revocation fields and session-scoped disconnects; excludes passive expiry
+- [SESSION_MANAGEMENT_API.md](https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/SESSION_MANAGEMENT_API.md): documented revocation JTI marker and 30-day TTL; session/device routes, filtering and headers
+
+### Currency and remaining gaps
+
+1. JWT/token docs last changed March 26, before the Stargate replacement, and
+   still name Padlock plus a March 20 legacy-token deadline. The current client
+   uses /stargate/auth/token. Do not equate old deployment defaults with current
+   fleet settings merely because the docs remain in the tree.
+2. The May 16 shared-cache guide describes authoritative validation on a session
+   cache miss; the March JWT guide describes local validation. Establish which
+   current flow applies to PostWatch and how session epochs interact with ver.
+3. Redis logical revocation/account-version names are documented, but current
+   raw versus dyson-normalized keys, marker/version encoding, absent-version
+   behavior and authority/cache-outage behavior are not fully established.
+4. Permission semantics and the exact key are documented. The current evaluator's
+   authoritative data source/transport, time boundaries and precise scope,
+   superuser and punishment ordering still need eligible evidence where prose
+   is incomplete or ambiguous. Do not replace account grants with token scope alone.
+5. Public key path, issuer and audience configuration keys are documented; their
+   selected deployment values, key rotation and clock tolerance are not. A JWKS
+   endpoint is not required unless the actual supported deployment says so.
+6. Error envelope is resolved; exact current invalid/expired/revoked/disabled/
+   dependency-failure code mapping and credential extraction precedence remain.
+7. Session examples contain older camelCase shapes unlike current snake_case
+   startup configuration; treat those examples as historical, not full fixtures.
+
+[MODEL_CONFIGURATION_REWORK.md](https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/MODEL_CONFIGURATION_REWORK.md)
+concerns AI model/kernel selection, not EF model filtering or timestamps. It does
+not resolve ApplySoftDeleteFilters or ApplyAuditableAndSoftDelete. The board
+candidate's row/audit default gate therefore remains justified.
 
 ## Proposed implementable design
 
 Implement only after the missing authoritative contract is supplied:
 
-1. An Authenticator verifies supported request credentials through the existing
-   authoritative identity service and returns an immutable verified account ID,
-   session identity and relevant token restrictions
+1. An Authenticator follows the verified current generation: either the documented
+   local RS256 plus authoritative Redis state checks, or a documented authority
+   adapter. It returns immutable verified account/session identity and restrictions
 2. An Authorizer evaluates the verified account/session against the confirmed
    PostSubscriptionsManage capability for PUT; GET only requires identity unless
    the verified inherited middleware contract adds requirements
@@ -151,18 +167,19 @@ production default. A C# host retaining its existing authoritative middleware
 could be a future staged boundary, but any identity handoff to Go would itself
 need a documented, authenticated channel and explicit deployment approval.
 
-## Minimal input needed to proceed
+## Minimal next evidence needed
 
-- Independently derived licensed-client contracts or separately licensed public
-  HTTP/interface documentation with synthetic request/response/error examples;
-  no definitions exported from the excluded unlicensed protocol repository
-- Exact PostSubscriptionsManage wire key and permission semantics
-- Token type/validation and revocation requirements relevant to PostWatch
-- Verified deployment trust configuration, supplied without private credentials
+- Current-version confirmation of the documented validation flow, selected public
+  key/issuer/audience configuration and credential precedence, without secrets
+- Current Redis key normalization, values and missing/outage/version/epoch semantics
+- Eligible documented permission-evaluator input/data/decision/error contract for
+  the already-known post.subscriptions.manage key, including scope restrictions
+- Synthetic current success/denial/revoked/expired fixtures to resolve doc drift
 
-Without these, adding a production authentication adapter would invent security
-semantics. Existing local development authentication must remain visibly local
-and must not be described as real Stargate integration.
+No excluded protocol definitions, descriptor sets, generated bindings or exports
+are requested. Existing baseline docs support independent reconstruction, but
+current production integration remains unverified. Standard errors and the exact
+permission value are no longer missing evidence.
 
 ## License and access boundaries
 

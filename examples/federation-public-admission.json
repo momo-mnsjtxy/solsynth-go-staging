@@ -1,0 +1,12 @@
+{
+  "origin": "https://local.example.test",
+  "allowed_origins": ["https://public.example.test"],
+  "max_attempts": 3,
+  "delivery_timeout_seconds": 5,
+  "public_admission": [
+    {"origin": "https://public.example.test", "incarnation": "10000000-0000-4000-8000-000000000001"}
+  ],
+  "retired_remote_actors": [],
+  "retired_remote_key_ids": [],
+  "retired_remote_key_fingerprints": []
+}

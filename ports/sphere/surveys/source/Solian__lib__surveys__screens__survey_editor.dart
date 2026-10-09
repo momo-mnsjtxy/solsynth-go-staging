@@ -1,0 +1,1244 @@
+import 'package:flutter/foundation.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
+import 'package:gap/gap.dart';
+import 'package:island/core/network.dart';
+
+import 'package:island/shared/widgets/alert.dart';
+import 'package:island/shared/widgets/layouts/sheet_scaffold.dart';
+import 'package:logging/logging.dart';
+import 'package:styled_widget/styled_widget.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:solar_network_sdk/solar_network_sdk.dart';
+
+const _emptyGuid = '00000000-0000-0000-0000-000000000000';
+
+class SurveyEditorState {
+  String? id;
+  String? title;
+  String? description;
+  DateTime? endedAt;
+  List<SnSurveyQuestion> questions;
+  bool notifySubscribers;
+  bool isAnonymous;
+
+  SurveyEditorState({
+    this.id,
+    this.title,
+    this.description,
+    this.endedAt,
+    List<SnSurveyQuestion>? questions,
+    this.notifySubscribers = false,
+    this.isAnonymous = false,
+  }) : questions = questions ?? const [];
+}
+
+/// Riverpod Notifier state
+class SurveyEditor extends Notifier<SurveyEditorState> {
+  late SurveyEditorState _initialState;
+
+  @override
+  SurveyEditorState build() {
+    final initial = SurveyEditorState();
+    _initialState = _cloneState(initial);
+    return initial;
+  }
+
+  SurveyEditorState _cloneState(SurveyEditorState source) {
+    return SurveyEditorState(
+      id: source.id,
+      title: source.title,
+      description: source.description,
+      endedAt: source.endedAt,
+      notifySubscribers: source.notifySubscribers,
+      isAnonymous: source.isAnonymous,
+      questions: source.questions
+          .map(
+            (q) => q.copyWith(
+              options: q.options
+                  ?.map((o) => o.copyWith())
+                  .toList(growable: false),
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  void _commitState(SurveyEditorState next, {bool markAsInitial = false}) {
+    state = next;
+    if (markAsInitial) {
+      _initialState = _cloneState(next);
+    }
+  }
+
+  void reset() {
+    _commitState(SurveyEditorState(), markAsInitial: true);
+  }
+
+  void restoreInitial() {
+    state = _cloneState(_initialState);
+  }
+
+  Future<void> initialize(BuildContext context, {String? surveyId}) async {
+    reset();
+    if (surveyId == null || surveyId.isEmpty) return;
+    await setEditingId(context, surveyId);
+  }
+
+  void setTitle(String? value) {
+    state = SurveyEditorState(
+      id: state.id,
+      title: value,
+      description: state.description,
+      endedAt: state.endedAt,
+      questions: [...state.questions],
+    );
+  }
+
+  void setDescription(String? value) {
+    state = SurveyEditorState(
+      id: state.id,
+      title: state.title,
+      description: value,
+      endedAt: state.endedAt,
+      questions: [...state.questions],
+    );
+  }
+
+  void setEndedAt(DateTime? value) {
+    state = SurveyEditorState(
+      id: state.id,
+      title: state.title,
+      description: state.description,
+      endedAt: value,
+      notifySubscribers: state.notifySubscribers,
+      isAnonymous: state.isAnonymous,
+      questions: [...state.questions],
+    );
+  }
+
+  void setNotifySubscribers(bool value) {
+    state = SurveyEditorState(
+      id: state.id,
+      title: state.title,
+      description: state.description,
+      endedAt: state.endedAt,
+      notifySubscribers: value,
+      isAnonymous: state.isAnonymous,
+      questions: [...state.questions],
+    );
+  }
+
+  void setIsAnonymous(bool value) {
+    state = SurveyEditorState(
+      id: state.id,
+      title: state.title,
+      description: state.description,
+      endedAt: state.endedAt,
+      notifySubscribers: state.notifySubscribers,
+      isAnonymous: value,
+      questions: [...state.questions],
+    );
+  }
+
+  Future<void> setEditingId(BuildContext context, String? id) async {
+    if (id == null || id.isEmpty) return;
+
+    showLoadingModal(context);
+    final dio = ref.read(solarNetworkClientProvider).dio;
+    try {
+      final res = await dio.get('/sphere/surveys/$id');
+
+      // Handle both plain object and wrapped response formats.
+      final dynamic payload = res.data;
+      final Map<String, dynamic> json =
+          payload is Map && payload['data'] is Map<String, dynamic>
+          ? Map<String, dynamic>.from(payload['data'] as Map)
+          : Map<String, dynamic>.from(payload as Map);
+
+      final survey = SnSurvey.fromJson(json);
+
+      _commitState(
+        SurveyEditorState(
+          id: survey.id,
+          title: survey.title,
+          description: survey.description,
+          endedAt: survey.endedAt,
+          questions: survey.questions,
+        ),
+        markAsInitial: true,
+      );
+    } on DioException catch (e) {
+      Logger.root.severe('Failed to load survey $id: ${e.message}');
+      // Keep state with id set; UI may handle error display.
+    } catch (e) {
+      Logger.root.severe('Unexpected error loading survey $id: $e');
+    } finally {
+      if (context.mounted) hideLoadingModal(context);
+    }
+  }
+
+  void addQuestion(SnSurveyQuestionType type) {
+    final nextOrder = state.questions.length;
+    final isOptionsType = _isOptionsType(type);
+    final q = SnSurveyQuestion(
+      id: _emptyGuid,
+      type: type,
+      options: isOptionsType
+          ? [
+              SnSurveyOption(
+                id: _emptyGuid,
+                label: 'surveyOptionDefaultLabel'.tr(),
+                order: 0,
+              ),
+            ]
+          : null,
+      title: '',
+      description: null,
+      order: nextOrder,
+      isRequired: false,
+    );
+    state = SurveyEditorState(
+      id: state.id,
+      title: state.title,
+      description: state.description,
+      endedAt: state.endedAt,
+      questions: [...state.questions, q],
+    );
+  }
+
+  void removeQuestion(int index) {
+    if (index < 0 || index >= state.questions.length) return;
+    final updated = [...state.questions]..removeAt(index);
+    for (var i = 0; i < updated.length; i++) {
+      updated[i] = updated[i].copyWith(order: i);
+    }
+    state = SurveyEditorState(
+      id: state.id,
+      title: state.title,
+      description: state.description,
+      endedAt: state.endedAt,
+      questions: updated,
+    );
+  }
+
+  void moveQuestionUp(int index) {
+    if (index <= 0 || index >= state.questions.length) return;
+    final updated = [...state.questions];
+    final tmp = updated[index - 1];
+    updated[index - 1] = updated[index];
+    updated[index] = tmp;
+    for (var i = 0; i < updated.length; i++) {
+      updated[i] = updated[i].copyWith(order: i);
+    }
+    state = SurveyEditorState(
+      id: state.id,
+      title: state.title,
+      description: state.description,
+      endedAt: state.endedAt,
+      questions: updated,
+    );
+  }
+
+  void moveQuestionDown(int index) {
+    if (index < 0 || index >= state.questions.length - 1) return;
+    final updated = [...state.questions];
+    final tmp = updated[index + 1];
+    updated[index + 1] = updated[index];
+    updated[index] = tmp;
+    for (var i = 0; i < updated.length; i++) {
+      updated[i] = updated[i].copyWith(order: i);
+    }
+    state = SurveyEditorState(
+      id: state.id,
+      title: state.title,
+      description: state.description,
+      endedAt: state.endedAt,
+      questions: updated,
+    );
+  }
+
+  void setQuestionType(int index, SnSurveyQuestionType type) {
+    if (index < 0 || index >= state.questions.length) return;
+    final q = state.questions[index];
+    final isOptionsType = _isOptionsType(type);
+    final newOptions = isOptionsType
+        ? (q.options?.isNotEmpty == true
+              ? q.options
+              : [
+                  SnSurveyOption(
+                    id: _emptyGuid,
+                    label: 'surveyOptionDefaultLabel'.tr(),
+                    order: 0,
+                  ),
+                ])
+        : null;
+    _updateQuestion(index, q.copyWith(type: type, options: newOptions));
+  }
+
+  void setQuestionTitle(int index, String title) {
+    if (index < 0 || index >= state.questions.length) return;
+    final q = state.questions[index];
+    _updateQuestion(index, q.copyWith(title: title));
+  }
+
+  void setQuestionDescription(int index, String? description) {
+    if (index < 0 || index >= state.questions.length) return;
+    final q = state.questions[index];
+    _updateQuestion(index, q.copyWith(description: description));
+  }
+
+  void setQuestionRequired(int index, bool value) {
+    if (index < 0 || index >= state.questions.length) return;
+    final q = state.questions[index];
+    _updateQuestion(index, q.copyWith(isRequired: value));
+  }
+
+  void addOption(int qIndex) {
+    if (qIndex < 0 || qIndex >= state.questions.length) return;
+    final q = state.questions[qIndex];
+    if (!_isOptionsType(q.type)) return;
+    final opts = <SnSurveyOption>[...(q.options ?? [])];
+    final nextOrder = opts.length;
+    opts.add(
+      SnSurveyOption(
+        id: _emptyGuid,
+        label: 'Option ${nextOrder + 1}',
+        order: nextOrder,
+      ),
+    );
+    _updateQuestion(qIndex, q.copyWith(options: opts));
+  }
+
+  void removeOption(int qIndex, int optIndex) {
+    if (qIndex < 0 || qIndex >= state.questions.length) return;
+    final q = state.questions[qIndex];
+    if (!_isOptionsType(q.type)) return;
+    final opts = <SnSurveyOption>[...(q.options ?? [])];
+    if (optIndex < 0 || optIndex >= opts.length) return;
+    opts.removeAt(optIndex);
+    for (var i = 0; i < opts.length; i++) {
+      opts[i] = opts[i].copyWith(order: i);
+    }
+    _updateQuestion(qIndex, q.copyWith(options: opts));
+  }
+
+  List<SnSurveyOption> _moveOptionByDelta(
+    List<SnSurveyOption> original,
+    int idx,
+    int delta,
+  ) {
+    if (idx + delta < 0 || idx + delta >= original.length) {
+      return original;
+    }
+    final clone = List<SnSurveyOption>.from(original);
+    clone.insert(idx + delta, clone.removeAt(idx));
+    for (var i = 0; i < clone.length; i++) {
+      clone[i] = clone[i].copyWith(order: i);
+    }
+    return clone;
+  }
+
+  void moveOptionUp(int qIndex, int optIndex) {
+    if (qIndex < 0 || qIndex >= state.questions.length) return;
+    final q = state.questions[qIndex];
+    if (!_isOptionsType(q.type)) return;
+    final original = q.options ?? const <SnSurveyOption>[];
+    if (optIndex <= 0 || optIndex >= original.length) return;
+
+    final reordered = _moveOptionByDelta(original, optIndex, -1);
+    if (!identical(reordered, original)) {
+      _updateQuestion(qIndex, q.copyWith(options: reordered));
+    }
+  }
+
+  void moveOptionDown(int qIndex, int optIndex) {
+    if (qIndex < 0 || qIndex >= state.questions.length) return;
+    final q = state.questions[qIndex];
+    if (!_isOptionsType(q.type)) return;
+    final original = q.options ?? const <SnSurveyOption>[];
+    if (optIndex < 0 || optIndex >= original.length - 1) return;
+
+    final reordered = _moveOptionByDelta(original, optIndex, 1);
+    if (!identical(reordered, original)) {
+      _updateQuestion(qIndex, q.copyWith(options: reordered));
+    }
+  }
+
+  void setOptionLabel(int qIndex, int optIndex, String label) {
+    final q = state.questions[qIndex];
+    if (!_isOptionsType(q.type)) return;
+    final opts = <SnSurveyOption>[...(q.options ?? [])];
+    if (optIndex < 0 || optIndex >= opts.length) return;
+    opts[optIndex] = opts[optIndex].copyWith(label: label);
+    _updateQuestion(qIndex, q.copyWith(options: opts));
+  }
+
+  void setOptionDescription(int qIndex, int optIndex, String? description) {
+    final q = state.questions[qIndex];
+    if (!_isOptionsType(q.type)) return;
+    final opts = <SnSurveyOption>[...(q.options ?? [])];
+    if (optIndex < 0 || optIndex >= opts.length) return;
+    opts[optIndex] = opts[optIndex].copyWith(description: description);
+    _updateQuestion(qIndex, q.copyWith(options: opts));
+  }
+
+  bool _isOptionsType(SnSurveyQuestionType type) {
+    return type == SnSurveyQuestionType.singleChoice ||
+        type == SnSurveyQuestionType.multipleChoice;
+  }
+
+  void _updateQuestion(int index, SnSurveyQuestion newQ) {
+    final list = <SnSurveyQuestion>[...state.questions];
+    list[index] = newQ;
+    state = SurveyEditorState(
+      id: state.id,
+      title: state.title,
+      description: state.description,
+      endedAt: state.endedAt,
+      questions: list,
+    );
+  }
+}
+
+/// The survey editor screen.
+/// Note: This is UI only; wire API later. Requires riverpod_generator and build_runner to generate .g.dart.
+final surveyEditorProvider = NotifierProvider<SurveyEditor, SurveyEditorState>(
+  SurveyEditor.new,
+);
+
+@RoutePage()
+class SurveyEditorScreen extends ConsumerStatefulWidget {
+  const SurveyEditorScreen({
+    super.key,
+    this.initialSurveyId,
+    this.initialPublisher,
+  });
+
+  final String? initialSurveyId;
+  final String? initialPublisher;
+
+  @override
+  ConsumerState<SurveyEditorScreen> createState() => _SurveyEditorScreenState();
+}
+
+class _SurveyEditorScreenState extends ConsumerState<SurveyEditorScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref
+          .read(surveyEditorProvider.notifier)
+          .initialize(context, surveyId: widget.initialSurveyId);
+    });
+  }
+
+  @override
+  void dispose() {
+    ref.read(surveyEditorProvider.notifier).reset();
+    super.dispose();
+  }
+
+  Future<void> _submitSurvey(BuildContext context) async {
+    final model = ref.read(surveyEditorProvider);
+    final dio = ref.read(solarNetworkClientProvider).dio;
+
+    // Build payload
+    final body = {
+      'title': model.title,
+      'description': model.description,
+      'endedAt': model.endedAt?.toUtc().toIso8601String(),
+      'notify_subscribers': model.notifySubscribers,
+      'is_anonymous': model.isAnonymous,
+      'questions': model.questions
+          .map(
+            (q) => {
+              'id': q.id.isEmpty ? _emptyGuid : q.id,
+              'type': q.type.index,
+              'options': q.options
+                  ?.map(
+                    (o) => {
+                      'id': o.id.isEmpty ? _emptyGuid : o.id,
+                      'label': o.label,
+                      'description': o.description,
+                      'order': o.order,
+                    },
+                  )
+                  .toList(),
+              'title': q.title,
+              'description': q.description,
+              'order': q.order,
+              'isRequired': q.isRequired,
+            },
+          )
+          .toList(),
+    };
+
+    try {
+      final isUpdate = model.id != null && model.id!.isNotEmpty;
+      final String path = isUpdate
+          ? '/sphere/surveys/${model.id}'
+          : '/sphere/surveys';
+      final Response res = await (isUpdate
+          ? dio.patch(
+              path,
+              queryParameters: {'pub': widget.initialPublisher},
+              data: body,
+            )
+          : dio.post(
+              path,
+              queryParameters: {'pub': widget.initialPublisher},
+              data: body,
+            ));
+
+      showSnackBar(isUpdate ? 'surveyUpdated'.tr() : 'surveyCreated'.tr());
+
+      if (!context.mounted) return;
+      Navigator.of(context).maybePop(SnSurvey.fromJson(res.data));
+    } catch (e) {
+      showErrorAlert(e);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final model = ref.watch(surveyEditorProvider);
+    final notifier = ref.watch(surveyEditorProvider.notifier);
+
+    return SheetScaffold(
+      titleText: model.id == null ? 'surveyCreate'.tr() : 'surveyEdit'.tr(),
+      actions: [
+        if (kDebugMode)
+          IconButton(
+            tooltip: 'surveyPreviewJsonDebug'.tr(),
+            onPressed: () {
+              _showDebugPreview(context, model);
+            },
+            icon: const Icon(Icons.visibility_outlined),
+          ),
+      ],
+      heightFactor: 0.9,
+      onClose: () async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('confirm'.tr()),
+            content: Text('surveyConfirmDiscard'.tr()),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: Text('cancel'.tr()),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(ctx).colorScheme.error,
+                ),
+                child: Text('discard'.tr()),
+              ),
+            ],
+          ),
+        );
+        if (confirmed == true) {
+          notifier.restoreInitial();
+          if (context.mounted) Navigator.of(context).pop();
+        }
+      },
+      child: Column(
+        children: [
+          Expanded(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 640),
+              child: Form(
+                key: ValueKey(model.id),
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    TextFormField(
+                      initialValue: model.title ?? '',
+                      decoration: InputDecoration(
+                        labelText: 'postTitle'.tr(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(16)),
+                        ),
+                      ),
+                      textInputAction: TextInputAction.next,
+                      maxLength: 256,
+                      onChanged: notifier.setTitle,
+                      onTapOutside: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'surveyTitleRequired'.tr();
+                        }
+                        return null;
+                      },
+                    ),
+                    const Gap(12),
+                    TextFormField(
+                      initialValue: model.description ?? '',
+                      decoration: InputDecoration(
+                        labelText: 'description'.tr(),
+                        alignLabelWithHint: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(16)),
+                        ),
+                      ),
+                      maxLines: 3,
+                      maxLength: 4096,
+                      onChanged: notifier.setDescription,
+                      onTapOutside: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
+                    ),
+                    const Gap(12),
+                    _EndDatePicker(
+                      value: model.endedAt,
+                      onChanged: notifier.setEndedAt,
+                    ),
+                    const Gap(12),
+                    SwitchListTile(
+                      title: Text('surveyNotifySubscribers'.tr()),
+                      subtitle: Text('surveyNotifySubscribersHint'.tr()),
+                      value: model.notifySubscribers,
+                      onChanged: (v) => notifier.setNotifySubscribers(v),
+                    ),
+                    SwitchListTile(
+                      title: Text('surveyAnonymousAnswers'.tr()),
+                      subtitle: Text('surveyAnonymousAnswersHint'.tr()),
+                      value: model.isAnonymous,
+                      onChanged: (v) => notifier.setIsAnonymous(v),
+                    ),
+                    const Gap(24),
+                    Row(
+                      children: [
+                        Text(
+                          'questions'.tr(),
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const Spacer(),
+                        MenuAnchor(
+                          builder: (context, controller, child) {
+                            return FilledButton.icon(
+                              onPressed: () {
+                                controller.isOpen
+                                    ? controller.close()
+                                    : controller.open();
+                              },
+                              icon: const Icon(Icons.add),
+                              label: Text('surveyAddQuestion'.tr()),
+                            );
+                          },
+                          menuChildren: SnSurveyQuestionType.values
+                              .map(
+                                (t) => MenuItemButton(
+                                  leadingIcon: Icon(_iconForType(t)),
+                                  onPressed: () => notifier.addQuestion(t),
+                                  child: Text(_labelForType(t)),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
+                    ),
+                    const Gap(8),
+                    if (model.questions.isEmpty)
+                      _EmptyState(
+                        title: 'surveyNoQuestionsYet'.tr(),
+                        subtitle: 'surveyNoQuestionsHint'.tr(),
+                      )
+                    else
+                      ReorderableListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: model.questions.length,
+                        onReorder: (oldIndex, newIndex) {
+                          // Convert to stepwise moves using provided functions
+                          if (newIndex > oldIndex) newIndex -= 1;
+                          final steps = newIndex - oldIndex;
+                          if (steps == 0) return;
+                          if (steps > 0) {
+                            for (int i = 0; i < steps; i++) {
+                              notifier.moveQuestionDown(oldIndex + i);
+                            }
+                          } else {
+                            for (int i = 0; i > steps; i--) {
+                              notifier.moveQuestionUp(oldIndex + i);
+                            }
+                          }
+                        },
+                        buildDefaultDragHandles: false,
+                        itemBuilder: (context, index) {
+                          final q = model.questions[index];
+                          return Card(
+                            key: ValueKey(q.id),
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            clipBehavior: Clip.antiAlias,
+                            child: Column(
+                              children: [
+                                _QuestionHeader(
+                                  index: index,
+                                  question: q,
+                                  onMoveUp: index > 0
+                                      ? () => notifier.moveQuestionUp(index)
+                                      : null,
+                                  onMoveDown: index < model.questions.length - 1
+                                      ? () => notifier.moveQuestionDown(index)
+                                      : null,
+                                  onDelete: () =>
+                                      notifier.removeQuestion(index),
+                                ),
+                                const Divider(height: 1),
+                                Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: _QuestionEditor(
+                                    index: index,
+                                    question: q,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    const Gap(96),
+                  ],
+                ),
+              ).center(),
+            ),
+          ),
+          Material(
+            elevation: 2,
+            color: Theme.of(context).colorScheme.surfaceContainer,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 640),
+              child:
+                  Row(
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          notifier.restoreInitial();
+                          Navigator.of(context).maybePop();
+                        },
+                        icon: const Icon(Icons.close),
+                        label: Text('cancel'.tr()),
+                      ),
+                      const Spacer(),
+                      FilledButton.icon(
+                        onPressed: () {
+                          _submitSurvey(context);
+                        },
+                        icon: const Icon(Icons.cloud_upload_outlined),
+                        label: Text(
+                          model.id == null ? 'create'.tr() : 'update'.tr(),
+                        ),
+                      ),
+                    ],
+                  ).padding(
+                    horizontal: 24,
+                    top: 16,
+                    bottom: MediaQuery.of(context).padding.bottom + 16,
+                  ),
+            ).center(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDebugPreview(BuildContext context, SurveyEditorState model) {
+    final buf = StringBuffer();
+    buf.writeln('{');
+    buf.writeln('  "title": ${_jsonStr(model.title)},');
+    buf.writeln('  "description": ${_jsonStr(model.description)},');
+    buf.writeln('  "endedAt": ${_jsonStr(model.endedAt?.toIso8601String())},');
+    buf.writeln('  "questions": [');
+    for (var i = 0; i < model.questions.length; i++) {
+      final q = model.questions[i];
+      buf.writeln('    {');
+      buf.writeln('      "id": ${_jsonStr(q.id)},');
+      buf.writeln('      "type": "${q.type.name}",');
+      buf.writeln('      "title": ${_jsonStr(q.title)},');
+      buf.writeln('      "description": ${_jsonStr(q.description)},');
+      buf.writeln('      "order": ${q.order},');
+      buf.writeln('      "isRequired": ${q.isRequired},');
+      if (q.options != null) {
+        buf.writeln('      "options": [');
+        for (var j = 0; j < q.options!.length; j++) {
+          final o = q.options![j];
+          buf.writeln(
+            '        { "id": ${_jsonStr(o.id)}, "label": ${_jsonStr(o.label)}, "description": ${_jsonStr(o.description)}, "order": ${o.order} }${j == q.options!.length - 1 ? '' : ','}',
+          );
+        }
+        buf.writeln('      ]');
+      } else {
+        buf.writeln('      "options": null');
+      }
+      buf.writeln('    }${i == model.questions.length - 1 ? '' : ','}');
+    }
+    buf.writeln('  ]');
+    buf.writeln('}');
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('surveyDebugPreview'.tr()),
+        content: SingleChildScrollView(child: SelectableText(buf.toString())),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('close'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _jsonStr(String? v) =>
+    v == null ? 'null' : '"${v.replaceAll('"', '\\"')}"';
+
+IconData _iconForType(SnSurveyQuestionType t) {
+  switch (t) {
+    case SnSurveyQuestionType.singleChoice:
+      return Icons.radio_button_checked;
+    case SnSurveyQuestionType.multipleChoice:
+      return Icons.check_box;
+    case SnSurveyQuestionType.freeText:
+      return Icons.short_text;
+    case SnSurveyQuestionType.yesNo:
+      return Icons.toggle_on;
+    case SnSurveyQuestionType.rating:
+      return Icons.star_rate;
+  }
+}
+
+String _labelForType(SnSurveyQuestionType t) {
+  switch (t) {
+    case SnSurveyQuestionType.singleChoice:
+      return 'surveyQuestionTypeSingleChoice'.tr();
+    case SnSurveyQuestionType.multipleChoice:
+      return 'surveyQuestionTypeMultipleChoice'.tr();
+    case SnSurveyQuestionType.freeText:
+      return 'surveyQuestionTypeFreeText'.tr();
+    case SnSurveyQuestionType.yesNo:
+      return 'surveyQuestionTypeYesNo'.tr();
+    case SnSurveyQuestionType.rating:
+      return 'surveyQuestionTypeRating'.tr();
+  }
+}
+
+/// End date and time picker row
+class _EndDatePicker extends StatelessWidget {
+  const _EndDatePicker({required this.value, required this.onChanged});
+
+  final DateTime? value;
+  final ValueChanged<DateTime?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: InputDecorator(
+            decoration: InputDecoration(
+              labelText: 'surveyEndDateOptional'.tr(),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+              ),
+            ),
+            child: Wrap(
+              spacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Icon(Icons.event, color: Theme.of(context).colorScheme.primary),
+                Text(
+                  value == null
+                      ? 'notSet'.tr()
+                      : MaterialLocalizations.of(
+                          context,
+                        ).formatFullDate(value!),
+                ),
+                if (value != null) ...[
+                  const Text('—'),
+                  Text(
+                    MaterialLocalizations.of(context).formatTimeOfDay(
+                      TimeOfDay.fromDateTime(value!),
+                      alwaysUse24HourFormat: true,
+                    ),
+                  ),
+                ],
+                const Gap(8),
+                TextButton(
+                  onPressed: () async {
+                    final now = DateTime.now();
+                    final initial = value ?? now.add(const Duration(days: 1));
+                    final pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: initial,
+                      firstDate: now,
+                      lastDate: now.add(const Duration(days: 3650)),
+                    );
+                    if (pickedDate == null) return;
+                    if (!context.mounted) return;
+                    final pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.fromDateTime(initial),
+                      builder: (ctx, child) {
+                        return MediaQuery(
+                          data: MediaQuery.of(
+                            ctx,
+                          ).copyWith(alwaysUse24HourFormat: true),
+                          child: child!,
+                        );
+                      },
+                    );
+                    final dt = DateTime(
+                      pickedDate.year,
+                      pickedDate.month,
+                      pickedDate.day,
+                      pickedTime?.hour ?? 0,
+                      pickedTime?.minute ?? 0,
+                    );
+                    onChanged(dt);
+                  },
+                  child: Text('pick'.tr()),
+                ),
+                if (value != null)
+                  TextButton(
+                    onPressed: () => onChanged(null),
+                    child: Text('clear'.tr()),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Question card header with actions
+class _QuestionHeader extends StatelessWidget {
+  const _QuestionHeader({
+    required this.index,
+    required this.question,
+    this.onMoveUp,
+    this.onMoveDown,
+    this.onDelete,
+  });
+
+  final int index;
+  final SnSurveyQuestion question;
+  final VoidCallback? onMoveUp;
+  final VoidCallback? onMoveDown;
+  final VoidCallback? onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: ReorderableDragStartListener(
+        index: index,
+        child: const Icon(Icons.drag_handle),
+      ),
+      title: Text(
+        question.title.isEmpty ? 'surveyUntitledQuestion'.tr() : question.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(_labelForType(question.type)),
+      trailing: Wrap(
+        spacing: 4,
+        children: [
+          IconButton(
+            tooltip: 'moveUp'.tr(),
+            onPressed: onMoveUp,
+            icon: const Icon(Icons.arrow_upward),
+          ),
+          IconButton(
+            tooltip: 'moveDown'.tr(),
+            onPressed: onMoveDown,
+            icon: const Icon(Icons.arrow_downward),
+          ),
+          IconButton(
+            tooltip: 'delete'.tr(),
+            onPressed: onDelete,
+            icon: const Icon(Icons.delete_outline),
+            color: Theme.of(context).colorScheme.error,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Question details editor
+class _QuestionEditor extends ConsumerWidget {
+  const _QuestionEditor({required this.index, required this.question});
+
+  final int index;
+  final SnSurveyQuestion question;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.watch(surveyEditorProvider.notifier);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            _QuestionTypePicker(
+              value: question.type,
+              onChanged: (t) => notifier.setQuestionType(index, t),
+            ),
+            FilterChip(
+              label: Text('required'.tr()),
+              selected: question.isRequired,
+              onSelected: (v) => notifier.setQuestionRequired(index, v),
+              avatar: Icon(
+                question.isRequired
+                    ? Icons.check_circle
+                    : Icons.radio_button_unchecked,
+              ),
+            ),
+          ],
+        ),
+        const Gap(12),
+        TextFormField(
+          initialValue: question.title,
+          decoration: InputDecoration(
+            labelText: 'surveyQuestionTitle'.tr(),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+          ),
+          textInputAction: TextInputAction.next,
+          maxLength: 1024,
+          onChanged: (v) => notifier.setQuestionTitle(index, v),
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+          validator: (v) {
+            if (v == null || v.trim().isEmpty) {
+              return 'surveyQuestionTitleRequired'.tr();
+            }
+            return null;
+          },
+        ),
+        const Gap(12),
+        TextFormField(
+          initialValue: question.description ?? '',
+          decoration: InputDecoration(
+            alignLabelWithHint: true,
+            labelText: 'surveyQuestionDescriptionOptional'.tr(),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+          ),
+          maxLines: 2,
+          maxLength: 4096,
+          onChanged: (v) =>
+              notifier.setQuestionDescription(index, v.isEmpty ? null : v),
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        ),
+        if (question.options != null) ...[
+          const Gap(16),
+          Text('options'.tr(), style: Theme.of(context).textTheme.titleMedium),
+          const Gap(8),
+          _OptionsEditor(index: index, options: question.options!),
+          const Gap(4),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: () => notifier.addOption(index),
+              icon: const Icon(Icons.add),
+              label: Text('surveyAddOption'.tr()),
+            ),
+          ),
+        ],
+        if (question.options == null &&
+            (question.type == SnSurveyQuestionType.freeText ||
+                question.type == SnSurveyQuestionType.rating ||
+                question.type == SnSurveyQuestionType.yesNo)) ...[
+          const Gap(16),
+          _TextAnswerPreview(long: false),
+        ],
+      ],
+    );
+  }
+}
+
+class _QuestionTypePicker extends StatelessWidget {
+  const _QuestionTypePicker({required this.value, required this.onChanged});
+
+  final SnSurveyQuestionType value;
+  final ValueChanged<SnSurveyQuestionType> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<SnSurveyQuestionType>(
+      value: value,
+      decoration: InputDecoration(
+        labelText: 'Type'.tr(),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+      ),
+      items: SnSurveyQuestionType.values
+          .map(
+            (t) => DropdownMenuItem(
+              value: t,
+              child: Row(
+                children: [
+                  Icon(_iconForType(t)),
+                  const Gap(8),
+                  Text(_labelForType(t)),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: (t) {
+        if (t != null) onChanged(t);
+      },
+    );
+  }
+}
+
+class _OptionsEditor extends ConsumerWidget {
+  const _OptionsEditor({required this.index, required this.options});
+
+  final int index;
+  final List<SnSurveyOption> options;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.watch(surveyEditorProvider.notifier);
+
+    return Column(
+      children: [
+        for (var i = 0; i < options.length; i++)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    key: ValueKey(options[i].id),
+                    initialValue: options[i].label,
+                    decoration: InputDecoration(
+                      labelText: 'surveyOptionLabel'.tr(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                    ),
+                    onChanged: (v) => notifier.setOptionLabel(index, i, v),
+                    onTapOutside: (_) =>
+                        FocusManager.instance.primaryFocus?.unfocus(),
+                    inputFormatters: [LengthLimitingTextInputFormatter(1024)],
+                  ),
+                ),
+                const Gap(8),
+                SizedBox(
+                  width: 40,
+                  child: IconButton(
+                    tooltip: 'moveUp'.tr(),
+                    onPressed: i > 0
+                        ? () => notifier.moveOptionUp(index, i)
+                        : null,
+                    icon: const Icon(Icons.arrow_upward),
+                  ),
+                ),
+                SizedBox(
+                  width: 40,
+                  child: IconButton(
+                    tooltip: 'moveDown'.tr(),
+                    onPressed: i < options.length - 1
+                        ? () => notifier.moveOptionDown(index, i)
+                        : null,
+                    icon: const Icon(Icons.arrow_downward),
+                  ),
+                ),
+                SizedBox(
+                  width: 40,
+                  child: IconButton(
+                    tooltip: 'delete'.tr(),
+                    onPressed: () => notifier.removeOption(index, i),
+                    icon: const Icon(Icons.close),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _TextAnswerPreview extends StatelessWidget {
+  const _TextAnswerPreview({required this.long});
+
+  final bool long;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      enabled: false,
+      maxLines: long ? 4 : 1,
+      decoration: InputDecoration(
+        labelText: long
+            ? 'surveyLongTextAnswerPreview'.tr()
+            : 'surveyShortTextAnswerPreview'.tr(),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        border: Border.all(color: Theme.of(context).dividerColor),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.help_outline,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const Gap(12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'surveyNoQuestionsYet'.tr(),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const Gap(4),
+                Text(
+                  'surveyNoQuestionsHint'.tr(),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

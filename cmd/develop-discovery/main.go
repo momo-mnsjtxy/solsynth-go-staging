@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -26,6 +27,9 @@ type config struct {
 	listen                    string
 	dsnEnv                    string
 	syntheticProductionStatus *int32
+	syntheticMiniAppStage     *int32
+	syntheticBotCommands      bool
+	packageDirectory          string
 }
 
 func parseConfig(args []string) (config, error) {
@@ -35,6 +39,9 @@ func parseConfig(args []string) (config, error) {
 	flags.SetOutput(io.Discard)
 	flags.StringVar(&cfg.listen, "listen", "127.0.0.1:8081", "loopback IP and numeric port")
 	flags.StringVar(&cfg.dsnEnv, "postgres-dsn-env", "", "environment variable containing the synthetic PostgreSQL DSN")
+	packageStage := flags.String("synthetic-miniapp-stage", "", "explicit int32 fixture stage; opts in to package counter writes")
+	flags.BoolVar(&cfg.syntheticBotCommands, "synthetic-bot-commands", false, "enable isolated documented-field bot command read candidate")
+	flags.StringVar(&cfg.packageDirectory, "synthetic-package-directory", "", "local synthetic package directory; no production object storage")
 	status := flags.String("synthetic-production-status", "", "explicit int32 candidate status; NOT a verified production enum or authentication")
 	if err := flags.Parse(args); err != nil {
 		return config{}, errors.New("invalid command options; use --listen, --postgres-dsn-env and --synthetic-production-status")
@@ -42,8 +49,11 @@ func parseConfig(args []string) (config, error) {
 	if flags.NArg() != 0 {
 		return config{}, errors.New("positional arguments are not supported")
 	}
-	var supplied bool
+	var supplied, packageSupplied bool
 	flags.Visit(func(f *flag.Flag) {
+		if f.Name == "synthetic-miniapp-stage" {
+			packageSupplied = true
+		}
 		if f.Name == "synthetic-production-status" {
 			supplied = true
 		}
@@ -56,6 +66,14 @@ func parseConfig(args []string) (config, error) {
 		v := int32(value)
 		cfg.syntheticProductionStatus = &v
 	}
+	if packageSupplied {
+		value, err := strconv.ParseInt(*packageStage, 10, 32)
+		if err != nil {
+			return config{}, errors.New("synthetic miniapp stage must be an explicit signed int32")
+		}
+		v := int32(value)
+		cfg.syntheticMiniAppStage = &v
+	}
 	if err := cfg.validate(); err != nil {
 		return config{}, err
 	}
@@ -63,6 +81,15 @@ func parseConfig(args []string) (config, error) {
 }
 
 func (cfg config) validate() error {
+	if cfg.syntheticBotCommands && cfg.syntheticProductionStatus == nil {
+		return errors.New("synthetic bot commands require discovery/DSN opt-in")
+	}
+	if cfg.syntheticMiniAppStage != nil && (cfg.syntheticProductionStatus == nil || cfg.packageDirectory == "") {
+		return errors.New("synthetic packages require discovery opt-in and a synthetic package directory")
+	}
+	if cfg.packageDirectory != "" && cfg.syntheticMiniAppStage == nil {
+		return errors.New("package directory requires explicit synthetic miniapp stage")
+	}
 	host, port, err := net.SplitHostPort(cfg.listen)
 	if err != nil {
 		return errors.New("listen address must contain a loopback IP and numeric port")
@@ -105,7 +132,7 @@ func makeHandler(ctx context.Context, cfg config, getenv func(string) string, op
 		return nil, nil, err
 	}
 	if cfg.syntheticProductionStatus == nil {
-		return develop.NewHandler(nil), func() {}, nil
+		return newDevelopHandler(develop.NewHandler(nil), develop.NewPackageHandler(nil), develop.NewBotCommandsHandler(nil)), func() {}, nil
 	}
 	dsn := getenv(cfg.dsnEnv)
 	if dsn == "" {
@@ -126,7 +153,25 @@ func makeHandler(ctx context.Context, cfg config, getenv func(string) string, op
 		return nil, nil, errors.New("PostgreSQL connection failed (connection details suppressed)")
 	}
 	repository := developpg.NewSyntheticCompatibilityRepository(db, *cfg.syntheticProductionStatus)
-	return develop.NewSyntheticCompatibilityHandler(repository), func() { _ = db.Close() }, nil
+	packageHandler := develop.NewPackageHandler(nil)
+	closeStorage := func() {}
+	if cfg.syntheticMiniAppStage != nil {
+		storage, err := develop.NewSyntheticLocalPackageStorage(cfg.packageDirectory)
+		if err != nil {
+			_ = db.Close()
+			return nil, nil, errors.New("unable to open synthetic package directory")
+		}
+		closeStorage = func() { _ = storage.Close() }
+		packages := developpg.NewSyntheticCompatibilityPackageRepository(db, *cfg.syntheticMiniAppStage)
+		service := develop.NewSyntheticCompatibilityPackageService(packages, storage)
+		packageHandler = develop.NewSyntheticCompatibilityPackageHandler(service)
+	}
+	botHandler := develop.NewBotCommandsHandler(nil)
+	if cfg.syntheticBotCommands {
+		botRepository := developpg.NewSyntheticCompatibilityBotCommandsRepository(db)
+		botHandler = develop.NewSyntheticCompatibilityBotCommandsHandler(develop.NewSyntheticCompatibilityBotCommandsService(botRepository))
+	}
+	return newDevelopHandler(develop.NewSyntheticCompatibilityHandler(repository), packageHandler, botHandler), func() { closeStorage(); _ = db.Close() }, nil
 }
 
 func run(ctx context.Context, cfg config) error {
@@ -182,4 +227,20 @@ func main() {
 	if err := run(ctx, cfg); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// Route families stay explicit; package operations remain disabled unless their
+// independent synthetic write/storage opt-in was supplied.
+func newDevelopHandler(discovery, packages http.Handler, bots ...http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/bots/") && len(bots) > 0 {
+			bots[0].ServeHTTP(w, r)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, "/api/miniapps/") {
+			packages.ServeHTTP(w, r)
+			return
+		}
+		discovery.ServeHTTP(w, r)
+	})
 }

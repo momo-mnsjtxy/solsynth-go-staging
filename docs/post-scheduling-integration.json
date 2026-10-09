@@ -1,0 +1,32 @@
+{
+  "base_commit": "c8f2fe79c6f8822534c24ad3926fcfaad4ded917",
+  "ci_files_modified": false,
+  "schema": "internal/postpg/scheduling_schema.sql",
+  "install_before": "Any application.Backend.Ready call",
+  "dependencies": [
+    "internal/authoritypg/continuity_schema.sql",
+    "internal/postpg/schema.sql",
+    "internal/accountpg/schema.sql",
+    "internal/socialpg/permissions_schema.sql",
+    "internal/postmediapg/schema.sql",
+    "internal/timelinepg/schema.sql",
+    "internal/moderationpg/schema.sql"
+  ],
+  "before": [
+    "TestPGPostScheduleLifecycleAndNoEarlyVisibility",
+    "TestPGPostScheduleCancellationReplacementAndDelete",
+    "TestPGPostScheduleAuthorityRefreshLogoutAndPolicyRevocation",
+    "TestPGPostScheduleRollbackConcurrencyAndBoundary",
+    "TestPGPostScheduleWaitObservesCancellationAndUnavailableMedia",
+    "TestPGPostScheduleRealmModerationAndRelatedVisibility",
+    "TestPGPostScheduleBackendProjectionAndDeferredFederation",
+    "TestPGPostSchedulePublicationGatesAfterMediaWait",
+    "TestPGPostScheduleExplicitPublicationUsesCurrentGates",
+    "TestPGPostScheduleFinalScheduleWaitRechecksSession",
+    "TestPGPostScheduleSavedRestartPersistence"
+  ],
+  "after": [
+    "TestPGPostScheduleSavedRestartPersistence"
+  ],
+  "actual_postgres": "Pending parent registration and authorized private CI; never run locally."
+}

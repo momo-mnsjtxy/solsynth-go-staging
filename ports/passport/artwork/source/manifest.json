@@ -1,0 +1,64 @@
+{
+  "repository": "Solsynth/DysonNetwork",
+  "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "license": "AGPL-3.0-only",
+  "scope": "Complete root-licensed authored Passport files; imported Shared implementations are excluded.",
+  "files": [
+    {
+      "file": "ApplicationConfiguration.cs",
+      "source_path": "DysonNetwork.Passport/Startup/ApplicationConfiguration.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Startup/ApplicationConfiguration.cs",
+      "blob": "baf63804f5ad39749155629b8b8daa9432b260a0",
+      "sha256": "1c0c9da466153419c3d6794338277037c3af7e0f2534d2f99cbd535b03e32ec7",
+      "bytes": 1380
+    },
+    {
+      "file": "LICENSE.txt",
+      "source_path": "LICENSE",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/LICENSE",
+      "blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523
+    },
+    {
+      "file": "PresenceArtworkController.cs",
+      "source_path": "DysonNetwork.Passport/Account/PresenceArtworkController.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/PresenceArtworkController.cs",
+      "blob": "362669dba7e1ecc0b10e125947ffdef846c3d701",
+      "sha256": "6be9f47724b05d20cd60a5cc2adb247101a81fadb65838e19c2781aec973f0c2",
+      "bytes": 3552
+    },
+    {
+      "file": "PresenceArtworkService.cs",
+      "source_path": "DysonNetwork.Passport/Account/PresenceArtworkService.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/PresenceArtworkService.cs",
+      "blob": "685a065b24ee7748e92a31920a70e3ea0dc77d1e",
+      "sha256": "470f67d585acd41e0047ba6071e0084cbfd45082e80b6976bc2df6767efead98",
+      "bytes": 11354
+    },
+    {
+      "file": "Program.cs",
+      "source_path": "DysonNetwork.Passport/Program.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Program.cs",
+      "blob": "0a5af9f43395a5d7636eb65f831b52dcc6c45358",
+      "sha256": "98f6e82fbbaec85196a3caccc13bb9b69bc650b5804db22279e9e4d43d95bbad",
+      "bytes": 1870
+    },
+    {
+      "file": "ServiceCollectionExtensions.cs",
+      "source_path": "DysonNetwork.Passport/Startup/ServiceCollectionExtensions.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Startup/ServiceCollectionExtensions.cs",
+      "blob": "47d5a3175a5326b3919507513d6789ec41bc7ca8",
+      "sha256": "a421aa8599091ea33a741297a663c2439ef765bc82a64e2289e966c08a4a91c6",
+      "bytes": 25572
+    },
+    {
+      "file": "SnPresenceArtwork.cs",
+      "source_path": "DysonNetwork.Passport/Account/SnPresenceArtwork.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/SnPresenceArtwork.cs",
+      "blob": "79f42028bd7632009efd11346f873167ddd25e12",
+      "sha256": "85bcc5f4cbb7f2a0b641587f2999417f3ba2a9e5791a39dc645a3dcd37072e4f",
+      "bytes": 496
+    }
+  ]
+}

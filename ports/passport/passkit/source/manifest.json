@@ -1,0 +1,72 @@
+{
+  "repository": "Solsynth/DysonNetwork",
+  "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "license": "AGPL-3.0-only",
+  "scope": "Complete authored source and documentation; excluded Shared/SDK implementations and generated protocol definitions are not imported. Solian authored code searches for passbook, pkpass, AppleWallet and memberPass returned no caller, so no invented client API is claimed.",
+  "files": [
+    {
+      "file": "ApplePassService.cs",
+      "blob": "f16b887d3bde74dd6f06e06c8323e3cb46673aa5",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/ApplePassService.cs",
+      "source_path": "DysonNetwork.Passport/Account/ApplePassService.cs",
+      "bytes": 16526,
+      "sha256": "21cf8f5c712df9f62a212b12560bff379a422b8264844c86333451a8416c73cc"
+    },
+    {
+      "file": "APPLE_WALLET_MEMBER_PASS.md",
+      "blob": "b8baf452c4a45921f43d4e40038f672b802ce6ab",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/APPLE_WALLET_MEMBER_PASS.md",
+      "source_path": "docs/APPLE_WALLET_MEMBER_PASS.md",
+      "bytes": 15670,
+      "sha256": "b96f30ad8df37108096a8ceabce3210ec59709651bddf51179c9d485f618b5e7"
+    },
+    {
+      "file": "AppleWalletOptions.cs",
+      "blob": "d5d2c65ef2c626b364fdd0368227278b0fb144e6",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AppleWalletOptions.cs",
+      "source_path": "DysonNetwork.Passport/Account/AppleWalletOptions.cs",
+      "bytes": 1526,
+      "sha256": "db0629c06c78def41d5aae2a1d16e42de87561addf9e64d171ad61aec233f230"
+    },
+    {
+      "file": "SnApplePass.cs",
+      "blob": "5ad36bdf74560dcce6f7b2515b9c3620c8e84a36",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/SnApplePass.cs",
+      "source_path": "DysonNetwork.Passport/Account/SnApplePass.cs",
+      "bytes": 841,
+      "sha256": "aaff570c767a3a7876c8236003a6a712dab7db701b47f968b6cbff1d84fdb637"
+    },
+    {
+      "file": "SnApplePassRegistration.cs",
+      "blob": "60742e7471a86846e50e3210c28d621b902ae172",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/SnApplePassRegistration.cs",
+      "source_path": "DysonNetwork.Passport/Account/SnApplePassRegistration.cs",
+      "bytes": 590,
+      "sha256": "98ef11d53d89c563beb598d40ef2978d17d3c98e7ef16d9e368c70d9b633ffec"
+    },
+    {
+      "file": "AccountCurrentController.cs",
+      "blob": "543ccc2f9b06ea81da6561622b6eafccd2c826de",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountCurrentController.cs",
+      "source_path": "DysonNetwork.Passport/Account/AccountCurrentController.cs",
+      "bytes": 10747,
+      "sha256": "9dac86470690c7258315de060d6803d640173b12bbcf0917fdffbf384072a563"
+    },
+    {
+      "file": "PassKitController.cs",
+      "source_path": "DysonNetwork.Passport/Account/PassKitController.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/PassKitController.cs",
+      "blob": "91417afd6bc5d0b42b7d4b6b86c50d7806c36893",
+      "bytes": 6665,
+      "sha256": "9f5ede691b9ac04aaeb1714ae607cd0137e920180e6fa8171a5e7ea9a59028b5"
+    },
+    {
+      "file": "LICENSE.txt",
+      "source_path": "LICENSE",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/LICENSE",
+      "blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    }
+  ]
+}

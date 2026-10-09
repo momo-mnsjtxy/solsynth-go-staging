@@ -1,0 +1,487 @@
+{
+  "audit_date": "2026-10-08",
+  "repository": "Solsynth/Solian",
+  "ref": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+  "status": "passed",
+  "source_file_count": 59,
+  "source_bytes": 1105861,
+  "license_verified": true,
+  "all_authored_auth_subtree_files_retained": 23,
+  "upstream_generated_auth_companions_not_retrieved": 3,
+  "runtime_tests": "not run",
+  "backend_requests": "none",
+  "checks": [
+    {
+      "path": "android/app/src/main/kotlin/dev/solsynth/solian/network/ApiClient.kt",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "ios/Solian/Services/DataExchange.swift",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "ios/Solian/Services/NetworkService.swift",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "ios/Solian/Services/SharedConstants.swift",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "ios/SolianWatchApp/Models/Models.swift",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "ios/SolianWatchApp/Services/NetworkService.swift",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "ios/SolianWatchApp/Services/StandaloneAuthService.swift",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "ios/SolianWatchApp/State/AppState.swift",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "ios/SolianWatchApp/Views/AccountSessionsView.swift",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "ios/SolianWatchApp/Views/InAppWebView.swift",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "ios/SolianWatchApp/Views/SignInView.swift",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "ios/SolianWidgetExtension/WidgetNetworking.swift",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/accounts/account_pod.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/accounts/account_screen.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/accounts/models/authorized_app.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/accounts/punishment_service.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/accounts/screens/me/account_settings.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/accounts/widgets/account/account_authorized_apps.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/accounts/widgets/account/account_devices.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/auth_form_widgets.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/authorize_screen.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/captcha.config.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/captcha.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/captcha.native.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/captcha.web.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/challenge_approval_sheet.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/challenge_ws_listener.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/create_account.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/create_account_content.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/create_account_modal.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/login.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/login_content.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/login_modal.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/models/authorize_client_info.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/oidc.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/oidc.native.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/oidc.web.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/public_app.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/web_auth/auth_request_sheet.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/web_auth/web_auth_app_info.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/web_auth/web_auth_server.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/auth/widgets/auth_consent.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/core/config.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/core/network.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/core/network/api_error.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/core/websocket.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/developers/models/custom_app.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/plugins/apis/network_api.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/realms/screens/realm_detail.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/shared/widgets/alert.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "lib/shared/widgets/app_wrapper.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "pubspec.yaml",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "test/auth/auth_consent_test.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "test/auth/auth_user_code_input_test.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "test/auth/challenge_ws_listener_test.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "test/core/auth_callback_token_test.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "test/core/network_client_refresh_test.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "test/core/token_external_rotation_test.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    },
+    {
+      "path": "test/misc/dashboard_unauthorized_test.dart",
+      "checks": {
+        "git_blob": true,
+        "sha256": true,
+        "bytes": true
+      }
+    }
+  ]
+}

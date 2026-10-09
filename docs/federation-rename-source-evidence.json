@@ -1,0 +1,48 @@
+{
+  "policy": "Independently authored compatibility implementation; existing licensed snapshots referenced without copying. No excluded definitions, corpus, artwork or remote data.",
+  "sources": [
+    {
+      "path": "ports/passport/namecards/source/manifest.json",
+      "sha256": "1ff505a4d87449068ca11770b48f9e2397404b01c205bc4387874b592fa14733"
+    },
+    {
+      "path": "ports/passport/namecards/source/NameChangeCardService.cs",
+      "sha256": "d898affa8551f641ebd17bd8a27005afef005f17ea307f18b3e3687a02ab6849"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/Publisher/PublisherController.cs",
+      "sha256": "27f586249fd911cbe552e788f3e19016a5e206b28ea386e0aa1f8bf826358ed9"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/ActivityPubController.cs",
+      "sha256": "db52059524c21b87d272e8f349a01f5103733b9735f97e08957c77c678814888"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Sphere/ActivityPub/WebFingerController.cs",
+      "sha256": "9388351edf1995ddf18725d490c8193db2de6488e2c0a6582b221459e3fb042a"
+    },
+    {
+      "path": "ports/federation/PROVENANCE.md",
+      "sha256": "012711f116c4dc3853c7c508aa2fa02e75236a7de17683e204e07b62efbeb0a2"
+    }
+  ],
+  "official_references": [
+    {
+      "url": "https://www.w3.org/TR/activitypub/#actor-objects",
+      "consulted": "2026-10-08"
+    },
+    {
+      "url": "https://datatracker.ietf.org/doc/html/rfc7033#section-4.4.1",
+      "consulted": "2026-10-08"
+    },
+    {
+      "url": "https://datatracker.ietf.org/doc/html/rfc7033#section-4.4.2",
+      "consulted": "2026-10-08"
+    }
+  ],
+  "owned_policy": [
+    "Permanent exact-handle reservation per publisher UUID, cap 256",
+    "Immutable actor URI and key ID, explicit configured-origin initializer",
+    "Retired aliases retain all current canonical privacy gates"
+  ]
+}

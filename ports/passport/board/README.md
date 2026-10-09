@@ -84,3 +84,14 @@ documented adapters and differential fixtures.
 - [Widget-key DDL](https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Migrations/20260708152943_AddCustomAppWidgetKeyToAccountBoardItems.cs)
 
 Run go test -race ./ports/passport/board and go vet ./ports/passport/board.
+
+## Runnable HTTP continuation (2026-10-08)
+
+The historical partial-port limits above describe the earlier checkpoint. The
+new `http.go`, `envelope.go`, `synthetic.go`, and `cache.go` implement an actual
+HTTP family using the existing domain operations and real `boardpg` persistence.
+See `docs/passport-board-continuation.md` for the current status, operation list,
+source conflicts, independent architecture decisions, testing, and outstanding
+production authority contracts. The host is `cmd/passport-board` and stays
+loopback-only. Without an explicit synthetic configuration every board route
+fails closed. There is no fake success fallback for SQL, validation, or cache.

@@ -1,0 +1,3263 @@
+{
+  "base_commit": "c84a3c8aa721d5c4867fb9ddcf602882421d8088",
+  "restart_cases": [
+    {
+      "test": "TestPGAccountAdminSavedRestartPersistence",
+      "source": "tests/integration/account_admin_badges_test.go",
+      "function_sha256": "12d3b5d442b390b3f6776aea453e080a100998d5627b7c5e3a665d7f9b056ff4",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "account-admin-badges-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "account-admin-badges-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Original before-target one-hour root credential and public-verifier elapsed-clock snapshot; same account/target, active and revoked badge rows/provenance, immutable session/identity state and audit counts. After performs direct and composed original-proof reads without seed, issuance, refresh, private keys or authority changes. Same assigned disposable cluster and marker only."
+    },
+    {
+      "test": "TestPGAccountSettingsRestartPersistence",
+      "source": "tests/integration/account_settings_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "5591e8188e777c8a968f82f65186cb4e622c7f9387e6bd6d1597d474fa042383",
+      "marker_files": [
+        "account-settings-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "account-settings-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGAccountsRestartPersistence",
+      "source": "tests/integration/accounts_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "d73415ba1fbdcf32f104e347d3a7a5a942c3498573f3959af75c523ae4d3b930",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGActivitySavedRestartPersistence",
+      "source": "tests/integration/activities_test.go",
+      "function_sha256": "7fa25506d4578ab400355e0c60562518d0ebf6b1730cae8c9532ae9881a7a12f",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "activities-state.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Exclusive original ended activity/catalog/stat/event rows and before-target one-hour owner/other proof/publickeys. After verifies original proof with elapsed time, owner-only catalog/stats and idempotent end, unchanged original IDs/accounting. No reseed/issuance or private signer."
+    },
+    {
+      "test": "TestPGAdminExtensionsRestartPersistence",
+      "source": "tests/integration/admin_extensions_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "083545f633dfe6bd290e0fc811d2006919f84240899b1eb2e9eb5481a7c1d1f4",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "title": "Synthetic durable admin extensions checkpoint",
+        "ruleName": "Synthetic durable admin extensions rule"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGAffiliationRestartPersistence",
+      "source": "tests/integration/affiliation_test.go",
+      "function_sha256": "90c9ef6b8d2a4131d9bb996352b6feee226db2c089d92b775094669646dafb1a",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "affiliation-activation.json"
+      ],
+      "persistent_directories_or_files": [
+        "affiliation-activation.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before performs canonical verified-contact admission/activation and saves actual account/spell IDs, activation timestamp, policy hash and admission JSON. After loads the marker, reads original rows, compares timestamp/hash and semantic JSON, and verifies exactly one captured posts.create grant. No after-phase target reseeding or reactivation."
+    },
+    {
+      "test": "TestPGArtworkRestartPersistence",
+      "source": "tests/integration/presence_artwork_test.go",
+      "marker_files": [
+        "presence-artwork-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "presence-artwork-record.json",
+        "presence-artwork-objects"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
+      "function_sha256": "b73456b05611e095c193c3cc3f1c71b92dead61e7f64d663102867bd0911354a",
+      "group_before_and_after": "group-b"
+    },
+    {
+      "test": "TestPGAuthorityRestartPersistence",
+      "source": "tests/integration/authority_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "4644d2fb3ecf7cbe693abd12129845a4370ce9734e50fa26ca7694c5b4566850",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "account": "a0700000-0000-4000-8000-000000000001",
+        "session": "a0700000-0000-4000-8000-000000000002"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGAutocompleteRestartPersistence",
+      "source": "tests/integration/content_autocomplete_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "630f5c5ec3a0c3a2b7711a9b06492e542051908c35a50d3d1efcee7becee4c6d",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "name": "synthetic_autocomplete_restart"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGBackendAccountHistorySavedRestartPersistence",
+      "source": "tests/integration/account_history_test.go",
+      "function_sha256": "75fa58fddbbd4b2b85181bc99647e9b298837df7ff1ba54f71169cfe6d2f2cfa",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "account-history-state.json"
+      ],
+      "persistent_directories_or_files": [
+        "account-history-state.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Original one-hour before-target credentials and public-verifier elapsed-clock snapshot; original canonical ended activity/status, audit source rows, immutable permanent credit and established connection metadata. Exact authored-route response comparison after real database/process restart, with no reseed, issue, refresh or private signer. Other original credential cannot read owner connections. Same assigned disposable cluster and marker only."
+    },
+    {
+      "test": "TestPGBackendCallsFederationRestartPersistence",
+      "source": "tests/integration/backend_external_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "1c02b635b724987b893beb5652eff5254527b345db065c77b9db854550da5a9d",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "actor": "ca110000-0000-4000-8000-000000000001",
+        "room": "ca110000-0000-4000-8000-000000000002",
+        "member": "ca110000-0000-4000-8000-000000000003",
+        "call": "ca110000-0000-4000-8000-000000000004",
+        "pub": "ca110000-0000-4000-8000-000000000005"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGBackendRestartPersistence",
+      "source": "tests/integration/backend_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "730debacfb02ced55dbf58c92e0317ebc6506b81598bf075ef7495632c4fcf64",
+      "marker_files": [
+        "synthetic-hash.bin",
+        "synthetic-seal.bin",
+        "synthetic-signing.pem",
+        "synthetic-token.txt"
+      ],
+      "persistent_directories_or_files": [
+        "backend-restart"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "The original synthetic bearer is issued before board/wallet target writes with a one-hour AccessTTL, matching the existing one-hour SessionTTL and covering the fifty-minute CI job bound. After reads the same saved token and validates it at current wall time with the same configured maximum lifetime; no issuance, refresh, timestamp rewrite or expiry bypass occurs. Existing private marker files, target reads/assertions and same-group database restart remain unchanged. The shared fixture keeps its default lifetime for every caller that does not explicitly opt in."
+    },
+    {
+      "test": "TestPGBackendWalletExchangeOriginalProofRestartPersistence",
+      "source": "tests/integration/wallet_exchange_test.go",
+      "function_sha256": "e39428839a2093972460bac2bf3d044b3a73421583a6b2af2e2cb887dcd3c07f",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "wallet-exchange-original-proof.json"
+      ],
+      "persistent_directories_or_files": [
+        "wallet-exchange-original-proof.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Original account, funded treasury, immutable policy version, two ledger legs and exact response persist in same cluster. After uses original one-hour bearer/public verifier and a new bounded payment authorization to replay the original idempotency key, not a new exchange. No after policy/balance/identity setup. Before-only temporary active-policy fixtures synchronously restore prior tuple and retain immutable history; no t.Parallel."
+    },
+    {
+      "test": "TestPGBackendWalletReportingRestartPersistence",
+      "source": "tests/integration/wallet_reporting_test.go",
+      "function_sha256": "5d3e8920d6e73142f7a91bace0b544faa6aedefe29e6c7b3adc205e268f5eef7",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "wallet-reporting-original-proof.json"
+      ],
+      "persistent_directories_or_files": [
+        "wallet-reporting-original-proof.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Original actor/wallet/settled transfer and one-hour bearer public-verifier snapshot. After reads same saved IDs and advances verifier by actual elapsed time; no seed, reissue, private key or after mutation."
+    },
+    {
+      "test": "TestPGBlogSavedRestartPersistence",
+      "source": "tests/integration/blog_posts_test.go",
+      "function_sha256": "116c7696ed7752195a8283deee265674d9444b1faa8dde0d6670dc6774657b22",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "blog-posts.json"
+      ],
+      "persistent_directories_or_files": [
+        "blog-posts.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before exclusively saves exact original actor/publisher/post/domain and database snapshot including monotonic policy generation. After only reads and compares those saved rows across real restart, without reseeding or token issuance."
+    },
+    {
+      "test": "TestPGBoardDiscoveryRestartPersistence",
+      "source": "tests/integration/board_discovery_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "0d2c460b0194f8c179bf68351a436dcc4f969a0e3218d1c5baa11c2ee75d9338",
+      "marker_files": [
+        "board-discovery.json"
+      ],
+      "persistent_directories_or_files": [
+        "board-discovery.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGBoardHTTPRestartPersistence",
+      "source": "tests/integration/board_http_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "e0d2dbb04f49c8c1cf50cb775f326cd41baeffb988ab9351de5eed0a3831ff52",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGBoardRestartPersistence",
+      "source": "tests/integration/board_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "bf2f7dfea275184e66b67e23225770d847b763450a0f9632e102b4b68ebf0a88",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGBotExecutionRestartPersistence",
+      "source": "tests/integration/bot_execution_test.go",
+      "function_sha256": "15857e4c08806b8b48c2c3cffc227c4f16e0b6bc430bd8490f87995b3888f883",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "bot-execution-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "bot-execution-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Validated phase and exclusive before marker. After reconstructs adapters with saved public authority configuration over original rows; no fixture/account/wallet/enrollment or token issuance. Same original target state across real database and process restart."
+    },
+    {
+      "test": "TestPGBotsRestartPersistence",
+      "source": "tests/integration/bots_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "727dedd7a301aa2bdd980187619ba0c156192e7dd3ac88e51c889d5efeb83188",
+      "marker_files": [
+        "synthetic-bots-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "synthetic-bot-package-store",
+        "synthetic-bots-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGCalendarActivityRestartPersistence",
+      "source": "tests/integration/calendar_activity_test.go",
+      "function_sha256": "d29978610635f26837f8668a1a62b08b78397d02515bfb060fc31473725c359b",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "calendar-activity.json"
+      ],
+      "persistent_directories_or_files": [
+        "calendar-activity.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before exclusively saves original status/checkin/account IDs. After verifies those canonical event records and privacy; no reseeding."
+    },
+    {
+      "test": "TestPGCalendarMediaRestartPersistence",
+      "source": "tests/integration/calendar_media_test.go",
+      "function_sha256": "77902325b8e87cd8a591b03ab5febbfdb75ec05782863c25249f3104a6be0b10",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "calendar-media.json"
+      ],
+      "persistent_directories_or_files": [
+        "calendar-media.json",
+        "calendar-media-objects"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before exclusively saves exact original calendar/file/account IDs and persistent synthetic object directory. After reads original target rows/blobs only; no fixture reconstruction, upload or account issuance."
+    },
+    {
+      "test": "TestPGCalendarRestartPersistence",
+      "source": "tests/integration/notabledays_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "9d1b152d2c32d58592d9a2fd8c8bfc6401e6974950d4546f4481bd7265219441",
+      "marker_files": [
+        "calendar-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "calendar-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGChatDetailsSavedRestartPersistence",
+      "source": "tests/integration/chat_details_test.go",
+      "function_sha256": "d2d4381fe3c467b6345b9f5a750bc6a4f00f03a0e06240b9e2756ab3cf4cab9d",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "chat-details.json"
+      ],
+      "persistent_directories_or_files": [
+        "chat-details.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Preserves original before-phase one-hour proof, public verifier keys and advancing wall time. The after phase compares raw room/member/audit state before using that original proof, does not seed/reissue/refresh, and checks expiry remains enforced."
+    },
+    {
+      "test": "TestPGChatMediaReactionsRestartPersistence",
+      "source": "tests/integration/chat_media_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "4a230760d7013909778c6b18ff4ed5e6d468837f2345445b1107085c3e3352ed",
+      "marker_files": [
+        "chat-media-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "chat-media-objects",
+        "chat-media-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGChatOrganizationRestartPersistence",
+      "source": "tests/integration/chat_organization_test.go",
+      "function_sha256": "a5778d1926b766ff8002fda373a3f05f5a2dda50c3c2935803e2f03478cf4898",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "chat-organization.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Exclusive before marker retains original group/room/message/pin/read receipt IDs and summary, one-hour pre-target bearer with public-only verifier snapshot. After binds original proof to canonical chat guard and compares saved IDs/read cursor/summary without mutation or reseeding; explicit expiry denial. Marker is private and excluded from artifacts."
+    },
+    {
+      "test": "TestPGChatRelationsDeletionAndRestartPersistence",
+      "source": "tests/integration/chat_relations_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "27191530d57236ec49a5c2ce8c00a2e65e512d7edca6af8b492258696a0abe79",
+      "marker_files": [
+        "synthetic-chat-relations-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "synthetic-chat-relations-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGChatRestartPersistence",
+      "source": "tests/integration/chat_lifecycle_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "5c11264f1fe74bf01322d25fa09753d36ab8df164cf474176f887fa0c86496d4",
+      "marker_files": [
+        "owned-chat-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "owned-chat-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGChatThreadsForwardRestartPersistence",
+      "source": "tests/integration/chat_threads_forward_test.go",
+      "function_sha256": "b8ce438678999b111ff7ccd778eec1ecc81d313d889bd2702371dd568e82d934",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "chat-thread-forward.json"
+      ],
+      "persistent_directories_or_files": [
+        "chat-thread-forward.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before creates source/destination/thread/reference/snapshot, deletes original and exclusively saves canonical projections. After loads saved IDs and projections only in the same real restarted database, no reseeding."
+    },
+    {
+      "test": "TestPGCollectionNavigationSinglePoolAndRestartPersistence",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "function_sha256": "5609170d81ba5296b154408d03f378ed627ec6279232b08b03c28e9d914e281b",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "collection-subscription-navigation.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Before saves exact actor/reader original tokens, public verifier snapshot, canonical collection/subscription/anchor/target IDs, and authority/subscription/audit/item JSON snapshots. After restores the saved verifier and original tokens against the same restarted database with one pool connection; reads and exact idempotent subscribe replay cannot create identities, grants, content, subscriptions or audits. No new credential or seed in after. Corrected fixture also saves byte-exact full navigation JSON containing one authorized attachment and a hidden private parent; before and after use one connection and compare the original full response, without new tokens, accounts, grants, content or media."
+    },
+    {
+      "test": "TestPGCollectionPublicationSavedRestartPersistence",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "7b898212f76b124e604c2091b52d73d46a5507c96c488efffdb7a88fc6836f02",
+      "marker_files": [
+        "collection-publication.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Before snapshots original actor/recipient tokens and verifier, account identities/authority state, publication post ID, namespace and collection route with committed pending identity-only outbox. After restores that verifier and original credentials against the same database using one pool connection, projects pending work twice, verifies exactly one source-linked replay event, unsubscribes with the original proof and verifies the old replay becomes invisible without reissuing credentials, reseeding identities/grants, or creating replacement posts/subscriptions.",
+      "group_before_and_after": "group-a"
+    },
+    {
+      "test": "TestPGCommerceMaintenanceQuarantineRestartPersistence",
+      "source": "tests/integration/commerce_maintenance_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "ab30952c62daf008257295097cb7f02c1c17800a11804b068d90adaa3f132f12",
+      "marker_files": [
+        "commerce-maintenance-quarantine.json"
+      ],
+      "persistent_directories_or_files": [
+        "commerce-maintenance-quarantine.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGCommerceRestartPersistence",
+      "source": "tests/integration/commerce_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "eb2136cb7c0be9c8688f73b632db90b9e901ee1eb41c5f2e41dafff35c19bb1c",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGContentModerationRestartPersistence",
+      "source": "tests/integration/content_moderation_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "ef694469c35036cca1ce35f291ec50f586f6c7037f91a331ec7924fe9ab5b828",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "marker": "Synthetic durable content moderation checkpoint"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGCouponSavedRestartPersistence",
+      "source": "tests/integration/coupon_restart_test.go",
+      "function_sha256": "3f1a8a1965279bc55ea7da5e0111e88ba3a66a7f42ba203f1c35aabcaecf3f60",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "coupon-checkout-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "coupon-checkout-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before exclusively saves exact random canonical IDs and original projections. After validates saved IDs/state only in the same restarted database; no recreation or reseeding."
+    },
+    {
+      "test": "TestPGDevelopBotCommandsRestartPersistence",
+      "source": "tests/integration/develop_bot_commands_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "48726c7da35b5632e327bb6bd7de63ebf153df65c6303fb4a7f44b53b03932ab",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGDevelopDiscoveryRestartPersistence",
+      "source": "tests/integration/develop_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "1afa0b564b1deb7e0c4ae73d22e164e98720dc304b29bb0197ee189514b62f44",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGDevelopPackageRestartPersistence",
+      "source": "tests/integration/develop_packages_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "d6e98f89109a66f977f18cef43ac748aedc6070380fdb5f8e9dc9f0a4d911959",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGDeveloperAppsRestartPersistence",
+      "source": "tests/integration/developer_apps_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "cc2d290062507105ae1e1f73ff5a31bdc10c75c6a7de8f0e00099e7c2ea24f96",
+      "marker_files": [
+        "developer-apps-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "developer-apps-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGDeveloperCustomOrderSavedRestartPersistence",
+      "source": "tests/integration/developer_management_test.go",
+      "function_sha256": "0ff16f32d5bd14b535ff2bd474c01738248b1e6ffaf4d062f9a9fd7f19b2b364",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "developer-custom-order.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Original custom-order/scope/audit/outbox IDs, pre-target one-hour proof/publickeys and elapsed clock retained in exclusive private marker. After verifies original proof, idempotent repository and HTTP replay, unchanged order and counts; no seeding/migration/key generation/credential issuance or lifetime extension. Marker excluded from artifacts."
+    },
+    {
+      "test": "TestPGDirectRecoveryPrivacyRestartPersistence",
+      "source": "tests/integration/direct_recovery_privacy_test.go",
+      "function_sha256": "3f26ff14f07d34ebad9de3d0e92b1d1862fc2c0a98332669062b5d6d3e5ce249",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "direct-recovery-privacy.json"
+      ],
+      "persistent_directories_or_files": [
+        "direct-recovery-privacy.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before saves established pair/room/message/group IDs, exact requesting-member states and database-rounded timed-block deadline; distinctive profile/contact/message and opaque MLS controls stay in the same disposable cluster. After loads the original state without seeding, checks both caller orders and exact persisted deadline, denies list/sync, then expires only the saved block and verifies restored admission without friendship. No marker contents uploaded."
+    },
+    {
+      "test": "TestPGDomainTrustRestartPersistence",
+      "source": "tests/integration/domain_trust_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "15452a8610fce37e5a901a776d04c975fb5525efe43bd90545036a0c4c11d74b",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "host": "synthetic-domain-restart.test"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGFactorSetupRestartPersistence",
+      "source": "tests/integration/factor_setup_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "6c9167b10d66622264f3dbdb382b67b1083fb9be1e7016e51c42a0697ac5ca17",
+      "marker_files": [
+        "factor-setup-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "factor-setup-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGFederatedRenameRestartPersistence",
+      "source": "tests/integration/federation_rename_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "8b45d2917f4f12513ae9cf645d3c28b6c99792ed1e188f72358490fbcfcff03f",
+      "marker_files": [
+        "federation-rename-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "federation-rename-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGFederationDeliverySavedRestartPersistence",
+      "source": "tests/integration/federation_delivery_restart_test.go",
+      "function_sha256": "b9fface4e760da74443d2cb503e7bcb67750590b409584bbbb5a980febd4241b",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "federation-delivery-restart.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "database": "federation_delivery_restart_candidate",
+        "identity": "Database name and pg_database OID saved before and compared after"
+      },
+      "storage_contract": "Before creates one isolated database in the same guarded disposable cluster and directs every fixture pool there; saves original database OID/name, delivery/session/publisher rows, original bearer and public verifier. After the actual cluster restart only verifies database existence/OID and original rows before reclaiming the original expired lease. Other tests/process workers use the primary database and cannot consume this queue. No after CREATE/seed/refresh/private key. Cluster teardown removes the disposable database only after verification. Production readiness currently assumes one application schema per database; this fixture preserves that assumption rather than weakening trigger counts."
+    },
+    {
+      "test": "TestPGFederationDiscoverySavedRestartPersistence",
+      "source": "tests/integration/federation_discovery_test.go",
+      "function_sha256": "c92610b9a1ff86db29f13af766943983959042c04abcab8cf78efb7846d2c50b",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "federation-discovery-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "federation-discovery-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before exclusively saves original completed discovery job and anchored server identity JSON. After compares only those original rows through saved IDs; no reseeding, new proof or key generation."
+    },
+    {
+      "test": "TestPGFederationPublicAdmissionSavedRestartPersistence",
+      "source": "tests/integration/federation_public_admission_test.go",
+      "function_sha256": "901c2c53c95e3527b1613288035715148c200d90f72fdd8c14c2e87c6fe0a312",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "federation-public-admission-restart.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Exclusive original admission job/key/policy/session rows plus original signed request. After reads identical original rows and public key; signing-time mathematical verification is separate from advancing elapsed-time expiry rejection. No reseeding, key generation or new signed request; private marker excluded from uploaded artifacts."
+    },
+    {
+      "test": "TestPGFederationQuoteRestartPersistence",
+      "source": "tests/integration/federation_quotes_test.go",
+      "function_sha256": "df32f9cd0863f0453f632c78e6cfec1e3b9d50eefc19ece87cb08e310dca90c1",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "federation-quote-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "federation-quote-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before saves active/revoked grant rows and quote delivery payload snapshots, disables its fixture publisher and cancels its own pending deliveries so unrelated delivery scans cannot alter saved state. After reads the exact saved rows/IDs and checks JSON equality; no grant/account reseeding."
+    },
+    {
+      "test": "TestPGFederationRestartPersistence",
+      "source": "tests/integration/federation_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "23a143e7320955ab44619dba9b72f0a59eb668bb833654eaeb5f2281174eb196",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "actor": "fed10000-0000-4000-8000-000000000001",
+        "pub": "fed10000-0000-4000-8000-000000000002"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGFortuneRestartPersistence",
+      "source": "tests/integration/fortunes_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "6a420f9a32ecaa9a2a18b03e761e740c984b875412a6581a585a7eddf3aa2973",
+      "marker_files": [
+        "fortune-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "fortune-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGFriendEventsSavedRestartPersistence",
+      "source": "tests/integration/friend_events_test.go",
+      "function_sha256": "95f5638efa3b02b03e68f49e501e7befed55fef6b537320f1d9f492546021989",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "friend-events-state.json"
+      ],
+      "persistent_directories_or_files": [
+        "friend-events-state.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Independently reviewed: original pre-target one-hour proofs, public verifier keys, elapsed wall clock, complete first-party replay page and pending outbox count are saved only in friend-events-state.json. The same named case and assigned disposable cluster retain before/after state. After rehydrates authorized events from existing markers and exercises backend HTTP replay in memory, without issuance, refresh, reseeding, authority rewriting or packet import. Actual PostgreSQL/restart execution remains pending coordinator private CI."
+    },
+    {
+      "test": "TestPGFriendsOverviewSavedRestartPersistence",
+      "source": "tests/integration/friends_overview_test.go",
+      "function_sha256": "6f6b98e274b525706be93bfa002bc8ac63818c46dece79821ff8711abf341641",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "friends-overview-state.json"
+      ],
+      "persistent_directories_or_files": [
+        "friends-overview-state.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Independently reviewed original before-phase synthetic account IDs, one-hour bearer credentials issued before target state, public verifier keys and elapsed wall clock, exact visible overview and source event count. After a real restart the unchanged case reads the same canonical state using the original saved credential, compares the complete projection and unchanged source event count, and rejects cross-actor proof substitution. No target seeding, issuance, refresh, lifetime extension, private signing key or authority rewrite occurs in the after phase. Marker remains private to its assigned cluster; actual execution is coordinator CI only."
+    },
+    {
+      "test": "TestPGLiveStreamAwardsPayoutRestartPersistence",
+      "source": "tests/integration/livestream_awards_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "781008b1d6c94eafa0cb1cc13275d2165c35da597fd6a2960604fcdd2a44369b",
+      "marker_files": [
+        "synthetic-livestream-award-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "synthetic-livestream-award-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGLiveStreamChatOutboxRestartPersistence",
+      "source": "tests/integration/livestream_chat_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "91c5caee508bfef444b96eec81c815d69967cf30fdea8f522859409e8488b6ea",
+      "marker_files": [
+        "synthetic-livestream-chat-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "synthetic-livestream-chat-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGLiveStreamCleanupRestartPersistence",
+      "source": "tests/integration/livestreams_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "18b1cf8faa64a8b45ffef5ed39e313f741ced152b6bb91d006a325b03ac59d4d",
+      "marker_files": [
+        "synthetic-livestream-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "synthetic-livestream-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGLiveStreamOutputsRestartPersistence",
+      "source": "tests/integration/livestream_outputs_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "a13d59174d2f5a3ee850d7777bd3a139a538ca0c12734f4001a82a3baeb01313",
+      "marker_files": [
+        "synthetic-livestream-output-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "synthetic-livestream-output-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGLocationsRestartPersistence",
+      "source": "tests/integration/locations_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "89cb943a0d359f3160775ec6a63445976f21be392d84814007c8eed42af6c557",
+      "marker_files": [
+        "locations-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "locations-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGMLSRestartPersistence",
+      "source": "tests/integration/chat_mls_restart_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "b0f33fc222d7ca02237274d8cb489adec31258e507a3f07239fc66d21fe5d5d2",
+      "marker_files": [
+        "owned-mls-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "owned-mls-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGMediaRestartPersistence",
+      "source": "tests/integration/media_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "03e9d3403e8203c3e3b2abcfd83ec3b120bfeca852fe156714ab90e6c186c41b",
+      "marker_files": [
+        "media-file.json"
+      ],
+      "persistent_directories_or_files": [
+        "media-file.json",
+        "media-objects"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGMediaResumableRestartPersistence",
+      "source": "tests/integration/media_resumable_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "405881c8e3b194713bdbd2778201efe8c0f847933861104d5c6dc61662c360d9",
+      "marker_files": [
+        "media-resumable.json"
+      ],
+      "persistent_directories_or_files": [
+        "media-resumable-objects",
+        "media-resumable.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGMediaUsageRestartPersistence",
+      "source": "tests/integration/media_usage_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "06be66ac7799933a3a5f3a42229ac7d48f9bc868ad7c7bfb5edeeb35182d4d7c",
+      "marker_files": [
+        "media-usage-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "media-usage-objects",
+        "media-usage-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGMerchantsRestartPersistence",
+      "source": "tests/integration/merchants_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "f64de16723b286d0f295fa3ce0fc5284797ba45a249972b5663b0157702bfecb",
+      "marker_files": [
+        "merchants-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "merchants-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGMessagerRestartPersistence",
+      "source": "tests/integration/messager_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "80fecc87256b4679718aa2bd988a1c3072b2642eb1ddd1fd970af8279a222c99",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGNameCardRestartPersistence",
+      "source": "tests/integration/namecards_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "e2667feaf175666c33d5d22e433ee850667ded24f5f9982b190cb4651c30499b",
+      "marker_files": [
+        "name-card-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "name-card-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGNodeInfoRestartPersistence",
+      "source": "tests/integration/nodeinfo_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "6bf9ff0849129ffced99a4f96bb463d7b2b34887bdb84068971ef4936072b31b",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGNotificationsRestartPersistence",
+      "source": "tests/integration/notifications_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "fabbcfca98b226a3d768b7f30975983c9a59d8677e9f31252545e24433c0aa00",
+      "marker_files": [
+        "notification-restart.json",
+        "synthetic-hash.bin",
+        "synthetic-seal.bin",
+        "synthetic-signing.pem"
+      ],
+      "persistent_directories_or_files": [
+        "notification-restart-keys",
+        "notification-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGOAuthRestartPersistence",
+      "source": "tests/integration/oauth_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "680491a12d95614b9ac9984b109a9ece37cf3aba42b3f937dc96824f59dde087",
+      "marker_files": [
+        "state.json",
+        "synthetic-hash.bin",
+        "synthetic-seal.bin",
+        "synthetic-signing.pem"
+      ],
+      "persistent_directories_or_files": [
+        "state.json",
+        "synthetic-oauth-restart"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGPasskitRestartPersistence",
+      "source": "tests/integration/passkit_test.go",
+      "function_sha256": "5e578b0db1dd71e22c14267c5bbd28c2907c58cd1c62bb0a35562d074559f150",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "apple-pass-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "apple-pass-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before saves pass serial/token/update tag plus disposable synthetic signing material and registers one synthetic device. After reconstructs signer/services but reads the same persistent pass/device rows, checks serial/token/tag and singleton record; no target account/pass/device reseeding. Marker contents are never uploaded as evidence."
+    },
+    {
+      "test": "TestPGPaymentPINRestartPersistence",
+      "source": "tests/integration/payment_pin_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "19613d0c955a16357f04f1c4f534d2a5c16c869b0bc6aef0f390285a83be3045",
+      "marker_files": [
+        "payment-pin-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "payment-pin-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGPostAutomodSavedDecisionRestartPersistence",
+      "source": "tests/integration/post_automod_test.go",
+      "function_sha256": "652191a4d7d6ac10ee6967404d2c3fa890c81abb0c630a7018ac3533ccb7073c",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "post-automod-saved.json"
+      ],
+      "persistent_directories_or_files": [
+        "post-automod-saved.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before exclusively saves exact random canonical IDs and original projections. After validates saved IDs/state only in the same restarted database; no recreation or reseeding."
+    },
+    {
+      "test": "TestPGPostAwardRestartPersistence",
+      "source": "tests/integration/post_awards_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "e6cc45ccfeae94158db29eb6a57016a2d588b6fdf8e105a0212f57eed54bd320",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "marker": "Synthetic durable post award reserve"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGPostCompositionSavedRestartPersistence",
+      "source": "tests/integration/post_composition_test.go",
+      "function_sha256": "733f6718923b9b86c606ed3656073b380f7be97f627813058eb498ffc5a345f5",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "post-composition-state.json",
+        "fixture-template.json"
+      ],
+      "persistent_directories_or_files": [
+        "post-composition-state.json",
+        "fixture-template.json"
+      ],
+      "named_database_markers": {
+        "fixture-template.json": "Runner-owned, sealed schema-only template; candidate/schema/root, template OID and cluster identity; zero copied application rows.",
+        "post-composition-state.json": "Unique composer clone name/OID/comment and original template identity; retained in the same disposable cluster across its actual restart."
+      },
+      "storage_contract": "Before clones the runner's audited zero-row schema template through template1 and seeds only its unique composer database, preserving original one-day fund terms and one-hour owner/outsider bearer/public verifier. Saves original post, all target/link rows, authority state, audit count and database/template name/OID/comment/cluster/candidate/schema identity. After requires that exact existing database, compares original rows before and after original-proof reads and retains all private-target visibility assertions. Never recreates, reseeds, issues credentials, reinstalls schema or repairs rows. Global maintenance integration tests and runtime behavior remain unchanged."
+    },
+    {
+      "test": "TestPGPostInteractionsRestartPersistence",
+      "source": "tests/integration/post_interactions_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "a2f6e285a785fee6ce5f741d0f82b138e004920fc28e7039e08a367653c9bf03",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGPostMediaRestartPersistence",
+      "source": "tests/integration/post_media_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "ecb0eb43b53d63d55861a4869924875af7f8e181755503b140d22ea013b22158",
+      "marker_files": [
+        "post-media-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "post-media-objects",
+        "post-media-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGPostRealmRestartPersistence",
+      "source": "tests/integration/post_realms_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "65f6570528b1265ca05c37d4836196f1c90917970be3549be200fde792cf0516",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "owner": "d5100000-0000-4000-8000-000000004980",
+        "member": "d5100000-0000-4000-8000-000000004981",
+        "pubName": "post-publisher-4980",
+        "realmSlug": "synthetic-post-realm-restart",
+        "postSlug": "post-realm-restart"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGPostScheduleSavedRestartPersistence",
+      "source": "tests/integration/post_scheduling_test.go",
+      "function_sha256": "50ef444f14e89e3bd1f02cd1070f0d9e4a5260c1d79a5a1269ae206c21af1cd5",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "post-scheduling.json"
+      ],
+      "persistent_directories_or_files": [
+        "post-scheduling.json",
+        "post-schedule-objects"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before saves actually published, future pending and moderation-blocked posts with exact schedule/event snapshot, original file bytes and database publication timestamp. After reloads saved IDs/root, compares exact snapshot, validates only published visibility and original bytes, and denies pending/blocked content. No after reseeding or due processing; object root remains paired within one cluster."
+    },
+    {
+      "test": "TestPGPostsRestartPersistence",
+      "source": "tests/integration/posts_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "849c785d5f2119b1ddce83b4d58a7ddd06da3f56d4f7a772bb9109c54db729ed",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGPresenceProgressionRestartPersistence",
+      "source": "tests/integration/presence_progression_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "a238a1023d8bd470617f2f2ca35a3bcbce5857380bdd2b1556a7edf4884aa4c9",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "actor": "c8910000-0000-4000-8000-000000000001"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGProductStockRestartPersistence",
+      "source": "tests/integration/product_stock_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "aeaa4b463e9fc5a15c20bff7ca8f01887e6aa63944c020020e968b3ab8c6709d",
+      "marker_files": [
+        "product-stock-restart.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGProfileMediaRestartPersistence",
+      "source": "tests/integration/profile_media_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "8381dac571e45accf491edbec8206b1df50a52decdadff67d3f4abdd3bcf35bb",
+      "marker_files": [
+        "profile-media-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "profile-media-objects",
+        "profile-media-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGPublisherRatingRestartPersistence",
+      "source": "tests/integration/publisher_ratings_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "4fe0153589f4db61db66612ca391ce04942da091943c9f9a33ee42d357119624",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "marker": "Synthetic durable reaction-only publisher rating"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGPublisherSponsorshipRestartPersistence",
+      "source": "tests/integration/publisher_sponsorship_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "eb7f74deca415f4e9bda92d8e1ecb27ac31cefdf2fdb8509335dd7d3456f79fc",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "marker": "Synthetic durable paid sponsorship"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGPublisherSubscriptionSavedRestartPersistence",
+      "source": "tests/integration/publisher_subscription_state_test.go",
+      "function_sha256": "fef8693e6066be70b01beee2df717e92722191cc85546369dc5a120b1e791ea0",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "publisher-subscription-state.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Original publisher/subscription/readcursor/live stream/audit/outbox IDs plus pre-target one-hour bearer/public verifier snapshot. After original HTTP reads and idempotent replay use elapsed clock, no seeding or issuance; private marker excluded from result artifacts."
+    },
+    {
+      "test": "TestPGPublishingControlsSavedRestartPersistence",
+      "source": "tests/integration/publishing_controls_test.go",
+      "function_sha256": "362c08145dbd154626e6f5e48a6794c48e1c1179e5cd48cf1df8ce912ef9e624",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "publishing-controls.json"
+      ],
+      "persistent_directories_or_files": [
+        "publishing-controls.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before issues original one-hour credentials before settings/post lifecycle targets; saves original settings/post/audit snapshot, session row and public verifier with elapsed wall time. After compares exact saved rows before constructing a read-only host, uses the original saved bearer/public verifier only, asserts unchanged session and full snapshot afterward. No after fixture/account creation, issuance, refresh, private signer or target reconstruction. Media store remains unconfigured because saved posts have no attachments. Reviewed publishingApp helper assigns MediaStore only for a non-nil filesystem pointer; configured media fixtures retain their original store, while text-only restart keeps a nil interface. Test bodies, assertions, markers and group assignments are unchanged."
+    },
+    {
+      "test": "TestPGReaderRestartPersistence",
+      "source": "tests/integration/reader_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "9dbff46b612959d1b784768d709faba5bb839ebeefa2f9b6f29a59e307e80458",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "retained": "https://preview.example/synthetic-restart/Case?Value=Kept",
+        "removed": "https://preview.example/synthetic-restart/removed"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGRealmBoostRestartPersistence",
+      "source": "tests/integration/realm_boosts_test.go",
+      "function_sha256": "bafa2ed2698fd0b8560837cdc62f7f07e90f9218131e30c6e5325951f43f1ba6",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "realm-boost-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "realm-boost-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Validated phase and exclusive before marker. After reconstructs adapters with saved public authority configuration over original rows; no fixture/account/wallet/enrollment or token issuance. Same original target state across real database and process restart."
+    },
+    {
+      "test": "TestPGRealmMemberRestartPersistence",
+      "source": "tests/integration/realm_members_test.go",
+      "function_sha256": "753a485c68706942ad07608e78da21ad20d3fceffd754bbe31276361aabb3096",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "realm-member-record.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Exclusive before marker saves original label/membership/tenure IDs and public verifier with original one-hour synthetic proof; after reads original state, verifies advancing elapsed-time authority, checks idempotent replay without seeding or credential issuance. Marker excluded from result artifacts."
+    },
+    {
+      "test": "TestPGRealmPermissionRestartPersistence",
+      "source": "tests/integration/realm_permissions_test.go",
+      "marker_files": [
+        "realm-permission-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "realm-permission-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
+      "function_sha256": "f02f05c54a984575b46a5a1f890e77972db877fd4d31ad2cc3b27bd80b6a1cb0",
+      "group_before_and_after": "group-b"
+    },
+    {
+      "test": "TestPGRealmProfileAndLogRestartPersistence",
+      "source": "tests/integration/realm_profile_restart_test.go",
+      "function_sha256": "fc22dcf1c9979965926a95229d2b885de7d208c716993331248d97bebd225056",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "realm-profile-log-record.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Exclusive original profile/member/moderation log/audit IDs plus before-target one-hour original proof/publickeys. After only canonical reads with advancing elapsed verifier and original IDs/updatedAt; no credentials/policy/fixture writes."
+    },
+    {
+      "test": "TestPGRealmPublisherRestartPersistence",
+      "source": "tests/integration/realm_publishing_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "64e747f6c548025d801981feec23c9ac66255908fd997e0633483a5a6576ea08",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "publisher": "synthetic-realm-publisher-restart",
+        "slug": "realm-publishing-restart",
+        "member": "d5100000-0000-4000-8000-000000004891"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGRecurringProductRestartPersistence",
+      "source": "tests/integration/recurring_products_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "7ac5a378bf7f7972ea7ce94c08dad639175f23b8498990adcb9c07637c358d64",
+      "marker_files": [
+        "recurring-product-restart.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGRefreshContinuityRestartPersistence",
+      "source": "tests/integration/refresh_continuity_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "e7db93ea05bd7d940b38ef274374077f9102a61cd5547c858f1e453698b5f770",
+      "marker_files": [
+        "synthetic-refresh-continuity.json"
+      ],
+      "persistent_directories_or_files": [
+        "synthetic-refresh-continuity.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGRelationshipExpiryRestartPersistence",
+      "source": "tests/integration/relationship_expiry_test.go",
+      "function_sha256": "d17580c666777f697966adbdb4e273b2b02eab960b608c285078e4e63fdbe5d2",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "relationship-expiry-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "relationship-expiry-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before persists permanent block, 30-day timed mute and processed block-to-mute with durable event snapshot. After loads saved account/relationship IDs and compares exact state/events before current repository reads. No after reseeding or renewed deadlines."
+    },
+    {
+      "test": "TestPGRestartPersistence",
+      "source": "tests/integration/watchpg_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "ea6c20e60d1a95571ce44e6ccfd401e6fd8d42d628b2e4dbd0a1a44deebc40f8",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGRewindRestartPersistence",
+      "source": "tests/integration/rewind_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "56d003807f99aeb5a3e4cbd1f3b1b00c4b3af073e5ca8c1a6cdc42ba906d02f8",
+      "marker_files": [
+        "rewind-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "rewind-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGRoomMediaSavedRestartPersistence",
+      "source": "tests/integration/room_media_test.go",
+      "function_sha256": "e0a1537a412dc150da7df071c5c883ab524a07a4a9b64016629d68f85de9de2f",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "room-media.json"
+      ],
+      "persistent_directories_or_files": [
+        "room-media.json",
+        "room-media-objects"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before saves exact room/media/system-event state and immutable original object root/IDs after removing one background grant. After compares saved JSON, loads original bytes, denies the removed grant, and reads the persisted event without target reseeding. Object root and marker remain in the same disposable cluster job; neither is uploaded."
+    },
+    {
+      "test": "TestPGShippingRestartPersistence",
+      "source": "tests/integration/shipping_test.go",
+      "function_sha256": "c07a02088594fbfa322ff4d0ed6153be4b968100465f6820f278b462a121faaa",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "shipping-destination.json"
+      ],
+      "persistent_directories_or_files": [
+        "shipping-destination.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before pays a canonical physical order, saves exact destination text/contact revision/capture timestamp and immutable payee/transaction, then deletes original address. After loads original IDs and compares persisted destination/order economics and deletion state; no reseeding or recapture."
+    },
+    {
+      "test": "TestPGSigninRestartPersistence",
+      "source": "tests/integration/signin_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "b4cf55bffc888e075e821a26b8d1361096a2858676da8c0c2a4e4c4c8bc9d612",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "account": "a0710000-0000-4000-8000-000000000001",
+        "factor": "a0710000-0000-4000-8000-000000000002"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGSocialRestartPersistence",
+      "source": "tests/integration/social_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "5ac4af3c6ecb76e856c615230e87c8281cbb80b2f15cab9c5046c43da13749ca",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "a": "c0500000-0000-4000-8000-000000000001",
+        "b": "c0500000-0000-4000-8000-000000000002",
+        "slug": "social-restart-realm"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGSubscriptionActivationRestartPersistence",
+      "source": "tests/integration/subscription_activation_test.go",
+      "marker_files": [
+        "subscription-activation-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "subscription-activation-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
+      "function_sha256": "a2b8078781f6a1b1b625e58830dcc7e305e4f7cf0fc3d2ba3f6f059697546800",
+      "group_before_and_after": "group-a"
+    },
+    {
+      "test": "TestPGSurveySubscriptionsRestartPersistence",
+      "source": "tests/integration/survey_subscriptions_test.go",
+      "function_sha256": "376285990fb68a26b6ee9cc450943e0aeb2002e17f9c0f09be08cdf88bea69db",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "survey-subscriptions.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Exclusive original survey/subscription incarnation/answer/queued revision/app namespace and pre-target one-hour bearer/public keys. After reads original state and resumes only existing work under the saved namespace; no seeding or credential issuance. Historical inbox and replay remain minimal; another namespace cannot consume saved pending work. Ordinary fixture queue namespaces are now unique and bound across enqueue/host/direct repository/sink; this restart retains its original survey.restart.<actor> namespace. Failed lock-wait workers are cancelled and joined before pool cleanup. No after re-seeding."
+    },
+    {
+      "test": "TestPGSurveysStickersRestartPersistence",
+      "source": "tests/integration/surveys_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "3b97690b743146fa3b0cdb3ee1c9572c869e0ca3bbddeaad754301818212ad09",
+      "marker_files": [
+        "surveys-stickers-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "surveys-stickers-objects",
+        "surveys-stickers-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGTaxonomyRestartPersistence",
+      "source": "tests/integration/taxonomy_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "657569620ed00dd50b7ac81ea91c53140a80974d72ef29e7c551a5dfdc482bd1",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGTicketMediaRestartPersistence",
+      "source": "tests/integration/ticket_media_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "7d5684e6e013547e98910362251ad96854d6659756ab1e9df7fe5125b06b633b",
+      "marker_files": [
+        "ticket-media.json"
+      ],
+      "persistent_directories_or_files": [
+        "ticket-media-objects",
+        "ticket-media.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGTicketsExamsRestartPersistence",
+      "source": "tests/integration/tickets_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "12a71f882be725b67028e2a155acf702d0c62ed7892797a57daf674f9da400f0",
+      "marker_files": [
+        "tickets-exams-record.json"
+      ],
+      "persistent_directories_or_files": [
+        "tickets-exams-record.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGTimelineRestartPersistence",
+      "source": "tests/integration/timeline_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "1e41f191c3aa3cf84877223c6facbebece210b3f830aa29b0dfdd36657d08763",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGTranslationRestartPersistence",
+      "source": "tests/integration/content_translation_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "6e15262849c0424ced7c5bf898e6c10f05977eb2ee276bf4d214108a2e12dd2f",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {
+        "name": "synthetic_translation_restart"
+      },
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGWalletFundsRestartPersistence",
+      "source": "tests/integration/wallet_funds_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "7d54eb5b844b52b3841618a10fa83b02da6b7cfa463429599c9c59bde60df453",
+      "marker_files": [
+        "wallet-funds-state.json"
+      ],
+      "persistent_directories_or_files": [
+        "wallet-funds-state.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGWalletRestartPersistence",
+      "source": "tests/integration/wallet_test.go",
+      "group_before_and_after": "group-b",
+      "function_sha256": "f14ecf960d14d80173932ebf8e394aa32dd9581490fbc86599def476500319ba",
+      "marker_files": [],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGWalletTransferRequestRestartPersistence",
+      "source": "tests/integration/wallet_transfer_requests_test.go",
+      "group_before_and_after": "group-a",
+      "function_sha256": "c88c8399d46b23cdc356bc5c57a3896d3fee156f0a89acd3ea093cba05db4183",
+      "marker_files": [
+        "wallet-transfer-request.json"
+      ],
+      "persistent_directories_or_files": [
+        "wallet-transfer-request.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    }
+  ],
+  "external_process_smokes": [
+    {
+      "script": "scripts/verify-develop-http.py",
+      "phases": [
+        "before",
+        "after"
+      ],
+      "seed": "TestPGDevelopDiscoveryRestartPersistence",
+      "selector": "develop-restart-sentinel; 96000000-0000-0000-0000-000000000001",
+      "source_sha256": "a08332880f4dc6592e21e4d6af895c2a79df271f44f69cf8517637e9e44eae3e"
+    },
+    {
+      "script": "scripts/verify-catalog-http.py",
+      "phases": [
+        "before",
+        "after"
+      ],
+      "seed": null,
+      "selector": "Own temporary file-backed settings/watch store; no PostgreSQL seed dependency",
+      "source_sha256": "65fad7b10a0b36dfad5cf964ff7d96e63fba39d2b1a5903aa400a420d704874b"
+    },
+    {
+      "script": "scripts/verify-candidate-http.py",
+      "phases": [
+        "after"
+      ],
+      "seeds": [
+        "TestPGDevelopPackageRestartPersistence",
+        "TestPGDevelopBotCommandsRestartPersistence",
+        "TestPGNodeInfoRestartPersistence"
+      ],
+      "selector": "package-restart / a8000000-0000-0000-0000-00000000000a; bot ab000000-0000-0000-0000-00000000000a; nodeinfo_candidate restart publisher/post",
+      "source_sha256": "0eb9c164e2f46475f5d15208513b1012a6abf515e7ffe500d3c8ed38a6fecb7d"
+    }
+  ],
+  "go_process_smokes": [
+    {
+      "test": "TestPGBackendHTTPProcessRestart",
+      "group": "group-b",
+      "fixture": "The named test creates its own synthetic DB/file fixtures and starts/stops actual compiled processes; the entire case is indivisible."
+    },
+    {
+      "test": "TestPGBackendSigninHTTPProcessRestart",
+      "group": "group-b",
+      "fixture": "The named test creates its own synthetic DB/file fixtures and starts/stops actual compiled processes; the entire case is indivisible."
+    },
+    {
+      "test": "TestPGBoardHTTPProcessRestart",
+      "group": "group-a",
+      "fixture": "The named test creates its own synthetic DB/file fixtures and starts/stops actual compiled processes; the entire case is indivisible."
+    },
+    {
+      "test": "TestPGMessagerHTTPProcessRestart",
+      "group": "group-a",
+      "fixture": "The named test creates its own synthetic DB/file fixtures and starts/stops actual compiled processes; the entire case is indivisible."
+    },
+    {
+      "test": "TestPGTaxonomyHTTPProcessRestart",
+      "group": "group-b",
+      "fixture": "The named test creates its own synthetic DB/file fixtures and starts/stops actual compiled processes; the entire case is indivisible."
+    }
+  ],
+  "authority_process_helper": {
+    "parent_test": "TestPGAuthorityLifecycle",
+    "helper": "TestAuthorityProcessHelper",
+    "fixture": "Child test process uses its parent case synthetic keys/token directory and existing database; stays within one selected top-level case. Helper is not an extra TestPG assignment.",
+    "group": "group-b"
+  },
+  "limits": [
+    "Existing restart cases that reconstruct independent authentication/fixture services are preserved byte-for-byte; this change does not certify or alter those inherited fixture semantics.",
+    "No actual PostgreSQL group execution or process startup occurred in this offline proposal.",
+    "Fixed database-only markers and filesystem markers remain local to their assigned before/after runner."
+  ],
+  "composed_host_cases": [
+    {
+      "test": "TestPGArtworkComposedUploadDedupOwnershipAndRemoval",
+      "source": "tests/integration/presence_artwork_test.go",
+      "group": "group-a",
+      "function_sha256": "ad43adbeda79dd09f073e46d9ead5c063fb5abf82066956975e11c332f65c40c"
+    },
+    {
+      "test": "TestPGBackendAccountAdminSensitiveReadRoutes",
+      "source": "tests/integration/account_admin_badges_test.go",
+      "function_sha256": "ed503ce64e05347b770a37d792efd3cb8deef54d02b9d4abb7f3be39de26ede1",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBackendAccountHistoryAuthoredRoutes",
+      "source": "tests/integration/account_history_test.go",
+      "function_sha256": "2ec448c8a5a9b9e0b542563cce84a4bbf12bb5931ec0a5870dc7e8854a386374",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendAccountHistoryForgedChannels",
+      "source": "tests/integration/account_history_test.go",
+      "function_sha256": "e52f7de658552f69f1b27761921784798751240a8a411cc3081cf09c2e9bfa14",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBackendAccountHistorySavedRestartPersistence",
+      "source": "tests/integration/account_history_test.go",
+      "function_sha256": "75fa58fddbbd4b2b85181bc99647e9b298837df7ff1ba54f71169cfe6d2f2cfa",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendAccountSettingsComposition",
+      "source": "tests/integration/backend_account_settings_test.go",
+      "group": "group-b",
+      "function_sha256": "166279fafb401ae004d521eb6aa8a2ae31d5f767d3e8b50d542b0179ff998fc1"
+    },
+    {
+      "test": "TestPGBackendActivityAuthoredRoutesLifecycle",
+      "source": "tests/integration/activities_test.go",
+      "function_sha256": "1c9e26447a68cd3f9c3452b7b0062e41de5d87f7c13f5d61c21f68ca17a6a217",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBackendAdminExtensionsComposition",
+      "source": "tests/integration/backend_admin_extensions_test.go",
+      "group": "group-a",
+      "function_sha256": "faefe40a3e5b9b9cc2deca08390e75d480632fc2557d9501dea213fc4d13c908"
+    },
+    {
+      "test": "TestPGBackendAffiliationRoutesAndActivation",
+      "source": "tests/integration/affiliation_test.go",
+      "function_sha256": "e4f795f1fe152a462ced2e9c85d63c58c858e51169ecc3ba3cf3125e35816df9",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendAutocompleteComposition",
+      "source": "tests/integration/backend_utilities_test.go",
+      "group": "group-b",
+      "function_sha256": "8b59b7500c601b42b226ee7754bc3e0e098994fa54f7a9acd8aec289c37b84ad"
+    },
+    {
+      "test": "TestPGBackendBoardDiscoveryComposition",
+      "source": "tests/integration/board_discovery_test.go",
+      "group": "group-b",
+      "function_sha256": "9fd85f39c4d711fb71627ea10713abf7e6c743bf7e99d2f85bc0fcd1f2bc160a"
+    },
+    {
+      "test": "TestPGBackendBotMiniappComposition",
+      "source": "tests/integration/backend_portals_test.go",
+      "group": "group-a",
+      "function_sha256": "0571ee7429a56bb9e46ff41a6b0524d4c000d7a0636efb3ce2c3cfbf05643f5b"
+    },
+    {
+      "test": "TestPGBackendCalendarComposition",
+      "source": "tests/integration/backend_portals_test.go",
+      "group": "group-b",
+      "function_sha256": "afc506712dc73e94cf178635bd71f546ac6dfc9beb01bedc6c6808cd3f6d61b2"
+    },
+    {
+      "test": "TestPGBackendCallsFederationComposition",
+      "source": "tests/integration/backend_external_test.go",
+      "group": "group-b",
+      "function_sha256": "803af01e2205bf08e029f81e499c0b68d166bd122c3f04c452b053544808e6b6"
+    },
+    {
+      "test": "TestPGBackendCallsFederationRestartPersistence",
+      "source": "tests/integration/backend_external_test.go",
+      "group": "group-a",
+      "function_sha256": "1c02b635b724987b893beb5652eff5254527b345db065c77b9db854550da5a9d"
+    },
+    {
+      "test": "TestPGBackendChatDetailsAuthoredRoutesAndFailClosedPolicy",
+      "source": "tests/integration/backend_chat_details_test.go",
+      "function_sha256": "46b4e0eba5ecd95c83f289af6ac8545dd0eb3c3a9c876506f140ca50f4c0de16",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBackendChatDetailsCanonicalProfileConfiguration",
+      "source": "tests/integration/backend_chat_details_test.go",
+      "function_sha256": "0cd2a4842221ca70757e44cda97031f4e8ba22cec1079cd899376c707e0e85b0",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendChatMediaAndReactionsComposition",
+      "source": "tests/integration/chat_media_test.go",
+      "group": "group-a",
+      "function_sha256": "9961bd4ceda9ff6fde0434675b3d171d39ca4f267872dc2233a49b3aa473ba43"
+    },
+    {
+      "test": "TestPGBackendChatOrganizationRoutes",
+      "source": "tests/integration/chat_organization_test.go",
+      "function_sha256": "08add1c06534779c72e51a381d8697ced7b779d9920ed4aa12be484b489b2f90",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBackendChatRelationsComposition",
+      "source": "tests/integration/backend_chat_relations_test.go",
+      "group": "group-b",
+      "function_sha256": "021c4115d077b86e7ebb989c01b262e85643d6248fc72773ecb5c571bc7e499b"
+    },
+    {
+      "test": "TestPGBackendChatThreadsForwardAndRedirectComposition",
+      "source": "tests/integration/chat_threads_forward_test.go",
+      "function_sha256": "c5cb6c1a7e75916545410c2a39b5cc7421182bae75f1a743dc08d0eeef7617d8",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendContentComposition",
+      "source": "tests/integration/backend_content_test.go",
+      "group": "group-a",
+      "function_sha256": "8e0d3ac240a78edba6553f7af46fc8aa1da3cbb9293df36c2a6f029bae3fbe9d"
+    },
+    {
+      "test": "TestPGBackendContentModerationComposition",
+      "source": "tests/integration/backend_content_moderation_test.go",
+      "group": "group-a",
+      "function_sha256": "bb511b9393cf5e2f38bed0125d4166b86c1ae81c7a86c2afb5ef40b73b69ed9a"
+    },
+    {
+      "test": "TestPGBackendDomainCollectionsComposition",
+      "source": "tests/integration/backend_domain_collections_test.go",
+      "group": "group-a",
+      "function_sha256": "fefcbe25ae388bf33093836f4854c633e5f8a3815470705dd40012c5442c83c5"
+    },
+    {
+      "test": "TestPGBackendDomainComposition",
+      "source": "tests/integration/backend_test.go",
+      "group": "group-a",
+      "function_sha256": "b6dc43cf477543b055741762904f283242911f41576896114654c386b7c866b4"
+    },
+    {
+      "test": "TestPGBackendFederatedRenameComposition",
+      "source": "tests/integration/backend_federation_rename_test.go",
+      "group": "group-a",
+      "function_sha256": "9050b39715dddd9718f1d463ae177c8024439a530661e0ecfe3d7210ee422127"
+    },
+    {
+      "test": "TestPGBackendFederationDeliveryLeaseComposition",
+      "source": "tests/integration/backend_federation_delivery_test.go",
+      "function_sha256": "3c8f221a08fc5482b724e7ddd5cb6a6d5ce9eacc81028cd4dd08247c8abcbc8e",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBackendFederationDiscoveryComposition",
+      "source": "tests/integration/backend_federation_discovery_test.go",
+      "function_sha256": "160b1cc66222e9659215373655777a2063a8a7dc2c0ee27231c5344de2e7d999",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendFederationPublicAdmissionComposition",
+      "source": "tests/integration/backend_federation_public_admission_test.go",
+      "function_sha256": "71b72fcb14e378b0298ebd57b7077fc4f00477635787398585dc58072e42d6df",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBackendFortuneComposition",
+      "source": "tests/integration/backend_identity_reports_test.go",
+      "group": "group-b",
+      "function_sha256": "0e1c3476a663d87dfb8ca589fdb3e632fe3ae0a2ccc299393ee34385f15a3318"
+    },
+    {
+      "test": "TestPGBackendFreshAuthorityAndIndependentPools",
+      "source": "tests/integration/backend_test.go",
+      "group": "group-a",
+      "function_sha256": "7e472c0612ada30502d9d58fd0adb9a4d4624bbeb5111c9d2c0e9c6e3fe59cbe"
+    },
+    {
+      "test": "TestPGBackendHTTPProcessRestart",
+      "source": "tests/integration/backend_test.go",
+      "group": "group-b",
+      "function_sha256": "f4725b519493c2fd3b02e9fb9b0243730a2f485bc851087bec08d09c448ca06a"
+    },
+    {
+      "test": "TestPGBackendIPCheckComposition",
+      "source": "tests/integration/backend_ipcheck_test.go",
+      "group": "group-b",
+      "function_sha256": "d381f3335953102c0bbc2d5ca137a03804bec01c1a2e2f1cd2e930271e807c29"
+    },
+    {
+      "test": "TestPGBackendLivestreamAwardsComposition",
+      "source": "tests/integration/backend_livestream_awards_test.go",
+      "group": "group-b",
+      "function_sha256": "a3d6da07d707a9ff3ef4e4e9fba3f2783dd587f5dfd9e377a7cfba21d82bd5e2"
+    },
+    {
+      "test": "TestPGBackendLivestreamChatComposition",
+      "source": "tests/integration/backend_livestream_chat_test.go",
+      "group": "group-b",
+      "function_sha256": "891dde9ebcaecfe4c3f60727a6f1930fb18afe8b1d269fc919454bc921bb8183"
+    },
+    {
+      "test": "TestPGBackendLivestreamComposition",
+      "source": "tests/integration/backend_livestream_test.go",
+      "group": "group-a",
+      "function_sha256": "7588b7f05f19458fba96e3000e65e18cc22ea74250031b861c8b4badf8bd8a57"
+    },
+    {
+      "test": "TestPGBackendLivestreamOutputPlaybackComposition",
+      "source": "tests/integration/backend_livestream_outputs_test.go",
+      "group": "group-a",
+      "function_sha256": "b8e58a1ac50fcee25ef10178a4df0ea4e698aed674e8ffd189289b22f02726f6"
+    },
+    {
+      "test": "TestPGBackendMerchantCatalogComposition",
+      "source": "tests/integration/backend_merchant_test.go",
+      "group": "group-a",
+      "function_sha256": "99abd206a935e10df14c14e82cb978c7acfead78c4ee5a96abb758e8fa61d1e2"
+    },
+    {
+      "test": "TestPGBackendOAuthComposition",
+      "source": "tests/integration/backend_identity_reports_test.go",
+      "group": "group-a",
+      "function_sha256": "946d0b373ad571f26811828f9201f5fe61c1f99e2b4af9aa9dc404215882faca"
+    },
+    {
+      "test": "TestPGBackendPaidNameCardComposition",
+      "source": "tests/integration/backend_account_extras_test.go",
+      "group": "group-a",
+      "function_sha256": "296e03603fdc96d5029295c41d06d359f00ffaa60d8164bf952128fe5f34d239"
+    },
+    {
+      "test": "TestPGBackendPaymentPINSourceHTTPComposition",
+      "source": "tests/integration/payment_pin_test.go",
+      "group": "group-a",
+      "function_sha256": "b8183991aa375edc13c0d59ead4bf9f5386fe65fd10c1690b533ffdcd2ba9190"
+    },
+    {
+      "test": "TestPGBackendPostAutomodCompositionAndExplicitReview",
+      "source": "tests/integration/backend_post_automod_test.go",
+      "function_sha256": "13cd0631136f633228cc0a480fada19a47771ef185d29bf9dac6ff1aa9c87102",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendPostAwardCheckoutAndRelease",
+      "source": "tests/integration/backend_post_awards_test.go",
+      "group": "group-a",
+      "function_sha256": "5d5b558cdf445febbf0ec4a473f6700cb2861adf60c5847677ad757e8443b28c"
+    },
+    {
+      "test": "TestPGBackendPostCompositionAuthoredRoutes",
+      "source": "tests/integration/post_composition_test.go",
+      "function_sha256": "c90757f29ddbabdf2b165e2f94b60b16c25ec4166a267e8512fb978bf5883303",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBackendPostRealmComposition",
+      "source": "tests/integration/backend_portals_test.go",
+      "group": "group-b",
+      "function_sha256": "d3e116157b5bacaa17234c40a131adf8a9168bfbde595a895242ad2df8789038"
+    },
+    {
+      "test": "TestPGBackendPresenceProgressionLocationComposition",
+      "source": "tests/integration/backend_presence_test.go",
+      "group": "group-a",
+      "function_sha256": "4ffd43fb64b18b3d9d6d89d52d249aa1de84043fb79567c830ed22f14ee23aab"
+    },
+    {
+      "test": "TestPGBackendPublisherCommerceComposition",
+      "source": "tests/integration/backend_publisher_commerce_test.go",
+      "group": "group-b",
+      "function_sha256": "68a5fffe9beeb71c8f6718ef0ac3fcbc19d5b0ba59d755ecf3f61b009814575d"
+    },
+    {
+      "test": "TestPGBackendReaderComposition",
+      "source": "tests/integration/backend_reader_test.go",
+      "group": "group-a",
+      "function_sha256": "96ef5d78330f97cd9c5d1f82767b7d3049fa0f657d0ce98cae00041b13a59c6c"
+    },
+    {
+      "test": "TestPGBackendRealmBoostRoutes",
+      "source": "tests/integration/realm_boosts_host_test.go",
+      "function_sha256": "fff42f3ad13313aa0a56c2a0c2609e17e6527e9b8bb796a0b2ea4f0c21fda665",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendRealmMemberRoutesAndFeatureGates",
+      "source": "tests/integration/realm_members_test.go",
+      "function_sha256": "168b30d5f3241f0bd31116c999717bdd4ab0076475e819404ef1783e58aed849",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBackendRefreshContinuesBroadcastChatThenLogoutRevokes",
+      "source": "tests/integration/refresh_continuity_test.go",
+      "group": "group-a",
+      "function_sha256": "c498f456869791254348b11bc03ce4d4895769176dc2ffe3e9ed95002a6708c3"
+    },
+    {
+      "test": "TestPGBackendRestartPersistence",
+      "source": "tests/integration/backend_test.go",
+      "group": "group-b",
+      "function_sha256": "730debacfb02ced55dbf58c92e0317ebc6506b81598bf075ef7495632c4fcf64"
+    },
+    {
+      "test": "TestPGBackendRewindComposition",
+      "source": "tests/integration/backend_account_extras_test.go",
+      "group": "group-b",
+      "function_sha256": "b6219d01164e746d7cc5be17f5653828748ad341d697981b25aa482e90237a6e"
+    },
+    {
+      "test": "TestPGBackendShippingAddressCheckout",
+      "source": "tests/integration/shipping_test.go",
+      "function_sha256": "4610b8e7c43a54626cc9b505db3405092d92b055b6b8d9f0fe442c6bae05604f",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendSigninHTTPProcessRestart",
+      "source": "tests/integration/backend_signin_test.go",
+      "group": "group-b",
+      "function_sha256": "18c02315b8a8053132f02e8df64ab5d4f4d6c358ed7bc31924febf52b6ac81d6"
+    },
+    {
+      "test": "TestPGBackendSubscriptionActivationRoutes",
+      "source": "tests/integration/subscription_activation_test.go",
+      "group": "group-b",
+      "function_sha256": "81bf4ee7163be5f5b661325b717615390f5d4530c4f081b7255415708bcc70c3"
+    },
+    {
+      "test": "TestPGBackendTicketsExamProgressionComposition",
+      "source": "tests/integration/backend_ticket_test.go",
+      "group": "group-b",
+      "function_sha256": "be9b49f0daecf7da02a3f8685d5fcb52cb06bd49a978de32e9eace64482253c5"
+    },
+    {
+      "test": "TestPGBackendTranslationComposition",
+      "source": "tests/integration/backend_utilities_test.go",
+      "group": "group-a",
+      "function_sha256": "4d9520c4305ca427cdf4c7184858fb28bfdacba60695a24412803c34dadb20ce"
+    },
+    {
+      "test": "TestPGBackendWalletExchangeDisabledAndTreasuryLiquidity",
+      "source": "tests/integration/wallet_exchange_test.go",
+      "function_sha256": "ef4cc4d6500cf9588e75436511a0eee92c652485581564fb29f73920188bb84a",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendWalletExchangeOriginalProofRestartPersistence",
+      "source": "tests/integration/wallet_exchange_test.go",
+      "function_sha256": "e39428839a2093972460bac2bf3d044b3a73421583a6b2af2e2cb887dcd3c07f",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBackendWalletExchangePINReplayAndConservation",
+      "source": "tests/integration/wallet_exchange_test.go",
+      "function_sha256": "7e016f73be7b7e7cf9a2e6e0fd58addd05f4556ae45eb0fa49a663866df222ff",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendWalletReportingFundsDoNotDoubleCount",
+      "source": "tests/integration/wallet_reporting_test.go",
+      "function_sha256": "167ad7e61dd0da609529117272b64fcf000adaf2ffb06a85667f3a93ce2d8dee",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBackendWalletReportingLifecyclePrivacyAndDates",
+      "source": "tests/integration/wallet_reporting_test.go",
+      "function_sha256": "f717362400148668a17a787db4be889703c136f99b7574f7054abb0813432e6a",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendWalletReportingRestartPersistence",
+      "source": "tests/integration/wallet_reporting_test.go",
+      "function_sha256": "5d3e8920d6e73142f7a91bace0b544faa6aedefe29e6c7b3adc205e268f5eef7",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBlogBackendAliasesAndStrictPermissionRequest",
+      "source": "tests/integration/blog_posts_test.go",
+      "function_sha256": "fc49251d0d736974cb800a83f3dcbdc60dd9c6ae502e57f90d927fd9895cf62f",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGCalendarMediaComposedAudienceAndProjection",
+      "source": "tests/integration/calendar_media_test.go",
+      "function_sha256": "9f732b6b00916cce994f24ec7c6a30954a33b95b0018d2d9fdf7053dfd404709",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCalendarMediaComposedReadProofWait",
+      "source": "tests/integration/calendar_media_test.go",
+      "function_sha256": "7e8eaf92ebf83a5ad790512103f808d241a1fbc6f193ee86e6b1fc5614772b62",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGCollectionPublicationFinalEnqueueWaitRechecksComposition",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "dd9f0895f46fe7708adfa69062572960cb7e13b3814946dd904ccfc1ce143ee6",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGCouponBackendHTTPPolicyAndBinding",
+      "source": "tests/integration/coupon_backend_test.go",
+      "function_sha256": "6a3208a3bd7ab76b9c4a3da9647d5fd4fadf2d28647d4e6bad442fe345341edf",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGMLSBackendAuthorityAndGatewayComposition",
+      "source": "tests/integration/chat_mls_test.go",
+      "group": "group-b",
+      "function_sha256": "de6593c1672b799b0a894b32de15eb889382507cb4262b1114d5f5a561457a9b"
+    },
+    {
+      "test": "TestPGPasskitCompositionRegistrationIsolationAndUpdates",
+      "source": "tests/integration/passkit_test.go",
+      "function_sha256": "0541ff9a8805dc918debc071efae1ede3d725bf75950886877848c3c02a28f43",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
+      "source": "tests/integration/post_automod_editor_projection_test.go",
+      "function_sha256": "097c1d4e3a1be5fd20424ebc378f42976b110ddc288c5be48082d5f69aa951cd",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGPostAutomodRealmAndNestedEvidenceIsolation",
+      "source": "tests/integration/post_automod_review_test.go",
+      "function_sha256": "ba8660369eeb754de2171e531c990098dfa69054cb4de392472b4cff7d87bacb",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGPostCompositionCanonicalLivePrivacy",
+      "source": "tests/integration/post_composition_review_test.go",
+      "function_sha256": "a1e9c781b53da11d8ca16c86da3ff4e3e4d3755d4f132ca84b3c3fb3b1a57651",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGPostCompositionCanonicalReferencesAndReplay",
+      "source": "tests/integration/post_composition_test.go",
+      "function_sha256": "10b80f2e317029ec9f946c3127da94002d16eaad4a5310e6dac396e1c25a5caf",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGPostCompositionFinalWaitsRecheckReferences",
+      "source": "tests/integration/post_composition_review_test.go",
+      "function_sha256": "920fb141498858f1b812493f89eff9027838d9aa19cef64617945f90017a3132",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGPostCompositionLivePrivacyExpiryAndPublication",
+      "source": "tests/integration/post_composition_test.go",
+      "function_sha256": "404742daffc5683b34f05e113fdb61247f94ce3a2cfde89eafc8ba07f02b9456",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGPostCompositionOwnershipAndAtomicRollback",
+      "source": "tests/integration/post_composition_test.go",
+      "function_sha256": "f6f59f56e22aa0b83ef2bc3a4f3a5bd84f9f2d27799ce7c23562f771bce68b87",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGPostCompositionProofScopeAndMediaWait",
+      "source": "tests/integration/post_composition_review_test.go",
+      "function_sha256": "ea617b2c622d90e43bd7c43a4a0935138c06543a003c0ab70c9af449e15e3976",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGPostCompositionSavedRestartPersistence",
+      "source": "tests/integration/post_composition_test.go",
+      "function_sha256": "733f6718923b9b86c606ed3656073b380f7be97f627813058eb498ffc5a345f5",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGPostCompositionTargetWaitRechecksLifecycle",
+      "source": "tests/integration/post_composition_test.go",
+      "function_sha256": "51d093db4560bfd29f29e08ec17ba2bf2b728f57c7f4986438bbe22c23cdf11d",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGPostScheduleBackendProjectionAndDeferredFederation",
+      "source": "tests/integration/post_scheduling_test.go",
+      "function_sha256": "f7147dd9bf1d0c32009cd630e84c01cfa007661ea20611f7ec85a472de27be6f",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGRealmPermissionBackendDTOAndNullClear",
+      "source": "tests/integration/realm_permissions_test.go",
+      "group": "group-a",
+      "function_sha256": "649fb752ec68dee61b4f71f49c0c9e691074b75fb5adf2f66a1b35fc961a5f89"
+    },
+    {
+      "test": "TestPGRoomMediaConcurrentSlotsAndBackendComposition",
+      "source": "tests/integration/room_media_test.go",
+      "function_sha256": "031cfbe08a811177d9aec74cba394d9d514415f7a2ffbe9f8bca52719e5d6cc8",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGTicketMediaComposedLifecycleAndPrivateAudience",
+      "source": "tests/integration/ticket_media_test.go",
+      "group": "group-b",
+      "function_sha256": "6c5f78f818fabf0e7ae9b7f0dca5858faf7f3c5f6d4b76406e0ecc12fe2294ec"
+    },
+    {
+      "test": "TestPGCollectionSubscriptionAuthoredHTTPAndIncarnations",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-a",
+      "function_sha256": "1ab163b07063f946e1b1e0eb6a593ef0f0fc22bd75960a6ce025159e0cd44c9b"
+    },
+    {
+      "test": "TestPGCollectionNavigationAuthoredOrderingAndHiddenAnchors",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-b",
+      "function_sha256": "1b9d40c277581c927d20a45bb7b21b5a58393bf9cce06d31df0e654f773a0c6b"
+    },
+    {
+      "test": "TestPGCollectionNavigationNestedMediaAndCurrentPrivacy",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-b",
+      "function_sha256": "d259d79a3291a5d65dda021d9aec5c4b6d9a43f93ce4e70c63bad699fab05c7b"
+    },
+    {
+      "test": "TestPGCollectionSubscriptionConcurrentAndAuditRollback",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-b",
+      "function_sha256": "83fb828de4d25cead10565ca38a7eb79451c122e9bf38a1ac70f0b03cd5e56d1"
+    },
+    {
+      "test": "TestPGCollectionSubscriptionWaitRechecksIdentityAndProof",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-b",
+      "function_sha256": "b0273b771751d6ffa443ff1993d06e115101d196c295f4c678cd8023050b2865"
+    },
+    {
+      "test": "TestPGCollectionNavigationMediaWaitRechecksProjectionAndProof",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-a",
+      "function_sha256": "376a39ab43ee6ba45307f3e1748fbc889e7c802e98990734086e17125949d1ee"
+    },
+    {
+      "test": "TestPGCollectionNavigationSinglePoolAndRestartPersistence",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-b",
+      "function_sha256": "5609170d81ba5296b154408d03f378ed627ec6279232b08b03c28e9d914e281b"
+    },
+    {
+      "test": "TestPGCollectionNavigationRealmPrivacyAndMembership",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-a",
+      "function_sha256": "65e237d5cdb8ca8c40609ce4a1dd16293f2f82744fc71e8daad064d873ebe143"
+    },
+    {
+      "test": "TestPGCollectionSubscriptionRenameAndAdminDeleteIsolation",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-a",
+      "function_sha256": "6a2c2f6301efc43bb6899437a0d03c4630ae6fa4e883ab99e549fd7dc45618f6"
+    },
+    {
+      "test": "TestPGCollectionPublicationBoundsAndProofAfterWait",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "b176bb11d94ab8ad16463f1ee05bac8865b4f1b590afe61a5d257b091054289b",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCollectionPublicationCurrentAudienceAndIncarnations",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "d831af2936f7702d9048bf824d755a283f17460ea944cb2196cefb69f0030366",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGCollectionPublicationDraftScheduleAndEligibility",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "e90a8255ddc5cebfda6b6cf4faed9bf424600b48b312535e248cfbd400009c12",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCollectionPublicationInboxReplayRevocation",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "b2ac66948de8ac1b3cb265e7c2cdf05d01fdc30d615c08739bf052acf6467ab4",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCollectionPublicationLifecycleAndDeduplication",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "031235f76437a1e6f7dedf068c66ed8ecd722aaccc00daa9991153bfe3ab6a54",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGCollectionPublicationRealmMembershipAndOwnerPolicy",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "c1099fb0b86671474c06617b2ea8d892c95ae709c2197c37fb6536b4101b6b1f",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCollectionPublicationRollbackNamespaceAndConcurrentWorkers",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "a7af7386df5fbedc87a9f68c8081d20b13a19f66d16094f3331353374e562783",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGCollectionPublicationSavedRestartPersistence",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "7b898212f76b124e604c2091b52d73d46a5507c96c488efffdb7a88fc6836f02",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCollectionPublicationWaitRechecksSourcesAndCancellation",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "e336705b3ce55bfb3e18427c150ff73293b0eb3d319c7d28564d89d43e994ed9",
+      "group": "group-b"
+    }
+  ],
+  "fixture_source_files": [
+    {
+      "source": "tests/integration/account_admin_badges_test.go",
+      "sha256": "973aac5376aaa18a7a0949c406ec360e101ed5f8922fe6ab3ea21d5a44f38480"
+    },
+    {
+      "source": "tests/integration/account_admin_review_test.go",
+      "sha256": "dcaca8e46986a5c5e3e3981c2be3d39dd2c81abc71382775def50411cf36f1a5"
+    },
+    {
+      "source": "tests/integration/account_history_test.go",
+      "sha256": "a6ce9cf5d4da36e6fcad5933f6925c6ffd71d00c3dcacbb9bf6eabd3703fd8ff"
+    },
+    {
+      "source": "tests/integration/account_settings_test.go",
+      "sha256": "0024e97cda0d7a2d357c79d6845f07a28cabd5532d0131031b994fea7cfcdbfb"
+    },
+    {
+      "source": "tests/integration/accounts_test.go",
+      "sha256": "f37ec15c3e93698bcde7d1dc5ff12d794515aa3e74833015ca3ab9c59dd3cd78"
+    },
+    {
+      "source": "tests/integration/activities_test.go",
+      "sha256": "af14c70f6eda0d3fa2438934b9b3927e548589de4b08b6b5e2106a3ba8a57291"
+    },
+    {
+      "source": "tests/integration/admin_extensions_test.go",
+      "sha256": "205ba94e3e4707ea049118ec0806a2dda2fdfeefcc15048d2388f0b6c06c51b5"
+    },
+    {
+      "source": "tests/integration/affiliation_review_test.go",
+      "sha256": "5089d98ae8ec29c708e9c8203bf70ee1e7328ba5d316ef595ef8b1426f43afc7"
+    },
+    {
+      "source": "tests/integration/affiliation_test.go",
+      "sha256": "b3eba31de9a0018b8928bec27f7d103188d8856678c3d4f85f690295c5319950"
+    },
+    {
+      "source": "tests/integration/app_publisher_owner_review_test.go",
+      "sha256": "0e9acbb1fc655e09b0428f53a71b0c310fed92141cd6ae70e49baa545efbe6fa"
+    },
+    {
+      "source": "tests/integration/authority_atomic_test.go",
+      "sha256": "3ff6b784ff795890ebc130df44ea3095bc9d10b549ab97c1e4c7275e54865b05"
+    },
+    {
+      "source": "tests/integration/authority_test.go",
+      "sha256": "dec499cc20086976ce871f6fa916fdcafc35b1dbda685c2a5386a25a63fc3f93"
+    },
+    {
+      "source": "tests/integration/backend_account_extras_test.go",
+      "sha256": "16116763064a45328ce08071d1e1f535505ce6ffaad35ded41c884cdae855af7"
+    },
+    {
+      "source": "tests/integration/backend_account_settings_test.go",
+      "sha256": "3d9cbffdba8aa8af2aba90120a54fb0e5fba83dbf351e2167355af666c799582"
+    },
+    {
+      "source": "tests/integration/backend_admin_extensions_test.go",
+      "sha256": "b794cd431eb6f1a946418082116b99b2adb8ce1189da7129473b090e55cb23ab"
+    },
+    {
+      "source": "tests/integration/backend_chat_details_test.go",
+      "sha256": "124d1294dff937ec37d1159643d005536f4eace0fdc6458e0bcc9798d7d12c32"
+    },
+    {
+      "source": "tests/integration/backend_chat_relations_test.go",
+      "sha256": "b0b70003a2790d98ee9928fcc3a9dc7990afa727f3f8a627e503bef45c1cad81"
+    },
+    {
+      "source": "tests/integration/backend_content_moderation_test.go",
+      "sha256": "dc20d583e16b7a03ffa58ab8c50f79d28041a165baeb26463bca78d2e8d73eda"
+    },
+    {
+      "source": "tests/integration/backend_content_test.go",
+      "sha256": "90fc0c2f12798b5ba31b1204158e373286314285d9d72a5051fb21253b136ded"
+    },
+    {
+      "source": "tests/integration/backend_domain_collections_test.go",
+      "sha256": "2547f64e2f45f23a1faafeba6bf986dba646e478a95e9bc26c0ffd7b8ff37394"
+    },
+    {
+      "source": "tests/integration/backend_external_test.go",
+      "sha256": "7cbd2737afea877114a09de6743baf513ca3c7f40cfa2a77e0c9d2b55a68bcca"
+    },
+    {
+      "source": "tests/integration/backend_federation_delivery_test.go",
+      "sha256": "b84db5a4c6e8c7b7a017dd884f5394a48a4c65d2437662df2556d336426c4e57"
+    },
+    {
+      "source": "tests/integration/backend_federation_discovery_test.go",
+      "sha256": "85738f8a93374287a0ba367e3d86024ef055447a87c2c259959c8f693edb99c7"
+    },
+    {
+      "source": "tests/integration/backend_federation_public_admission_test.go",
+      "sha256": "b42f8b9db4f0c80dbbf81a5b25e2e84db1d714d1920ef05a50a4f437b50b7b69"
+    },
+    {
+      "source": "tests/integration/backend_federation_rename_test.go",
+      "sha256": "1fa13152bb889083d3a39fe14b61c3ebbcfb88ab0574dc56b956ec3bec09cbad"
+    },
+    {
+      "source": "tests/integration/backend_identity_reports_test.go",
+      "sha256": "0aca3d9554a65861ea372023c6f5d3028117a156f2a25669219670105014ce4a"
+    },
+    {
+      "source": "tests/integration/backend_ipcheck_test.go",
+      "sha256": "e9075764c5dd96f1a4df889642c754c0459e8c1fe88f59b1ab0c22fe0cb5a7b5"
+    },
+    {
+      "source": "tests/integration/backend_livestream_awards_test.go",
+      "sha256": "f87f3357064d9435eca3efbb7ca383611a3aa64887a9e8e32af3736a4135ebcb"
+    },
+    {
+      "source": "tests/integration/backend_livestream_chat_test.go",
+      "sha256": "c6cdfb80de8ee2920aa0ef49acb741f1a9af4176b2d45e6d7ccdef089ff6e7a7"
+    },
+    {
+      "source": "tests/integration/backend_livestream_outputs_test.go",
+      "sha256": "0035551bd195b752833cbf96f87c5ea583af69e585250a81b7c43d0f14d6271d"
+    },
+    {
+      "source": "tests/integration/backend_livestream_test.go",
+      "sha256": "a60521fd8b3a38f2eaff9b92ff3a5bd9bc51b900ce4f69768899abd8b89abd38"
+    },
+    {
+      "source": "tests/integration/backend_merchant_test.go",
+      "sha256": "a934f59b70a8b6a143abeae578ed14b44ba43ba5ae2d4c406d4829da6bc470ae"
+    },
+    {
+      "source": "tests/integration/backend_portals_test.go",
+      "sha256": "75c3803ddfa732714abea2f2d8a4e234be29effc68be4debb011bc4c2f8982b9"
+    },
+    {
+      "source": "tests/integration/backend_post_automod_test.go",
+      "sha256": "00972a556ae4e13c0c1fec3e83e6ac12f8e0b9f893137f4d9fc414665d4fcdf4"
+    },
+    {
+      "source": "tests/integration/backend_post_awards_test.go",
+      "sha256": "dd01282e69ba0bb371ceaeba244fbe8d3fef1021e5d94ff883a0f055cc7cdc6e"
+    },
+    {
+      "source": "tests/integration/backend_presence_test.go",
+      "sha256": "58a146573acd00af77a714d3b4939e81a863fca2ee13279bd37872207c65a8f6"
+    },
+    {
+      "source": "tests/integration/backend_publisher_commerce_test.go",
+      "sha256": "2af5b3421a290b7b0848e19961aae0b25cacd50743da6d7863879005c5f9e1b1"
+    },
+    {
+      "source": "tests/integration/backend_reader_test.go",
+      "sha256": "d71dd48e68bf4e55f4dfd0c9a338f81733f904b0f1862e9a69c1681d42412359"
+    },
+    {
+      "source": "tests/integration/backend_signin_test.go",
+      "sha256": "0e133ae0c08023a9420f2ec9a4d0c43f86186acba612d8d5db7abee9caf5544e"
+    },
+    {
+      "source": "tests/integration/backend_test.go",
+      "sha256": "f707d7aa5a71cc6ab814e866bf6ef06df402a72705f0d30d77328af914c1bdcb"
+    },
+    {
+      "source": "tests/integration/backend_ticket_test.go",
+      "sha256": "42ba3069b4af054ed0218700395672cfd719582d8162e38206406a217d1f4b71"
+    },
+    {
+      "source": "tests/integration/backend_utilities_test.go",
+      "sha256": "86565936e40094e10b45cbe3158aa3e80265a3679ff61bd8e4d88b723dee6b95"
+    },
+    {
+      "source": "tests/integration/blog_automod_composition_test.go",
+      "sha256": "a0730afd50d923d7cefd2458f2d212751dc0cc265a4a3141d651579a59d70d33"
+    },
+    {
+      "source": "tests/integration/blog_posts_test.go",
+      "sha256": "3ef23c15fb85d3ce8246a38572761bca76e77bbf83db09179380ea66b821274f"
+    },
+    {
+      "source": "tests/integration/blog_review_test.go",
+      "sha256": "592e0693151045deb0143e78a39419c93a3e8cb6841149cb5eff64522f398b17"
+    },
+    {
+      "source": "tests/integration/board_discovery_test.go",
+      "sha256": "3636a7ad8ebb6f4abd4d5dcddc570bef71517f8f43245e09387818ce4da9a7dc"
+    },
+    {
+      "source": "tests/integration/board_http_test.go",
+      "sha256": "2888907d17e13faf996243b1505a69bcc13d8f17b547042c43f3b8ba7e1a3b8c"
+    },
+    {
+      "source": "tests/integration/board_test.go",
+      "sha256": "2ff297223b03d00c6c4dbc280cec462701e92b7e0b56ccf18b635649fcdba7cd"
+    },
+    {
+      "source": "tests/integration/bot_execution_test.go",
+      "sha256": "a0751fd6ca2dded3cf8ab9b72eca54456260f754d0fead0cbba5192a4039dd74"
+    },
+    {
+      "source": "tests/integration/bots_test.go",
+      "sha256": "81c46545335e1e5f658ad85c6880627869a1f3322019e720273a8403270fa13f"
+    },
+    {
+      "source": "tests/integration/calendar_activity_test.go",
+      "sha256": "c6ab591021d7db1225c33cfebf8c2a72299d6adbab4f38f570b60fb74559e0a4"
+    },
+    {
+      "source": "tests/integration/calendar_media_review_test.go",
+      "sha256": "4b69caa081f68752b5ed4668580d3cc71ee76ab0d2f5652b888fb22846862c75"
+    },
+    {
+      "source": "tests/integration/calendar_media_test.go",
+      "sha256": "b43644639c28345505aeb769f9619ba1ddba57f729816b18c14e536100ac946b"
+    },
+    {
+      "source": "tests/integration/calls_test.go",
+      "sha256": "787ce9179709ecc78c1ebc0a9cd22e7b6d2c3030fe5defabca36304d3e049b0f"
+    },
+    {
+      "source": "tests/integration/chat_details_test.go",
+      "sha256": "1187cdf6300864dbca30bbdc127f934c2ee3709deb74564bf9c7c585b5c3e8b3"
+    },
+    {
+      "source": "tests/integration/chat_lifecycle_test.go",
+      "sha256": "4be9dc5a2a5f13dc2f7b75d4ef6afeb92417d3641959c305e7072c859f982ab6"
+    },
+    {
+      "source": "tests/integration/chat_media_test.go",
+      "sha256": "dbc1e54c50b6ade5b911eb6e2376e01f7c53c6eeb81ebe6b852ce05da87ef35f"
+    },
+    {
+      "source": "tests/integration/chat_mls_restart_test.go",
+      "sha256": "15ad7810e3f7ed810565ab3392d348a38c23c3f8cb670af5b2b5131b45d81756"
+    },
+    {
+      "source": "tests/integration/chat_mls_test.go",
+      "sha256": "a6fe8ddcef5dd688e3b37cd0e727f5ba8693192aeef57340a0da95326a946ff7"
+    },
+    {
+      "source": "tests/integration/chat_organization_test.go",
+      "sha256": "845340eccdcd52931ea8e177e3acf9f3a72f4d231ddcdcb6800fd40002a8b79c"
+    },
+    {
+      "source": "tests/integration/chat_preflight_test.go",
+      "sha256": "c6b6fa60d9699bd8acba889d28759f656a9a858174cabe5f29a2cfdb87db3f8c"
+    },
+    {
+      "source": "tests/integration/chat_relations_test.go",
+      "sha256": "1335b0049f1c3ad659ff54bb2f57c67ff8f4c13cd2298e556662029bc63c1670"
+    },
+    {
+      "source": "tests/integration/chat_threads_forward_review_test.go",
+      "sha256": "25698bc9114e8c8ef1342f1cd68f9d31c838eba9e91a3c185ee347f5f298928c"
+    },
+    {
+      "source": "tests/integration/chat_threads_forward_test.go",
+      "sha256": "2b6d80bd12315ce3d582b45cd3eceb944a98149bbad0221d6dfb6daeacfc4f15"
+    },
+    {
+      "source": "tests/integration/checkout_owner_policy_test.go",
+      "sha256": "177d8074a2ce851f1c570a60243353e01b7257d0c4bcce1d2d791bb297f3ffb9"
+    },
+    {
+      "source": "tests/integration/collection_admin_test.go",
+      "sha256": "56ab80920903d9f67fd97804a2d0a24126f22164e9b5261bdf41c4b4a0891c15"
+    },
+    {
+      "source": "tests/integration/collection_publication_test.go",
+      "sha256": "c82232a05cd03fdceb9403b486f0bb30a998548f7725cbfc87b5b7245dd377cb"
+    },
+    {
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "sha256": "c255e71e8d1760bcfe279a9f5295da862a70fc548f0621bd11237981da3f6e67"
+    },
+    {
+      "source": "tests/integration/commerce_maintenance_test.go",
+      "sha256": "642ba4eaa35283afe9a24ed35159f370d6f7360942e9a186c08139ea228454f6"
+    },
+    {
+      "source": "tests/integration/commerce_test.go",
+      "sha256": "3ebdbf57daa111cbf524d7ecbcde1789281ee99c70e75cbf1da3acf99e65716f"
+    },
+    {
+      "source": "tests/integration/content_autocomplete_test.go",
+      "sha256": "2c846a7fbff0bbebfc6473a2edda4bc887d4cef1a3addc7775d21272ca19df90"
+    },
+    {
+      "source": "tests/integration/content_moderation_test.go",
+      "sha256": "a4a052b5a65dbe0de61e4af77533029f2f20a02f6cff2588bf6c13a3eb1062d8"
+    },
+    {
+      "source": "tests/integration/content_translation_test.go",
+      "sha256": "6bffe6bed38058ba77d0731e37679c2da64b28cd58eec37ce2608941b2ce89b1"
+    },
+    {
+      "source": "tests/integration/coupon_backend_test.go",
+      "sha256": "8aaf970563c9a62555b771a6b034b387c19b031e48ca44f85af82713a11d5c2a"
+    },
+    {
+      "source": "tests/integration/coupon_catalog_review_test.go",
+      "sha256": "f8b967613c23c44009f2d86da82616be2cd0f7cba77fab49ba50747d492119ad"
+    },
+    {
+      "source": "tests/integration/coupon_checkout_test.go",
+      "sha256": "12c4ab4bd2665a6f6d698fae9a8e9869b01eecad4121b42a58cd66b22960fed3"
+    },
+    {
+      "source": "tests/integration/coupon_restart_test.go",
+      "sha256": "b4dccd63031f6fb6e7df4910b4d96fa94ed8cd33d47d80bf8c9b774963298455"
+    },
+    {
+      "source": "tests/integration/develop_bot_commands_test.go",
+      "sha256": "494aebbc8729f4122b4a22e6a69b883ea1e8c732a96ffd96a54510a8d70d944c"
+    },
+    {
+      "source": "tests/integration/develop_packages_test.go",
+      "sha256": "56fff4ab9812a105bcb983556a1e543aa442679ff09afc725544fa2bd101255f"
+    },
+    {
+      "source": "tests/integration/develop_test.go",
+      "sha256": "11a54f0806dbfb2c065e4aad08da246e180645ca78885cc0d6df24ea897811c8"
+    },
+    {
+      "source": "tests/integration/developer_apps_test.go",
+      "sha256": "f27495c2cbbab90fdfc3d911788f233bc81a5d0e2853f350344643b3457b14ff"
+    },
+    {
+      "source": "tests/integration/developer_management_test.go",
+      "sha256": "6f7f902d1812c41fbccb99d14abc1c1a6f48deb2c3abf3fcf344ceff10c28d4c"
+    },
+    {
+      "source": "tests/integration/direct_recovery_privacy_test.go",
+      "sha256": "2c76a82a6159c64099f7541d1fd48be96f77709c3233aaeb711ba0d489b386ca"
+    },
+    {
+      "source": "tests/integration/disposable_database_offline_test.go",
+      "sha256": "95ef062ea516dc8f883289dc5d9a5f63637b3c57ce296854064242b31f49c40b"
+    },
+    {
+      "source": "tests/integration/disposable_database_test.go",
+      "sha256": "9fafe9a24ce7b7d915af1eba884d6915ba1cf4931dbbe70fdf7d2113a0501fbf"
+    },
+    {
+      "source": "tests/integration/domain_http_test.go",
+      "sha256": "ccd8beba44b133c6536e69d90bbdc8ae99680dd1005c149b6939489d63644d91"
+    },
+    {
+      "source": "tests/integration/domain_trust_test.go",
+      "sha256": "db848ae4317494a0414549c97aa33339dfb03e4c4dd396a3bb03335d27065d77"
+    },
+    {
+      "source": "tests/integration/factor_origin_test.go",
+      "sha256": "aa0bbadebdeb1f4fee083d92077da2e74876f1aff05040e1455349381ee48a12"
+    },
+    {
+      "source": "tests/integration/factor_setup_review_test.go",
+      "sha256": "a6e201474e196fd96476c6d644585f2a1bac1de0970c0e7f3b281b140c1d6ed7"
+    },
+    {
+      "source": "tests/integration/factor_setup_test.go",
+      "sha256": "752efa65fdf334c4266037250acebeecf746359bc4d5b1ba07a0e642821e45fa"
+    },
+    {
+      "source": "tests/integration/federation_cleanup_receipts_test.go",
+      "sha256": "a24a27abf12a9eedc44a832218a7b8f02e96e64561e217f5d1165ccafce72285"
+    },
+    {
+      "source": "tests/integration/federation_delivery_leases_test.go",
+      "sha256": "cde0ea766fa424a6bd9447697b1b10d238c259d89ef524bbc66307c1299d6801"
+    },
+    {
+      "source": "tests/integration/federation_delivery_restart_test.go",
+      "sha256": "080d6d36cde99bf33385f35d56310b0433ecd25048d185272b84df7d7b6ab041"
+    },
+    {
+      "source": "tests/integration/federation_discovery_review_test.go",
+      "sha256": "15f21f988ec7e30b3c6cefc6d21cdd43ef489a49b05b021ac336a69ab8711158"
+    },
+    {
+      "source": "tests/integration/federation_discovery_test.go",
+      "sha256": "26fb23f810f5a6905a1a5926131f89a556689de28e572790afa37dbbb50ebade"
+    },
+    {
+      "source": "tests/integration/federation_history_fixture_test.go",
+      "sha256": "ddf6d3da09b85de48c636f3b481c6d9fb4acb3901e8471e14cc09949665e0647"
+    },
+    {
+      "source": "tests/integration/federation_pool_reads_test.go",
+      "sha256": "db98ad4ed4f98921b228db28f0ad05be3756aaa44e0bec276ae3480fc00160d4"
+    },
+    {
+      "source": "tests/integration/federation_public_admission_test.go",
+      "sha256": "633633846d4f3d5082ac527826e39da0c95b9789d620604c761961328b74f5da"
+    },
+    {
+      "source": "tests/integration/federation_public_admission_wait_test.go",
+      "sha256": "98b365e9aa983f2360ff449337d470e70d59241242198fa9af2bda9995dbd2e3"
+    },
+    {
+      "source": "tests/integration/federation_quotes_test.go",
+      "sha256": "27d69e0f1b65904948582d691d50b07585aa76bb70fe29ecc07c2380ce881f30"
+    },
+    {
+      "source": "tests/integration/federation_rename_test.go",
+      "sha256": "a6e189a63a853e2738b8bfd596bd6317570a45c72b8d87fae5b590e584da79fb"
+    },
+    {
+      "source": "tests/integration/federation_test.go",
+      "sha256": "fbae949d583afb73348f522c87380ef90d30c2ecde0d9c448ab29564322799f5"
+    },
+    {
+      "source": "tests/integration/fortunes_test.go",
+      "sha256": "dcf591d52248e2aeb4b450917c6e8027605cef879061df9da686e0329adf8ab0"
+    },
+    {
+      "source": "tests/integration/friend_events_test.go",
+      "sha256": "2f74fa879648948a81c0bb73f274ed714f3ce7d4e3161069c3db79253b356ba3"
+    },
+    {
+      "source": "tests/integration/friend_events_wait_test.go",
+      "sha256": "a21ce7e563be740cd781dc39eb95e6abe3fef95e1912ec974fc63a88ccac22ba"
+    },
+    {
+      "source": "tests/integration/friends_overview_test.go",
+      "sha256": "c635c4fba59fa4ff201a38cd19e65f3104fd2f3d4021d7fb7120172a8d0749b0"
+    },
+    {
+      "source": "tests/integration/http_fixture_test.go",
+      "sha256": "57ca93eb975963de5d2fec0b2d67483f9eb833ebe1728ced8045860bbcccbfa2"
+    },
+    {
+      "source": "tests/integration/identity_guard_review_test.go",
+      "sha256": "998270edce0471d5b48ac41a1d95ca82d669241cbcd3b3ccc36fc2a6abfb8987"
+    },
+    {
+      "source": "tests/integration/livestream_awards_test.go",
+      "sha256": "c8ecbf4c23a4290dab17a7d678770c1059699963b39f06c3d031e59e8c54ba7f"
+    },
+    {
+      "source": "tests/integration/livestream_chat_test.go",
+      "sha256": "ef2d4b6c88e3b8c3373da95cfa544ea21c3d1b4418ac9ed941dca8289bb3e87a"
+    },
+    {
+      "source": "tests/integration/livestream_outputs_test.go",
+      "sha256": "7814eeec7b530f4a0b4565fedc8d18539f73c0e2c65a5e4d10da247d28ed9470"
+    },
+    {
+      "source": "tests/integration/livestreams_test.go",
+      "sha256": "074c194bcb99e618b8631fc14303602de53c3f3eb0c28e27ae63321bc2609d37"
+    },
+    {
+      "source": "tests/integration/locations_test.go",
+      "sha256": "9dfe61bfc0c804e6223e1c57b12f7c5fe350a89faebe66e63a0380c9474988eb"
+    },
+    {
+      "source": "tests/integration/media_resumable_test.go",
+      "sha256": "f98712314ed6221f6b9b8f987a7d0c0305964139a815f2ec3ff18d7810747a3f"
+    },
+    {
+      "source": "tests/integration/media_test.go",
+      "sha256": "5a5ef3cc5019bbeb9706d3b8bd18ef68edf4df4e7f55bb0fb336569a7116139d"
+    },
+    {
+      "source": "tests/integration/media_usage_test.go",
+      "sha256": "ddfe3ae8459f196377814750ce46a09da5dd18f8a550b105b47ef8c8b57fc6df"
+    },
+    {
+      "source": "tests/integration/merchants_test.go",
+      "sha256": "e5cdfaa9fb60f3c40092a1dde3ef75ea361d78da7ed5a1f902e0a167c1466f3f"
+    },
+    {
+      "source": "tests/integration/messager_test.go",
+      "sha256": "f29c0f5083b552b092c29cbdb7d8311371786653942a58e5795fbeef28a7fb10"
+    },
+    {
+      "source": "tests/integration/namecards_test.go",
+      "sha256": "041674220bb86f722dbf7ed703a81faa8ca28834f9181cecaac1a4a94a0b05c3"
+    },
+    {
+      "source": "tests/integration/nodeinfo_test.go",
+      "sha256": "91c81e09d76cdd70a4ab1024e05ccaf43b201ab2280e67bd851608f724e6a27f"
+    },
+    {
+      "source": "tests/integration/notabledays_test.go",
+      "sha256": "7394c5b0b257025284c55e3015fee718d9f97e911ff5fb3f9bf268398023952a"
+    },
+    {
+      "source": "tests/integration/notifications_test.go",
+      "sha256": "a5e7e33cfbe9c1ec92a9d62ea22c4495e72d4ef9813c573fba86927a8adf5848"
+    },
+    {
+      "source": "tests/integration/oauth_review_test.go",
+      "sha256": "0338287259b69e54a61a87add68c7f1f668eada61c491d94edd04fb186f469a4"
+    },
+    {
+      "source": "tests/integration/oauth_test.go",
+      "sha256": "ff182348051337ca2fc06ce78961bc5612fadecbd346bee11bf571889a6132e9"
+    },
+    {
+      "source": "tests/integration/passkit_program_review_test.go",
+      "sha256": "cac2aa8f72e38df4ff1bdfcc189aebb4e2b4ad89f22fa332f6d0122d8009832c"
+    },
+    {
+      "source": "tests/integration/passkit_provisioning_review_test.go",
+      "sha256": "638ba838398b9f8b65f04569c94cc10c9765c12759b7eaf6208f889f676afbeb"
+    },
+    {
+      "source": "tests/integration/passkit_test.go",
+      "sha256": "80a81be9fb09dbd44ae0ba5888871b2e2091c52364688af3533155a92e398b24"
+    },
+    {
+      "source": "tests/integration/payment_pin_test.go",
+      "sha256": "491e2caeefa84b36827908569775493960295f003ca9cb6c9aedcb3d90aef13f"
+    },
+    {
+      "source": "tests/integration/post_admin_queries_test.go",
+      "sha256": "7b2af968a3a4c9b2c3201469d23ed1ebc688f0bf7010c5960be3ebee51dfb79a"
+    },
+    {
+      "source": "tests/integration/post_automod_editor_projection_test.go",
+      "sha256": "7d09f1417a066a1bab6f11d8a556a606fc1585d4a1d3263e5968fc8cd60736d6"
+    },
+    {
+      "source": "tests/integration/post_automod_review_test.go",
+      "sha256": "3723968b6f7003219c8b2c3d490ee00b793aaf5afe8a2af4a8852286a9c36343"
+    },
+    {
+      "source": "tests/integration/post_automod_scheduling_test.go",
+      "sha256": "a286984750f903824c12e17da2ab9517046d032e9fbe4cdb14f306114c5ba2b3"
+    },
+    {
+      "source": "tests/integration/post_automod_test.go",
+      "sha256": "f40ca8cb43a1db4230bead8b5b3e09d4bcaa8958bb9b7eca7c6e7f9854d331fc"
+    },
+    {
+      "source": "tests/integration/post_awards_test.go",
+      "sha256": "ad8bce5bc4eceaf484f69278f1945413a14f2f593bba69d2e33545cb216bb7eb"
+    },
+    {
+      "source": "tests/integration/post_composition_review_test.go",
+      "sha256": "8260a6cd6ba8d54c72339948d2643325e5338c42e116ed0c68eeac83e9647dc2"
+    },
+    {
+      "source": "tests/integration/post_composition_test.go",
+      "sha256": "507cb5ed17c8a2ed920c6cb399d6cfd3856707b75194f742ae8d23c0c48c9815"
+    },
+    {
+      "source": "tests/integration/post_interactions_test.go",
+      "sha256": "a1c044785c578cb8aaaee10c0baa6acc3e94da51e6caab96340e9ea51c35bf01"
+    },
+    {
+      "source": "tests/integration/post_media_test.go",
+      "sha256": "2eb6bd1c526a2f43f266658243dacdffb198e1bd3305092663cbe929cfec208b"
+    },
+    {
+      "source": "tests/integration/post_realms_test.go",
+      "sha256": "5a0bba21eb12b497bc0c592f09b98609c03c10c5878886759c815546d7e05a48"
+    },
+    {
+      "source": "tests/integration/post_scheduling_review_test.go",
+      "sha256": "48a00eca62d6a11eeb9a9cf413b45dbc85cf2f38935008dabd1d6f4200c5d7b7"
+    },
+    {
+      "source": "tests/integration/post_scheduling_test.go",
+      "sha256": "cf615733d82d83aaa1fa4cd985e7694c69b6c34628bc89ca6034000ba182e65f"
+    },
+    {
+      "source": "tests/integration/posts_test.go",
+      "sha256": "7fc37419dc0dc889df4503fd4ba1bc01f301837b8b8b55789bc0fb0db8ccc838"
+    },
+    {
+      "source": "tests/integration/presence_artwork_test.go",
+      "sha256": "c1897c8336005a592b6b5bb787bf1dafe50ccfa927286e01df876d6e03fd9a91"
+    },
+    {
+      "source": "tests/integration/presence_progression_test.go",
+      "sha256": "eff0b535b2b3086f8d1967009cd3a6baaccf689bc57831c2f1af283db23b262a"
+    },
+    {
+      "source": "tests/integration/product_stock_test.go",
+      "sha256": "7cace0960a87873d67b1b3018aad09ed6d5500fb04d1421a110cb0c4213a3472"
+    },
+    {
+      "source": "tests/integration/profile_media_test.go",
+      "sha256": "f7b36f218ba1a82dff95acb77995779887a158e94a8af1e165ef7ce3a4e37c6c"
+    },
+    {
+      "source": "tests/integration/publisher_ratings_test.go",
+      "sha256": "2c2724ba7ed0dffc4243296de83abdfaf8236812672cab63ca9601814f1ad7e3"
+    },
+    {
+      "source": "tests/integration/publisher_route_fixture_test.go",
+      "sha256": "d48b89811c2faf92c76899d9ff6478c64bd8bd07d51bae91ab04965178af130e"
+    },
+    {
+      "source": "tests/integration/publisher_sponsorship_test.go",
+      "sha256": "71e8c535c1d17878266aa0b32e484f0fe0b3c9ac6b54909110f0ca234ba588f5"
+    },
+    {
+      "source": "tests/integration/publisher_subscription_state_test.go",
+      "sha256": "9db38c8793a5c8c1f6c9936ee0eca7d74a413c301effcf1ac68324196c341516"
+    },
+    {
+      "source": "tests/integration/publishing_controls_test.go",
+      "sha256": "ed277e736ba0b76803ea80129c18d109974c338ea9d9cf895bf39f4ba050e3d3"
+    },
+    {
+      "source": "tests/integration/reader_test.go",
+      "sha256": "c39637851ad4b0732be2fb2f24bbe294fdd9571ef7055bddabd1ddf813040a42"
+    },
+    {
+      "source": "tests/integration/realm_boosts_host_test.go",
+      "sha256": "58be0f20bb403963c4fb1554cb875b7a975d2115c3b7a95927b6e6bb1d161813"
+    },
+    {
+      "source": "tests/integration/realm_boosts_test.go",
+      "sha256": "f9fee212ae95e6abd7cbcf309f6f83ede883e16f159441d838b61c471b312e97"
+    },
+    {
+      "source": "tests/integration/realm_members_test.go",
+      "sha256": "68e04b1786b7b4c105bdb2a9841a7a275c50e644c1a83fe7f3e4848ffbca3e1c"
+    },
+    {
+      "source": "tests/integration/realm_permissions_membership_review_test.go",
+      "sha256": "c1e7b2e134f5a8e98ac108d9056d7bcd6117bacd87f9d29587ceaff96ca84930"
+    },
+    {
+      "source": "tests/integration/realm_permissions_mls_review_test.go",
+      "sha256": "e6bd243bd98aada608c8ae7c7198cc6e96b0fdaaf2730fe13d8700f90bf2315a"
+    },
+    {
+      "source": "tests/integration/realm_permissions_test.go",
+      "sha256": "38b7546fec99613970573ea710200b4484b6e70ddce145638baa9cbcab3a3f18"
+    },
+    {
+      "source": "tests/integration/realm_profile_restart_test.go",
+      "sha256": "aa9552e0920cb3dd1c828cad80d0825a4aec57b520937038837285f193bd878f"
+    },
+    {
+      "source": "tests/integration/realm_profile_routes_test.go",
+      "sha256": "e7ca60d62074ebe7cab42e3a15093dca07bdf8c74e9e74de06ad2071aa73984f"
+    },
+    {
+      "source": "tests/integration/realm_publishing_test.go",
+      "sha256": "3796c8a0bace44780f579db1c9b17e078e3fa964e2af91c11dd2639397c6047c"
+    },
+    {
+      "source": "tests/integration/recurring_expiry_test.go",
+      "sha256": "f44b0d3ea1e703bfa02cc325c81c7c2c410dbbdd6c24e80800234d27c27ab51d"
+    },
+    {
+      "source": "tests/integration/recurring_products_test.go",
+      "sha256": "26952579ca074526758a3bd875572ad2d39d1eabf1958ea51903c24c1197a56c"
+    },
+    {
+      "source": "tests/integration/refresh_continuity_test.go",
+      "sha256": "8a9e7afa5b59d0224eae9dc4d97fd7c411ff5f0e290be0346fd5f57a93ccc51d"
+    },
+    {
+      "source": "tests/integration/relationship_expiry_test.go",
+      "sha256": "a78b828a113de7dbb75ac8e81aeb0d3fc5f1c9f431841f3de644951ed9561bf1"
+    },
+    {
+      "source": "tests/integration/restart_authority_snapshot_test.go",
+      "sha256": "f50f6c6dd4da91c2fcde6e04d01fdf56e4fc6f8bcff07e28ef5032618e33fe13"
+    },
+    {
+      "source": "tests/integration/restart_fixture_test.go",
+      "sha256": "487ca66fd4db89c23ac90bc4110845a09e5e2986796a9b8b4a5c989ca6f4c5cc"
+    },
+    {
+      "source": "tests/integration/rewind_test.go",
+      "sha256": "113cbe9bc4e0576a99858000a71e47e1cdb39ba711fcba90ed0c62eba96c6bea"
+    },
+    {
+      "source": "tests/integration/room_media_test.go",
+      "sha256": "f2e674d2222d784d311de9688c153d948713e86ec865fc68834d9203e8772521"
+    },
+    {
+      "source": "tests/integration/shadowban_fixture_test.go",
+      "sha256": "1bafc3f772ade70bd90ad78efa3244a29e0065a40ccf3a9716e4c3252ab751e2"
+    },
+    {
+      "source": "tests/integration/shipping_review_test.go",
+      "sha256": "b5225fcc64ba3700da2db6834e1a272e6d67292f5c395b9fa89625ebe8630418"
+    },
+    {
+      "source": "tests/integration/shipping_test.go",
+      "sha256": "123ae60b2ab8d7f08caf793c5ddce49c2948ac10ac7863780ddd63d98fd5f7ff"
+    },
+    {
+      "source": "tests/integration/signin_test.go",
+      "sha256": "e1e6a45642e4587fdc85ff23a8f3c7fc80c8e976a0461cae4db1a13d17306733"
+    },
+    {
+      "source": "tests/integration/social_test.go",
+      "sha256": "300829edb43d8c76f0382727a39ce95bd4d59648953d05efe3a843a3f159de65"
+    },
+    {
+      "source": "tests/integration/subscription_activation_test.go",
+      "sha256": "9567efe86d954c065e5af6451cc4dff53b030015653b6049efc8e109a4cc6751"
+    },
+    {
+      "source": "tests/integration/survey_subscriptions_test.go",
+      "sha256": "4295eb79f4738b1f204ea038aadf46ef9a1362e5fd6cd96bfd88a6c491d1ccab"
+    },
+    {
+      "source": "tests/integration/surveys_test.go",
+      "sha256": "12dcd5d5fa30a4ee856d80a60480f5e7b5db3ec638fcb2ed33a7eee92e493d6f"
+    },
+    {
+      "source": "tests/integration/taxonomy_test.go",
+      "sha256": "da72ed3cb38decccb85b8b304bfb58f249c867abf583f0af953e6cdb24de352d"
+    },
+    {
+      "source": "tests/integration/ticket_media_test.go",
+      "sha256": "e00adca599cc6fb5ae41b9d841a8a16f38846e38b9c77868a435b90206d8dedc"
+    },
+    {
+      "source": "tests/integration/tickets_test.go",
+      "sha256": "e66fd36cff73ca10afc63e3ac6b1a0bec0851f90804b8b44c131b591e2ccf1c8"
+    },
+    {
+      "source": "tests/integration/timeline_locks_test.go",
+      "sha256": "c279adcbb0cec29e5e1e724309bfe9082eec1eff319b8b81e96468e922f5cee0"
+    },
+    {
+      "source": "tests/integration/timeline_test.go",
+      "sha256": "d9eae23f58d4ede194dbd7a2c28c79f20d47ad2d86faec0de7357bfbd09bdbed"
+    },
+    {
+      "source": "tests/integration/verification_adapters_test.go",
+      "sha256": "22ff163ab9b9754e3d78dc77545b67d60f211d46f7f156d28ec5e1e22d4b019a"
+    },
+    {
+      "source": "tests/integration/wallet_exchange_test.go",
+      "sha256": "620e3f5e92cce1fa3c3ac6d1b57a4116bfc27d87e2a91fe2efd3da2f9e199c48"
+    },
+    {
+      "source": "tests/integration/wallet_funds_test.go",
+      "sha256": "0a9dd4a21e4d98465a221c4850b3924a12fe8486b2d7a5181a2f82d1b4001bc4"
+    },
+    {
+      "source": "tests/integration/wallet_managed_index_test.go",
+      "sha256": "b3b10fa3594a915cc5d294094c8bcd30adf4c8d2a00a989f71f2a8f6cea05a7c"
+    },
+    {
+      "source": "tests/integration/wallet_reporting_test.go",
+      "sha256": "e27b641d7801ba9d50056a4956f2cb27980fb995da9884de2f9bb6b1f171e177"
+    },
+    {
+      "source": "tests/integration/wallet_test.go",
+      "sha256": "7d89c29b3b64d119a2cbdfcb551466ce26519e32081ec68cfbdfb4022b6e89d2"
+    },
+    {
+      "source": "tests/integration/wallet_transfer_requests_test.go",
+      "sha256": "5c298cbe3a72b3af8d7489d4f0cc20b02d52588bd40115b19888f9b102b6ecd1"
+    },
+    {
+      "source": "tests/integration/watchers_test.go",
+      "sha256": "c46bd266ec50d07d56891e8546d389379a14b016ebb7a0beb5c51e0e077e6819"
+    },
+    {
+      "source": "tests/integration/watchpg_test.go",
+      "sha256": "be466d5ef4cfe6608c095c7fc72b49583e468018d4314a63c14165d9026e607f"
+    }
+  ],
+  "current_rebase_review": {
+    "checkpoint": "c8f2fe79c6f8822534c24ad3926fcfaad4ded917",
+    "reviewed_added_cases": [
+      "TestPGFederationQuoteConcurrentReplayAndRollback",
+      "TestPGFederationQuoteCurrentPrivacyOriginAndOwnership",
+      "TestPGFederationQuoteFreshKeyAndBlockRevocation",
+      "TestPGFederationQuoteRestartPersistence",
+      "TestPGFederationQuoteReviewWaitsAndAcceptanceIsolation",
+      "TestPGFederationQuoteSignedLifecycleAndSingleObject",
+      "TestPGPasskitCanonicalProfileMediaAndConcurrentIssuance",
+      "TestPGPasskitCompositionRegistrationIsolationAndUpdates",
+      "TestPGPasskitInternalProgramEligibility",
+      "TestPGPasskitProvisioningAuthorizationAndWaitRevocation",
+      "TestPGPasskitRestartPersistence",
+      "TestPGPasskitSigningRollbackAndCurrentIdentity",
+      "TestPGPasskitWaitRechecksAccountAndCanonicalMedia",
+      "TestPGRelationshipExpiryActorIsolationAndAtomicEvents",
+      "TestPGRelationshipExpiryCurrentVisibilityAcrossDomains",
+      "TestPGRelationshipExpiryDoesNotExpandFederationAudience",
+      "TestPGRelationshipExpiryImmediateDegradeAndCleanup",
+      "TestPGRelationshipExpiryRequestsAndLegacyNull",
+      "TestPGRelationshipExpiryRestartPersistence",
+      "TestPGRelationshipExpiryWaitObservesRenewalAndRequestDeadline"
+    ],
+    "changed_fixture_review": "MLS encrypted fixture emits only encryption_meta and negative-control rejects plaintext field. Recreated realm-member fixture preserves required timestamps; opposite-realm lock fixture explicitly admits both actors while retaining lock-order/rollback assertions. PassKit/quote/expiry fixture helpers seed owned random accounts/IDs and retain current authority; no new cross-test producer/consumer dependency. Synthetic delivery/expiry maintenance queries preserve scoped restart snapshots. New restart marker ownership recorded individually.",
+    "runtime_status": "Actual two-cluster coverage and ordering remain pending; no speedup or full pass claimed."
+  },
+  "quote_fixture_review": "Only enclosing Create/Update public audience corrected to match existing nested public Note. Added actual-PG private-envelope/public-Note denial before valid creation, and offline wire-roundtrip control. Restart marker/target state unchanged; no case assignment or required counts changed.",
+  "recovery_privacy_review": "Independent four-file review930b84f verifies fresh sorted pair locks/current proof, no peer profile or nested cached fields in denied recovery, both GET and direct-state responses, corrupt owner/extra member/deleted requester bounds. Existing chat-relations restart uses explicit synthetic compatibility constructor. MLS revocation fixture uses source-supported canonical social block after confirming direct room; social finite-block fixture asserts durable deadline and expiry coverage remains separate. Case and marker review completed; actual581/77 pending.",
+  "room_affiliation_rebase_review": "All20 added cases reviewed. Room-media cases use canonical ownership/audiences, current permission waits, rollback and same saved object root; pre-confirmation DM block fixture corrected. Affiliation cases use recipient/session-bound root proof or separate canonical contact challenge, once-only captured policy and semantic restart JSON; administrative issuance now requires explicit affiliations.invites.issue, with tracking-only/delegated denials and explicit-grant positive control. Activation allowlist rejects that key. Existing privacy correction and all prior source/schema/Go bodies retained. No new cross-group dependency; exact marker audits included. Actual601/79 pending.",
+  "social_rollback_fixture_review": "Successful finite blocking resets via authored DELETE relationship and POST friend request before the independent audit rollback test. Preconditions require no relation in either direction and exactly one pending request; failure must be PostgreSQL23514 for social_test_rollback. Original rollback and post-wait permission assertions retained. No case/group count change.",
+  "shipping_schedule_rebase_review": "24 added cases reviewed: source-shaped address APIs, current contact/scoped app/merchant authority after waits, immutable paid destination and amounts, ordinary quote invariance, exact ledger/proof rollback, current direct/realm publisher owner observations without extra locks. Schedule cases retain current proof/intent, current post/publisher/realm/related/media gates after all waits and positive explicit-publication controls; short-lived real access expiry avoids mixed clocks. Synthetic-only isolated fixture states and marker ownership recorded. Source and schema guard registration complete. Actual625/81 pending.",
+  "room_media_quota_review": "601 failure occurred before room-media assertions: realm creation lacked required canonical quota. Add one current explicit quota grant only; preserve runtime enforcement and all existing assertions. Other queued realm fixtures already seed canonical quota.",
+  "thread_owner_review": "Seventeen self-contained synthetic cases reviewed; unchanged schemas installed by existing runner; composed backend uses existing fixture adapters. One exact saved-state restart marker, same group before/after, no external provider or copied state.",
+  "coupon_automod_review": "Thirty-two self-contained cases, two genuine restart markers, existing host fixtures and new coupon schema installed. Automod restart uses validated phase and saved exact ID/bytes; fresh repository coupon case explicitly renamed to avoid restart claim. Preserves all existing cases and zero-skip/disjoint group invariants.",
+  "canonical_fixture_correction": "Reviewed four fixture sources: invitation accepted using canonical action with joined assertion; moderator boost prerequisite and exact state assertion; paired canonical shadowban reason/time helpers; foreign/nonexistent contact denials equal with no disclosure or mutation. Runtime gates unchanged.",
+  "owner_sql_fixture_review": "Explicit UUID/text casts on three synthetic owner ancestry INSERTs; exact prior case set retained. Anonymous reaction projection fix covered by existing thread before/restart plus focused local nil-transaction negative control.",
+  "anonymous_thread_review": "Existing thread case expanded with anonymous/private denial, malformed nonempty identity denial, equal aggregate reactions and distinct personal reactions. Existing saved restart target unchanged; updated exact fixture/function hashes reviewed.",
+  "anonymous_reaction_symbol_review": "New boundary assertion uses canonical thumb_up reaction symbol; exact changed fixture hash reviewed.",
+  "thread_implemented_boundary_review": "Previously unsupported thread input now returns404 for unknown canonical root, with zero-message assertion. Encryption/fund/alternate-identity unsupported boundaries retained. Current exact unchanged declaration set.",
+  "boost_bot_privacy_review": "Reviewed25 added cases and all modified fixture hashes. Boost10/bot12/editorprivacy3, two new exact restart markers. Explicit canonical schema ordering and composed HTTP/PIN/lease/privacy paths retained. Original developer fixture merely retains its existing config for saved public verification state, no identity behavior change.",
+  "blog_composed_review": "Nineteen new cases:18 independently reviewed blog/admin declarations plus composed server-metadata-before-automod/privacy/rankedLatest/scheduled test. Existing source fixtures unchanged except new files. New blog schema atomic after canonical policy/account/social/post dependencies, original saved restart paired exactly.",
+  "bot_issuer_fixture_review": "Scoped bot sessions reuse retained original issuer signing/trust configuration. Same identities, exact scopes and signature verification preserved; only fixture issuer consistency changed.",
+  "discovery_review": "Eleven reviewed self-contained cases with pinned synthetic transports, durable admission/deadline/ABA/config fencing, composed host and exact saved restart. Atomic discovery migration follows identity/name reservations; all source/composed/restart hashes reviewed.",
+  "calendar_media_review": "Thirteen independent cases and two saved restart pairs, current complete read-set/proof/owner/audience rechecks after file/policy/storage waits, denial closes reader and zeroes metadata. Calendar schema follows media/notableday; new source and composed hashes reviewed.",
+  "realm_member_review": {
+    "before": 14,
+    "after": 1,
+    "independent_correction": "b983da25aa0435e29a98d76808ae0a9071f681c38f093078a1bd44d2f7380690",
+    "coordinator_checks": "Combined original experience route array and disabled fallback; original-token elapsed restart; exact registered case/dependency/marker coverage. Actual PG pending."
+  },
+  "public_admission_review": {
+    "before": 12,
+    "after": 1,
+    "correction_sha256": "b6cacf4968c39f0d01149e52cbf6a1ccedfd09ecbb1ad77112f3d97f97c6f8f1",
+    "scope": "Configured synthetic admission; disabled static fallback preserves durable reservations, retired fingerprints, special platform address deny, original policy/session history; outbound POST lease redesign remains separate."
+  },
+  "post_composer_review": {
+    "before": 9,
+    "after": 1,
+    "correction_sha256": "929da77dcce5a65305b6b46b24f5e48acc7e32ca7b6cc2fc341009ac45a32876",
+    "coordinator_followup": "Bind original restart proof to canonical post read guard; preserve final target/editor checks, reviewed private stream and meet boundaries."
+  },
+  "discovery_calendar_fixture_correction": {
+    "runtime_changes": false,
+    "utc_day": "Canonical UTC checkin day, unchanged NewYork local projection assertions",
+    "retry": "Third attempt after121seconds preserves two-minute backoff and original one-hour deadline; separate ancestor-deadline denial unchanged",
+    "job_wait": "Synthetic no-FK generation increment verifies final freshness only; canonical grant ABA remains separate. Verified ReplacePolicy\u2192WithinAccount locks account before grants; original fixture inverted job\u2192grant\u2192factor-trigger-account against completion account\u2192publisher\u2192job."
+  },
+  "chat_organization_review": {
+    "before": 9,
+    "after": 1,
+    "correction_sha256": "9b5342c69151208c95ffa89458f4a9dbe4c8c07ec72b99ca7e2e5214681b33bf",
+    "review": "Fresh database-clock paid entitlement after all final lock waits, canonical realm/privacy/owner/scope/pin/rollback tests and original expiry-bound restart. Original nine top-level names retained."
+  },
+  "federation_delivery_review": {
+    "before": 12,
+    "after": 1,
+    "correction_sha256": "c8248e141db867a11f247c3c61a35b47e752460cc6a47013462a4282cd8c9300",
+    "scope": "Committed/fenced observation and acknowledgement, noSQLlocks acrossSend, table-before-key-row order. Small-pool transactional resolver follow-up remains pending, not silently accepted."
+  },
+  "publisher_subscription_review": {
+    "before": 10,
+    "after": 1,
+    "correction_sha256": "66d21d6375ff6053a3d4898ce5de2ff9f00e45b399492dcd6224c514e516f5bf",
+    "scope": "Canonical current individual/realm owner eligibility including effective punishments; bulk andlive projections/receipts, original HTTP proof restart."
+  },
+  "public_admission_wait_fixture_review": {
+    "runtime_changes": false,
+    "scope": "Shared synthetic no-FK history-only probe afterjob/audit waits; rejects held canonical account/grant/membership write locks and asserts canonical factor policy version unchanged. Canonical account-first grant ABA remains separate.",
+    "source": "tests/integration/federation_history_fixture_test.go",
+    "audit": "All federation hold.Exec grant/session sites classified; only later-order job/audit probes substituted. Existing account-held grant writers and account-held session observation are preserved after checking their trigger lock paths."
+  },
+  "federation_pool_review": {
+    "before_added": 3,
+    "restart_added": 0,
+    "patch_sha256": "956beff9bf5977d40c15ec5d6e4b9d9ee0d89dc3afaf4767958f4052d5644394",
+    "review": "Coordinator independently inspected same-queryer delegation and all changed transactional callsites; policy/collision SQL and lock order preserved, no pooledconnection inside owned remote lookup undertx. Mutation negative proves original reentry fails offline. ActualPG single/saturated pool remains pending."
+  },
+  "developer_management_review": {
+    "before": 5,
+    "after": 1,
+    "correction_sha256": "de0722dddd05c662929d860aac5cc69ed9124dbdaddefbc22e36ab363027cb4c",
+    "scope": "Explicit atomic varchar1024 custom identifier migration/readiness; source publicstats/editorcustomorder wire, exactmills/capturedbeneficiary/idempotency/rollback/conservation/currentauthority tests; original appcredential256limit retained."
+  },
+  "realm_profile_review": {
+    "before": 8,
+    "after": 1,
+    "correction_sha256": "10930f54fa669765f315bd83f0b600a69eb8316270e4204c2e6331e9d9e489b2",
+    "scope": "Canonical self profile/perk and realm-only logs; explicitly configured owned quota, stable missingpolicy503. Both begun/ended paid-cycle eligibility rechecked after all waits with DB/currentpolicy clock; canonical normal-member joinfixture."
+  },
+  "activity_review": {
+    "before": 8,
+    "after": 1,
+    "correction_sha256": "88752c269646cfedf5fb6f10302244f48b523f32db11be997a013aff0cbe22bf",
+    "scope": "Omittedrenewal visibility/type preserved onallaliases, durable authorization generation with oldtokenrejection and current revocation/scope, final artwork/lease fences, owner-only catalogprivacy."
+  },
+  "quote_independent_security_review": {
+    "runtime": "Quote jobs capture independent durable block/security generation; unrelated FollowUndo no longercancels validconsent. Otherpeer lifecycle jobs retainoriginalgeneration. LegacyNULL failclosed, currentquote/account/session/key/owner checks retained.",
+    "reviewed_correction_sha256": "2f0635a8287fc31a39544b99df3c4f19eabd680c6e49dc6a576a97dde5099249",
+    "fixtures": "Explicitfresh enablement afterpolicysetup; valid originalancestor deadline; mandatoryMessagerPolicy; canonicalpairedshadowban helper. No selector/countchanges."
+  },
+  "survey_subscription_review": {
+    "before": 10,
+    "after": 1,
+    "correction_sha256": "a899189cf256a517cb058b88a47f65728c4546eb8b932d47c109d49187c659c2",
+    "scope": "Current recipient and all source-owner eligibility, attached realm privacy, subscription incarnation and namespace fences; anonymous nested payload allowlist. Composite subscription FK and separate-pool answer/dispatch/unsubscribe/delete races preserve account-before-domain lock order."
+  },
+  "cleanup_receipt_review": {
+    "runtime": "Default-off explicitly activated permanent transport incarnation. Immutable historical dispatch receipt authorizes only one bounded content-free Tombstone; current original authority, keys, egress and policy remain required. Receipt INSERT final wait rechecked with rollback savepoint; cleanup row deletion cannot reset attempts.",
+    "cases": 6,
+    "fixture_scope": "Separate synthetic explicit activation; never-dispatched post emits no cleanup. Realm move test preserves both already-sent content-free withdrawal and never-sent denial. Saved lease uses separate original disposable database, no changes here.",
+    "correction_sha256": "1156dab592b8eef6327e4042d4be011fc43f349d542bef1ba8dee7ce81ab1816"
+  },
+  "composer_database_isolation_review": {
+    "reviewed_base_commit": "5ac8adc3a810a565c4f004073e4d20b37ce27660",
+    "test": "TestPGPostCompositionSavedRestartPersistence",
+    "group_before_and_after": "group-a",
+    "reason": "Global ProcessFundsDue tests use a synthetic seven-day future clock and can expire this unrelated one-day restart fund in the shared database.",
+    "schema_sha256": "f30e89ada74fb4a7f8944574022529afd309b28508cd567167c6835ebb6d282d",
+    "ordered_schema_files": [
+      "internal/authoritypg/schema.sql",
+      "internal/authoritypg/assurance_schema.sql",
+      "internal/authoritypg/continuity_schema.sql",
+      "internal/authoritypg/activation_schema.sql",
+      "internal/readerpg/schema.sql",
+      "internal/accountpg/schema.sql",
+      "internal/accountpg/name_schema.sql",
+      "internal/signinpg/schema.sql",
+      "internal/signinpg/address_schema.sql",
+      "internal/signinpg/payment_pin_schema.sql",
+      "internal/signinpg/factor_setup_schema.sql",
+      "internal/accountsettingspg/schema.sql",
+      "internal/ticketpg/schema.sql",
+      "internal/affiliationpg/schema.sql",
+      "internal/notificationpg/schema.sql",
+      "internal/notificationpg/friend_schema.sql",
+      "internal/apppg/schema.sql",
+      "internal/oauthpg/schema.sql",
+      "internal/mediapg/schema.sql",
+      "internal/mediapg/usage_schema.sql",
+      "internal/mediapg/resumable_schema.sql",
+      "internal/mediapg/artwork_schema.sql",
+      "internal/botpg/schema.sql",
+      "internal/walletpg/schema.sql",
+      "internal/walletpg/pin_schema.sql",
+      "internal/walletpg/transfer_requests_schema.sql",
+      "internal/walletpg/funds_schema.sql",
+      "internal/walletpg/exchange_schema.sql",
+      "internal/commercepg/schema.sql",
+      "internal/commercepg/custom_order_identifier.sql",
+      "internal/commercepg/coupon_schema.sql",
+      "internal/commercepg/shipping_schema.sql",
+      "internal/commercepg/order_index_scope.sql",
+      "internal/commercepg/maintenance_schema.sql",
+      "internal/translationpg/schema.sql",
+      "internal/postpg/schema.sql",
+      "internal/federationpg/schema.sql",
+      "internal/federationpg/identity_schema.sql",
+      "internal/federationpg/discovery_schema.sql",
+      "internal/federationpg/public_admission_schema.sql",
+      "internal/federationpg/quote_schema.sql",
+      "internal/federationpg/delivery_schema.sql",
+      "internal/application/schema.sql",
+      "internal/socialpg/schema.sql",
+      "internal/realmboostpg/schema.sql",
+      "internal/socialpg/permissions_schema.sql",
+      "internal/realmmemberpg/schema.sql",
+      "internal/socialpg/expiry_schema.sql",
+      "internal/postpg/realm_schema.sql",
+      "internal/merchantpg/schema.sql",
+      "internal/locationpg/schema.sql",
+      "internal/interactionpg/schema.sql",
+      "internal/interactionpg/collection_publication_schema.sql",
+      "internal/timelinepg/schema.sql",
+      "internal/timelinepg/subscription_state_schema.sql",
+      "internal/postmediapg/schema.sql",
+      "internal/profilemediapg/schema.sql",
+      "internal/passkitpg/schema.sql",
+      "internal/ticketmediapg/schema.sql",
+      "internal/surveypg/schema.sql",
+      "internal/stickerpg/schema.sql",
+      "tests/integration/schema.sql",
+      "internal/watchpg/testdata/watchers-projection.sql",
+      "internal/boardpg/testdata/schema.sql",
+      "internal/developpg/testdata/schema.sql",
+      "internal/developpg/testdata/packages.sql",
+      "internal/developpg/testdata/bot_commands.sql",
+      "internal/nodeinfopg/testdata/schema.sql",
+      "internal/messagerpg/testdata/schema.sql",
+      "internal/chatpg/schema.sql",
+      "internal/botpg/execution_schema.sql",
+      "internal/chatmediapg/schema.sql",
+      "internal/roommediapg/schema.sql",
+      "internal/chatpg/relations_schema.sql",
+      "internal/chatpg/mls_schema.sql",
+      "internal/presencepg/schema.sql",
+      "internal/progressionpg/schema.sql",
+      "internal/accounthistorypg/schema.sql",
+      "internal/notabledaypg/schema.sql",
+      "internal/calendarmediapg/schema.sql",
+      "internal/fortunepg/schema.sql",
+      "internal/callpg/schema.sql",
+      "internal/taxonomypg/testdata/schema.sql",
+      "internal/namecardpg/schema.sql",
+      "internal/rewindpg/schema.sql",
+      "internal/moderationpg/schema.sql",
+      "internal/postpg/scheduling_schema.sql",
+      "internal/blogpg/schema.sql",
+      "internal/livestreampg/schema.sql",
+      "internal/adminpg/schema.sql",
+      "internal/livestreampg/chat_schema.sql",
+      "internal/livestreampg/outputs_schema.sql",
+      "internal/livestreampg/awards_schema.sql",
+      "internal/domaintrustpg/schema.sql",
+      "internal/sponsorshippg/schema.sql",
+      "internal/publisherratingpg/schema.sql",
+      "internal/postawardpg/schema.sql",
+      "internal/postembedpg/schema.sql",
+      "internal/chatpg/organization_schema.sql",
+      "internal/activitypg/schema.sql",
+      "internal/friendeventpg/schema.sql"
+    ],
+    "source_baselines": [
+      {
+        "table": "public.owned_reader_cache_state",
+        "schema_source": "internal/readerpg/schema.sql",
+        "rows": 1,
+        "copied_to_template": false
+      },
+      {
+        "table": "public.owned_automod_state",
+        "schema_source": "internal/adminpg/schema.sql",
+        "rows": 1,
+        "copied_to_template": false
+      },
+      {
+        "table": "public.owned_domain_trust_state",
+        "schema_source": "internal/domaintrustpg/schema.sql",
+        "rows": 1,
+        "copied_to_template": false
+      },
+      {
+        "table": "public.owned_progression_definitions",
+        "schema_source": "internal/progressionpg/schema.sql",
+        "rows": 58,
+        "copied_to_template": false
+      }
+    ],
+    "before_clone_baseline_rows": [],
+    "dependency_sources": [
+      {
+        "source": "scripts/fixture_template.py",
+        "sha256": "e25759df126525c6d2b216d043ae9857838e59d163bc701b0d42ee67c2f47816"
+      },
+      {
+        "source": "scripts/test-fixture-isolation.py",
+        "sha256": "75c38b182b1baee90ca90de4999e6823a55a97c9d20f63ac8d50eac2ddf113f9"
+      },
+      {
+        "source": "scripts/integration-postgres.sh",
+        "sha256": "b06c57bd35c051a2bef3660d66d74ddc7802619b2995312b389820b3c9120a37"
+      },
+      {
+        "source": ".github/workflows/postgres-validation.yml",
+        "sha256": "387a4fca36b4d961b4bbb31b0e536065dbf543463fae356bb2648de2e859e0d2"
+      },
+      {
+        "source": "scripts/verify.sh",
+        "sha256": "1ea18a571e44061eca6172234a119a7a9434fcadaa885d34432c67c1c6c5b595"
+      },
+      {
+        "source": "tests/integration/disposable_database_test.go",
+        "sha256": "9fafe9a24ce7b7d915af1eba884d6915ba1cf4931dbbe70fdf7d2113a0501fbf"
+      },
+      {
+        "source": "tests/integration/disposable_database_offline_test.go",
+        "sha256": "95ef062ea516dc8f883289dc5d9a5f63637b3c57ce296854064242b31f49c40b"
+      },
+      {
+        "source": "tests/integration/media_test.go",
+        "sha256": "5a5ef3cc5019bbeb9706d3b8bd18ef68edf4df4e7f55bb0fb336569a7116139d"
+      },
+      {
+        "source": "tests/integration/post_media_test.go",
+        "sha256": "2eb6bd1c526a2f43f266658243dacdffb198e1bd3305092663cbe929cfec208b"
+      },
+      {
+        "source": "tests/integration/post_composition_test.go",
+        "sha256": "507cb5ed17c8a2ed920c6cb399d6cfd3856707b75194f742ae8d23c0c48c9815"
+      },
+      {
+        "source": "tests/integration/restart_fixture_test.go",
+        "sha256": "487ca66fd4db89c23ac90bc4110845a09e5e2986796a9b8b4a5c989ca6f4c5cc"
+      },
+      {
+        "source": "tests/integration/restart_authority_snapshot_test.go",
+        "sha256": "f50f6c6dd4da91c2fcde6e04d01fdf56e4fc6f8bcff07e28ef5032618e33fe13"
+      },
+      {
+        "source": "docs/composer-restart-isolation.md",
+        "sha256": "e3a97887bda049a022de876b24dfef4029745275f642a3a546c8540e9bf744e2"
+      }
+    ],
+    "runtime_case_counts": {
+      "before": 940,
+      "after": 110
+    },
+    "actual_cluster_validation": "Pending exact-candidate authorized private CI; offline checks are not database evidence."
+  }
+}

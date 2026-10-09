@@ -1,0 +1,29 @@
+{
+  "scope": "Tracked publication snapshot only; no external credential stores inspected",
+  "source_configurations_omitted": [
+    "inventory/identity-client-evidence/blade/configs/config.toml",
+    "inventory/identity-client-evidence/blade/configs/docker.toml",
+    "inventory/identity-client-evidence/blade/configs/relay.toml",
+    "inventory/identity-client-evidence/blade/docker-compose.relay.yml",
+    "inventory/identity-client-evidence/blade/docker-compose.yml"
+  ],
+  "credential_bearing_urls_in_omitted_files": 2,
+  "same_material_found_in_completed_upload_mapping": false,
+  "remaining_url_userinfo_findings": "Four intentionally inert negative-test strings in command unit tests using localhost and the literal synthetic marker sensitive-secret; no password values or live connections",
+  "pattern_checks": [
+    "private-key PEM material",
+    "GitHub/Slack token forms",
+    "AWS access key forms",
+    "credential-bearing URI authority",
+    "literal secret assignments"
+  ],
+  "limitations": "Pattern scan plus source-context review, not proof of absence of every possible secret",
+  "no_values_logged": true,
+  "no_backend_functionality_removed": true,
+  "owned_assembly_scan": {
+    "files": 988,
+    "findings": "Three inert test literals reviewed: an invalid one-byte PEM payload, a disposable localhost DSN, and an example.test URI rejection fixture. No usable key material or live credential discovered. Generated ephemeral test keys remain outside tracked source.",
+    "patterns": "Credential-bearing URI authority, private key PEM delimiters, GitHub/Slack/AWS token forms; source context reviewed",
+    "limitations": "Pattern review cannot prove absence of every possible secret"
+  }
+}

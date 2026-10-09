@@ -99,3 +99,19 @@ denial, and JSON number/null fidelity. Actual PostgreSQL tests are owned by
 tests/integration and run only through the disposable-cluster runner. Their
 results must be recorded separately; source or unit tests alone do not establish
 database execution, durability or production parity.
+
+## Explicit independent storage policy
+
+`NewWithIndependentPolicy(db, clock)` now selects the documented active-row,
+audit, lock and persistence rules as an authored architecture choice. It does
+not need an excluded implementation of internal hooks to work. The old default
+`New(db)` remains disabled to avoid silently changing callers' expectations;
+`NewForCompatibilityTests` delegates to the explicit constructor.
+
+The new `Delete` executes an account-scoped physical deletion under the same
+transaction/advisory-lock protocol. This is an explicit delete policy, not a
+claim that the old shared SaveChanges hooks physically deleted rows. It leaves
+cache policy to the caller; the recovered admin controller performs no purge.
+The loopback board command selects this policy only in explicit synthetic mode.
+Real authenticated-account and app-consent authority are still required before
+any production wiring, independently of these completed storage choices.

@@ -1,3 +1,14 @@
+# Current continuation status, 2026-10-08
+
+Local recovery and latest main were reconciled without overwriting newer policy
+or app-discovery work. Package downloads and NodeInfo gained explicit synthetic
+runnable candidates. Local aggregate verification passes; actual combined PG,
+process HTTP and CI verification remains pending. No production service is
+complete. See README and docs/continuation-result.json for current evidence.
+
+The material below is the preserved earlier main checkpoint and historical CI
+record, not a claim that those commits validate this continuation tree.
+
 # Backend migration checkpoint
 
 This is a source checkpoint, not a completed platform replacement.

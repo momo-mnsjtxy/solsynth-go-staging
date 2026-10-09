@@ -1,0 +1,101 @@
+{
+  "licensed_sources": [
+    {
+      "path": "DysonNetwork.Sphere/Models/AutomodRule.cs",
+      "blob": "caa2acd9ef87bb5b75c51f8b5ded84cfcc381170",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Models/AutomodRule.cs"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Automod/AutomodService.cs",
+      "blob": "69475ac7ae8ebc45115661679da16b246ceb133e",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Automod/AutomodService.cs"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Startup/AutomodConfiguration.cs",
+      "blob": "d2b159cce2c6148c96f8702d6fb77796ae643a38",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Startup/AutomodConfiguration.cs"
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/AccountService.cs",
+      "blob": "270436f5665cf8a2539c32719ed55580139ddfb9",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountService.cs"
+    },
+    {
+      "path": "docs/ACCOUNT_ADMIN_API.md",
+      "blob": "cbf1ed8576ee7495250f1d3b6e8307ed5aad28bb",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/ACCOUNT_ADMIN_API.md"
+    },
+    {
+      "path": "docs/ADMIN_STATS_API.md",
+      "blob": "0bdd2e969238d0a13e4bf98183ae19d9e03d872d",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/ADMIN_STATS_API.md"
+    },
+    {
+      "path": "lib/accounts/widgets/account/account_name.dart",
+      "blob": "514f1680f688bf764a5223203c368a7493057176",
+      "url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/widgets/account/account_name.dart"
+    },
+    {
+      "path": "docs/PERMISSIONS.md",
+      "blob": "524bc9fd360bd3e358ffc108cbf60823bd734361",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/PERMISSIONS.md"
+    },
+    {
+      "path": "docs/SPHERE_ADMIN_API.md",
+      "blob": "2b68c937180fcd881d6000699f84b5cc35e3d4cb",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/SPHERE_ADMIN_API.md"
+    },
+    {
+      "path": "docs/REALM_ADMIN_API.md",
+      "blob": "bd1dc10a5aecff0042fd73cad40d389617336042",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/REALM_ADMIN_API.md"
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/AccountAdminController.cs",
+      "blob": "ce1c3465960fcb9f92dff30b648df0d3af96419d",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountAdminController.cs"
+    },
+    {
+      "path": "DysonNetwork.Passport/Account/AccountStatsAdminController.cs",
+      "blob": "7db7e71996c1a90c88d3c0a9da7d3f2215f01323",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountStatsAdminController.cs"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Publisher/PublisherAdminController.cs",
+      "blob": "850f993fe2bab27eff9f5a397125841892eb7796",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Publisher/PublisherAdminController.cs"
+    },
+    {
+      "path": "DysonNetwork.Passport/Realm/RealmAdminController.cs",
+      "blob": "1033f1b89726bc822e83227f3ec98e3d61d72725",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Realm/RealmAdminController.cs"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Post/PostStatsAdminController.cs",
+      "blob": "18b418db3b1ab3e37a4d7ef488f914549488c439",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostStatsAdminController.cs"
+    },
+    {
+      "path": "DysonNetwork.Wallet/Payment/WalletStatsAdminController.cs",
+      "blob": "535993e7931c19ebf5dbaca03a33cf57602bc023",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Wallet/Payment/WalletStatsAdminController.cs"
+    },
+    {
+      "path": "DysonNetwork.Sphere/Automod/AutomodController.cs",
+      "blob": "f47f3ad40560c4b4be713151d88083c3532533fc",
+      "url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Automod/AutomodController.cs"
+    }
+  ],
+  "boundary": "Authored licensed DysonNetwork controllers/services/models/docs and Solian widget only. No excluded Shared definitions, generated SDK/bindings, SoSYS, Spec, NeTo or fortune corpus.",
+  "contracts": {
+    "automod_values": "LinkBlocklist=1, KeywordBlocklist=2; Derank=1, Hide=2, Flag=3 are explicit authored Sphere model values.",
+    "verification": "Account API documentation proves numeric type; authored Solian renders indices 0..6 and nullable title/description/verifiedBy. Semantic string-to-number mapping remains unproven, so only bounded numeric input is supported.",
+    "statistics": "Service-local identical /api/admin/stats routes are preserved by configured service. Combined-host qualified aliases are explicit owned routing."
+  },
+  "owned_policies": [
+    "Current canonical Superuser plus named permission for every new administrative route.",
+    "RE2 and conservative instruction/input bounds; no external classification or implicit post enforcement.",
+    "Canonical active profile/presence totals and nondeleted post/ledger records; rolling windows are bounded above by calculated_at.",
+    "Verification is informational public metadata. It never grants identity, membership, permission or read access."
+  ]
+}

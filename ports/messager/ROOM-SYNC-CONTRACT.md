@@ -162,5 +162,9 @@ source observations above without treating them as permission to inspect or
 reuse excluded dependencies. Then
 verify middleware, error envelopes, GUID/time validation and hydration; run
 golden cases including edits/deletions, empty results and >1000 records. Until
-then, only an explicitly labeled local subset can be built. No additional
-handler, command, persistence layer or placeholder-success adapter was added.
+then, compatibility claims remain bounded. The subsequent implementation in
+`sync_http.go`, `sync_service.go`, `internal/messagerpg`, and `cmd/messager-sync`
+adds a runnable PostgreSQL-backed subset, with independently authored membership
+and hydration policy. See `docs/messager-continuation.md` for its exact scope.
+The unified host supplies verified owned-authority identity; fixture-only
+constructors remain explicit. This does not establish unknown legacy filter parity.

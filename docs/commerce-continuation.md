@@ -61,7 +61,7 @@ wallet. Duplicate items are combined and products locked in sorted order.
 Bounded stock counts unpaid unexpired plus paid/finished reservations within its
 source-defined UTC/manual window;
 cancelled/expired orders release availability. Digital recurring app products use the canonical subscription fulfillment
-described in `recurring-products.md`; address-required products remain unavailable.
+described in `recurring-products.md`. One-time address-required checkout is now described in `shipping-addresses-and-fulfillment.md`; recurring physical delivery remains unavailable.
 Exact rational prices are added before the single truncation to canonical
 thousandths. Positive amounts and quantities, ranges, body sizes and duration
 limits are bounded. Idempotency keys bind scope, operation and payload.
@@ -101,7 +101,7 @@ require the host's publisher and idempotent consumers.
 ## Explicit remaining boundaries
 
 No automatic migration of legacy Wallet databases; realm-owned payer wallet
-payment; merchant payouts; coupon/free-trial programs; nonintegral or unbounded cycle durations; address-contact fulfillment;
+payment; merchant payouts; coupon/free-trial programs; nonintegral or unbounded cycle durations; recurring physical shipment/provider fulfillment;
 billing relation views; sponsor badge/golden-point grants; provider gold-currency
 minting; external billing cancellation; production provider clients; delivery of
 outbox events. Unsupported requests fail closed or are unrouted. These are not

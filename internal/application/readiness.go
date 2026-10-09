@@ -19,6 +19,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if b == nil || b.db == nil || b.authorityDB == nil {
 		return errors.New("backend unavailable")
 	}
+	if b.scheduledPosts != nil {
+		if e := b.scheduledPosts.SchedulingReady(ctx); e != nil {
+			return e
+		}
+	}
 	if b.social != nil {
 		if e := b.social.ExpiryReady(ctx); e != nil {
 			return e
@@ -75,7 +80,7 @@ func (b *Backend) Ready(ctx context.Context) error {
 			return err
 		}
 	}
-	if _, err := b.db.ExecContext(ctx, `SELECT credential_account_id,verified_at,is_public FROM owned_authority_contacts LIMIT 0`); err != nil {
+	if _, err := b.db.ExecContext(ctx, `SELECT credential_account_id,verified_at,is_public,revision FROM owned_authority_contacts LIMIT 0; SELECT order_id,address_snapshot,captured_at FROM commerce_v1.order_destinations LIMIT 0`); err != nil {
 		return err
 	}
 	if b.translation != nil {

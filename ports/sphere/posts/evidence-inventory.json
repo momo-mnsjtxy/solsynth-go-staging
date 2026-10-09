@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "prepared_on": "2026-10-08",
-  "scope": "Complete 21-operation PostController and 21-operation PostActionController licensed evidence inventory; eight bounded HTTP routes implemented. No full parity claim.",
+  "scope": "Historical complete controller inventory plus complete authored PostService evidence for the owned scheduled-publication continuation. No full model/provider parity claim.",
   "files": [
     {
       "file": "inventory/operation-sources/DysonNetwork.Sphere/Post/PostController.cs",
@@ -81,6 +81,16 @@
     {
       "file": "ports/sphere/posts/upstream/SOLIAN-LICENSE.txt",
       "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+      "license": "AGPL-3.0-only"
+    },
+    {
+      "file": "ports/sphere/posts/scheduling-evidence/PostService.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Sphere/Post/PostService.cs",
+      "sha256": "a8afd1bec596450dea5fa17bbaead101a6c4c8b2a6e799d21323165b0dafa333",
+      "git_blob": "dbacff11ded248680bc34d9fe422cc7e38c49068",
+      "bytes": 145621,
       "license": "AGPL-3.0-only"
     }
   ],

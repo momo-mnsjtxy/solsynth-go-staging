@@ -47,3 +47,5 @@ Stock/reservation source contracts are pinned in `stock-source-manifest.json`;
 recurring allocation, immutable-price checks and stock-exhausted renewal policy.
 
 `activation-source-manifest.json` records complete retained evidence for pending subscription activation and the incomplete coupon investigation. Exact routes, permissions and authored callers plus owned duration/opt-in corrections are documented in `docs/subscription-activation.md`.
+
+The shipping continuation uses the existing complete OrderController, MerchantController, APP_PRODUCTS documentation and authored Solian contact/order callers. `docs/shipping-addresses-and-fulfillment.md` distinguishes observed type-2 address input and payment-time canonical snapshots from owned address update, app fulfillment-read scope and privacy hardening.

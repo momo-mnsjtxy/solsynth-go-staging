@@ -25,7 +25,11 @@ var PaymentPINSchema string
 
 //go:embed factor_setup_schema.sql
 var FactorSetupSchema string
-var Schema = baseSchema + "\n" + PaymentPINSchema + "\n" + FactorSetupSchema
+
+//go:embed address_schema.sql
+var AddressSchema string
+
+var Schema = baseSchema + "\n" + PaymentPINSchema + "\n" + FactorSetupSchema + "\n" + AddressSchema
 
 type Repository struct {
 	admission  RegistrationAdmission

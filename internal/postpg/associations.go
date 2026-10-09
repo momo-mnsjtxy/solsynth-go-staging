@@ -36,6 +36,7 @@ type MutationScope struct {
 	PostID      string
 	RealmID     *string
 	Deleting    bool
+	Publishing  bool
 }
 
 func NewWithAssociations(db *sql.DB, a AssociationStore) *Repository {

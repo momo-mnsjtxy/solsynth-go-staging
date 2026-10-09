@@ -45,6 +45,14 @@ func (r *Repository) Prelock(ctx context.Context, tx *sql.Tx, actor string, scop
 			if existingReply != nil {
 				targetIDs = append(targetIDs, existingReply)
 			}
+			if scope.Publishing {
+				var forward, chain *string
+				e := tx.QueryRowContext(ctx, `SELECT forwarded_post_id::text,chained_post_id::text FROM owned_post_relations WHERE post_id=$1`, scope.PostID).Scan(&forward, &chain)
+				if e != nil && !errors.Is(e, sql.ErrNoRows) {
+					return e
+				}
+				targetIDs = append(targetIDs, forward, chain)
+			}
 		}
 	}
 	for _, target := range targetIDs {

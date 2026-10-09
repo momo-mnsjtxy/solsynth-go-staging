@@ -52,7 +52,30 @@ func lockOrderApp(ctx context.Context, tx *sql.Tx, o c.Order) error {
 	if errors.Is(e, sql.ErrNoRows) {
 		return c.ErrForbidden
 	}
-	return e
+	if e != nil {
+		return e
+	}
+	return checkOrderAppOwner(ctx, tx, o)
+}
+
+// checkOrderAppOwner observes current owner eligibility without adding another
+// account lock after the buyer's lock. App ancestry is already retained by
+// lockOrderApp. Repeat this after wallet/payment waits before a new charge
+// commits. A concurrent disable after the final observation may serialize after
+// the payment; a disable committed before the observation must be respected.
+func checkOrderAppOwner(ctx context.Context, tx *sql.Tx, o c.Order) error {
+	if o.AppIdentifier == "internal" || o.AppIdentifier == "gift" {
+		return nil
+	}
+	var active bool
+	e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM commerce_v1.orders o JOIN owned_custom_apps a ON a.id=o.app_id JOIN owned_dev_projects project ON project.id=a.project_id JOIN owned_developers dev ON dev.id=project.developer_id JOIN owned_publishers pub ON pub.id=dev.publisher_id LEFT JOIN owned_realms realm ON pub.type=1 AND realm.id=pub.realm_id JOIN owned_authority_accounts owner ON owner.id=CASE WHEN pub.type=0 THEN pub.account_id WHEN pub.type=1 THEN realm.account_id END WHERE o.id=$1::uuid AND ('developer.app:'||a.id::text)=$2::text AND a.status=1 AND a.deleted_at IS NULL AND project.deleted_at IS NULL AND pub.deleted_at IS NULL AND ((pub.type=0 AND pub.account_id IS NOT NULL AND pub.realm_id IS NULL) OR (pub.type=1 AND pub.account_id IS NULL AND realm.id IS NOT NULL AND realm.deleted_at IS NULL)) AND NOT owner.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments punishment WHERE punishment.account_id=owner.id AND punishment.kind='disable_account' AND(punishment.starts_at IS NULL OR punishment.starts_at<=clock_timestamp())AND(punishment.expires_at IS NULL OR punishment.expires_at>clock_timestamp())))`, o.ID, o.AppIdentifier).Scan(&active)
+	if e != nil {
+		return e
+	}
+	if !active {
+		return c.ErrForbidden
+	}
+	return nil
 }
 
 // enrichOrder projects only public display fields. It never exposes OAuth

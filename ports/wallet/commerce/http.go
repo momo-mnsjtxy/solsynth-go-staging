@@ -133,6 +133,21 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 		done(v, e, "WALLET_ORDER_METRICS_FAILED")
 		return
 	}
+	if len(parts) == 3 && parts[0] == "orders" && parts[2] == "fulfillment" && method == "POST" {
+		var credentials Credentials
+		if e := body(r, &credentials); e != nil {
+			problem(w, e, "WALLET_ORDER_FULFILLMENT_FAILED")
+			return
+		}
+		repo, ok := s.Store.(FulfillmentStore)
+		if !ok {
+			problem(w, ErrUnavailable, "WALLET_ORDER_FULFILLMENT_UNAVAILABLE")
+			return
+		}
+		v, e := repo.OrderFulfillment(ctx, parts[1], credentials)
+		done(v, e, "WALLET_ORDER_FULFILLMENT_FAILED")
+		return
+	}
 	if len(parts) == 3 && parts[0] == "orders" && parts[2] == "status" && method == "PATCH" {
 		var q UpdateStatus
 		if e := body(r, &q); e != nil {

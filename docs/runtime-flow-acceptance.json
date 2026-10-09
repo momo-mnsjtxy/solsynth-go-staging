@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed room-media and affiliation601/79 candidate plus final social audit-rollback setup correction through authored routes, exact audit constraint and preserved preconditions. Recovery privacy already passed real before/restart in581 groupB; whole suite remains pending.",
+  "local_source_checkpoint": "Reviewed shipping/address fulfillment and scheduled-post lifecycle with post-wait publication corrections; current checkout owner eligibility including canonical realm chain. Room-media realm fixture now seeds its required canonical quota. Actual PostgreSQL pending for this625/81 candidate.",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,14 +12,14 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "2972bb32c1d700027a139c256b0e72739b2d6355",
-    "run": 37856589410,
-    "required_before": 581,
-    "required_after_restart": 77,
-    "status": "Failed aggregate:groupB288before+34restart passed zero skips, including direct recovery privacy;groupA292/293before passed and43restart not run. Final social fixture setup corrected in this601 candidate; no fullgreen claim."
+    "commit": "c4d78b81fc70935c33af615a9ce944a42dea954a",
+    "run": 37859695832,
+    "required_before": 601,
+    "required_after_restart": 79,
+    "status": "Failed aggregate:600/601 before passed; groupA302/303 and no restart, groupB298before+36restart passed zero skips. Sole room-media realm fixture lacked required quota, corrected locally; no new full green."
   },
-  "local_required_before": 601,
-  "local_required_after_restart": 79,
+  "local_required_before": 625,
+  "local_required_after_restart": 81,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -1792,14 +1792,14 @@
     "delivered_not_integrated": []
   },
   "current_remaining": {
-    "as_of": "2026-10-08T23:03:00Z",
+    "as_of": "2026-10-08T23:55:00Z",
     "authoritative_for": "Known remaining flows, not a count of source operations. Partial/unresearched contracts remain research tasks; unavailable is never inferred from lack of prior research.",
     "families": [
       {
         "family": "develop.apps_products",
         "remaining": [
           "Remaining original app-management contracts",
-          "Required address fulfillment and external workspace/provider execution"
+          "External workspace/provider execution; address fulfillment implemented pending CI"
         ]
       },
       {
@@ -1940,7 +1940,7 @@
       {
         "family": "sphere.posts",
         "remaining": [
-          "Blog, scheduling/moderation and remaining original admin/statistics operations"
+          "Blog and remaining original admin/statistics operations; scheduling implemented pending CI and automatic ranking enforcement under review"
         ]
       },
       {
@@ -1958,14 +1958,14 @@
       {
         "family": "wallet.orders_payments",
         "remaining": [
-          "Live provider clients, address fulfillment, coupons, payouts"
+          "Live provider clients and payouts; address fulfillment implemented pending CI; opt-in owned coupons reviewed pending integration"
         ]
       },
       {
         "family": "wallet.subscriptions_gifts",
         "remaining": [
           "Provider synchronization and trials",
-          "Required address and external workspace fulfillment"
+          "External workspace fulfillment; required address implemented pending CI"
         ]
       },
       {
@@ -2179,14 +2179,17 @@
       "Original data migration/import, rollback and compatibility fixtures for historical data",
       "Broader federation actor/realm/follow/moderation/key-management and remote discovery contracts; implemented bounded quote authorization tracked separately",
       "Original external provider execution, settlement/payout and production operational acceptance; live actions require separate authorization",
-      "Coupon issuance/discount/usage semantics remain only partially evidenced: retained callers accept coupon strings but calculation delegates to excluded/unavailable model code; no invented coupon economy",
-      "Address fulfillment and provider-specific recurring workspace execution",
+      "Coupon issuance/discount/usage semantics remain only partially evidenced: retained callers accept coupon strings but calculation delegates to excluded/unavailable model code; explicit opt-in owned coupon policy reviewed pending integration, legacy formula remains unproven",
+      "Provider-specific recurring workspace execution; address fulfillment implemented pending CI",
       "Source-declaration818 acceptance map remains an operation inventory, not runtime endpoint count or proof of whole-platform completion"
     ],
     "active_implementation": [
-      "Scheduled-post publication independently reviewed, wait/explicit publication corrections pending",
-      "Shipping/address snapshot independently reviewed, actual PG pending",
-      "Message threads and explicit redirect/live-reference forwarding implementation"
+      "Shipping/address and scheduled publication reviewed and integrated625/81; actualPG pending",
+      "Thread/live-reference forwarding independently reviewed, integration pending",
+      "Opt-in owned coupon policy independently reviewed, integration pending",
+      "Automatic ranked-post enforcement independent review fixing evidence privacy",
+      "App credential owner wait revalidation under independent review",
+      "Realm boost contract reconstruction and implementation"
     ],
     "not_remaining_missing_features": [
       "PIN enrollment/rotation/removal",
@@ -2195,7 +2198,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last full green455/60.581 groupB288+34 succeeded; groupA failed one social fixture and skipped its restart phase.601/79 localcombined verification passed after correcting that fixture, actualPG pending."
+    "verification_note": "Failed aggregate:600/601 before passed; groupA302/303 and no restart, groupB298before+36restart passed zero skips. Sole room-media realm fixture lacked required quota, corrected locally; no new full green."
   },
   "global_remaining": [
     "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",

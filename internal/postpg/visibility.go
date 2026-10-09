@@ -67,6 +67,9 @@ func CanViewPublisher(ctx context.Context, tx *sql.Tx, actor, publisher string, 
 	return allowed, e
 }
 func (r *Repository) validatePatch(v posts.Patch, create bool, now time.Time) error {
+	if r.scheduling && v.PublishedAt != nil && v.PublishedAt.After(now) && v.DraftedAt == nil {
+		v.PublishedAt = nil
+	}
 	if v.Visibility != nil && (*v.Visibility == posts.Friends || *v.Visibility == posts.CloseFriends) {
 		if r.visibility == nil {
 			return posts.ErrUnsupported

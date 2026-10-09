@@ -75,6 +75,39 @@ func (s *Service) ContactHandler() http.Handler {
 			return
 		}
 		id := parts[1]
+		if len(parts) == 2 && r.Method == "GET" {
+			out, e := s.GetContact(r.Context(), token, id)
+			if e != nil {
+				failure(w, e)
+				return
+			}
+			respond(w, 200, out)
+			return
+		}
+		if len(parts) == 2 && r.Method == "PATCH" {
+			typ, _, e := mime.ParseMediaType(r.Header.Get("Content-Type"))
+			if e != nil || typ != "application/json" {
+				failure(w, ErrInput)
+				return
+			}
+			raw, e := io.ReadAll(http.MaxBytesReader(w, r.Body, 8192))
+			if e != nil {
+				failure(w, ErrInput)
+				return
+			}
+			input, e := decodeContactInput(raw)
+			if e != nil || input.Type != AddressContactType {
+				failure(w, ErrInput)
+				return
+			}
+			out, e := s.UpdateAddress(r.Context(), token, id, input)
+			if e != nil {
+				failure(w, e)
+				return
+			}
+			respond(w, 200, out)
+			return
+		}
 		if len(parts) == 2 && r.Method == "DELETE" {
 			e = s.RemoveContact(r.Context(), token, id)
 			if e != nil {

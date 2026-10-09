@@ -108,7 +108,7 @@ optional text. Omitted/null patch fields leave the field unchanged. Omitted
 visibility on PATCH preserves the stored value. A non-null `drafted_at` marks
 the post as a draft and clears publication; non-null `published_at` publishes
 and clears draft state. Creating with neither publishes immediately. Future
-publication scheduling is rejected until a scheduler is supplied.
+publication scheduling is now supported by the explicitly composed durable worker; see `post-scheduling-continuation.md` for the canonical-draft boundary, session continuity and current policy checks.
 
 Local safeguards include a 2 MiB JSON envelope, 1 MiB content, bounded pagination
 and validation of NUL/invalid UTF-8 text. These are not asserted upstream limits.
@@ -190,7 +190,7 @@ Unsupported operations include featured/bookmark/sponsor/reaction/reply/thread/
 chain/navigation/forward reads; batch mutations; blog/domain checks; media,
 collections, taxonomy, embeds, realm moderation, pin/boost/awards/payments;
 federation, post watches, notifications, search indexing, view counting, storage
-validation and scheduled publication. Local audit rows are not an outbox and
+validation beyond the current owned gates. Durable scheduled publication is described in `post-scheduling-continuation.md`. Local audit rows are not an outbox and
 must not be described as delivered events. Gatekeeping, user relationships,
 blocking, legacy import, full model enrichment and upstream error/body parity
 remain separate release gates. The machine-readable inventory retains every

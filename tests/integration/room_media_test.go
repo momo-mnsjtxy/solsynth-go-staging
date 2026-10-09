@@ -279,6 +279,9 @@ func TestPGRoomMediaWaitRevalidatesFileMembershipAndAuthority(t *testing.T) {
 
 func TestPGRoomMediaRealmRevocationAndDirectAudience(t *testing.T) {
 	f := newRoomMediaFixture(t)
+	// Realm creation requires a current canonical quota grant; media fixtures
+	// otherwise provision only media and chat authority.
+	query(t, f.db, `INSERT INTO owned_realm_quota(account_id,total,starts_at)VALUES($1,1,clock_timestamp()-interval '1 second')`, f.actor)
 	socialRepo := socialpg.New(f.db)
 	realm := socialRealm(t, socialRepo, f.actor, true, true)
 	realmPermissionJoin(t, socialRepo, f.other, realm.ID)

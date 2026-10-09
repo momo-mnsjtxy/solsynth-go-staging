@@ -30,6 +30,7 @@ type Repository struct {
 	authority    *authoritypg.TransactionGuard
 	associations AssociationStore
 	visibility   VisibilityProvider
+	scheduling   bool
 }
 
 func New(db *sql.DB) *Repository {
@@ -126,6 +127,11 @@ func (r *Repository) write(ctx context.Context, actor, permission string, fn fun
 	if e = fn(tx, r.now().UTC()); e != nil {
 		return mapped(e)
 	}
+	if r.authority != nil {
+		if _, e = r.authority.Authorize(ctx, r.db, tx, actor, permission); e != nil {
+			return e
+		}
+	}
 	return mapped(tx.Commit())
 }
 func audit(ctx context.Context, tx *sql.Tx, actor, id, action string, now time.Time) error {
@@ -205,6 +211,9 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 		}
 		p = posts.Post{ID: id, PublisherID: pub.ID, Publisher: pub, CreatedAt: now, UpdatedAt: now, PublishedAt: &now}
 		apply(&p, v)
+		if e = r.prepareSchedule(ctx, tx, actor, &p, v, now); e != nil {
+			return e
+		}
 		_, e = tx.ExecContext(ctx, `INSERT INTO owned_text_posts(id,publisher_id,title,description,slug,content,visibility,type,language,drafted_at,published_at,created_at,updated_at,realm_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12,$13)`, p.ID, p.PublisherID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, now, p.RealmID)
 		if e != nil {
 			return e
@@ -212,14 +221,17 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 		if e = r.applyAssociations(ctx, tx, actor, &p, v, true); e != nil {
 			return e
 		}
-		return audit(ctx, tx, actor, p.ID, "create", now)
+		if e = audit(ctx, tx, actor, p.ID, "create", now); e != nil {
+			return e
+		}
+		return r.syncSchedule(ctx, tx, actor, &p, v, "create", now)
 	})
 	if e != nil {
 		return posts.Post{}, e
 	}
 	return p, nil
 }
-func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v posts.Patch, deleting bool) (posts.Post, error) {
+func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v posts.Patch, deleting bool, publishing ...bool) (posts.Post, error) {
 	if !authority.ValidID(id) {
 		return posts.Post{}, posts.ErrNotFound
 	}
@@ -228,7 +240,7 @@ func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v
 	if e := tx.QueryRowContext(ctx, `SELECT publisher_id::text,realm_id::text FROM owned_text_posts WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&publisher, &realm); e != nil {
 		return posts.Post{}, mapped(e)
 	}
-	if e := r.prelock(ctx, tx, actor, MutationScope{PublisherID: publisher, PostID: id, RealmID: realm, Deleting: deleting}, v, false); e != nil {
+	if e := r.prelock(ctx, tx, actor, MutationScope{PublisherID: publisher, PostID: id, RealmID: realm, Deleting: deleting, Publishing: len(publishing) > 0 && publishing[0]}, v, false); e != nil {
 		return posts.Post{}, e
 	}
 	pub, e := r.publishers.RequirePostEditor(ctx, tx, actor, publisher)
@@ -294,10 +306,12 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 			}
 		}
 		var e error
-		p, e = r.locked(ctx, tx, actor, id, v, action == "delete")
+		publishing := r.scheduling && (action == "publish" || v.PublishedAt != nil && !v.PublishedAt.After(now))
+		p, e = r.locked(ctx, tx, actor, id, v, action == "delete", publishing)
 		if e != nil {
 			return e
 		}
+		wasDraft := p.DraftedAt != nil
 		switch action {
 		case "update":
 			apply(&p, v)
@@ -316,13 +330,37 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 			return posts.ErrInvalid
 		}
 		p.UpdatedAt = now
+		if e = r.prepareSchedule(ctx, tx, actor, &p, v, now); e != nil {
+			return e
+		}
 		if e = save(ctx, tx, p); e != nil {
 			return e
 		}
 		if e = r.applyAssociations(ctx, tx, actor, &p, v, false); e != nil {
 			return e
 		}
-		return audit(ctx, tx, actor, id, action, now)
+		if publishing && wasDraft && p.DraftedAt == nil && p.PublishedAt != nil {
+			// Explicit publication records fresh intent but must still pass the
+			// same current media, related-post and moderation gates as due work.
+			check := p
+			reason, e := r.preparePublication(ctx, tx, actor, &check)
+			if e != nil {
+				return e
+			}
+			if reason == "" {
+				reason, e = r.checkPublication(ctx, tx, actor, &check)
+				if e != nil {
+					return e
+				}
+			}
+			if reason != "" {
+				return posts.ErrForbidden
+			}
+		}
+		if e = audit(ctx, tx, actor, id, action, now); e != nil {
+			return e
+		}
+		return r.syncSchedule(ctx, tx, actor, &p, v, action, now)
 	})
 	if e != nil {
 		return posts.Post{}, e
@@ -379,6 +417,9 @@ func (r *Repository) detail(ctx context.Context, actor, filter string, args ...a
 		if e = r.associations.Load(ctx, tx, actor, &p); e != nil {
 			return posts.Post{}, e
 		}
+	}
+	if e = r.loadSchedule(ctx, tx, actor, &p); e != nil {
+		return posts.Post{}, e
 	}
 	if e = tx.Commit(); e != nil {
 		return posts.Post{}, e
@@ -484,6 +525,11 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 			if e = r.associations.Load(ctx, tx, actor, &out[i]); e != nil {
 				return nil, 0, e
 			}
+		}
+	}
+	for i := range out {
+		if e = r.loadSchedule(ctx, tx, actor, &out[i]); e != nil {
+			return nil, 0, e
 		}
 	}
 	if e = tx.Commit(); e != nil {

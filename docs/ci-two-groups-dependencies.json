@@ -1,5 +1,5 @@
 {
-  "base_commit": "657eb35c8c6d5fb21baa97f21508ffd3476a0d86",
+  "base_commit": "820323e86861b3762391fe72417f1e5c1c87ee83",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -701,6 +701,21 @@
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
     },
     {
+      "test": "TestPGPostScheduleSavedRestartPersistence",
+      "source": "tests/integration/post_scheduling_test.go",
+      "function_sha256": "50ef444f14e89e3bd1f02cd1070f0d9e4a5260c1d79a5a1269ae206c21af1cd5",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "post-scheduling.json"
+      ],
+      "persistent_directories_or_files": [
+        "post-scheduling.json",
+        "post-schedule-objects"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before saves actually published, future pending and moderation-blocked posts with exact schedule/event snapshot, original file bytes and database publication timestamp. After reloads saved IDs/root, compares exact snapshot, validates only published visibility and original bytes, and denies pending/blocked content. No after reseeding or due processing; object root remains paired within one cluster."
+    },
+    {
       "test": "TestPGPostsRestartPersistence",
       "source": "tests/integration/posts_test.go",
       "group_before_and_after": "group-a",
@@ -725,7 +740,7 @@
     {
       "test": "TestPGProductStockRestartPersistence",
       "source": "tests/integration/product_stock_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "aeaa4b463e9fc5a15c20bff7ca8f01887e6aa63944c020020e968b3ab8c6709d",
       "marker_files": [
         "product-stock-restart.json"
@@ -798,7 +813,7 @@
       "named_database_markers": {},
       "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
       "function_sha256": "f02f05c54a984575b46a5a1f890e77972db877fd4d31ad2cc3b27bd80b6a1cb0",
-      "group_before_and_after": "group-a"
+      "group_before_and_after": "group-b"
     },
     {
       "test": "TestPGRealmPublisherRestartPersistence",
@@ -844,7 +859,7 @@
       "test": "TestPGRelationshipExpiryRestartPersistence",
       "source": "tests/integration/relationship_expiry_test.go",
       "function_sha256": "d17580c666777f697966adbdb4e273b2b02eab960b608c285078e4e63fdbe5d2",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "relationship-expiry-restart.json"
       ],
@@ -882,7 +897,7 @@
       "test": "TestPGRoomMediaSavedRestartPersistence",
       "source": "tests/integration/room_media_test.go",
       "function_sha256": "e0a1537a412dc150da7df071c5c883ab524a07a4a9b64016629d68f85de9de2f",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "room-media.json"
       ],
@@ -892,6 +907,20 @@
       ],
       "named_database_markers": {},
       "storage_contract": "Before saves exact room/media/system-event state and immutable original object root/IDs after removing one background grant. After compares saved JSON, loads original bytes, denies the removed grant, and reads the persisted event without target reseeding. Object root and marker remain in the same disposable cluster job; neither is uploaded."
+    },
+    {
+      "test": "TestPGShippingRestartPersistence",
+      "source": "tests/integration/shipping_test.go",
+      "function_sha256": "c07a02088594fbfa322ff4d0ed6153be4b968100465f6820f278b462a121faaa",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "shipping-destination.json"
+      ],
+      "persistent_directories_or_files": [
+        "shipping-destination.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before pays a canonical physical order, saves exact destination text/contact revision/capture timestamp and immutable payee/transaction, then deletes original address. After loads original IDs and compares persisted destination/order economics and deletion state; no reseeding or recapture."
     },
     {
       "test": "TestPGSigninRestartPersistence",
@@ -1346,6 +1375,12 @@
       "function_sha256": "b6219d01164e746d7cc5be17f5653828748ad341d697981b25aa482e90237a6e"
     },
     {
+      "test": "TestPGBackendShippingAddressCheckout",
+      "source": "tests/integration/shipping_test.go",
+      "function_sha256": "4610b8e7c43a54626cc9b505db3405092d92b055b6b8d9f0fe442c6bae05604f",
+      "group": "group-a"
+    },
+    {
       "test": "TestPGBackendSigninHTTPProcessRestart",
       "source": "tests/integration/backend_signin_test.go",
       "group": "group-a",
@@ -1354,7 +1389,7 @@
     {
       "test": "TestPGBackendSubscriptionActivationRoutes",
       "source": "tests/integration/subscription_activation_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "81bf4ee7163be5f5b661325b717615390f5d4530c4f081b7255415708bcc70c3"
     },
     {
@@ -1382,16 +1417,22 @@
       "group": "group-a"
     },
     {
+      "test": "TestPGPostScheduleBackendProjectionAndDeferredFederation",
+      "source": "tests/integration/post_scheduling_test.go",
+      "function_sha256": "f7147dd9bf1d0c32009cd630e84c01cfa007661ea20611f7ec85a472de27be6f",
+      "group": "group-b"
+    },
+    {
       "test": "TestPGRealmPermissionBackendDTOAndNullClear",
       "source": "tests/integration/realm_permissions_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "649fb752ec68dee61b4f71f49c0c9e691074b75fb5adf2f66a1b35fc961a5f89"
     },
     {
       "test": "TestPGRoomMediaConcurrentSlotsAndBackendComposition",
       "source": "tests/integration/room_media_test.go",
       "function_sha256": "031cfbe08a811177d9aec74cba394d9d514415f7a2ffbe9f8bca52719e5d6cc8",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGTicketMediaComposedLifecycleAndPrivateAudience",
@@ -1572,6 +1613,10 @@
     {
       "source": "tests/integration/chat_relations_test.go",
       "sha256": "1335b0049f1c3ad659ff54bb2f57c67ff8f4c13cd2298e556662029bc63c1670"
+    },
+    {
+      "source": "tests/integration/checkout_owner_policy_test.go",
+      "sha256": "177d8074a2ce851f1c570a60243353e01b7257d0c4bcce1d2d791bb297f3ffb9"
     },
     {
       "source": "tests/integration/collection_admin_test.go",
@@ -1758,6 +1803,14 @@
       "sha256": "86b8a159b42fa66695050ae7736df4bebcfbbbcfcb9f90d7fdd6001153992683"
     },
     {
+      "source": "tests/integration/post_scheduling_review_test.go",
+      "sha256": "e01c062deab78f402af7aa492e072a4e7401eb3804774a54b238dba1cee48f03"
+    },
+    {
+      "source": "tests/integration/post_scheduling_test.go",
+      "sha256": "cf615733d82d83aaa1fa4cd985e7694c69b6c34628bc89ca6034000ba182e65f"
+    },
+    {
       "source": "tests/integration/posts_test.go",
       "sha256": "7fc37419dc0dc889df4503fd4ba1bc01f301837b8b8b55789bc0fb0db8ccc838"
     },
@@ -1835,11 +1888,19 @@
     },
     {
       "source": "tests/integration/room_media_test.go",
-      "sha256": "93940706b2b5cdf92215c684a9b75aa2e85258f810c43be4636311f256994b12"
+      "sha256": "a6ad017a4d69f97906add8820cb0c6c1c815ebbf44fe1514cfbe6055649b4cf5"
     },
     {
       "source": "tests/integration/shadowban_fixture_test.go",
       "sha256": "a7f6300654e8276d3ae1615aadf1d025e29300c80dbd337d0bbd38fb03b63517"
+    },
+    {
+      "source": "tests/integration/shipping_review_test.go",
+      "sha256": "b5225fcc64ba3700da2db6834e1a272e6d67292f5c395b9fa89625ebe8630418"
+    },
+    {
+      "source": "tests/integration/shipping_test.go",
+      "sha256": "0559b9e45ec7c3f492bd603b152abc2c4a5f4ace5ecd9e4798b2361082ea8c63"
     },
     {
       "source": "tests/integration/signin_test.go",
@@ -1936,5 +1997,7 @@
   "quote_fixture_review": "Only enclosing Create/Update public audience corrected to match existing nested public Note. Added actual-PG private-envelope/public-Note denial before valid creation, and offline wire-roundtrip control. Restart marker/target state unchanged; no case assignment or required counts changed.",
   "recovery_privacy_review": "Independent four-file review930b84f verifies fresh sorted pair locks/current proof, no peer profile or nested cached fields in denied recovery, both GET and direct-state responses, corrupt owner/extra member/deleted requester bounds. Existing chat-relations restart uses explicit synthetic compatibility constructor. MLS revocation fixture uses source-supported canonical social block after confirming direct room; social finite-block fixture asserts durable deadline and expiry coverage remains separate. Case and marker review completed; actual581/77 pending.",
   "room_affiliation_rebase_review": "All20 added cases reviewed. Room-media cases use canonical ownership/audiences, current permission waits, rollback and same saved object root; pre-confirmation DM block fixture corrected. Affiliation cases use recipient/session-bound root proof or separate canonical contact challenge, once-only captured policy and semantic restart JSON; administrative issuance now requires explicit affiliations.invites.issue, with tracking-only/delegated denials and explicit-grant positive control. Activation allowlist rejects that key. Existing privacy correction and all prior source/schema/Go bodies retained. No new cross-group dependency; exact marker audits included. Actual601/79 pending.",
-  "social_rollback_fixture_review": "Successful finite blocking resets via authored DELETE relationship and POST friend request before the independent audit rollback test. Preconditions require no relation in either direction and exactly one pending request; failure must be PostgreSQL23514 for social_test_rollback. Original rollback and post-wait permission assertions retained. No case/group count change."
+  "social_rollback_fixture_review": "Successful finite blocking resets via authored DELETE relationship and POST friend request before the independent audit rollback test. Preconditions require no relation in either direction and exactly one pending request; failure must be PostgreSQL23514 for social_test_rollback. Original rollback and post-wait permission assertions retained. No case/group count change.",
+  "shipping_schedule_rebase_review": "24 added cases reviewed: source-shaped address APIs, current contact/scoped app/merchant authority after waits, immutable paid destination and amounts, ordinary quote invariance, exact ledger/proof rollback, current direct/realm publisher owner observations without extra locks. Schedule cases retain current proof/intent, current post/publisher/realm/related/media gates after all waits and positive explicit-publication controls; short-lived real access expiry avoids mixed clocks. Synthetic-only isolated fixture states and marker ownership recorded. Source and schema guard registration complete. Actual625/81 pending.",
+  "room_media_quota_review": "601 failure occurred before room-media assertions: realm creation lacked required canonical quota. Add one current explicit quota grant only; preserve runtime enforcement and all existing assertions. Other queued realm fixtures already seed canonical quota."
 }

@@ -87,6 +87,9 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 				return o, e
 			}
 		}
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.pay"); e != nil {
+			return c.Order{}, e
+		}
 		return o, tx.Commit()
 	}
 	if o.Status != c.Unpaid {
@@ -158,6 +161,9 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 	}
 	if isRecurring && (sub.Valid || gift.Valid) {
 		return o, c.ErrConflict
+	}
+	if e = r.captureDestination(ctx, tx, actor, &o); e != nil {
+		return c.Order{}, e
 	}
 	tr, e := walletpg.CommerceHold(ctx, tx, o.ID, actor, payer, o.PayeeWalletID, o.Currency, o.Amount, now)
 	if e != nil {
@@ -293,6 +299,9 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 	if !o.ExpiredAt.After(r.now().UTC()) {
 		return c.Order{}, c.ErrConflict
 	}
+	if e = checkOrderAppOwner(ctx, tx, o); e != nil {
+		return c.Order{}, e
+	}
 	return o, tx.Commit()
 }
 func (r *Repository) UpdateOrder(ctx context.Context, idv string, req c.UpdateStatus) (c.Order, error) {
@@ -317,7 +326,10 @@ func (r *Repository) UpdateOrder(ctx context.Context, idv string, req c.UpdateSt
 		return o, c.ErrNotFound
 	}
 	if o.Status == req.Status {
-		return o, tx.Commit()
+		if _, e = r.client(ctx, tx, req.Credentials, "orders.status.manage"); e != nil {
+			return c.Order{}, e
+		}
+		return c.RedactShipping(o), tx.Commit()
 	}
 	if req.Status == c.Finished && o.Status != c.Paid || req.Status == c.Cancelled && o.Status != c.Paid && o.Status != c.Unpaid {
 		return o, c.ErrConflict
@@ -343,7 +355,10 @@ func (r *Repository) UpdateOrder(ctx context.Context, idv string, req c.UpdateSt
 	if e = event(ctx, tx, kind, o.ID, o, now); e != nil {
 		return o, e
 	}
-	return o, tx.Commit()
+	if _, e = r.client(ctx, tx, req.Credentials, "orders.status.manage"); e != nil {
+		return c.Order{}, e
+	}
+	return c.RedactShipping(o), tx.Commit()
 }
 func definition(ctx context.Context, tx *sql.Tx, identifier string) (c.Definition, error) {
 	return definitionLocked(ctx, tx, identifier, false)

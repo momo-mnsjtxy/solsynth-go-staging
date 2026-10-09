@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"math/big"
+	c "solsynth.local/go-migration/ports/wallet/commerce"
 	"solsynth.local/go-migration/ports/wallet/merchants"
 	"strconv"
 	"strings"
@@ -32,10 +33,7 @@ func (r *Repository) Orders(ctx context.Context, actor, publisher string, q merc
 	if e != nil {
 		return nil, 0, e
 	}
-	permission := ""
-	if publisher == "" {
-		permission = "orders.view"
-	}
+	permission := "orders.view"
 	tx, e := r.begin(ctx, actor, permission)
 	if e != nil {
 		return nil, 0, e
@@ -66,11 +64,31 @@ func (r *Repository) Orders(ctx context.Context, actor, publisher string, q merc
 			rows.Close()
 			return nil, 0, e
 		}
+		if raw, ok := o.Meta["fulfillment"]; ok {
+			var destination c.Fulfillment
+			if json.Unmarshal(raw, &destination) != nil {
+				rows.Close()
+				return nil, 0, merchants.ErrUnavailable
+			}
+			destination.AddressContactID = ""
+			if o.Status != c.Paid && o.Status != c.Finished {
+				destination.AddressSnapshot = ""
+			}
+			o.Meta["fulfillment"], _ = json.Marshal(destination)
+		}
+		delete(o.Meta, "address_contact_id")
+		delete(o.Meta, "address_snapshot")
 		out = append(out, o)
 	}
 	e = rows.Err()
 	rows.Close()
 	if e != nil {
+		return nil, 0, e
+	}
+	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.view"); e != nil {
+		return nil, 0, e
+	}
+	if _, e = r.reportScope(ctx, tx, actor, publisher); e != nil {
 		return nil, 0, e
 	}
 	return out, count, tx.Commit()

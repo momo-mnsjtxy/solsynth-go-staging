@@ -98,10 +98,13 @@ func (s *Service) contacts(ctx context.Context, token string, recent, write bool
 }
 func (s *Service) ListContacts(ctx context.Context, token string) (out []Contact, e error) {
 	out = []Contact{}
-	e = s.contacts(ctx, token, false, false, func(_ Transaction, c ContactTransaction, _ authority.Principal) error {
+	e = s.contacts(ctx, token, false, true, func(_ Transaction, c ContactTransaction, _ authority.Principal) error {
 		var e error
 		out, e = c.Contacts()
-		return e
+		if e != nil {
+			return e
+		}
+		return c.AuthorizeContacts()
 	})
 	return
 }

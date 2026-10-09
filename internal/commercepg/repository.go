@@ -124,6 +124,9 @@ func event(ctx context.Context, tx *sql.Tx, kind, idv string, v any, now time.Ti
 	if e != nil {
 		return e
 	}
+	if order, ok := v.(c.Order); ok {
+		v = c.RedactShipping(order)
+	}
 	if g, ok := v.(c.Gift); ok {
 		g.GiftCode = ""
 		v = g
@@ -240,7 +243,10 @@ func (r *Repository) CreateOrder(ctx context.Context, req c.CreateOrder, key str
 		if e != nil {
 			return o, e
 		}
-		return o, tx.Commit()
+		if _, e = r.client(ctx, tx, credentials, "orders.create"); e != nil {
+			return c.Order{}, e
+		}
+		return c.RedactShipping(o), tx.Commit()
 	}
 	if req.DurationHours == 0 {
 		req.DurationHours = 24
@@ -253,7 +259,7 @@ func (r *Repository) CreateOrder(ctx context.Context, req c.CreateOrder, key str
 		if e != nil || len(b) > 16384 {
 			return o, c.ErrInvalid
 		}
-		for _, reserved := range []string{"subscription_id", "gift_id", "app_subscription", "fulfillment", "address_contact_id", "address_snapshot", "required_scopes"} {
+		for _, reserved := range []string{"subscription_id", "gift_id", "app_subscription", "fulfillment", "required_scopes"} {
 			if _, ok := req.Meta[reserved]; ok {
 				return o, c.ErrInvalid
 			}
@@ -281,6 +287,8 @@ func (r *Repository) CreateOrder(ctx context.Context, req c.CreateOrder, key str
 		quantity int
 	}
 	items := []selection{}
+	requiresAddress := false
+	addressID := ""
 	if len(req.Items) > 0 {
 		if r.adapters.Product == nil {
 			return o, c.ErrUnavailable
@@ -308,8 +316,11 @@ func (r *Repository) CreateOrder(ctx context.Context, req c.CreateOrder, key str
 			if e != nil {
 				return o, e
 			}
-			if !p.Enabled || !c.ValidPrice(p.Price) || p.RequiresAddress {
+			if !p.Enabled || !c.ValidPrice(p.Price) {
 				return o, c.ErrUnavailable
+			}
+			if p.RequiresAddress {
+				requiresAddress = true
 			}
 			if p.Recurrence != "" && p.Recurrence != "none" {
 				if len(names) != 1 || totals[name] != 1 {
@@ -340,6 +351,27 @@ func (r *Repository) CreateOrder(ctx context.Context, req c.CreateOrder, key str
 			items = append(items, selection{p, totals[name]})
 		}
 	}
+	if requiresAddress {
+		addressID, e = shippingSelection(req.Meta)
+		if e != nil {
+			return o, e
+		}
+		// Caller text is accepted for the original shape but never trusted or
+		// retained. The payer's current canonical contact supplies the snapshot.
+		o.Meta = cloneShippingMeta(o.Meta)
+		delete(o.Meta, "address_contact_id")
+		delete(o.Meta, "address_snapshot")
+		o.Meta["fulfillment"], e = jsonBytes(c.Fulfillment{RequiresAddress: true})
+		if e != nil {
+			return o, e
+		}
+	} else {
+		for _, key := range []string{"address_contact_id", "address_snapshot"} {
+			if _, ok := req.Meta[key]; ok {
+				return o, c.ErrInvalid
+			}
+		}
+	}
 	// A blocked product read may cross a stock window or manual restock.
 	// Admit all items using one fresh clock after every product lock is owned.
 	now = r.now().UTC()
@@ -364,6 +396,11 @@ func (r *Repository) CreateOrder(ctx context.Context, req c.CreateOrder, key str
 	if e = insertOrder(ctx, tx, o, app.AppID, "", "", ""); e != nil {
 		return o, e
 	}
+	if requiresAddress {
+		if e = pendingDestination(ctx, tx, &o, addressID); e != nil {
+			return o, e
+		}
+	}
 	for _, item := range items {
 		e = reserveProduct(ctx, tx, o.ID, item.p.ID, item.p.Identifier, item.quantity)
 		if e != nil {
@@ -373,7 +410,10 @@ func (r *Repository) CreateOrder(ctx context.Context, req c.CreateOrder, key str
 	if e = recordIdem(ctx, tx, "app:"+app.AppID, key, "order", fp, o.ID); e != nil {
 		return o, e
 	}
-	return o, tx.Commit()
+	if _, e = r.client(ctx, tx, credentials, "orders.create"); e != nil {
+		return c.Order{}, e
+	}
+	return c.RedactShipping(o), tx.Commit()
 }
 func ownOrder(ctx context.Context, tx *sql.Tx, actor string, o c.Order) error {
 	var ok bool
@@ -394,7 +434,11 @@ func (r *Repository) GetOrder(ctx context.Context, actor, idv string, public boo
 	if !public && !wallet.ValidID(actor) {
 		return o, c.ErrForbidden
 	}
-	tx, e := r.begin(ctx, actor, "")
+	permission := ""
+	if !public {
+		permission = "orders.view"
+	}
+	tx, e := r.begin(ctx, actor, permission)
 	if e != nil {
 		return o, e
 	}
@@ -412,6 +456,9 @@ func (r *Repository) GetOrder(ctx context.Context, actor, idv string, public boo
 		if d, recurring, err := recurringSnapshot(o); err == nil && recurring {
 			publicMeta["app_subscription"], _ = jsonBytes(d)
 		}
+		if _, ok := o.Meta["fulfillment"]; ok {
+			publicMeta["fulfillment"] = json.RawMessage(`{"requires_address":true}`)
+		}
 		o.Meta = publicMeta
 		o.PayerWalletID = nil
 		o.TransactionID = nil
@@ -422,6 +469,11 @@ func (r *Repository) GetOrder(ctx context.Context, actor, idv string, public boo
 
 	if o.Status == c.Unpaid && !o.ExpiredAt.After(r.now()) {
 		o.Status = c.Expired
+	}
+	if !public {
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.view"); e != nil {
+			return c.Order{}, e
+		}
 	}
 	return o, tx.Commit()
 }
@@ -440,7 +492,7 @@ func bounds(q c.PageQuery) c.PageQuery {
 func (r *Repository) ListOrders(ctx context.Context, actor string, q c.PageQuery) ([]c.Order, int, error) {
 	out := []c.Order{}
 	q = bounds(q)
-	tx, e := r.userTx(ctx, actor, "")
+	tx, e := r.userTx(ctx, actor, "orders.view")
 	if e != nil {
 		return nil, 0, e
 	}
@@ -470,6 +522,9 @@ func (r *Repository) ListOrders(ctx context.Context, actor string, q c.PageQuery
 	e = rows.Err()
 	rows.Close()
 	if e != nil {
+		return nil, 0, e
+	}
+	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.view"); e != nil {
 		return nil, 0, e
 	}
 	return out, total, tx.Commit()

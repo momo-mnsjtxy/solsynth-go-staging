@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Add reviewed canonical chat reads search pins and personal groups",
+  "checkpoint": "Correct admission wait fixtures with explicit synthetic history probes",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "e05ec1500d9c1ae051b2efc06abc0e2496cac328"
+    "remote_parent": "caaaab0d44ec1fdec54719b5cd2fcf5021a30c1c"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -613,8 +613,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 122022,
-      "sha256": "89a134fac53c6856bf710446ef6922bc726a806b27ed108b43269528c901f08a"
+      "bytes": 122833,
+      "sha256": "70484382d51da013f5bbd1d7bc3e50dfedf702793cf127d7c723e630cc6576e4"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -1963,8 +1963,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 207365,
-      "sha256": "eb3f6065f87a19504c7dadd85735a2e2210fcbf875af214b945be388dececc08"
+      "bytes": 207058,
+      "sha256": "ec4391c4e0a883d1ef27e5c3990f213451c03f90e3e6b9d1729aea1ef9b276a6"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -10744,7 +10744,7 @@
     {
       "path": "scripts/integration-groups.json",
       "bytes": 106114,
-      "sha256": "a6ff3269c1f8ffb13fc44531932ed0cab3b17c36a656853c2753432cf5ee972f"
+      "sha256": "c341f1e410ac1679a9ba4b3f4141640bb5ee1ac8393a316aab1cfe40a3a8ba1f"
     },
     {
       "path": "scripts/integration-postgres.sh",
@@ -11472,14 +11472,19 @@
       "sha256": "26fb23f810f5a6905a1a5926131f89a556689de28e572790afa37dbbb50ebade"
     },
     {
+      "path": "tests/integration/federation_history_fixture_test.go",
+      "bytes": 2427,
+      "sha256": "ddf6d3da09b85de48c636f3b481c6d9fb4acb3901e8471e14cc09949665e0647"
+    },
+    {
       "path": "tests/integration/federation_public_admission_test.go",
       "bytes": 22725,
       "sha256": "633633846d4f3d5082ac527826e39da0c95b9789d620604c761961328b74f5da"
     },
     {
       "path": "tests/integration/federation_public_admission_wait_test.go",
-      "bytes": 8801,
-      "sha256": "214a2251006c86035295d78b5131e0fd0a0e555b5aede30527d0d47ca3cf2cfa"
+      "bytes": 8199,
+      "sha256": "98b365e9aa983f2360ff449337d470e70d59241242198fa9af2bda9995dbd2e3"
     },
     {
       "path": "tests/integration/federation_quotes_test.go",

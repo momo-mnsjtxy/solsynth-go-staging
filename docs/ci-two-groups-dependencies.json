@@ -1,5 +1,5 @@
 {
-  "base_commit": "41d68f76a71f355ff14c7baab69101ba696a7d06",
+  "base_commit": "444076623a010135a721122730612210be85e670",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -2070,12 +2070,16 @@
       "sha256": "26fb23f810f5a6905a1a5926131f89a556689de28e572790afa37dbbb50ebade"
     },
     {
+      "source": "tests/integration/federation_history_fixture_test.go",
+      "sha256": "ddf6d3da09b85de48c636f3b481c6d9fb4acb3901e8471e14cc09949665e0647"
+    },
+    {
       "source": "tests/integration/federation_public_admission_test.go",
       "sha256": "633633846d4f3d5082ac527826e39da0c95b9789d620604c761961328b74f5da"
     },
     {
       "source": "tests/integration/federation_public_admission_wait_test.go",
-      "sha256": "214a2251006c86035295d78b5131e0fd0a0e555b5aede30527d0d47ca3cf2cfa"
+      "sha256": "98b365e9aa983f2360ff449337d470e70d59241242198fa9af2bda9995dbd2e3"
     },
     {
       "source": "tests/integration/federation_quotes_test.go",
@@ -2480,5 +2484,11 @@
     "after": 1,
     "correction_sha256": "9b5342c69151208c95ffa89458f4a9dbe4c8c07ec72b99ca7e2e5214681b33bf",
     "review": "Fresh database-clock paid entitlement after all final lock waits, canonical realm/privacy/owner/scope/pin/rollback tests and original expiry-bound restart. Original nine top-level names retained."
+  },
+  "public_admission_wait_fixture_review": {
+    "runtime_changes": false,
+    "scope": "Shared synthetic no-FK history-only probe afterjob/audit waits; rejects held canonical account/grant/membership write locks and asserts canonical factor policy version unchanged. Canonical account-first grant ABA remains separate.",
+    "source": "tests/integration/federation_history_fixture_test.go",
+    "audit": "All federation hold.Exec grant/session sites classified; only later-order job/audit probes substituted. Existing account-held grant writers and account-held session observation are preserved after checking their trigger lock paths."
   }
 }

@@ -2,16 +2,15 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed canonical chat summary/read-all/literal paid-search/pins/personal groups integrated, paid-cycle final wait expiry correction; combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL pending.",
+  "local_source_checkpoint": "Narrow public-admission job/audit wait fixture correction; runtime unchanged. Synthetic no-FK history helper explicitly forbids canonical writes under later locks; canonical ABA tests retained. ActualPG pending.",
   "last_fully_passed_ci": {
-    "commit": "651c6302809de83a2682047c5820468befd15b1e",
-    "run": 37873421328,
+    "commit": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e",
+    "run": 37876162176,
     "attempt": 1,
-    "before": 718,
-    "after_restart": 87,
+    "before": 756,
+    "after_restart": 91,
     "skipped": 0,
-    "evidence": "All four exact jobs/head/attempt/required steps passed. Independent exact named-case verification from authorized raw job logs; CI aggregate verified both attempt-bound artifact digests and two actual restarted clusters/process smokes. Local artifact ZIP recomputation unavailable403/error1010; no bypass or retry.",
-    "acceptance_limit": "CI-green for this immutable implementation, not all original platform functions or production rollout."
+    "evidence": "Exactalljobs/head/attempt/steps and independentnamedrawlogcases; CIaggregateverifiedbothartifactdigestsandactualrestarts; localZIP403/error1010 unavailable."
   },
   "latest_candidate": {
     "commit": "e05ec1500d9c1ae051b2efc06abc0e2496cac328",
@@ -4141,17 +4140,17 @@
     "Passing configured adapters and owned policies does not establish upstream internal behavior, live provider activation, or production migration readiness."
   ],
   "prior_candidate_result": {
-    "commit": "0a79937fb769650afb0c446de0bcb7ca0b815afd",
-    "run": 37874181155,
-    "before_passed": 739,
-    "before_failed": 3,
+    "commit": "e05ec1500d9c1ae051b2efc06abc0e2496cac328",
+    "run": 37876657622,
+    "before_passed": 775,
+    "before_failed": 2,
     "after_restart": 0,
     "skipped": 0,
     "failures": [
-      "TestPGCalendarActivityStringProjectionPrivacyAndTimeZone",
-      "TestPGFederationDiscoveryRetryLeaseAndAtomicRollback",
-      "TestPGFederationDiscoveryCurrentPolicyAfterJobLockWait"
-    ]
+      "TestPGFederationPublicAdmissionCurrentPolicyAfterAuditWait",
+      "TestPGFederationPublicAdmissionCurrentPolicyAfterJobWait"
+    ],
+    "note": "All9newcomposerPGpassed, no restart."
   },
   "latest_job_log_verified_ci_pass": {
     "commit": "651c6302809de83a2682047c5820468befd15b1e",

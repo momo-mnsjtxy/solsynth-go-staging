@@ -109,14 +109,8 @@ func TestPGFederationPublicAdmissionCurrentPolicyAfterJobWait(t *testing.T) {
 	}
 	unblock()
 	waitAtomicBlocked(t, atomicAuthorityFixture{db: x.db, ctx: ctx}, pid, "owned_federation_public_admission_jobs")
-	// Direct maintained-table fixture writes deliberately bypass canonical locks
-	// to prove the completion's final post-job-wait statement reads fresh policy.
-	if _, e = hold.ExecContext(ctx, `UPDATE owned_authority_grants SET deny=true WHERE account_id=$1::uuid AND pattern='publishers.*'`, x.actor); e != nil {
-		t.Fatal(e)
-	}
-	if _, e = hold.ExecContext(ctx, `UPDATE owned_authority_grants SET deny=false WHERE account_id=$1::uuid AND pattern='publishers.*'`, x.actor); e != nil {
-		t.Fatal(e)
-	}
+	// Synthetic generation-only probe: canonical grant ABA is tested separately.
+	syntheticFederationHistoryTransition(t, ctx, hold, "discovery", x.actor)
 	if e = hold.Commit(); e != nil {
 		t.Fatal(e)
 	}
@@ -198,12 +192,7 @@ func TestPGFederationPublicAdmissionCurrentPolicyAfterAuditWait(t *testing.T) {
 	done := make(chan error, 1)
 	go func() { _, e := x.r.ProcessPublicAdmissions(ctx, discoveryResponse(t, x, target), 1); done <- e }()
 	waitAtomicBlocked(t, atomicAuthorityFixture{db: x.db, ctx: ctx}, pid, "owned_federation_public_audit")
-	if _, e = hold.ExecContext(ctx, `UPDATE owned_authority_grants SET deny=true WHERE account_id=$1 AND pattern='publishers.*'`, x.actor); e != nil {
-		t.Fatal(e)
-	}
-	if _, e = hold.ExecContext(ctx, `UPDATE owned_authority_grants SET deny=false WHERE account_id=$1 AND pattern='publishers.*'`, x.actor); e != nil {
-		t.Fatal(e)
-	}
+	syntheticFederationHistoryTransition(t, ctx, hold, "discovery", x.actor)
 	if e = hold.Commit(); e != nil {
 		t.Fatal(e)
 	}

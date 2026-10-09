@@ -129,6 +129,8 @@ type EventPatch struct {
 	IconID            *string         `json:"icon_id"`
 	BackgroundID      *string         `json:"background_id"`
 	RecurrencePresent bool            `json:"-"`
+	IconPresent       bool            `json:"-"`
+	BackgroundPresent bool            `json:"-"`
 }
 type DayInput struct {
 	Name              string          `json:"name"`
@@ -199,10 +201,11 @@ type Countdown struct {
 	Background     any             `json:"background"`
 }
 type Overlay struct {
-	Date     string
-	CheckIn  json.RawMessage
-	Statuses []json.RawMessage
-	Merged   []MergedEvent
+	Date       string
+	CheckIn    json.RawMessage
+	Statuses   []json.RawMessage
+	Merged     []MergedEvent
+	Activities []ActivityEvent
 }
 type DailyCalendar struct {
 	Date                  time.Time         `json:"date"`
@@ -212,7 +215,21 @@ type DailyCalendar struct {
 	NotableDays           []Occurrence      `json:"notable_days"`
 	UnavailableComponents []string          `json:"unavailable_components,omitempty"`
 }
+
+// ActivityEvent is an independently authored projection. Kind is a stable string;
+// it does not assert equivalence to an unverified upstream numeric activity enum.
+type ActivityEvent struct {
+	ID        string    `json:"id"`
+	Kind      string    `json:"kind"`
+	Title     string    `json:"title"`
+	StartTime time.Time `json:"start_time"`
+	EndTime   time.Time `json:"end_time"`
+	IsAllDay  bool      `json:"is_all_day"`
+}
+
 type MergedEvent struct {
+	Icon          any             `json:"icon"`
+	Background    any             `json:"background"`
 	ID            *string         `json:"id"`
 	Type          int             `json:"type"`
 	Title         string          `json:"title"`
@@ -225,6 +242,7 @@ type MergedEvent struct {
 	OccurrenceKey string          `json:"occurrence_key,omitempty"`
 }
 type MergedCalendar struct {
+	ActivityEvents        []ActivityEvent   `json:"activity_events"`
 	Date                  time.Time         `json:"date"`
 	CheckInResult         json.RawMessage   `json:"check_in_result"`
 	Statuses              []json.RawMessage `json:"statuses"`

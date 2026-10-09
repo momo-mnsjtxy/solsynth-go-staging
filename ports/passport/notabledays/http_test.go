@@ -100,3 +100,24 @@ func TestOccurrenceKeyCanBeSafelyURLEncoded(t *testing.T) {
 		t.Fatal(w.Code)
 	}
 }
+
+func TestCalendarHTTPMediaOmissionAndRemoval(t *testing.T) {
+	repo := &testRepo{}
+	h := (&Service{Repository: repo, Authority: testAuth{}}).Handler()
+	for _, tc := range []struct {
+		body             string
+		icon, background bool
+	}{{`{"title":"keep media"}`, false, false}, {`{"icon_id":null}`, true, false}, {`{"background_id":null}`, false, true}, {`{"icon_id":"10000000-0000-4000-8000-000000000002","background_id":null}`, true, true}} {
+		w := httpCall(h, "PUT", "/api/accounts/me/calendar/events/"+testAccount, tc.body, true)
+		if w.Code != 200 || repo.c.Patch.IconPresent != tc.icon || repo.c.Patch.BackgroundPresent != tc.background {
+			t.Fatal(tc, w.Code, repo.c.Patch)
+		}
+	}
+	for _, body := range []string{`{"icon_id":null,"icon_id":null}`, `{"background_id":{}}`, `{"icon":{"url":"https://example.invalid"}}`} {
+		repo.calls = 0
+		w := httpCall(h, "PUT", "/api/accounts/me/calendar/events/"+testAccount, body, true)
+		if w.Code != 400 || repo.calls != 0 {
+			t.Fatal(body, w.Code)
+		}
+	}
+}

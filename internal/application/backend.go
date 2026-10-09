@@ -17,6 +17,7 @@ import (
 	"solsynth.local/go-migration/internal/blogpg"
 	"solsynth.local/go-migration/internal/boardpg"
 	"solsynth.local/go-migration/internal/botpg"
+	"solsynth.local/go-migration/internal/calendarmediapg"
 	"solsynth.local/go-migration/internal/chatmediapg"
 	"solsynth.local/go-migration/internal/chatpg"
 	"solsynth.local/go-migration/internal/commercepg"
@@ -441,6 +442,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		}
 	}
 	var mediaRepo *mediapg.Repository
+	var calendarMedia *calendarmediapg.Repository
 	var artworkHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "MEDIA_STORAGE_UNCONFIGURED") })
 	var mediaHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "MEDIA_STORAGE_UNCONFIGURED") })
 	if c.MediaStore != nil {
@@ -453,7 +455,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		}
 		ticketMedia := ticketmediapg.New(db, ticketRepo)
 		ticketRepo.WithMedia(ticketMedia)
-		profileMedia := profilemediapg.New(db, mediapg.AnyReadVisibility{postMedia, chatMedia, roomMedia, ticketMedia})
+		calendarMedia = calendarmediapg.New(db)
+		profileMedia := profilemediapg.New(db, mediapg.AnyReadVisibility{postMedia, chatMedia, roomMedia, ticketMedia, calendarMedia})
 		accountRepo.WithProfileMedia(profileMedia)
 		mediaRepo.WithReadVisibility(profileMedia)
 		artworkHTTP = (&artwork.Service{Repository: mediaRepo, Authority: proofIdentity{identity}}).Handler()
@@ -470,9 +473,12 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		if fortuneRepo != nil {
 			activity = fortunepg.CalendarOverlay{Base: activity, Reports: fortuneRepo}
 		}
-		calendarRepo, err = notabledaypg.New(db, guard, notabledaypg.Config{Activity: activity})
+		calendarRepo, err = notabledaypg.New(db, guard, notabledaypg.Config{Now: c.Authority.Now, Activity: activity})
 		if err != nil {
 			return nil, err
+		}
+		if calendarMedia != nil {
+			calendarRepo.WithMedia(calendarMedia)
 		}
 		calendarHTTP = bindIdentity(v, (&notabledays.Service{Repository: calendarRepo, Authority: proofIdentity{identity}}).Handler())
 	}

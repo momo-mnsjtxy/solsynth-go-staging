@@ -30,6 +30,8 @@ type FederationConfig struct {
 	Policy    federation.Config
 	Keys      federation.KeyProvider
 	Transport federation.Transport
+	Discovery federation.DiscoveryFeatures
+	Fetcher   federation.Fetcher
 }
 type externalModules struct {
 	streams                                       *livestreampg.Repository
@@ -37,6 +39,8 @@ type externalModules struct {
 	calls                                         *callpg.Repository
 	federation                                    *federationpg.Repository
 	transport                                     federation.Transport
+	fetcher                                       federation.Fetcher
+	discoveryEnabled                              bool
 	callHTTP, federationPublic, federationPrivate http.Handler
 }
 
@@ -68,11 +72,16 @@ func externalModulesFor(db, authorityDB *sql.DB, c Config, v *authority.Verifier
 		if c.Federation.Keys == nil {
 			return x, errors.New("federation requires explicitly provisioned keys")
 		}
-		x.federation, err = federationpg.New(db, c.Federation.Policy, c.Federation.Keys, guard)
+		x.federation, err = federationpg.NewWithDiscovery(db, c.Federation.Policy, c.Federation.Keys, guard, c.Federation.Discovery)
 		if err != nil {
 			return x, err
 		}
 		x.transport = c.Federation.Transport
+		x.fetcher = c.Federation.Fetcher
+		x.discoveryEnabled = c.Federation.Discovery.Server != nil || len(c.Federation.Discovery.Targets) > 0
+		if x.fetcher != nil && len(c.Federation.Discovery.Targets) == 0 {
+			return x, errors.New("discovery transport requires configured targets")
+		}
 		handler := federationhttp.Handler{Repository: x.federation, Config: c.Federation.Policy, Keys: c.Federation.Keys, Authority: proofIdentity{identity}}
 		x.federationPublic = handler
 		x.federationPrivate = bindIdentity(v, bindTransactionAuthority(guard, handler))
@@ -98,6 +107,11 @@ func (x externalModules) ready(ctx context.Context, db *sql.DB) error {
 		}
 	}
 	if x.federation != nil {
+		if x.discoveryEnabled {
+			if e := x.federation.DiscoveryReady(ctx); e != nil {
+				return errors.New("federation discovery schema or server anchor unavailable")
+			}
+		}
 		if e := x.federation.Ready(ctx); e != nil {
 			return errors.New("federation schema unavailable")
 		}
@@ -124,6 +138,11 @@ func (x externalModules) processDue(ctx context.Context, limit int) (count int, 
 		err = errors.Join(err, e)
 	}
 	if x.federation != nil {
+		if x.fetcher != nil {
+			n, e := x.federation.ProcessDiscoveries(ctx, x.fetcher, limit)
+			count += n
+			err = errors.Join(err, e)
+		}
 		n, e := x.federation.ReconcilePosts(ctx, limit)
 		count += n
 		err = errors.Join(err, e)

@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Narrow blog fixture contract correction: complete owned messager enums and preview-title fallback request. Runtime keeps authored title override; no gate relaxation. Full local checks pending, actualPG pending.",
+  "local_source_checkpoint": "Reviewed pinned federation discovery and calendar media/activity with final audience rechecks; original-token calendar restart proof, no after issuance. Full combined offline checks passed; actual PostgreSQL pending.",
   "last_fully_passed_ci": {
     "commit": "85674a81584fc05876446b80761f6c27917ed037",
     "run": 37868140163,
@@ -14,14 +14,14 @@
     "acceptance_limit": "Known ordinary-editor automod evidence issue corrected in699;674 is CI-green, not production or whole-platform acceptance."
   },
   "latest_candidate": {
-    "commit": "370301367488fb8462b231ef65163188ed78ee39",
-    "run": 37871611271,
+    "commit": "651c6302809de83a2682047c5820468befd15b1e",
+    "run": 37873421328,
     "required_before": 718,
     "required_after_restart": 87,
-    "status": "Running canonical explicit-grant correction; two blog fixture corrections follow here. Original718 run713/718 before passed, five failures,no restart,zero skips."
+    "status": "Running narrow fixture correction. Parent3703013 completed716/718 before with only two corrected blog fixture failures, zero skips, no restart; explicit automod grant/expiry/revocation and original bot issuer regressions passed."
   },
-  "local_required_before": 718,
-  "local_required_after_restart": 87,
+  "local_required_before": 742,
+  "local_required_after_restart": 90,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2129,41 +2129,57 @@
     "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
-    "as_of": "2026-10-09T01:20:00Z",
-    "authoritative_for": "Known remaining flows, not a count of source operations. Partial/unresearched contracts remain research tasks; unavailable is never inferred from lack of prior research.",
+    "as_of": "2026-10-09T02:13:00Z",
+    "authoritative_for": "Current source-backed remaining flow bundles, implementation candidates and operational gaps; no percentage or endpoint-total inference.",
     "families": [
       {
         "family": "develop.apps_products",
         "remaining": [
-          "Remaining original app-management contracts",
-          "External workspace/provider execution; address fulfillment implemented pending CI"
+          "See current source-backed flow bundles: developer_management_edges"
+        ],
+        "bundle_ids": [
+          "developer_management_edges"
         ]
       },
       {
         "family": "develop.bots",
         "remaining": [
-          "Ordinary-group bot dispatch implemented pending CI; bot identity credentials/replies and legacy migration remain partial",
-          "DM/realm/MLS execution and automatic enrollment renewal unsupported"
+          "See current source-backed flow bundles: developer_management_edges, bot_credentials_replies"
+        ],
+        "bundle_ids": [
+          "developer_management_edges",
+          "bot_credentials_replies"
         ]
       },
       {
         "family": "develop.miniapps",
         "remaining": [
-          "Hosted execution, legacy multipart/image contracts and legacy migration"
+          "See current source-backed flow bundles: miniapp_source_upload"
+        ],
+        "bundle_ids": [
+          "miniapp_source_upload"
         ]
       },
       {
         "family": "messager.messages",
         "remaining": [
-          "Remaining original system/message types; thread/live-reference/explicit plaintext forwarding implemented pending CI, attachment forwarding requires separate canonical rights",
-          "Later client integration for generation-aware reset and encrypted deletion; attachment cryptography remains deferred frontend work"
+          "See current source-backed flow bundles: chat_reads_search, chat_pins_folders, chat_voice_placeholders"
+        ],
+        "bundle_ids": [
+          "chat_reads_search",
+          "chat_pins_folders",
+          "chat_voice_placeholders"
         ]
       },
       {
         "family": "messager.rooms",
         "remaining": [
-          "Bot automatic confirmation/execution and account-perk-bound nickname semantics",
-          "Legacy system-message envelopes"
+          "See current source-backed flow bundles: chat_reads_search, chat_pins_folders, chat_room_details"
+        ],
+        "bundle_ids": [
+          "chat_reads_search",
+          "chat_pins_folders",
+          "chat_room_details"
         ]
       },
       {
@@ -2175,40 +2191,58 @@
       {
         "family": "passport.badges",
         "remaining": [
-          "Legacy badge import and original external earning providers"
+          "See current source-backed flow bundles: account_admin_badges"
+        ],
+        "bundle_ids": [
+          "account_admin_badges"
         ]
       },
       {
         "family": "passport.fortunes",
         "remaining": [
-          "Original sayings/tips/fallback corpus excluded pending provenance",
-          "Birthday/backdated rules and unsupported enrichment; original personality RPC not imported"
+          "See current source-backed flow bundles: progression_provider_edges"
+        ],
+        "bundle_ids": [
+          "progression_provider_edges"
         ]
       },
       {
         "family": "passport.accounts_presence",
         "remaining": [
-          "Admin contacts, phone/address verification, security modes and excluded SDK preference encoding",
-          "External identity providers; affiliation purchase settlement remains explicit separate gap"
+          "See current source-backed flow bundles: presence_activity_catalog, account_admin_badges, account_history_credit_connections"
+        ],
+        "bundle_ids": [
+          "presence_activity_catalog",
+          "account_admin_badges",
+          "account_history_credit_connections"
         ]
       },
       {
         "family": "passport.progression",
         "remaining": [
-          "Source-point payout provider, explicit level threshold policy values, unsupported legacy event categories"
+          "See current source-backed flow bundles: account_history_credit_connections, progression_provider_edges"
+        ],
+        "bundle_ids": [
+          "account_history_credit_connections",
+          "progression_provider_edges"
         ]
       },
       {
         "family": "passport.social_realms",
         "remaining": [
-          "Realm boost flow implemented pending CI; total realm XP/levels remain partial. No realm-mute contract found in retained sources.",
-          "Original excluded numeric role/model encoding and legacy data mapping; owned0/50/100 mapping and security differences are documented"
+          "See current source-backed flow bundles: realm_remaining_details"
+        ],
+        "bundle_ids": [
+          "realm_remaining_details"
         ]
       },
       {
         "family": "passport.location_nfc",
         "remaining": [
-          "Hardware/encrypted NFC, provider geocoding, image attachments, durable stream replay"
+          "See current source-backed flow bundles: nearby_nfc_media"
+        ],
+        "bundle_ids": [
+          "nearby_nfc_media"
         ]
       },
       {
@@ -2235,7 +2269,10 @@
       {
         "family": "sphere.federation",
         "remaining": [
-          "Remote discovery, client-to-server activity, private/realm/media federation and broader activity types"
+          "See current source-backed flow bundles: federation_broader_contracts"
+        ],
+        "bundle_ids": [
+          "federation_broader_contracts"
         ]
       },
       {
@@ -2247,13 +2284,22 @@
       {
         "family": "sphere.publishers",
         "remaining": [
-          "Remaining ratings/settlement/subscription administration and organization-specific collection/sticker/app/taxonomy/federation compatibility; implemented subflows are tracked in dedicated families"
+          "See current source-backed flow bundles: publisher_discovery_features_stats, publisher_subscription_state, collection_subscriptions_navigation, merchant_settlement_payout"
+        ],
+        "bundle_ids": [
+          "publisher_discovery_features_stats",
+          "publisher_subscription_state",
+          "collection_subscriptions_navigation",
+          "merchant_settlement_payout"
         ]
       },
       {
         "family": "sphere.live_ads",
         "remaining": [
-          "Live provider configuration and actual external egress are operational acceptance gaps; implemented lifecycle is tracked separately"
+          "See current source-backed flow bundles: publisher_discovery_features_stats"
+        ],
+        "bundle_ids": [
+          "publisher_discovery_features_stats"
         ]
       },
       {
@@ -2266,57 +2312,91 @@
       {
         "family": "sphere.stickers_surveys",
         "remaining": [
-          "Excluded legacy migrations and third-party sticker assets"
+          "See current source-backed flow bundles: survey_subscriptions"
+        ],
+        "bundle_ids": [
+          "survey_subscriptions"
         ]
       },
       {
         "family": "sphere.timeline",
         "remaining": [
-          "Semantic/fuzzy search and external notification delivery"
+          "See current source-backed flow bundles: publisher_subscription_state, post_controls_navigation"
+        ],
+        "bundle_ids": [
+          "publisher_subscription_state",
+          "post_controls_navigation"
         ]
       },
       {
         "family": "sphere.posts",
         "remaining": [
-          "Remaining original admin/statistics semantics beyond implemented controllers; blog and scheduling delivered pending actualPG",
-          "External source/provider activation and historical-data compatibility remain operational gaps"
+          "See current source-backed flow bundles: publishing_settings, post_controls_navigation, post_typed_composition, collection_subscriptions_navigation"
+        ],
+        "bundle_ids": [
+          "publishing_settings",
+          "post_controls_navigation",
+          "post_typed_composition",
+          "collection_subscriptions_navigation"
         ]
       },
       {
         "family": "wallet.product_catalog",
         "remaining": [
-          "Configuration provisioning and full provider purchase flows"
+          "See current source-backed flow bundles: wallet_financial_admin, wallet_external_provider_flows"
+        ],
+        "bundle_ids": [
+          "wallet_financial_admin",
+          "wallet_external_provider_flows"
         ]
       },
       {
         "family": "wallet.ledger",
         "remaining": [
-          "Legacy import policy; compatible user PIN enrollment is implemented in passport.payment_pin"
+          "See current source-backed flow bundles: wallet_exchange_analytics"
+        ],
+        "bundle_ids": [
+          "wallet_exchange_analytics"
         ]
       },
       {
         "family": "wallet.orders_payments",
         "remaining": [
-          "Live provider clients and payouts; address fulfillment implemented pending CI; opt-in owned coupons implemented pending CI"
+          "See current source-backed flow bundles: wallet_financial_admin, merchant_settlement_payout, wallet_external_provider_flows"
+        ],
+        "bundle_ids": [
+          "wallet_financial_admin",
+          "merchant_settlement_payout",
+          "wallet_external_provider_flows"
         ]
       },
       {
         "family": "wallet.subscriptions_gifts",
         "remaining": [
-          "Provider synchronization and trials",
-          "External workspace fulfillment; required address implemented pending CI"
+          "See current source-backed flow bundles: wallet_financial_admin, wallet_external_provider_flows"
+        ],
+        "bundle_ids": [
+          "wallet_financial_admin",
+          "wallet_external_provider_flows"
         ]
       },
       {
         "family": "wallet.merchants",
         "remaining": [
-          "Legacy publisher-wide settlement state and payouts"
+          "See current source-backed flow bundles: merchant_settlement_payout"
+        ],
+        "bundle_ids": [
+          "merchant_settlement_payout"
         ]
       },
       {
         "family": "wallet.reporting",
         "remaining": [
-          "Global financial administration and provider settlement reports"
+          "See current source-backed flow bundles: wallet_exchange_analytics, wallet_financial_admin"
+        ],
+        "bundle_ids": [
+          "wallet_exchange_analytics",
+          "wallet_financial_admin"
         ]
       },
       {
@@ -2381,9 +2461,10 @@
       {
         "family": "federation.publisher_aliases",
         "remaining": [
-          "Remote Move/origin migration",
-          "Remote alias discovery/history enumeration",
-          "Organization federation"
+          "See current source-backed flow bundles: federation_broader_contracts"
+        ],
+        "bundle_ids": [
+          "federation_broader_contracts"
         ]
       },
       {
@@ -2454,9 +2535,10 @@
       {
         "family": "sphere.post_awards",
         "remaining": [
-          "XP/social-credit projections and global resettlement",
-          "Automatic individual-wallet fallback",
-          "Retroactive rewrite of reaction-only rating receipts"
+          "See current source-backed flow bundles: merchant_settlement_payout"
+        ],
+        "bundle_ids": [
+          "merchant_settlement_payout"
         ]
       },
       {
@@ -2485,9 +2567,10 @@
       {
         "family": "federation.quote_authorization",
         "remaining": [
-          "Outbound QuoteRequest and unknown remote-issued authorizations",
-          "Unobserved remote signing-key rollback requires provider generation/history; observed mismatches revoke durably",
-          "Remote/private/realm/media discovery and whole-FEP conformance remain unsupported"
+          "See current source-backed flow bundles: federation_broader_contracts"
+        ],
+        "bundle_ids": [
+          "federation_broader_contracts"
         ]
       },
       {
@@ -2508,16 +2591,19 @@
       {
         "family": "passport.affiliation_and_owned_activation",
         "remaining": [
-          "Paid invitation issuance requires dedicated price/beneficiary policy and canonical settlement adapter; endpoint explicitly unavailable",
-          "Excluded legacy type/group mapping; owned type and member permission policy documented",
-          "No implicit administrative grant or restoration of revoked activation grants"
+          "See current source-backed flow bundles: affiliation_paid_issue"
+        ],
+        "bundle_ids": [
+          "affiliation_paid_issue"
         ]
       },
       {
         "family": "wallet.owned_coupons",
         "remaining": [
-          "Legacy formula/schema/enum parity not evidenced; owned configured economics explicitly different",
-          "External provider/platform-funded coupons and coupon auto-renewal unsupported"
+          "See current source-backed flow bundles: wallet_external_provider_flows"
+        ],
+        "bundle_ids": [
+          "wallet_external_provider_flows"
         ]
       },
       {
@@ -2537,7 +2623,10 @@
       {
         "family": "wallet.address_fulfillment",
         "remaining": [
-          "Carrier/provider workspace execution remains unsupported"
+          "See current source-backed flow bundles: wallet_external_provider_flows"
+        ],
+        "bundle_ids": [
+          "wallet_external_provider_flows"
         ]
       },
       {
@@ -2549,17 +2638,19 @@
       {
         "family": "passport.realm_boosts",
         "remaining": [
-          "Total realm XP/levels and other event sources remain unsupported; response explicitly identifies boost receipt history",
-          "Label caps and subscription-to-perk mapping require owned explicit configuration",
-          "No live transactions or production treasury provisioning"
+          "See current source-backed flow bundles: realm_remaining_details"
+        ],
+        "bundle_ids": [
+          "realm_remaining_details"
         ]
       },
       {
         "family": "develop.bot_dispatch",
         "remaining": [
-          "DM/realm/MLS execution, bot replies/key issuance and automatic enrollment renewal remain unsupported",
-          "Provider deduplication is required to prevent ambiguous duplicate acceptance; no exactly-once execution claim",
-          "Live adapter activation remains operationally unperformed"
+          "See current source-backed flow bundles: bot_credentials_replies"
+        ],
+        "bundle_ids": [
+          "bot_credentials_replies"
         ]
       },
       {
@@ -2596,7 +2687,1432 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last CI-green674/84 with known editor privacy issue.699696/699 failed;718 inherited failures pending. Current narrow matching-grant fix is locally verified and awaiting actualPG."
+    "verification_note": "Last full CI-green85674a:674 before/84 restart. Explicit-grant718 run37871611271:716/718 before passed, two blog fixture failures, zero skips, no restart. Grant/expiry/revocation and bot issuer regressions passed. Narrow fixture correction651c630 awaits CI.",
+    "unimplemented_flow_bundles": [
+      {
+        "id": "chat_reads_search",
+        "families": [
+          "messager.messages",
+          "messager.rooms"
+        ],
+        "remaining": "Chat aggregate/read-all/global-sync/search and subscription/status projections are not exposed by the composed Go host.",
+        "source": [
+          {
+            "path": "DysonNetwork.Messager/Chat/ChatController.cs",
+            "blob": "29e748e8c585ed766c9e20dddfc2eae65509f9a2",
+            "methods": "GetChatSummary@230; MarkAllAsRead@269; GetRoomSubscriptions@284; GetMyAccountSubscriptions@299; GetMyChatStatus@310; SearchMessages@429; GetGlobalSyncData@1675; DeviceJoined@1810",
+            "route_examples": [
+              "GET /api/chat/summary",
+              "POST /api/chat/read-all",
+              "GET /api/chat/{roomId:guid}/subscriptions"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Messager/Chat/ChatRoomController.cs",
+            "blob": "373efa01d468a76ba5085bf5c2b59bede71bd7ec",
+            "methods": "SyncJoinedChatRooms@167",
+            "route_examples": [
+              "POST /api/chat/rooms/sync"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/messager/rooms/http.go:serveHTTP/isReadRoute",
+          "internal/messagerpg/repository.go",
+          "ports/messager/sync_service.go"
+        ],
+        "current_boundary": "Current room reads, per-room sync and total unread are implemented. Other requests fall through CHAT_UNSUPPORTED or do not resolve to a valid room; pure helpers do not constitute these runtime flows.",
+        "next_slice": "Start with summary, read-all and literal canonical search using existing membership/visibility rules; separately specify transport subscription/device semantics."
+      },
+      {
+        "id": "chat_pins_folders",
+        "families": [
+          "messager.messages",
+          "messager.rooms"
+        ],
+        "remaining": "Message pins and per-account chat folders/group assignment remain unimplemented.",
+        "source": [
+          {
+            "path": "DysonNetwork.Messager/Chat/ChatController.cs",
+            "blob": "29e748e8c585ed766c9e20dddfc2eae65509f9a2",
+            "methods": "PinMessage@1868; UnpinMessage@1897; ListPins@1926",
+            "route_examples": [
+              "POST /api/chat/{roomId:guid}/pins",
+              "DELETE /api/chat/{roomId:guid}/pins/{pinId:guid}",
+              "GET /api/chat/{roomId:guid}/pins"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Messager/Chat/ChatRoomController.cs",
+            "blob": "373efa01d468a76ba5085bf5c2b59bede71bd7ec",
+            "methods": "ListGroups@2093; CreateGroup@2104; UpdateGroup@2116; DeleteGroup@2128; MoveToGroup@2140",
+            "route_examples": [
+              "GET /api/chat/groups",
+              "POST /api/chat/groups",
+              "PATCH /api/chat/groups/{groupId:guid}"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/messager/rooms/http.go:serveHTTP",
+          "internal/chatpg",
+          "internal/messagerpg"
+        ],
+        "current_boundary": "No pin or personal-group persistence/handler in current canonical owner. Do not confuse personal folders with implemented group chat rooms.",
+        "next_slice": "One bounded transactional bundle: fresh room/target visibility, account-owned folders, pin expiry and saved-state restart."
+      },
+      {
+        "id": "chat_voice_placeholders",
+        "families": [
+          "messager.messages"
+        ],
+        "remaining": "Voice upload/download, persisted placeholder lifecycle/expiry and non-text typed message compositions remain unimplemented.",
+        "source": [
+          {
+            "path": "DysonNetwork.Messager/Chat/ChatController.cs",
+            "blob": "29e748e8c585ed766c9e20dddfc2eae65509f9a2",
+            "methods": "SendMessage@610; SendVoiceMessage@856; SendPlaceholderMessage@943; GetVoiceMessage@1067; UpdateMessage@1087",
+            "route_examples": [
+              "POST /api/chat/{roomId:guid}/messages",
+              "POST /api/chat/{roomId:guid}/messages/voice",
+              "POST /api/chat/{roomId:guid}/messages/placeholder"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/messager/rooms/validation.go:ValidateText",
+          "ports/messager/rooms/http.go:serveHTTP",
+          "ports/messager/placeholder.go"
+        ],
+        "current_boundary": "Voice/placeholder HTTP routes have no concrete owner; ValidateText rejects non-text type and fund/survey IDs. Placeholder pure transformation/expiry helpers exist, but no canonical persisted job/HTTP flow. Existing attachment/rich metadata/reactions/thread/forwarding paths must be preserved.",
+        "next_slice": "Implement placeholder persistence first; then canonical owned voice bytes/expiry and permitted typed media references. Do not transplant external media URLs or downgrade encrypted content.",
+        "additional_source": [
+          "DysonNetwork.Messager/Chat/PlaceholderExpirationJob.cs:Execute",
+          "DysonNetwork.Messager/Chat/Voice/ChatVoiceCleanupJob.cs:Execute"
+        ]
+      },
+      {
+        "id": "chat_room_details",
+        "families": [
+          "messager.rooms"
+        ],
+        "remaining": "Public slug lookup, online-member count, member profile customization and legacy moderation route aliases remain missing.",
+        "source": [
+          {
+            "path": "DysonNetwork.Messager/Chat/ChatRoomController.cs",
+            "blob": "373efa01d468a76ba5085bf5c2b59bede71bd7ec",
+            "methods": "GetChatRoomBySlug@132; UpdateRoomIdentity@1178; ClearRoomIdentity@1202; GetOnlineUsersCount@1223; DeleteMessage@2160; TimeoutUser@2232",
+            "route_examples": [
+              "GET /api/chat/public/{scope}/{chatSlug}",
+              "PATCH /api/chat/{roomId:guid}/members/me/profile",
+              "DELETE /api/chat/{roomId:guid}/members/me/profile"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/messager/rooms/http.go",
+          "ports/messager/rooms/types.go",
+          "internal/chatpg"
+        ],
+        "current_boundary": "Room CRUD, invitation/join/leave, notify, direct/realm restrictions and timeouts exist. These additional paths/shapes are absent; slug/read-receipt policy fields remain explicitly unsupported.",
+        "next_slice": "Add read/profile routes against canonical presence/media and current member policy; treat perk-dependent customization as an explicit entitlement decision."
+      },
+      {
+        "id": "developer_management_edges",
+        "families": [
+          "develop.apps_products",
+          "develop.bots",
+          "develop.developers"
+        ],
+        "remaining": "Developer quota/statistics reads, publisher-authorized ad-hoc custom order creation, and app/product/bot imagery are missing.",
+        "source": [
+          {
+            "path": "DysonNetwork.Develop/Identity/DevelopQuotaController.cs",
+            "blob": "b95feeaa845c087971a51282738fbe1774399980",
+            "methods": "GetQuota@21",
+            "route_examples": [
+              "GET /api/develop/quota"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Develop/Identity/CustomAppController.cs",
+            "blob": "6d8c005d5c90a93c394df012382a98fd49799d1d",
+            "methods": "CreateApp@269; UpdateApp@307; CreateCustomOrder@380",
+            "route_examples": [
+              "POST /api/private/apps",
+              "PATCH /api/private/apps/{appId:guid}",
+              "POST /api/private/apps/{appId:guid}/orders"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Develop/Identity/AppProductController.cs",
+            "blob": "a1c2e16cef2cfa4e9c5cd593e66d7f56f7583521",
+            "methods": "CreateProduct@102; UpdateProduct@147",
+            "route_examples": [
+              "POST /api/private/apps/{appId:guid}/products",
+              "PATCH /api/private/apps/{appId:guid}/products/{productId:guid}"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Develop/Identity/BotAccountController.cs",
+            "blob": "a6095069043325ca9e2226f5c8d878dab54b3e71",
+            "methods": "CreateBot@140; UpdateBot@216",
+            "route_examples": [
+              "POST /api/private/bots",
+              "PATCH /api/private/bots/{botId:guid}"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Develop/Identity/DeveloperController.cs",
+            "blob": "6e43f3a40fb0488c601bc4fedadb260459a1352c",
+            "methods": "GetDeveloperStats@34",
+            "route_examples": [
+              "GET /api/developers/{name}/stats"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "internal/application/router.go:appRoute",
+          "ports/develop/apps/http.go",
+          "ports/develop/apps/types.go:ValidateApp/ValidateProduct",
+          "ports/develop/bots/validation.go:ValidatePatch",
+          "internal/apppg",
+          "internal/commercepg"
+        ],
+        "current_boundary": "GET /api/develop/quota has no host route. Private-app /orders has no handler; existing app-secret POST /api/orders is a product-catalog order and does not implement the source arbitrary amount/identifier/expiry request. Non-null app/product/bot picture/background IDs fail with provider-unsupported. GET /api/developers/{name}/stats is also missing (only developer list/detail/enroll are handled).",
+        "next_slice": "Expose quota from canonical policy; implement media associations with uploader rights; then add a narrowly authorized custom-order adapter with explicit canonical beneficiary/settlement policy."
+      },
+      {
+        "id": "bot_credentials_replies",
+        "families": [
+          "develop.bots",
+          "develop.bot_dispatch"
+        ],
+        "remaining": "Bot key CRUD/rotation/revocation, bot identity replies, DM/realm/MLS execution and automatic enrollment renewal remain unsupported.",
+        "source": [
+          {
+            "path": "DysonNetwork.Develop/Identity/BotAccountController.cs",
+            "blob": "a6095069043325ca9e2226f5c8d878dab54b3e71",
+            "methods": "ListBotKeys@319; GetBotKey@344; CreateBotKey@377; RotateBotKey@411; DeleteBotKey@439",
+            "route_examples": [
+              "GET /api/private/bots/{botId:guid}/keys",
+              "GET /api/private/bots/{botId:guid}/keys/{keyId:guid}",
+              "POST /api/private/bots/{botId:guid}/keys"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Messager/Chat/ChatController.cs",
+            "blob": "29e748e8c585ed766c9e20dddfc2eae65509f9a2",
+            "methods": "SendMessage@610; UpdateMessage@1087",
+            "route_examples": [
+              "POST /api/chat/{roomId:guid}/messages",
+              "PATCH /api/chat/{roomId:guid}/messages/{messageId:guid}"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/develop/bots/http.go:keys branch",
+          "ports/messager/rooms/http.go:identity query rejection",
+          "docs/bot-execution-continuation.md"
+        ],
+        "current_boundary": "Canonical bot identity/configuration already exists. Ordinary-group dispatch is delivered but pending CI. Key routes deliberately return DEV_BOT_PROVIDER_UNCONFIGURED; chat identity override fails closed.",
+        "next_slice": "Design a purpose-specific bot credential/reply authorization lane before enabling these requests; never repurpose human sessions or infer provider deduplication."
+      },
+      {
+        "id": "miniapp_source_upload",
+        "families": [
+          "develop.miniapps"
+        ],
+        "remaining": "Original multipart package upload and icon/background associations remain unsupported.",
+        "source": [
+          {
+            "path": "DysonNetwork.Develop/MiniApp/MiniAppController.cs",
+            "blob": "2f60539dba4ded617efd90f0b4417b926f6ddfa4",
+            "methods": "UploadPackage@65; CreateMiniApp@174; UpdateMiniApp@217",
+            "route_examples": [
+              "POST /api/private/miniapps/{miniAppId:guid}/package",
+              "POST /api/private/miniapps",
+              "PATCH /api/private/miniapps/{miniAppId:guid}"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/develop/bots/http.go:miniHTTP",
+          "ports/develop/bots/validation.go:ValidateMini",
+          "internal/botpg"
+        ],
+        "current_boundary": "Owned PUT /api/private/miniapps/{id}/package links a validated canonical ZIP and download works; original POST multipart upload is rejected. Non-null icon/background IDs are rejected. A server-hosted execution engine is not established by these controller contracts and must not be called a proven missing endpoint.",
+        "next_slice": "Add source POST upload compatibility via canonical media, preserve validated ZIP ownership/publication; add media slots separately."
+      },
+      {
+        "id": "presence_activity_catalog",
+        "families": [
+          "passport.accounts_presence"
+        ],
+        "remaining": "Rich presence activity leases, session start/end, accumulated catalog and duration/tag statistics have no composed runtime owner.",
+        "source": [
+          {
+            "path": "DysonNetwork.Passport/Account/PresenceActivityController.cs",
+            "blob": "2f502003c925e32c7e59e19d44cd592be099755b",
+            "methods": "GetActivities@41; GetActivitiesByAccountId@104; SetActivity@127; StartActivitySession@216; EndActivitySession@282; GetCatalog@309; GetStats@342; GetTagStats@369; UpdateActivity@397; DeleteActivityById@469",
+            "route_examples": [
+              "GET /api/activities",
+              "GET /api/activities/{identifier}",
+              "POST /api/activities"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Passport/Account/FriendsController.cs",
+            "blob": "ea1b00027cce94342ac274164c01c71055b1a3a8",
+            "methods": "GetOverview@29",
+            "route_examples": [
+              "GET /api/friends/overview"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "internal/application/router.go",
+          "ports/passport/presence/http.go",
+          "internal/presencepg",
+          "internal/mediapg/artwork.go"
+        ],
+        "current_boundary": "Canonical online status/session leases/privacy and artwork upload/hash reads exist. They are not the /api/activities CRUD/session/catalog flow. GET /api/friends/overview is also unrouted.",
+        "next_slice": "Implement account-owned activity rows and duration accounting using current privacy and artwork ownership; derive friend overview only from authorized current activity/status reads."
+      },
+      {
+        "id": "account_admin_badges",
+        "families": [
+          "passport.accounts_presence",
+          "passport.badges"
+        ],
+        "remaining": "Account admin listing/detail/activity metrics/contact/factor reads and explicit badge grant/activate/revoke are missing.",
+        "source": [
+          {
+            "path": "DysonNetwork.Passport/Account/AccountAdminController.cs",
+            "blob": "ce1c3465960fcb9f92dff30b648df0d3af96419d",
+            "methods": "GetActivityMetrics@115; ListAccounts@139; GetAccount@193; GetAccountContacts@235; GetAccountAuthFactors@294; GetAccountBadges@354; GrantBadge@370; ActivateBadge@394; RevokeBadge@406",
+            "route_examples": [
+              "GET /api/admin/accounts/metrics/activity",
+              "GET /api/admin/accounts",
+              "GET /api/admin/accounts/{identifier}"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "internal/application/router.go",
+          "ports/admin/content/http.go",
+          "internal/adminpg/statistics.go",
+          "internal/progressionpg",
+          "internal/accountpg"
+        ],
+        "current_boundary": "Account verification and admin board routes are implemented elsewhere and excluded from this gap. Current global stats are a separate owned aggregate and do not implement the source activity-metrics route. Earned badge projection is not admin grant/revoke.",
+        "next_slice": "First deliver admin read projections with explicit global permissions and no secret factor material; then source-backed badge writes with atomic audit and source/provenance distinctions."
+      },
+      {
+        "id": "account_history_credit_connections",
+        "families": [
+          "passport.accounts_presence",
+          "passport.progression"
+        ],
+        "remaining": "Account activity timeline/action-log/connection reads and social-credit ledger/projection remain missing.",
+        "source": [
+          {
+            "path": "DysonNetwork.Passport/Account/AccountController.cs",
+            "blob": "693d62314815feb900644b972b93b16f366ea16f",
+            "methods": "GetTimeline@368",
+            "route_examples": [
+              "GET /api/accounts/{name}/timeline"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Passport/Account/AccountCurrentController.cs",
+            "blob": "543ccc2f9b06ea81da6561622b6eafccd2c826de",
+            "methods": "GetActionLogs@111; GetSocialCredit@225; GetCreditHistory@234; GetConnections@257",
+            "route_examples": [
+              "GET /api/accounts/me/actions",
+              "GET /api/accounts/me/credits",
+              "GET /api/accounts/me/credits/history"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Passport/Account/AccountPublicController.cs",
+            "blob": "6c3f3712356f5543ba0be6846637d2b62c649c5a",
+            "methods": "GetSocialCredits@47",
+            "route_examples": [
+              "GET /api/accounts/{name}/credits"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Passport/Account/AccountAdminController.cs",
+            "blob": "ce1c3465960fcb9f92dff30b648df0d3af96419d",
+            "methods": "SendTestNightOwlReminder@255; InvalidateSocialCreditCache@532; ScanSteamPresences@540; ScanSteamPresenceForAccount@549; ScanSteamPresenceBySteamId@565; ScanSteamPresencesByStage@575",
+            "route_examples": [
+              "POST /api/admin/accounts/{identifier}/notifications/night-owl",
+              "POST /api/admin/accounts/{name}/credits",
+              "POST /api/admin/accounts/presences/steam/scan"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/passport/accounts/http.go",
+          "internal/application/router.go",
+          "internal/accountpg/rewind.go",
+          "internal/progressionpg"
+        ],
+        "current_boundary": "Owned rewind optional telemetry does not expose /accounts/me/actions. No canonical social-credit ledger/projection or external connection/Steam source is wired. Night-owl/Steam actions are provider-backed gaps, unlike straightforward private history reads.",
+        "next_slice": "Split read-only history/credit contract work from Steam/night-owl provider execution. Establish a canonical credit provenance/decay policy from authored source before adding reward writers.",
+        "additional_source": [
+          "DysonNetwork.Passport/Credit/SocialCreditServiceGrpc.cs:AddRecord/GetSocialCredit",
+          "DysonNetwork.Passport/Credit/SocialCreditValidationJob.cs:Execute",
+          "DysonNetwork.Passport/Account/Presences/PresenceUpdateJob.cs",
+          "DysonNetwork.Passport/Account/NightOwlReminderJob.cs"
+        ]
+      },
+      {
+        "id": "realm_remaining_details",
+        "families": [
+          "passport.social_realms",
+          "passport.realm_boosts"
+        ],
+        "remaining": "Realm quota/public discovery and member profile customization remain missing; full member status/search and non-boost/non-tenure progression remain incomplete.",
+        "source": [
+          {
+            "path": "DysonNetwork.Passport/Realm/RealmController.cs",
+            "blob": "70ba45891ecb476e5d41c54beca1bfbd40777f10",
+            "methods": "GetQuota@42; ListMembers@286; UpdateCurrentIdentity@396; DeleteCurrentIdentity@418",
+            "route_examples": [
+              "GET /api/realms/quota",
+              "GET /api/realms/{slug}/members",
+              "PATCH /api/realms/{slug}/members/me/profile"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Passport/Realm/RealmPublicController.cs",
+            "blob": "e9262ce79e8b1191f4de47b1062c520673053982",
+            "methods": "ListCommunityRealms@13",
+            "route_examples": [
+              "GET /api/realms/public"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/passport/social/http.go:realmHTTP",
+          "internal/socialpg/realms.go",
+          "/workspace/shared/realm-member-delivery/README.md"
+        ],
+        "current_boundary": "Roles/permission overrides, boosts, membership and moderation are implemented. Pending realm-member delivery adds labels and explicitly scoped tenure; it does not add profile customization, full original member filtering/ordering, public realm discovery, or complete XP/levels. GET quota is explicitly unsupported; public is otherwise interpreted as a realm reference.",
+        "next_slice": "Deliver quota/public discovery and member profile routes; retain label/tenure delivery boundaries and use explicit entitlement/level policy."
+      },
+      {
+        "id": "progression_provider_edges",
+        "families": [
+          "passport.progression",
+          "passport.fortunes"
+        ],
+        "remaining": "Source-point payout, birthday/backdated check-in and remaining trusted event sources are absent; admin seed-sync/test-packet HTTP compatibility is missing.",
+        "source": [
+          {
+            "path": "DysonNetwork.Passport/Progression/ProgressionAdminController.cs",
+            "blob": "f23caf795d2789003ba14102568dc396af7565fa",
+            "methods": "SyncSeeds@110; TestWebSocketPacket@119",
+            "route_examples": [
+              "POST /api/admin/progression/sync",
+              "POST /api/admin/progression/test-ws-packet"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Passport/Account/AccountEventController.cs",
+            "blob": "54133c31c974e78120b9aa9b503f9bdfd29862f5",
+            "methods": "DoCheckIn@227",
+            "route_examples": [
+              "POST /api/accounts/me/check-in"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/passport/progression/http.go",
+          "internal/progressionpg/events.go",
+          "docs/presence-progression-continuation.md"
+        ],
+        "current_boundary": "Canonical once-only XP/check-in/earned badges and seed definitions exist. Backdated/CAPTCHA options fail closed; source-point grant timestamp remains null. No arbitrary caller XP writer should be introduced.",
+        "next_slice": "Add specific verified canonical event adapters; resolve funded payout and explicit check-in policies separately. Seed synchronization endpoint is distinct from already installed seed definitions."
+      },
+      {
+        "id": "nearby_nfc_media",
+        "families": [
+          "passport.location_nfc"
+        ],
+        "remaining": "Nearby rotating presence-token/observation resolution, encrypted NFC admin/claim/lock, and location image attachments remain missing.",
+        "source": [
+          {
+            "path": "DysonNetwork.Passport/Nearby/NearbyController.cs",
+            "blob": "f29c3fab5bcfde05e83c4b9f009d132de9344b44",
+            "methods": "IssuePresenceTokens@85; Resolve@119",
+            "route_examples": [
+              "POST /api/nearby/presence-tokens",
+              "POST /api/nearby/resolve"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Passport/Nfc/NfcAdminController.cs",
+            "blob": "4a26a030cc9b460b4f072b1af0b7cb1ed1b9c6ea",
+            "methods": "CreateEncryptedTag@49; ListEncryptedTags@147",
+            "route_examples": [
+              "POST /api/admin/nfc/tags",
+              "GET /api/admin/nfc/tags"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Passport/Nfc/NfcController.cs",
+            "blob": "2a3d0b6d68c883ad149aa0c5993ac97efff87618",
+            "methods": "Resolve@127; ClaimTag@498; LockTag@593",
+            "route_examples": [
+              "GET /api/nfc",
+              "POST /api/nfc/tags/claim",
+              "POST /api/nfc/tags/{tagId:guid}/lock"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Passport/Meet/MeetController.cs",
+            "blob": "f77d6f394b82f968011d3750d3a63d054f86c114",
+            "methods": "CreateMeet@39; CreateOrUpdatePin@386",
+            "route_examples": [
+              "POST /api/meets",
+              "POST /api/meets/{id:guid}/pin"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "internal/application/router.go:locations dispatch",
+          "ports/sphere/locations/routes.go",
+          "ports/sphere/locations/validation.go",
+          "internal/locationpg"
+        ],
+        "current_boundary": "Canonical meets/plain UID NFC/point pins and limited streaming work. /api/nearby and /api/admin/nfc are unrouted; SUN/encrypted payloads/claim/lock and image attachment options fail closed. Durable stream replay and geocoding remain separate gaps.",
+        "next_slice": "Implement nearby token privacy with explicit device/expiry binding; keep hardware/SUN/provider work separately scoped. Canonical image references can be a bounded media slice."
+      },
+      {
+        "id": "affiliation_paid_issue",
+        "families": [
+          "passport.affiliation_and_owned_activation"
+        ],
+        "remaining": "Paid registration-invite issuance is still explicitly unavailable.",
+        "source": [
+          {
+            "path": "DysonNetwork.Passport/Affiliation/AffiliationSpellController.cs",
+            "blob": "1bef81235162ce0ba592c3033ea431098f0122d8",
+            "methods": "PurchaseSpell@57",
+            "route_examples": [
+              "POST /api/affiliations/purchase"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/passport/affiliation/http.go:purchase",
+          "internal/affiliationpg",
+          "docs/affiliation-and-activation.md"
+        ],
+        "current_boundary": "Tracking, consume and owned once-only activation are implemented and green-tested. Purchase needs dedicated economics and canonical settlement; it is not an activation implementation gap.",
+        "next_slice": "Define bounded price/currency/beneficiary policy and connect paid canonical order receipt to once-only issuance."
+      },
+      {
+        "id": "publishing_settings",
+        "families": [
+          "sphere.posts"
+        ],
+        "remaining": "Original publishing settings GET/PATCH are absent from the composed HTTP surface.",
+        "source": [
+          {
+            "path": "DysonNetwork.Sphere/Account/AccountSettingsController.cs",
+            "blob": "a61c5e30d44f2eb379b82cc6107bfbedb6a825d5",
+            "methods": "GetSettings@33; UpdateSettings@54",
+            "route_examples": [
+              "GET /api/account/publishing",
+              "PATCH /api/account/publishing"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "internal/application/router.go",
+          "ports/passport/accounts/http.go",
+          "internal/accountpg/schema.sql:owned_publishing_settings"
+        ],
+        "current_boundary": "Canonical publishing-settings state exists but /api/account/publishing is not dispatched and no corresponding handler is registered.",
+        "next_slice": "Expose the source settings envelope through current account authority and validate every setting consumed by post creation."
+      },
+      {
+        "id": "publisher_discovery_features_stats",
+        "families": [
+          "sphere.publishers",
+          "sphere.live_ads"
+        ],
+        "remaining": "Publisher quota/search, heatmap/statistics, feature management/expected rewards and advertising reads remain missing.",
+        "source": [
+          {
+            "path": "DysonNetwork.Sphere/Publisher/PublisherController.cs",
+            "blob": "0095ae0f7cbc5702659301ab48c0129b411450ba",
+            "methods": "GetQuota@43; ListPublisherFeatures@849; GetPublisherExpectedReward@866; AddPublisherFeature@932; RemovePublisherFeature@1002; ListAdvertisingPosts@1374",
+            "route_examples": [
+              "GET /api/publishers/quota",
+              "GET /api/publishers/{name}/features",
+              "GET /api/publishers/{name}/rewards"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Sphere/Publisher/PublisherPublicController.cs",
+            "blob": "fe731e3e6925475efa214135b519f7c6819f19dc",
+            "methods": "SearchPublishers@80; GetPublisherHeatmap@138; GetPublisherStats@147; GetPublisherContentStats@156",
+            "route_examples": [
+              "GET /api/publishers/search",
+              "GET /api/publishers/{name}/heatmap",
+              "GET /api/publishers/{name}/stats"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Sphere/Post/AdsController.cs",
+            "blob": "489251204fcd795e4beb6ec91d844b9481bc6ff3",
+            "methods": "ListPublisherAds@16",
+            "route_examples": [
+              "GET /api/ads/{name}"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/passport/accounts/http.go:publisherRead/publisherWrite",
+          "internal/accountpg",
+          "ports/sphere/sponsorship/http.go",
+          "ports/sphere/publisherrating/http.go"
+        ],
+        "current_boundary": "Publisher CRUD/members, sponsorship and rating/history/leaderboard are implemented. These original quota/search/feature/advertising aliases are not those flows and currently fall through unsupported/unrouted.",
+        "next_slice": "Start with canonical reads/search/stats. Feature mutation needs explicit entitlement and publisher ownership policy; reward expectations need canonical settlement policy."
+      },
+      {
+        "id": "publisher_subscription_state",
+        "families": [
+          "sphere.publishers",
+          "sphere.timeline"
+        ],
+        "remaining": "Subscriber administration, notify/read state/live list and publisher-specific block/mute/relationship APIs remain missing.",
+        "source": [
+          {
+            "path": "DysonNetwork.Sphere/Publisher/PublisherSubscriptionController.cs",
+            "blob": "9a993973bb0556dde47d939aeccf2cad6f82aec5",
+            "methods": "GetSubscriptionReadStatus@120; ListSubscribers@460; AddSubscriber@517; RemoveSubscriber@577; UpdateMySubscriptionNotify@602; UpdateSubscriptionReadStatus@630; MarkAllSubscriptionsRead@665; GetSubscribedPublisherLiveStreams@681; GetBlockedPublishers@888; GetMutedPublishers@899; GetPublisherRelationship@910; BlockPublisher@934; UnblockPublisher@959; MutePublisher@984; UnmutePublisher@1009",
+            "route_examples": [
+              "GET /api/publishers/{name}/subscription/read-status",
+              "GET /api/publishers/{name}/subscribers",
+              "POST /api/publishers/{name}/subscribers/{accountId:guid}"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/sphere/timeline/http.go:NewHandler/Handles",
+          "internal/timelinepg/follows.go",
+          "ports/passport/accounts/http.go"
+        ],
+        "current_boundary": "Ordinary subscribe/unsubscribe/status/list and follow-request approve/reject are implemented. Local account relationships cannot substitute for organization/publisher-specific relationship state. Subscription IsLive/HasNewContent projections do not implement source read-state protocol.",
+        "next_slice": "One bounded subscription-state bundle using current visibility: subscriber list/admin, notify, per-publisher/all read receipts, current live projection; separate publisher block/mute policy with feed/read revalidation."
+      },
+      {
+        "id": "post_controls_navigation",
+        "families": [
+          "sphere.posts",
+          "sphere.timeline"
+        ],
+        "remaining": "Post pin/unpin, boost/unboost/list, batch delete/visibility, featured/adjacent/reaction-user and pinned/featured-reply reads remain absent.",
+        "source": [
+          {
+            "path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+            "blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+            "methods": "PinPost@1139; UnpinPost@1196; BatchDeletePosts@1708; BatchUpdateVisibility@1764; BoostPost@1889; UnboostPost@1995; GetPostBoosts@2062",
+            "route_examples": [
+              "POST /api/posts/{id:guid}/pin",
+              "DELETE /api/posts/{id:guid}/pin",
+              "POST /api/posts/batch/delete"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Sphere/Post/PostController.cs",
+            "blob": "057065a923d53bd8d6b015127bcc307a0b3edae2",
+            "methods": "ListFeaturedPosts@275; GetPrevPost@1028; GetNextPost@1198; ListUserReactions@1412; GetFeaturedReply@1520; ListPinnedReplies@1559",
+            "route_examples": [
+              "GET /api/posts/featured",
+              "GET /api/posts/{id:guid}/prev",
+              "GET /api/posts/{id:guid}/next"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/sphere/posts/http.go",
+          "ports/sphere/timeline/http.go",
+          "ports/sphere/interactions/http.go",
+          "internal/postpg",
+          "internal/timelinepg"
+        ],
+        "current_boundary": "CRUD/drafts/scheduled publication, reply/forward/chain/thread, reactions/bookmarks, admin moderation, sponsorship/awards and pending blog handling are present. They do not implement the listed user controls. media/shuffle/pinned=true/mentioned and semantic search are explicitly rejected by searchOptions.",
+        "next_slice": "Implement bounded batch/pin and adjacent/reply reads first; attach canonical boost events and richer search separately with privacy and idempotency."
+      },
+      {
+        "id": "post_typed_composition",
+        "families": [
+          "sphere.posts"
+        ],
+        "remaining": "Post survey/fund/meet/livestream/notable-day/calendar/location/thumbnail associations, non-link embeds, nonempty meta and automatic chain behavior are rejected.",
+        "source": [
+          {
+            "path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+            "blob": "f45bf60dc973dd1f37a575cba789db1119a41eb7",
+            "methods": "CreatePost@353; UpdatePost@1252",
+            "route_examples": [
+              "POST /api/posts",
+              "PATCH /api/posts/{id:guid}"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/sphere/posts/http.go:decode",
+          "internal/postpg"
+        ],
+        "current_boundary": "Source request fields and mapping are authored at PostActionController.cs:239-290,535-707,1365-1603. Canonical linked media, realm and explicit reply/forward/chain relations already exist. Standalone survey/fund/meet/calendar implementations do not prove post composition integration.",
+        "next_slice": "Add one typed association at a time through current canonical read/ownership adapters; validate withdrawal and cross-domain lock waits."
+      },
+      {
+        "id": "collection_subscriptions_navigation",
+        "families": [
+          "sphere.posts",
+          "sphere.publishers"
+        ],
+        "remaining": "Collection subscribe/unsubscribe/status and adjacent-post navigation remain absent.",
+        "source": [
+          {
+            "path": "DysonNetwork.Sphere/Post/PostCollectionController.cs",
+            "blob": "a6c11a5b40849986ea250546c7eb6d1e98849b86",
+            "methods": "SubscribeCollection@219; UnsubscribeCollection@254; GetCollectionSubscription@278; GetPrevCollectionPost@488; GetNextCollectionPost@494",
+            "route_examples": [
+              "POST /api/publishers/{publisherName}/collections/{slug}/subscribe",
+              "POST /api/publishers/{publisherName}/collections/{slug}/unsubscribe",
+              "GET /api/publishers/{publisherName}/collections/{slug}/subscription"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/sphere/interactions/http.go",
+          "internal/interactionpg",
+          "internal/collectionadminpg"
+        ],
+        "current_boundary": "Collection CRUD/media/contents/batch add-remove and admin are implemented. Manual reorder is explicitly rejected by the ORIGINAL controller too; do not count reorder as a missing feature.",
+        "next_slice": "Add subscription records and current-visibility previous/next reads to the same canonical collection owner."
+      },
+      {
+        "id": "federation_broader_contracts",
+        "families": [
+          "sphere.federation",
+          "federation.publisher_aliases",
+          "federation.quote_authorization"
+        ],
+        "remaining": "Original client-facing fediverse actor/profile/posts/availability/follow APIs, realm federation, actor moderation/key administration, featured collections, Move and broader/private/media activities remain incomplete.",
+        "source": [
+          {
+            "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubController.cs",
+            "blob": "79c9de7e85216a99689311f036da27e4c92d9a6d",
+            "methods": "GetFeatured@584",
+            "route_examples": [
+              "GET /activitypub/actors/{username}/featured"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubFollowController.cs",
+            "blob": "2e136824e2de392de94b490ac96b6020993c57b1",
+            "methods": "GetFollowing@64; GetFollowers@107; SearchRemoteUsers@150; GetRelationships@178; CheckActor@237",
+            "route_examples": [
+              "GET /api/activitypub/following",
+              "GET /api/activitypub/followers",
+              "GET /api/activitypub/search"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Sphere/ActivityPub/ActivityPubRealmController.cs",
+            "blob": "6cc345d3e0361f93541c65a85a698662531336ee",
+            "methods": "GetCommunityActor@28; GetCommunityFollowers@89; ReceiveCommunityActivity@125; GetCommunityOutbox@330",
+            "route_examples": [
+              "GET /activitypub/realms/{slug}",
+              "GET /activitypub/realms/{slug}/followers",
+              "POST /activitypub/realms/{slug}/inbox"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Sphere/ActivityPub/FediverseActorController.cs",
+            "blob": "67af5f12a2ee25542835643d79e9336c8256bb30",
+            "methods": "GetActorByHandle@51; GetActorById@85; SearchActors@105; GetActorPosts@226; GetActorFollowers@777; GetActorFollowing@804; GetActorRelationship@831; CheckAvailability@995; FollowActor@1062; UnfollowActor@1100",
+            "route_examples": [
+              "GET /api/fediverse/actors/{username}@{instance}",
+              "GET /api/fediverse/actors/{id:guid}",
+              "GET /api/fediverse/actors/search"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Sphere/ActivityPub/FediverseKeyAdminController.cs",
+            "blob": "3d9d340f6a64e721a1f3765481b9bcb4ba43fc15",
+            "methods": "GetAuditResult@19; BackfillKeys@26; CleanupOrphanedKeys@45; GetStatistics@52; GetActorKeyInfo@66; EnsureKey@93; RegenerateKey@107",
+            "route_examples": [
+              "GET /api/admin/fediverse/keys/audit",
+              "POST /api/admin/fediverse/keys/backfill",
+              "POST /api/admin/fediverse/keys/cleanup"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Sphere/ActivityPub/FediverseModerationController.cs",
+            "blob": "75fbdad603bec715eecbf7c99919cf36416afac4",
+            "methods": "ListRules@21; GetRule@42; CreateRule@52; UpdateRule@83; DeleteRule@126; ToggleRule@144; CheckDomain@164; CheckActor@172; CheckActorRule@180; ListActorRules@188; SuspendActor@215; UnsuspendActor@272",
+            "route_examples": [
+              "GET /api/fediverse/moderation/rules",
+              "GET /api/fediverse/moderation/rules/{id:guid}",
+              "POST /api/fediverse/moderation/rules"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "internal/federationhttp/handler.go",
+          "internal/federationpg",
+          "ports/federation",
+          "/workspace/shared/federation-discovery-review-delivery/manifest.json"
+        ],
+        "current_boundary": "Existing owned /api/activitypub/publishers/{uuid}/settings/relationships and signed public activity subset are not wire aliases for every source API. Reviewed pending discovery only observes explicitly pinned targets and serves server/key aliases. Public remote admission is active work with no frozen delivery. Outbound QuoteRequest/remote authorizations and remote Move remain unsupported.",
+        "next_slice": "Finish/review remote admission first; then bounded client read/follow adapter. Keep server/realm/private/media crawls and administrative key mutation separate with explicit trust history."
+      },
+      {
+        "id": "wallet_exchange_analytics",
+        "families": [
+          "wallet.ledger",
+          "wallet.reporting"
+        ],
+        "remaining": "Currency exchange mutation and wallet stats/overview/order-history routes remain missing.",
+        "source": [
+          {
+            "path": "DysonNetwork.Wallet/Payment/WalletController.cs",
+            "blob": "10650f1a12912532d70f6ea422a69557a508a224",
+            "methods": "GetWalletStats@164; GetOrders@429; ExchangeCurrency@656; GetWalletOverview@1275",
+            "route_examples": [
+              "GET /api/wallets/stats",
+              "GET /api/wallets/orders",
+              "POST /api/wallets/exchange"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/wallet/accounts/http.go",
+          "ports/wallet/exchangecatalog",
+          "internal/walletpg",
+          "internal/commercepg"
+        ],
+        "current_boundary": "GET exchange catalogue is implemented; POST exchange is not. Canonical transfer/fund/order/PIN flows do not supply these analytics routes.",
+        "next_slice": "Deliver read-only stats/overview/order history first. Exchange requires exact configured rate/rounding, atomic double-entry conservation, fresh PIN/payment authorization and replay policy."
+      },
+      {
+        "id": "wallet_financial_admin",
+        "families": [
+          "wallet.orders_payments",
+          "wallet.reporting",
+          "wallet.subscriptions_gifts",
+          "wallet.product_catalog"
+        ],
+        "remaining": "Original admin payment transaction/order/inbound-order reads, balance adjustments, admin subscription list/maintenance HTTP and buyer billing list remain missing. Admin top-up definition summary and paid-product apply/reconciliation are also absent.",
+        "source": [
+          {
+            "path": "DysonNetwork.Wallet/Payment/PaymentAdminController.cs",
+            "blob": "d0cc6d8e08a2bcd1dc69ce26d5bc196326961322",
+            "methods": "ListTransactions@35; GetTransaction@89; ListOrders@106; GetOrder@165; ListInboundOrders@182; GetInboundOrder@235; ModifyWalletBalance@250",
+            "route_examples": [
+              "GET /api/admin/payments/transactions",
+              "GET /api/admin/payments/transactions/{id:guid}",
+              "GET /api/admin/payments/orders"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Wallet/Payment/WalletController.cs",
+            "blob": "10650f1a12912532d70f6ea422a69557a508a224",
+            "methods": "ModifyWalletBalance@833",
+            "route_examples": [
+              "POST /api/wallets/balance"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Wallet/Payment/SubscriptionAdminController.cs",
+            "blob": "40b5a7738e308eea5702bfeea648f1ec2378bba9",
+            "methods": "ListSubscriptions@51; UpdateExpiredSubscriptions@156; ActivatePendingSubscriptions@169; CancelUnavailableInAppWalletSubscriptions@183",
+            "route_examples": [
+              "GET /api/admin/subscriptions",
+              "POST /api/admin/subscriptions/maintenance/update-expired",
+              "POST /api/admin/subscriptions/maintenance/activate-pending"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Wallet/Payment/SubscriptionController.cs",
+            "blob": "cf34663c8e7d84c8e27475d12abcc2d09c407479",
+            "methods": "ListBillingRecords@130",
+            "route_examples": [
+              "GET /api/subscriptions/billing"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Wallet/Payment/WalletProductAdminController.cs",
+            "blob": "854f3390e7346e3c359286ebb265c6fca0e0afb8",
+            "methods": "GetGoldsResupplyPack@27; ApplyPaidWalletProductOrder@47",
+            "route_examples": [
+              "GET /api/admin/wallet-products/golds-resupply-pack",
+              "POST /api/admin/wallet-products/orders/{orderId:guid}/apply"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "internal/application/router.go",
+          "ports/wallet/accounts/http.go",
+          "ports/wallet/commerce/http.go",
+          "ports/wallet/merchants/routes.go",
+          "internal/adminpg/statistics.go"
+        ],
+        "current_boundary": "Admin aggregate stats and subscription catalogue CRUD exist. Renewal/expiry/activation maintenance works through owned internal lifecycle but the listed HTTP compatibility APIs are absent. Arbitrary nil-sided source balance mutation is deliberately unsupported, not safe to copy.",
+        "next_slice": "Start with permission-scoped read projections; explicitly design funded adjustment/reconciliation policy before balance writers. Expose maintenance through bounded current-authority adapters only."
+      },
+      {
+        "id": "merchant_settlement_payout",
+        "families": [
+          "wallet.merchants",
+          "wallet.orders_payments",
+          "sphere.publishers",
+          "sphere.post_awards"
+        ],
+        "remaining": "Legacy publisher-wide merchant binding/statistics/settlement, app payouts and aggressive publisher/global resettlement remain unsupported.",
+        "source": [
+          {
+            "path": "DysonNetwork.Wallet/Payment/MerchantController.cs",
+            "blob": "b73ef4254b4b20a75811ea3b9e4b46a6b041fa93",
+            "methods": "ListSettlements@60; UpdateWallet@182; GetPendingSummary@254; ManualSettle@286; GetOverviewStats@322; GetPeriodIncoming@352; GetDailyIncoming@407",
+            "route_examples": [
+              "GET /api/merchants/{merchant}/settlements",
+              "PATCH /api/merchants/{merchant}/wallet",
+              "GET /api/merchants/{merchant}/settlements/pending"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          },
+          {
+            "path": "DysonNetwork.Wallet/Payment/OrderController.cs",
+            "blob": "5364a452799ed87f3891bac5462824a183322710",
+            "methods": "CreateAppPayout@579",
+            "route_examples": [
+              "POST /api/orders/payouts"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Sphere/Publisher/PublisherController.cs",
+            "blob": "0095ae0f7cbc5702659301ab48c0129b411450ba",
+            "methods": "SettlePublisherAward@1046; SettlePostAwards@1056; AggressiveResettle@1072",
+            "route_examples": [
+              "POST /api/publishers/rewards/settle",
+              "POST /api/publishers/awards/settle",
+              "POST /api/publishers/rewards/resettle"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/wallet/merchants/routes.go:settlements branch",
+          "internal/merchantpg",
+          "internal/commercepg",
+          "internal/postawardpg",
+          "internal/publisherratingpg"
+        ],
+        "current_boundary": "Owned app-scoped merchant binding/order reports, funded paid awards and rating receipts exist. Source settlement APIs and legacy merchant stats are absent; generic settlement branch explicitly returns MERCHANT_FEATURE_UNSUPPORTED. No general refund/chargeback protocol is implemented.",
+        "next_slice": "Specify canonical settlement obligations and refund/reversal conservation first; then inspection/reporting, followed by bounded settlement adapters. Preserve existing paid award receipts and never replay old reaction-only rewards.",
+        "additional_source": [
+          "DysonNetwork.Wallet/Payment/MerchantServiceGrpc.cs:CreateMerchantSettlement/GetPendingSettlements/SettleMerchant",
+          "DysonNetwork.Wallet/Payment/PaymentServiceGrpc.cs:RefundOrder",
+          "DysonNetwork.Wallet/Payment/AppSettlementJob.cs",
+          "DysonNetwork.Sphere/Publisher/PublisherSettlementJob.cs"
+        ]
+      },
+      {
+        "id": "wallet_external_provider_flows",
+        "families": [
+          "wallet.product_catalog",
+          "wallet.orders_payments",
+          "wallet.subscriptions_gifts",
+          "wallet.owned_coupons",
+          "wallet.address_fulfillment"
+        ],
+        "remaining": "Concrete external payment/provider clients, top-up checkouts, trials, external recurring workspace/carrier execution and provider-funded coupon/refund synchronization are unimplemented.",
+        "source": [
+          {
+            "path": "DysonNetwork.Wallet/Payment/WalletProductController.cs",
+            "blob": "4f99c6318440ef8245b1b7210d3fce03cf299804",
+            "methods": "CreatePaddleCheckout@69; CreateAfdianCheckout@108",
+            "route_examples": [
+              "POST /api/wallet-products/golds-resupply-pack/checkout/paddle",
+              "POST /api/wallet-products/golds-resupply-pack/checkout/afdian"
+            ]
+          },
+          {
+            "path": "DysonNetwork.Wallet/Payment/SubscriptionController.cs",
+            "blob": "cf34663c8e7d84c8e27475d12abcc2d09c407479",
+            "methods": "CreateSubscription@449; RestorePurchaseFromAfdian@587; RestorePurchaseFromPaddle@604; RestorePurchaseFromAppleStore@621; CreatePaddleCheckout@655; CreateAfdianCheckout@708; AfdianWebhook@748; PaddleWebhook@759; AppleStoreWebhook@770",
+            "route_examples": [
+              "POST /api/subscriptions",
+              "POST /api/subscriptions/order/restore/afdian",
+              "POST /api/subscriptions/order/restore/paddle"
+            ],
+            "all_routes_ref": "docs/operation-coverage-plan-parts/http_operations-*.json (match controller/action)"
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/wallet/commerce/http.go:provider",
+          "internal/commercepg/lifecycle.go",
+          "internal/application/backend.go",
+          "docs/shipping-addresses-and-fulfillment.md",
+          "docs/coupon-checkout.md"
+        ],
+        "current_boundary": "Generic provider interface/webhook-restore-checkout orchestration and synthetic idempotency tests exist; no real provider implementation is configured. Free trials explicitly fail. Address snapshots/fulfillment handoff and opt-in owned coupon arithmetic are implemented, not missing.",
+        "next_slice": "Choose one supported provider and define verified callback, reconciliation/refund and expiry behavior with synthetic contracts; no live payment or provider probing is authorized by this audit."
+      },
+      {
+        "id": "survey_subscriptions",
+        "families": [
+          "sphere.stickers_surveys"
+        ],
+        "remaining": "Per-survey subscribe/unsubscribe/status and subscriber answer-notification projection remain unimplemented.",
+        "source": [
+          {
+            "path": "DysonNetwork.Sphere/Survey/SurveyController.cs",
+            "blob": "856e6696b21738dc5e9997bea450ed144f30ece8",
+            "methods": "SubscribeToSurvey@842; UnsubscribeFromSurvey@873; GetSurveySubscription@893",
+            "route_examples": [
+              "POST /api/surveys/{id:guid}/subscribe",
+              "POST /api/surveys/{id:guid}/unsubscribe",
+              "GET /api/surveys/{id:guid}/subscription"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/sphere/surveys/http.go",
+          "internal/surveypg/repository.go"
+        ],
+        "current_boundary": "Survey CRUD/lifecycle/answers/feedback/results are implemented. The three subscription paths are not registered; NotifySubscribers=true is explicitly rejected. Standalone sticker operations are implemented within their documented owned policy; third-party assets/migration remain separate.",
+        "next_slice": "Add idempotent current-audience subscriptions and canonical notification outbox production; retain privacy/withdrawal/answer-anonymity boundaries."
+      }
+    ],
+    "implemented_pending_verification": [
+      {
+        "id": "passport.realm_boosts",
+        "status": "implemented_pending_exact_commit_CI",
+        "scope": [
+          "Exact source-grounded share purchase through canonical orders/PIN/hold/settlement, once-only XP",
+          "Configured label caps/perk identifiers, source multiplier values, inclusive30-day entitlement",
+          "Live boost-dependent promotion gates including pending elevated invitations; existing roles retained",
+          "Standalone explicit enable/config flags, original-proof restart reconstruction"
+        ],
+        "test_sources": [
+          "tests/integration/realm_boosts_host_test.go",
+          "tests/integration/realm_boosts_test.go"
+        ],
+        "limit": "Offline pass/compiled test registration is not an actual PostgreSQL or restart pass.",
+        "registered_case_examples": [
+          "TestPGBackendRealmBoostRoutes",
+          "TestPGRealmBoostAuthenticatedHTTP",
+          "TestPGRealmBoostAuthorityRevocationAfterWait"
+        ]
+      },
+      {
+        "id": "develop.bot_dispatch",
+        "status": "implemented_pending_exact_commit_CI",
+        "scope": [
+          "Existing ordinary text submission atomically queues enrolled group bot deliveries",
+          "Current developer/owner/sender/session and membership-incarnation checks, no untrusted identity substitution",
+          "Committed bounded leases/attempt fencing; network outside transactions; metadata/forward/encryption suppressed",
+          "Standalone strict allowlisted HTTPS/key-file configuration with public-IP pinned transport; synthetic tests only"
+        ],
+        "test_sources": [
+          "tests/integration/bot_execution_test.go"
+        ],
+        "limit": "Offline pass/compiled test registration is not an actual PostgreSQL or restart pass.",
+        "registered_case_examples": [
+          "TestPGBotExecutionCanonicalSendAndReplay",
+          "TestPGBotExecutionConcurrentWorkersAndRevocationWait",
+          "TestPGBotExecutionEnrollmentRoleAndSessionScope"
+        ]
+      },
+      {
+        "id": "owned.automod_evidence_privacy",
+        "status": "implemented_pending_exact_commit_CI",
+        "scope": [
+          "Ordinary editor gets only whitelisted outcome/penalty/freshness, recursively applied",
+          "Full evidence requires canonical global authority plus current explicit automod.rules.manage and post permission",
+          "Combined final checks cover list/read/inspection/review, expiry/revocation and commit errors; canonical full evidence retained"
+        ],
+        "test_sources": [
+          "tests/integration/post_automod_editor_projection_test.go"
+        ],
+        "limit": "Offline pass/compiled test registration is not an actual PostgreSQL or restart pass.",
+        "registered_case_examples": [
+          "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
+          "TestPGPostAutomodEvidenceGrantExpiryAtResponse",
+          "TestPGPostAutomodEvidenceRevocationAfterAccountWait"
+        ]
+      },
+      {
+        "id": "sphere.blog_domains",
+        "status": "implemented_pending_exact_commit_CI",
+        "scope": [
+          "Strict domain add/list/delete/recheck and bounded pending verification recovery",
+          "Source-supported blog permission and metadata-backed post lifecycle through existing routes",
+          "Exact domain/publisher/policy incarnation and original session deadline fence provider work and scheduled publication",
+          "Server-produced metadata reaches automod before ranking; editor evidence remains sanitized",
+          "Existing admin description search/publication ordering/camelCase aliases restored"
+        ],
+        "test_sources": [
+          "tests/integration/blog_automod_composition_test.go",
+          "tests/integration/blog_posts_test.go",
+          "tests/integration/blog_review_test.go",
+          "tests/integration/post_admin_queries_test.go"
+        ],
+        "limit": "Offline pass/compiled test registration is not an actual PostgreSQL or restart pass.",
+        "registered_case_examples": [
+          "TestPGBlogAutomodUsesPreparedMetadataAndSafeProjection",
+          "TestPGBlogBackendAliasesAndStrictPermissionRequest",
+          "TestPGBlogCreationEditingMediaAndVisibility"
+        ]
+      },
+      {
+        "id": "sphere.federation_discovery",
+        "status": "independently_reviewed_pending_integration_and_CI",
+        "scope": "Anchored server actor, server collections/key routes, canonical host-meta/WebFinger and publisher key aliases; durable explicit pinned remote observation jobs with current-authority/history fences.",
+        "artifact": "/workspace/shared/federation-discovery-review-delivery",
+        "artifact_sha256": {
+          "correction.patch": "8c4b3119dd74743ae253f588916cd7e0cd3480c36137bf96604d821c465d777e"
+        },
+        "required_restart_cases": [
+          "TestPGFederationDiscoverySavedRestartPersistence"
+        ],
+        "limit": "Actual PostgreSQL/restart not run; final combined grouping/dependency audit is required. Realm review was active at audit cutoff.",
+        "registered_case_examples": [
+          "TestPGBackendFederationDiscoveryComposition",
+          "TestPGFederationDiscoveryConcurrentClaim",
+          "TestPGFederationDiscoveryLifecycleAndIsolation"
+        ],
+        "full_case_set": "/workspace/shared/federation-discovery-review-delivery/manifest.json"
+      },
+      {
+        "id": "passport.calendar_media",
+        "status": "independently_reviewed_pending_integration_and_CI",
+        "scope": "Calendar/notable-day icon/background associations and audience-aware file reads; current projection revalidation and explicitly owned string-kind activity overlay.",
+        "artifact": "/workspace/shared/calendar-media-review-delivery",
+        "artifact_sha256": {
+          "correction.patch": "2c57be607727010a7cd69f21083d58c25ce79f4a000773c56b8dd11db1b9c80c"
+        },
+        "required_restart_cases": [
+          "TestPGCalendarActivityRestartPersistence",
+          "TestPGCalendarMediaRestartPersistence"
+        ],
+        "limit": "Actual PostgreSQL/restart not run; final combined grouping/dependency audit is required. Realm review was active at audit cutoff.",
+        "registered_case_examples": [
+          "TestPGCalendarActivityProjectionWaitRevalidatesPrivacy",
+          "TestPGCalendarActivityRestartPersistence",
+          "TestPGCalendarActivityStringProjectionPrivacyAndTimeZone"
+        ],
+        "full_case_set": "/workspace/shared/calendar-media-review-delivery/pg-cases.json"
+      },
+      {
+        "id": "passport.realm_members",
+        "status": "independently_reviewed_pending_integration_CI",
+        "scope": "Label CRUD/assignment/filter/projection and opt-in daily tenure with scoped XP/history/configured levels.",
+        "artifact": "/workspace/shared/realm-member-delivery",
+        "artifact_sha256": {
+          "core.patch": "971188548b0e38e216bebec001da05b9808e7a568e9fb1d0ccff1b35bd8906fe",
+          "shared-wiring.patch": "54bf76942389bbbf84dcef9136002c96b52409d8de2e3cac6cab0e655cb667be"
+        },
+        "required_restart_cases": [
+          "TestPGRealmMemberRestartPersistence"
+        ],
+        "limit": "Actual PostgreSQL/restart not run; final combined grouping/dependency audit is required. Realm review was active at audit cutoff.",
+        "registered_case_examples": [
+          "TestPGRealmLabelsCRUDVisibilityAndCanonicalProjection",
+          "TestPGRealmLabelsConcurrentQuotaAndReplay",
+          "TestPGRealmLabelsMembershipIncarnationAndCurrentRole"
+        ],
+        "full_case_set": "/workspace/shared/realm-member-delivery/integration.json"
+      }
+    ],
+    "owned_contract_differences": [
+      {
+        "id": "owned_authority_and_roles",
+        "families": [
+          "passport.social_realms",
+          "passport.accounts_presence",
+          "develop.apps_products",
+          "owned.oauth_oidc",
+          "owned.authority_refresh_continuity",
+          "owned.factor_setup"
+        ],
+        "difference": "Canonical account/session/root-proof/explicit-grant and role/scoped permission policies are intentional owned replacements. Legacy numeric roles, inherited filters, generated DTOs and imported permission constants are not established. Ordinary credential refresh continuity is implemented; exact legacy policy parity is not claimed.",
+        "evidence": [
+          "docs/authority-atomic-writes.md",
+          "docs/realm-permissions-continuation.md",
+          "docs/oauth-continuation.md",
+          "docs/factor-setup-continuation.md"
+        ]
+      },
+      {
+        "id": "owned_commerce_conservation",
+        "families": [
+          "wallet.ledger",
+          "wallet.funds",
+          "wallet.owned_coupons",
+          "wallet.transfer_requests",
+          "wallet.address_fulfillment",
+          "sphere.post_awards",
+          "sphere.livestream_awards",
+          "sphere.publisher_sponsorship_and_ratings"
+        ],
+        "difference": "Funded canonical ledger, explicit coupon economics, app-scoped merchant bindings, shipping snapshots and paid-receipt rewards replace unsafe or unevidenced legacy behavior. Nil-sided balance minting, automatic wallet fallback and rewriting old reaction-only receipts are not implicit parity requirements. Original enum/formula/migration mappings still need licensed evidence or accepted owned policy.",
+        "evidence": [
+          "docs/wallet-funds-continuation.md",
+          "docs/coupon-checkout.md",
+          "docs/merchants-continuation.md",
+          "docs/post-awards-continuation.md"
+        ]
+      },
+      {
+        "id": "owned_checkin_progression",
+        "families": [
+          "passport.progression",
+          "passport.fortunes",
+          "passport.realm_boosts",
+          "passport.social_realms"
+        ],
+        "difference": "UTC once-daily check-in, explicit level/perk thresholds and scoped boost/tenure ledgers are owned policies. Realm labels/tenure pending delivery does not produce complete legacy member XP or levels. Original fortune prose/corpus is excluded; no unsupported event or source-point grant is invented.",
+        "evidence": [
+          "docs/presence-progression-continuation.md",
+          "docs/fortunes-continuation.md",
+          "/workspace/shared/realm-member-delivery/README.md"
+        ]
+      },
+      {
+        "id": "owned_calendar_projection",
+        "families": [
+          "passport.notable_days"
+        ],
+        "difference": "Pending calendar media closes attachment associations. Legacy merged activity numeric codes remain unverified; owned activity_events uses string kinds. No unlicensed regional holiday corpus/assets are imported.",
+        "evidence": [
+          "/workspace/shared/calendar-media-review-delivery/receipt.json"
+        ]
+      },
+      {
+        "id": "owned_ticket_activation",
+        "families": [
+          "passport.tickets_exams",
+          "passport.affiliation_and_owned_activation"
+        ],
+        "difference": "Canonical ticket media and exam activation already work. Attachment-only UI/controller disagreement, newer status numeric mapping and legacy activation/group encodings remain contract gaps. No per-message edit/detach route was evidenced; do not fabricate it as a missing original feature.",
+        "evidence": [
+          "docs/ticket-media-continuation.md",
+          "docs/tickets-exams-continuation.md",
+          "docs/affiliation-and-activation.md"
+        ]
+      },
+      {
+        "id": "owned_miniapp_package",
+        "families": [
+          "develop.miniapps",
+          "develop.bots"
+        ],
+        "difference": "Canonical media ZIP publication/download is implemented. Owned PUT file_id and extra canonical app selector differ from original multipart POST/project scope. A hosted execution engine is not established by the retained backend controller.",
+        "evidence": [
+          "docs/bots-miniapps-continuation.md"
+        ]
+      },
+      {
+        "id": "owned_message_and_mls",
+        "families": [
+          "messager.messages",
+          "messager.rooms",
+          "messager.opaque_mls",
+          "messager.threads_and_forwarding",
+          "messager.room_media"
+        ],
+        "difference": "Plaintext snapshots and opaque MLS storage/reset generation are implemented; attachment forwarding remains rejected pending separate current rights, encrypted content never downgrades. No MLS cryptographic engine/validated client handshake is claimed. Room slot DELETE is owned; source null IDs retain references.",
+        "evidence": [
+          "docs/chat-threads-forwarding.md",
+          "docs/room-media-continuation.md",
+          "ports/messager/rooms/mls.go"
+        ]
+      },
+      {
+        "id": "owned_federation_trust",
+        "families": [
+          "sphere.federation",
+          "sphere.federation_discovery",
+          "federation.quote_authorization",
+          "federation.publisher_aliases"
+        ],
+        "difference": "Pinned keys/observations do not create trust. Quote authorization supports a bounded local issuance/revocation model; remote Move, outbound QuoteRequest and whole-FEP parity remain unsupported. Stable local publisher aliases are implemented, so local rename is not a missing feature.",
+        "evidence": [
+          "docs/federation-quotes-continuation.md",
+          "docs/federation-rename-continuation.md",
+          "/workspace/shared/federation-discovery-review-delivery/manifest.json"
+        ]
+      },
+      {
+        "id": "owned_search_automod",
+        "families": [
+          "sphere.timeline",
+          "sphere.ranked_automod",
+          "admin.verification_statistics_automod"
+        ],
+        "difference": "Bounded literal search and RE2 automod intentionally differ from semantic search and .NET regex. Ranked enforcement exists; optional review/evidence is an owned extension, with current privacy regression fix pending CI.",
+        "evidence": [
+          "ports/sphere/timeline/http.go:searchOptions",
+          "docs/post-automod-continuation.md"
+        ]
+      },
+      {
+        "id": "owned_reader_ip_rewind",
+        "families": [
+          "sphere.content_utilities",
+          "passport.ip_check",
+          "passport.rewind"
+        ],
+        "difference": "Explicit subscription/perk mapping, JSON-CIDR geo policy and bounded partial rewind providers are owned. MaxMind dataset, legacy personality RPC, configured tokenizer and action telemetry are not bundled. Source hardcoded-year/time defects are deliberately corrected.",
+        "evidence": [
+          "docs/content-utilities-continuation.md",
+          "docs/ip-check-continuation.md",
+          "docs/account-extras-continuation.md"
+        ]
+      },
+      {
+        "id": "owned_media_streaming",
+        "families": [
+          "sphere.livestreams",
+          "sphere.livestream_chat",
+          "sphere.livestream_egress_hls",
+          "sphere.livestream_awards",
+          "messager.calls"
+        ],
+        "difference": "HLS is an authenticated bounded live MPEG-TS projection; archives/recording import and arbitrary playlist variants are not implemented. Realtime award packets, exactly-once recipient receipt and legacy packet/VoIP compatibility remain separate gaps. Uncorrelated ingress/RTMP outcomes require reconciliation, not blind retry.",
+        "evidence": [
+          "docs/livestream-outputs-continuation.md",
+          "docs/livestream-awards-continuation.md",
+          "docs/livestream-chat-continuation.md",
+          "docs/calls-continuation.md"
+        ]
+      },
+      {
+        "id": "owned_internal_transport",
+        "families": [
+          "cross_platform"
+        ],
+        "difference": "The unified host deliberately composes in-process Go interfaces; original gRPC wire transports are not reproduced. Authored RPC business methods remain evidence, but excluded protobuf/shared/generated definitions cannot establish wire parity. Missing business capabilities such as credit writes, refunds, settlement and article scraping are tracked independently from transport replacement.",
+        "evidence": [
+          "internal/application/router.go:modules",
+          "docs/operation-coverage-plan-parts/rpc_implementations-0001.json",
+          "inventory/operation-sources/DysonNetwork.Sphere/Reader/WebReaderGrpcService.cs"
+        ]
+      }
+    ],
+    "operationally_unverified": [
+      {
+        "id": "exact_candidate_acceptance",
+        "remaining": "Current combined code, fixes and pending delivery lanes must pass exact-commit PostgreSQL, concurrency, process smoke and genuine restart; skipped/compiled tests are not acceptance.",
+        "evidence": "verification/current_candidate"
+      },
+      {
+        "id": "production_rollout",
+        "remaining": "Legacy data import/migration/reconciliation, schema upgrade with old writers stopped, rollback rehearsal, production config/quotas/treasury/entitlement policy and deployment remain unverified.",
+        "evidence": [
+          "docs/refresh-continuity-continuation.md",
+          "docs/compatibility-inventory.md"
+        ]
+      },
+      {
+        "id": "external_activation",
+        "remaining": "Live email/push/VoIP, RTC/media plane, bot/webhook, link preview/translation/autocomplete/fortune, federation/blog DNS and payment/storage provider activation were not exercised. Provider interfaces and synthetic tests do not establish operational availability.",
+        "evidence": [
+          "docs/runtime-flow-acceptance.json",
+          "cmd/backend/external_config.go",
+          "internal/application/external_modules.go"
+        ]
+      },
+      {
+        "id": "apple_passes",
+        "remaining": "Production Apple signing material, physical Wallet installation and APNs delivery remain unverified. Existing pass generation/registration/token lifecycle is implemented and green-tested; app-product membership label eligibility remains intentionally excluded.",
+        "evidence": "docs/apple-wallet-passkit.md"
+      },
+      {
+        "id": "client_interoperability",
+        "remaining": "Deployed consent UI, exact original gateway/serialization/client integration, generation-aware MLS reset/encrypted delete and attachment cryptography remain unverified or deferred client work. Resource API OAuth delegation remains blocked pending concrete route/scope policy.",
+        "evidence": [
+          "docs/oauth-continuation.md",
+          "docs/identity-client-contract-audit.md",
+          "docs/runtime-flow-acceptance.json"
+        ]
+      },
+      {
+        "id": "maintenance_retention",
+        "remaining": "Explicit purge/retention/redrive/inspection operations for domain metrics, transfer requests, durable chat delivery and commerce quarantine are not all exposed. Original database recycling/backfills and scheduler cron equivalence are not proved by owned ProcessDue.",
+        "evidence": [
+          "internal/application/backend.go:ProcessDue",
+          "docs/operation-coverage-plan-parts/scheduled_job_registrations-0001.json",
+          "docs/commerce-maintenance-quarantine.md"
+        ]
+      }
+    ],
+    "source_audit_basis": {
+      "coordinator_commit": "8eb29449756e41844cdad87480cf3321e2b53440",
+      "read_only_snapshot": "/workspace/shared/remaining-audit-8eb2944",
+      "original_source_revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "authored_client_revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "original_source_root": "inventory/operation-sources/",
+      "original_source_license": "AGPL-3.0 root manifest; only retained authored controller/service/client evidence",
+      "operation_plan": "docs/operation-coverage-plan.json",
+      "operation_plan_canonical_sha256": "bd314e3873b1dac73bb4f7c35227e027dfbb24473b64f86f952d917723ac499a",
+      "static_http_attributes": 818,
+      "meaning": "Static declarations, not endpoint count. All shard hashes checked. This is a flow/contract audit, not production or complete upstream wire-parity acceptance. Dirty coordinator sources were not used.",
+      "exclusions": "No NeTo/Spec/generated bindings, canceled SoSYS/Socommon/mirrors, unlicensed Suki repository or fortune corpus, provider/production probes, credentials, sockets or remote writes."
+    },
+    "reviewed_pending_integration": [
+      {
+        "id": "realm.labels_tenure",
+        "state": "Independent review passed offline; integration and actual PG pending; automatic tenure scheduling and full historical XP remain unsupported."
+      },
+      {
+        "id": "federation.public_remote_admission",
+        "state": "Frozen candidate delivered; independent reservation/restart review in progress; no actual PG acceptance."
+      },
+      {
+        "id": "posts.typed_composition",
+        "state": "Six-case candidate delivered and offline verified; independent review/integration/actual PG pending."
+      }
+    ]
   },
   "global_remaining": [
     "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",

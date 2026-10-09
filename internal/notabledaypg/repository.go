@@ -38,6 +38,7 @@ type Repository struct {
 	db    *sql.DB
 	guard *authoritypg.TransactionGuard
 	cfg   Config
+	media EventMediaStore
 }
 
 func New(db *sql.DB, guard *authoritypg.TransactionGuard, cfg Config) (*Repository, error) {
@@ -47,7 +48,7 @@ func New(db *sql.DB, guard *authoritypg.TransactionGuard, cfg Config) (*Reposito
 	if cfg.Now == nil {
 		cfg.Now = time.Now
 	}
-	return &Repository{db, guard, cfg}, nil
+	return &Repository{db: db, guard: guard, cfg: cfg}, nil
 }
 func (r *Repository) BindAuthority(ctx context.Context, p authority.Principal) context.Context {
 	if r == nil || r.guard == nil {
@@ -60,6 +61,9 @@ func (r *Repository) Ready(ctx context.Context) error {
 		return notabledays.ErrUnavailable
 	}
 	_, e := r.db.ExecContext(ctx, `SELECT id,definition,region,deleted_at FROM owned_notable_days LIMIT 0; SELECT id,definition,visibility,request_hash,version FROM owned_calendar_events LIMIT 0; SELECT id,subscriber_id,target_account_id FROM owned_calendar_subscriptions LIMIT 0; SELECT actor_id,operation FROM owned_calendar_audit LIMIT 0; SELECT account_id,related_id,status FROM owned_social_effective_relationships LIMIT 0`)
+	if e == nil && r.media != nil {
+		e = r.media.Ready(ctx)
+	}
 	if e == nil && r.cfg.Activity != nil {
 		e = r.cfg.Activity.Ready(ctx, r.db)
 	}
@@ -146,8 +150,8 @@ func (r *Repository) Execute(ctx context.Context, actor string, c notabledays.Co
 	if !public && !authority.ValidID(actor) {
 		return out, authority.ErrInvalid
 	}
-	opts := &sql.TxOptions{Isolation: sql.LevelReadCommitted}
-	if public {
+	opts := &sql.TxOptions{Isolation: sql.LevelReadCommitted, ReadOnly: public}
+	if public && (c.Operation == "day.list" || c.Operation == "day.get") {
 		opts = &sql.TxOptions{Isolation: sql.LevelRepeatableRead, ReadOnly: true}
 	}
 	tx, e := r.db.BeginTx(ctx, opts)
@@ -180,6 +184,8 @@ func (r *Repository) Execute(ctx context.Context, actor string, c notabledays.Co
 			return out, e
 		}
 	}
+	reads := &calendarReadSet{events: map[string]string{}, versions: map[string]int64{}, snapshots: map[string]notabledays.Event{}}
+	ctx = context.WithValue(ctx, calendarReadSetKey{}, reads)
 	now := r.cfg.Now().UTC()
 	switch {
 	case strings.HasPrefix(c.Operation, "day."):
@@ -197,6 +203,21 @@ func (r *Repository) Execute(ctx context.Context, actor string, c notabledays.Co
 	if write && out.Changed {
 		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_calendar_audit(actor_id,operation,resource_id,occurred_at)VALUES($1::uuid,$2::text,$3::uuid,$4::timestamptz)`, actor, c.Operation, out.ResourceID, now); e != nil {
 			return notabledays.Result{}, mapped(e)
+		}
+	}
+	if e = r.validateCalendarReads(ctx, tx, actor, c, reads); e != nil {
+		return notabledays.Result{}, mapped(e)
+	}
+	// Media row waits may outlive the original proof. Revalidate that same proof
+	// after all associations and before committing, never mint a replacement.
+	if !public {
+		if perm == "" {
+			_, e = r.guard.Authenticate(ctx, r.db, tx, actor)
+		} else {
+			_, e = r.guard.Authorize(ctx, r.db, tx, actor, perm)
+		}
+		if e != nil {
+			return notabledays.Result{}, e
 		}
 	}
 	if e = tx.Commit(); e != nil {
@@ -217,7 +238,7 @@ func resolveAccount(ctx context.Context, tx *sql.Tx, actor, ref string) (notable
 	if authority.ValidID(ref) {
 		column = "id::text"
 	}
-	e := tx.QueryRowContext(ctx, `SELECT id::text,name,nick,region FROM owned_authority_accounts WHERE `+column+`=$1::text AND NOT disabled`, ref).Scan(&a.ID, &a.Name, &a.Nick, &region)
+	e := tx.QueryRowContext(ctx, `SELECT id::text,name,nick,region FROM owned_authority_accounts WHERE `+column+`=$1::text AND NOT disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=owned_authority_accounts.id AND p.kind='disable_account' AND(p.starts_at IS NULL OR p.starts_at<=statement_timestamp())AND(p.expires_at IS NULL OR p.expires_at>statement_timestamp()))`, ref).Scan(&a.ID, &a.Name, &a.Nick, &region)
 	if e != nil {
 		return a, region, mapped(e)
 	}

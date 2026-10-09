@@ -28,6 +28,7 @@ def check():
             "ports/passport/social/expiry-evidence/relationship.dart",
             "ports/passport/social/contract-evidence/RealmService.cs",
             "ports/federation/quote-evidence/QUOTE_AUTHORIZATION.md",
+            "ports/federation/discovery-evidence/ActivityPubDiscoveryService.cs",
             "ports/federation/quote-evidence/ActivityHandlerService.cs",
             "ports/passport/passkit/source/ApplePassService.cs",
             "ports/messager/mls-evidence/mls_group_manager.dart",

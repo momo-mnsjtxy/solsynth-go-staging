@@ -462,6 +462,8 @@ func route(w http.ResponseWriter, r *http.Request, values url.Values) (c Command
 				return c, 0, ErrInvalid
 			}
 			_, v.RecurrencePresent = keys["recurrence"]
+			_, v.IconPresent = keys["icon_id"]
+			_, v.BackgroundPresent = keys["background_id"]
 			c.Patch = &v
 			c.Operation = "event.create"
 			status = 201

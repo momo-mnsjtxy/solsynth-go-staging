@@ -15,7 +15,7 @@ import (
 const eventFields = `e.id::text,e.account_id::text,e.definition,e.start_time,e.end_time,e.visibility,e.version,e.created_at,e.updated_at,e.deleted_at,a.name,a.nick`
 const friendSQL = `(EXISTS(SELECT 1 FROM owned_social_effective_relationships f WHERE f.account_id=e.account_id AND f.related_id=NULLIF($1::text,'')::uuid AND f.status>=100)AND EXISTS(SELECT 1 FROM owned_social_effective_relationships f WHERE f.account_id=NULLIF($1::text,'')::uuid AND f.related_id=e.account_id AND f.status>=100))`
 const blockedSQL = `EXISTS(SELECT 1 FROM owned_social_effective_relationships b WHERE b.status=-100 AND((b.account_id=e.account_id AND b.related_id=NULLIF($1::text,'')::uuid)OR(b.related_id=e.account_id AND b.account_id=NULLIF($1::text,'')::uuid)))`
-const eventBase = ` FROM owned_calendar_events e JOIN owned_authority_accounts a ON a.id=e.account_id WHERE e.deleted_at IS NULL AND NOT a.disabled AND NOT ` + blockedSQL + ` AND(e.account_id=NULLIF($1::text,'')::uuid OR e.visibility=200 OR(e.visibility=100 AND ` + friendSQL + `))`
+const eventBase = ` FROM owned_calendar_events e JOIN owned_authority_accounts a ON a.id=e.account_id WHERE e.deleted_at IS NULL AND ` + activeCalendarOwner + ` AND NOT ` + blockedSQL + ` AND(e.account_id=NULLIF($1::text,'')::uuid OR e.visibility=200 OR(e.visibility=100 AND ` + friendSQL + `))`
 
 func scanEvent(row interface{ Scan(...any) error }) (v notabledays.Event, e error) {
 	var b []byte
@@ -34,7 +34,7 @@ func scanEvent(row interface{ Scan(...any) error }) (v notabledays.Event, e erro
 	v.Account.ID = v.AccountID
 	return v, nil
 }
-func loadEvent(ctx context.Context, tx *sql.Tx, actor, id string, write bool) (notabledays.Event, error) {
+func (r *Repository) loadEvent(ctx context.Context, tx *sql.Tx, actor, id string, write bool) (notabledays.Event, error) {
 	if !authority.ValidID(id) {
 		return notabledays.Event{}, notabledays.ErrNotFound
 	}
@@ -42,12 +42,16 @@ func loadEvent(ctx context.Context, tx *sql.Tx, actor, id string, write bool) (n
 	if write {
 		query += ` AND e.account_id=NULLIF($1::text,'')::uuid FOR UPDATE OF e`
 	}
-	return scanEvent(tx.QueryRowContext(ctx, query, actor, id))
+	v, e := scanEvent(tx.QueryRowContext(ctx, query, actor, id))
+	if e == nil && r.media != nil && !write {
+		e = r.media.Load(ctx, tx, actor, &v)
+	}
+	if e == nil && !write {
+		e = observeCalendarEvent(ctx, v)
+	}
+	return v, e
 }
 func applyEvent(v notabledays.EventBody, p notabledays.EventPatch) (notabledays.EventBody, error) {
-	if p.IconID != nil && *p.IconID != "" || p.BackgroundID != nil && *p.BackgroundID != "" {
-		return v, notabledays.ErrUnsupported
-	}
 	if p.Title != nil {
 		v.Title = strings.TrimSpace(*p.Title)
 	}
@@ -111,7 +115,15 @@ func (r *Repository) events(ctx context.Context, tx *sql.Tx, actor string, c not
 		if e != nil {
 			return out, e
 		}
-		hash, e := fingerprint(v)
+		selection, e := normalizeMediaPatch(*c.Patch, r.media != nil)
+		if e != nil {
+			return out, e
+		}
+		hash, e := fingerprint(struct {
+			notabledays.EventBody
+			IconID       *string `json:"icon_id,omitempty"`
+			BackgroundID *string `json:"background_id,omitempty"`
+		}{v, selection.IconID, selection.BackgroundID})
 		if e != nil {
 			return out, e
 		}
@@ -123,7 +135,7 @@ func (r *Repository) events(ctx context.Context, tx *sql.Tx, actor string, c not
 				if !prior.Valid || prior.String != hash {
 					return out, notabledays.ErrConflict
 				}
-				out.Value, e = loadEvent(ctx, tx, actor, priorID, false)
+				out.Value, e = r.loadEvent(ctx, tx, actor, priorID, false)
 				return out, e
 			}
 			if !errors.Is(e, sql.ErrNoRows) {
@@ -149,16 +161,26 @@ func (r *Repository) events(ctx context.Context, tx *sql.Tx, actor string, c not
 		if e != nil {
 			return out, e
 		}
-		out.Value, e = loadEvent(ctx, tx, actor, eventID, false)
+		if r.media != nil {
+			if e = r.media.Apply(ctx, tx, actor, eventID, selection); e != nil {
+				return out, e
+			}
+		}
+		out.Value, e = r.loadEvent(ctx, tx, actor, eventID, false)
 		out.Changed = e == nil
 		out.ResourceID = eventID
 		return out, e
 	case "event.update", "event.delete":
-		v, e := loadEvent(ctx, tx, actor, c.ID, true)
+		v, e := r.loadEvent(ctx, tx, actor, c.ID, true)
 		if e != nil {
 			return out, e
 		}
 		if c.Operation == "event.delete" {
+			if r.media != nil {
+				if e = r.media.Remove(ctx, tx, v.ID); e != nil {
+					return out, e
+				}
+			}
 			_, e = tx.ExecContext(ctx, `UPDATE owned_calendar_events SET deleted_at=$2::timestamptz,updated_at=$2::timestamptz,version=version+1 WHERE id=$1::uuid`, v.ID, now)
 			out.Changed = e == nil
 			out.ResourceID = v.ID
@@ -166,6 +188,10 @@ func (r *Repository) events(ctx context.Context, tx *sql.Tx, actor string, c not
 		}
 		if c.Patch == nil {
 			return out, notabledays.ErrInvalid
+		}
+		selection, e := normalizeMediaPatch(*c.Patch, r.media != nil)
+		if e != nil {
+			return out, e
 		}
 		body, e := applyEvent(v.EventBody, *c.Patch)
 		if e != nil {
@@ -179,12 +205,17 @@ func (r *Repository) events(ctx context.Context, tx *sql.Tx, actor string, c not
 		if e != nil {
 			return out, e
 		}
-		out.Value, e = loadEvent(ctx, tx, actor, v.ID, false)
+		if r.media != nil {
+			if e = r.media.Apply(ctx, tx, actor, v.ID, selection); e != nil {
+				return out, e
+			}
+		}
+		out.Value, e = r.loadEvent(ctx, tx, actor, v.ID, false)
 		out.Changed = e == nil
 		out.ResourceID = v.ID
 		return out, e
 	case "event.get":
-		v, e := loadEvent(ctx, tx, actor, c.ID, false)
+		v, e := r.loadEvent(ctx, tx, actor, c.ID, false)
 		if e != nil {
 			return out, e
 		}
@@ -204,7 +235,7 @@ func (r *Repository) events(ctx context.Context, tx *sql.Tx, actor string, c not
 		if !notabledays.ValidQuery(q) {
 			return out, notabledays.ErrInvalid
 		}
-		v, e := listEvents(ctx, tx, actor, q)
+		v, e := r.listEvents(ctx, tx, actor, q)
 		if e != nil {
 			return out, e
 		}
@@ -223,7 +254,7 @@ func (r *Repository) events(ctx context.Context, tx *sql.Tx, actor string, c not
 		return out, nil
 	case "event.tags":
 		q := notabledays.Query{Owner: "me", AccountID: actor, Take: 100}
-		events, e := listEvents(ctx, tx, actor, q)
+		events, e := r.listEvents(ctx, tx, actor, q)
 		if e != nil {
 			return out, e
 		}
@@ -243,7 +274,7 @@ func (r *Repository) events(ctx context.Context, tx *sql.Tx, actor string, c not
 	}
 	return out, notabledays.ErrUnsupported
 }
-func listEvents(ctx context.Context, tx *sql.Tx, actor string, q notabledays.Query) ([]notabledays.Event, error) {
+func (r *Repository) listEvents(ctx context.Context, tx *sql.Tx, actor string, q notabledays.Query) ([]notabledays.Event, error) {
 	accessible := q.Owner == "" || q.Owner == "me"
 	owner := q.AccountID
 	if owner != "" && !authority.ValidID(owner) {
@@ -281,7 +312,24 @@ func listEvents(ctx context.Context, tx *sql.Tx, actor string, q notabledays.Que
 			return nil, notabledays.ErrLimit
 		}
 	}
-	return out, rows.Err()
+	e = rows.Err()
+	rows.Close()
+	if e != nil {
+		return nil, e
+	}
+	if r.media != nil {
+		for i := range out {
+			if e = r.media.Load(ctx, tx, actor, &out[i]); e != nil {
+				return nil, e
+			}
+		}
+	}
+	for _, v := range out {
+		if e = observeCalendarEvent(ctx, v); e != nil {
+			return nil, e
+		}
+	}
+	return out, nil
 }
 func eventRange(q notabledays.Query, now time.Time) (time.Time, time.Time, error) {
 	var from, to time.Time

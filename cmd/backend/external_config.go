@@ -6,7 +6,9 @@ import (
 	"context"
 	"crypto"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"flag"
 	"io"
@@ -18,6 +20,7 @@ import (
 	"solsynth.local/go-migration/internal/rtcprovider"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/federation"
+	"strings"
 	"time"
 )
 
@@ -30,6 +33,7 @@ type externalFlagSet struct {
 	streamTTL, streamLifetime, streamIdle        *time.Duration
 	streamLimit                                  *int
 	calls, federation, send, cloudRevocation     *bool
+	discover                                     *bool
 	endpoint, keyEnv, secretEnv, federationFile  *string
 	tokenTTL, callTTL, maintenance               *time.Duration
 }
@@ -51,6 +55,7 @@ func externalFlags(fs *flag.FlagSet) externalFlagSet {
 		calls:             fs.Bool("enable-calls", false, "enable canonical room-call signaling with explicitly provisioned LiveKit Cloud credentials"),
 		federation:        fs.Bool("enable-federation", false, "enable the explicitly provisioned ActivityPub subset"),
 		send:              fs.Bool("federation-send", false, "enable queued outbound delivery only to configured pinned HTTPS peers"),
+		discover:          fs.Bool("federation-discover", false, "enable bounded WebFinger/actor observations for explicitly configured pinned targets"),
 		cloudRevocation:   fs.Bool("livekit-cloud-revocation", false, "assert this deployment supports Cloud revoke_token_ts; self-hosted removal is insufficient"),
 		endpoint:          fs.String("livekit-endpoint", "", "explicit WSS LiveKit endpoint"), keyEnv: fs.String("livekit-api-key-env", "", "explicit environment variable holding the LiveKit API key"), secretEnv: fs.String("livekit-api-secret-env", "", "explicit environment variable holding the raw LiveKit API secret"),
 		federationFile: fs.String("federation-config", "", "absolute path to a JSON origin/peer/key-reference configuration; keys are never generated"),
@@ -113,12 +118,12 @@ func (v externalFlagSet) apply(c *application.Config) error {
 		c.Livestreams.Chat = &livestreampg.ChatConfig{MaxMessagesPerStream: *v.streamMessages, MaxEventsPerStream: *v.streamEvents, MaxAttempts: *v.streamAttempts, EventTTL: *v.streamEventTTL, SendTimeout: *v.streamSendTimeout}
 	}
 	if !*v.federation {
-		if *v.federationFile != "" || *v.send {
+		if *v.federationFile != "" || *v.send || *v.discover {
 			return errors.New("federation settings require enable-federation")
 		}
 		return nil
 	}
-	cfg, e := loadFederationConfig(*v.federationFile, *v.send)
+	cfg, e := loadFederationConfigWithDiscovery(*v.federationFile, *v.send, *v.discover)
 	if e != nil {
 		return e
 	}
@@ -127,10 +132,17 @@ func (v externalFlagSet) apply(c *application.Config) error {
 }
 
 type federationFile struct {
-	Origin                 string   `json:"origin"`
-	AllowedOrigins         []string `json:"allowed_origins"`
-	MaxAttempts            int      `json:"max_attempts"`
-	DeliveryTimeoutSeconds int      `json:"delivery_timeout_seconds"`
+	ServerActor *struct {
+		Username      string `json:"username"`
+		Name          string `json:"name"`
+		Summary       string `json:"summary"`
+		PublicKeyFile string `json:"public_key_file"`
+	} `json:"server_actor"`
+	DiscoveryTargets       []federation.DiscoveryTarget `json:"discovery_targets"`
+	Origin                 string                       `json:"origin"`
+	AllowedOrigins         []string                     `json:"allowed_origins"`
+	MaxAttempts            int                          `json:"max_attempts"`
+	DeliveryTimeoutSeconds int                          `json:"delivery_timeout_seconds"`
 	LocalKeys              []struct {
 		PublisherID    string `json:"publisher_id"`
 		PrivateKeyFile string `json:"private_key_file"`
@@ -179,6 +191,9 @@ func (k configuredFederationKeys) RemoteActor(ctx context.Context, id string) (f
 	return s, nil
 }
 func loadFederationConfig(name string, send bool) (*application.FederationConfig, error) {
+	return loadFederationConfigWithDiscovery(name, send, false)
+}
+func loadFederationConfigWithDiscovery(name string, send, discover bool) (*application.FederationConfig, error) {
 	invalid := errors.New("invalid explicit federation configuration")
 	if !filepath.IsAbs(name) {
 		return nil, invalid
@@ -189,7 +204,7 @@ func loadFederationConfig(name string, send bool) (*application.FederationConfig
 	}
 	defer file.Close()
 	raw, e := io.ReadAll(io.LimitReader(file, 1<<20+1))
-	if e != nil || len(raw) > 1<<20 || federation.CheckJSON(raw) != nil {
+	if e != nil || len(raw) > 1<<20 || federation.CheckJSON(raw) != nil || !canonicalFederationFields(raw) {
 		return nil, invalid
 	}
 	var input federationFile
@@ -199,7 +214,7 @@ func loadFederationConfig(name string, send bool) (*application.FederationConfig
 		return nil, invalid
 	}
 	policy := federation.Config{Origin: input.Origin, AllowedOrigins: input.AllowedOrigins, MaxAttempts: input.MaxAttempts, DeliveryTimeout: time.Duration(input.DeliveryTimeoutSeconds) * time.Second}
-	if policy.Validate() != nil || len(input.AllowedOrigins) > 128 || len(input.LocalKeys) < 1 || len(input.LocalKeys) > 1000 || len(input.RemoteKeys) > 1000 {
+	if policy.Validate() != nil || len(input.AllowedOrigins) > 128 || len(input.LocalKeys) < 1 && input.ServerActor == nil || len(input.LocalKeys) > 1000 || len(input.RemoteKeys) > 1000 || len(input.DiscoveryTargets) > 128 {
 		return nil, invalid
 	}
 	keys := configuredFederationKeys{local: map[string]crypto.Signer{}, remote: map[string]federation.RemoteKey{}, actors: map[string]federation.RemoteKey{}}
@@ -233,6 +248,41 @@ func loadFederationConfig(name string, send bool) (*application.FederationConfig
 		keys.actors[bound.Actor] = bound
 	}
 	cfg := &application.FederationConfig{Policy: policy, Keys: keys}
+	if input.ServerActor != nil {
+		if !filepath.IsAbs(input.ServerActor.PublicKeyFile) {
+			return nil, invalid
+		}
+		key, e := publicKey(input.ServerActor.PublicKeyFile)
+		if e != nil {
+			return nil, invalid
+		}
+		der, e := x509.MarshalPKIXPublicKey(key)
+		if e != nil {
+			return nil, invalid
+		}
+		server := federation.ServerConfig{Username: input.ServerActor.Username, Name: input.ServerActor.Name, Summary: input.ServerActor.Summary, PublicKeyPEM: string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: der}))}
+		if _, e = server.Actor(policy); e != nil {
+			return nil, invalid
+		}
+		cfg.Discovery.Server = &server
+	}
+	seenTargets := map[string]bool{}
+	for _, target := range input.DiscoveryTargets {
+		if target.Validate(policy) != nil || seenTargets[target.Resource] {
+			return nil, invalid
+		}
+		if _, e := target.Binding(policy, keys.actors[target.Actor]); e != nil {
+			return nil, invalid
+		}
+		seenTargets[target.Resource] = true
+		cfg.Discovery.Targets = append(cfg.Discovery.Targets, target)
+	}
+	if discover {
+		cfg.Fetcher, e = federation.NewHTTPFetcher(policy, cfg.Discovery.Targets)
+		if e != nil {
+			return nil, invalid
+		}
+	}
 	if send {
 		if len(input.AllowedOrigins) == 0 {
 			return nil, invalid
@@ -243,4 +293,38 @@ func loadFederationConfig(name string, send bool) (*application.FederationConfig
 		}
 	}
 	return cfg, nil
+}
+
+// Reject JSON's case-insensitive struct aliases, including duplicate logical
+// options spelled with different casing. Configuration has one exact spelling.
+func canonicalFederationFields(raw []byte) bool {
+	var root any
+	if json.Unmarshal(raw, &root) != nil {
+		return false
+	}
+	names := []string{"server_actor", "username", "name", "summary", "public_key_file", "discovery_targets", "resource", "actor", "origin", "allowed_origins", "max_attempts", "delivery_timeout_seconds", "local_keys", "publisher_id", "private_key_file", "remote_keys", "inbox", "key_id"}
+	var walk func(any) bool
+	walk = func(v any) bool {
+		switch x := v.(type) {
+		case map[string]any:
+			for key, value := range x {
+				for _, name := range names {
+					if strings.EqualFold(key, name) && key != name {
+						return false
+					}
+				}
+				if !walk(value) {
+					return false
+				}
+			}
+		case []any:
+			for _, value := range x {
+				if !walk(value) {
+					return false
+				}
+			}
+		}
+		return true
+	}
+	return walk(root)
 }

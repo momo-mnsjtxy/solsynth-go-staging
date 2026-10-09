@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/calendarmediapg/schema.sql",
  "internal/blogpg/schema.sql",
  "internal/botpg/execution_schema.sql",
  "internal/realmboostpg/schema.sql",
@@ -30,6 +31,7 @@ REQUIRED_SCHEMAS = {
  "internal/accountpg/name_schema.sql",
  "internal/federationpg/identity_schema.sql",
  "internal/federationpg/quote_schema.sql",
+ "internal/federationpg/discovery_schema.sql",
  "internal/adminpg/schema.sql",
  "internal/livestreampg/schema.sql",
  "internal/moderationpg/schema.sql",
@@ -140,6 +142,10 @@ def check(runner, read_schema=None):
         raise ValueError("quote authorizations require canonical posts and anchored federation first")
     if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/federationpg/quote_schema.sql' not in runner:
         raise ValueError("quote authorization migration must be atomic")
+    if schemas.index("internal/federationpg/discovery_schema.sql") <= max(schemas.index("internal/federationpg/identity_schema.sql"), schemas.index("internal/accountpg/name_schema.sql")):
+        raise ValueError("discovery requires anchored federation and permanent publisher names")
+    if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/federationpg/discovery_schema.sql' not in runner:
+        raise ValueError("discovery migration must be atomic")
     if schemas.index("internal/commercepg/order_index_scope.sql") <= schemas.index("internal/commercepg/schema.sql"):
         raise ValueError("commerce index migration requires the base commerce schema first")
     if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/commercepg/order_index_scope.sql' not in runner:
@@ -255,6 +261,7 @@ def main():
         source.replace("--single-transaction -f internal/socialpg/expiry_schema.sql", "-f internal/socialpg/expiry_schema.sql"),
         source.replace("--single-transaction -f internal/socialpg/permissions_schema.sql", "-f internal/socialpg/permissions_schema.sql"),
         source.replace("--single-transaction -f internal/federationpg/quote_schema.sql", "-f internal/federationpg/quote_schema.sql"),
+        source.replace("--single-transaction -f internal/federationpg/discovery_schema.sql", "-f internal/federationpg/discovery_schema.sql"),
         source.replace("--single-transaction -f internal/commercepg/order_index_scope.sql", "-f internal/commercepg/order_index_scope.sql"),
         source.replace("--single-transaction -f internal/mediapg/usage_schema.sql", "-f internal/mediapg/usage_schema.sql"),
         source.replace("test -timeout 30m -race", "test -race"),

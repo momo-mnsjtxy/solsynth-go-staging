@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Package federation implements an explicitly provisioned ActivityPub S2S subset.
-// It never fetches actors or keys, provisions credentials, or starts workers.
+// Construction never provisions credentials or starts workers. Optional explicit
+// discovery observes configured actor documents without importing key authority.
 package federation
 
 import (

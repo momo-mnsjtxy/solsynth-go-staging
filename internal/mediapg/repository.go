@@ -302,77 +302,97 @@ func (r *Repository) read(ctx context.Context, actor, id string, open bool, artw
 		return media.File{}, nil, err
 	}
 	defer tx.Rollback()
+	checkProof := func() error {
+		if actor == "" {
+			return nil
+		}
+		_, err := r.guard.Authorize(ctx, r.db, tx, actor, media.ReadPermission)
+		return err
+	}
 	f, err := scan(tx.QueryRowContext(ctx, `SELECT `+fields+` FROM owned_media_files WHERE id=$1 AND state='ready' FOR SHARE`, id))
 	if err != nil {
-		return f, nil, err
+		return media.File{}, nil, err
 	}
-	// Recheck owner state after the file lock, so a lock waiter observes a
-	// disable that committed while it waited. The optional policy never changes
-	// the file's public flag or its canonical ownership.
-	var active bool
-	if err = tx.QueryRowContext(ctx, `SELECT NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=a.id AND p.kind='disable_account' AND(p.starts_at IS NULL OR p.starts_at<=statement_timestamp())AND(p.expires_at IS NULL OR p.expires_at>statement_timestamp())) FROM owned_authority_accounts a WHERE a.id=$1`, f.AccountID).Scan(&active); err != nil {
-		return f, nil, err
+	// File contention may outlive the request proof. Revalidate that same proof
+	// after the lock before any audience policy or object access, for every file.
+	if err = checkProof(); err != nil {
+		return media.File{}, nil, err
 	}
-	if !active {
-		return media.File{}, nil, media.ErrNotFound
+	// The file lock keeps readiness and ownership stable. Parent grants and owner
+	// status use fresh statements both before and after object-store waits.
+	checkAudience := func() error {
+		if err := artworkOwnerActive(ctx, tx, f.AccountID); err != nil {
+			return err
+		}
+		artworkAllowed := false
+		if len(artworkHash) != 0 {
+			if f.SHA256 != strings.TrimPrefix(artworkHash[0], "sha256:") || !strings.HasPrefix(f.MIMEType, "image/") {
+				return media.ErrNotFound
+			}
+			var err error
+			artworkAllowed, err = r.artworkLive(ctx, tx, artworkHash[0], f.ID)
+			if err != nil {
+				return err
+			}
+			if !artworkAllowed {
+				return media.ErrNotFound
+			}
+		}
+		if !f.Public && f.AccountID != actor && !artworkAllowed {
+			allowed := false
+			var err error
+			if r.readVisibility != nil {
+				allowed, err = r.readVisibility.CanReadInTransaction(ctx, tx, actor, id)
+			}
+			if err != nil {
+				return err
+			}
+			if !allowed {
+				return media.ErrNotFound
+			}
+		}
+		// A composed policy can wait too; owner disablement must be fresh after it.
+		return artworkOwnerActive(ctx, tx, f.AccountID)
 	}
-	artworkAllowed := false
-	if len(artworkHash) != 0 {
-		if f.SHA256 != strings.TrimPrefix(artworkHash[0], "sha256:") || !strings.HasPrefix(f.MIMEType, "image/") {
-			return media.File{}, nil, media.ErrNotFound
-		}
-		artworkAllowed, err = r.artworkLive(ctx, tx, artworkHash[0], f.ID)
-		if err != nil {
-			return media.File{}, nil, err
-		}
-		if !artworkAllowed {
-			return media.File{}, nil, media.ErrNotFound
-		}
+	if err = checkAudience(); err != nil {
+		return media.File{}, nil, err
 	}
-	if !f.Public && f.AccountID != actor && !artworkAllowed {
-		allowed := false
-		if r.readVisibility != nil {
-			allowed, err = r.readVisibility.CanReadInTransaction(ctx, tx, actor, id)
-		}
-		if err != nil {
-			return f, nil, err
-		}
-		if !allowed {
-			return media.File{}, nil, media.ErrNotFound
-		}
+	if err = checkProof(); err != nil {
+		return media.File{}, nil, err
 	}
 	var body io.ReadSeekCloser
 	if open {
 		body, err = r.openFile(ctx, f)
 		if err != nil {
-			return f, nil, err
-		}
-	}
-	if len(artworkHash) != 0 {
-		if actor != "" {
-			_, err = r.guard.Authorize(ctx, r.db, tx, actor, media.ReadPermission)
-		}
-		if err == nil {
-			err = artworkOwnerActive(ctx, tx, f.AccountID)
-		}
-		if err == nil {
-			artworkAllowed, err = r.artworkLive(ctx, tx, artworkHash[0], f.ID)
-			if err == nil && !artworkAllowed {
-				err = media.ErrNotFound
-			}
-		}
-		if err != nil {
-			if body != nil {
-				body.Close()
-			}
 			return media.File{}, nil, err
 		}
+	}
+	if err = checkProof(); err != nil {
+		if body != nil {
+			body.Close()
+		}
+		return media.File{}, nil, err
+	}
+	if err = checkAudience(); err != nil {
+		if body != nil {
+			body.Close()
+		}
+		return media.File{}, nil, err
+	}
+	// Object opening and composed policies may also consume time. Recheck the
+	// same original proof before exposing bytes or metadata; close an opened
+	// object on failure. Anonymous reads keep their established public policy.
+	if err = checkProof(); err != nil {
+		if body != nil {
+			body.Close()
+		}
+		return media.File{}, nil, err
 	}
 	if err = tx.Commit(); err != nil {
 		if body != nil {
 			body.Close()
 		}
-		return f, nil, err
+		return media.File{}, nil, err
 	}
 	return f, body, nil
 }

@@ -129,7 +129,7 @@
       "test": "TestPGBlogSavedRestartPersistence",
       "source": "tests/integration/blog_posts_test.go",
       "function_sha256": "116c7696ed7752195a8283deee265674d9444b1faa8dde0d6670dc6774657b22",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "blog-posts.json"
       ],
@@ -177,7 +177,7 @@
       "test": "TestPGBotExecutionRestartPersistence",
       "source": "tests/integration/bot_execution_test.go",
       "function_sha256": "15857e4c08806b8b48c2c3cffc227c4f16e0b6bc430bd8490f87995b3888f883",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "bot-execution-restart.json"
       ],
@@ -201,6 +201,35 @@
       ],
       "named_database_markers": {},
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGCalendarActivityRestartPersistence",
+      "source": "tests/integration/calendar_activity_test.go",
+      "function_sha256": "d29978610635f26837f8668a1a62b08b78397d02515bfb060fc31473725c359b",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "calendar-activity.json"
+      ],
+      "persistent_directories_or_files": [
+        "calendar-activity.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before exclusively saves original status/checkin/account IDs. After verifies those canonical event records and privacy; no reseeding."
+    },
+    {
+      "test": "TestPGCalendarMediaRestartPersistence",
+      "source": "tests/integration/calendar_media_test.go",
+      "function_sha256": "77902325b8e87cd8a591b03ab5febbfdb75ec05782863c25249f3104a6be0b10",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "calendar-media.json"
+      ],
+      "persistent_directories_or_files": [
+        "calendar-media.json",
+        "calendar-media-objects"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before exclusively saves exact original calendar/file/account IDs and persistent synthetic object directory. After reads original target rows/blobs only; no fixture reconstruction, upload or account issuance."
     },
     {
       "test": "TestPGCalendarRestartPersistence",
@@ -422,10 +451,24 @@
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
     },
     {
+      "test": "TestPGFederationDiscoverySavedRestartPersistence",
+      "source": "tests/integration/federation_discovery_test.go",
+      "function_sha256": "c92610b9a1ff86db29f13af766943983959042c04abcab8cf78efb7846d2c50b",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "federation-discovery-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "federation-discovery-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before exclusively saves original completed discovery job and anchored server identity JSON. After compares only those original rows through saved IDs; no reseeding, new proof or key generation."
+    },
+    {
       "test": "TestPGFederationQuoteRestartPersistence",
       "source": "tests/integration/federation_quotes_test.go",
       "function_sha256": "df32f9cd0863f0453f632c78e6cfec1e3b9d50eefc19ece87cb08e310dca90c1",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "federation-quote-restart.json"
       ],
@@ -1345,6 +1388,12 @@
       "function_sha256": "9050b39715dddd9718f1d463ae177c8024439a530661e0ecfe3d7210ee422127"
     },
     {
+      "test": "TestPGBackendFederationDiscoveryComposition",
+      "source": "tests/integration/backend_federation_discovery_test.go",
+      "function_sha256": "160b1cc66222e9659215373655777a2063a8a7dc2c0ee27231c5344de2e7d999",
+      "group": "group-b"
+    },
+    {
       "test": "TestPGBackendFortuneComposition",
       "source": "tests/integration/backend_identity_reports_test.go",
       "group": "group-b",
@@ -1420,7 +1469,7 @@
       "test": "TestPGBackendPostAutomodCompositionAndExplicitReview",
       "source": "tests/integration/backend_post_automod_test.go",
       "function_sha256": "13cd0631136f633228cc0a480fada19a47771ef185d29bf9dac6ff1aa9c87102",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendPostAwardCheckoutAndRelease",
@@ -1456,7 +1505,7 @@
       "test": "TestPGBackendRealmBoostRoutes",
       "source": "tests/integration/realm_boosts_host_test.go",
       "function_sha256": "fff42f3ad13313aa0a56c2a0c2609e17e6527e9b8bb796a0b2ea4f0c21fda665",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendRefreshContinuesBroadcastChatThenLogoutRevokes",
@@ -1480,7 +1529,7 @@
       "test": "TestPGBackendShippingAddressCheckout",
       "source": "tests/integration/shipping_test.go",
       "function_sha256": "4610b8e7c43a54626cc9b505db3405092d92b055b6b8d9f0fe442c6bae05604f",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendSigninHTTPProcessRestart",
@@ -1491,7 +1540,7 @@
     {
       "test": "TestPGBackendSubscriptionActivationRoutes",
       "source": "tests/integration/subscription_activation_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "81bf4ee7163be5f5b661325b717615390f5d4530c4f081b7255415708bcc70c3"
     },
     {
@@ -1510,7 +1559,19 @@
       "test": "TestPGBlogBackendAliasesAndStrictPermissionRequest",
       "source": "tests/integration/blog_posts_test.go",
       "function_sha256": "fc49251d0d736974cb800a83f3dcbdc60dd9c6ae502e57f90d927fd9895cf62f",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGCalendarMediaComposedAudienceAndProjection",
+      "source": "tests/integration/calendar_media_test.go",
+      "function_sha256": "9f732b6b00916cce994f24ec7c6a30954a33b95b0018d2d9fdf7053dfd404709",
       "group": "group-a"
+    },
+    {
+      "test": "TestPGCalendarMediaComposedReadProofWait",
+      "source": "tests/integration/calendar_media_test.go",
+      "function_sha256": "7e8eaf92ebf83a5ad790512103f808d241a1fbc6f193ee86e6b1fc5614772b62",
+      "group": "group-b"
     },
     {
       "test": "TestPGCouponBackendHTTPPolicyAndBinding",
@@ -1633,6 +1694,10 @@
       "sha256": "7cbd2737afea877114a09de6743baf513ca3c7f40cfa2a77e0c9d2b55a68bcca"
     },
     {
+      "source": "tests/integration/backend_federation_discovery_test.go",
+      "sha256": "85738f8a93374287a0ba367e3d86024ef055447a87c2c259959c8f693edb99c7"
+    },
+    {
       "source": "tests/integration/backend_federation_rename_test.go",
       "sha256": "1fa13152bb889083d3a39fe14b61c3ebbcfb88ab0574dc56b956ec3bec09cbad"
     },
@@ -1735,6 +1800,18 @@
     {
       "source": "tests/integration/bots_test.go",
       "sha256": "81c46545335e1e5f658ad85c6880627869a1f3322019e720273a8403270fa13f"
+    },
+    {
+      "source": "tests/integration/calendar_activity_test.go",
+      "sha256": "072832e782bc6710b2b6471b25e1495d3ae0f6df0cabe3067647648edd8e9aa8"
+    },
+    {
+      "source": "tests/integration/calendar_media_review_test.go",
+      "sha256": "4b69caa081f68752b5ed4668580d3cc71ee76ab0d2f5652b888fb22846862c75"
+    },
+    {
+      "source": "tests/integration/calendar_media_test.go",
+      "sha256": "b43644639c28345505aeb769f9619ba1ddba57f729816b18c14e536100ac946b"
     },
     {
       "source": "tests/integration/calls_test.go",
@@ -1855,6 +1932,14 @@
     {
       "source": "tests/integration/factor_setup_test.go",
       "sha256": "752efa65fdf334c4266037250acebeecf746359bc4d5b1ba07a0e642821e45fa"
+    },
+    {
+      "source": "tests/integration/federation_discovery_review_test.go",
+      "sha256": "df59d7722fe3255de263d925c4f959529f5287def90eccba3e03cddbb78274fc"
+    },
+    {
+      "source": "tests/integration/federation_discovery_test.go",
+      "sha256": "25e78c21170102e3a19bcd2053736badff477efbd3e9789ae49bdd2ebc2bd17c"
     },
     {
       "source": "tests/integration/federation_quotes_test.go",
@@ -2081,6 +2166,10 @@
       "sha256": "a78b828a113de7dbb75ac8e81aeb0d3fc5f1c9f431841f3de644951ed9561bf1"
     },
     {
+      "source": "tests/integration/restart_authority_snapshot_test.go",
+      "sha256": "f50f6c6dd4da91c2fcde6e04d01fdf56e4fc6f8bcff07e28ef5032618e33fe13"
+    },
+    {
       "source": "tests/integration/restart_fixture_test.go",
       "sha256": "487ca66fd4db89c23ac90bc4110845a09e5e2986796a9b8b4a5c989ca6f4c5cc"
     },
@@ -2212,5 +2301,6 @@
   "boost_bot_privacy_review": "Reviewed25 added cases and all modified fixture hashes. Boost10/bot12/editorprivacy3, two new exact restart markers. Explicit canonical schema ordering and composed HTTP/PIN/lease/privacy paths retained. Original developer fixture merely retains its existing config for saved public verification state, no identity behavior change.",
   "blog_composed_review": "Nineteen new cases:18 independently reviewed blog/admin declarations plus composed server-metadata-before-automod/privacy/rankedLatest/scheduled test. Existing source fixtures unchanged except new files. New blog schema atomic after canonical policy/account/social/post dependencies, original saved restart paired exactly.",
   "bot_issuer_fixture_review": "Scoped bot sessions reuse retained original issuer signing/trust configuration. Same identities, exact scopes and signature verification preserved; only fixture issuer consistency changed.",
-  "blog_fixture_contract_review": "Complete canonical messager enum configuration in composed host; blog automod test uses empty authored title to exercise verified preview fallback, preserving nonempty caller-title semantics. Assertions and exact case set retained."
+  "discovery_review": "Eleven reviewed self-contained cases with pinned synthetic transports, durable admission/deadline/ABA/config fencing, composed host and exact saved restart. Atomic discovery migration follows identity/name reservations; all source/composed/restart hashes reviewed.",
+  "calendar_media_review": "Thirteen independent cases and two saved restart pairs, current complete read-set/proof/owner/audience rechecks after file/policy/storage waits, denial closes reader and zeroes metadata. Calendar schema follows media/notableday; new source and composed hashes reviewed."
 }

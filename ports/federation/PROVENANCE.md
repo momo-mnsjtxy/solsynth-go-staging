@@ -37,3 +37,9 @@ Official references consulted on 2026-10-08:
 
 No live federation target or production service was contacted during this work.
 All new Go/SQL files carry AGPL-3.0-only identifiers, consistent with the project.
+
+The later [server and discovery continuation](../../docs/federation-discovery-continuation.md)
+adds anchored server/key/host-meta routes and an optional bounded observation
+worker for configured, already pinned peers. Its complete additional authored
+source and pinned license are in `discovery-evidence/manifest.json`. That worker
+does not import remote keys, grant authority, or contact a peer during construction.

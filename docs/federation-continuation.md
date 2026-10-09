@@ -164,3 +164,8 @@ upstream Shared-schema or C# differential parity. Existing NodeInfo output is
 not expanded to advertise these unsupported features.
 
 The later [signed quote authorization continuation](federation-quotes-continuation.md) adds a bounded incoming QuoteRequest/Accept/consume/revoke/Delete flow and public stamp dereference while retaining the explicit remote-discovery and broader protocol gaps above.
+
+The subsequent [server and discovery continuation](federation-discovery-continuation.md)
+adds first-party server/key/host-meta routes and bounded, opt-in observations of
+already pinned remote actors. Arbitrary discovery, key import, signed remote
+GETs and the broader protocol gaps remain unsupported.

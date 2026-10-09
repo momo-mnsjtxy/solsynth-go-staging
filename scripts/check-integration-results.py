@@ -5,6 +5,32 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGCalendarActivityProjectionWaitRevalidatesPrivacy",
+        "TestPGCalendarActivityRestartPersistence",
+        "TestPGCalendarActivityStringProjectionPrivacyAndTimeZone",
+        "TestPGCalendarMediaComposedAudienceAndProjection",
+        "TestPGCalendarMediaComposedReadProofWait",
+        "TestPGCalendarMediaFileWaitRevalidatesStateAndAuthority",
+        "TestPGCalendarMediaOwnershipReplayQuotaAndRollback",
+        "TestPGCalendarMediaPolicyWaitReturnsNoMetadataOnFailure",
+        "TestPGCalendarMediaProjectionWaitRevalidatesCompleteResponse",
+        "TestPGCalendarMediaReadWaitObservesVisibilityWithdrawal",
+        "TestPGCalendarMediaRealmGrantCannotRedistribute",
+        "TestPGCalendarMediaRestartPersistence",
+        "TestPGCalendarMediaStorageWaitRevalidatesAudienceAndProof",
+
+        "TestPGBackendFederationDiscoveryComposition",
+        "TestPGFederationDiscoveryConcurrentClaim",
+        "TestPGFederationDiscoveryLifecycleAndIsolation",
+        "TestPGFederationDiscoveryRechecksOwnerSessionBlockAndPins",
+        "TestPGFederationDiscoveryRetryLeaseAndAtomicRollback",
+        "TestPGFederationDiscoverySavedRestartPersistence",
+        "TestPGFederationServerDiscoveryAndReservedIdentity",
+        "TestPGFederationDiscoveryPolicyAndMembershipABA",
+        "TestPGFederationDiscoveryAdmissionWaitABA",
+        "TestPGFederationDiscoveryOriginalDeadlineAndConfiguration",
+        "TestPGFederationDiscoveryCurrentPolicyAfterJobLockWait",
+
         "TestPGBlogBackendAliasesAndStrictPermissionRequest",
         "TestPGBlogCreationEditingMediaAndVisibility",
         "TestPGBlogDomainLifecyclePermissionsAndProof",
@@ -771,6 +797,11 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGCalendarActivityRestartPersistence",
+        "TestPGCalendarMediaRestartPersistence",
+
+        "TestPGFederationDiscoverySavedRestartPersistence",
+
         "TestPGBlogSavedRestartPersistence",
 
         "TestPGBotExecutionRestartPersistence",

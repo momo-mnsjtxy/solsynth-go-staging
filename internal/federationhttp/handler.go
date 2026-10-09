@@ -24,7 +24,7 @@ type Handler struct {
 }
 
 func IsPublicRoute(p string) bool {
-	return IsQuoteRoute(p) || p == "/.well-known/webfinger" || strings.HasPrefix(p, "/activitypub/")
+	return IsQuoteRoute(p) || p == "/.well-known/webfinger" || p == "/.well-known/host-meta" || strings.HasPrefix(p, "/activitypub/")
 }
 func IsPrivateRoute(p string) bool {
 	return IsQuoteRoute(p) || p == "/api/activitypub" || strings.HasPrefix(p, "/api/activitypub/")
@@ -135,6 +135,14 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.quote(w, r)
 		return
 	}
+	if p == "/.well-known/host-meta" {
+		h.hostMeta(w, r)
+		return
+	}
+	if p == "/activitypub/actor" || strings.HasPrefix(p, "/activitypub/actor/") {
+		h.serverActor(w, r)
+		return
+	}
 	if IsPrivateRoute(p) {
 		h.private(w, r)
 		return
@@ -211,6 +219,19 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		write(w, 200, a, f.MediaType)
 		return
 	}
+	if parts[3] == "main-key" || parts[3] == "publickey" {
+		if r.URL.RawQuery != "" {
+			fail(w, f.ErrInvalid)
+			return
+		}
+		a, e := h.Repository.Actor(r.Context(), name)
+		if e != nil {
+			fail(w, e)
+			return
+		}
+		write(w, 200, f.PublicKeyDocument(a.PublicKey), f.MediaType)
+		return
+	}
 	offset, take, e := page(r)
 	if e != nil {
 		fail(w, e)
@@ -259,6 +280,13 @@ func (h Handler) webfinger(w http.ResponseWriter, r *http.Request) {
 		fail(w, f.ErrNotFound)
 		return
 	}
+	if repo, ok := h.Repository.(f.ServerRepository); ok {
+		a, e := repo.ServerActor(r.Context())
+		if e == nil && strings.EqualFold(name, a.Username) {
+			write(w, 200, map[string]any{"subject": "acct:" + a.Username + "@" + domain, "links": []map[string]string{{"rel": "self", "type": f.MediaType, "href": a.ID}, {"rel": "http://webfinger.net/rel/profile-page", "type": "text/html", "href": h.Config.Origin}}}, "application/jrd+json")
+			return
+		}
+	}
 	a, e := h.Repository.Actor(r.Context(), name)
 	if e != nil {
 		fail(w, e)
@@ -292,6 +320,9 @@ func (h Handler) private(w http.ResponseWriter, r *http.Request) {
 	}
 	ref := parts[3]
 	switch parts[4] {
+	case "discovery":
+		h.discovery(w, r, p.Account.ID, ref)
+		return
 	case "settings":
 		if r.Method != "PATCH" {
 			method(w, "PATCH")

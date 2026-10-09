@@ -57,7 +57,7 @@ func (a CanonicalActivityOverlay) CalendarActivity(ctx context.Context, tx *sql.
 		return nil, e
 	}
 	if viewer == owner || visibility == "public" || visibility == "friends" && friend {
-		rows, e := tx.QueryContext(ctx, `SELECT s.id::text,s.attitude,s.type,s.label,s.symbol,s.cleared_at,s.created_at,s.updated_at FROM owned_presence_statuses s JOIN owned_authority_accounts a ON a.id=s.account_id WHERE s.account_id=$1::uuid AND NOT a.disabled AND s.created_at>=$2::timestamptz AND s.created_at<$3::timestamptz ORDER BY s.created_at,s.id LIMIT 501`, owner, from, to)
+		rows, e := tx.QueryContext(ctx, `SELECT s.id::text,s.attitude,s.type,s.label,s.symbol,s.cleared_at,s.created_at,s.updated_at FROM owned_presence_statuses s JOIN owned_authority_accounts a ON a.id=s.account_id WHERE s.account_id=$1::uuid AND `+activeCalendarOwner+` AND s.created_at>=$2::timestamptz AND s.created_at<$3::timestamptz ORDER BY s.created_at,s.id LIMIT 501`, owner, from, to)
 		if e != nil {
 			return nil, e
 		}
@@ -88,15 +88,19 @@ func (a CanonicalActivityOverlay) CalendarActivity(ctx context.Context, tx *sql.
 			}
 			day := entry(created)
 			day.Statuses = append(day.Statuses, raw)
+			title := "Status Update"
+			if label != nil {
+				title = *label
+			}
+			end := created.Add(24 * time.Hour)
+			if cleared != nil {
+				end = *cleared
+			}
+			if end.Before(created) {
+				end = created
+			}
+			day.Activities = append(day.Activities, notabledays.ActivityEvent{ID: id, Kind: "status", Title: title, StartTime: created, EndTime: end})
 			if a.StatusType != nil {
-				title := "Status Update"
-				if label != nil {
-					title = *label
-				}
-				end := created.Add(24 * time.Hour)
-				if cleared != nil {
-					end = *cleared
-				}
 				day.Merged = append(day.Merged, notabledays.MergedEvent{ID: &id, Type: *a.StatusType, Title: title, StartTime: created, EndTime: end})
 			}
 		}
@@ -107,11 +111,17 @@ func (a CanonicalActivityOverlay) CalendarActivity(ctx context.Context, tx *sql.
 		}
 	}
 	if viewer == owner {
-		rows, e := tx.QueryContext(ctx, `SELECT c.id::text,c.level,c.reward_experience,c.created_at FROM owned_progression_checkins c JOIN owned_authority_accounts a ON a.id=c.account_id WHERE c.account_id=$1::uuid AND NOT a.disabled AND c.created_at>=$2::timestamptz AND c.created_at<$3::timestamptz ORDER BY c.created_at,c.id LIMIT 367`, owner, from, to)
+		rows, e := tx.QueryContext(ctx, `SELECT c.id::text,c.level,c.reward_experience,c.created_at FROM owned_progression_checkins c JOIN owned_authority_accounts a ON a.id=c.account_id WHERE c.account_id=$1::uuid AND `+activeCalendarOwner+` AND c.created_at>=$2::timestamptz AND c.created_at<$3::timestamptz ORDER BY c.created_at,c.id LIMIT 367`, owner, from, to)
 		if e != nil {
 			return nil, e
 		}
+		count := 0
 		for rows.Next() {
+			count++
+			if count > 366 {
+				rows.Close()
+				return nil, notabledays.ErrLimit
+			}
 			var id string
 			var level int
 			var xp int64
@@ -127,6 +137,7 @@ func (a CanonicalActivityOverlay) CalendarActivity(ctx context.Context, tx *sql.
 			}
 			day := entry(created)
 			day.CheckIn = raw
+			day.Activities = append(day.Activities, notabledays.ActivityEvent{ID: id, Kind: "check_in", Title: fmt.Sprintf("Check-in: %d", level), StartTime: created, EndTime: created, IsAllDay: true})
 			if a.CheckInType != nil {
 				day.Merged = append(day.Merged, notabledays.MergedEvent{ID: &id, Type: *a.CheckInType, Title: fmt.Sprintf("Check-in: %d", level), StartTime: created, EndTime: created, IsAllDay: true})
 			}

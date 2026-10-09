@@ -42,7 +42,7 @@ func (r *Repository) calendar(ctx context.Context, tx *sql.Tx, actor string, c n
 		}
 		q.StartTime = &from
 		q.EndTime = &to
-		events, e := listEvents(ctx, tx, actor, q)
+		events, e := r.listEvents(ctx, tx, actor, q)
 		if e != nil {
 			return out, e
 		}
@@ -78,7 +78,7 @@ func (r *Repository) calendar(ctx context.Context, tx *sql.Tx, actor string, c n
 		out.Value, out.Total = page(items, q)
 		return out, nil
 	case "calendar.countdown":
-		events, e := listEvents(ctx, tx, actor, q)
+		events, e := r.listEvents(ctx, tx, actor, q)
 		if e != nil {
 			return out, e
 		}
@@ -90,7 +90,7 @@ func (r *Repository) calendar(ctx context.Context, tx *sql.Tx, actor string, c n
 			}
 			for _, event := range nearest {
 				id, account := event.ID, event.AccountID
-				items = append(items, notabledays.Countdown{EventID: &id, EventType: 0, OccurrenceKey: event.OccurrenceKey, Title: event.Title, Description: event.Description, Location: event.Location, StartTime: event.StartTime, EndTime: event.EndTime, IsAllDay: event.IsAllDay, Meta: event.Meta, AccountID: &account})
+				items = append(items, notabledays.Countdown{EventID: &id, EventType: 0, OccurrenceKey: event.OccurrenceKey, Title: event.Title, Description: event.Description, Location: event.Location, StartTime: event.StartTime, EndTime: event.EndTime, IsAllDay: event.IsAllDay, Meta: event.Meta, AccountID: &account, Icon: event.Icon, Background: event.Background})
 			}
 			if len(items) > notabledays.MaxResults {
 				return out, notabledays.ErrLimit
@@ -150,7 +150,7 @@ func (r *Repository) calendar(ctx context.Context, tx *sql.Tx, actor string, c n
 		to := from.AddDate(0, 1, 0)
 		q.StartTime = &from
 		q.EndTime = &to
-		events, e := listEvents(ctx, tx, actor, q)
+		events, e := r.listEvents(ctx, tx, actor, q)
 		if e != nil {
 			return out, e
 		}
@@ -176,6 +176,9 @@ func (r *Repository) calendar(ctx context.Context, tx *sql.Tx, actor string, c n
 		if r.cfg.Activity != nil {
 			values, e := r.cfg.Activity.CalendarActivity(ctx, tx, owner.ID, actor, from.UTC(), to.UTC(), q.TimeZone)
 			if e != nil {
+				return out, e
+			}
+			if e = observeCalendarActivity(ctx, owner.ID, actor, from.UTC(), to.UTC(), q.TimeZone, values); e != nil {
 				return out, e
 			}
 			for _, value := range values {
@@ -212,7 +215,7 @@ func (r *Repository) calendar(ctx context.Context, tx *sql.Tx, actor string, c n
 			out.Value = calendar
 			return out, nil
 		}
-		merged := notabledays.MergedCalendar{Date: from.UTC(), CheckInResult: json.RawMessage(`null`), Statuses: []json.RawMessage{}, UserEvents: events, NotableDays: days, MergedEvents: []notabledays.MergedEvent{}, UnavailableComponents: append([]string{}, unavailable...)}
+		merged := notabledays.MergedCalendar{Date: from.UTC(), CheckInResult: json.RawMessage(`null`), Statuses: []json.RawMessage{}, UserEvents: events, NotableDays: days, MergedEvents: []notabledays.MergedEvent{}, ActivityEvents: []notabledays.ActivityEvent{}, UnavailableComponents: append([]string{}, unavailable...)}
 		if len(calendar) > 0 {
 			merged.CheckInResult = calendar[0].CheckInResult
 		}
@@ -220,11 +223,12 @@ func (r *Repository) calendar(ctx context.Context, tx *sql.Tx, actor string, c n
 			merged.Statuses = append(merged.Statuses, entry.Statuses...)
 			if data, ok := overlay[entry.Date.In(loc).Format("2006-01-02")]; ok {
 				merged.MergedEvents = append(merged.MergedEvents, data.Merged...)
+				merged.ActivityEvents = append(merged.ActivityEvents, data.Activities...)
 			}
 		}
 		for _, v := range events {
 			id := v.ID
-			merged.MergedEvents = append(merged.MergedEvents, notabledays.MergedEvent{ID: &id, Type: 0, Title: v.Title, Description: v.Description, Location: v.Location, StartTime: v.StartTime, EndTime: v.EndTime, IsAllDay: v.IsAllDay, Meta: v.Meta, OccurrenceKey: v.OccurrenceKey})
+			merged.MergedEvents = append(merged.MergedEvents, notabledays.MergedEvent{ID: &id, Type: 0, Title: v.Title, Description: v.Description, Location: v.Location, StartTime: v.StartTime, EndTime: v.EndTime, IsAllDay: v.IsAllDay, Meta: v.Meta, OccurrenceKey: v.OccurrenceKey, Icon: v.Icon, Background: v.Background})
 		}
 		for _, v := range days {
 			description := v.LocalName
@@ -233,6 +237,16 @@ func (r *Repository) calendar(ctx context.Context, tx *sql.Tx, actor string, c n
 		if adapter, ok := r.cfg.Activity.(interface{ UnavailableMergedComponents() []string }); ok {
 			merged.UnavailableComponents = append(merged.UnavailableComponents, adapter.UnavailableMergedComponents()...)
 		}
+		sort.SliceStable(merged.ActivityEvents, func(i, j int) bool {
+			a, b := merged.ActivityEvents[i], merged.ActivityEvents[j]
+			if !a.StartTime.Equal(b.StartTime) {
+				return a.StartTime.Before(b.StartTime)
+			}
+			if a.Kind != b.Kind {
+				return a.Kind < b.Kind
+			}
+			return a.ID < b.ID
+		})
 		sort.SliceStable(merged.MergedEvents, func(i, j int) bool { return merged.MergedEvents[i].StartTime.Before(merged.MergedEvents[j].StartTime) })
 		out.Value = merged
 		return out, nil

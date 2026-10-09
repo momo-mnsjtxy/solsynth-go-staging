@@ -26,10 +26,12 @@ type TransactionGuard interface {
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
 }
 type Repository struct {
-	db     *sql.DB
-	config f.Config
-	keys   f.KeyProvider
-	guard  TransactionGuard
+	db               *sql.DB
+	config           f.Config
+	keys             f.KeyProvider
+	guard            TransactionGuard
+	discoveryTargets map[string]f.DiscoveryTarget
+	server           *f.ServerConfig
 }
 
 func New(db *sql.DB, c f.Config, keys f.KeyProvider, guard TransactionGuard) (*Repository, error) {

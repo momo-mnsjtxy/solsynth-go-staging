@@ -14,6 +14,7 @@ import (
 
 func TestLiveStreamDataUsesExplicitDestinationsAndRoomScope(t *testing.T) {
 	recipient := "d1000000-0000-4000-8000-000000000001"
+	operation := "d2000000-0000-4000-8000-000000000001"
 	payload := []byte(`{"id":"stable-event","content":"synthetic"}`)
 	var p *LiveKit
 	requests := 0
@@ -31,25 +32,26 @@ func TestLiveStreamDataUsesExplicitDestinationsAndRoomScope(t *testing.T) {
 			Data         string   `json:"data"`
 			Kind         string   `json:"kind"`
 			Destinations []string `json:"destination_identities"`
+			Topic        string   `json:"topic"`
 		}
 		if e := json.NewDecoder(r.Body).Decode(&body); e != nil {
 			t.Fatal(e)
 		}
 		raw, e := base64.StdEncoding.DecodeString(body.Data)
-		if e != nil || string(raw) != string(payload) || body.Kind != "RELIABLE" || body.Room != "synthetic-room" || len(body.Destinations) != 1 || body.Destinations[0] != recipient {
+		if e != nil || string(raw) != string(payload) || body.Kind != "RELIABLE" || body.Room != "synthetic-room" || len(body.Destinations) != 1 || body.Destinations[0] != recipient || body.Topic != "solsynth-event-"+operation {
 			t.Fatal(body, e)
 		}
 		return response(200, `{}`), nil
 	}))
-	if e := p.SendStreamData(context.Background(), "synthetic-room", []string{recipient}, payload); e != nil {
+	if e := p.SendStreamData(context.Background(), operation, "synthetic-room", []string{recipient}, payload); e != nil {
 		t.Fatal(e)
 	}
 	for _, ids := range [][]string{nil, {}, {recipient, recipient}, {"user-supplied"}} {
-		if e := p.SendStreamData(context.Background(), "synthetic-room", ids, payload); !errors.Is(e, live.ErrInvalid) {
+		if e := p.SendStreamData(context.Background(), operation, "synthetic-room", ids, payload); !errors.Is(e, live.ErrInvalid) {
 			t.Fatal(ids, e)
 		}
 	}
-	if e := p.SendStreamData(context.Background(), "synthetic-room", []string{recipient}, []byte(`{"x":"`+strings.Repeat("a", live.MaxDataPacketBytes)+`"}`)); !errors.Is(e, live.ErrInvalid) {
+	if e := p.SendStreamData(context.Background(), operation, "synthetic-room", []string{recipient}, []byte(`{"x":"`+strings.Repeat("a", live.MaxDataPacketBytes)+`"}`)); !errors.Is(e, live.ErrInvalid) {
 		t.Fatal(e)
 	}
 	if requests != 1 {
@@ -62,7 +64,7 @@ func TestLiveStreamDataRequiresAcknowledgedProviderResponse(t *testing.T) {
 		body   string
 	}{{500, `{"message":"provider secret"}`}, {404, `{"code":"not_found"}`}, {200, `null`}, {302, `{}`}, {200, `invalid`}} {
 		p := fixture(t, roundTrip(func(*http.Request) (*http.Response, error) { return response(tc.status, tc.body), nil }))
-		e := p.SendStreamData(context.Background(), "synthetic-room", []string{"d1000000-0000-4000-8000-000000000001"}, []byte(`{}`))
+		e := p.SendStreamData(context.Background(), "d2000000-0000-4000-8000-000000000001", "synthetic-room", []string{"d1000000-0000-4000-8000-000000000001"}, []byte(`{}`))
 		if !errors.Is(e, live.ErrProvider) || strings.Contains(e.Error(), "secret") {
 			t.Fatal(tc, e)
 		}

@@ -394,7 +394,11 @@ func NewHandler(repo Repository, auth posts.Auth) http.Handler {
 			pattern = "PATCH " + collectionRoot + "/{slug}"
 		}
 		mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-			actor, ok := identity(w, r, true, "")
+			permission := "post.collections.update"
+			if create {
+				permission = "post.collections.create"
+			}
+			actor, ok := identity(w, r, true, permission)
 			if !ok || !noquery(w, r) {
 				return
 			}
@@ -427,7 +431,7 @@ func NewHandler(repo Repository, auth posts.Auth) http.Handler {
 		})
 	}
 	mux.HandleFunc("DELETE "+collectionRoot+"/{slug}", func(w http.ResponseWriter, r *http.Request) {
-		actor, ok := identity(w, r, true, "")
+		actor, ok := identity(w, r, true, "post.collections.delete")
 		if !ok || !noquery(w, r) {
 			return
 		}

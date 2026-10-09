@@ -122,6 +122,9 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 			return messager.MessageProjection{}, e
 		}
 	}
+	if p, e = r.composeMessage(ctx, tx, actor, p, nil); e != nil {
+		return messager.MessageProjection{}, e
+	}
 	p.EncryptionMeta = normalizedMLSEncryption(ctx, p.EncryptionMeta)
 	meta := mergeMeta(nil, p)
 	encoded, _ := json.Marshal(struct {
@@ -177,7 +180,7 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 			if _, e = r.writable(ctx, tx, actor, rid); e != nil {
 				return messager.MessageProjection{}, e
 			}
-			return v, r.commit(ctx, tx, actor, "chat.messages.create")
+			return v, r.commitMessage(ctx, tx, actor, "chat.messages.create", v.Meta)
 		}
 		if !errors.Is(e, sql.ErrNoRows) {
 			return messager.MessageProjection{}, e
@@ -234,12 +237,12 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 	if _, e = r.writable(ctx, tx, actor, rid); e != nil {
 		return messager.MessageProjection{}, e
 	}
-	if r.textObserver != nil {
+	if r.textObserver != nil && !botWriteFrom(ctx) {
 		if e = r.textObserver.QueueMessage(ctx, tx, actor, rid, v.ID); e != nil {
 			return messager.MessageProjection{}, e
 		}
 	}
-	return v, r.commit(ctx, tx, actor, "chat.messages.create")
+	return v, r.commitMessage(ctx, tx, actor, "chat.messages.create", v.Meta)
 }
 func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.TextRequest) (messager.MessageProjection, error) {
 	if e := valid(actor, rid, mid); e != nil {
@@ -279,6 +282,9 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 		return v, e
 	}
 	previousAttachments := append([]byte(nil), v.Attachments...)
+	if p, e = r.composeMessage(ctx, tx, actor, p, v.Meta); e != nil {
+		return messager.MessageProjection{}, e
+	}
 	content := v.Content
 	if p.EncryptionMeta != nil {
 		content = nil
@@ -332,7 +338,7 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 		return messager.MessageProjection{}, rooms.ErrInvalid
 	}
 	if unchanged && sameClient && bytes.Equal(previousAttachments, v.Attachments) {
-		return v, r.commit(ctx, tx, actor, "chat.messages.update")
+		return v, r.commitMessage(ctx, tx, actor, "chat.messages.update", v.Meta)
 	}
 	eventMeta := map[string]any{}
 	_ = json.Unmarshal(meta, &eventMeta)
@@ -361,7 +367,7 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 	if e = r.loadMessage(ctx, tx, actor, &v); e != nil {
 		return v, e
 	}
-	return v, r.commit(ctx, tx, actor, "chat.messages.update")
+	return v, r.commitMessage(ctx, tx, actor, "chat.messages.update", v.Meta)
 }
 
 func (r *Repository) DeleteMessage(ctx context.Context, actor, rid, mid string) error {

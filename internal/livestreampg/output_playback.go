@@ -2,6 +2,7 @@
 package livestreampg
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"errors"
@@ -61,6 +62,39 @@ func (r *Repository) artifact(ctx context.Context, v outputRecord, name string, 
 	return data, at, nil
 }
 
+func (r *Repository) playbackSnapshot(ctx context.Context, actor, sid, id, starter string) (*sql.Tx, outputRecord, error) {
+	tx, _, stream, e := r.locked(ctx, actor, sid, "", "livestreams.view", false, false, starter)
+	if e != nil {
+		return nil, outputRecord{}, e
+	}
+	if _, e = r.visible(ctx, tx, actor, &stream); e != nil {
+		tx.Rollback()
+		return nil, outputRecord{}, e
+	}
+	v, e := loadOutput(ctx, tx, id)
+	if e != nil {
+		tx.Rollback()
+		return nil, outputRecord{}, e
+	}
+	if v.Stream != sid || v.Actor != starter || v.Kind != "hls" || v.Phase != "active" && v.Phase != "done" {
+		tx.Rollback()
+		return nil, outputRecord{}, live.ErrNotFound
+	}
+	if v.Phase == "active" {
+		if ok, x := r.outputAlive(ctx, tx, v, stream); x != nil || !ok {
+			tx.Rollback()
+			if x != nil {
+				return nil, outputRecord{}, x
+			}
+			return nil, outputRecord{}, live.ErrNotFound
+		}
+	} else if v.Finished == nil {
+		tx.Rollback()
+		return nil, outputRecord{}, live.ErrNotFound
+	}
+	return tx, v, nil
+}
+
 func (r *Repository) OpenHLS(ctx context.Context, actor, sid, id, asset string) (live.Playback, error) {
 	var out live.Playback
 	if !authority.ValidID(actor) {
@@ -72,8 +106,6 @@ func (r *Repository) OpenHLS(ctx context.Context, actor, sid, id, asset string) 
 	if _, e := r.outputProvider(); e != nil {
 		return out, e
 	}
-	// The immutable output actor is observed only after authority preflight. This
-	// read transaction closes before the complete sorted account lock plan opens.
 	observation, e := r.read(ctx, actor)
 	if e != nil {
 		return out, e
@@ -87,47 +119,33 @@ func (r *Repository) OpenHLS(ctx context.Context, actor, sid, id, asset string) 
 	if e != nil {
 		return out, e
 	}
-	tx, _, stream, e := r.locked(ctx, actor, sid, "", "livestreams.view", false, false, starter)
+	first, observed, e := r.playbackSnapshot(ctx, actor, sid, id, starter)
 	if e != nil {
 		return out, e
 	}
-	defer tx.Rollback()
-	if _, e = r.visible(ctx, tx, actor, &stream); e != nil {
+	identity := archiveOutputHash(observed)
+	if e = r.commit(ctx, first, actor, "livestreams.view"); e != nil {
+		first.Rollback()
 		return out, e
 	}
-	v, e := loadOutput(ctx, tx, id)
+	playlist, at, e := r.artifact(ctx, observed, observed.Playlist, r.outputs.MaxPlaylistBytes)
 	if e != nil {
 		return out, e
 	}
-	if v.Stream != sid || v.Actor != starter || v.Kind != "hls" || v.Phase != "active" {
-		return out, live.ErrNotFound
-	}
-	if ok, e := r.outputAlive(ctx, tx, v, stream); e != nil || !ok {
-		if e != nil {
-			return out, e
-		}
-		return out, live.ErrNotFound
-	}
-	playlist, at, e := r.artifact(ctx, v, v.Playlist, r.outputs.MaxPlaylistBytes)
+	projected, allowed, e := live.ProjectHLS(playlist, observed.Stream, observed.ID, r.outputs.MaxSegments)
 	if e != nil {
 		return out, e
 	}
-	projected, allowed, e := live.ProjectHLS(playlist, v.Stream, v.ID, r.outputs.MaxSegments)
-	if e != nil {
-		return out, e
-	}
-	if asset == v.Playlist {
+	if asset == observed.Playlist {
 		out = live.Playback{Body: projected, MIME: "application/vnd.apple.mpegurl", ModifiedAt: at}
 	} else {
 		if !allowed[asset] || !strings.HasSuffix(asset, ".ts") {
 			return out, live.ErrNotFound
 		}
-		data, at, e := r.artifact(ctx, v, asset, r.outputs.MaxSegmentBytes)
-		if e != nil {
-			return out, e
+		data, modified, x := r.artifact(ctx, observed, asset, r.outputs.MaxSegmentBytes)
+		if x != nil {
+			return out, x
 		}
-		// This supported transport is ordinary 188-byte MPEG-TS packets. Partial
-		// files, M2TS/fMP4 and arbitrary bytes are not served as a valid segment.
 		if len(data) < 188 || len(data)%188 != 0 {
 			return out, live.ErrPlaylist
 		}
@@ -136,9 +154,17 @@ func (r *Repository) OpenHLS(ctx context.Context, actor, sid, id, asset string) 
 				return out, live.ErrPlaylist
 			}
 		}
-		out = live.Playback{Body: data, MIME: "video/mp2t", ModifiedAt: at}
+		out = live.Playback{Body: data, MIME: "video/mp2t", ModifiedAt: modified}
 	}
-	if e = r.commit(ctx, tx, actor, "livestreams.view"); e != nil {
+	final, current, e := r.playbackSnapshot(ctx, actor, sid, id, starter)
+	if e != nil {
+		return live.Playback{}, e
+	}
+	defer final.Rollback()
+	if !bytes.Equal(identity, archiveOutputHash(current)) {
+		return live.Playback{}, live.ErrConflict
+	}
+	if e = r.commit(ctx, final, actor, "livestreams.view"); e != nil {
 		return live.Playback{}, e
 	}
 	return out, nil

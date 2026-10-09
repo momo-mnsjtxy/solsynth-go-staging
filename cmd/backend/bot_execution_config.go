@@ -24,7 +24,7 @@ type botExecutionSettings struct {
 }
 
 func botExecutionFlags(fs *flag.FlagSet) botExecutionSettings {
-	return botExecutionSettings{fs.Bool("enable-bot-execution", false, "enable explicitly enrolled ordinary-group bot delivery"), fs.String("bot-execution-config", "", "absolute strict JSON file referencing existing bot IDs, exact HTTPS origins and signing-key files")}
+	return botExecutionSettings{fs.Bool("enable-bot-execution", false, "enable explicitly enrolled bot delivery for supported rooms"), fs.String("bot-execution-config", "", "absolute strict JSON file referencing existing bot IDs, exact HTTPS origins and signing-key files")}
 }
 func botConfigFile(path string, limit int64) ([]byte, error) {
 	if !filepath.IsAbs(path) || filepath.Clean(path) != path {

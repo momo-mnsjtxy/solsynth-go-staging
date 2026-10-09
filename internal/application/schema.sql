@@ -45,6 +45,13 @@ CREATE TABLE owned_taxonomy.post_tag_links (
  tags_id uuid NOT NULL REFERENCES owned_taxonomy.post_tags(id) ON DELETE CASCADE,
  PRIMARY KEY(posts_id,tags_id)
 );
+-- Topical progression receipts retain the exact taxonomy facts that were live
+-- at publication. Restricting deletion keeps that historical proof intact;
+-- ordinary taxonomy deletion is soft deletion.
+ALTER TABLE owned_post_progression_sources ADD CONSTRAINT owned_post_progression_source_tag
+ FOREIGN KEY(tag_id) REFERENCES owned_taxonomy.post_tags(id);
+ALTER TABLE owned_post_progression_sources ADD CONSTRAINT owned_post_progression_source_category
+ FOREIGN KEY(category_id) REFERENCES owned_taxonomy.post_categories(id);
 CREATE TABLE owned_taxonomy.post_category_subscriptions (
  id uuid PRIMARY KEY,
  account_id uuid NOT NULL,

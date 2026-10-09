@@ -33,11 +33,7 @@ func observeCollection(ctx context.Context, tx *sql.Tx, publisher, slug string) 
 	return
 }
 func (r *Repository) visibleCollection(ctx context.Context, tx *sql.Tx, actor, publisher, slug string) (posts.Collection, error) {
-	blocked := ""
-	if r.visibility != nil {
-		blocked = ` AND NOT (` + r.visibility.PostBlockedSQL() + `)`
-	}
-	return scanCollection(tx.QueryRowContext(ctx, `SELECT `+collectionColumns+` FROM owned_post_collections c JOIN owned_publishers u ON u.id=c.publisher_id WHERE c.deleted_at IS NULL AND u.deleted_at IS NULL AND u.type=0 AND `+accountpg.ActivePublisherOwnerPredicate("u")+` AND `+postpg.PublisherPredicate(r.visibility)+blocked+` AND `+accountpg.PublisherNamePredicate("u", "$2")+` AND c.slug=$3`, actor, publisher, taxonomy.NormalizeSlug(slug)))
+	return scanCollection(tx.QueryRowContext(ctx, `SELECT `+collectionColumns+` FROM owned_post_collections c JOIN owned_publishers u ON u.id=c.publisher_id WHERE c.deleted_at IS NULL AND `+postpg.VisiblePublisherPredicate(r.visibility, "u", "$1", false)+` AND `+accountpg.PublisherNamePredicate("u", "$2")+` AND c.slug=$3`, actor, publisher, taxonomy.NormalizeSlug(slug)))
 }
 func (r *Repository) collectionAuthority(ctx context.Context, tx *sql.Tx, actor, permission string, preflight bool) error {
 	if actor == "" {

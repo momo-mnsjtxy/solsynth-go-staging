@@ -87,7 +87,7 @@ func optional(s *string) *string {
 	return &v
 }
 
-const columns = `p.id::text,p.publisher_id::text,p.title,p.description,p.slug,p.content,p.visibility,p.type,p.language,p.drafted_at,p.published_at,p.created_at,p.updated_at,p.deleted_at,p.locked_at,p.realm_id::text,p.awarded_score::text,u.id::text,u.name,u.nick,u.bio,u.type,u.account_id::text,u.realm_id::text,u.created_at,u.updated_at,u.verification,p.blog_metadata`
+const columns = `p.id::text,p.publisher_id::text,p.title,p.description,p.slug,p.content,p.visibility,p.type,p.language,p.drafted_at,p.published_at,p.created_at,p.updated_at,p.deleted_at,p.locked_at,p.realm_id::text,p.awarded_score::text,u.id::text,u.name,u.nick,u.bio,u.type,u.account_id::text,u.realm_id::text,u.created_at,u.updated_at,u.verification,p.blog_metadata,p.pin_mode`
 const base = ` FROM owned_text_posts p JOIN owned_publishers u ON u.id=p.publisher_id WHERE p.deleted_at IS NULL AND u.deleted_at IS NULL AND (u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=u.account_id AND NOT owner.disabled))`
 
 // The owned privacy rule is editor-only access for private/draft posts. This is
@@ -98,7 +98,7 @@ func scan(s scanner) (posts.Post, error) {
 	var p posts.Post
 	var verification, blog []byte
 	e := s.Scan(&p.ID, &p.PublisherID, &p.Title, &p.Description, &p.Slug, &p.Content, &p.Visibility, &p.Type, &p.Language, &p.DraftedAt, &p.PublishedAt, &p.CreatedAt, &p.UpdatedAt, &p.DeletedAt, &p.LockedAt, &p.RealmID, &p.AwardedScore,
-		&p.Publisher.ID, &p.Publisher.Name, &p.Publisher.Nick, &p.Publisher.Bio, &p.Publisher.Type, &p.Publisher.AccountID, &p.Publisher.RealmID, &p.Publisher.CreatedAt, &p.Publisher.UpdatedAt, &verification, &blog)
+		&p.Publisher.ID, &p.Publisher.Name, &p.Publisher.Nick, &p.Publisher.Bio, &p.Publisher.Type, &p.Publisher.AccountID, &p.Publisher.RealmID, &p.Publisher.CreatedAt, &p.Publisher.UpdatedAt, &verification, &blog, &p.PinMode)
 	if e == nil {
 		p.Publisher.Verification, e = accounts.DecodeVerification(verification)
 	}
@@ -146,11 +146,15 @@ func audit(ctx context.Context, tx *sql.Tx, actor, id, action string, now time.T
 	return e
 }
 func apply(p *posts.Post, v posts.Patch) {
+	oldRealm := p.RealmID
 	if v.ClearRealm {
 		p.RealmID = nil
 	} else if v.RealmID != nil {
 		id := *v.RealmID
 		p.RealmID = &id
+	}
+	if p.PinMode != nil && *p.PinMode == posts.RealmPin && !SameOptionalID(oldRealm, p.RealmID) {
+		p.PinMode = nil
 	}
 	if v.Title != nil {
 		p.Title = optional(v.Title)
@@ -260,6 +264,15 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 				return e
 			}
 		}
+		if isPublished(p, now) {
+			source, x := newID()
+			if x != nil {
+				return x
+			}
+			if e = r.recordPostProgressionSource(ctx, tx, "post.create_topical", source, actor, "", p, *p.PublishedAt); e != nil {
+				return e
+			}
+		}
 		return nil
 	})
 	if e != nil {
@@ -332,7 +345,7 @@ func save(ctx context.Context, tx *sql.Tx, p posts.Post) error {
 	if e != nil {
 		return e
 	}
-	_, e = tx.ExecContext(ctx, `UPDATE owned_text_posts SET title=$2,description=$3,slug=$4,content=$5,visibility=$6,type=$7,language=$8,drafted_at=$9,published_at=$10,updated_at=$11,deleted_at=$12,realm_id=$13,blog_metadata=$14::jsonb WHERE id=$1`, p.ID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, p.UpdatedAt, p.DeletedAt, p.RealmID, blog)
+	_, e = tx.ExecContext(ctx, `UPDATE owned_text_posts SET title=$2,description=$3,slug=$4,content=$5,visibility=$6,type=$7,language=$8,drafted_at=$9,published_at=$10,updated_at=$11,deleted_at=$12,pin_mode=CASE WHEN pin_mode=1 AND realm_id IS DISTINCT FROM $13::uuid THEN NULL ELSE pin_mode END,realm_id=$13,blog_metadata=$14::jsonb WHERE id=$1`, p.ID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, p.UpdatedAt, p.DeletedAt, p.RealmID, blog)
 	return e
 }
 func (r *Repository) mutate(ctx context.Context, actor, id, action string, v posts.Patch) (posts.Post, error) {
@@ -433,6 +446,15 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 				return e
 			}
 		}
+		if !wasPublished && isPublished(p, now) {
+			source, x := newID()
+			if x != nil {
+				return x
+			}
+			if e = r.recordPostProgressionSource(ctx, tx, "post.create_topical", source, actor, "", p, *p.PublishedAt); e != nil {
+				return e
+			}
+		}
 		return nil
 	})
 	if e != nil {
@@ -523,17 +545,25 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	if o.Type != nil && *o.Type != posts.Moment && *o.Type != posts.Article && (*o.Type != posts.Blog || r.blogs == nil) {
 		return nil, 0, posts.ErrUnsupported
 	}
+	if o.Pinned != nil && (o.Drafts || *o.Pinned && o.Realm == "" && o.Publisher == "") {
+		return nil, 0, posts.ErrPinnedScope
+	}
 	if o.Drafts && actor == "" {
 		return nil, 0, posts.ErrUnauthenticated
 	}
-	tx, e := r.read(ctx, actor)
+	tx, e := r.readList(ctx, actor, o.Pinned != nil)
 	if e != nil {
 		return nil, 0, e
 	}
 	defer tx.Rollback()
+	publisherSelector := o.Publisher
 	if o.Publisher != "" {
 		var id string
-		e = tx.QueryRowContext(ctx, `SELECT u.id::text FROM owned_publishers u WHERE u.deleted_at IS NULL AND (u.id::text=$1 OR `+accountpg.PublisherNamePredicate("u", "$1")+`) AND(u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=u.account_id AND NOT a.disabled))`, o.Publisher).Scan(&id)
+		match := `(u.id::text=$1 OR ` + accountpg.PublisherNamePredicate("u", "$1") + `)`
+		if o.Pinned != nil && authority.ValidID(o.Publisher) {
+			match = `u.id=$1::uuid`
+		}
+		e = tx.QueryRowContext(ctx, `SELECT u.id::text FROM owned_publishers u WHERE u.deleted_at IS NULL AND `+match+` AND(u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=u.account_id AND NOT a.disabled))`, o.Publisher).Scan(&id)
 		if e != nil {
 			return nil, 0, mapped(e)
 		}
@@ -543,6 +573,9 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 		}
 		if !visible {
 			return nil, 0, posts.ErrNotFound
+		}
+		if o.Pinned != nil {
+			publisherSelector = id
 		}
 		if o.Drafts {
 			var allowed bool
@@ -555,7 +588,11 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 			}
 		}
 	}
-	where := base + ` AND ` + PublisherPredicate(r.visibility) + ` AND ` + RealmPredicate(r.visibility, false) + ` AND ($2='' OR u.id::text=$2 OR ` + accountpg.PublisherNamePredicate("u", "$2") + `) AND ($3::integer IS NULL OR p.type=$3)`
+	publisherFilter := `($2='' OR u.id::text=$2 OR ` + accountpg.PublisherNamePredicate("u", "$2") + `)`
+	if o.Pinned != nil {
+		publisherFilter = `($2='' OR u.id::text=$2)`
+	}
+	where := base + ` AND ` + PublisherPredicate(r.visibility) + ` AND ` + RealmPredicate(r.visibility, false) + ` AND ` + publisherFilter + ` AND ($3::integer IS NULL OR p.type=$3)`
 	realm, e := ResolveRealmFilter(ctx, tx, r.visibility, actor, o.Realm)
 	if e != nil {
 		return nil, 0, e
@@ -571,7 +608,8 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	} else {
 		where += ` AND ` + ListingPredicate(r.visibility)
 	}
-	args := []any{actor, o.Publisher, o.Type, realm}
+	where += pinFilter(o)
+	args := []any{actor, publisherSelector, o.Type, realm}
 	var total int64
 	if e = tx.QueryRowContext(ctx, `SELECT count(*)`+where, args...).Scan(&total); e != nil {
 		return nil, 0, e
@@ -598,6 +636,15 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	if e != nil {
 		return nil, 0, e
 	}
+	if o.Pinned != nil {
+		out, e = r.lockPinnedPage(ctx, tx, actor, out, where, args)
+		if e != nil {
+			return nil, 0, e
+		}
+		if e = tx.QueryRowContext(ctx, `SELECT count(*)`+where, args...).Scan(&total); e != nil {
+			return nil, 0, e
+		}
+	}
 	for i := range out {
 		if e = r.loadAutomod(ctx, tx, actor, &out[i]); e != nil {
 			return nil, 0, e
@@ -612,6 +659,28 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	}
 	for i := range out {
 		if e = r.loadSchedule(ctx, tx, actor, &out[i]); e != nil {
+			return nil, 0, e
+		}
+	}
+	if o.Pinned != nil {
+		for i := range out {
+			if e = RecheckAssociations(ctx, tx, actor, &out[i], r.associations); errors.Is(e, posts.ErrNotFound) {
+				// A root withdrawn during hydration is filtered by the final predicate.
+				continue
+			} else if e != nil {
+				return nil, 0, e
+			}
+		}
+		out, e = recheckPinnedPage(ctx, tx, out, where, args)
+		if e != nil {
+			return nil, 0, e
+		}
+		if e = tx.QueryRowContext(ctx, `SELECT count(*)`+where, args...).Scan(&total); e != nil {
+			return nil, 0, e
+		}
+	}
+	if o.Pinned != nil && actor != "" && r.authority != nil {
+		if _, e = r.authority.Authenticate(ctx, r.db, tx, actor); e != nil {
 			return nil, 0, e
 		}
 	}

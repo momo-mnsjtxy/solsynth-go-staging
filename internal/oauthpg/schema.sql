@@ -26,3 +26,15 @@ CREATE TABLE IF NOT EXISTS owned_oauth_refresh(
 );
 CREATE INDEX IF NOT EXISTS owned_oauth_refresh_session ON owned_oauth_refresh(session_id,epoch);
 CREATE TABLE IF NOT EXISTS owned_oauth_audit(id bigserial PRIMARY KEY,account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),app_id uuid NOT NULL REFERENCES owned_custom_apps(id),action text NOT NULL,occurred_at timestamptz NOT NULL);
+
+CREATE TABLE IF NOT EXISTS owned_oauth_devices(
+ hash bytea PRIMARY KEY CHECK(octet_length(hash)=32),user_hash bytea NOT NULL UNIQUE CHECK(octet_length(user_hash)=32),
+ app_id uuid NOT NULL REFERENCES owned_custom_apps(id),client_id text NOT NULL,app_epoch bigint NOT NULL,owner_id uuid REFERENCES owned_authority_accounts(id),owner_version bigint NOT NULL,
+ scopes jsonb NOT NULL CHECK(jsonb_typeof(scopes)='array'),secret_id uuid REFERENCES owned_app_secrets(id),secret_hash bytea,
+ created_at timestamptz NOT NULL,expires_at timestamptz NOT NULL,interval_seconds integer NOT NULL DEFAULT 5 CHECK(interval_seconds>=5),last_polled_at timestamptz,
+ preview_account_id uuid REFERENCES owned_authority_accounts(id),preview_parent_id uuid REFERENCES owned_authority_sessions(id),previewed_at timestamptz,
+ account_id uuid REFERENCES owned_authority_accounts(id),parent_id uuid REFERENCES owned_authority_sessions(id),consent_version bigint,decision boolean,decided_at timestamptz,used_at timestamptz,session_id uuid REFERENCES owned_authority_sessions(id),
+ CHECK((secret_id IS NULL AND secret_hash IS NULL)OR(secret_id IS NOT NULL AND octet_length(secret_hash)=32)),
+ CHECK((account_id IS NULL AND parent_id IS NULL AND consent_version IS NULL AND decision IS NULL AND decided_at IS NULL)OR(account_id IS NOT NULL AND parent_id IS NOT NULL AND consent_version IS NOT NULL AND decision IS NOT NULL AND decided_at IS NOT NULL))
+);
+CREATE INDEX IF NOT EXISTS owned_oauth_devices_expiry ON owned_oauth_devices(expires_at,app_id);

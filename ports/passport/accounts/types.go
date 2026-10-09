@@ -194,6 +194,63 @@ type Repository interface {
 	PublisherEntitlement(context.Context, string) (Entitlement, error)
 }
 
+// PublisherCompletionRepository contains the remaining publisher-facing
+// projections and relationship controls. It is optional so small adapters and
+// compatibility-free tests do not accidentally acquire these capabilities.
+type PublisherCompletionRepository interface {
+	PublisherQuota(context.Context, string) (PublisherQuota, error)
+	SearchPublishers(context.Context, string, string, int) ([]Publisher, error)
+	PublisherHeatmap(context.Context, string, string) ([]HeatmapDay, error)
+	PublisherStats(context.Context, string, string) (PublisherStats, error)
+	PublisherContentStats(context.Context, string, string) (PublisherContentStats, error)
+	PublisherFeatures(context.Context, string, string) (map[string]bool, error)
+	SetPublisherFeature(context.Context, string, string, string, *time.Time, bool) (PublisherFeature, error)
+	PublisherRewards(context.Context, string, string) (PublisherRewardPreview, error)
+	PublisherRelationships(context.Context, string, string) ([]PublisherRelationship, error)
+	PublisherRelationshipState(context.Context, string, string) (PublisherRelationship, error)
+	SetPublisherRelationship(context.Context, string, string, string, bool) (PublisherRelationship, error)
+}
+
+type PublisherQuota struct {
+	Used      int64      `json:"used"`
+	Total     int64      `json:"total"`
+	Remaining int64      `json:"remaining"`
+	StartsAt  time.Time  `json:"starts_at"`
+	ExpiresAt *time.Time `json:"expires_at"`
+}
+type HeatmapDay struct {
+	Day   string `json:"day"`
+	Posts int64  `json:"posts"`
+}
+type PublisherStats struct {
+	Posts       int64 `json:"posts"`
+	Followers   int64 `json:"followers"`
+	Members     int64 `json:"members"`
+	Collections int64 `json:"collections"`
+}
+type PublisherContentStats struct {
+	Moments   int64 `json:"moments"`
+	Articles  int64 `json:"articles"`
+	Blogs     int64 `json:"blogs"`
+	Reactions int64 `json:"reactions"`
+}
+type PublisherRewardPreview struct {
+	SettledAmount string `json:"settled_amount"`
+	PendingAmount string `json:"pending_amount"`
+	PendingCount  int64  `json:"pending_count"`
+}
+type PublisherFeature struct {
+	PublisherID string     `json:"publisher_id"`
+	Flag        string     `json:"flag"`
+	ExpiredAt   *time.Time `json:"expired_at"`
+}
+type PublisherRelationship struct {
+	PublisherID string     `json:"publisher_id"`
+	BlockedAt   *time.Time `json:"blocked_at"`
+	MutedAt     *time.Time `json:"muted_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+}
+
 // An adapter must verify proof AND re-read authority state on every call.
 type Authority interface {
 	AuthenticateRequest(*http.Request) (authority.Principal, error)

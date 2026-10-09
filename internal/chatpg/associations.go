@@ -18,6 +18,65 @@ type MessageAssociations interface {
 	Ready(context.Context) error
 }
 
+type MessageComposer interface {
+	Compose(context.Context, *sql.Tx, string, rooms.TextRequest, json.RawMessage) (rooms.TextRequest, error)
+	Revalidate(context.Context, *sql.Tx, string, json.RawMessage) error
+}
+
+func hasCanonicalEmbed(p rooms.TextRequest) bool {
+	if p.Embeds == nil {
+		return false
+	}
+	for _, embed := range *p.Embeds {
+		kind, _ := embed["type"].(string)
+		switch kind {
+		case "survey", "fund", "meet", "notable_day", "calendar_event":
+			return true
+		}
+	}
+	return false
+}
+
+func metaHasCanonicalEmbed(meta json.RawMessage) bool {
+	var value struct {
+		Embeds []map[string]any `json:"embeds"`
+	}
+	if json.Unmarshal(meta, &value) != nil {
+		return false
+	}
+	return hasCanonicalEmbed(rooms.TextRequest{Embeds: &value.Embeds})
+}
+
+func (r *Repository) composeMessage(ctx context.Context, tx *sql.Tx, actor string, p rooms.TextRequest, prior json.RawMessage) (rooms.TextRequest, error) {
+	if p.SurveyID == nil && p.FundID == nil && p.MeetID == nil && p.NotableDayID == nil && p.CalendarEventID == nil && p.LocationName == nil && p.LocationAddress == nil && p.LocationWKT == nil && !hasCanonicalEmbed(p) && !p.SurveySet && !p.FundSet && !p.MeetSet && !p.NotableDaySet && !p.CalendarEventSet && !p.LocationSet {
+		return p, nil
+	}
+	if r.composer == nil {
+		return p, rooms.ErrUnavailable
+	}
+	return r.composer.Compose(ctx, tx, actor, p, prior)
+}
+
+func (r *Repository) revalidateMessage(ctx context.Context, tx *sql.Tx, actor string, meta json.RawMessage) error {
+	if !metaHasCanonicalEmbed(meta) {
+		return nil
+	}
+	if r.composer == nil {
+		return rooms.ErrUnavailable
+	}
+	return r.composer.Revalidate(ctx, tx, actor, meta)
+}
+
+// commitMessage is the single terminal path for text create/replay/edit. All
+// potentially waiting attachment, hydration and observer work precedes the
+// canonical reference check; commit then rechecks the original bound proof.
+func (r *Repository) commitMessage(ctx context.Context, tx *sql.Tx, actor, permission string, meta json.RawMessage) error {
+	if e := r.revalidateMessage(ctx, tx, actor, meta); e != nil {
+		return e
+	}
+	return r.commit(ctx, tx, actor, permission)
+}
+
 func (r *Repository) WithAssociations(a MessageAssociations) *Repository {
 	r.associations = a
 	return r
@@ -75,8 +134,12 @@ func mergeMeta(prior json.RawMessage, p rooms.TextRequest) json.RawMessage {
 	if meta == nil {
 		meta = map[string]any{}
 	}
-	if p.Embeds != nil && len(*p.Embeds) > 0 {
-		meta["embeds"] = *p.Embeds
+	if p.Embeds != nil {
+		if len(*p.Embeds) > 0 {
+			meta["embeds"] = *p.Embeds
+		} else {
+			delete(meta, "embeds")
+		}
 	}
 	if len(meta) == 0 {
 		return json.RawMessage(`null`)

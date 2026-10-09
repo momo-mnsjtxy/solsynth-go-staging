@@ -79,6 +79,7 @@ type DefinitionInput struct {
 	Currency                   string              `json:"currency"`
 	BasePrice                  json.Number         `json:"base_price"`
 	CycleDurationDays          int                 `json:"cycle_duration_days"`
+	FreeTrialDays              int                 `json:"free_trial_days"`
 	PayeeWalletID              string              `json:"payee_wallet_id"`
 	AppIdentifier              *string             `json:"app_identifier"`
 	Enabled                    *bool               `json:"enabled"`
@@ -132,6 +133,90 @@ type Report struct {
 	Count      int64                     `json:"total_count"`
 	ByCurrency map[string]CurrencyTotals `json:"by_currency"`
 	Daily      []Daily                   `json:"daily"`
+}
+type AdminQuery struct {
+	Take, Offset                              int
+	WalletID, AccountID, Currency, Identifier string
+	AppIdentifier, ProductIdentifier          string
+	Status, Type                              *int
+}
+type AdminPage[T any] struct {
+	Items []T   `json:"items"`
+	Total int64 `json:"total"`
+}
+type InboundOrder struct {
+	ID             string    `json:"id"`
+	Provider       string    `json:"provider"`
+	ExternalID     string    `json:"external_id"`
+	SubscriptionID string    `json:"subscription_id"`
+	CreatedAt      time.Time `json:"created_at"`
+}
+type BalanceAdjustment struct {
+	WalletID         string        `json:"wallet_id"`
+	AccountID        string        `json:"account_id"`
+	TreasuryWalletID string        `json:"treasury_wallet_id"`
+	Currency         string        `json:"currency"`
+	Amount           wallet.Amount `json:"amount"`
+	Remark           *string       `json:"remark"`
+}
+type MaintenanceFailure struct {
+	SubscriptionID string     `json:"subscription_id"`
+	Reason         string     `json:"reason"`
+	DocumentSHA256 string     `json:"document_sha256"`
+	FirstSeenAt    time.Time  `json:"first_seen_at"`
+	LastSeenAt     time.Time  `json:"last_seen_at"`
+	ResolvedAt     *time.Time `json:"resolved_at"`
+	Observations   int64      `json:"observations"`
+}
+type Settlement struct {
+	ID          string        `json:"id"`
+	PublisherID string        `json:"publisher_id"`
+	AppID       string        `json:"app_id"`
+	OrderID     string        `json:"order_id"`
+	WalletID    string        `json:"wallet_id"`
+	Currency    string        `json:"currency"`
+	Amount      wallet.Amount `json:"amount"`
+	Status      int           `json:"status"`
+	CreatedAt   time.Time     `json:"created_at"`
+	SettledAt   *time.Time    `json:"settled_at"`
+}
+type SettlementTotals map[string]Total
+type SettlementOverview struct {
+	TotalPending int64            `json:"total_pending"`
+	TotalSettled int64            `json:"total_settled"`
+	TotalAllTime int64            `json:"total_all_time"`
+	Pending      SettlementTotals `json:"pending"`
+	Settled      SettlementTotals `json:"settled"`
+	ThisMonth    SettlementTotals `json:"this_month"`
+}
+type WalletProductApply struct {
+	TreasuryWalletID string `json:"treasury_wallet_id"`
+}
+
+type AdminRepository interface {
+	AdminTransactions(context.Context, string, AdminQuery) (AdminPage[wallet.Transaction], error)
+	AdminTransaction(context.Context, string, string) (wallet.Transaction, error)
+	AdminOrders(context.Context, string, AdminQuery) (AdminPage[Order], error)
+	AdminOrder(context.Context, string, string) (Order, error)
+	RefundOrder(context.Context, string, string, string) (wallet.Transaction, error)
+	AdminInboundOrders(context.Context, string, AdminQuery) (AdminPage[InboundOrder], error)
+	AdminInboundOrder(context.Context, string, string) (InboundOrder, error)
+	AdjustBalance(context.Context, string, BalanceAdjustment, string) (wallet.Transaction, error)
+	AdminSubscriptions(context.Context, string, AdminQuery) (AdminPage[commerce.Subscription], error)
+	Billing(context.Context, string, AdminQuery) (AdminPage[InboundOrder], error)
+	MaintenanceFailures(context.Context, string, string, int) ([]MaintenanceFailure, error)
+	RetryMaintenance(context.Context, string, string) error
+	RunMaintenance(context.Context, string, int) (int, error)
+	WalletProductSummary(context.Context, string) (json.RawMessage, error)
+	ApplyWalletProduct(context.Context, string, string, WalletProductApply, string) (wallet.Transaction, error)
+}
+
+type SettlementRepository interface {
+	Settlements(context.Context, string, string, Query) ([]Settlement, int64, error)
+	PendingSettlements(context.Context, string, string) (SettlementTotals, error)
+	Settle(context.Context, string, string) ([]wallet.Transaction, error)
+	SettlementOverview(context.Context, string, string) (SettlementOverview, error)
+	SettlementReport(context.Context, string, string, Query) (Report, error)
 }
 type Repository interface {
 	Profile(context.Context, string, string) (Profile, error)

@@ -13,6 +13,8 @@ import (
 	"solsynth.local/go-migration/ports/develop"
 	"solsynth.local/go-migration/ports/develop/apps"
 	"solsynth.local/go-migration/ports/media"
+	"solsynth.local/go-migration/ports/messager"
+	"solsynth.local/go-migration/ports/messager/rooms"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"time"
 )
@@ -108,6 +110,27 @@ type ManifestPatch struct {
 	SupportChat          *bool                 `json:"support_chat"`
 	SubscribedEvents     *[]string             `json:"subscribed_events"`
 }
+type Key struct {
+	ID        string     `json:"id"`
+	Secret    *string    `json:"secret,omitempty"`
+	Label     string     `json:"label"`
+	BotID     string     `json:"bot_id"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	RevokedAt *time.Time `json:"revoked_at,omitempty"`
+}
+type KeyRequest struct {
+	Label string `json:"label"`
+}
+type ReplyRequest struct {
+	RoomID           string                `json:"room_id"`
+	Content          string                `json:"content"`
+	EncryptionMeta   *rooms.EncryptionMeta `json:"encryption_meta,omitempty"`
+	RepliedMessageID *string               `json:"replied_message_id,omitempty"`
+	ClientMessageID  *string               `json:"client_message_id,omitempty"`
+	DeviceID         string                `json:"device_id,omitempty"`
+	MLSStateVersion  *int64                `json:"mls_state_version,omitempty"`
+}
 type MiniManifest struct {
 	ID          string   `json:"id"`
 	Name        string   `json:"name"`
@@ -122,29 +145,32 @@ type MiniManifest struct {
 	EntryURL    *string  `json:"entry_url"`
 }
 type MiniApp struct {
-	ID            string        `json:"id"`
-	Slug          string        `json:"slug"`
-	PluginID      *string       `json:"plugin_id"`
-	Name          *string       `json:"name"`
-	Version       string        `json:"version"`
-	Author        *string       `json:"author"`
-	Description   *string       `json:"description"`
-	EntryURL      *string       `json:"entry_url"`
-	Icon          any           `json:"icon"`
-	Background    any           `json:"background"`
-	Homepage      *string       `json:"homepage"`
-	PackageURL    *string       `json:"package_url"`
-	PackageSHA256 *string       `json:"package_sha256"`
-	PackageSize   *int64        `json:"package_size"`
-	DownloadCount int64         `json:"download_count"`
-	Stage         int           `json:"stage"`
-	Manifest      *MiniManifest `json:"manifest"`
-	ProjectID     string        `json:"project_id"`
-	AppID         string        `json:"app_id"`
-	Developer     *Developer    `json:"developer,omitempty"`
-	CreatedAt     time.Time     `json:"created_at"`
-	UpdatedAt     time.Time     `json:"updated_at"`
-	DeletedAt     *time.Time    `json:"deleted_at"`
+	ID            string  `json:"id"`
+	Slug          string  `json:"slug"`
+	PluginID      *string `json:"plugin_id"`
+	Name          *string `json:"name"`
+	Version       string  `json:"version"`
+	Author        *string `json:"author"`
+	Description   *string `json:"description"`
+	EntryURL      *string `json:"entry_url"`
+	Icon          any     `json:"icon"`
+	Background    any     `json:"background"`
+	Homepage      *string `json:"homepage"`
+	PackageURL    *string `json:"package_url"`
+	PackageSHA256 *string `json:"package_sha256"`
+	PackageSize   *int64  `json:"package_size"`
+	DownloadCount int64   `json:"download_count"`
+	// DownloadCount counts authorized package opens, including conditional,
+	// ranged, and interrupted transfers after canonical storage access succeeds.
+	DownloadCountSemantics string        `json:"download_count_semantics"`
+	Stage                  int           `json:"stage"`
+	Manifest               *MiniManifest `json:"manifest"`
+	ProjectID              string        `json:"project_id"`
+	AppID                  string        `json:"app_id"`
+	Developer              *Developer    `json:"developer,omitempty"`
+	CreatedAt              time.Time     `json:"created_at"`
+	UpdatedAt              time.Time     `json:"updated_at"`
+	DeletedAt              *time.Time    `json:"deleted_at"`
 }
 type MiniPatch struct {
 	Slug         *string       `json:"slug"`
@@ -166,6 +192,8 @@ type PackageResult struct {
 	SHA256      string `json:"sha256"`
 }
 type Repository interface {
+	Keys(context.Context, apps.Scope, string, string, *KeyRequest, string) ([]Key, error)
+	Reply(context.Context, string, string, ReplyRequest) (messager.MessageProjection, error)
 	LinkPackage(context.Context, apps.Scope, string, string) (PackageResult, error)
 	OpenPackage(context.Context, string) (media.File, io.ReadSeekCloser, error)
 	ListBots(context.Context, apps.Scope, int, int) ([]Bot, int64, error)

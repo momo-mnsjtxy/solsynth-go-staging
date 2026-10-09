@@ -29,7 +29,7 @@ type Client struct {
 
 func SupportedClientScope(scope string) bool {
 	switch scope {
-	case BoardScope, "coupons.manage", "orders.create", "orders.status.manage", "orders.metrics.read", "orders.fulfillment.read", OAuthClientAuthScope:
+	case BoardScope, "coupons.manage", "orders.create", "orders.status.manage", "orders.metrics.read", "orders.fulfillment.read", "orders.payouts.manage", OAuthClientAuthScope:
 		return true
 	}
 	return false

@@ -18,13 +18,14 @@ import (
 var Schema string
 
 type Repository struct {
-	db     *sql.DB
-	access rooms.AccessPolicy
-	none   int32
+	db         *sql.DB
+	access     rooms.AccessPolicy
+	none       int32
+	voiceReads bool
 }
 
 func New(db *sql.DB, access rooms.AccessPolicy, none int32) *Repository {
-	return &Repository{db, access, none}
+	return &Repository{db: db, access: access, none: none}
 }
 func (r *Repository) Ready(ctx context.Context) error {
 	if r == nil || r.db == nil || r.access == nil {

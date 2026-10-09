@@ -139,6 +139,15 @@ func lookupAccount(ctx context.Context, q querier, ref string) (accounts.Account
 func (r *Repository) LookupAccount(ctx context.Context, ref string) (accounts.Account, error) {
 	return r.LookupAccountForViewer(ctx, "", ref)
 }
+
+// LookupAccountInTransaction projects the canonical public account in the
+// caller's snapshot. It performs no authority bypass and acquires no locks.
+func (r *Repository) LookupAccountInTransaction(ctx context.Context, tx *sql.Tx, ref string) (accounts.Account, error) {
+	if tx == nil {
+		return accounts.Account{}, accounts.ErrUnavailable
+	}
+	return lookupAccount(ctx, tx, ref)
+}
 func (r *Repository) write(ctx context.Context, actor, permission string, fn func(*sql.Tx, time.Time) error) error {
 	if r == nil || r.db == nil || r.requireAuthority && r.guard == nil {
 		return accounts.ErrUnavailable
@@ -170,6 +179,18 @@ func (r *Repository) write(ctx context.Context, actor, permission string, fn fun
 	}
 	if e = fn(tx, r.now().UTC()); e != nil {
 		return mapped(e)
+	}
+	// A write may wait on later domain locks long enough for a delegated proof
+	// to expire. Revalidate the same proof immediately before commit.
+	if r.requireAuthority {
+		if permission == "" {
+			_, e = r.guard.Authenticate(ctx, r.db, tx, actor)
+		} else {
+			_, e = r.guard.Authorize(ctx, r.db, tx, actor, permission)
+		}
+		if e != nil {
+			return e
+		}
 	}
 	return tx.Commit()
 }

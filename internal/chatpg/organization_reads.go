@@ -3,7 +3,9 @@ package chatpg
 
 import (
 	"context"
+	"database/sql"
 	"math"
+	"time"
 
 	"solsynth.local/go-migration/ports/messager"
 	"solsynth.local/go-migration/ports/messager/rooms"
@@ -21,6 +23,16 @@ func (o *Organization) Summary(ctx context.Context, actor string) (map[string]ro
 		return nil, e
 	}
 	defer tx.Rollback()
+	out, e := o.summaryInTransaction(ctx, tx, actor, ids)
+	if e != nil {
+		return nil, e
+	}
+	if e = o.commitAll(ctx, tx, actor, "", ids); e != nil {
+		return nil, e
+	}
+	return out, nil
+}
+func (o *Organization) summaryInTransaction(ctx context.Context, tx *sql.Tx, actor string, ids []string) (map[string]rooms.ChatSummary, error) {
 	out := map[string]rooms.ChatSummary{}
 	rows, e := tx.QueryContext(ctx, `SELECT member.chat_room_id::text,count(msg.id) FILTER(WHERE member.notify=$3 OR(member.notify=$4 AND msg.members_mentioned @> jsonb_build_array($1::text))),count(msg.id) FROM chat_members member LEFT JOIN chat_messages msg ON msg.chat_room_id=member.chat_room_id AND msg.sender_id<>member.id AND msg.type<>'placeholder' AND left(msg.type,9)<>'messages.' AND msg.deleted_at IS NULL AND(member.last_read_at IS NULL OR msg.created_at>member.last_read_at) AND EXISTS(SELECT 1 FROM chat_members sender WHERE sender.id=msg.sender_id AND sender.chat_room_id=msg.chat_room_id AND sender.deleted_at IS NULL) WHERE member.account_id=$1::uuid AND member.chat_room_id=ANY($2::uuid[]) AND member.joined_at IS NOT NULL AND member.leave_at IS NULL AND member.deleted_at IS NULL AND NOT member.owned_banned GROUP BY member.chat_room_id`, actor, ids, o.r.policy.NotifyAll, o.r.policy.NotifyMentions)
 	if e != nil {
@@ -73,9 +85,6 @@ func (o *Organization) Summary(ctx context.Context, actor string) (map[string]ro
 		v.LastMessage = &messages[i]
 		out[messages[i].ChatRoomID] = v
 	}
-	if e = o.commitAll(ctx, tx, actor, "", ids); e != nil {
-		return nil, e
-	}
 	return out, nil
 }
 func (o *Organization) ReadAll(ctx context.Context, actor string) error {
@@ -90,9 +99,36 @@ func (o *Organization) ReadAll(ctx context.Context, actor string) error {
 	if e != nil {
 		return e
 	}
-	_, e = tx.ExecContext(ctx, `WITH changed AS(UPDATE chat_members member SET last_read_at=greatest(member.last_read_at,$3::timestamptz,(SELECT max(m.created_at) FROM chat_messages m WHERE m.chat_room_id=member.chat_room_id AND m.deleted_at IS NULL)),owned_updated_at=clock_timestamp() WHERE member.account_id=$1::uuid AND member.chat_room_id=ANY($2::uuid[]) AND member.joined_at IS NOT NULL AND member.leave_at IS NULL AND member.deleted_at IS NULL AND NOT member.owned_banned RETURNING id,chat_room_id,account_id,last_read_at) INSERT INTO owned_chat_read_receipts(member_id,room_id,account_id,last_read_at,updated_at) SELECT id,chat_room_id,account_id,last_read_at,clock_timestamp() FROM changed ON CONFLICT(member_id) DO UPDATE SET last_read_at=greatest(owned_chat_read_receipts.last_read_at,EXCLUDED.last_read_at),updated_at=EXCLUDED.updated_at`, actor, ids, now)
+	rows, e := tx.QueryContext(ctx, `WITH changed AS(UPDATE chat_members member SET last_read_at=greatest(member.last_read_at,$3::timestamptz,(SELECT max(m.created_at) FROM chat_messages m WHERE m.chat_room_id=member.chat_room_id AND m.deleted_at IS NULL)),owned_updated_at=clock_timestamp() WHERE member.account_id=$1::uuid AND member.chat_room_id=ANY($2::uuid[]) AND member.joined_at IS NOT NULL AND member.leave_at IS NULL AND member.deleted_at IS NULL AND NOT member.owned_banned RETURNING id,chat_room_id,account_id,last_read_at),saved AS(INSERT INTO owned_chat_read_receipts(member_id,room_id,account_id,last_read_at,updated_at)SELECT id,chat_room_id,account_id,last_read_at,clock_timestamp() FROM changed ON CONFLICT(member_id)DO UPDATE SET last_read_at=greatest(owned_chat_read_receipts.last_read_at,EXCLUDED.last_read_at),updated_at=EXCLUDED.updated_at RETURNING member_id)SELECT id::text,chat_room_id::text,account_id::text,last_read_at FROM changed`, actor, ids, now)
 	if e != nil {
 		return e
+	}
+	type receipt struct {
+		member, room, account string
+		at                    time.Time
+	}
+	changed := []receipt{}
+	for rows.Next() {
+		var v receipt
+		if e = rows.Scan(&v.member, &v.room, &v.account, &v.at); e != nil {
+			rows.Close()
+			return e
+		}
+		changed = append(changed, v)
+	}
+	e = rows.Err()
+	rows.Close()
+	if e != nil {
+		return e
+	}
+	for _, v := range changed {
+		eventID, x := id()
+		if x != nil {
+			return x
+		}
+		if _, x = tx.ExecContext(ctx, `INSERT INTO owned_chat_read_events(id,member_id,room_id,account_id,last_read_at,excluded_device_id,created_at)VALUES($1,$2,$3,$4,$5,$6,clock_timestamp())`, eventID, v.member, v.room, v.account, v.at, rooms.MLSWriteFrom(ctx).Device); x != nil {
+			return x
+		}
 	}
 	return o.commitAll(ctx, tx, actor, "chat.read.all", ids)
 }

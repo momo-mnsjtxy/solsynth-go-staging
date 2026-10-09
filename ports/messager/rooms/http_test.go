@@ -126,6 +126,11 @@ func TestStrictTextHTTPRejectsUnsupportedAndAmbiguousInput(t *testing.T) {
 	if w.Code != 200 || repo.writes != 1 || repo.actor != testActor || repo.room != testRoom || a.permission != "chat.messages.create" || !strings.Contains(w.Body.String(), `\\# hello`) {
 		t.Fatal(w, repo, a)
 	}
+	fund := "c3000000-0000-4000-8000-000000000001"
+	w = call(h, "POST", target, `{"fund_id":"`+fund+`"}`, "Bearer fixture")
+	if w.Code != 200 || repo.writes != 2 || repo.request.FundID == nil || *repo.request.FundID != fund {
+		t.Fatal("typed composition was not wired without MLS", w, repo)
+	}
 }
 func TestInviteAcceptanceAndMemberSelfRoutes(t *testing.T) {
 	a := &fakeAuthority{}

@@ -63,6 +63,9 @@ func bindIdentity(v *authority.Verifier, next http.Handler) http.Handler {
 				return
 			}
 			p, err := v.AuthenticateRequest(r)
+			if err != nil && errors.Is(err, authority.ErrInvalid) {
+				p, err = authenticateResource(v, r)
+			}
 			if err != nil {
 				writeAuthorityError(w, err)
 				return

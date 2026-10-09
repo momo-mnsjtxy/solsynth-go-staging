@@ -39,14 +39,14 @@ func ValidateDefinition(v DefinitionInput) (commerce.Definition, error) {
 		v.GroupIdentifier = v.Identifier
 	}
 	d := commerce.Definition{}
-	if !ValidKey(v.Identifier) || !ValidKey(v.GroupIdentifier) || !text(v.DisplayName, 1024) || strings.TrimSpace(v.DisplayName) == "" || !ValidKey(v.Currency) || len(v.Currency) > 128 || v.CycleDurationDays < 1 || v.CycleDurationDays > 366 || !authority.ValidID(v.PayeeWalletID) {
+	if !ValidKey(v.Identifier) || !ValidKey(v.GroupIdentifier) || !text(v.DisplayName, 1024) || strings.TrimSpace(v.DisplayName) == "" || !ValidKey(v.Currency) || len(v.Currency) > 128 || v.CycleDurationDays < 1 || v.CycleDurationDays > 366 || v.FreeTrialDays < 0 || v.FreeTrialDays > 366 || !authority.ValidID(v.PayeeWalletID) {
 		return d, ErrInvalid
 	}
 	price, e := ExactPrice(v.BasePrice)
 	if e != nil {
 		return d, e
 	}
-	d = commerce.Definition{Identifier: v.Identifier, GroupIdentifier: v.GroupIdentifier, DisplayName: v.DisplayName, Currency: v.Currency, BasePrice: price, PayeeWalletID: v.PayeeWalletID, CycleDurationDays: v.CycleDurationDays, AllowedPaymentMethods: v.AllowedPaymentMethods, ProviderMappings: v.ProviderMappings}
+	d = commerce.Definition{Identifier: v.Identifier, GroupIdentifier: v.GroupIdentifier, DisplayName: v.DisplayName, Currency: v.Currency, BasePrice: price, PayeeWalletID: v.PayeeWalletID, CycleDurationDays: v.CycleDurationDays, FreeTrialDays: v.FreeTrialDays, AllowedPaymentMethods: v.AllowedPaymentMethods, ProviderMappings: v.ProviderMappings}
 	if v.AllowGift != nil {
 		d.AllowGift = *v.AllowGift
 	}

@@ -12,6 +12,10 @@ import unittest
 
 import fixture_template as fixture
 
+gate_spec = importlib.util.spec_from_file_location('current_gate', fixture.ROOT / 'scripts/check-integration-results.py')
+gate = importlib.util.module_from_spec(gate_spec)
+gate_spec.loader.exec_module(gate)
+
 
 class Catalog:
     def __init__(self):
@@ -219,7 +223,7 @@ class WiringTests(unittest.TestCase):
         self.assertEqual(review['schema_sha256'], schema_hash)
         self.assertEqual(review['ordered_schema_files'], paths)
         self.assertEqual(review['before_clone_baseline_rows'], [])
-        self.assertEqual(review['runtime_case_counts'], {'before': 962, 'after': 112})
+        self.assertEqual(review['runtime_case_counts'], {phase: len(names) for phase, names in gate.EXPECTED.items()})
         self.assertEqual({x['table'] for x in review['source_baselines']}, set(fixture.BASELINES))
         self.assertEqual(sum(x['rows'] for x in review['source_baselines']), 61)
         self.assertTrue(all(x['copied_to_template'] is False for x in review['source_baselines']))

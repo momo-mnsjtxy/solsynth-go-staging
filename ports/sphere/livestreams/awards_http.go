@@ -17,6 +17,21 @@ func (s *Service) awardsHTTP(w http.ResponseWriter, r *http.Request, ctx context
 	var e error
 	total := -1
 	switch {
+	case len(parts) == 4 && parts[2] != "" && parts[3] == "refund":
+		reconciliation, ok := s.Repository.(AwardReconciliationRepository)
+		if !ok {
+			failure(w, ErrAwardUnavailable)
+			return
+		}
+		if r.Method != "POST" {
+			method(w, "POST")
+			return
+		}
+		var q AwardRefundRequest
+		e = decode(w, r, &q, "reason")
+		if e == nil {
+			out, e = reconciliation.RequestAwardRefund(ctx, actor, parts[0], parts[2], q)
+		}
 	case len(parts) == 2:
 		switch r.Method {
 		case "GET":

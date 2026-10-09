@@ -4,6 +4,7 @@ package main
 import (
 	"flag"
 	"solsynth.local/go-migration/internal/application"
+	"solsynth.local/go-migration/internal/livestreampg"
 	"testing"
 )
 
@@ -42,4 +43,20 @@ func TestLivestreamAwardConfiguration(t *testing.T) {
 			}
 		})
 	}
+	t.Run("realtime requires durable delivery", func(t *testing.T) {
+		fs := flag.NewFlagSet("realtime", flag.ContinueOnError)
+		s := livestreamAwardFlags(fs)
+		args := append([]string{"--enable-livestream-awards", "--livestream-award-realtime"}, binding...)
+		if e := fs.Parse(args); e != nil {
+			t.Fatal(e)
+		}
+		c := application.Config{Livestreams: &application.LivestreamConfig{}}
+		if e := s.apply(&c); e == nil {
+			t.Fatal("realtime awards enabled without durable delivery")
+		}
+		c.Livestreams.Chat = &livestreampg.ChatConfig{}
+		if e := s.apply(&c); e != nil || c.Livestreams.Awards == nil || !c.Livestreams.Awards.RealtimePackets {
+			t.Fatal(e, c.Livestreams.Awards)
+		}
+	})
 }

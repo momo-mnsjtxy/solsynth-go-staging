@@ -215,6 +215,13 @@ func (w Worker) Step(ctx context.Context) (int, error) {
 			return n, e
 		}
 	}
+	if w.Chat {
+		v, e = w.Repository.ProjectChatEvents(ctx, 32, w.ChatNoneEncryptionMode)
+		n += v
+		if e != nil {
+			return n, e
+		}
+	}
 	v, e = w.Repository.ProjectFriends(ctx, 32)
 	n += v
 	if e != nil {

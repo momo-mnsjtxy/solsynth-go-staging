@@ -69,6 +69,9 @@ func TestPGProductStockConcurrentReservationConsumeAndRelease(t *testing.T) {
 	if _, e := f.r.UpdateOrder(f.ctx, got[0].ID, c.UpdateStatus{Credentials: f.credentials, Status: c.Finished}); e != nil {
 		t.Fatal(e)
 	}
+	if released, settleErr := merchantRepo(t, f).Settle(f.ctx, f.actor, f.publisher); settleErr != nil || len(released) != 1 {
+		t.Fatal("explicit stock settlement", released, settleErr)
+	}
 	if _, e := stockOrder(f, 1, ""); !errors.Is(e, c.ErrStock) {
 		t.Fatal("finished order released inventory", e)
 	}
@@ -330,6 +333,9 @@ func TestPGProductStockRecurringReservationRenewalAndCancel(t *testing.T) {
 	}
 	if current, x := other.r.Subscription(other.ctx, other.actor, def.Identifier); x != nil || current.ID != final.ID || current.Status != c.SubscriptionActive {
 		t.Fatal("cancelled history shadowed paid replacement", current, x)
+	}
+	if released, settleErr := merchantRepo(t, other).Settle(other.ctx, other.actor, other.publisher); settleErr != nil || len(released) != 1 {
+		t.Fatal("explicit recurring stock settlement", released, settleErr)
 	}
 	walletAssertBalance(t, walletpg.New(other.db), other.wallet.ID, "synthetic-commerce", "97.877", "0.000", "97.877")
 	walletAssertBalance(t, walletpg.New(other.db), other.payee.ID, "synthetic-commerce", "2.123", "0.000", "2.123")

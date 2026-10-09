@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/sphere/posts"
 )
 
@@ -38,6 +39,18 @@ func (r *fakeRepo) React(_ context.Context, actor, id string, v ReactionRequest)
 func (r *fakeRepo) BookmarkStatus(context.Context, string, string) (*Bookmark, error) {
 	r.called++
 	return nil, nil
+}
+func (r *fakeRepo) CreateCollection(context.Context, string, string, CollectionRequest) (Collection, error) {
+	r.called++
+	return Collection{ID: actorID, Publisher: accounts.Publisher{Name: "pub"}, Slug: "slug"}, nil
+}
+func (r *fakeRepo) UpdateCollection(context.Context, string, string, string, CollectionRequest) (Collection, error) {
+	r.called++
+	return Collection{ID: actorID, Publisher: accounts.Publisher{Name: "pub"}, Slug: "slug"}, nil
+}
+func (r *fakeRepo) DeleteCollection(context.Context, string, string, string) error {
+	r.called++
+	return nil
 }
 func call(h http.Handler, method, path, body string) *httptest.ResponseRecorder {
 	r := httptest.NewRequest(method, path, strings.NewReader(body))
@@ -104,5 +117,22 @@ func TestValidationAndPaging(t *testing.T) {
 	long := strings.Repeat("😀", 129)
 	if e := ValidateCollection(CollectionRequest{Slug: "x", Name: &long}, true); !errors.Is(e, ErrInvalid) {
 		t.Fatal("UTF-16 collection bound", e)
+	}
+}
+
+func TestCollectionCRUDUsesDistinctProductionPermissions(t *testing.T) {
+	for _, tc := range []struct {
+		method, path, body, permission string
+		status                         int
+	}{
+		{"POST", "/api/publishers/pub/collections", `{"slug":"slug"}`, "post.collections.create", 201},
+		{"PATCH", "/api/publishers/pub/collections/slug", `{}`, "post.collections.update", 200},
+		{"DELETE", "/api/publishers/pub/collections/slug", "", "post.collections.delete", 204},
+	} {
+		repo, a := &fakeRepo{}, &fakeAuth{actor: actorID}
+		w := call(NewHandler(repo, a), tc.method, tc.path, tc.body)
+		if w.Code != tc.status || repo.called != 1 || a.permission != tc.permission {
+			t.Fatal(tc, w.Code, w.Body.String(), repo.called, a.permission)
+		}
 	}
 }

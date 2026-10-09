@@ -66,7 +66,7 @@ func externalFlags(fs *flag.FlagSet) externalFlagSet {
 	}
 }
 func (v externalFlagSet) apply(c *application.Config) error {
-	outputPolicy, outputConfig, outputError := v.outputs.load(*v.streams, c)
+	outputPolicy, outputConfig, archiveImport, outputError := v.outputs.load(*v.streams, c)
 	if outputError != nil {
 		return outputError
 	}
@@ -114,7 +114,7 @@ func (v externalFlagSet) apply(c *application.Config) error {
 			c.Calls = &application.CallConfig{Provider: provider, TokenTTL: *v.tokenTTL, CallTTL: *v.callTTL}
 		}
 		if *v.streams {
-			c.Livestreams = &application.LivestreamConfig{Provider: provider, Outputs: outputConfig, Policy: livestreampg.Config{TokenTTL: *v.streamTTL, MaxRunDuration: *v.streamLifetime, IdleGrace: *v.streamIdle, MaxStreamsPerPublisher: *v.streamLimit}}
+			c.Livestreams = &application.LivestreamConfig{Provider: provider, Outputs: outputConfig, ArchiveImport: archiveImport, Policy: livestreampg.Config{TokenTTL: *v.streamTTL, MaxRunDuration: *v.streamLifetime, IdleGrace: *v.streamIdle, MaxStreamsPerPublisher: *v.streamLimit}}
 		}
 	}
 	if *v.streamChat {

@@ -2,11 +2,13 @@ package accounts
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 type authFixture struct {
@@ -81,5 +83,43 @@ func TestHTTPDoesNotLeakInternalError(t *testing.T) {
 	h.ServeHTTP(out, httptest.NewRequest("GET", "/api/wallets", nil))
 	if out.Header().Get("Cache-Control") != "no-store" || out.Header().Get("Content-Type") != "application/json" {
 		t.Fatal(out.Header())
+	}
+}
+
+type maintenanceStore struct {
+	*storeRecorder
+	inspectOffset, inspectTake int
+	purgeLimit                 int
+	purgeBefore                time.Time
+}
+
+func (m *maintenanceStore) InspectTransferRequests(_ context.Context, _ string, offset, take int) ([]TransferRequestRecord, int64, error) {
+	m.inspectOffset, m.inspectTake = offset, take
+	return []TransferRequestRecord{}, 3, nil
+}
+func (m *maintenanceStore) PurgeTransferRequests(_ context.Context, _ string, before time.Time, limit int) (int64, error) {
+	m.purgeBefore, m.purgeLimit = before, limit
+	return 2, nil
+}
+
+func TestHTTPTransferRequestMaintenanceRoutes(t *testing.T) {
+	s, base, access, _, p := serviceFixture()
+	store := &maintenanceStore{storeRecorder: base}
+	s.Store = store
+	h := NewHandler(s, authFixture{principal: p})
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("GET", "/api/wallets/transfer/requests/admin?offset=2&take=7", nil))
+	if w.Code != 200 || w.Header().Get("X-Total") != "3" || store.inspectOffset != 2 || store.inspectTake != 7 || access.lastPermission != PermissionTransferRequestInspect {
+		t.Fatal(w.Code, w.Body.String(), w.Header(), store.inspectOffset, store.inspectTake, access.lastPermission)
+	}
+	w = httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("GET", "/api/wallets/transfer/requests/admin?unknown=1", nil))
+	if w.Code != 400 {
+		t.Fatal(w.Code, w.Body.String())
+	}
+	w = httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("POST", "/api/wallets/transfer/requests/purge", strings.NewReader(`{"older_than":"2025-01-01T00:00:00Z","limit":11}`)))
+	if w.Code != 200 || store.purgeLimit != 11 || store.purgeBefore.IsZero() || access.lastPermission != PermissionTransferRequestPurge || !strings.Contains(w.Body.String(), `"purged":2`) {
+		t.Fatal(w.Code, w.Body.String(), store.purgeLimit, store.purgeBefore, access.lastPermission)
 	}
 }

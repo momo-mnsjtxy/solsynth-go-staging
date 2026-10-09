@@ -248,9 +248,9 @@ func (s *Service) serveMLS(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func (s *Service) textFields() []string {
-	fields := []string{"content", "client_message_id", "nonce", "replied_message_id", "attachments_id", "meta", "embeds", "thread_id", "forwarded_message_id", "is_thread_root"}
+	fields := []string{"content", "client_message_id", "nonce", "replied_message_id", "attachments_id", "meta", "embeds", "thread_id", "forwarded_message_id", "is_thread_root", "survey_id", "fund_id", "meet_id", "notable_day_id", "calendar_event_id", "location_name", "location_address", "location_wkt"}
 	if enabled, ok := s.Repository.(interface{ MLSDeliveryEnabled() bool }); ok && enabled.MLSDeliveryEnabled() {
-		fields = append(fields, "type", "encryption_meta", "survey_id", "fund_id")
+		fields = append(fields, "type", "encryption_meta")
 	}
 	return fields
 }

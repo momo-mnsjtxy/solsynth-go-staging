@@ -216,13 +216,21 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" && len(parts) == 3 && parts[1] == "awards" && parts[2] == "leaderboard" {
 		allowed["limit"] = true
 	}
+	if r.Method == "GET" && len(parts) == 1 && parts[0] == "operations" {
+		allowed["limit"] = true
+		allowed["offset"] = true
+		allowed["kind"] = true
+	}
+	if r.Method == "GET" && len(parts) == 4 && parts[1] == "hls" {
+		allowed["download"] = true
+	}
 	for key, values := range q {
 		if !allowed[key] || len(values) != 1 {
 			failure(w, ErrInvalid)
 			return
 		}
 	}
-	required := r.Method != "GET" || len(parts) >= 2 && (parts[1] == "token" || parts[1] == "chat" || parts[1] == "hls" || parts[1] == "egress")
+	required := r.Method != "GET" || len(parts) > 0 && parts[0] == "operations" || len(parts) >= 2 && (parts[1] == "token" || parts[1] == "chat" || parts[1] == "hls" || parts[1] == "egress")
 	ctx, actor, e := s.principal(r, required)
 	if e != nil {
 		failure(w, e)
@@ -279,6 +287,9 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		out, e = s.Repository.List(ctx, actor, parts[1], limit, offset)
+	case len(parts) > 0 && parts[0] == "operations":
+		s.operationsHTTP(w, r, ctx, actor, parts, limit, offset)
+		return
 	default:
 		if len(parts) == 0 || !authority.ValidID(parts[0]) {
 			failure(w, ErrNotFound)

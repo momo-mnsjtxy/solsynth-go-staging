@@ -105,6 +105,25 @@ func awardState(t *testing.T, f streamAwardFixture, order string) string {
 
 func TestPGLiveStreamAwardsPaidLifecycleAndConservation(t *testing.T) {
 	f := newStreamAwardFixture(t)
+	foreign := f.options
+	foreign.TreasuryAccountID = f.owner
+	if e := f.repo.WithAwards(foreign, f.commerce); e != nil {
+		t.Fatal(e)
+	}
+	if e := f.repo.AwardsReady(f.ctx); !errors.Is(e, live.ErrAwardUnavailable) {
+		t.Fatal("foreign treasury wallet accepted", e)
+	}
+	if e := f.repo.WithAwards(f.options, f.commerce); e != nil {
+		t.Fatal(e)
+	}
+	query(t, f.db, `INSERT INTO owned_authority_punishments(account_id,kind,starts_at)VALUES($1::uuid,'disable_account',clock_timestamp())`, f.treasuryActor)
+	if e := f.repo.AwardsReady(f.ctx); !errors.Is(e, live.ErrAwardUnavailable) {
+		t.Fatal("active treasury punishment accepted", e)
+	}
+	query(t, f.db, `DELETE FROM owned_authority_punishments WHERE account_id=$1::uuid AND kind='disable_account'`, f.treasuryActor)
+	if e := f.repo.AwardsReady(f.ctx); e != nil {
+		t.Fatal(e)
+	}
 	s := streamCreate(t, f.streamFixture, "awards-paid")
 	streamNative(t, f.streamFixture, s.ID)
 	base := "/api/livestreams/" + s.ID + "/awards"
@@ -587,4 +606,146 @@ func TestPGLiveStreamAwardsHTTPStrictRequestTransport(t *testing.T) {
 	}
 	streamGetCall(t, f.streamFixture, path+"?limit=101", f.token, 400)
 	streamGetCall(t, f.streamFixture, path+"/leaderboard?limit=3", "", 200)
+}
+
+func TestPGLiveStreamAwardRefundReleasesReserveAndReversesCapture(t *testing.T) {
+	f := newStreamAwardFixture(t)
+	query(t, f.db, `UPDATE owned_authority_accounts SET is_superuser=true WHERE id=$1::uuid`, f.owner)
+	root, e := f.verifier.Authenticate(f.ctx, f.token)
+	if e != nil {
+		t.Fatal(e)
+	}
+	rootCtx := f.guard.Bind(f.ctx, root)
+	s := streamCreate(t, f.streamFixture, "award-refund")
+	streamNative(t, f.streamFixture, s.ID)
+	o, _ := paidStreamAward(t, f, s.ID, "10", "refund-source")
+	var purchase string
+	if e = f.db.QueryRow(`SELECT id::text FROM owned_livestream_award_purchases WHERE order_id=$1::uuid`, o.OrderID).Scan(&purchase); e != nil {
+		t.Fatal(e)
+	}
+	refund, e := f.repo.RequestAwardRefund(rootCtx, f.owner, s.ID, purchase, live.AwardRefundRequest{Reason: "operator reconciliation"})
+	if e != nil || refund.State != "refund_pending" || refund.PurchaseID != purchase {
+		t.Fatal(refund, e)
+	}
+	items, total, e := f.repo.ListAwards(f.ctx, "", s.ID, 20, 0, false)
+	if e != nil || total != 0 || len(items) != 0 {
+		t.Fatal("pending refund remained publicly counted", items, total, e)
+	}
+	constraint := "synthetic_refund_phase_" + strings.ReplaceAll(purchase, "-", "")
+	query(t, f.db, `ALTER TABLE owned_livestream_award_receipts ADD CONSTRAINT `+constraint+` CHECK(NOT(purchase_id='`+purchase+`'::uuid AND payout_state='refunded'))NOT VALID`)
+	t.Cleanup(func() {
+		_, _ = f.db.Exec(`ALTER TABLE owned_livestream_award_receipts DROP CONSTRAINT IF EXISTS ` + constraint)
+	})
+	if _, e := f.repo.ProcessAwardsDue(f.ctx, 100); e == nil {
+		t.Fatal("second refund phase failure was not injected")
+	}
+	if state := awardState(t, f, o.OrderID); state != "refund_ready" {
+		t.Fatal("durable refund checkpoint lost", state)
+	}
+	walletAssertBalance(t, f.wallets, f.donor.ID, f.options.PointsCurrency, "90.000", "0.000", "90.000")
+	walletAssertBalance(t, f.wallets, f.treasury.ID, f.options.PointsCurrency, "10.000", "0.000", "10.000")
+	query(t, f.db, `ALTER TABLE owned_livestream_award_receipts DROP CONSTRAINT `+constraint)
+	query(t, f.db, `UPDATE owned_livestream_award_receipts SET next_attempt_at=clock_timestamp()-interval '1 microsecond' WHERE purchase_id=$1::uuid`, purchase)
+	if n, e := f.repo.ProcessAwardsDue(f.ctx, 100); e != nil || n != 1 {
+		t.Fatal(n, e)
+	}
+	if state := awardState(t, f, o.OrderID); state != "refunded" {
+		t.Fatal(state)
+	}
+	walletAssertBalance(t, f.wallets, f.donor.ID, f.options.PointsCurrency, "100.000", "0.000", "100.000")
+	walletAssertBalance(t, f.wallets, f.treasury.ID, f.options.PointsCurrency, "0.000", "0.000", "0.000")
+	walletAssertBalance(t, f.wallets, f.beneficiary.ID, f.options.PointsCurrency, "100.000", "0.000", "100.000")
+	var originalStatus, distributionStatus int
+	if e = f.db.QueryRow(`SELECT o.status,d.status FROM owned_livestream_award_receipts r JOIN commerce_v1.orders o ON o.id=r.order_id JOIN commerce_v1.orders d ON d.id=r.distribution_order_id WHERE r.purchase_id=$1::uuid`, purchase).Scan(&originalStatus, &distributionStatus); e != nil || originalStatus != int(commerce.Cancelled) || distributionStatus != int(commerce.Cancelled) {
+		t.Fatal(originalStatus, distributionStatus, e)
+	}
+	replayed, e := f.repo.RequestAwardRefund(rootCtx, f.owner, s.ID, purchase, live.AwardRefundRequest{Reason: "operator reconciliation"})
+	if e != nil || replayed.State != "refunded" || replayed.RefundedAt == nil {
+		t.Fatal(replayed, e)
+	}
+}
+
+func TestPGLiveStreamAwardCapturesRealmWalletBeneficiary(t *testing.T) {
+	f := newStreamAwardFixture(t)
+	s := streamCreate(t, f.streamFixture, "realm-award")
+	streamNative(t, f.streamFixture, s.ID)
+	realm := authorityUUID(t)
+	query(t, f.db, `INSERT INTO owned_realms(id,slug,name,account_id,created_at,updated_at)VALUES($1::uuid,$1::text,'Synthetic livestream realm',$2::uuid,clock_timestamp(),clock_timestamp())`, realm, f.owner)
+	realmWallet, e := f.wallets.CreateWallet(f.ctx, wallet.Owner{RealmID: realm}, "Synthetic livestream realm wallet")
+	if e != nil {
+		t.Fatal(e)
+	}
+	query(t, f.db, `UPDATE owned_publishers SET type=1,account_id=NULL,realm_id=$2::uuid,updated_at=clock_timestamp() WHERE id=$1::uuid`, f.pub.ID, realm)
+	o, _ := paidStreamAward(t, f, s.ID, "10", "realm-beneficiary")
+	var capturedRealm, capturedWallet string
+	if e = f.db.QueryRow(`SELECT beneficiary_realm_id::text,beneficiary_wallet_id::text FROM owned_livestream_award_purchases WHERE order_id=$1::uuid`, o.OrderID).Scan(&capturedRealm, &capturedWallet); e != nil || capturedRealm != realm || capturedWallet != realmWallet.ID {
+		t.Fatal(capturedRealm, capturedWallet, e)
+	}
+	if e = f.repo.End(f.ownerCtx, f.owner, s.ID, false); e != nil {
+		t.Fatal(e)
+	}
+	// A later realm ownership transfer cannot redirect or strand the realm's
+	// already-earned award; the captured realm wallet remains the beneficiary.
+	query(t, f.db, `UPDATE owned_realms SET account_id=$2::uuid,updated_at=clock_timestamp() WHERE id=$1::uuid`, realm, f.other)
+	awardDue(t, f)
+	walletAssertBalance(t, f.wallets, realmWallet.ID, f.options.PointsCurrency, "9.000", "0.000", "9.000")
+	walletAssertBalance(t, f.wallets, f.beneficiary.ID, f.options.PointsCurrency, "100.000", "0.000", "100.000")
+}
+
+func TestPGLiveStreamAwardRealtimeUsesDurableCurrentAudienceOutbox(t *testing.T) {
+	f := newStreamChatFixture(t)
+	if e := f.repo.WithChat(livestreampg.ChatConfig{MaxMessagesPerStream: 1, MaxEventsPerStream: 1, MaxAttempts: 3, EventTTL: time.Hour, SendTimeout: time.Second}); e != nil {
+		t.Fatal(e)
+	}
+	query(t, f.db, livestreampg.AwardsSchema)
+	treasuryActor := authorityUUID(t)
+	if e := authoritypg.SeedSynthetic(f.ctx, f.db, treasuryActor, "synthetic_realtime_award_treasury_"+strings.ReplaceAll(treasuryActor, "-", ""), time.Now().UTC()); e != nil {
+		t.Fatal(e)
+	}
+	wallets := walletpg.New(f.db)
+	donor := walletCreate(t, wallets, f.third)
+	_ = walletCreate(t, wallets, f.owner)
+	treasury := walletCreate(t, wallets, treasuryActor)
+	currency := "synthetic-realtime-awards"
+	walletFund(t, f.db, donor, currency, "100.000")
+	maximum, _ := wallet.ParseAmount("100")
+	commerceRepo := commercepg.New(f.db, f.guard, commercepg.Adapters{})
+	options := livestreampg.AwardConfig{PointsCurrency: currency, TreasuryAccountID: treasuryActor, TreasuryWalletID: treasury.ID, MaxAmount: maximum, MaxOrdersPerAccountStream: 20, MaxAwardsPerStream: 100, OrderTTL: time.Hour, RealtimePackets: true}
+	if e := f.repo.WithAwards(options, commerceRepo); e != nil {
+		t.Fatal(e)
+	}
+	commerceRepo.WithLiveStreamAwards(f.repo)
+	s := streamChatStart(t, f, "realtime-award")
+	points, _ := live.ParseAwardPoints("10")
+	o, e := f.repo.CreateAwardOrder(f.viewerCtx, f.third, s.ID, "realtime-award-one", live.AwardRequest{Amount: points})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = commerceRepo.PayOrder(f.viewerCtx, f.third, o.OrderID, &donor.ID); e != nil {
+		t.Fatal(e)
+	}
+	var eventID, state string
+	if e = f.db.QueryRow(`SELECT id::text,state FROM owned_livestream_chat_outbox WHERE stream_id=$1::uuid AND kind='award'`, s.ID).Scan(&eventID, &state); e != nil || state != "pending" {
+		t.Fatal(eventID, state, e)
+	}
+	second, e := f.repo.CreateAwardOrder(f.viewerCtx, f.third, s.ID, "realtime-award-cap", live.AwardRequest{Amount: points})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = commerceRepo.PayOrder(f.viewerCtx, f.third, second.OrderID, &donor.ID); e == nil {
+		t.Fatal("full realtime event capacity accepted a second paid award")
+	}
+	walletAssertBalance(t, wallets, donor.ID, currency, "90.000", "0.000", "90.000")
+	walletAssertBalance(t, wallets, treasury.ID, currency, "1.000", "9.000", "1.000")
+	if n := countCalls(t, f.callFixture, `SELECT count(*) FROM owned_livestream_award_receipts WHERE stream_id=$1::uuid`, s.ID); n != 1 {
+		t.Fatal("capacity failure did not roll back monetary receipt", n)
+	}
+	chatProcess(t, f)
+	packets := f.data.snapshot()
+	if len(packets) != 1 || !json.Valid(packets[0].Payload) || !strings.Contains(string(packets[0].Payload), `"type":"livestream.award"`) {
+		t.Fatal(packets)
+	}
+	if state = chatEventState(t, f, eventID); state != "accepted" {
+		t.Fatal(state)
+	}
 }

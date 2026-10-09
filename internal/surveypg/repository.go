@@ -729,6 +729,16 @@ func (r *Repository) Get(ctx context.Context, actor, id string) (surveys.Survey,
 	}
 	return x.s, nil
 }
+
+// ValidateChatSurvey uses the same current publisher, block, draft and linked
+// post visibility checks as Get without opening a nested transaction.
+func (r *Repository) ValidateChatSurvey(ctx context.Context, tx *sql.Tx, actor, id string) error {
+	if r == nil || tx == nil || !authority.ValidID(actor) || !authority.ValidID(id) {
+		return surveys.ErrInvalid
+	}
+	_, e := r.load(ctx, tx, actor, id, false)
+	return e
+}
 func (r *Repository) Results(ctx context.Context, actor, id string) (surveys.Results, error) {
 	tx, e := r.begin(ctx, actor, "", true)
 	if e != nil {

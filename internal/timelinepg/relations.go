@@ -234,6 +234,72 @@ func (r *Repository) Load(ctx context.Context, tx *sql.Tx, actor string, p *post
 	}
 	return tx.QueryRowContext(ctx, r.descendantCTE()+` SELECT count(*) FROM tree`, actor, p.ID).Scan(&p.ThreadRepliesCount)
 }
+
+// Pin responses use read committed transactions to observe completed lock waits.
+// Recheck the already hydrated nested posts and their resources before returning
+// them; root eligibility alone cannot authorize a now-private forward or media.
+func (r *Repository) RecheckProjection(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post) error {
+	if r == nil || r.visibility == nil || tx == nil || p == nil {
+		return posts.ErrUnavailable
+	}
+	if _, e := postpg.ReadWithVisibility(ctx, tx, actor, p.ID, r.visibility); e != nil {
+		return e
+	}
+	if e := postpg.RecheckAssociations(ctx, tx, actor, p, r.associations); e != nil {
+		return e
+	}
+	for _, link := range []struct {
+		id   **string
+		post **posts.Post
+	}{{&p.RepliedPostID, &p.RepliedPost}, {&p.ForwardedPostID, &p.ForwardedPost}, {&p.ChainedPostID, &p.ChainedPost}} {
+		if *link.post == nil {
+			*link.id = nil
+			continue
+		}
+		child := *link.post
+		e := postpg.RecheckAssociations(ctx, tx, actor, child, r.associations)
+		if e == nil {
+			_, e = postpg.ReadWithVisibility(ctx, tx, actor, child.ID, r.visibility)
+		}
+		if errors.Is(e, posts.ErrNotFound) {
+			*link.id, *link.post = nil, nil
+		} else if e != nil {
+			return e
+		}
+	}
+	children := make([]posts.Post, 0, len(p.ChainedPosts))
+	for _, child := range p.ChainedPosts {
+		e := postpg.RecheckAssociations(ctx, tx, actor, &child, r.associations)
+		if errors.Is(e, posts.ErrNotFound) {
+			continue
+		}
+		if e != nil {
+			return e
+		}
+		var visible bool
+		if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1`+r.base()+` AND p.id=$2 AND EXISTS(SELECT 1 FROM owned_post_relations l WHERE l.post_id=p.id AND l.chained_post_id=$3))`, actor, child.ID, p.ID).Scan(&visible); e != nil {
+			return e
+		}
+		if visible {
+			children = append(children, child)
+		}
+	}
+	p.ChainedPosts = children
+	for _, count := range []struct {
+		column string
+		dst    *int64
+	}{{"replied_post_id", &p.RepliesCount}, {"forwarded_post_id", &p.ForwardsCount}, {"chained_post_id", &p.ChainedCount}} {
+		if e := tx.QueryRowContext(ctx, `SELECT count(*)`+r.base()+` AND EXISTS(SELECT 1 FROM owned_post_relations l WHERE l.post_id=p.id AND l.`+count.column+`=$2)`, actor, p.ID).Scan(count.dst); e != nil {
+			return e
+		}
+	}
+	if e := tx.QueryRowContext(ctx, r.descendantCTE()+` SELECT count(*) FROM tree`, actor, p.ID).Scan(&p.ThreadRepliesCount); e != nil {
+		return e
+	}
+	_, e := postpg.ReadWithVisibility(ctx, tx, actor, p.ID, r.visibility)
+	return e
+}
+
 func (r *Repository) descendantCTE() string {
 	return `WITH RECURSIVE visible AS MATERIALIZED(SELECT p.id,p.published_at` + postpg.ActivePostFrom + ` AND ` + postpg.ListingPredicate(r.visibility) + ` AND EXISTS(SELECT 1 FROM owned_post_relations z WHERE z.post_id=p.id AND z.replied_post_id IS NOT NULL)), links AS (SELECT v.id,l.replied_post_id,v.published_at FROM visible v JOIN owned_post_relations l ON l.post_id=v.id), tree(id,parent,depth,path,ordering) AS (SELECT id,replied_post_id,0,ARRAY[id],ARRAY[row_number() OVER(ORDER BY published_at DESC,id DESC)] FROM links WHERE replied_post_id=$2::uuid UNION ALL SELECT l.id,l.replied_post_id,t.depth+1,t.path||l.id,t.ordering||row_number() OVER(PARTITION BY l.replied_post_id ORDER BY l.published_at DESC,l.id DESC) FROM tree t JOIN links l ON l.replied_post_id=t.id WHERE t.depth<49 AND NOT l.id=ANY(t.path))`
 }

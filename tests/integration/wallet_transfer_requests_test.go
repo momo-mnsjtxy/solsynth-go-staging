@@ -146,6 +146,21 @@ func TestPGWalletTransferRequestVisibilityPermissionAndExpiry(t *testing.T) {
 		t.Fatal("denied request spent money")
 	}
 }
+
+func TestPGWalletTransferRequestRetentionUsesDatabaseClock(t *testing.T) {
+	f := newRequestFixture(t)
+	old := f.create(t)
+	future := f.create(t)
+	query(t, f.db, `UPDATE wallet_v1.transfer_requests SET created_at=clock_timestamp()-interval '3 hours',expires_at=clock_timestamp()-interval '2 hours' WHERE id=$1::uuid`, old.ID)
+	query(t, f.db, `UPDATE wallet_v1.transfer_requests SET created_at=clock_timestamp(),expires_at=clock_timestamp()+interval '1 day' WHERE id=$1::uuid`, future.ID)
+	if n, e := walletpg.New(f.db).PurgeTransferRequestsDue(context.Background(), time.Hour, 100); e != nil || n != 1 {
+		t.Fatal(n, e)
+	}
+	if n := commerceCount(t, f.db, `SELECT count(*) FROM wallet_v1.transfer_requests WHERE id=$1::uuid`, future.ID); n != 1 {
+		t.Fatal("forward-dated transfer request was purged by process clock", n)
+	}
+}
+
 func TestPGWalletTransferRequestRollbackAndBounds(t *testing.T) {
 	f := newRequestFixture(t)
 	for _, hours := range []int{0, 169} {

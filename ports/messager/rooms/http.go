@@ -154,6 +154,9 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	if rest != "" {
 		p = strings.Split(strings.TrimPrefix(rest, "/"), "/")
 	}
+	if s.serveSubscriptionSync(w, r, p) {
+		return
+	}
 	if s.serveDetails(w, r, p) {
 		return
 	}
@@ -289,7 +292,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			result = map[string]any{"rooms": list}
 		case "POST":
 			var req RoomPatch
-			e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode", "realm_id", "picture_id", "background_id", "slug")
+			e = decode(w, r, &req, "name", "description", "is_public", "is_community", "is_read_receipts_public", "encryption_mode", "realm_id", "picture_id", "background_id", "slug")
 			if e == nil {
 				result, e = s.Repository.Create(ctx, actor, req)
 			}
@@ -404,7 +407,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 				result, e = s.Repository.Get(ctx, actor, rid)
 			case "PATCH":
 				var req RoomPatch
-				e = decode(w, r, &req, "name", "description", "is_public", "is_community", "encryption_mode", "realm_id", "picture_id", "background_id", "slug")
+				e = decode(w, r, &req, "name", "description", "is_public", "is_community", "is_read_receipts_public", "encryption_mode", "realm_id", "picture_id", "background_id", "slug")
 				if e == nil {
 					result, e = s.Repository.Update(ctx, actor, rid, req)
 				}
@@ -564,7 +567,7 @@ func method(w http.ResponseWriter, allow string) {
 	send(w, 405, map[string]string{"code": "METHOD_NOT_ALLOWED"})
 }
 
-var unsupported = map[string]bool{"realm_id": true, "picture_id": true, "background_id": true, "slug": true, "e2ee_policy": true, "is_read_receipts_public": true, "role": true, "encryption_meta": true, "attachments_id": true, "embeds": true, "meta": true, "fund_id": true, "survey_id": true, "meet_id": true, "notable_day_id": true, "calendar_event_id": true, "location_name": true, "location_address": true, "location_wkt": true, "forwarded_message_id": true, "thread_id": true, "is_thread_root": true, "break_until": true}
+var unsupported = map[string]bool{"realm_id": true, "picture_id": true, "background_id": true, "slug": true, "e2ee_policy": true, "role": true, "encryption_meta": true, "attachments_id": true, "embeds": true, "meta": true, "fund_id": true, "survey_id": true, "meet_id": true, "notable_day_id": true, "calendar_event_id": true, "location_name": true, "location_address": true, "location_wkt": true, "forwarded_message_id": true, "thread_id": true, "is_thread_root": true, "break_until": true}
 
 // Exact, duplicate-free top-level names avoid JSON's last-key-wins ambiguity.
 // Unsupported provider/encryption fields fail explicitly, including empty ones.

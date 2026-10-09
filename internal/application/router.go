@@ -388,10 +388,10 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.tickets != nil && (service == "api" || service == "passport") && ticketRoute(canonical) {
 		target = h.tickets
 	}
-	if h.merchants != nil && (service == "api" || service == "wallet") && (under(canonical, "/api/merchants") || under(canonical, "/api/admin/subscriptions/catalog")) {
+	if h.merchants != nil && (service == "api" || service == "wallet") && (under(canonical, "/api/merchants") || under(canonical, "/api/admin/payments") || under(canonical, "/api/admin/subscriptions") || under(canonical, "/api/admin/wallet-products") || canonical == "/api/subscriptions/billing") {
 		target = h.merchants
 	}
-	if h.commerce != nil && (under(canonical, "/api/orders") || under(canonical, "/api/subscriptions") || under(canonical, "/api/coupons")) && (service == "wallet" || service == "api") {
+	if h.commerce != nil && canonical != "/api/subscriptions/billing" && (under(canonical, "/api/orders") || under(canonical, "/api/subscriptions") || under(canonical, "/api/coupons")) && (service == "wallet" || service == "api") {
 		target = h.commerce
 	}
 	if h.apps != nil && appRoute(canonical) && (service == "develop" || service == "api") {

@@ -125,6 +125,11 @@ func TestPGRecurringProductCheckoutAtomicAndIsolation(t *testing.T) {
 	if n := commerceCount(t, f.db, `SELECT count(*) FROM wallet_v1.transactions WHERE managed_by=$1`, o.ID); n != 1 {
 		t.Fatal("duplicate money", n)
 	}
+	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "97.877", "2.123", "97.877")
+	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "0.000", "0.000", "0.000")
+	if released, settleErr := merchantRepo(t, f).Settle(f.ctx, f.actor, f.publisher); settleErr != nil || len(released) != 1 {
+		t.Fatal("explicit recurring settlement", released, settleErr)
+	}
 	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "97.877", "0.000", "97.877")
 	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "2.123", "0.000", "2.123")
 	if _, e = f.r.UpdateOrder(f.ctx, o.ID, c.UpdateStatus{Credentials: f.credentials, Status: c.Cancelled}); !errors.Is(e, c.ErrConflict) {
@@ -178,6 +183,9 @@ func TestPGRecurringProductRenewalEconomicsAndRevocation(t *testing.T) {
 			}
 			if _, e = f.r.ProcessDue(f.ctx, 1000); e != nil {
 				t.Fatal(e)
+			}
+			if released, settleErr := merchantRepo(t, f).Settle(f.ctx, f.actor, f.publisher); settleErr != nil || len(released) != 2 {
+				t.Fatal("explicit initial and renewal settlement", released, settleErr)
 			}
 			walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "91.506", "0.000", "91.506")
 			switch change {

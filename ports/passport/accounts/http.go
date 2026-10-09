@@ -11,6 +11,7 @@ import (
 	"solsynth.local/go-migration/ports/authority"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
@@ -261,7 +262,135 @@ func (s *Service) publisherRead(w http.ResponseWriter, r *http.Request, p []stri
 		failure(w, e)
 		return
 	}
+	extra, hasExtra := s.Repository.(PublisherCompletionRepository)
 	switch {
+	case len(p) == 1 && p[0] == "quota":
+		actor, e := s.principal(r)
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		if !hasExtra || !queryOnly(r) {
+			failure(w, completionError(hasExtra))
+			return
+		}
+		out, e := extra.PublisherQuota(accountContext(s.Repository, ctx, actor), actor.Account.ID)
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		send(w, 200, out)
+	case len(p) == 1 && p[0] == "search":
+		if !hasExtra || !queryOnly(r, "query", "take") {
+			failure(w, completionError(hasExtra))
+			return
+		}
+		take := 20
+		if raw := r.URL.Query().Get("take"); raw != "" {
+			take, e = strconv.Atoi(raw)
+		}
+		if e != nil || take < 1 || take > 100 {
+			failure(w, ErrInvalid)
+			return
+		}
+		out, e := extra.SearchPublishers(ctx, viewer, r.URL.Query().Get("query"), take)
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		send(w, 200, out)
+	case len(p) == 1 && (p[0] == "blocked" || p[0] == "muted"):
+		actor, e := s.principal(r)
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		if !hasExtra || !queryOnly(r) {
+			failure(w, completionError(hasExtra))
+			return
+		}
+		out, e := extra.PublisherRelationships(accountContext(s.Repository, ctx, actor), actor.Account.ID, p[0])
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		send(w, 200, out)
+	case len(p) == 2 && (p[1] == "heatmap" || p[1] == "stats" || p[1] == "content-stats"):
+		if !hasExtra || !queryOnly(r) {
+			failure(w, completionError(hasExtra))
+			return
+		}
+		switch p[1] {
+		case "heatmap":
+			out, e := extra.PublisherHeatmap(ctx, viewer, p[0])
+			if e != nil {
+				failure(w, e)
+				return
+			}
+			send(w, 200, out)
+		case "stats":
+			out, e := extra.PublisherStats(ctx, viewer, p[0])
+			if e != nil {
+				failure(w, e)
+				return
+			}
+			send(w, 200, out)
+		case "content-stats":
+			out, e := extra.PublisherContentStats(ctx, viewer, p[0])
+			if e != nil {
+				failure(w, e)
+				return
+			}
+			send(w, 200, out)
+		}
+	case len(p) == 2 && p[1] == "features":
+		actor, e := s.principal(r)
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		if !hasExtra || !queryOnly(r) {
+			failure(w, completionError(hasExtra))
+			return
+		}
+		out, e := extra.PublisherFeatures(accountContext(s.Repository, ctx, actor), actor.Account.ID, p[0])
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		send(w, 200, out)
+	case len(p) == 2 && p[1] == "relationship":
+		actor, e := s.principal(r)
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		if !hasExtra || !queryOnly(r) {
+			failure(w, completionError(hasExtra))
+			return
+		}
+		out, e := extra.PublisherRelationshipState(accountContext(s.Repository, ctx, actor), actor.Account.ID, p[0])
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		send(w, 200, out)
+	case len(p) == 2 && p[1] == "rewards":
+		actor, e := s.principal(r)
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		if !hasExtra || !queryOnly(r) {
+			failure(w, completionError(hasExtra))
+			return
+		}
+		out, e := extra.PublisherRewards(accountContext(s.Repository, ctx, actor), actor.Account.ID, p[0])
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		send(w, 200, out)
 	case len(p) == 0:
 		actor, e := s.principal(r)
 		if e != nil {
@@ -382,6 +511,12 @@ func (s *Service) publisherWrite(w http.ResponseWriter, r *http.Request, p []str
 		change.Action = UpdateRole
 		change.AccountID = p[2]
 		operation = "member"
+	case len(p) == 2 && p[1] == "features" && (r.Method == "POST" || r.Method == "DELETE"):
+		permission = "publishers.features.manage"
+		operation = "feature"
+	case len(p) == 2 && (p[1] == "block" || p[1] == "mute") && (r.Method == "POST" || r.Method == "DELETE"):
+		permission = "publishers.subscriptions.manage"
+		operation = "relationship"
 	default:
 		if _, e := s.principal(r); e != nil {
 			failure(w, e)
@@ -489,7 +624,84 @@ func (s *Service) publisherWrite(w http.ResponseWriter, r *http.Request, p []str
 		default:
 			send(w, 200, out)
 		}
+	case "feature":
+		extra, ok := s.Repository.(PublisherCompletionRepository)
+		if !ok {
+			failure(w, ErrUnsupported)
+			return
+		}
+		flag := ""
+		var expires *time.Time
+		if r.Method == "POST" {
+			if !queryOnly(r) {
+				failure(w, ErrInvalid)
+				return
+			}
+			var in struct {
+				Flag      string     `json:"flag"`
+				ExpiredAt *time.Time `json:"expired_at"`
+			}
+			if e = decode(w, r, &in); e != nil {
+				failure(w, e)
+				return
+			}
+			flag = in.Flag
+			expires = in.ExpiredAt
+		} else {
+			if !queryOnly(r, "flag") || r.URL.Query().Get("flag") == "" {
+				failure(w, ErrInvalid)
+				return
+			}
+			body, readErr := io.ReadAll(http.MaxBytesReader(w, r.Body, 1024))
+			if readErr != nil || len(bytes.TrimSpace(body)) != 0 {
+				failure(w, ErrInvalid)
+				return
+			}
+			flag = r.URL.Query().Get("flag")
+		}
+		out, e := extra.SetPublisherFeature(ctx, actor.Account.ID, p[0], flag, expires, r.Method == "POST")
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		if r.Method == "DELETE" {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		send(w, http.StatusOK, out)
+	case "relationship":
+		extra, ok := s.Repository.(PublisherCompletionRepository)
+		if !ok {
+			failure(w, ErrUnsupported)
+			return
+		}
+		out, e := extra.SetPublisherRelationship(ctx, actor.Account.ID, p[0], p[1], r.Method == "POST")
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		send(w, 200, out)
 	}
+}
+
+func completionError(supported bool) error {
+	if !supported {
+		return ErrUnsupported
+	}
+	return ErrInvalid
+}
+
+func queryOnly(r *http.Request, allowed ...string) bool {
+	set := make(map[string]struct{}, len(allowed))
+	for _, key := range allowed {
+		set[key] = struct{}{}
+	}
+	for key, values := range r.URL.Query() {
+		if _, ok := set[key]; !ok || len(values) != 1 {
+			return false
+		}
+	}
+	return true
 }
 
 // EncodeResponse is usable by aggregate hosts after their own proof-based

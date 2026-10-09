@@ -136,6 +136,21 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 		done(v, e, "WALLET_ORDER_METRICS_FAILED")
 		return
 	}
+	if path == "orders/payouts" && method == "POST" {
+		var q AppPayout
+		if e := body(r, &q); e != nil {
+			problem(w, e, "WALLET_PAYOUT_FAILED")
+			return
+		}
+		store, ok := s.Store.(PayoutStore)
+		if !ok {
+			problem(w, ErrUnavailable, "WALLET_PAYOUT_UNAVAILABLE")
+			return
+		}
+		v, e := store.CreateAppPayout(ctx, q, r.Header.Get("Idempotency-Key"))
+		done(v, e, "WALLET_PAYOUT_FAILED")
+		return
+	}
 	if len(parts) == 3 && parts[0] == "orders" && parts[2] == "fulfillment" && method == "POST" {
 		var credentials Credentials
 		if e := body(r, &credentials); e != nil {

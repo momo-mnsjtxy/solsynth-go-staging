@@ -46,8 +46,9 @@ func Cursor(v string) (*time.Time, string, error) {
 	}
 	return &t, key, nil
 }
-func encodeCursor(p posts.Post) string {
-	return "v1." + base64.RawURLEncoding.EncodeToString([]byte(p.PublishedAt.UTC().Format(time.RFC3339Nano)+"|"+p.ID))
+func encodeCursor(p posts.Post) string { return encodeCursorAt(*p.PublishedAt, p.ID) }
+func encodeCursorAt(at time.Time, id string) string {
+	return "v1." + base64.RawURLEncoding.EncodeToString([]byte(at.UTC().Format(time.RFC3339Nano)+"|"+id))
 }
 func validateSearch(o timeline.SearchOptions) error {
 	if o.Offset < 0 || o.Offset > 1000000 || o.Take < 1 || o.Take > 100 || len(o.Realm) > 256 || len(o.Publisher) > 256 || len(o.Query) > 1024 || !utf8.ValidString(o.Query) || strings.ContainsRune(o.Query, 0) {
@@ -226,12 +227,13 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 	}
 	add := func(v any) string { args = append(args, v); return fmt.Sprintf("$%d", len(args)) }
 	where += ` AND NOT EXISTS(SELECT 1 FROM owned_post_relations l WHERE l.post_id=p.id AND(l.replied_post_id IS NOT NULL OR l.chained_post_id IS NOT NULL))`
+	boostAt := `COALESCE((SELECT max(boost.boosted_at) FROM owned_post_boosts boost JOIN owned_publishers boost_publisher ON boost_publisher.id=boost.publisher_id WHERE boost.post_id=p.id AND ` + postpg.VisiblePublisherPredicate(r.visibility, "boost_publisher", "$1", true) + `),p.published_at)`
 	if cursor != nil {
 		a := add(*cursor)
 		if key == "" {
-			where += ` AND p.published_at<` + a
+			where += ` AND ` + boostAt + `<` + a
 		} else {
-			where += ` AND(p.published_at,p.id)<(` + a + `,` + add(key) + `::uuid)`
+			where += ` AND(` + boostAt + `,p.id)<(` + a + `,` + add(key) + `::uuid)`
 		}
 	}
 	if o.Collection != "" {
@@ -247,6 +249,8 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 	}
 	if actor != "" {
 		where += ` AND NOT EXISTS(SELECT 1 FROM owned_timeline_preferences x WHERE x.account_id=$1::uuid AND ((x.kind='publisher' AND x.reference_id=p.publisher_id) OR(x.kind='account' AND x.reference_id=u.account_id)))`
+		where += ` AND NOT EXISTS(SELECT 1 FROM owned_publisher_relationships preference WHERE preference.account_id=$1::uuid AND preference.publisher_id=p.publisher_id AND preference.muted_at IS NOT NULL)`
+		where += ` AND NOT EXISTS(SELECT 1 FROM owned_social_effective_relationships mute WHERE mute.account_id=$1::uuid AND mute.related_id=COALESCE(u.account_id,(SELECT realm_owner.account_id FROM owned_realms realm_owner WHERE realm_owner.id=u.realm_id AND realm_owner.deleted_at IS NULL)) AND mute.status=-50)`
 		if o.Filter == "subscriptions" {
 			where += ` AND EXISTS(SELECT 1 FROM owned_publisher_follows f WHERE f.account_id=$1::uuid AND f.publisher_id=p.publisher_id AND f.state='accepted' AND f.ended_at IS NULL)`
 		}
@@ -256,12 +260,21 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 	}
 	// Rank a complete chronological page. The cursor represents its last scanned
 	// (timestamp, UUID), so equal timestamps and score reordering cannot skip posts.
-	out, total, e := r.selectPosts(ctx, tx, actor, where, args, `p.published_at DESC,p.id DESC`, 0, o.Take)
+	out, total, e := r.selectPosts(ctx, tx, actor, where, args, boostAt+` DESC,p.id DESC`, 0, o.Take)
 	if e != nil {
 		return page, e
 	}
+	feedAt := make(map[string]time.Time, len(out))
+	for _, p := range out {
+		var at time.Time
+		if e = tx.QueryRowContext(ctx, `SELECT `+boostAt+` FROM owned_text_posts p JOIN owned_publishers u ON u.id=p.publisher_id WHERE p.id=$2`, actor, p.ID).Scan(&at); e != nil {
+			return page, e
+		}
+		feedAt[p.ID] = at
+	}
 	if int64(len(out)) < total && len(out) > 0 {
-		c := encodeCursor(out[len(out)-1])
+		cursorAt := feedAt[out[len(out)-1].ID]
+		c := encodeCursorAt(cursorAt, out[len(out)-1].ID)
 		page.NextCursor = &c
 	}
 	ranked := make([]sphere.Post, 0, len(out))
@@ -280,7 +293,8 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 		}
 	}
 	for _, p := range out {
-		rp := sphere.Post{ID: p.ID, PublisherID: p.PublisherID, CreatedAt: p.CreatedAt, PublishedAt: p.PublishedAt, ThreadRepliesCount: int(p.ThreadRepliesCount)}
+		publishedAt := feedAt[p.ID]
+		rp := sphere.Post{ID: p.ID, PublisherID: p.PublisherID, CreatedAt: p.CreatedAt, PublishedAt: &publishedAt, ThreadRepliesCount: int(p.ThreadRepliesCount)}
 		if p.Type == posts.Article {
 			rp.Type = "Article"
 		}
@@ -332,7 +346,7 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 	}
 	for _, rp := range sphere.RankPosts(ranked, signals, sphere.Options{Now: r.now().UTC(), Take: o.Take, Mode: o.Mode, Authenticated: actor != "", Aggressive: o.Aggressive}) {
 		p := byID[rp.ID]
-		page.Items = append(page.Items, timeline.Event{ID: p.ID, ResourceIdentifier: p.ID, Type: "posts.new", CreatedAt: *p.PublishedAt, UpdatedAt: p.UpdatedAt, Data: &p})
+		page.Items = append(page.Items, timeline.Event{ID: p.ID, ResourceIdentifier: p.ID, Type: "posts.new", CreatedAt: feedAt[p.ID], UpdatedAt: p.UpdatedAt, Data: &p})
 	}
 	if len(page.Items) == 0 {
 		page.Items = append(page.Items, timeline.Event{ID: "empty", ResourceIdentifier: "empty", Type: "empty", CreatedAt: r.now().UTC(), UpdatedAt: r.now().UTC()})

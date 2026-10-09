@@ -55,6 +55,7 @@ ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_owner_id uuid REFERENCES o
 ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_name varchar(1024) NOT NULL DEFAULT '';
 ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_description varchar(4096) NOT NULL DEFAULT '';
 ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_is_community boolean NOT NULL DEFAULT false;
+ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_read_receipts_public boolean NOT NULL DEFAULT false;
 ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE chat_rooms ADD COLUMN IF NOT EXISTS owned_next_sequence bigint NOT NULL DEFAULT 0 CHECK(owned_next_sequence>=0);

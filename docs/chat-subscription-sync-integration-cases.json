@@ -1,0 +1,19 @@
+{
+  "before": [
+    "TestPGChatGlobalSyncStableMillisecondCursor",
+    "TestPGChatJoinedRoomSyncBucketsAndRemovedPrivacy",
+    "TestPGChatSubscriptionsSessionContinuityAndPrivacy",
+    "TestPGChatSubscriptionAuthorizationGenerationAndExpiry",
+    "TestPGChatSubscriptionSyncRestartPersistence",
+    "TestPGBackendChatSubscriptionSyncRoutes",
+    "TestPGChatSyncWaitRechecksOriginalProof",
+    "TestPGChatJoinedRoomSyncExplicitOverflow",
+    "TestPGChatConnectionDelegatedBindingIsolation"
+  ],
+  "after": [
+    "TestPGChatSubscriptionSyncRestartPersistence"
+  ],
+  "marker": "chat-subscription-sync.json",
+  "readiness_schema": "internal/chatpg/organization_schema.sql",
+  "restart": "Original before-phase one-hour proof and public verifier keys restored with elapsed wall time. Same rows; no after-phase issuance/refresh/seeding. Explicit before-only synthetic TTL extension to 30 minutes. Same connection is read then renewed only after saved-state assertions."
+}

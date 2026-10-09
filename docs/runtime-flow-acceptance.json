@@ -2717,7 +2717,7 @@
           "messager.messages",
           "messager.rooms"
         ],
-        "remaining": "Summary/read-all/literal canonical paid-search integrated pending actualPG; room/account subscriptions, chat status/global sync, and read-receipt websocket fanout remain unsupported.",
+        "remaining": "Summary/read-all/literal canonical paid-search, room/account subscription reads, chat status, global/joined-room sync, durable session-bound WebSocket subscribe/unsubscribe, live message/read-receipt fanout, typed chat composition and stream maintenance are implemented pending actualPG/restart verification. External push-provider delivery and legacy frame compatibility are outside this lane.",
         "source": [
           {
             "path": "DysonNetwork.Messager/Chat/ChatController.cs",
@@ -2744,15 +2744,15 @@
           "internal/messagerpg/repository.go",
           "ports/messager/sync_service.go"
         ],
-        "current_boundary": "Current room reads, per-room sync and total unread are implemented. Other requests fall through CHAT_UNSUPPORTED or do not resolve to a valid room; pure helpers do not constitute these runtime flows.",
-        "next_slice": "Start with summary, read-all and literal canonical search using existing membership/visibility rules; separately specify transport subscription/device semantics."
+        "current_boundary": "Summary, read-all, literal canonical search, room/account subscriptions, status and global/joined-room synchronization are implemented with current proof and membership revalidation. Transport subscriptions are durable, connection-scoped and consumed by the production realtime command loop.",
+        "next_slice": "Run the guarded PostgreSQL, cross-instance process and saved-state restart cases at the exact integrated commit."
       },
       {
         "id": "chat_voice_placeholders",
         "families": [
           "messager.messages"
         ],
-        "remaining": "Original multipart voice, persisted placeholder replacement/update/finalize/expiry and initiating WebSocket responses are implemented pending PostgreSQL/restart. Full source-shaped multi-recipient broadcasts remain active separate work; broader typed compositions remain incomplete.",
+        "remaining": "Original multipart voice, persisted placeholder replacement/update/finalize/expiry, initiating WebSocket responses, durable multi-recipient message/read fanout and typed fund/survey/meet/notable-day/calendar/location composition are implemented pending PostgreSQL/restart. External push-provider delivery and excluded legacy frame compatibility remain outside this lane.",
         "source": [
           {
             "path": "DysonNetwork.Messager/Chat/ChatController.cs",
@@ -4072,7 +4072,7 @@
       },
       {
         "id": "maintenance_retention",
-        "remaining": "Explicit purge/retention/redrive/inspection operations for domain metrics, transfer requests, durable chat delivery and commerce quarantine are not all exposed. Original database recycling/backfills and scheduler cron equivalence are not proved by owned ProcessDue.",
+        "remaining": "Durable chat delivery has explicit bounded purge, redrive and inspection operations. Equivalent operations for domain metrics, transfer requests and commerce quarantine are not all exposed. Original database recycling/backfills and scheduler cron equivalence are not proved by owned ProcessDue.",
         "evidence": [
           "internal/application/backend.go:ProcessDue",
           "docs/operation-coverage-plan-parts/scheduled_job_registrations-0001.json",

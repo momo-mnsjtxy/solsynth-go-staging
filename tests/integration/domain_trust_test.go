@@ -345,3 +345,16 @@ func TestPGDomainTrustRestartPersistence(t *testing.T) {
 		t.Fatal(e)
 	}
 }
+
+func TestPGDomainTrustRetentionUsesDatabaseClock(t *testing.T) {
+	f := newDomainFixture(t)
+	oldHost := "old." + f.host
+	futureHost := "future." + f.host
+	query(t, f.db, `INSERT INTO owned_domain_trust_metrics(domain,check_count,blocked_count,verified_count,last_checked_at)VALUES($1,1,0,0,clock_timestamp()-interval '2 hours'),($2,1,0,0,clock_timestamp()+interval '1 day')`, oldHost, futureHost)
+	if n, e := f.trust.PurgeMetricsDue(f.ctx, time.Hour, 100); e != nil || n != 1 {
+		t.Fatal(n, e)
+	}
+	if n := commerceCount(t, f.db, `SELECT count(*) FROM owned_domain_trust_metrics WHERE domain=$1`, futureHost); n != 1 {
+		t.Fatal("forward-dated metric was purged by process clock", n)
+	}
+}

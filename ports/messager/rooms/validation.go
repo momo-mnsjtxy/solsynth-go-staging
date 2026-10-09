@@ -48,14 +48,20 @@ func ValidateTimeout(p *TimeoutRequest) error {
 	return nil
 }
 func ValidateText(p TextRequest, edit bool) (TextRequest, error) {
-	if p.Type != nil && *p.Type != "text" || p.SurveyID != nil || p.FundID != nil {
+	if p.Type != nil && *p.Type != "text" {
 		return p, ErrUnsupported
+	}
+	if p.SurveyID != nil && !ValidID(*p.SurveyID) || p.FundID != nil && !ValidID(*p.FundID) || p.MeetID != nil && !ValidID(*p.MeetID) || p.NotableDayID != nil && !ValidID(*p.NotableDayID) || p.CalendarEventID != nil && !ValidID(*p.CalendarEventID) {
+		return p, ErrInvalid
+	}
+	if p.LocationName != nil && !validText(*p.LocationName, 256) || p.LocationAddress != nil && !validText(*p.LocationAddress, 1024) || p.LocationWKT != nil && !validText(*p.LocationWKT, 256) {
+		return p, ErrInvalid
 	}
 	if p.EncryptionMeta != nil {
 		if e := ValidateEncryption(p.EncryptionMeta); e != nil {
 			return p, e
 		}
-		if p.ContentSet || p.Content != "" || p.Embeds != nil {
+		if p.ContentSet || p.Content != "" || p.Embeds != nil || p.SurveyID != nil || p.FundID != nil || p.MeetID != nil || p.NotableDayID != nil || p.CalendarEventID != nil || p.LocationName != nil || p.LocationAddress != nil || p.LocationWKT != nil {
 			return p, ErrInvalid
 		}
 		if e := ValidateMLSReferenceMeta(p.Meta); e != nil {
@@ -85,6 +91,26 @@ func ValidateText(p TextRequest, edit bool) (TextRequest, error) {
 		if _, reserved := value["redirect"]; reserved {
 			return p, ErrInvalid
 		}
+		// Canonical embeds must use the top-level embeds field so the message
+		// composer can authorize and lock their source rows. Unknown legacy
+		// metadata remains opaque, but cannot impersonate a canonical locator.
+		if raw, exists := value["embeds"]; exists {
+			list, ok := raw.([]any)
+			if !ok {
+				return p, ErrInvalid
+			}
+			for _, item := range list {
+				embed, ok := item.(map[string]any)
+				if !ok {
+					return p, ErrInvalid
+				}
+				kind, _ := embed["type"].(string)
+				switch kind {
+				case "survey", "fund", "meet", "notable_day", "calendar_event":
+					return p, ErrInvalid
+				}
+			}
+		}
 		p.Meta, _ = json.Marshal(value)
 	}
 	if p.Embeds != nil {
@@ -101,7 +127,7 @@ func ValidateText(p TextRequest, edit bool) (TextRequest, error) {
 			return p, ErrInvalid
 		}
 	}
-	if !edit && p.ForwardedMessageID == nil && p.EncryptionMeta == nil && strings.TrimSpace(p.Content) == "" && (p.AttachmentsID == nil || len(*p.AttachmentsID) == 0) && (p.Embeds == nil || len(*p.Embeds) == 0) {
+	if !edit && p.ForwardedMessageID == nil && p.EncryptionMeta == nil && p.SurveyID == nil && p.FundID == nil && p.MeetID == nil && p.NotableDayID == nil && p.CalendarEventID == nil && p.LocationName == nil && p.LocationAddress == nil && p.LocationWKT == nil && strings.TrimSpace(p.Content) == "" && (p.AttachmentsID == nil || len(*p.AttachmentsID) == 0) && (p.Embeds == nil || len(*p.Embeds) == 0) {
 		return p, ErrInvalid
 	}
 	if p.Nonce != nil && (!validText(*p.Nonce, 36) || strings.TrimSpace(*p.Nonce) == "") {
@@ -146,6 +172,15 @@ func (p *TextRequest) UnmarshalJSON(data []byte) error {
 	if raw, ok := fields["content"]; ok {
 		v.ContentSet = !bytes.Equal(bytes.TrimSpace(raw), []byte("null"))
 	}
+	_, v.SurveySet = fields["survey_id"]
+	_, v.FundSet = fields["fund_id"]
+	_, v.MeetSet = fields["meet_id"]
+	_, v.NotableDaySet = fields["notable_day_id"]
+	_, v.CalendarEventSet = fields["calendar_event_id"]
+	_, nameSet := fields["location_name"]
+	_, addressSet := fields["location_address"]
+	_, wktSet := fields["location_wkt"]
+	v.LocationSet = nameSet || addressSet || wktSet
 	if bytes.Equal(bytes.TrimSpace(v.Meta), []byte("null")) {
 		v.Meta = nil
 	}

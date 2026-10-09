@@ -96,6 +96,9 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 			failure(w, ErrUnauthenticated)
 			return
 		}
+		if handleExtended(w, r, repo, auth, actor) {
+			return
+		}
 		parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 		var out any
 		status := 200

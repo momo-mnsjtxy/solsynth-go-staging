@@ -86,6 +86,26 @@ func (r *Repository) Fund(ctx context.Context, actor, id string) (accounts.Fund,
 	}
 	return f, tx.Commit()
 }
+
+// ValidateChatFund runs inside the caller's message transaction. Only a fund's
+// creator may compose its public locator into a chat message.
+func (r *Repository) ValidateChatFund(ctx context.Context, tx *sql.Tx, actor, id string) error {
+	if r == nil || tx == nil || !accounts.ValidID(actor) || !accounts.ValidID(id) {
+		return accounts.ErrInvalid
+	}
+	var owner string
+	e := tx.QueryRowContext(ctx, `SELECT creator_account_id::text FROM wallet_v1.funds WHERE id=$1`, id).Scan(&owner)
+	if errors.Is(e, sql.ErrNoRows) {
+		return accounts.ErrNotFound
+	}
+	if e != nil {
+		return e
+	}
+	if owner != actor {
+		return accounts.ErrForbidden
+	}
+	return nil
+}
 func (r *Repository) Funds(ctx context.Context, actor string, offset, take int, status *int) ([]accounts.Fund, int, error) {
 	if !accounts.ValidID(actor) || offset < 0 || take < 0 || take > 100 || status != nil && (*status < 0 || *status > 4) {
 		return nil, 0, accounts.ErrInvalid

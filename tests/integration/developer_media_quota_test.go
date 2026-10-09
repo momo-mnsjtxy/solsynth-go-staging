@@ -201,7 +201,7 @@ func TestPGDeveloperMediaCurrentAudienceAndNestedProjection(t *testing.T) {
 		arg           string
 	}{
 		{`UPDATE owned_custom_apps SET status=0 WHERE id=$1`, `UPDATE owned_custom_apps SET status=1 WHERE id=$1`, f.app.ID},
-		{`UPDATE owned_publishers SET shadowbanned_at=now() WHERE id=$1`, `UPDATE owned_publishers SET shadowbanned_at=NULL WHERE id=$1`, f.app.PublisherID},
+		{`UPDATE owned_publishers SET shadowbanned_at=now(),shadowban_reason='other' WHERE id=$1`, `UPDATE owned_publishers SET shadowbanned_at=NULL,shadowban_reason=NULL WHERE id=$1`, f.app.PublisherID},
 		{`UPDATE owned_authority_accounts SET disabled=true WHERE id=$1`, `UPDATE owned_authority_accounts SET disabled=false WHERE id=$1`, f.actor},
 	} {
 		query(t, f.db, change.hide, change.arg)

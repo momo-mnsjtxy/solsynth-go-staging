@@ -92,6 +92,9 @@ func (r *Repository) PurchaseGift(ctx context.Context, actor string, req c.Purch
 		if e != nil {
 			return g, e
 		}
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "subscriptions.gifts.purchase"); e != nil {
+			return g, e
+		}
 		return g, tx.Commit()
 	}
 	payer, e := defaultWallet(ctx, tx, actor, req.PaymentDetails.PayerWalletID)
@@ -137,15 +140,15 @@ func (r *Repository) PurchaseGift(ctx context.Context, actor string, req c.Purch
 		return g, e
 	}
 	if g.Coupon != nil {
-		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "subscriptions.gifts.purchase"); e != nil {
-			return g, e
-		}
 		if e = couponIssuer(ctx, tx, g.Coupon.AppID, g.Coupon.PublisherID, g.Coupon.PayeeWalletID); e != nil {
 			return g, e
 		}
 		if !g.Coupon.ExpiresAt.After(r.now().UTC()) {
 			return g, c.ErrConflict
 		}
+	}
+	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "subscriptions.gifts.purchase"); e != nil {
+		return g, e
 	}
 	return g, tx.Commit()
 }
@@ -240,6 +243,9 @@ func (r *Repository) GiftOrder(ctx context.Context, actor, gid string) (c.Order,
 	if e != nil {
 		return o, e
 	}
+	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "subscriptions.order.manage"); e != nil {
+		return o, e
+	}
 	return o, tx.Commit()
 }
 func (r *Repository) GiftAction(ctx context.Context, actor, gid string, send bool) (c.Gift, error) {
@@ -266,17 +272,26 @@ func (r *Repository) GiftAction(ctx context.Context, actor, gid string, send boo
 	now := r.now().UTC()
 	if send {
 		if g.Status == c.GiftSent && g.ExpiresAt.After(now) {
+			if _, e = r.guard.Authorize(ctx, r.db, tx, actor, permission); e != nil {
+				return g, e
+			}
 			return g, tx.Commit()
 		}
 		return g, c.ErrConflict
 	}
 	if g.Status == c.GiftCancelled {
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, permission); e != nil {
+			return g, e
+		}
 		return g, tx.Commit()
 	}
 	if g.Status != c.GiftCreated && g.Status != c.GiftSent {
 		return g, c.ErrConflict
 	}
 	if e = r.cancelGift(ctx, tx, &g, c.GiftCancelled, now); e != nil {
+		return g, e
+	}
+	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, permission); e != nil {
 		return g, e
 	}
 	return g, tx.Commit()
@@ -373,10 +388,18 @@ func (r *Repository) RedeemGift(ctx context.Context, actor, code string) (c.Rede
 		if e != nil {
 			return out, e
 		}
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "subscriptions.gifts.redeem"); e != nil {
+			return out, e
+		}
 		return c.Redemption{Gift: g, Subscription: s}, tx.Commit()
 	}
 	now := r.now().UTC()
-	if g.Status != c.GiftSent || !g.ExpiresAt.After(now) || g.GifterID == actor || g.RecipientID != nil && *g.RecipientID != actor {
+	var durableExpiry time.Time
+	if e = tx.QueryRowContext(ctx, `SELECT expires_at FROM commerce_v1.gifts WHERE id=$1::uuid`, g.ID).Scan(&durableExpiry); e != nil {
+		return out, e
+	}
+	g.ExpiresAt = durableExpiry
+	if g.Status != c.GiftSent || !durableExpiry.After(now) || g.GifterID == actor || g.RecipientID != nil && *g.RecipientID != actor {
 		return out, c.ErrConflict
 	}
 	var oid string
@@ -412,7 +435,7 @@ func (r *Repository) RedeemGift(ctx context.Context, actor, code string) (c.Rede
 	if e = insertSubscription(ctx, tx, s, days, false); e != nil {
 		return out, e
 	}
-	if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+	if e = finalizePaidOrder(ctx, tx, o, now); e != nil {
 		return out, e
 	}
 	o.Status = c.Finished
@@ -435,6 +458,12 @@ func (r *Repository) RedeemGift(ctx context.Context, actor, code string) (c.Rede
 		return out, e
 	}
 	if e = event(ctx, tx, "order.finished", o.ID, o, now); e != nil {
+		return out, e
+	}
+	if !durableExpiry.After(r.now().UTC()) {
+		return out, c.ErrConflict
+	}
+	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "subscriptions.gifts.redeem"); e != nil {
 		return out, e
 	}
 	return c.Redemption{Gift: g, Subscription: s}, tx.Commit()

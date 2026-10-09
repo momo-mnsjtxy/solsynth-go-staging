@@ -43,5 +43,5 @@ type ChatAccountProvider interface {
 // nonempty destinations are previously recorded, freshly eligible admissions.
 // An empty list must fail instead of broadcasting to an unfiltered room.
 type DataProvider interface {
-	SendStreamData(context.Context, string, []string, []byte) error
+	SendStreamData(context.Context, string, string, []string, []byte) error
 }

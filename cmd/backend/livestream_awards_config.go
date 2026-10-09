@@ -14,7 +14,7 @@ import (
 )
 
 type awardSettings struct {
-	enabled, maintenance               *bool
+	enabled, maintenance, realtime     *bool
 	currency, account, wallet, maximum *string
 	accountLimit, streamLimit          *int
 	ttl                                *time.Duration
@@ -24,6 +24,7 @@ func livestreamAwardFlags(fs *flag.FlagSet) awardSettings {
 	return awardSettings{
 		fs.Bool("enable-livestream-awards", false, "enable explicitly bound paid livestream awards"),
 		fs.Bool("livestream-awards-maintenance-only", false, "release existing award reserves without streaming APIs"),
+		fs.Bool("livestream-award-realtime", false, "enqueue durable current-audience award packets"),
 		fs.String("livestream-award-currency", "", "explicit award currency"),
 		fs.String("livestream-award-treasury-account", "", "existing treasury account ID"),
 		fs.String("livestream-award-treasury-wallet", "", "existing treasury wallet ID"),
@@ -34,7 +35,7 @@ func livestreamAwardFlags(fs *flag.FlagSet) awardSettings {
 	}
 }
 func (s awardSettings) apply(c *application.Config) error {
-	defaults := *s.maximum == "1000" && *s.accountLimit == 100 && *s.streamLimit == 10000 && *s.ttl == time.Hour
+	defaults := *s.maximum == "1000" && *s.accountLimit == 100 && *s.streamLimit == 10000 && *s.ttl == time.Hour && !*s.realtime
 	if !*s.enabled && !*s.maintenance {
 		if *s.currency != "" || *s.account != "" || *s.wallet != "" || !defaults {
 			return errors.New("award settings require explicit enablement")
@@ -57,6 +58,9 @@ func (s awardSettings) apply(c *application.Config) error {
 	if c.Livestreams == nil {
 		return errors.New("awards require streaming configuration")
 	}
+	if *s.realtime && c.Livestreams.Chat == nil {
+		return errors.New("realtime awards require durable livestream data delivery")
+	}
 	if _, e := live.ParseAwardPoints(*s.maximum); e != nil {
 		return e
 	}
@@ -68,6 +72,6 @@ func (s awardSettings) apply(c *application.Config) error {
 	if amount.Cmp(cap) > 0 || *s.accountLimit < 1 || *s.accountLimit > 1000 || *s.streamLimit < 1 || *s.streamLimit > 100000 || *s.ttl < time.Minute || *s.ttl > 24*time.Hour {
 		return errors.New("invalid award creation bounds")
 	}
-	c.Livestreams.Awards = &livestreampg.AwardConfig{PointsCurrency: *s.currency, TreasuryAccountID: *s.account, TreasuryWalletID: *s.wallet, MaxAmount: amount, MaxOrdersPerAccountStream: *s.accountLimit, MaxAwardsPerStream: *s.streamLimit, OrderTTL: *s.ttl}
+	c.Livestreams.Awards = &livestreampg.AwardConfig{PointsCurrency: *s.currency, TreasuryAccountID: *s.account, TreasuryWalletID: *s.wallet, MaxAmount: amount, MaxOrdersPerAccountStream: *s.accountLimit, MaxAwardsPerStream: *s.streamLimit, OrderTTL: *s.ttl, RealtimePackets: *s.realtime}
 	return nil
 }

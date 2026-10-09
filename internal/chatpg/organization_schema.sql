@@ -40,3 +40,29 @@ CREATE TABLE IF NOT EXISTS owned_chat_read_receipts (
  last_read_at timestamptz NOT NULL,
  updated_at timestamptz NOT NULL
 );
+CREATE TABLE IF NOT EXISTS owned_chat_read_events (
+ id uuid PRIMARY KEY,
+ member_id uuid NOT NULL REFERENCES chat_members(id),
+ room_id uuid NOT NULL REFERENCES chat_rooms(id),
+ account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),
+ last_read_at timestamptz NOT NULL,
+ excluded_device_id varchar(256) NOT NULL DEFAULT '',
+ created_at timestamptz NOT NULL
+);
+CREATE INDEX IF NOT EXISTS owned_chat_read_events_order ON owned_chat_read_events(created_at,id);
+
+-- Owned connection and subscription lifecycle, not a legacy Redis/key contract.
+-- connection IDs are random public handles, never bearer/device credentials.
+CREATE TABLE IF NOT EXISTS owned_chat_connections (
+ id uuid PRIMARY KEY,account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),
+ session_id uuid NOT NULL,account_version bigint NOT NULL CHECK(account_version>0),
+ authorization_epoch bigint NOT NULL CHECK(authorization_epoch>0),mls_device_id varchar(256) NOT NULL DEFAULT '',
+ created_at timestamptz NOT NULL,expires_at timestamptz NOT NULL,closed_at timestamptz,
+ FOREIGN KEY(account_id,session_id) REFERENCES owned_authority_sessions(account_id,id)
+);
+CREATE INDEX IF NOT EXISTS owned_chat_connections_account ON owned_chat_connections(account_id,expires_at);
+CREATE TABLE IF NOT EXISTS owned_chat_subscriptions (
+ connection_id uuid NOT NULL REFERENCES owned_chat_connections(id),member_id uuid NOT NULL REFERENCES chat_members(id),
+ joined_at timestamptz NOT NULL,expires_at timestamptz NOT NULL,PRIMARY KEY(connection_id,member_id)
+);
+CREATE INDEX IF NOT EXISTS owned_chat_subscriptions_member ON owned_chat_subscriptions(member_id,expires_at);

@@ -299,6 +299,42 @@ func (r *Repository) Load(ctx context.Context, tx *sql.Tx, actor string, p *post
 	}
 	return nil
 }
+func (r *Repository) RecheckProjection(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post) error {
+	if r == nil || r.visibility == nil || tx == nil || p == nil {
+		return posts.ErrUnavailable
+	}
+	if e := postpg.RecheckAssociations(ctx, tx, actor, p, r.next); e != nil {
+		return e
+	}
+	if p.Meta == nil {
+		return nil
+	}
+	retained := make([]posts.Embed, 0, len(p.Meta.Composed))
+	for _, ref := range p.Meta.Composed {
+		visible, e := r.visible(ctx, tx, actor, p, ref)
+		if e != nil {
+			return e
+		}
+		if visible {
+			retained = append(retained, ref)
+		}
+	}
+	p.Meta.Composed = retained
+	if p.Meta.Thumbnail != nil {
+		visible := false
+		for _, attachment := range p.Attachments {
+			if attachment["id"] == *p.Meta.Thumbnail {
+				visible = true
+				break
+			}
+		}
+		if !visible {
+			p.Meta.Thumbnail = nil
+		}
+	}
+	return nil
+}
+
 func (r *Repository) CheckPostPublication(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post, lock bool) error {
 	v, e := stored(ctx, tx, p.ID)
 	if e != nil {

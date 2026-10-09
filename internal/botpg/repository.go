@@ -14,6 +14,8 @@ import (
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/develop/apps"
 	"solsynth.local/go-migration/ports/develop/bots"
+	"solsynth.local/go-migration/ports/messager"
+	"solsynth.local/go-migration/ports/messager/rooms"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"sort"
 	"time"
@@ -27,28 +29,47 @@ type TransactionGuard interface {
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
 }
 type Repository struct {
-	db           *sql.DB
-	guard        TransactionGuard
-	media        bots.MediaProvider
-	profileMedia apps.MediaStore
-	execution    *executionRuntime
+	db                   *sql.DB
+	guard                TransactionGuard
+	media                bots.MediaProvider
+	profileMedia         apps.MediaStore
+	execution            *executionRuntime
+	packageUploadTimeout time.Duration
+	replies              botReplySender
 }
 
-func New(db *sql.DB) *Repository { return &Repository{db: db} }
+func New(db *sql.DB) *Repository { return &Repository{db: db, packageUploadTimeout: 2 * time.Minute} }
 func NewWithAuthority(db *sql.DB, g TransactionGuard) *Repository {
-	return &Repository{db: db, guard: g}
+	return &Repository{db: db, guard: g, packageUploadTimeout: 2 * time.Minute}
 }
 
 func (r *Repository) WithProfileMedia(m apps.MediaStore) *Repository { r.profileMedia = m; return r }
 
 func (r *Repository) WithMedia(m bots.MediaProvider) *Repository { r.media = m; return r }
 
+type botReplySender interface {
+	SendBot(context.Context, string, string, string, rooms.TextRequest) (messager.MessageProjection, error)
+}
+
+func (r *Repository) WithReplySender(sender botReplySender) *Repository {
+	r.replies = sender
+	return r
+}
+
+func (r *Repository) ConfigurePackageUploadTimeout(timeout time.Duration) error {
+	if r == nil || timeout < 5*time.Second || timeout > 15*time.Minute {
+		return bots.ErrInvalid
+	}
+	r.packageUploadTimeout = timeout
+	return nil
+}
+
 // Ready checks the explicitly installed schema; it never creates tables or policy.
 func (r *Repository) Ready(ctx context.Context) error {
 	if r == nil || r.db == nil || r.guard == nil {
 		return bots.ErrUnavailable
 	}
-	_, e := r.db.ExecContext(ctx, `SELECT account_id,app_id,project_id,controlled_disabled_version FROM owned_bots LIMIT 0; SELECT commands,subscribed_events FROM owned_bot_chat LIMIT 0; SELECT package_file_id,package_fingerprint,download_count FROM owned_bot_miniapps LIMIT 0; SELECT publisher_id,bots_total,miniapps_total,starts_at,expires_at FROM owned_bot_quotas LIMIT 0; SELECT actor_id,app_id,action,target_id,occurred_at FROM owned_bot_audit LIMIT 0; SELECT account_id,publisher_id FROM owned_developer_quota_accounts LIMIT 0`)
+	_, e := r.db.ExecContext(ctx, `SELECT account_id,app_id,project_id,controlled_disabled_version FROM owned_bots LIMIT 0; SELECT id,bot_id,secret_hash,generation,revoked_at FROM owned_bot_keys LIMIT 0; SELECT commands,subscribed_events FROM owned_bot_chat LIMIT 0; SELECT package_file_id,package_fingerprint,package_owner_id,download_count FROM owned_bot_miniapps LIMIT 0; SELECT miniapp_id,slot,file_id,assigned_by FROM owned_miniapp_media LIMIT 0; SELECT publisher_id,bots_total,miniapps_total,starts_at,expires_at FROM owned_bot_quotas LIMIT 0; SELECT actor_id,app_id,action,target_id,occurred_at FROM owned_bot_audit LIMIT 0; SELECT account_id,publisher_id FROM owned_developer_quota_accounts LIMIT 0`)
 	return e
 }
 
@@ -95,11 +116,12 @@ const ancestry = ` FROM owned_custom_apps a JOIN owned_dev_projects project ON p
 
 // Keep the canonical app adapter's unsupported organization-app boundary for
 // imported bot/miniapp rows too; a NULL direct owner grants no authority.
-const liveAncestry = `a.deleted_at IS NULL AND project.deleted_at IS NULL AND pub.deleted_at IS NULL AND pub.type=0 AND a.status<>2`
+const liveAncestry = `a.deleted_at IS NULL AND project.deleted_at IS NULL AND pub.deleted_at IS NULL AND pub.type=0 AND pub.realm_id IS NULL AND a.status<>2`
 
 type appScope struct {
 	publisher, developer string
 	status               int
+	epoch                int64
 }
 
 // Scope/identity are always reread after deterministic canonical account locks.
@@ -186,7 +208,7 @@ func (r *Repository) within(ctx context.Context, s apps.Scope, target, permissio
 	if e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_dev_projects WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, s.Project).Scan(&locked); e != nil {
 		return mapped(e)
 	}
-	if e = tx.QueryRowContext(ctx, `SELECT status FROM owned_custom_apps WHERE id=$1 AND project_id=$2 AND deleted_at IS NULL AND status<>2 FOR UPDATE`, s.App, s.Project).Scan(&out.status); e != nil {
+	if e = tx.QueryRowContext(ctx, `SELECT status,oauth_epoch FROM owned_custom_apps WHERE id=$1 AND project_id=$2 AND deleted_at IS NULL AND status<>2 FOR UPDATE`, s.App, s.Project).Scan(&out.status, &out.epoch); e != nil {
 		return mapped(e)
 	}
 	// Lock waits and package reads can cross token/grant time boundaries. Check
@@ -293,4 +315,4 @@ func developer(ctx context.Context, tx *sql.Tx, app string) (v bots.Developer, e
 	return
 }
 
-const publicAncestry = `a.status=1 AND a.deleted_at IS NULL AND project.deleted_at IS NULL AND pub.deleted_at IS NULL AND pub.type=0 AND EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=pub.account_id AND NOT owner.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments pun WHERE pun.account_id=owner.id AND pun.kind='disable_account' AND(pun.starts_at IS NULL OR pun.starts_at<=statement_timestamp())AND(pun.expires_at IS NULL OR pun.expires_at>statement_timestamp())))`
+const publicAncestry = `a.status=1 AND a.deleted_at IS NULL AND project.deleted_at IS NULL AND pub.deleted_at IS NULL AND pub.type=0 AND pub.realm_id IS NULL AND pub.shadowbanned_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=pub.account_id AND NOT owner.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments pun WHERE pun.account_id=owner.id AND pun.kind='disable_account' AND(pun.starts_at IS NULL OR pun.starts_at<=statement_timestamp())AND(pun.expires_at IS NULL OR pun.expires_at>statement_timestamp())))`

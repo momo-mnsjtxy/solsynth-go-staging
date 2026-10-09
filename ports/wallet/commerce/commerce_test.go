@@ -125,6 +125,35 @@ type orderStore struct {
 	calls int
 }
 
+type payoutStore struct {
+	Store
+	request AppPayout
+	key     string
+}
+
+func (s *payoutStore) CreateAppPayout(_ context.Context, q AppPayout, key string) (wallet.Transaction, error) {
+	s.request = q
+	s.key = key
+	return wallet.Transaction{ID: "a7000000-0000-0000-0000-000000000099"}, nil
+}
+
+func TestAppPayoutRequiresOwnedStoreAndPassesIdempotency(t *testing.T) {
+	unsupported := (&Service{Store: &orderStore{}}).Handler()
+	w := httptest.NewRecorder()
+	unsupported.ServeHTTP(w, httptest.NewRequest("POST", "/api/orders/payouts", strings.NewReader(`{"client_id":"app","client_secret":"secret","payee_account_id":"a7000000-0000-0000-0000-000000000002","currency":"points","amount":1}`)))
+	if w.Code != 503 {
+		t.Fatal(w.Code, w.Body.String())
+	}
+	s := &payoutStore{}
+	req := httptest.NewRequest("POST", "/api/orders/payouts", strings.NewReader(`{"client_id":"app","client_secret":"secret","payee_account_id":"a7000000-0000-0000-0000-000000000002","currency":"points","amount":1.25}`))
+	req.Header.Set("Idempotency-Key", "payout-1")
+	w = httptest.NewRecorder()
+	(&Service{Store: s}).Handler().ServeHTTP(w, req)
+	if w.Code != 200 || s.key != "payout-1" || s.request.Amount.String() != "1.250" {
+		t.Fatal(w.Code, s.key, s.request.Amount, w.Body.String())
+	}
+}
+
 func (s *orderStore) CreateOrder(context.Context, CreateOrder, string) (Order, error) {
 	s.calls++
 	return Order{}, ErrInvalid

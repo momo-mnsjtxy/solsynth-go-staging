@@ -2,6 +2,7 @@ package accounts
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -62,5 +63,18 @@ func TestAmountArithmetic(t *testing.T) {
 	}
 	if a.Cmp(b) != 1 || b.Sign() != 1 || (Amount{}).Sign() != 0 {
 		t.Fatal("comparison")
+	}
+}
+
+func TestValidCurrencyUsesCanonicalTextBoundary(t *testing.T) {
+	for _, value := range []string{"points", "积分", strings.Repeat("币", 128)} {
+		if !ValidCurrency(value) {
+			t.Fatal("valid currency rejected", value)
+		}
+	}
+	for _, value := range []string{"", " points", "points ", "points\n", "points\x00", strings.Repeat("币", 129)} {
+		if ValidCurrency(value) {
+			t.Fatal("invalid currency accepted", value)
+		}
 	}
 }

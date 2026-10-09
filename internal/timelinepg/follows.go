@@ -113,7 +113,7 @@ func (r *Repository) Unsubscribe(ctx context.Context, actor, selector string) (t
 		// content or grants access. Resolve only active canonical publisher identity.
 		var pub string
 		var approval bool
-		e := tx.QueryRowContext(ctx, `SELECT u.id::text,COALESCE(f.requires_approval,false) FROM owned_publishers u LEFT JOIN owned_publisher_follow_policy f ON f.publisher_id=u.id WHERE (u.id::text=$1 OR `+accountpg.PublisherNamePredicate("u", "$1")+`) AND u.deleted_at IS NULL FOR UPDATE OF u`, selector).Scan(&pub, &approval)
+		e := tx.QueryRowContext(ctx, `SELECT u.id::text,COALESCE(f.requires_approval AND(f.expires_at IS NULL OR f.expires_at>statement_timestamp()),false) FROM owned_publishers u LEFT JOIN owned_publisher_follow_policy f ON f.publisher_id=u.id WHERE (u.id::text=$1 OR `+accountpg.PublisherNamePredicate("u", "$1")+`) AND u.deleted_at IS NULL FOR UPDATE OF u`, selector).Scan(&pub, &approval)
 		if e != nil {
 			return missing(e)
 		}

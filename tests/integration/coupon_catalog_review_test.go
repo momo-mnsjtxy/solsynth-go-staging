@@ -257,6 +257,10 @@ func TestPGCouponGiftIssuerCannotSettleEscrow(t *testing.T) {
 				if _, e = recipient.r.RedeemGift(recipient.ctx, recipient.actor, g.GiftCode); e != nil {
 					t.Fatal(e)
 				}
+				walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "0.000", "0.000", "0.000")
+				if settled, settleErr := merchantRepo(t, f).Settle(f.ctx, f.actor, f.publisher); settleErr != nil || len(settled) != 1 {
+					t.Fatal("explicit coupon catalog gift settlement", settled, settleErr)
+				}
 				walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "2.332", "0.000", "2.332")
 			}
 			if n := commerceCount(t, f.db, `SELECT count(*) FROM commerce_v1.coupon_redemptions WHERE coupon_id=$1`, cp.ID); n != 1 {

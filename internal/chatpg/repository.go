@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/messager"
 	"solsynth.local/go-migration/ports/messager/rooms"
 	"solsynth.local/go-migration/ports/passport/social"
 	"time"
@@ -32,13 +33,75 @@ type Repository struct {
 	profilePerks   rooms.ProfileEntitlement
 	voice          VoiceStorage
 	voiceRetention time.Duration
+	botIdentity    BotIdentity
+	composer       MessageComposer
 }
+
+func (r *Repository) WithMessageComposer(c MessageComposer) *Repository { r.composer = c; return r }
 
 func (r *Repository) WithSocial(p rooms.SocialProvider) *Repository { r.social = p; return r }
 
 type TransactionGuard interface {
 	Authenticate(context.Context, *sql.DB, *sql.Tx, string) (authority.Principal, error)
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
+}
+type BotIdentity interface {
+	AuthenticateBotKey(context.Context, string, string) (string, error)
+	AuthenticateBotKeyInTransaction(context.Context, *sql.DB, *sql.Tx, string, string) (string, error)
+}
+
+func (r *Repository) WithBotIdentity(v BotIdentity) *Repository { r.botIdentity = v; return r }
+
+type botWriteProof struct {
+	bot, key, account string
+}
+
+func (r *Repository) authenticateBotWrite(ctx context.Context, tx *sql.Tx, actor string) (bool, error) {
+	proof, ok := ctx.Value(botWriteProofKey{}).(botWriteProof)
+	if !ok {
+		return false, nil
+	}
+	if r.botIdentity == nil || proof.account != actor {
+		return true, rooms.ErrForbidden
+	}
+	// SendBot already authenticated this proof before entering the canonical
+	// write. Lock planning must inspect it without taking the key/bot rows: key
+	// mutation takes canonical accounts before the key, and taking the key here
+	// would invert that order. The same proof is locked and revalidated after the
+	// complete account set has been acquired and again immediately before commit.
+	if tx == nil {
+		return true, nil
+	}
+	account, err := r.botIdentity.AuthenticateBotKeyInTransaction(ctx, r.db, tx, proof.bot, proof.key)
+	if err != nil || account != actor {
+		if err == nil {
+			err = rooms.ErrForbidden
+		}
+		return true, err
+	}
+	return true, nil
+}
+
+func botWriteFrom(ctx context.Context) bool {
+	_, ok := ctx.Value(botWriteProofKey{}).(botWriteProof)
+	return ok
+}
+
+type botWriteProofKey struct{}
+
+// SendBot runs the canonical message write under a narrowly authenticated bot
+// account. The credential is checked before lock planning, after canonical
+// account locks, and immediately before commit.
+func (r *Repository) SendBot(ctx context.Context, bot, key, room string, p rooms.TextRequest) (messager.MessageProjection, error) {
+	if r == nil || r.botIdentity == nil || p.ForwardedMessageID != nil || p.ThreadID != nil || p.IsThreadRoot {
+		return messager.MessageProjection{}, rooms.ErrUnsupported
+	}
+	account, err := r.botIdentity.AuthenticateBotKey(ctx, bot, key)
+	if err != nil {
+		return messager.MessageProjection{}, err
+	}
+	ctx = context.WithValue(ctx, botWriteProofKey{}, botWriteProof{bot: bot, key: key, account: account})
+	return r.Send(ctx, account, room, p)
 }
 
 var _ rooms.Repository = (*Repository)(nil)
@@ -135,13 +198,13 @@ func account(ctx context.Context, tx *sql.Tx, actor string) error {
 	return nil
 }
 
-const roomColumns = `id::text,owned_owner_id::text,owned_name,owned_description,is_public,owned_is_community,encryption_mode,owned_created_at,owned_updated_at,deleted_at,owned_type,owned_relation_guard,owned_slug`
+const roomColumns = `id::text,owned_owner_id::text,owned_name,owned_description,is_public,owned_is_community,owned_read_receipts_public,encryption_mode,owned_created_at,owned_updated_at,deleted_at,owned_type,owned_relation_guard,owned_slug`
 
 type scanner interface{ Scan(...any) error }
 
 func scanRoom(s scanner) (rooms.Room, error) {
 	var v rooms.Room
-	e := s.Scan(&v.ID, &v.AccountID, &v.Name, &v.Description, &v.IsPublic, &v.IsCommunity, &v.EncryptionMode, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt, &v.Type, &v.RelationGuard, &v.Slug)
+	e := s.Scan(&v.ID, &v.AccountID, &v.Name, &v.Description, &v.IsPublic, &v.IsCommunity, &v.ReadReceiptsPublic, &v.EncryptionMode, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt, &v.Type, &v.RelationGuard, &v.Slug)
 	if errors.Is(e, sql.ErrNoRows) {
 		e = rooms.ErrNotFound
 	}
@@ -263,7 +326,11 @@ func (r *Repository) Create(ctx context.Context, actor string, p rooms.RoomPatch
 	if community && !public {
 		return rooms.Room{}, rooms.ErrInvalid
 	}
-	v, e := scanRoom(tx.QueryRowContext(ctx, `INSERT INTO chat_rooms(id,is_public,encryption_mode,owned_owner_id,owned_name,owned_description,owned_is_community,owned_slug,owned_slug_realm_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING `+roomColumns, rid, public, r.policy.NoneEncryptionMode, actor, *p.Name, description, community, normalizedSlug(p.Slug), p.RealmID))
+	readReceipts := false
+	if p.ReadReceiptsPublic != nil {
+		readReceipts = *p.ReadReceiptsPublic
+	}
+	v, e := scanRoom(tx.QueryRowContext(ctx, `INSERT INTO chat_rooms(id,is_public,encryption_mode,owned_owner_id,owned_name,owned_description,owned_is_community,owned_read_receipts_public,owned_slug,owned_slug_realm_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING `+roomColumns, rid, public, r.policy.NoneEncryptionMode, actor, *p.Name, description, community, readReceipts, normalizedSlug(p.Slug), p.RealmID))
 	if e != nil {
 		return v, mapDetailError(e)
 	}
@@ -416,10 +483,13 @@ func (r *Repository) Update(ctx context.Context, actor, rid string, p rooms.Room
 	if p.IsCommunity != nil {
 		v.IsCommunity = *p.IsCommunity
 	}
+	if p.ReadReceiptsPublic != nil {
+		v.ReadReceiptsPublic = *p.ReadReceiptsPublic
+	}
 	if v.IsCommunity && !v.IsPublic {
 		return rooms.Room{}, rooms.ErrInvalid
 	}
-	v, e = scanRoom(tx.QueryRowContext(ctx, `UPDATE chat_rooms SET owned_name=$2,owned_description=$3,is_public=$4,owned_is_community=$5,owned_updated_at=clock_timestamp(),owned_slug=$6,owned_slug_realm_id=coalesce($7::uuid,owned_slug_realm_id) WHERE id=$1 RETURNING `+roomColumns, rid, v.Name, v.Description, v.IsPublic, v.IsCommunity, v.Slug, slugRealm(p, v)))
+	v, e = scanRoom(tx.QueryRowContext(ctx, `UPDATE chat_rooms SET owned_name=$2,owned_description=$3,is_public=$4,owned_is_community=$5,owned_read_receipts_public=$6,owned_updated_at=clock_timestamp(),owned_slug=$7,owned_slug_realm_id=coalesce($8::uuid,owned_slug_realm_id) WHERE id=$1 RETURNING `+roomColumns, rid, v.Name, v.Description, v.IsPublic, v.IsCommunity, v.ReadReceiptsPublic, v.Slug, slugRealm(p, v)))
 	if e != nil {
 		return v, mapDetailError(e)
 	}

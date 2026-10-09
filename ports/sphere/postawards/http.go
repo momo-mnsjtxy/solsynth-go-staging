@@ -17,7 +17,7 @@ type Auth func(*http.Request, bool) (string, error)
 
 func Handles(path string) bool {
 	p := parts(path)
-	return len(p) >= 3 && len(p) <= 4 && p[0] == "posts" && p[2] == "awards" && (len(p) == 3 || p[3] == "pending") || len(p) >= 3 && len(p) <= 4 && p[0] == "merchants" && (p[2] == "wallet" && len(p) == 3 || p[2] == "settlements" && (len(p) == 3 || p[3] == "settle"))
+	return len(p) >= 3 && len(p) <= 4 && p[0] == "posts" && p[2] == "awards" && (len(p) == 3 || p[3] == "pending") || len(p) >= 3 && len(p) <= 4 && p[0] == "merchants" && (p[2] == "wallet" && len(p) == 3 || p[2] == "settlements" && (len(p) == 3 || p[3] == "settle")) || len(p) == 3 && p[0] == "publishers" && ((p[1] == "rewards" && (p[2] == "settle" || p[2] == "resettle")) || (p[1] == "awards" && p[2] == "settle"))
 }
 func writeError(w http.ResponseWriter, e error) {
 	var f *Failure
@@ -112,6 +112,32 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 			var count int
 			count, e = repo.SettleMerchant(r.Context(), actor, p[1], 100)
 			out = map[string]int{"settled": count}
+		case p[0] == "publishers" && len(p) == 3 && r.Method == "POST":
+			var count int
+			switch {
+			case p[1] == "rewards" && p[2] == "settle":
+				if admin.EmptyBody(w, r) != nil {
+					e = ErrInvalid
+					break
+				}
+				count, e = repo.SettlePublisherRewards(r.Context(), actor, 100)
+			case p[1] == "awards" && p[2] == "settle":
+				if admin.EmptyBody(w, r) != nil {
+					e = ErrInvalid
+					break
+				}
+				count, e = repo.SettlePublisherAwards(r.Context(), actor, 100)
+			case p[1] == "rewards" && p[2] == "resettle":
+				var request ResettleRequest
+				if admin.DecodeStrict(w, r, &request) != nil {
+					e = ErrInvalid
+					break
+				}
+				count, e = repo.ResettlePublisherRewards(r.Context(), actor, request, 100)
+			default:
+				e = ErrInvalid
+			}
+			out = map[string]int{"settled": count}
 		default:
 			admin.Respond(w, 405, ErrInvalid)
 			return
@@ -134,7 +160,7 @@ func parts(path string) []string {
 		path = "/api/" + strings.TrimPrefix(path, "/wallet/")
 	}
 	p := sponsorship.Parts(path)
-	if len(p) > 0 && (wallet && p[0] != "merchants" || sphere && p[0] != "posts") {
+	if len(p) > 0 && (wallet && p[0] != "merchants" || sphere && p[0] != "posts" && p[0] != "publishers") {
 		return nil
 	}
 	return p

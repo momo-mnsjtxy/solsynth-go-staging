@@ -15,8 +15,9 @@ CREATE INDEX owned_post_chain_parent ON owned_post_relations(chained_post_id,pos
 -- Explicit deployment policy, separate from access grants. Defaults to open
 -- following. It never grants access to private/friends posts.
 CREATE TABLE owned_publisher_follow_policy (
- publisher_id uuid PRIMARY KEY REFERENCES owned_publishers(id),requires_approval boolean NOT NULL
+ publisher_id uuid PRIMARY KEY REFERENCES owned_publishers(id),requires_approval boolean NOT NULL,expires_at timestamptz
 );
+ALTER TABLE owned_publisher_follow_policy ADD COLUMN IF NOT EXISTS expires_at timestamptz;
 CREATE TABLE owned_publisher_follows (
  id uuid PRIMARY KEY,account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),
  publisher_id uuid NOT NULL REFERENCES owned_publishers(id),state text NOT NULL CHECK(state IN('pending','accepted','rejected')),

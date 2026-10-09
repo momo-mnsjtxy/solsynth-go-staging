@@ -86,3 +86,31 @@ func TestAffiliationRootAndInputBoundaries(t *testing.T) {
 		t.Fatal("input boundary")
 	}
 }
+
+func TestPaidInviteHTTPRequiresExactIdempotencyAndCanonicalActor(t *testing.T) {
+	repo := &fixtureRepo{}
+	h := (&Service{repo, fixtureAuthority{}}).Handler()
+	body := `{"payer_wallet_id":"00000000-0000-4000-8000-000000000002","max_usages":2,"expires_at":"2030-01-02T03:04:05Z","remark":"registration invite"}`
+	for _, keys := range [][]string{nil, {"one", "two"}} {
+		r := httptest.NewRequest("POST", "/api/affiliations/purchase", strings.NewReader(body))
+		r.Header.Set("Content-Type", "application/json")
+		r.Header.Set("Authorization", "Bearer synthetic")
+		for _, key := range keys {
+			r.Header.Add("Idempotency-Key", key)
+		}
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		if w.Code != 400 || repo.calls != 0 {
+			t.Fatal(keys, w.Code, repo.calls)
+		}
+	}
+	r := httptest.NewRequest("POST", "/api/affiliations/purchase", strings.NewReader(body))
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("Authorization", "Bearer synthetic")
+	r.Header.Set("Idempotency-Key", "purchase-one")
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	if w.Code != 200 || repo.calls != 1 || repo.last.Operation != "purchase" || repo.last.Purchase == nil || repo.last.Purchase.Key != "purchase-one" || repo.last.Purchase.MaxUsages != 2 {
+		t.Fatal(w.Code, w.Body.String(), repo.calls, repo.last)
+	}
+}

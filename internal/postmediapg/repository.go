@@ -186,6 +186,20 @@ func (r *Repository) Load(ctx context.Context, tx *sql.Tx, actor string, p *post
 	} else {
 		postpg.EmptyAssociations(p)
 	}
+	return r.loadVisibleAttachments(ctx, tx, actor, p)
+}
+
+func (r *Repository) RecheckProjection(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post) error {
+	if r == nil || r.visibility == nil || tx == nil || p == nil {
+		return posts.ErrUnavailable
+	}
+	if e := postpg.RecheckAssociations(ctx, tx, actor, p, r.next); e != nil {
+		return e
+	}
+	return r.loadVisibleAttachments(ctx, tx, actor, p)
+}
+
+func (r *Repository) loadVisibleAttachments(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post) error {
 	p.Attachments = []postmedia.Attachment{}
 	if p.DeletedAt != nil {
 		return nil

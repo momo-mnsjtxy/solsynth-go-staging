@@ -16,10 +16,12 @@ import (
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/internal/signinpg"
 	"solsynth.local/go-migration/internal/ticketpg"
+	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/authority/signin"
 	a "solsynth.local/go-migration/ports/passport/affiliation"
 	"solsynth.local/go-migration/ports/passport/tickets"
+	wallet "solsynth.local/go-migration/ports/wallet/accounts"
 	"strings"
 	"testing"
 	"time"
@@ -150,6 +152,184 @@ func TestPGAffiliationTrackingIsolationAndRevocation(t *testing.T) {
 	}
 	backendCall(t, h, "POST", "/api/affiliations/purchase", f.token, "", 503)
 }
+
+func TestPGAffiliationPaidInviteUsesFundedTransferAndExactReplay(t *testing.T) {
+	f := newAffiliationFixture(t)
+	query(t, f.db, affiliationpg.PaidSchema)
+	treasuryActor := authorityUUID(t)
+	if e := authoritypg.SeedSynthetic(f.ctx, f.db, treasuryActor, "synthetic_affiliation_treasury_"+strings.ReplaceAll(treasuryActor, "-", ""), f.config.Now()); e != nil {
+		t.Fatal(e)
+	}
+	wallets := walletpg.New(f.db)
+	payer := walletCreate(t, wallets, f.admin)
+	treasury := walletCreate(t, wallets, treasuryActor)
+	currency := "synthetic-affiliation-points"
+	walletFund(t, f.db, payer, currency, "50.000")
+	price, e := wallet.ParseAmount("12.500")
+	if e != nil {
+		t.Fatal(e)
+	}
+	purchaseConfig := affiliationpg.PurchaseConfig{Currency: currency, TreasuryAccountID: treasuryActor, TreasuryWalletID: treasury.ID, Price: price, MaxUsages: 5, MaxPurchases: 1, MaxLifetime: 24 * time.Hour, PurchasePeriod: 30 * 24 * time.Hour}
+	paid, e := affiliationpg.New(f.db, f.guard, affiliationpg.Config{Now: f.config.Now, Activation: f.repo, Purchase: &purchaseConfig})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = paid.Ready(f.ctx); e != nil {
+		t.Fatal(e)
+	}
+	foreignConfig := purchaseConfig
+	foreignConfig.TreasuryAccountID = f.admin
+	foreign, x := affiliationpg.New(f.db, f.guard, affiliationpg.Config{Now: f.config.Now, Activation: f.repo, Purchase: &foreignConfig})
+	if x != nil {
+		t.Fatal(x)
+	}
+	if x = foreign.Ready(f.ctx); !errors.Is(x, a.ErrPurchase) {
+		t.Fatal("foreign treasury wallet accepted", x)
+	}
+	query(t, f.db, `INSERT INTO owned_authority_punishments(account_id,kind,starts_at)VALUES($1::uuid,'disable_account',clock_timestamp())`, treasuryActor)
+	if e = paid.Ready(f.ctx); !errors.Is(e, a.ErrPurchase) {
+		t.Fatal("active treasury punishment accepted", e)
+	}
+	query(t, f.db, `DELETE FROM owned_authority_punishments WHERE account_id=$1::uuid AND kind='disable_account'`, treasuryActor)
+	if e = paid.Ready(f.ctx); e != nil {
+		t.Fatal(e)
+	}
+	if e = authoritypg.New(f.db).ReplacePolicy(f.ctx, f.admin, []authority.Rule{{Pattern: a.InviteIssuePermission}}, nil); e != nil {
+		t.Fatal(e)
+	}
+	expires := f.config.Now().Add(time.Hour)
+	secondDB := database(t)
+	secondPaid, e := affiliationpg.New(secondDB, f.guard, affiliationpg.Config{Now: f.config.Now, Activation: f.repo, Purchase: &purchaseConfig})
+	if e != nil {
+		t.Fatal(e)
+	}
+	commands := []a.Command{
+		{Operation: "purchase", Purchase: &a.InvitePurchase{PayerWalletID: payer.ID, MaxUsages: 2, ExpiresAt: expires, Key: "paid-invite-one"}},
+		{Operation: "purchase", Purchase: &a.InvitePurchase{PayerWalletID: payer.ID, MaxUsages: 2, ExpiresAt: expires, Key: "paid-invite-two"}},
+	}
+	type purchaseResult struct {
+		command a.Command
+		value   a.Result
+		err     error
+	}
+	start := make(chan struct{})
+	done := make(chan purchaseResult, 2)
+	for i, repo := range []*affiliationpg.Repository{paid, secondPaid} {
+		go func(repo *affiliationpg.Repository, command a.Command) {
+			<-start
+			value, x := repo.Execute(f.adminCtx, f.admin, command)
+			done <- purchaseResult{command, value, x}
+		}(repo, commands[i])
+	}
+	close(start)
+	var winner purchaseResult
+	success := 0
+	for range 2 {
+		result := <-done
+		if result.err == nil {
+			winner = result
+			success++
+		} else if !errors.Is(result.err, a.ErrConflict) {
+			t.Fatal(result.err)
+		}
+	}
+	if success != 1 {
+		t.Fatal("cross-instance rolling purchase quota was not serialized", success)
+	}
+	first := winner.value
+	second, e := secondPaid.Execute(f.adminCtx, f.admin, winner.command)
+	if e != nil {
+		t.Fatal(e)
+	}
+	a1, ok1 := first.Value.(a.InvitePurchaseReceipt)
+	a2, ok2 := second.Value.(a.InvitePurchaseReceipt)
+	if !ok1 || !ok2 || a1.Spell.ID != a2.Spell.ID || a1.Transaction.ID != a2.Transaction.ID {
+		t.Fatal("purchase did not replay exactly", first.Value, second.Value)
+	}
+	walletAssertBalance(t, wallets, payer.ID, currency, "37.500", "0.000", "37.500")
+	walletAssertBalance(t, wallets, treasury.ID, currency, "12.500", "0.000", "12.500")
+	changed := winner.command
+	changed.Purchase = &a.InvitePurchase{PayerWalletID: payer.ID, MaxUsages: 3, ExpiresAt: expires, Key: winner.command.Purchase.Key}
+	if _, e = paid.Execute(f.adminCtx, f.admin, changed); !errors.Is(e, a.ErrConflict) {
+		t.Fatal("changed request replay accepted", e)
+	}
+	additional := commands[0]
+	if additional.Purchase.Key == winner.command.Purchase.Key {
+		additional = commands[1]
+	}
+	if _, e = paid.Execute(f.adminCtx, f.admin, additional); !errors.Is(e, a.ErrConflict) {
+		t.Fatal("rolling purchase limit accepted an additional purchase", e)
+	}
+	walletAssertBalance(t, wallets, payer.ID, currency, "37.500", "0.000", "37.500")
+	walletAssertBalance(t, wallets, treasury.ID, currency, "12.500", "0.000", "12.500")
+	if n := commerceCount(t, f.db, `SELECT count(*) FROM owned_affiliation_purchases WHERE actor_id=$1::uuid`, f.admin); n != 1 {
+		t.Fatal(n)
+	}
+}
+
+func TestPGAffiliationPaidInviteRechecksTreasuryAfterWalletWait(t *testing.T) {
+	f := newAffiliationFixture(t)
+	query(t, f.db, affiliationpg.PaidSchema)
+	treasuryActor := authorityUUID(t)
+	if e := authoritypg.SeedSynthetic(f.ctx, f.db, treasuryActor, "synthetic_affiliation_wait_treasury_"+strings.ReplaceAll(treasuryActor, "-", ""), time.Now().UTC()); e != nil {
+		t.Fatal(e)
+	}
+	wallets := walletpg.New(f.db)
+	payer := walletCreate(t, wallets, f.admin)
+	treasury := walletCreate(t, wallets, treasuryActor)
+	const currency = "synthetic-affiliation-wait"
+	walletFund(t, f.db, payer, currency, "50.000")
+	price, _ := wallet.ParseAmount("12.500")
+	cfg := affiliationpg.PurchaseConfig{Currency: currency, TreasuryAccountID: treasuryActor, TreasuryWalletID: treasury.ID, Price: price, MaxUsages: 5, MaxPurchases: 1, MaxLifetime: 24 * time.Hour, PurchasePeriod: 30 * 24 * time.Hour}
+	paid, e := affiliationpg.New(f.db, f.guard, affiliationpg.Config{Now: func() time.Time { return time.Now().UTC() }, Activation: f.repo, Purchase: &cfg})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = authoritypg.New(f.db).ReplacePolicy(f.ctx, f.admin, []authority.Rule{{Pattern: a.InviteIssuePermission}}, nil); e != nil {
+		t.Fatal(e)
+	}
+	blocker, e := f.db.BeginTx(f.ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if e != nil {
+		t.Fatal(e)
+	}
+	t.Cleanup(func() { _ = blocker.Rollback() })
+	var pid int
+	if e = blocker.QueryRowContext(f.ctx, `SELECT pg_backend_pid() FROM wallet_v1.wallets WHERE id=$1::uuid FOR UPDATE`, payer.ID).Scan(&pid); e != nil {
+		t.Fatal(e)
+	}
+	var starts time.Time
+	if e = f.db.QueryRowContext(f.ctx, `INSERT INTO owned_authority_punishments(account_id,kind,starts_at)VALUES($1::uuid,'disable_account',clock_timestamp()+interval '1 second')RETURNING starts_at`, treasuryActor).Scan(&starts); e != nil {
+		t.Fatal(e)
+	}
+	done := make(chan error, 1)
+	go func() {
+		_, x := paid.Execute(f.adminCtx, f.admin, a.Command{Operation: "purchase", Purchase: &a.InvitePurchase{PayerWalletID: payer.ID, MaxUsages: 2, ExpiresAt: time.Now().UTC().Add(time.Hour), Key: "paid-wallet-wait"}})
+		done <- x
+	}()
+	waitAtomicBlocked(t, atomicAuthorityFixture{db: f.db, ctx: f.ctx}, pid, "wallet_v1.wallets")
+	for {
+		var active bool
+		if e = f.db.QueryRowContext(f.ctx, `SELECT clock_timestamp()>=$1::timestamptz`, starts).Scan(&active); e != nil {
+			t.Fatal(e)
+		}
+		if active {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if e = blocker.Commit(); e != nil {
+		t.Fatal(e)
+	}
+	if e = <-done; e == nil {
+		t.Fatal("treasury punishment activated during wallet wait was ignored")
+	}
+	walletAssertBalance(t, wallets, payer.ID, currency, "50.000", "0.000", "50.000")
+	walletAssertBalance(t, wallets, treasury.ID, currency, "0.000", "0.000", "0.000")
+	if n := commerceCount(t, f.db, `SELECT count(*) FROM owned_affiliation_purchases WHERE actor_id=$1::uuid`, f.admin); n != 0 {
+		t.Fatal("failed wallet wait committed purchase", n)
+	}
+}
+
 func TestPGAffiliationConcurrentInviteConsumptionAndReplay(t *testing.T) {
 	f := newAffiliationFixture(t)
 	fresh := affiliationPool(t, f, database(t))

@@ -27,7 +27,10 @@ var ContinuitySchema string
 //go:embed activation_schema.sql
 var ActivationSchema string
 
-var Schema = baseSchema + "\n" + AssuranceSchema + "\n" + ContinuitySchema + "\n" + ActivationSchema
+//go:embed stream_ticket_schema.sql
+var StreamTicketSchema string
+
+var Schema = baseSchema + "\n" + AssuranceSchema + "\n" + ContinuitySchema + "\n" + ActivationSchema + "\n" + StreamTicketSchema
 
 type Repository struct{ db *sql.DB }
 

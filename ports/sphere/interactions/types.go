@@ -116,8 +116,10 @@ func ValidateReaction(v ReactionRequest) error {
 	return ErrUnsupported
 }
 func ValidateCollection(v CollectionRequest, create bool) error {
-	if v.BackgroundID != nil || v.IconID != nil {
-		return ErrUnsupported
+	for _, id := range []*string{v.BackgroundID, v.IconID} {
+		if id != nil && !authority.ValidID(*id) {
+			return ErrInvalid
+		}
 	}
 	if create && (strings.TrimSpace(v.Slug) == "" || taxonomy.UTF16Length(v.Slug) > 128 || strings.ContainsAny(v.Slug, "/\\?#") || !utf8.ValidString(v.Slug) || strings.ContainsRune(v.Slug, 0)) {
 		return ErrInvalid

@@ -12,92 +12,182 @@
     {
       "id": "draft-transient-developer-media",
       "scope": "语音、placeholder、developer quota与媒体关联",
-      "status": "integrating",
-      "evidence": []
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "3e53853",
+        "caff00dddc01bdb1913d17cbb7c398764eb5523a",
+        "c602171"
+      ]
     },
     {
       "id": "draft-chat-sync",
       "scope": "房间/账户订阅、状态、全局/房间同步",
-      "status": "reviewing",
-      "evidence": []
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "01ef7bb8fd8c28ba92e7bbafcc87d5e29dc43c68",
+        "97a075f"
+      ]
     },
     {
       "id": "draft-chat-live",
       "scope": "聊天消息与已读事件实时投递/回放",
-      "status": "reviewing",
-      "evidence": []
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "01ef7bb8fd8c28ba92e7bbafcc87d5e29dc43c68",
+        "97a075f"
+      ]
     },
     {
       "id": "draft-post-pins",
       "scope": "publisher/realm置顶与筛选",
-      "status": "reviewing",
-      "evidence": []
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "88997cfd20960d0bcd66c64e46302e69f394e374",
+        "d25226e"
+      ]
     },
     {
       "id": "draft-miniapp-upload",
       "scope": "multipart ZIP与icon/background关联",
-      "status": "reviewing",
-      "evidence": []
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "07d783782392a3b421cb6ae35338f5724680a79c",
+        "9b1de07"
+      ]
     },
     {
       "id": "bot-credentials-execution",
       "scope": "Bot密钥/身份回复/DM-realm-MLS执行与renewal",
-      "status": "pending",
-      "evidence": []
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "07d783782392a3b421cb6ae35338f5724680a79c",
+        "9b1de07"
+      ]
     },
     {
       "id": "typed-chat-compositions",
       "scope": "非text fund/survey等消息组合",
-      "status": "pending",
-      "evidence": []
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "01ef7bb8fd8c28ba92e7bbafcc87d5e29dc43c68",
+        "97a075f"
+      ]
     },
     {
       "id": "account-admin-history",
       "scope": "账户聚合管理及auth侧contact/factor/session、provider links与credit writers",
-      "status": "pending",
-      "evidence": []
+      "status": "fixing_review",
+      "evidence": [
+        "9ffdda6e0cbfc6490997fcff237a5b5e052ca547"
+      ]
     },
     {
       "id": "realm-progression",
       "scope": "成员filter/order/status/search、XP触发/tenure、source-point/birthday/backdate/trusted/admin业务",
-      "status": "pending",
-      "evidence": []
+      "status": "fixing_review",
+      "evidence": [
+        "9ffdda6e0cbfc6490997fcff237a5b5e052ca547"
+      ]
     },
     {
       "id": "nearby-nfc-location-media",
       "scope": "附近presence tokens与resolve、加密NFC管理/claim/lock/SUN、location图片",
-      "status": "pending",
-      "evidence": []
+      "status": "implementing",
+      "evidence": [
+        "872f6f64c1addc67e49b3956c768354c810d9f07"
+      ]
     },
     {
       "id": "media-management",
       "scope": "resumable stats/task/bulk cleanup、remote upload/dedup/thumb/pools/folders/E2EE/expiry",
-      "status": "pending",
-      "evidence": []
+      "status": "implementing",
+      "evidence": [
+        "872f6f64c1addc67e49b3956c768354c810d9f07"
+      ]
     },
     {
       "id": "publisher-post-collection",
       "scope": "publisher quota/search/stats/feature/rewards/ads/block-mute、post boost/navigation/reaction/replies、org collection CRUD/artwork/search",
-      "status": "pending",
-      "evidence": []
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "88997cfd20960d0bcd66c64e46302e69f394e374",
+        "d25226e"
+      ]
     },
     {
       "id": "federation-oauth",
-      "scope": "actor/search/posts/follow/availability、realm ActivityPub/admin/moderation/private-media、OAuth device/registration/introspection/scope wiring",
-      "status": "pending",
-      "evidence": []
+      "scope": "actor/search/posts/follow/availability、realm ActivityPub/admin/moderation/private-media",
+      "status": "fixing_review",
+      "evidence": [
+        "1ce0f23779e01159e08e36e8ac46f938266715fa"
+      ]
     },
     {
       "id": "internal-wallet-commerce",
       "scope": "admin/buyer reads、maintenance/quarantine、funded adjustments、paid-product apply、settlement/payout/refund conservation",
-      "status": "implementing",
-      "evidence": []
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "142e917747765e34a0fc403b1567c55e571f32a2",
+        "9fd90e5"
+      ]
     },
     {
       "id": "affiliation-livestream-operations",
       "scope": "内部余额付费邀请码、HLS archive/download/MP4、award/beneficiary/refund、持久retention/purge/redrive/inspection",
-      "status": "pending",
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "450ac2515bdb2944adb4f7f2e534d6d7739dc5dc",
+        "e6ad3d4"
+      ]
+    },
+    {
+      "id": "oauth-resources",
+      "scope": "OAuth device/registration/introspection及明示HTTP资源scope接线",
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "e1e7a1f949dc89e79873305245c88b98f5e83d59",
+        "45cc8a0"
+      ]
+    },
+    {
+      "id": "device-push-registration",
+      "scope": "provider实际possession挑战、加密device token、单次确认与push_enable canonical progression、复核及撤销",
+      "status": "fixing_review",
+      "evidence": [
+        "9ffdda6e0cbfc6490997fcff237a5b5e052ca547"
+      ]
+    },
+    {
+      "id": "canonical-business-progression",
+      "scope": "post boost/topical/featured historical facts、UTC每日精选快照、内部stellar完整资金绑定及持久worker",
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "4c23becbe382a13c49c33d7a14f8cc3baa9a7a83",
+        "982c372",
+        "275ed0a"
+      ]
+    },
+    {
+      "id": "publisher-content-notifications",
+      "scope": "post发布/直播首次开始的publisher订阅者通知 producer 与持久projection",
+      "status": "implementing",
+      "evidence": []
+    },
+    {
+      "id": "rewind-configured-adapters",
+      "scope": "当前Go canonical活动记录与可配置中文词典真实分词、host接线",
+      "status": "implementing",
       "evidence": []
     }
-  ]
+  ],
+  "current_validation": {
+    "ordinary_go_tests": "affected packages passed after each integration; integration PG tests compile; actual PostgreSQL not run locally",
+    "first_combined_ci_run": 37947319307,
+    "first_combined_ci_head": "0b59486bf1b6a74905e7587fbcdc9fea9987acfe",
+    "first_combined_ci_result": "checks passed; both PostgreSQL groups and contracts failed; three specific causes fixed and independently reviewed locally, pending combined rerun",
+    "registered_before": 1073,
+    "registered_after_restart": 117,
+    "catalogue_review": "Independent gpt-5.6-sol review passed for exact source/compiled declarations, schema order and marker inventories; activated catalogue has passed independent offline guards; complete ordinary checks and private exact-head PostgreSQL CI remain separate.",
+    "local_source_checkpoint": "275ed0a5e84882e5aea2fcf46d1c8fa163e0ee71"
+  }
 }

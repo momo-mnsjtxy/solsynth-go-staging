@@ -587,7 +587,7 @@ func TestPGChatVoiceDurableDeletionFailureAndUnboundExpiry(t *testing.T) {
 		t.Fatal("deleting clip exposed")
 	}
 	store.failDelete = false
-	if n, e := repo.Cleanup(context.Background(), 100); e != nil || n != 1 {
+	if n, e := repo.CleanupOwnedDeletions(f.ctx, f.actor, 100); e != nil || n != 1 {
 		t.Fatal(n, e)
 	}
 	mediaUsage(t, f.mediaFixture, 0, 0)

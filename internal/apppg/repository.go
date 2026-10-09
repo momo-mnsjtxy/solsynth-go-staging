@@ -108,8 +108,14 @@ func audit(ctx context.Context, tx *sql.Tx, actor, app, action, target string, n
 	return e
 }
 func developer(ctx context.Context, q queryer, actor, name string, role int, lock bool) (apps.Developer, error) {
+	return developerWithOwnerPolicy(ctx, q, actor, name, role, lock, true)
+}
+func developerWithOwnerPolicy(ctx context.Context, q queryer, actor, name string, role int, lock, requireActiveOwner bool) (apps.Developer, error) {
 	var d apps.Developer
-	s := `SELECT d.id::text,d.publisher_id::text,p.name,d.created_at FROM owned_developers d JOIN owned_publishers p ON p.id=d.publisher_id JOIN owned_publisher_members m ON m.publisher_id=p.id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE ` + accountpg.PublisherNamePredicate("p", "$1") + ` AND p.deleted_at IS NULL AND p.type=0 AND m.account_id=$2 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND m.role>=$3 AND NOT a.disabled AND EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=p.account_id AND NOT owner.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments punishment WHERE punishment.account_id=owner.id AND punishment.kind='disable_account' AND(punishment.starts_at IS NULL OR punishment.starts_at<=clock_timestamp())AND(punishment.expires_at IS NULL OR punishment.expires_at>clock_timestamp())))`
+	s := `SELECT d.id::text,d.publisher_id::text,p.name,d.created_at FROM owned_developers d JOIN owned_publishers p ON p.id=d.publisher_id JOIN owned_publisher_members m ON m.publisher_id=p.id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE ` + accountpg.PublisherNamePredicate("p", "$1") + ` AND p.deleted_at IS NULL AND p.type=0 AND m.account_id=$2 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND m.role>=$3 AND NOT a.disabled`
+	if requireActiveOwner {
+		s += ` AND EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=p.account_id AND NOT owner.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments punishment WHERE punishment.account_id=owner.id AND punishment.kind='disable_account' AND(punishment.starts_at IS NULL OR punishment.starts_at<=clock_timestamp())AND(punishment.expires_at IS NULL OR punishment.expires_at>clock_timestamp())))`
+	}
 	if lock {
 		s += ` FOR UPDATE OF p,m`
 	}
@@ -120,10 +126,15 @@ func developer(ctx context.Context, q queryer, actor, name string, role int, loc
 	return d, e
 }
 func scope(ctx context.Context, q queryer, s apps.Scope, role int, lock bool) (apps.Developer, error) {
+	return scopeWithOwnerPolicy(ctx, q, s, role, lock, true)
+}
+
+// Only explicit credential deletion may clean up a disabled resource owner.
+func scopeWithOwnerPolicy(ctx context.Context, q queryer, s apps.Scope, role int, lock, requireActiveOwner bool) (apps.Developer, error) {
 	if !authority.ValidID(s.Actor) || !authority.ValidID(s.Project) || s.App != "" && !authority.ValidID(s.App) {
 		return apps.Developer{}, apps.ErrInvalid
 	}
-	d, e := developer(ctx, q, s.Actor, s.Developer, role, lock)
+	d, e := developerWithOwnerPolicy(ctx, q, s.Actor, s.Developer, role, lock, requireActiveOwner)
 	if e != nil {
 		return d, e
 	}

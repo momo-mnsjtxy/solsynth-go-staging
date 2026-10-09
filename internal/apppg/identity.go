@@ -62,7 +62,7 @@ func (r *Repository) Secrets(ctx context.Context, s apps.Scope, ref string, req 
 		return nil, apps.ErrProvider
 	}
 	e := r.write(ctx, s.Actor, "developers.apps.secrets.manage", func(tx *sql.Tx, now time.Time) error {
-		d, e := scope(ctx, tx, s, 50, true)
+		d, e := scopeWithOwnerPolicy(ctx, tx, s, 50, true, action != "delete")
 		if e != nil {
 			return e
 		}

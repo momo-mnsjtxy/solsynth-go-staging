@@ -352,6 +352,15 @@ func (r *Repository) processSchedule(ctx context.Context, s dueSchedule) (bool, 
 			return false, posts.ErrForbidden
 		}
 	}
+	if state == "published" {
+		source, x := newID()
+		if x != nil {
+			return false, x
+		}
+		if e = r.recordPostProgressionSource(ctx, tx, "post.create_topical", source, s.actor, "", p, *p.PublishedAt); e != nil {
+			return false, e
+		}
+	}
 	return true, tx.Commit()
 }
 

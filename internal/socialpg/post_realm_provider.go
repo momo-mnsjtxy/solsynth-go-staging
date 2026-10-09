@@ -52,3 +52,20 @@ func (r *Repository) ResolvePostRealmFilter(ctx context.Context, tx *sql.Tx, act
 	}
 	return id, e
 }
+
+// RequirePostRealmModerator follows the authored pin controller's role check.
+// The caller holds the realm row lock through commit, serializing membership
+// withdrawal and demotion with the post transition.
+func (r *Repository) RequirePostRealmModerator(ctx context.Context, tx *sql.Tx, actor, id string) error {
+	if tx == nil || !authority.ValidID(actor) || !authority.ValidID(id) {
+		return posts.ErrForbidden
+	}
+	if e := r.RequirePostRealmMember(ctx, tx, actor, id); e != nil {
+		return e
+	}
+	_, e := requireRole(ctx, tx, id, actor, social.Moderator)
+	if errors.Is(e, social.ErrForbidden) || errors.Is(e, social.ErrNotFound) {
+		return posts.ErrForbidden
+	}
+	return e
+}

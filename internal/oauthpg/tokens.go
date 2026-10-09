@@ -96,18 +96,23 @@ func (r *Repository) Token(ctx context.Context, req oauth.TokenRequest) (out oau
 		return out, e
 	}
 	switch req.GrantType {
+	case oauth.DeviceGrant:
+		if !oauth.Opaque(req.DeviceCode, 43, 43) || req.Code != "" || req.RefreshToken != "" || req.RedirectURI != "" || req.CodeVerifier != "" {
+			return out, oauth.ErrGrant
+		}
+		return r.deviceToken(ctx, req)
 	case "authorization_code":
-		if !oauth.Opaque(req.Code, 43, 43) || req.RefreshToken != "" {
+		if !oauth.Opaque(req.Code, 43, 43) || req.RefreshToken != "" || req.DeviceCode != "" {
 			return out, oauth.ErrGrant
 		}
 		return r.exchange(ctx, req)
 	case "refresh_token":
-		if !oauth.Opaque(req.RefreshToken, 43, 43) || req.Code != "" || req.RedirectURI != "" || req.CodeVerifier != "" {
+		if !oauth.Opaque(req.RefreshToken, 43, 43) || req.Code != "" || req.RedirectURI != "" || req.CodeVerifier != "" || req.DeviceCode != "" {
 			return out, oauth.ErrGrant
 		}
 		return r.refresh(ctx, req)
 	default:
-		return out, &oauth.Failure{Code: "unsupported_grant_type", Description: "Only authorization_code and refresh_token are supported.", Status: 400}
+		return out, &oauth.Failure{Code: "unsupported_grant_type", Description: "Only enabled authorization_code, refresh_token and device_code grants are supported.", Status: 400}
 	}
 }
 func (r *Repository) exchange(ctx context.Context, req oauth.TokenRequest) (out oauth.Tokens, e error) {
@@ -160,38 +165,14 @@ func (r *Repository) exchange(ctx context.Context, req oauth.TokenRequest) (out 
 		if secret.id != "" && secret.expires.Before(consentExp) {
 			consentExp = secret.expires
 		}
-		var count int
-		if e = b.tx.QueryRowContext(ctx, `SELECT count(*) FROM owned_oauth_grants WHERE account_id=$1 AND revoked_at IS NULL AND expires_at>$2`, actor, b.now).Scan(&count); e != nil {
-			return e
-		}
-		if count >= 128 {
-			return oauth.ErrGrant
-		}
-		se, pair, e := r.issuer.IssueOAuthTransaction(ctx, b.authority, parent, b.app.ID, scopes, consentExp)
-		if e != nil {
-			return oauth.ErrGrant
-		}
-		_, e = b.tx.ExecContext(ctx, `INSERT INTO owned_oauth_grants(session_id,account_id,parent_id,app_id,client_id,app_epoch,owner_id,owner_version,consent_version,secret_id,secret_hash,scopes,nonce,created_at,expires_at)VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`, se.ID, actor, parent, b.app.ID, client, b.epoch, nullable(b.owner), b.ownerVersion, version, nullable(secret.id), secret.hash, scopesRaw, nonce, b.now, se.ExpiresAt)
+		var sessionID string
+		out, sessionID, e = r.issueGrant(ctx, b, actor, parent, scopes, consentExp, secret, nonce, version)
 		if e != nil {
 			return e
 		}
-		if _, e = b.tx.ExecContext(ctx, `UPDATE owned_oauth_codes SET used_at=$2,session_id=$3 WHERE hash=$1`, digest("code", req.Code), b.now, se.ID); e != nil {
+		if _, e = b.tx.ExecContext(ctx, `UPDATE owned_oauth_codes SET used_at=$2,session_id=$3 WHERE hash=$1`, digest("code", req.Code), b.now, sessionID); e != nil {
 			return e
 		}
-		if pair.RefreshToken != "" {
-			if _, e = b.tx.ExecContext(ctx, `INSERT INTO owned_oauth_refresh(hash,session_id,epoch,created_at,expires_at)VALUES($1,$2,$3,$4,$5)`, digest("refresh", pair.RefreshToken), se.ID, se.Epoch, b.now, se.ExpiresAt); e != nil {
-				return e
-			}
-		}
-		if e = b.authority.(authority.SessionBindingTransaction).CheckSessionBinding(se, b.now); e != nil {
-			return e
-		}
-		idToken, e := r.issuer.OAuthIDToken(ctx, b.authority, se.ID, client, nonce)
-		if e != nil {
-			return e
-		}
-		out = oauth.Tokens{AccessToken: pair.Token, TokenType: "Bearer", ExpiresIn: pair.ExpiresIn, RefreshToken: pair.RefreshToken, RefreshExpiresIn: pair.RefreshExpiresIn, IDToken: idToken, Scope: strings.Join(scopes, " ")}
-		b.final = finalSession(ctx, b, se)
 		return audit(ctx, b.tx, actor, b.app.ID, "code.exchanged", b.now)
 	})
 	if e == nil && outcome != nil {
@@ -381,4 +362,38 @@ func (r *Repository) RevokeToken(ctx context.Context, client, secret, token stri
 		}
 		return audit(ctx, b.tx, actor, b.app.ID, "token.revoked", b.now)
 	})
+}
+
+// Both one-use authorization paths share canonical grant, refresh and binding rules.
+func (r *Repository) issueGrant(ctx context.Context, b *boundary, actor, parent string, scopes []string, consentExp time.Time, secret clientSecret, nonce string, version int64) (out oauth.Tokens, sessionID string, e error) {
+	var count int
+	if e = b.tx.QueryRowContext(ctx, `SELECT count(*) FROM owned_oauth_grants WHERE account_id=$1 AND revoked_at IS NULL AND expires_at>$2`, actor, b.now).Scan(&count); e != nil {
+		return out, "", e
+	}
+	if count >= 128 {
+		return out, "", oauth.ErrGrant
+	}
+	se, pair, e := r.issuer.IssueOAuthTransaction(ctx, b.authority, parent, b.app.ID, scopes, consentExp)
+	if e != nil {
+		return out, "", oauth.ErrGrant
+	}
+	_, e = b.tx.ExecContext(ctx, `INSERT INTO owned_oauth_grants(session_id,account_id,parent_id,app_id,client_id,app_epoch,owner_id,owner_version,consent_version,secret_id,secret_hash,scopes,nonce,created_at,expires_at)VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`, se.ID, actor, parent, b.app.ID, b.app.Slug, b.epoch, nullable(b.owner), b.ownerVersion, version, nullable(secret.id), secret.hash, rawJSON(scopes), nonce, b.now, se.ExpiresAt)
+	if e != nil {
+		return out, "", e
+	}
+	if pair.RefreshToken != "" {
+		if _, e = b.tx.ExecContext(ctx, `INSERT INTO owned_oauth_refresh(hash,session_id,epoch,created_at,expires_at)VALUES($1,$2,$3,$4,$5)`, digest("refresh", pair.RefreshToken), se.ID, se.Epoch, b.now, se.ExpiresAt); e != nil {
+			return out, "", e
+		}
+	}
+	if e = b.authority.(authority.SessionBindingTransaction).CheckSessionBinding(se, b.now); e != nil {
+		return out, "", e
+	}
+	idToken, e := r.issuer.OAuthIDToken(ctx, b.authority, se.ID, b.app.Slug, nonce)
+	if e != nil {
+		return out, "", e
+	}
+	out = oauth.Tokens{AccessToken: pair.Token, TokenType: "Bearer", ExpiresIn: pair.ExpiresIn, RefreshToken: pair.RefreshToken, RefreshExpiresIn: pair.RefreshExpiresIn, IDToken: idToken, Scope: strings.Join(scopes, " ")}
+	b.final = finalSession(ctx, b, se)
+	return out, se.ID, nil
 }

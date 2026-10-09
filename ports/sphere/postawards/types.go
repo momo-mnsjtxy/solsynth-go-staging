@@ -127,4 +127,12 @@ type Repository interface {
 	BindWallet(context.Context, string, string, WalletPatch) (Merchant, error)
 	Settlements(context.Context, string, string, Page) ([]Settlement, int, error)
 	SettleMerchant(context.Context, string, string, int) (int, error)
+	SettlePublisherRewards(context.Context, string, int) (int, error)
+	SettlePublisherAwards(context.Context, string, int) (int, error)
+	ResettlePublisherRewards(context.Context, string, ResettleRequest, int) (int, error)
+}
+type ResettleRequest struct {
+	DateFrom    time.Time `json:"date_from"`
+	DateTo      time.Time `json:"date_to"`
+	PublisherID *string   `json:"publisher_id"`
 }

@@ -146,7 +146,7 @@ func (r *Repository) BindVoice(ctx context.Context, tx *sql.Tx, actor, rid strin
 // proof and current room audience after this potentially blocking object open.
 func (r *Repository) OpenVoiceInTransaction(ctx context.Context, tx *sql.Tx, actor, rid, clipID string) (rooms.VoiceClip, io.ReadSeekCloser, error) {
 	var result rooms.VoiceClip
-	result, e := scanClip(tx.QueryRowContext(ctx, `SELECT `+clipFields+` FROM owned_chat_voice_clips c JOIN owned_media_files f ON f.id=c.id JOIN chat_messages m ON m.id=c.message_id JOIN chat_members sender ON sender.id=c.sender_id WHERE c.id=$1 AND c.room_id=$2 AND c.expires_at>clock_timestamp() AND f.state='ready' AND m.deleted_at IS NULL AND m.type='voice' AND m.chat_room_id=c.room_id AND m.sender_id=c.sender_id AND sender.deleted_at IS NULL FOR SHARE OF f,c`, clipID, rid))
+	result, e := scanClip(tx.QueryRowContext(ctx, `SELECT `+clipFields+` FROM owned_chat_voice_clips c JOIN owned_media_files f ON f.id=c.id JOIN chat_messages m ON m.id=c.message_id JOIN chat_members sender ON sender.id=c.sender_id WHERE c.id=$1 AND c.room_id=$2 AND c.expires_at>clock_timestamp() AND f.state='ready' AND m.deleted_at IS NULL AND m.type='voice' AND m.chat_room_id=c.room_id AND m.sender_id=c.sender_id AND sender.deleted_at IS NULL AND sender.joined_at=c.sender_joined_at FOR SHARE OF f,c`, clipID, rid))
 	if e != nil {
 		return result, nil, e
 	}
@@ -167,7 +167,7 @@ func (r *Repository) OpenVoiceInTransaction(ctx context.Context, tx *sql.Tx, act
 		return result, nil, e
 	}
 	var live bool
-	e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_chat_voice_clips c JOIN chat_messages m ON m.id=c.message_id JOIN chat_members s ON s.id=c.sender_id WHERE c.id=$1 AND c.expires_at>clock_timestamp() AND m.deleted_at IS NULL AND s.deleted_at IS NULL)`, clipID).Scan(&live)
+	e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_chat_voice_clips c JOIN chat_messages m ON m.id=c.message_id JOIN chat_members s ON s.id=c.sender_id WHERE c.id=$1 AND c.expires_at>clock_timestamp() AND m.deleted_at IS NULL AND s.deleted_at IS NULL AND s.joined_at=c.sender_joined_at)`, clipID).Scan(&live)
 	if e == nil && !live {
 		e = rooms.ErrNotFound
 	}

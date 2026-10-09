@@ -278,7 +278,7 @@ func listOptions(r *http.Request, drafts bool) (ListOptions, error) {
 	}
 	allowed := []string{"offset", "take", "pub", "realm"}
 	if !drafts {
-		allowed = append(allowed, "type", "order", "orderDesc")
+		allowed = append(allowed, "type", "order", "orderDesc", "pinned")
 	}
 	if e = query(q, allowed...); e != nil {
 		return ListOptions{}, e
@@ -297,6 +297,16 @@ func listOptions(r *http.Request, drafts bool) (ListOptions, error) {
 		o.Take, e = strconv.Atoi(q.Get("take"))
 		if e != nil {
 			return o, ErrInvalid
+		}
+	}
+	if q.Has("pinned") {
+		v, err := strconv.ParseBool(q.Get("pinned"))
+		if err != nil {
+			return o, ErrInvalid
+		}
+		o.Pinned = &v
+		if v && o.Publisher == "" && o.Realm == "" {
+			return o, ErrPinnedScope
 		}
 	}
 	if q.Has("type") {
@@ -347,6 +357,8 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 		return id, true
 	}
 	registerBlog(m, repo, identity)
+	registerPins(m, repo, identity)
+	registerCompletion(m, repo, identity)
 	list := func(drafts bool) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			permission := ""

@@ -28,6 +28,7 @@ var Schema = baseSchema + "\n" + FriendSchema
 
 type Repository struct {
 	collections CollectionPublicationPolicy
+	chatEvents  notifications.ChatEventProjector
 	friends     notifications.AudienceEventProjector
 	preferences PreferencePolicy
 	roomAccess  rooms.AccessPolicy
@@ -229,7 +230,8 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 	if r == nil || r.guard == nil {
 		return p, notifications.ErrUnavailable
 	}
-	if !authority.ValidID(actor) || app != r.app || after < 0 || take < 1 || take > 100 {
+	head := after == notifications.HeadCursor
+	if !authority.ValidID(actor) || app != r.app || after < 0 && !head || take < 1 || take > 100 {
 		return p, notifications.ErrInvalid
 	}
 	tx, e := r.begin(ctx)
@@ -245,8 +247,12 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 	if e != nil && !errors.Is(e, sql.ErrNoRows) {
 		return p, e
 	}
-	if after < floor || after > p.HighWater {
-		return p, notifications.ErrCursor
+	if head {
+		after = p.HighWater
+	} else if after < floor {
+		return p, &notifications.CursorReset{Cursor: floor}
+	} else if after > p.HighWater {
+		return p, &notifications.CursorReset{Cursor: p.HighWater}
 	}
 	p.Cursor = after
 	// Freeze the finite committed page before discovering its complete account
@@ -312,6 +318,9 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 		if v.audience == "chat" {
 			e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM chat_members m JOIN chat_rooms r ON r.id=m.chat_room_id WHERE m.account_id=$1 AND r.id=$2 AND m.joined_at IS NOT NULL AND m.joined_at<=$3 AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned AND r.deleted_at IS NULL AND `+r.chatFilter("r.id", "$1")+`)`, actor, v.id, v.event.CreatedAt).Scan(&visible)
 		}
+		if v.audience == "chat" && v.event.Type == chatLiveMarker && visible {
+			v.event, visible, e = r.projectChatReference(ctx, tx, actor, v.event)
+		}
 		if v.audience == "friend" && r.friends != nil && v.id != nil {
 			event, allow, x := r.friends.ProjectAudienceEvent(ctx, tx, actor, *v.id)
 			e = x
@@ -330,6 +339,23 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 	// all locks held, reproject every friend event and check the original reader.
 	final := []notifications.Event{}
 	for _, event := range p.Events {
+		allowed := true
+		for _, v := range items {
+			if v.event.Sequence == event.Sequence && v.audience == "chat" && v.event.Type == chatLiveMarker {
+				fresh, allow, x := r.projectChatReference(ctx, tx, actor, v.event)
+				if x != nil {
+					return p, x
+				}
+				allowed = allow
+				if allow {
+					event = fresh
+				}
+				break
+			}
+		}
+		if !allowed {
+			continue
+		}
 		var source *string
 		for _, v := range items {
 			if v.event.Sequence == event.Sequence && v.audience == "friend" {
@@ -340,7 +366,7 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 
 		// A friend/media wait may outlive another notification's source grant.
 		// Recheck notification visibility with the current statement snapshot.
-		allowed := true
+		allowed = true
 		for _, v := range items {
 			if v.event.Sequence == event.Sequence && v.audience == "notification" {
 				e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM notification_v1.inbox WHERE account_id=$1::text::uuid AND app_id=$2 AND id=$3 AND dismissed_at IS NULL AND `+r.inboxVisibilitySQL()+`)`, actor, app, v.id).Scan(&allowed)

@@ -22,7 +22,13 @@ func (g *TransactionGuard) StoredAuthenticationEligible(ctx context.Context, db 
 	return g.storedSessionEligible(ctx, db, tx, actor, session, version, epoch, true, nil)
 }
 
-func (g *TransactionGuard) storedSessionEligible(ctx context.Context, db *sql.DB, tx *sql.Tx, actor, session string, version, epoch int64, authenticationOnly bool, permissions []string) (bool, error) {
+// StoredConnectionEligible reconciles transport leases through the same OAuth
+// app/consent/parent binding used by the original credential verifier.
+func (g *TransactionGuard) StoredConnectionEligible(ctx context.Context, db *sql.DB, tx *sql.Tx, actor, session string, version, epoch int64) (bool, error) {
+	return g.storedSessionEligible(ctx, db, tx, actor, session, version, epoch, true, nil, true)
+}
+
+func (g *TransactionGuard) storedSessionEligible(ctx context.Context, db *sql.DB, tx *sql.Tx, actor, session string, version, epoch int64, authenticationOnly bool, permissions []string, connection ...bool) (bool, error) {
 	if g == nil || g.db == nil || g.db != db || g.verifier == nil || tx == nil {
 		return false, authority.ErrUnavailable
 	}
@@ -44,6 +50,9 @@ func (g *TransactionGuard) storedSessionEligible(ctx context.Context, db *sql.DB
 	var at time.Time
 	if e = tx.QueryRowContext(ctx, `SELECT clock_timestamp()`).Scan(&at); e != nil {
 		return false, e
+	}
+	if len(connection) == 1 && connection[0] {
+		return g.verifier.RecordedConnectionEligible(&transaction{tx: tx, ctx: ctx, account: a, readOnly: true}, session, version, epoch, at.UTC())
 	}
 	if authenticationOnly {
 		return g.verifier.RecordedAuthenticationEligible(&transaction{tx: tx, ctx: ctx, account: a, readOnly: true}, session, version, epoch, at.UTC())

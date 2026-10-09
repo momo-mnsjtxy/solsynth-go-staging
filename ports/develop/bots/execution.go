@@ -37,11 +37,14 @@ type MessageDelivery struct {
 	SenderAccountID string          `json:"sender_account_id"`
 	Content         string          `json:"content"`
 	MessageType     string          `json:"message_type"`
+	EncryptionMeta  json.RawMessage `json:"encryption_meta"`
 	Meta            json.RawMessage `json:"meta"`
 	CreatedAt       time.Time       `json:"created_at"`
 }
 type ExecutionConfig struct {
 	NoneEncryptionMode int
+	EnableMLSOpaque    bool
+	MLSEncryptionMode  int
 	SendTimeout        time.Duration
 	EventLifetime      time.Duration
 	MaxAttempts        int
@@ -49,7 +52,7 @@ type ExecutionConfig struct {
 }
 
 func (c ExecutionConfig) Validate() error {
-	if c.NoneEncryptionMode < 0 || c.SendTimeout < time.Millisecond || c.SendTimeout > 30*time.Second || c.EventLifetime < time.Second || c.EventLifetime > 24*time.Hour || c.MaxAttempts < 1 || c.MaxAttempts > 20 || c.MaxPendingPerRoom < 1 || c.MaxPendingPerRoom > 10000 {
+	if c.NoneEncryptionMode < 0 || c.EnableMLSOpaque && (c.MLSEncryptionMode < 0 || c.MLSEncryptionMode == c.NoneEncryptionMode) || c.SendTimeout < time.Millisecond || c.SendTimeout > 30*time.Second || c.EventLifetime < time.Second || c.EventLifetime > 24*time.Hour || c.MaxAttempts < 1 || c.MaxAttempts > 20 || c.MaxPendingPerRoom < 1 || c.MaxPendingPerRoom > 10000 {
 		return ErrInvalid
 	}
 	return nil
@@ -63,6 +66,29 @@ type EnrollmentRequest struct {
 	Adapter   string    `json:"adapter"`
 	ExpiresAt time.Time `json:"expires_at"`
 }
+type RenewalRequest struct {
+	ExpiresAt time.Time `json:"expires_at"`
+}
+type RenewalPolicyRequest struct {
+	// ExtendBySeconds is the bounded period each successful reconciliation adds
+	// from its current database time. ConsentExpiresAt is an absolute hard stop;
+	// it is never extended by the worker and cannot exceed the authorizing
+	// session or seven days from the explicit request.
+	ExtendBySeconds    int64     `json:"extend_by_seconds"`
+	RenewBeforeSeconds int64     `json:"renew_before_seconds"`
+	ConsentExpiresAt   time.Time `json:"consent_expires_at"`
+}
+type RenewalPolicy struct {
+	BotID              string     `json:"bot_id"`
+	RoomID             string     `json:"room_id"`
+	ExtendBySeconds    int64      `json:"extend_by_seconds"`
+	RenewBeforeSeconds int64      `json:"renew_before_seconds"`
+	ConsentExpiresAt   time.Time  `json:"consent_expires_at"`
+	Active             bool       `json:"active"`
+	RevokedAt          *time.Time `json:"revoked_at,omitempty"`
+	Reason             *string    `json:"reason,omitempty"`
+	UpdatedAt          time.Time  `json:"updated_at"`
+}
 type Enrollment struct {
 	BotID      string    `json:"bot_id"`
 	RoomID     string    `json:"room_id"`
@@ -75,6 +101,9 @@ type Enrollment struct {
 type ExecutionRepository interface {
 	Enrollment(context.Context, apps.Scope, string, string, *EnrollmentRequest, string) (Enrollment, error)
 	RoomCommands(context.Context, string, string) (map[string][]develop.BotCommand, error)
+}
+type RenewalRepository interface {
+	RenewalPolicy(context.Context, apps.Scope, string, string, *RenewalPolicyRequest, string) (RenewalPolicy, error)
 }
 
 // MessageObserver runs inside the canonical chat write transaction and must not

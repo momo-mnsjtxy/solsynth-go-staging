@@ -50,6 +50,14 @@ func TestLivestreamOutputConfigurationIsExplicitPrivateAndOffline(t *testing.T) 
 	if e = parseExternal(t, args...).apply(&c); e != nil || c.Livestreams == nil || c.Livestreams.Outputs == nil {
 		t.Fatal(e)
 	}
+	archiveArgs := append(append([]string(nil), args...), "--enable-livestream-archive-import", "--livestream-archive-ffmpeg=/usr/bin/ffmpeg", "--livestream-archive-limiter=/usr/bin/prlimit", "--livestream-archive-input-bytes=16777216", "--livestream-archive-output-bytes=8388608")
+	archiveConfig := application.Config{MediaStore: store, MaxMediaBytes: 16 << 20}
+	if e = parseExternal(t, archiveArgs...).apply(&archiveConfig); e != nil || archiveConfig.Livestreams == nil || archiveConfig.Livestreams.ArchiveImport == nil {
+		t.Fatal("explicit archive adapter configuration was not wired", e)
+	}
+	if e = parseExternal(t, append(args, "--enable-livestream-archive-import")...).apply(&c); e == nil {
+		t.Fatal("archive import accepted without explicit bounded executables")
+	}
 	provider, ok := c.Livestreams.Provider.(live.OutputProvider)
 	if !ok || provider.OutputContract() != live.EgressContract {
 		t.Fatal("missing supported output provider")

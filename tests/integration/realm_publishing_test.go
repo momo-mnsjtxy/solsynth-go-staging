@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -132,6 +133,484 @@ func (f *realmPublishingFixture) publisherEditor(t *testing.T) {
 	}
 	if _, e := f.accounts.ChangeMember(f.otherCtx, f.other, f.privatePub.ID, accounts.MemberChange{Action: accounts.AcceptInvite}); e != nil {
 		t.Fatal(e)
+	}
+}
+
+func TestPGOrganizationCollectionArtworkLiteralSearchAndConcurrentCRUD(t *testing.T) {
+	f := newRealmPublishingFixture(t)
+	if _, e := f.interactions.CreateCollection(f.otherCtx, f.other, f.publicPub.ID, interactions.CollectionRequest{Slug: "denied"}); !errors.Is(e, accounts.ErrForbidden) {
+		t.Fatal("realm member acquired publisher editor", e)
+	}
+	f.publisherEditor(t)
+	scoped := func(permission string) context.Context {
+		pair, e := f.issuer.IssueSession(context.Background(), f.actor, authority.SessionOptions{Label: "collection permission", Scopes: []string{permission}})
+		if e != nil {
+			t.Fatal(e)
+		}
+		proof, e := f.verifier.Authenticate(context.Background(), pair.Token)
+		if e != nil {
+			t.Fatal(e)
+		}
+		return f.guard.Bind(context.Background(), proof)
+	}
+	createdByScope, e := f.interactions.CreateCollection(scoped("post.collections.create"), f.actor, f.publicPub.ID, interactions.CollectionRequest{Slug: "scoped-crud"})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.interactions.UpdateCollection(scoped("post.collections.create"), f.actor, f.publicPub.ID, createdByScope.Slug, interactions.CollectionRequest{}); !errors.Is(e, authority.ErrForbidden) {
+		t.Fatal("create scope updated collection", e)
+	}
+	if _, e = f.interactions.UpdateCollection(scoped("post.collections.update"), f.actor, f.publicPub.ID, createdByScope.Slug, interactions.CollectionRequest{}); e != nil {
+		t.Fatal(e)
+	}
+	if e = f.interactions.DeleteCollection(scoped("post.collections.update"), f.actor, f.publicPub.ID, createdByScope.Slug); !errors.Is(e, authority.ErrForbidden) {
+		t.Fatal("update scope deleted collection", e)
+	}
+	if e = f.interactions.DeleteCollection(scoped("post.collections.delete"), f.actor, f.publicPub.ID, createdByScope.Slug); e != nil {
+		t.Fatal(e)
+	}
+	upload := mediaUpload("organization-collection-artwork", "synthetic image", true)
+	upload.Name = "art.png"
+	upload.MIMEType = "image/png"
+	file, _, e := f.repo.Upload(f.ctx, f.actor, upload, strings.NewReader("synthetic image"))
+	if e != nil {
+		t.Fatal(e)
+	}
+	name := "literal%_needle"
+	c, e := f.interactions.CreateCollection(f.otherCtx, f.other, f.publicPub.ID, interactions.CollectionRequest{Slug: "literal-art", Name: &name, BackgroundID: &file.ID, IconID: &file.ID})
+	if e != nil {
+		t.Fatal(e)
+	}
+	got, e := f.interactions.Collection(context.Background(), "", f.publicPub.Name, c.Slug)
+	if e != nil || got.BackgroundID == nil || *got.BackgroundID != file.ID || got.IconID == nil || *got.IconID != file.ID || got.Background == nil || got.Background.MIMEType != "image/png" || got.Icon == nil || got.Icon.SHA256 != file.SHA256 {
+		t.Fatal(got, e)
+	}
+	if _, e = f.accounts.SetPublisherRelationship(f.outsideCtx, f.outside, f.publicPub.ID, "block", true); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.interactions.Collection(f.outsideCtx, f.outside, f.publicPub.Name, c.Slug); !errors.Is(e, interactions.ErrCollectionNotFound) {
+		t.Fatal("blocked collection direct read", e)
+	}
+	if list, total, e := f.interactions.Collections(f.outsideCtx, f.outside, f.publicPub.Name, interactions.Page{Take: 20}); e != nil || len(list) != 0 || total != 0 {
+		t.Fatal("blocked collection list", list, total, e)
+	}
+	if _, e = f.accounts.SetPublisherRelationship(f.outsideCtx, f.outside, f.publicPub.ID, "block", false); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.accounts.SetPublisherRelationship(f.outsideCtx, f.outside, f.publicPub.ID, "mute", true); e != nil {
+		t.Fatal(e)
+	}
+	if mutedDirect, e := f.interactions.Collection(f.outsideCtx, f.outside, f.publicPub.Name, c.Slug); e != nil || mutedDirect.Background == nil {
+		t.Fatal("mute changed direct collection semantics", mutedDirect, e)
+	}
+	if list, _, e := f.interactions.Collections(f.outsideCtx, f.outside, "", interactions.Page{Take: 100, Query: name}); e != nil || len(list) != 0 {
+		t.Fatal("muted collection remained globally discoverable", list, e)
+	}
+	if list, total, e := f.interactions.Collections(f.outsideCtx, f.outside, f.publicPub.Name, interactions.Page{Take: 20}); e != nil || len(list) != 1 || total != 1 || list[0].Background == nil {
+		t.Fatal("mute hid direct publisher collection list", list, total, e)
+	}
+	if _, e = f.accounts.SetPublisherRelationship(f.outsideCtx, f.outside, f.publicPub.ID, "mute", false); e != nil {
+		t.Fatal(e)
+	}
+	rows, total, e := f.interactions.Collections(context.Background(), "", "", interactions.Page{Take: 20, Query: "%_"})
+	if e != nil || total != 1 || len(rows) != 1 || rows[0].ID != c.ID {
+		t.Fatal("search treated wildcard input as pattern", rows, total, e)
+	}
+	if _, e = f.interactions.CreateCollection(f.ctx, f.actor, f.privatePub.ID, interactions.CollectionRequest{Slug: "private-collection"}); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.interactions.Collection(context.Background(), "", f.privatePub.Name, "private-collection"); !errors.Is(e, interactions.ErrCollectionNotFound) {
+		t.Fatal("private organization collection leaked", e)
+	}
+	updated, e := f.interactions.UpdateCollection(f.ctx, f.actor, f.publicPub.ID, c.Slug, interactions.CollectionRequest{Name: &name})
+	if e != nil || updated.BackgroundID != nil || updated.IconID != nil {
+		t.Fatal(updated, e)
+	}
+	var wg sync.WaitGroup
+	errs := make(chan error, 2)
+	for range 2 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, e := f.interactions.CreateCollection(f.ctx, f.actor, f.publicPub.ID, interactions.CollectionRequest{Slug: "concurrent-collection"})
+			errs <- e
+		}()
+	}
+	wg.Wait()
+	close(errs)
+	success, conflict := 0, 0
+	for e := range errs {
+		if e == nil {
+			success++
+		} else if errors.Is(e, interactions.ErrCollectionConflict) {
+			conflict++
+		} else {
+			t.Fatal(e)
+		}
+	}
+	if success != 1 || conflict != 1 {
+		t.Fatal(success, conflict)
+	}
+}
+
+func TestPGCollectionArtworkReciprocalOwnersUseOrderedAccountLocks(t *testing.T) {
+	f := newRealmPublishingFixture(t)
+	otherName := "synthetic-artwork-owner-" + f.other
+	otherPublisher, e := f.accounts.CreatePublisher(f.otherCtx, f.other, accounts.PublisherPatch{Name: &otherName, Nick: &otherName})
+	if e != nil {
+		t.Fatal(e)
+	}
+	upload := func(ctx context.Context, actor, key string) string {
+		v := mediaUpload(key, key, true)
+		v.Name, v.MIMEType = key+".png", "image/png"
+		file, _, e := f.repo.Upload(ctx, actor, v, strings.NewReader(key))
+		if e != nil {
+			t.Fatal(e)
+		}
+		return file.ID
+	}
+	actorArtwork := upload(f.ctx, f.actor, "reciprocal-actor-artwork")
+	otherArtwork := upload(f.otherCtx, f.other, "reciprocal-other-artwork")
+	start := make(chan struct{})
+	errs := make(chan error, 2)
+	actorCtx, actorCancel := context.WithTimeout(f.ctx, 10*time.Second)
+	defer actorCancel()
+	otherCtx, otherCancel := context.WithTimeout(f.otherCtx, 10*time.Second)
+	defer otherCancel()
+	for _, request := range []struct {
+		ctx              context.Context
+		actor, publisher string
+		artwork          string
+		slug             string
+	}{{actorCtx, f.actor, f.individual.ID, otherArtwork, "reciprocal-a"}, {otherCtx, f.other, otherPublisher.ID, actorArtwork, "reciprocal-b"}} {
+		request := request
+		go func() {
+			<-start
+			_, e := f.interactions.CreateCollection(request.ctx, request.actor, request.publisher, interactions.CollectionRequest{Slug: request.slug, BackgroundID: &request.artwork})
+			errs <- e
+		}()
+	}
+	close(start)
+	for range 2 {
+		if e := <-errs; e != nil {
+			t.Fatal("reciprocal artwork write", e)
+		}
+	}
+}
+
+func TestPGPublisherCompletionAuthorityPrivacyRelationshipsAndPersistence(t *testing.T) {
+	f := newRealmPublishingFixture(t)
+	public := f.post(t, f.publicPub, "publisher completion public", posts.Public)
+	private := f.post(t, f.privatePub, "publisher completion private", posts.Public)
+	quota, e := f.accounts.PublisherQuota(f.ctx, f.actor)
+	if e != nil || quota.Total != 3 || quota.Used < 3 || quota.Remaining != 0 {
+		t.Fatal(quota, e)
+	}
+	rows, e := f.accounts.SearchPublishers(context.Background(), "", "synthetic-org-private", 20)
+	if e != nil || len(rows) != 0 {
+		t.Fatal("private publisher search leaked", rows, e)
+	}
+	rows, e = f.accounts.SearchPublishers(f.ctx, f.actor, "synthetic-org-private", 20)
+	if e != nil || len(rows) != 1 || rows[0].ID != f.privatePub.ID {
+		t.Fatal(rows, e)
+	}
+	if _, e = f.accounts.PublisherStats(context.Background(), "", f.privatePub.ID); !errors.Is(e, accounts.ErrNotFound) {
+		t.Fatal("private stats leaked", e)
+	}
+	if _, e = f.accounts.SetPublisherFeature(f.otherCtx, f.other, f.publicPub.ID, "comments.featured", nil, true); !errors.Is(e, accounts.ErrForbidden) {
+		t.Fatal("non-manager changed feature", e)
+	}
+	if _, e = f.accounts.SetPublisherFeature(f.ctx, f.actor, f.publicPub.ID, "comments.featured", nil, true); e != nil {
+		t.Fatal(e)
+	}
+	features, e := f.accounts.PublisherFeatures(f.ctx, f.actor, f.publicPub.ID)
+	if e != nil || !features["comments.featured"] {
+		t.Fatal(features, e)
+	}
+	reopened := accountpg.NewWithAuthority(f.db, f.guard).WithRealms(f.social)
+	features, e = reopened.PublisherFeatures(f.ctx, f.actor, f.publicPub.ID)
+	if e != nil || !features["comments.featured"] {
+		t.Fatal("feature not persistent", features, e)
+	}
+	if _, e = f.posts.Get(f.outsideCtx, f.outside, public.ID); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = reopened.SetPublisherRelationship(f.outsideCtx, f.outside, f.publicPub.ID, "block", true); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.posts.Get(f.outsideCtx, f.outside, public.ID); !errors.Is(e, posts.ErrNotFound) {
+		t.Fatal("publisher block did not hide post", e)
+	}
+	if _, e = reopened.PublisherStats(f.outsideCtx, f.outside, f.publicPub.ID); !errors.Is(e, accounts.ErrNotFound) {
+		t.Fatal("publisher block did not hide metadata stats", e)
+	}
+	if _, e = reopened.SetPublisherRelationship(f.outsideCtx, f.outside, f.publicPub.ID, "block", false); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.posts.Get(f.outsideCtx, f.outside, public.ID); e != nil {
+		t.Fatal("unblock did not restore post", e)
+	}
+	if _, e = reopened.SetPublisherRelationship(f.outsideCtx, f.outside, f.publicPub.ID, "mute", true); e != nil {
+		t.Fatal(e)
+	}
+	page, e := f.timeline.Feed(f.outsideCtx, f.outside, timeline.Options{Publisher: f.publicPub.ID, Take: 100, Mode: sphere.Latest})
+	if e != nil {
+		t.Fatal(e)
+	}
+	for _, item := range page.Items {
+		if item.Data != nil && item.Data.ID == public.ID {
+			t.Fatal("muted publisher remained in feed")
+		}
+	}
+	if _, e = f.posts.Get(f.outsideCtx, f.outside, public.ID); e != nil {
+		t.Fatal("mute hid direct post", e)
+	}
+	heat, e := f.accounts.PublisherHeatmap(context.Background(), "", f.publicPub.ID)
+	if e != nil || len(heat) == 0 {
+		t.Fatal(heat, e)
+	}
+	stats, e := f.accounts.PublisherContentStats(context.Background(), "", f.publicPub.ID)
+	if e != nil || stats.Moments < 1 {
+		t.Fatal(stats, e)
+	}
+	_ = private
+}
+
+func TestPGPublisherFeatureTTLFeaturedReactionProjectionAndBoostFeed(t *testing.T) {
+	f := newRealmPublishingFixture(t)
+	target := f.post(t, f.publicPub, "feature gated yesterday target", posts.Public)
+	expires := time.Now().UTC().Add(2 * time.Minute)
+	feature, e := f.accounts.SetPublisherFeature(f.ctx, f.actor, f.publicPub.ID, "postsRequireFollow", &expires, true)
+	if e != nil || feature.PublisherID != f.publicPub.ID || feature.ExpiredAt == nil {
+		t.Fatal(feature, e)
+	}
+	if _, e = f.posts.Get(f.outsideCtx, f.outside, target.ID); !errors.Is(e, posts.ErrNotFound) {
+		t.Fatal("postsRequireFollow did not gate direct reads", e)
+	}
+	status, e := f.timeline.Subscribe(f.outsideCtx, f.outside, f.publicPub.ID)
+	if e != nil || !status.IsActive {
+		t.Fatal(status, e)
+	}
+	if _, e = f.posts.Get(f.outsideCtx, f.outside, target.ID); e != nil {
+		t.Fatal("accepted follower did not satisfy gate", e)
+	}
+	if _, e = f.accounts.SetPublisherFeature(f.ctx, f.actor, f.publicPub.ID, "postsRequireFollow", nil, false); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.accounts.SetPublisherFeature(f.ctx, f.actor, f.publicPub.ID, "followRequiresApproval", &expires, true); e != nil {
+		t.Fatal(e)
+	}
+	pending, e := f.timeline.Subscribe(f.otherCtx, f.other, f.publicPub.ID)
+	if e != nil || !pending.IsPending {
+		t.Fatal("canonical follow policy was not updated", pending, e)
+	}
+	if _, e = f.timeline.Unsubscribe(f.outsideCtx, f.outside, f.publicPub.ID); e != nil {
+		t.Fatal(e)
+	}
+	query(t, f.db, `UPDATE owned_publisher_features SET expired_at=clock_timestamp()-interval '1 second' WHERE publisher_id=$1 AND flag='followRequiresApproval'`, f.publicPub.ID)
+	query(t, f.db, `UPDATE owned_publisher_follow_policy SET expires_at=clock_timestamp()-interval '1 second' WHERE publisher_id=$1`, f.publicPub.ID)
+	accepted, e := f.timeline.Subscribe(f.outsideCtx, f.outside, f.publicPub.ID)
+	if e != nil || !accepted.IsActive || accepted.RequiresApproval {
+		t.Fatal("expired approval policy remained effective", accepted, e)
+	}
+
+	// Featured uses the previous UTC creation day. A currently sponsored post is
+	// combined with that bounded top-five set even when it was created today.
+	var databaseNow time.Time
+	if e = f.db.QueryRow(`SELECT clock_timestamp()`).Scan(&databaseNow); e != nil {
+		t.Fatal(e)
+	}
+	utcBoundary := time.Date(databaseNow.UTC().Year(), databaseNow.UTC().Month(), databaseNow.UTC().Day(), 0, 0, 0, 0, time.UTC)
+	query(t, f.db, `UPDATE owned_text_posts SET created_at=$2::timestamptz WHERE id=$1`, target.ID, utcBoundary.Add(-12*time.Hour))
+	sponsored := f.post(t, f.publicPub, "current internal sponsor", posts.Public)
+	now := time.Now().UTC().Truncate(time.Hour)
+	query(t, f.db, `INSERT INTO owned_post_sponsor_placements(id,post_id,total_amount,valid_from,valid_until,created_at)VALUES($1,$2,5,$3,$3+interval '1 hour',$3)`, authorityUUID(t), sponsored.ID, now)
+	featured, _, e := f.posts.Featured(context.Background(), "", 0, 20)
+	if e != nil {
+		t.Fatal(e)
+	}
+	seenTarget, seenSponsor := false, false
+	for _, p := range featured {
+		seenTarget = seenTarget || p.ID == target.ID
+		seenSponsor = seenSponsor || p.ID == sponsored.ID
+	}
+	if !seenTarget || !seenSponsor {
+		t.Fatal("featured omitted daily or sponsored post", seenTarget, seenSponsor, featured)
+	}
+
+	if _, _, e = f.interactions.React(f.otherCtx, f.other, target.ID, interactions.ReactionRequest{Symbol: "heart", Attitude: interactions.Positive}); e != nil {
+		t.Fatal(e)
+	}
+	var otherName string
+	if e = f.db.QueryRow(`SELECT name FROM owned_authority_accounts WHERE id=$1`, f.other).Scan(&otherName); e != nil {
+		t.Fatal(e)
+	}
+	reactions, n, e := f.posts.ReactionUser(context.Background(), "", otherName, 0, 20)
+	if e != nil || n != 1 || len(reactions) != 1 || reactions[0].Account.ID != f.other || reactions[0].Post.ID != target.ID {
+		t.Fatal(reactions, n, e)
+	}
+
+	boost, e := f.posts.BoostPost(f.ctx, f.actor, target.ID, nil)
+	if e != nil {
+		t.Fatal(e)
+	}
+	page, e := f.timeline.Feed(f.ctx, f.actor, timeline.Options{Publisher: f.publicPub.ID, Take: 1, Mode: sphere.Latest})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if len(page.Items) == 0 || page.Items[0].Data == nil || page.Items[0].Data.ID != target.ID || page.Items[0].Data.BoostCount != 1 || page.NextCursor == nil {
+		t.Fatal("boost missing from feed ordering/count", page)
+	}
+	next, e := f.timeline.Feed(f.ctx, f.actor, timeline.Options{Publisher: f.publicPub.ID, Take: 1, Mode: sphere.Latest, Cursor: *page.NextCursor})
+	if e != nil || len(next.Items) == 0 || next.Items[0].Data == nil || next.Items[0].Data.ID == target.ID {
+		t.Fatal("boost cursor repeated or skipped page", next, e)
+	}
+	if _, e = f.accounts.ChangeMember(f.ctx, f.actor, boost.PublisherID, accounts.MemberChange{Action: accounts.InviteMember, AccountID: f.other, Role: accounts.Editor}); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.accounts.ChangeMember(f.otherCtx, f.other, boost.PublisherID, accounts.MemberChange{Action: accounts.AcceptInvite}); e != nil {
+		t.Fatal(e)
+	}
+	if e = f.posts.UnboostPost(f.otherCtx, f.other, target.ID); e != nil {
+		t.Fatal("current publisher editor could not unboost", e)
+	}
+}
+
+func TestPGBoostVisibilityControlsCountListAndFeedTimestamp(t *testing.T) {
+	f := newRealmPublishingFixture(t)
+	otherName := "synthetic-boost-owner-" + f.other
+	if _, e := f.accounts.CreatePublisher(f.otherCtx, f.other, accounts.PublisherPatch{Name: &otherName, Nick: &otherName}); e != nil {
+		t.Fatal(e)
+	}
+	target := f.post(t, f.publicPub, "old post with a hidden boost", posts.Public)
+	control := f.post(t, f.publicPub, "newer unboosted control", posts.Public)
+	now := f.config.Now().UTC()
+	query(t, f.db, `UPDATE owned_text_posts SET published_at=$2::timestamptz,created_at=$2::timestamptz WHERE id=$1::uuid`, target.ID, now.Add(-2*time.Hour))
+	query(t, f.db, `UPDATE owned_text_posts SET published_at=$2::timestamptz,created_at=$2::timestamptz WHERE id=$1::uuid`, control.ID, now.Add(-time.Hour))
+	boost, e := f.posts.BoostPost(f.otherCtx, f.other, target.ID, nil)
+	if e != nil {
+		t.Fatal(e)
+	}
+	assertBoost := func(want int64, wantFirst string) {
+		t.Helper()
+		rows, total, e := f.posts.PostBoosts(f.outsideCtx, f.outside, target.ID, 0, 20)
+		if e != nil || total != want || int64(len(rows)) != want {
+			t.Fatal("boost list", rows, total, e)
+		}
+		post, e := f.posts.Get(f.outsideCtx, f.outside, target.ID)
+		if e != nil || post.BoostCount != want {
+			t.Fatal("boost projection", post.BoostCount, want, e)
+		}
+		page, e := f.timeline.Feed(f.outsideCtx, f.outside, timeline.Options{Publisher: f.publicPub.ID, Take: 2, Mode: sphere.Latest})
+		if e != nil || len(page.Items) < 2 || page.Items[0].Data == nil || page.Items[0].Data.ID != wantFirst {
+			t.Fatal("boost feed timestamp", page, e)
+		}
+	}
+	assertBoost(1, target.ID)
+	if _, e = f.accounts.SetPublisherRelationship(f.outsideCtx, f.outside, boost.PublisherID, "mute", true); e != nil {
+		t.Fatal(e)
+	}
+	assertBoost(0, control.ID)
+	if _, e = f.accounts.SetPublisherRelationship(f.outsideCtx, f.outside, boost.PublisherID, "mute", false); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.social.ChangeRelationship(f.outsideCtx, f.outside, f.other, social.RelationshipChange{Action: social.Mute}); e != nil {
+		t.Fatal(e)
+	}
+	assertBoost(0, control.ID)
+	if _, e = f.social.ChangeRelationship(f.outsideCtx, f.outside, f.other, social.RelationshipChange{Action: social.Unmute}); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.social.ChangeRelationship(f.otherCtx, f.other, f.outside, social.RelationshipChange{Action: social.Block}); e != nil {
+		t.Fatal(e)
+	}
+	assertBoost(0, control.ID)
+}
+
+func TestPGFeaturedRanksVisibleCandidatesBeforeLimitInNonUTCSession(t *testing.T) {
+	f := newRealmPublishingFixture(t)
+	var databaseNow time.Time
+	if e := f.db.QueryRow(`SELECT clock_timestamp()`).Scan(&databaseNow); e != nil {
+		t.Fatal(e)
+	}
+	utcBoundary := time.Date(databaseNow.UTC().Year(), databaseNow.UTC().Month(), databaseNow.UTC().Day(), 0, 0, 0, 0, time.UTC)
+	previousDay := utcBoundary.Add(-12 * time.Hour)
+	want := map[string]bool{}
+	for i := range 5 {
+		visible := f.post(t, f.publicPub, fmt.Sprintf("visible featured candidate %d", i), posts.Public)
+		want[visible.ID] = true
+		query(t, f.db, `UPDATE owned_text_posts SET created_at=$2::timestamptz,published_at=$2::timestamptz,awarded_score=$3::numeric WHERE id=$1::uuid`, visible.ID, previousDay, i+1)
+		hidden := f.post(t, f.privatePub, fmt.Sprintf("private high-score featured candidate %d", i), posts.Public)
+		query(t, f.db, `UPDATE owned_text_posts SET created_at=$2::timestamptz,published_at=$2::timestamptz,awarded_score=$3::numeric WHERE id=$1::uuid`, hidden.ID, previousDay, 1000+i)
+	}
+	dsn := os.Getenv("PG_TEST_DSN") + ` options='-c timezone=Pacific/Kiritimati'`
+	nonUTC, e := sql.Open("pgx", dsn)
+	if e != nil {
+		t.Fatal("open non-UTC fixture connection")
+	}
+	nonUTC.SetMaxOpenConns(1)
+	t.Cleanup(func() { nonUTC.Close() })
+	var zone string
+	if e = nonUTC.QueryRow(`SHOW timezone`).Scan(&zone); e != nil || zone != "Pacific/Kiritimati" {
+		t.Fatal("non-UTC session", zone, e)
+	}
+	repo := postpg.New(nonUTC).WithVisibility(f.social)
+	featured, total, e := repo.Featured(context.Background(), "", 0, 20)
+	if e != nil || total != 5 || len(featured) != 5 {
+		t.Fatal("visible featured seats", len(featured), total, e)
+	}
+	for _, post := range featured {
+		if !want[post.ID] {
+			t.Fatal("ineligible high-score post displaced visible candidate", post.ID)
+		}
+	}
+}
+
+func TestPGPublisherAndCollectionWritesReauthorizeAfterLaterLockWait(t *testing.T) {
+	for _, operation := range []string{"feature", "collection"} {
+		t.Run(operation, func(t *testing.T) {
+			f := newRealmPublishingFixture(t)
+			cfg := f.config
+			cfg.AccessTTL, cfg.SessionTTL = 3*time.Second, 3*time.Second
+			issuer, e := authority.New(authoritypg.New(f.db), cfg)
+			if e != nil {
+				t.Fatal(e)
+			}
+			token := pgIssue(t, issuer, f.actor).Token
+			principal, e := f.verifier.Authenticate(context.Background(), token)
+			if e != nil {
+				t.Fatal(e)
+			}
+			requestCtx := f.guard.Bind(context.Background(), principal)
+			locks := atomicAuthorityFixture{db: f.db, ctx: f.ctx}
+			blocker, pid := atomicBlocker(t, locks, "owned_publishers", f.publicPub.ID)
+			done := make(chan error, 1)
+			go func() {
+				if operation == "feature" {
+					_, e = f.accounts.SetPublisherFeature(requestCtx, f.actor, f.publicPub.ID, "proofWait", nil, true)
+				} else {
+					_, e = f.interactions.CreateCollection(requestCtx, f.actor, f.publicPub.ID, interactions.CollectionRequest{Slug: "proof-wait"})
+				}
+				done <- e
+			}()
+			waitAtomicBlocked(t, locks, pid, "owned_publishers")
+			organizationWaitExpired(t, requestCtx, f.db, principal.Session.ExpiresAt)
+			if e = blocker.Commit(); e != nil {
+				t.Fatal(e)
+			}
+			if e = <-done; e == nil {
+				t.Fatal("expired original proof committed after wait")
+			}
+			var count int
+			if operation == "feature" {
+				e = f.db.QueryRow(`SELECT count(*) FROM owned_publisher_features WHERE publisher_id=$1 AND flag='proofWait'`, f.publicPub.ID).Scan(&count)
+			} else {
+				e = f.db.QueryRow(`SELECT count(*) FROM owned_post_collections WHERE publisher_id=$1 AND slug='proof-wait'`, f.publicPub.ID).Scan(&count)
+			}
+			if e != nil || count != 0 {
+				t.Fatal("failed transaction persisted", count, e)
+			}
+		})
 	}
 }
 func (f *realmPublishingFixture) accountHTTP(t *testing.T, ctx context.Context, token, method, path, body string) *httptest.ResponseRecorder {

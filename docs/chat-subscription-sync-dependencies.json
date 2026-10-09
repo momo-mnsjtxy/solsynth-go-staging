@@ -1,0 +1,34 @@
+{
+  "base": "e330428767a6aaf2e27650b62f8f431c571bf492",
+  "external_dependencies": [],
+  "schema_extension": "internal/chatpg/organization_schema.sql",
+  "requires": [
+    "canonical authority schema plus authorization_epoch continuity migration",
+    "canonical chat/member/message and organization tables",
+    "same-pool original proof TransactionGuard",
+    "existing OrganizationMessageReader and room/social/media hydration",
+    "MLS schema only when MLS delivery is configured",
+    "existing canonical OAuth app/consent/grant schema only for delegated connections"
+  ],
+  "authority_dependency": [
+    "RecordedConnectionEligible: separate transport reconciliation method; preserves existing resource method behavior",
+    "StoredConnectionEligible: same caller transaction; invokes canonical OAuth CheckSessionBinding without promoting scopes"
+  ],
+  "host_changes": [
+    "rooms.Service dispatch routes before generic room reads",
+    "Organization.Ready checks durable connection/subscription tables",
+    "realtime.Config.Connections integration owned by separate live fanout worker"
+  ],
+  "integration_cases": [
+    "TestPGChatGlobalSyncStableMillisecondCursor",
+    "TestPGChatJoinedRoomSyncBucketsAndRemovedPrivacy",
+    "TestPGChatSubscriptionsSessionContinuityAndPrivacy",
+    "TestPGChatSubscriptionAuthorizationGenerationAndExpiry",
+    "TestPGChatSubscriptionSyncRestartPersistence",
+    "TestPGBackendChatSubscriptionSyncRoutes",
+    "TestPGChatSyncWaitRechecksOriginalProof",
+    "TestPGChatJoinedRoomSyncExplicitOverflow",
+    "TestPGChatConnectionDelegatedBindingIsolation"
+  ],
+  "group_assignment": "Coordinator refreshes and independently reviews aggregate groups/dependency audit after composing all workers; this patch does not clear review-required markers."
+}

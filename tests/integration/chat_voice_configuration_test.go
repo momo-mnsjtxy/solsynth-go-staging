@@ -24,6 +24,14 @@ func TestPGBackendDisabledVoiceRequiresNoVoiceSchemaOrWorker(t *testing.T) {
 	if _, err = app.CleanupMedia(ctx, 10); err != nil {
 		t.Fatal("ordinary cleanup must not run disabled voice maintenance", err)
 	}
+	ordinary := privatePostFile(t, f, "ordinary-without-voice", "ordinary file remains readable")
+	marked := privatePostFile(t, f, "chatvoice:synthetic-missing-schema", "voice marker cannot become ordinary")
+	backendCall(t, app, "GET", "/api/media/files/"+ordinary.ID+"/info", f.token, "", 200)
+	backendCall(t, app, "GET", "/api/media/files/"+ordinary.ID, f.token, "", 200)
+	for _, suffix := range []string{"", "/info"} {
+		backendCall(t, app, "GET", "/api/media/files/"+marked.ID+suffix, f.token, "", 404)
+		backendCall(t, app, "HEAD", "/api/media/files/"+marked.ID+suffix, f.token, "", 404)
+	}
 	// A configured feature still checks its schema; disabling voice must not
 	// weaken readiness when the operator explicitly enables it.
 	cfg.ChatVoiceRetention = time.Hour

@@ -28,12 +28,13 @@ type Config struct {
 	PendingTTL   time.Duration
 }
 type Repository struct {
-	db             *sql.DB
-	store          media.ObjectStore
-	guard          *authoritypg.TransactionGuard
-	cfg            Config
-	completion     *completionQueue
-	readVisibility ReadVisibility
+	db                 *sql.DB
+	store              media.ObjectStore
+	guard              *authoritypg.TransactionGuard
+	cfg                Config
+	completion         *completionQueue
+	readVisibility     ReadVisibility
+	fileReadProtection FileReadProtection
 }
 
 func New(db *sql.DB, store media.ObjectStore, guard *authoritypg.TransactionGuard, cfg Config) (*Repository, error) {
@@ -43,6 +44,11 @@ func New(db *sql.DB, store media.ObjectStore, guard *authoritypg.TransactionGuar
 	return &Repository{db: db, store: store, guard: guard, cfg: cfg, completion: newCompletionQueue()}, nil
 }
 func (r *Repository) Ready(ctx context.Context) error {
+	if policy, ok := r.fileReadProtection.(interface{ Ready(context.Context) error }); ok {
+		if err := policy.Ready(ctx); err != nil {
+			return err
+		}
+	}
 	if err := r.store.Ready(ctx); err != nil {
 		return err
 	}
@@ -321,6 +327,9 @@ func (r *Repository) read(ctx context.Context, actor, id string, open bool, artw
 	// The file lock keeps readiness and ownership stable. Parent grants and owner
 	// status use fresh statements both before and after object-store waits.
 	checkAudience := func() error {
+		if err := r.protectFileRead(ctx, tx, actor, f.ID); err != nil {
+			return err
+		}
 		if err := artworkOwnerActive(ctx, tx, f.AccountID); err != nil {
 			return err
 		}
@@ -351,8 +360,11 @@ func (r *Repository) read(ctx context.Context, actor, id string, open bool, artw
 				return media.ErrNotFound
 			}
 		}
-		// A composed policy can wait too; owner disablement must be fresh after it.
-		return artworkOwnerActive(ctx, tx, f.AccountID)
+		// A composed policy can wait too; recheck owner and mandatory restrictions.
+		if err := artworkOwnerActive(ctx, tx, f.AccountID); err != nil {
+			return err
+		}
+		return r.protectFileRead(ctx, tx, actor, f.ID)
 	}
 	if err = checkAudience(); err != nil {
 		return media.File{}, nil, err

@@ -5,6 +5,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/authoritypg/stream_ticket_schema.sql",
+ "internal/affiliationpg/paid_schema.sql",
  "internal/chatpg/transient_schema.sql", "internal/mediapg/voice_schema.sql",
  "internal/developmediapg/schema.sql",
  "internal/interactionpg/collection_publication_schema.sql",
@@ -114,6 +116,7 @@ REQUIRED_BINARIES = {
     "TAXONOMY_BINARY": ("taxonomy", "taxonomy"),
 }
 PSQL = '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 -f '
+PHASE_TIMEOUTS = {"before": "40m", "after": "10m"}
 
 
 def check(runner, read_schema=None):
@@ -127,6 +130,13 @@ def check(runner, read_schema=None):
     schemas = [match.group(1) for match in installs]
     if set(schemas) != REQUIRED_SCHEMAS or len(schemas) != len(REQUIRED_SCHEMAS):
         raise ValueError("missing, unexpected or duplicate disposable schema install")
+    for schema, dependencies in {
+        "internal/authoritypg/stream_ticket_schema.sql": ("internal/authoritypg/schema.sql",),
+        "internal/affiliationpg/paid_schema.sql": ("internal/affiliationpg/schema.sql", "internal/walletpg/schema.sql"),
+        "internal/botpg/schema.sql": ("internal/apppg/schema.sql", "internal/mediapg/schema.sql"),
+    }.items():
+        if schemas.index(schema) <= max(schemas.index(dependency) for dependency in dependencies):
+            raise ValueError("canonical dependencies must precede schema: " + schema)
     if schemas.index("internal/chatpg/transient_schema.sql") <= schemas.index("internal/chatpg/schema.sql"):
         raise ValueError("placeholder lifecycle requires canonical chat first")
     if schemas.index("internal/mediapg/voice_schema.sql") <= max(schemas.index(x) for x in ("internal/chatpg/schema.sql","internal/mediapg/schema.sql")):
@@ -264,7 +274,7 @@ def check(runner, read_schema=None):
             raise ValueError("fixture binary is not built/exported before required tests: " + variable)
     for phase in ("before", "after"):
         invocation = (
-            f'PG_TEST_PHASE={phase} "$GO_BIN" test -timeout {"30m" if phase == "before" else "10m"} -race -count=1 -json '
+            f'PG_TEST_PHASE={phase} "$GO_BIN" test -timeout {PHASE_TIMEOUTS[phase]} -race -count=1 -json '
             f'-run "$(python3 scripts/check-integration-results.py --pattern {phase} --group "$group")" '
             f'./tests/integration | tee "$run/{phase}.jsonl"'
         )
@@ -303,7 +313,7 @@ def main():
         source.replace("--single-transaction -f internal/federationpg/public_admission_schema.sql", "-f internal/federationpg/public_admission_schema.sql"),
         source.replace("--single-transaction -f internal/commercepg/order_index_scope.sql", "-f internal/commercepg/order_index_scope.sql"),
         source.replace("--single-transaction -f internal/mediapg/usage_schema.sql", "-f internal/mediapg/usage_schema.sql"),
-        source.replace("test -timeout 30m -race", "test -race"),
+        source.replace("test -timeout 40m -race", "test -race"),
         source.replace("test -timeout 10m -race", "test -race"),
         source.replace("--single-transaction -f internal/signinpg/factor_setup_schema.sql", "-f internal/signinpg/factor_setup_schema.sql"),
         source.replace("--single-transaction -f internal/authoritypg/continuity_schema.sql", "-f internal/authoritypg/continuity_schema.sql"),

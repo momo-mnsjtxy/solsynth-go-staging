@@ -16,11 +16,12 @@ import (
 )
 
 type LivestreamConfig struct {
-	Provider live.Provider
-	Policy   livestreampg.Config
-	Chat     *livestreampg.ChatConfig
-	Awards   *livestreampg.AwardConfig
-	Outputs  *livestreampg.OutputConfig
+	Provider      live.Provider
+	Policy        livestreampg.Config
+	Chat          *livestreampg.ChatConfig
+	Awards        *livestreampg.AwardConfig
+	Outputs       *livestreampg.OutputConfig
+	ArchiveImport *mediapg.ArchiveImportConfig
 }
 
 func (x *externalModules) configureStreams(db *sql.DB, c Config, v *authority.Verifier, g *authoritypg.TransactionGuard, a *accountpg.Repository, s *socialpg.Repository, m *mediapg.Repository, commerceRepo *commercepg.Repository) (http.Handler, error) {
@@ -55,6 +56,7 @@ func (x *externalModules) configureStreams(db *sql.DB, c Config, v *authority.Ve
 		}
 	}
 	if c.Livestreams.Outputs != nil {
+		outputConfig := *c.Livestreams.Outputs
 		var artifacts live.ArtifactStore
 		if len(c.Livestreams.Outputs.HLSNamespaces) > 0 {
 			var ok bool
@@ -63,7 +65,16 @@ func (x *externalModules) configureStreams(db *sql.DB, c Config, v *authority.Ve
 				return nil, errors.New("HLS requires the configured canonical private artifact store")
 			}
 		}
-		if err = x.streams.WithOutputs(*c.Livestreams.Outputs, artifacts); err != nil {
+		if c.Livestreams.ArchiveImport != nil {
+			if m == nil || artifacts == nil || outputConfig.ArchiveImporter != nil {
+				return nil, errors.New("livestream archive import requires canonical media and private HLS storage")
+			}
+			outputConfig.ArchiveImporter, err = mediapg.NewArchiveImporter(m, artifacts, *c.Livestreams.ArchiveImport)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if err = x.streams.WithOutputs(outputConfig, artifacts); err != nil {
 			return nil, err
 		}
 	}

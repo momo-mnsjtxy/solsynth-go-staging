@@ -83,6 +83,36 @@ func TestReplayAndHandshakeRejectBeforeUpgrade(t *testing.T) {
 		t.Fatal("release")
 	}
 }
+
+func TestOmittedConnectionCursorRequestsTransactionalHead(t *testing.T) {
+	i := &identity{}
+	s := &eventStore{fn: func(after int64) (notifications.Page, error) {
+		if after != notifications.HeadCursor {
+			t.Fatalf("omitted websocket cursor replayed from %d", after)
+		}
+		return notifications.Page{Cursor: 9, HighWater: 9}, nil
+	}}
+	h := fixture(t, s, i)
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("GET", "/ws", nil))
+	// The request reaches the websocket upgrader only after the head lookup.
+	if w.Code != http.StatusBadRequest || s.calls.Load() != 1 {
+		t.Fatal(w.Code, w.Body.String(), s.calls.Load())
+	}
+}
+
+func TestCursorResetResponseIncludesRecoverableCursor(t *testing.T) {
+	i := &identity{}
+	s := &eventStore{fn: func(int64) (notifications.Page, error) {
+		return notifications.Page{}, &notifications.CursorReset{Cursor: 7}
+	}}
+	h := fixture(t, s, i)
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("GET", "/ws?after=2", nil))
+	if w.Code != http.StatusConflict || w.Body.String() != "{\"code\":\"REALTIME_CURSOR_RESET_REQUIRED\",\"cursor\":7}\n" {
+		t.Fatal(w.Code, w.Body.String())
+	}
+}
 func TestPumpReplayOrderAndRevocation(t *testing.T) {
 	i := &identity{}
 	s := &eventStore{fn: func(after int64) (notifications.Page, error) {

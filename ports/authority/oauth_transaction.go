@@ -36,9 +36,27 @@ func (v *Verifier) AuthenticateOAuth(ctx context.Context, token string) (Princip
 	return v.service.withClaims(ctx, c, nil)
 }
 
+// OAuthTokenMetadataTransaction accepts only this issuer's original signed
+// proof and validates its access-token lifetime and complete canonical binding.
+// Session lifetime is deliberately not used as a substitute for token expiry.
+func (s *Service) OAuthTokenMetadataTransaction(ctx context.Context, p Principal, tx Transaction) (map[string]any, error) {
+	if s == nil || p.Session.Category != OAuthSessionCategory {
+		return nil, ErrInvalid
+	}
+	fresh, e := (&Verifier{service: s}).AuthenticateTransaction(ctx, p, tx)
+	if e != nil {
+		return nil, e
+	}
+	c := p.proof.claims
+	return map[string]any{"active": true, "scope": strings.Join(fresh.Session.Scopes, " "), "sub": fresh.Account.ID, "client_id": fresh.Session.ClientID, "token_type": "Bearer", "exp": c.Expires, "iat": c.Issued, "nbf": c.NotBefore, "iss": c.Issuer, "aud": c.Audience}, nil
+}
+func (s *Service) AuthenticateOAuth(ctx context.Context, token string) (Principal, error) {
+	return (&Verifier{service: s}).AuthenticateOAuth(ctx, token)
+}
+
 func OAuthScope(scope string) bool {
 	switch scope {
-	case "openid", "profile", "email", "offline_access":
+	case "openid", "profile", "email", "offline_access", "posts.view", "posts.create", "posts.update", "posts.delete", "chat.view", "chat.messages.create", "chat.messages.update", "chat.messages.delete", "profile.read", "wallet.read", "notifications.read", "realms.read":
 		return true
 	}
 	return false
@@ -58,7 +76,7 @@ func oauthParent(tx Transaction, parent string, now time.Time) (Session, error) 
 func (s *Service) IssueOAuthTransaction(ctx context.Context, tx Transaction, parent, client string, scopes []string, expires time.Time) (Session, Pair, error) {
 	var se Session
 	var pair Pair
-	if s == nil || tx == nil || ctx.Err() != nil || !ValidID(parent) || !ValidID(client) || len(scopes) < 1 || len(scopes) > 4 {
+	if s == nil || tx == nil || ctx.Err() != nil || !ValidID(parent) || !ValidID(client) || len(scopes) < 1 || len(scopes) > 32 {
 		return se, pair, ErrInvalid
 	}
 	now := s.cfg.Now().UTC()

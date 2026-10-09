@@ -19,6 +19,18 @@ func TestExactPriceRejectsSilentTruncation(t *testing.T) {
 		t.Fatal(v, e)
 	}
 }
+
+func TestDefinitionFreeTrialPolicyIsExplicitAndBounded(t *testing.T) {
+	v := DefinitionInput{Identifier: "trial", GroupIdentifier: "trial", DisplayName: "Trial", Currency: "points", BasePrice: json.Number("1"), CycleDurationDays: 30, PayeeWalletID: "a7000000-0000-0000-0000-000000000001", AllowedPaymentMethods: []string{"solian.wallet"}, FreeTrialDays: 14}
+	d, e := ValidateDefinition(v)
+	if e != nil || d.FreeTrialDays != 14 {
+		t.Fatal(d, e)
+	}
+	v.FreeTrialDays = 367
+	if _, e = ValidateDefinition(v); e == nil {
+		t.Fatal("unbounded trial accepted")
+	}
+}
 func TestBoundedDateAndExplicitUnlink(t *testing.T) {
 	now := time.Date(2026, 10, 8, 12, 0, 0, 0, time.UTC)
 	from, to := now.Add(-367*24*time.Hour), now

@@ -10,6 +10,7 @@ import (
 )
 
 const EgressContract = "livekit-start-egress-json-v1"
+const ArchiveImportContract = "livestream-hls-mp4-import-v1"
 
 var ErrOutputUnavailable = &Failure{"LIVE_STREAM_OUTPUT_UNAVAILABLE", "The selected output capability is unavailable.", 503}
 var ErrOutputUncertain = &Failure{"LIVE_STREAM_OUTPUT_UNCERTAIN", "The provider outcome is not yet confirmed.", 409}
@@ -51,6 +52,8 @@ type OutputRepository interface {
 	StartHLS(context.Context, string, string, HLSRequest) (OutputResponse, error)
 	StopOutput(context.Context, string, string, string) error
 	OpenHLS(context.Context, string, string, string, string) (Playback, error)
+	RequestArchiveImport(context.Context, string, string, string, string) (ArchiveImport, error)
+	GetArchiveImport(context.Context, string, string, string, string) (ArchiveImport, error)
 }
 type Playback struct {
 	Body       []byte
@@ -90,6 +93,32 @@ func (p ProviderOutput) Terminal() bool { return p.Absent || p.Status >= 3 && p.
 type ArtifactStore interface {
 	StreamingReady(context.Context, string) error
 	OpenStreamingArtifact(context.Context, string, string, string, int64) (io.ReadSeekCloser, int64, time.Time, error)
+}
+
+// ArchiveImporter is an explicitly configured, idempotent host capability. It
+// converts one immutable stopped HLS archive to a canonical MP4 media record.
+// The job ID is the adapter idempotency key; implementations must return the
+// same media ID after a process restart or an uncertain response.
+type ArchiveImporter interface {
+	ArchiveImportContract() string
+	ArchiveImportReady(context.Context) error
+	ImportHLSArchive(context.Context, ArchiveImportSource) (ArchiveImportReceipt, error)
+}
+type ArchiveImportSource struct {
+	JobID, LeaseToken, ActorID, StreamID, OutputID, Namespace, Playlist, PlaylistSHA256 string
+}
+type ArchiveImportReceipt struct {
+	MediaID, SourceSHA256 string
+}
+type ArchiveImport struct {
+	ID        string    `json:"id"`
+	StreamID  string    `json:"stream_id"`
+	OutputID  string    `json:"output_id"`
+	State     string    `json:"state"`
+	MediaID   *string   `json:"media_id"`
+	Reason    string    `json:"reason,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 var outputProviderIDPattern = regexp.MustCompile(`^[A-Za-z0-9_-]{1,128}$`)

@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/jackc/pgx/v5/pgconn"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/passport/namecards"
 	realmboost "solsynth.local/go-migration/ports/passport/realmboosts"
@@ -116,6 +117,9 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 				return o, e
 			}
 		}
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.pay"); e != nil {
+			return o, e
+		}
 		if e = tx.Commit(); e != nil {
 			return o, e
 		}
@@ -201,7 +205,7 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		if e = r.fulfillRecurringOrder(ctx, tx, actor, &o, recurring, now); e != nil {
 			return o, e
 		}
-		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+		if e = finalizePaidOrder(ctx, tx, o, now); e != nil {
 			return o, e
 		}
 		o.Status = c.Finished
@@ -210,7 +214,7 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		if e = r.activateSubscription(ctx, tx, sub.String, o, now); e != nil {
 			return o, e
 		}
-		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+		if e = finalizePaidOrder(ctx, tx, o, now); e != nil {
 			return o, e
 		}
 		o.Status = c.Finished
@@ -239,7 +243,7 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		if r.namecards == nil || sub.Valid || gift.Valid {
 			return o, c.ErrUnavailable
 		}
-		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+		if e = finalizePaidOrder(ctx, tx, o, now); e != nil {
 			return o, e
 		}
 		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.pay"); e != nil {
@@ -251,7 +255,7 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		o.Status = c.Finished
 	}
 	if isRealmBoost {
-		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+		if e = finalizePaidOrder(ctx, tx, o, now); e != nil {
 			return o, e
 		}
 		if e = r.realmBoosts.FulfillRealmBoost(ctx, r.db, tx, actor, o, now); e != nil {
@@ -260,7 +264,7 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		o.Status = c.Finished
 	}
 	if isLiveAward {
-		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+		if e = finalizePaidOrder(ctx, tx, o, now); e != nil {
 			return o, e
 		}
 		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.pay"); e != nil {
@@ -272,7 +276,7 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		o.Status = c.Finished
 	}
 	if isPostAward {
-		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+		if e = finalizePaidOrder(ctx, tx, o, now); e != nil {
 			return o, e
 		}
 		if e = r.postAwards.FulfillPostAward(ctx, r.db, tx, actor, o, now); e != nil {
@@ -282,7 +286,7 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 	}
 
 	if isSponsor {
-		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+		if e = finalizePaidOrder(ctx, tx, o, now); e != nil {
 			return o, e
 		}
 		if e = r.sponsorship.FulfillSponsor(ctx, r.db, tx, actor, o, now); e != nil {
@@ -297,6 +301,9 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		return o, e
 	}
 	if e = event(ctx, tx, "order.paid", o.ID, o, now); e != nil {
+		return o, e
+	}
+	if e = recordStellarSupportMonths(ctx, tx, o.ID, now); e != nil {
 		return o, e
 	}
 	if isSponsor {
@@ -385,7 +392,12 @@ func (r *Repository) UpdateOrder(ctx context.Context, idv string, req c.UpdateSt
 		return o, e
 	}
 	if o.Status == c.Paid {
-		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, req.Status == c.Cancelled, now); e != nil {
+		if req.Status == c.Finished {
+			e = finalizePaidOrder(ctx, tx, o, now)
+		} else {
+			_, e = walletpg.CommerceSettle(ctx, tx, o.ID, true, now)
+		}
+		if e != nil {
 			return o, e
 		}
 	}
@@ -526,6 +538,9 @@ func insertSubscription(ctx context.Context, tx *sql.Tx, s c.Subscription, days 
 }
 func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c.CreateSubscription, key string, noop bool) (c.Subscription, error) {
 	var s c.Subscription
+	if req.IsFreeTrial && key == "" {
+		return s, c.ErrInvalid
+	}
 	tx, e := r.userTx(ctx, actor, "")
 	if e != nil {
 		return s, e
@@ -537,7 +552,7 @@ func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c
 	if req.Coupon != nil && req.IsAutoRenewal != nil && *req.IsAutoRenewal {
 		return s, c.ErrInvalid
 	}
-	if req.PaymentMethod != "solian.wallet" || req.IsFreeTrial {
+	if req.PaymentMethod != "solian.wallet" {
 		return s, c.ErrUnavailable
 	}
 	d, e := definition(ctx, tx, req.Identifier)
@@ -556,6 +571,14 @@ func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c
 	days, price, e := c.CyclePrice(d, req.CycleDurationDays)
 	if e != nil {
 		return s, e
+	}
+	initialDays := days
+	if req.IsFreeTrial {
+		if d.FreeTrialDays < 1 || req.Coupon != nil {
+			return s, c.ErrForbidden
+		}
+		initialDays = d.FreeTrialDays
+		price = wallet.Amount{}
 	}
 	consentVersion, e := recurringConsent(ctx, tx, actor, d, 0)
 	if e != nil {
@@ -577,11 +600,17 @@ func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c
 		if e != nil {
 			return s, e
 		}
+		if _, e = r.guard.Authenticate(ctx, r.db, tx, actor); e != nil {
+			return s, e
+		}
 		return s, tx.Commit()
 	}
 	old, e := lookupSubscriptionDefinition(ctx, tx, actor, req.Identifier)
 	if e == nil && (old.Status == c.SubscriptionUnpaid || old.Status == c.SubscriptionActive) {
 		if noop && req.Coupon == nil {
+			if _, e = r.guard.Authenticate(ctx, r.db, tx, actor); e != nil {
+				return s, e
+			}
 			return old, tx.Commit()
 		}
 		return old, c.ErrConflict
@@ -602,7 +631,15 @@ func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c
 	if d.ProductID != "" {
 		renew = d.AllowInternalWalletRenewal && req.IsAutoRenewal != nil && *req.IsAutoRenewal
 	}
-	s = c.Subscription{AppIdentifier: d.AppIdentifier, ProductTerms: d.ProductTerms, ConsentVersion: consentVersion, CycleDurationDays: days, IsAutoRenewal: renew, ID: sid, AccountID: actor, Identifier: d.Identifier, GroupIdentifier: d.GroupIdentifier, DisplayName: d.DisplayName, Status: c.SubscriptionUnpaid, PaymentMethod: req.PaymentMethod, PaymentDetails: c.PaymentDetails{Currency: d.Currency, PayerWalletID: &payer}, BasePrice: d.BasePrice, FinalPrice: price, BegunAt: now, EndedAt: now.Add(time.Duration(days) * 24 * time.Hour), CreatedAt: now, UpdatedAt: now}
+	s = c.Subscription{AppIdentifier: d.AppIdentifier, ProductTerms: d.ProductTerms, ConsentVersion: consentVersion, CycleDurationDays: days, IsAutoRenewal: renew, ID: sid, AccountID: actor, Identifier: d.Identifier, GroupIdentifier: d.GroupIdentifier, DisplayName: d.DisplayName, Status: c.SubscriptionUnpaid, PaymentMethod: req.PaymentMethod, PaymentDetails: c.PaymentDetails{Currency: d.Currency, PayerWalletID: &payer}, BasePrice: d.BasePrice, FinalPrice: price, BegunAt: now, EndedAt: now.Add(time.Duration(initialDays) * 24 * time.Hour), CreatedAt: now, UpdatedAt: now}
+	if req.IsFreeTrial {
+		s.Status = c.SubscriptionActive
+		s.IsActive = true
+		s.IsFreeTrial = true
+		if renew {
+			s.RenewalAt = &s.EndedAt
+		}
+	}
 	if req.Coupon != nil {
 		app, err := couponApp(d)
 		if err != nil {
@@ -619,22 +656,36 @@ func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c
 	if e = insertSubscription(ctx, tx, s, days, renew); e != nil {
 		return s, e
 	}
+	if req.IsFreeTrial {
+		if _, e = tx.ExecContext(ctx, `INSERT INTO commerce_v1.subscription_trials(account_id,identifier,subscription_id,created_at)VALUES($1::uuid,$2,$3::uuid,$4)`, actor, d.Identifier, s.ID, now); e != nil {
+			var pg *pgconn.PgError
+			if errors.As(e, &pg) && pg.Code == "23505" {
+				return s, c.ErrConflict
+			}
+			return s, e
+		}
+	}
 	if e = recordIdem(ctx, tx, "account:"+actor, key, "subscription", fp, s.ID); e != nil {
 		return s, e
 	}
 	if e = event(ctx, tx, "subscription.created", s.ID, s, now); e != nil {
 		return s, e
 	}
-	if s.Coupon != nil {
-		if _, e = r.guard.Authenticate(ctx, r.db, tx, actor); e != nil {
+	if req.IsFreeTrial {
+		if e = event(ctx, tx, "subscription.activated", s.ID, s, now); e != nil {
 			return s, e
 		}
+	}
+	if s.Coupon != nil {
 		if e = couponIssuer(ctx, tx, s.Coupon.AppID, s.Coupon.PublisherID, s.Coupon.PayeeWalletID); e != nil {
 			return s, e
 		}
 		if !s.Coupon.ExpiresAt.After(r.now().UTC()) {
 			return s, c.ErrConflict
 		}
+	}
+	if _, e = r.guard.Authenticate(ctx, r.db, tx, actor); e != nil {
+		return s, e
 	}
 	return s, tx.Commit()
 }
@@ -807,7 +858,7 @@ func (r *Repository) resourceOrder(ctx context.Context, tx *sql.Tx, actor string
 			return o, c.ErrConflict
 		}
 	}
-	if d.AppIdentifier != nil && (d.ProductID != "" || coupon != nil) {
+	if d.AppIdentifier != nil {
 		o.AppIdentifier = *d.AppIdentifier
 		app = strings.TrimPrefix(*d.AppIdentifier, "developer.app:")
 	}

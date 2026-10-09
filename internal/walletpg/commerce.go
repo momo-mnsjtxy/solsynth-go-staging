@@ -7,8 +7,38 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"solsynth.local/go-migration/ports/wallet/accounts"
+	"sort"
 	"time"
 )
+
+// LockCommerceBatch acquires every transaction and wallet needed by a bounded
+// settlement batch in one canonical order. Callers must already hold their own
+// settlement rows; later CommerceSettle calls reuse these transaction locks.
+func LockCommerceBatch(ctx context.Context, tx *sql.Tx, orders []string) error {
+	if tx == nil {
+		return accounts.ErrInvalid
+	}
+	ordered := append([]string(nil), orders...)
+	sort.Strings(ordered)
+	walletIDs := make([]string, 0, len(ordered)*2)
+	previous := ""
+	for _, order := range ordered {
+		if !accounts.ValidID(order) {
+			return accounts.ErrInvalid
+		}
+		if order == previous {
+			continue
+		}
+		previous = order
+		var payer, payee string
+		if err := tx.QueryRowContext(ctx, `SELECT payer_wallet_id::text,payee_wallet_id::text FROM wallet_v1.transactions WHERE managed_by=$1::uuid AND purpose='commerce' AND deleted_at IS NULL FOR UPDATE`, order).Scan(&payer, &payee); err != nil {
+			return mapErr(err)
+		}
+		walletIDs = append(walletIDs, payer, payee)
+	}
+	_, err := lockWallets(ctx, tx, walletIDs...)
+	return err
+}
 
 // CommerceHold is an internal transaction composition primitive. The caller
 // must hold its mandatory same-pool authority guard and commerce order row.

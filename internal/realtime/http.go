@@ -8,17 +8,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/messager/rooms"
 	"solsynth.local/go-migration/ports/notifications"
 )
 
 type Config struct {
+	Connections                   rooms.ChatConnections
 	Commands                      CommandHandler
 	App                           string
 	PollInterval, WriteTimeout    time.Duration
@@ -127,6 +132,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			notifications.WriteError(w, notifications.ErrInvalid)
 			return
 		}
+	} else if r.URL.Path != "/api/realtime/replay" {
+		after = notifications.HeadCursor
+	}
+	r, e = bindDevice(r)
+	if e != nil {
+		notifications.WriteError(w, e)
+		return
 	}
 	page, e := h.store.Replay(r.Context(), actor, h.cfg.App, after, 32)
 	if e != nil {
@@ -137,13 +149,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		notifications.WriteJSON(w, 200, page)
 		return
 	}
-	// Ordinary Solian connections start at the current durable high-water mark.
-	// after/Last-Event-ID opt into the independently authored resume protocol.
-	if afterRaw == "" {
-		after = page.HighWater
-		page.Events = nil
-		page.Cursor = after
-	}
+	// The store establishes omitted-cursor connections at a transactionally
+	// authenticated high-water mark. Explicit after/Last-Event-ID values opt in
+	// to replay and receive a recoverable reset cursor when retention passed them.
+	after = page.Cursor
 	if !h.acquire(actor) {
 		w.Header().Set("Retry-After", "1")
 		notifications.WriteJSON(w, 429, map[string]string{"code": "REALTIME_CONNECTION_LIMIT"})
@@ -176,20 +185,43 @@ func (h *Handler) pump(ctx context.Context, r *http.Request, actor string, after
 	return h.pumpCommands(ctx, r, actor, after, first, s, pings, nil)
 }
 func (h *Handler) pumpCommands(ctx context.Context, r *http.Request, actor string, after int64, first notifications.Page, s sink, pings <-chan struct{}, commands <-chan Command) error {
+	connection, e := h.openConnection(ctx, actor)
+	if e != nil {
+		return e
+	}
+	defer h.closeConnection(ctx, actor, connection)
+	ctx = rooms.WithChatConnection(ctx, connection)
+	r = r.WithContext(ctx)
 	ticker := time.NewTicker(h.cfg.PollInterval)
 	defer ticker.Stop()
 	heartbeat := time.NewTicker(20 * time.Second)
 	defer heartbeat.Stop()
 	page := first
 	send := func(p packet) error {
+		if p.Sequence == 0 || strings.HasPrefix(p.Type, "owned.") {
+			if e := h.currentConnection(ctx, actor, connection); e != nil {
+				return e
+			}
+			if a, e := h.identity.Account(r); e != nil {
+				return e
+			} else if a != actor {
+				return notifications.ErrInvalid
+			}
+		}
 		c, cancel := context.WithTimeout(ctx, h.cfg.WriteTimeout)
 		defer cancel()
 		return s.Send(c, p)
 	}
 	for {
+		if e := h.currentConnection(ctx, actor, connection); e != nil {
+			return e
+		}
 		for _, event := range page.Events {
 			if ctx.Err() != nil {
 				return ctx.Err()
+			}
+			if e := h.currentConnection(ctx, actor, connection); e != nil {
+				return e
 			}
 			// Identity is rechecked before each write, in addition to the transactional
 			// repository check at every poll. Bytes already in flight cannot be recalled.
@@ -216,6 +248,9 @@ func (h *Handler) pumpCommands(ctx context.Context, r *http.Request, actor strin
 			}
 			after = event.Sequence
 		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		if page.Cursor > after {
 			if e := send(packet{Type: "owned.cursor", Data: json.RawMessage(`null`), Sequence: page.Cursor}); e != nil {
 				return e
@@ -238,9 +273,6 @@ func (h *Handler) pumpCommands(ctx context.Context, r *http.Request, actor strin
 		case <-ctx.Done():
 			return ctx.Err()
 		case command := <-commands:
-			if h.cfg.Commands == nil {
-				return notifications.ErrInvalid
-			}
 			fresh, e := h.identity.Account(r)
 			if e != nil {
 				return e
@@ -248,7 +280,14 @@ func (h *Handler) pumpCommands(ctx context.Context, r *http.Request, actor strin
 			if fresh != actor {
 				return notifications.ErrInvalid
 			}
-			data, e := h.cfg.Commands.HandleCommand(ctx, actor, command)
+			var data json.RawMessage
+			if command.Type == "messages.subscribe" || command.Type == "messages.unsubscribe" {
+				data, e = h.handleSubscription(ctx, actor, connection, command)
+			} else if h.cfg.Commands == nil {
+				return notifications.ErrInvalid
+			} else {
+				data, e = h.cfg.Commands.HandleCommand(ctx, actor, command)
+			}
 			if e != nil {
 				return e
 			}
@@ -258,6 +297,9 @@ func (h *Handler) pumpCommands(ctx context.Context, r *http.Request, actor strin
 			}
 			if fresh != actor {
 				return notifications.ErrInvalid
+			}
+			if e = h.currentConnection(ctx, actor, connection); e != nil {
+				return e
 			}
 			if e = send(packet{Type: command.Type, Data: data}); e != nil {
 				return e
@@ -284,6 +326,27 @@ func (h *Handler) pumpCommands(ctx context.Context, r *http.Request, actor strin
 			return e
 		}
 	}
+}
+
+func (h *Handler) handleSubscription(ctx context.Context, actor, connection string, command Command) (json.RawMessage, error) {
+	if h.cfg.Connections == nil || connection == "" || command.Endpoint != "DysonNetwork.Messager" {
+		return nil, notifications.ErrInvalid
+	}
+	var input struct {
+		RoomID string `json:"chat_room_id"`
+	}
+	d := json.NewDecoder(strings.NewReader(string(command.Data)))
+	d.DisallowUnknownFields()
+	if e := d.Decode(&input); e != nil || !authority.ValidID(input.RoomID) {
+		return nil, notifications.ErrInvalid
+	}
+	if d.Decode(&struct{}{}) != io.EOF {
+		return nil, notifications.ErrInvalid
+	}
+	if e := h.cfg.Connections.SetSubscription(ctx, actor, connection, input.RoomID, command.Type == "messages.subscribe"); e != nil {
+		return nil, e
+	}
+	return json.RawMessage(`null`), nil
 }
 
 type wsSink struct{ c *websocket.Conn }
@@ -332,7 +395,8 @@ func (h *Handler) websocket(w http.ResponseWriter, r *http.Request, actor string
 				return
 			}
 			if p.Type != "ping" {
-				if h.cfg.Commands == nil {
+				isSubscription := p.Type == "messages.subscribe" || p.Type == "messages.unsubscribe"
+				if h.cfg.Commands == nil && (!isSubscription || h.cfg.Connections == nil) {
 					return
 				}
 				select {

@@ -26,12 +26,15 @@ type AwardConfig struct {
 	MaxAmount                                           wallet.Amount
 	MaxOrdersPerAccountStream, MaxAwardsPerStream       int
 	OrderTTL                                            time.Duration
+	RealtimePackets                                     bool
 }
 type AwardCommerce interface {
 	LiveAwardRequest(context.Context, *sql.DB, *sql.Tx, string, string, string, string) (string, error)
 	CreateLiveAwardOrder(context.Context, *sql.DB, *sql.Tx, string, string, string, string, string, wallet.Amount, time.Time, time.Time) (commerce.Order, error)
 	ReserveLiveAwardShare(context.Context, *sql.DB, *sql.Tx, string, string, string, string, commerce.Order, wallet.Amount, time.Time) (commerce.Order, error)
 	ReleaseLiveAwardShare(context.Context, *sql.DB, *sql.Tx, string, time.Time) error
+	ReleaseLiveAwardRefundReserve(context.Context, *sql.DB, *sql.Tx, string, time.Time) error
+	ReverseLiveAwardPayment(context.Context, *sql.DB, *sql.Tx, string, time.Time) (string, error)
 }
 
 func (r *Repository) WithAwards(c AwardConfig, store AwardCommerce) error {
@@ -44,6 +47,9 @@ func (r *Repository) WithAwards(c AwardConfig, store AwardCommerce) error {
 	}
 	if _, ok := r.publishers.(awardAccounts); !ok {
 		return live.ErrUnavailable
+	}
+	if c.RealtimePackets && r.chat == nil {
+		return live.ErrUnconfigured
 	}
 	r.awards = &c
 	r.awardCommerce = store
@@ -64,7 +70,7 @@ func (r *Repository) AwardsReady(ctx context.Context) error {
 		return e
 	}
 	var ready bool
-	e = r.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM pg_index WHERE indexrelid=to_regclass('commerce_v1.owned_livestream_award_distribution_source') AND indisunique AND indisvalid) AND EXISTS(SELECT 1 FROM wallet_v1.wallets w JOIN owned_authority_accounts a ON a.id=w.account_id WHERE w.id=$1::uuid AND w.account_id=$2::uuid AND w.realm_id IS NULL AND w.deleted_at IS NULL AND NOT a.disabled)`, r.awards.TreasuryWalletID, r.awards.TreasuryAccountID).Scan(&ready)
+	e = r.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM pg_index WHERE indexrelid=to_regclass('commerce_v1.owned_livestream_award_distribution_source') AND indisunique AND indisvalid) AND EXISTS(SELECT 1 FROM wallet_v1.wallets w JOIN owned_authority_accounts a ON a.id=w.account_id WHERE w.id=$1::uuid AND w.account_id=$2::uuid AND w.realm_id IS NULL AND w.deleted_at IS NULL AND NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=a.id AND p.kind='disable_account' AND(p.starts_at IS NULL OR p.starts_at<=clock_timestamp())AND(p.expires_at IS NULL OR p.expires_at>clock_timestamp())))`, r.awards.TreasuryWalletID, r.awards.TreasuryAccountID).Scan(&ready)
 	if e != nil {
 		return e
 	}
@@ -82,45 +88,44 @@ func awardMapped(e error) error {
 }
 
 type awardPurchase struct {
-	ID, Order, Stream, Actor, Owner, TreasuryActor, TreasuryWallet, BeneficiaryWallet, Currency string
-	Generation, OwnerVersion                                                                    int64
-	Amount, Share                                                                               wallet.Amount
-	Message, Sender                                                                             *string
-	Created                                                                                     time.Time
-	Fulfilled                                                                                   *time.Time
+	ID, Order, Stream, Actor, Owner, TreasuryActor, TreasuryWallet, BeneficiaryWallet, BeneficiaryAccount, BeneficiaryRealm, Currency string
+	Generation, OwnerVersion                                                                                                          int64
+	Amount, Share                                                                                                                     wallet.Amount
+	Message, Sender                                                                                                                   *string
+	Created                                                                                                                           time.Time
+	Fulfilled                                                                                                                         *time.Time
 }
 
-const awardPurchaseFields = `id::text,order_id::text,stream_id::text,generation,account_id::text,owner_id::text,owner_version,treasury_account_id::text,treasury_wallet_id::text,beneficiary_wallet_id::text,currency,amount::text,share_amount::text,message,sender_name,created_at,fulfilled_at`
+const awardPurchaseFields = `id::text,order_id::text,stream_id::text,generation,account_id::text,owner_id::text,owner_version,treasury_account_id::text,treasury_wallet_id::text,beneficiary_wallet_id::text,COALESCE(beneficiary_account_id::text,''),COALESCE(beneficiary_realm_id::text,''),currency,amount::text,share_amount::text,message,sender_name,created_at,fulfilled_at`
 
 func purchaseAward(ctx context.Context, tx *sql.Tx, id string, lock bool) (p awardPurchase, e error) {
 	q := `SELECT ` + awardPurchaseFields + ` FROM owned_livestream_award_purchases WHERE id=$1::uuid`
 	if lock {
 		q += ` FOR UPDATE NOWAIT`
 	}
-	e = tx.QueryRowContext(ctx, q, id).Scan(&p.ID, &p.Order, &p.Stream, &p.Generation, &p.Actor, &p.Owner, &p.OwnerVersion, &p.TreasuryActor, &p.TreasuryWallet, &p.BeneficiaryWallet, &p.Currency, &p.Amount, &p.Share, &p.Message, &p.Sender, &p.Created, &p.Fulfilled)
+	e = tx.QueryRowContext(ctx, q, id).Scan(&p.ID, &p.Order, &p.Stream, &p.Generation, &p.Actor, &p.Owner, &p.OwnerVersion, &p.TreasuryActor, &p.TreasuryWallet, &p.BeneficiaryWallet, &p.BeneficiaryAccount, &p.BeneficiaryRealm, &p.Currency, &p.Amount, &p.Share, &p.Message, &p.Sender, &p.Created, &p.Fulfilled)
 	if errors.Is(e, sql.ErrNoRows) {
 		e = live.ErrNotFound
 	}
 	return
 }
-func (r *Repository) awardOwner(ctx context.Context, tx *sql.Tx, v live.Stream) (owner string, version int64, wid string, e error) {
-	// The authored payout service supports individual publisher accounts only.
-	e = tx.QueryRowContext(ctx, `SELECT p.account_id::text,a.version FROM owned_publishers p JOIN owned_authority_accounts a ON a.id=p.account_id WHERE p.id=$1::uuid AND p.type=0 AND p.deleted_at IS NULL AND NOT a.disabled`, v.PublisherID).Scan(&owner, &version)
+func (r *Repository) awardOwner(ctx context.Context, tx *sql.Tx, v live.Stream) (owner string, version int64, wid, account, realm string, e error) {
+	e = tx.QueryRowContext(ctx, `SELECT COALESCE(p.account_id::text,''),COALESCE(p.realm_id::text,''),COALESCE(p.account_id::text,r.account_id::text),a.version FROM owned_publishers p LEFT JOIN owned_realms r ON r.id=p.realm_id AND r.deleted_at IS NULL JOIN owned_authority_accounts a ON a.id=COALESCE(p.account_id,r.account_id) WHERE p.id=$1::uuid AND p.type IN(0,1) AND p.deleted_at IS NULL AND NOT a.disabled AND ((p.type=0 AND p.account_id IS NOT NULL AND p.realm_id IS NULL)OR(p.type=1 AND p.realm_id IS NOT NULL AND p.account_id IS NULL AND r.id IS NOT NULL))`, v.PublisherID).Scan(&account, &realm, &owner, &version)
 	if errors.Is(e, sql.ErrNoRows) {
-		return "", 0, "", live.ErrAwardUnavailable
+		return "", 0, "", "", "", live.ErrAwardUnavailable
 	}
 	if e != nil {
 		return
 	}
-	e = tx.QueryRowContext(ctx, `SELECT id::text FROM wallet_v1.wallets WHERE account_id=$1::uuid AND realm_id IS NULL AND deleted_at IS NULL ORDER BY is_primary DESC,created_at,id LIMIT 1`, owner).Scan(&wid)
+	e = tx.QueryRowContext(ctx, `SELECT id::text FROM wallet_v1.wallets WHERE deleted_at IS NULL AND ((account_id=NULLIF($1::text,'')::uuid AND realm_id IS NULL)OR(realm_id=NULLIF($2::text,'')::uuid AND account_id IS NULL)) ORDER BY is_primary DESC,created_at,id LIMIT 1`, account, realm).Scan(&wid)
 	if errors.Is(e, sql.ErrNoRows) {
 		e = live.ErrAwardUnavailable
 	}
 	return
 }
-func walletOwned(ctx context.Context, tx *sql.Tx, wid, actor string) error {
+func walletBound(ctx context.Context, tx *sql.Tx, wid, account, realm string) error {
 	var yes bool
-	e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM wallet_v1.wallets WHERE id=$1::uuid AND account_id=$2::uuid AND realm_id IS NULL AND deleted_at IS NULL)`, wid, actor).Scan(&yes)
+	e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM wallet_v1.wallets WHERE id=$1::uuid AND deleted_at IS NULL AND ((account_id=NULLIF($2::text,'')::uuid AND realm_id IS NULL)OR(realm_id=NULLIF($3::text,'')::uuid AND account_id IS NULL)))`, wid, account, realm).Scan(&yes)
 	if e != nil {
 		return e
 	}
@@ -128,6 +133,9 @@ func walletOwned(ctx context.Context, tx *sql.Tx, wid, actor string) error {
 		return live.ErrAwardUnavailable
 	}
 	return nil
+}
+func walletOwned(ctx context.Context, tx *sql.Tx, wid, actor string) error {
+	return walletBound(ctx, tx, wid, actor, "")
 }
 func (r *Repository) CreateAwardOrder(ctx context.Context, actor, sid, key string, q live.AwardRequest) (out live.AwardOrderResponse, e error) {
 	defer func() { e = awardMapped(e) }()
@@ -168,7 +176,7 @@ func (r *Repository) CreateAwardOrder(ctx context.Context, actor, sid, key strin
 	if !alive {
 		return out, live.ErrForbidden
 	}
-	owner, version, beneficiary, e := r.awardOwner(ctx, tx, v)
+	owner, version, beneficiary, beneficiaryAccount, beneficiaryRealm, e := r.awardOwner(ctx, tx, v)
 	if e != nil {
 		return out, e
 	}
@@ -189,11 +197,12 @@ func (r *Repository) CreateAwardOrder(ctx context.Context, actor, sid, key strin
 		return out, live.ErrAwardUnavailable
 	}
 	fp := hex.EncodeToString(hash(struct {
-		Stream                            string
-		Generation                        int64
-		Owner, Wallet, Currency, Treasury string
-		Request                           live.AwardRequest
-	}{sid, v.Generation, owner, beneficiary, r.awards.PointsCurrency, r.awards.TreasuryWalletID, q}))
+		Stream                               string
+		Generation                           int64
+		Owner, Wallet, Currency, Treasury    string
+		BeneficiaryAccount, BeneficiaryRealm string
+		Request                              live.AwardRequest
+	}{sid, v.Generation, owner, beneficiary, r.awards.PointsCurrency, r.awards.TreasuryWalletID, beneficiaryAccount, beneficiaryRealm, q}))
 	prior, e := r.awardCommerce.LiveAwardRequest(ctx, r.db, tx, actor, key, fp, "")
 	if e != nil {
 		return out, e
@@ -235,7 +244,7 @@ func (r *Repository) CreateAwardOrder(ctx context.Context, actor, sid, key strin
 	if e != nil {
 		return out, e
 	}
-	_, e = tx.ExecContext(ctx, `INSERT INTO owned_livestream_award_purchases(id,order_id,stream_id,generation,account_id,owner_id,owner_version,beneficiary_wallet_id,treasury_account_id,treasury_wallet_id,currency,amount,share_amount,message,created_at)VALUES($1::uuid,$2::uuid,$3::uuid,$4::bigint,$5::uuid,$6::uuid,$7::bigint,$8::uuid,$9::uuid,$10::uuid,$11::text,$12::numeric,$13::numeric,$14::text,$15::timestamptz)`, id, o.ID, sid, v.Generation, actor, owner, version, beneficiary, r.awards.TreasuryAccountID, r.awards.TreasuryWalletID, r.awards.PointsCurrency, q.Amount.Amount(), share, q.Message, at)
+	_, e = tx.ExecContext(ctx, `INSERT INTO owned_livestream_award_purchases(id,order_id,stream_id,generation,account_id,owner_id,owner_version,beneficiary_wallet_id,beneficiary_account_id,beneficiary_realm_id,treasury_account_id,treasury_wallet_id,currency,amount,share_amount,message,created_at)VALUES($1::uuid,$2::uuid,$3::uuid,$4::bigint,$5::uuid,$6::uuid,$7::bigint,$8::uuid,NULLIF($9::text,'')::uuid,NULLIF($10::text,'')::uuid,$11::uuid,$12::uuid,$13::text,$14::numeric,$15::numeric,$16::text,$17::timestamptz)`, id, o.ID, sid, v.Generation, actor, owner, version, beneficiary, beneficiaryAccount, beneficiaryRealm, r.awards.TreasuryAccountID, r.awards.TreasuryWalletID, r.awards.PointsCurrency, q.Amount.Amount(), share, q.Message, at)
 	if e != nil {
 		return out, e
 	}
@@ -313,11 +322,11 @@ func (r *Repository) lockedAwardPayment(ctx context.Context, db *sql.DB, tx *sql
 	if _, e = r.visible(ctx, tx, actor, &stream); e != nil {
 		return
 	}
-	owner, version, beneficiary, e := r.awardOwner(ctx, tx, stream)
+	owner, version, beneficiary, beneficiaryAccount, beneficiaryRealm, e := r.awardOwner(ctx, tx, stream)
 	if e != nil {
 		return p, stream, e
 	}
-	if owner != p.Owner || version != p.OwnerVersion || beneficiary != p.BeneficiaryWallet {
+	if owner != p.Owner || version != p.OwnerVersion || beneficiary != p.BeneficiaryWallet || beneficiaryAccount != p.BeneficiaryAccount || beneficiaryRealm != p.BeneficiaryRealm {
 		return p, stream, live.ErrConflict
 	}
 	if e = activeAccount(ctx, tx, p.TreasuryActor); e != nil {
@@ -326,7 +335,7 @@ func (r *Repository) lockedAwardPayment(ctx context.Context, db *sql.DB, tx *sql
 	if e = walletOwned(ctx, tx, p.TreasuryWallet, p.TreasuryActor); e != nil {
 		return
 	}
-	if e = walletOwned(ctx, tx, p.BeneficiaryWallet, p.Owner); e != nil {
+	if e = walletBound(ctx, tx, p.BeneficiaryWallet, p.BeneficiaryAccount, p.BeneficiaryRealm); e != nil {
 		return
 	}
 	v, e := loadRun(ctx, tx, p.Stream, p.Generation)
@@ -386,6 +395,14 @@ func (r *Repository) FulfillLiveStreamAward(ctx context.Context, db *sql.DB, tx 
 	if !valid {
 		return live.ErrForbidden
 	}
+	// The stream lock held by lockedAwardPayment serializes every enqueue. Reserve
+	// no funds unless the realtime award packet can be durably admitted in this
+	// same transaction.
+	if r.awards.RealtimePackets {
+		if e = r.eventCapacity(ctx, tx, p.Stream); e != nil {
+			return e
+		}
+	}
 	distribution, e := r.awardCommerce.ReserveLiveAwardShare(ctx, db, tx, actor, p.ID, p.TreasuryActor, p.BeneficiaryWallet, o, p.Share, at)
 	if e != nil {
 		return e
@@ -421,6 +438,27 @@ func (r *Repository) FulfillLiveStreamAward(ctx context.Context, db *sql.DB, tx 
 	if e = audit(ctx, tx, p.Stream, actor, "livestreams.award.fulfilled"); e != nil {
 		return e
 	}
-	_, e = r.guard.Authorize(ctx, db, tx, actor, "orders.pay", "livestreams.awards")
-	return e
+	principal, e := r.guard.Authorize(ctx, db, tx, actor, "orders.pay", "livestreams.awards")
+	if e != nil {
+		return e
+	}
+	if r.awards.RealtimePackets {
+		packetID, x := uid()
+		if x != nil {
+			return x
+		}
+		payload, x := json.Marshal(map[string]any{"type": "livestream.award", "event_id": packetID, "id": p.ID, "stream_id": p.Stream, "account_id": actor, "amount": p.Amount, "message": p.Message, "sender_name": name, "created_at": at})
+		if x != nil || len(payload) > live.MaxDataPacketBytes {
+			return live.ErrInvalid
+		}
+		digest := hash(struct {
+			Purchase string
+			Payload  []byte
+		}{p.ID, payload})
+		_, x = tx.ExecContext(ctx, `INSERT INTO owned_livestream_chat_outbox(id,stream_id,generation,actor_id,kind,payload,request_hash,created_at,next_attempt_at,expires_at,session_id,account_version,session_epoch,permission)VALUES($1::uuid,$2::uuid,$3::bigint,$4::uuid,'award',$5::bytea,$6::bytea,$7::timestamptz,$7::timestamptz,$8::timestamptz,$9::uuid,$10::bigint,$11::bigint,'livestreams.awards')`, packetID, p.Stream, p.Generation, actor, payload, digest, at, at.Add(r.chat.EventTTL), principal.Session.ID, principal.Account.Version, principal.Session.AuthorizationEpoch)
+		if x != nil {
+			return x
+		}
+	}
+	return nil
 }

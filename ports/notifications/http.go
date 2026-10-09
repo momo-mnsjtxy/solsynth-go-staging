@@ -39,7 +39,11 @@ func WriteError(w http.ResponseWriter, e error) {
 	if status == 401 {
 		w.Header().Set("WWW-Authenticate", `Bearer realm="notifications"`)
 	}
-	WriteJSON(w, status, map[string]string{"code": code})
+	body := map[string]any{"code": code}
+	if cursor, ok := RecoverableCursor(e); ok {
+		body["cursor"] = cursor
+	}
+	WriteJSON(w, status, body)
 }
 func WriteJSON(w http.ResponseWriter, status int, v any) {
 	b, e := json.Marshal(v)

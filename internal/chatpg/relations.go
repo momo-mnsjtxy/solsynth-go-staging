@@ -83,7 +83,7 @@ func dedup(ids []string) []string {
 // Complete canonical account set precedes the guard; realm locks precede room
 // locks. Association changes during the wait fail with a retryable conflict.
 func (r *Repository) beginRoomWrite(ctx context.Context, actor, rid, permission, newRealm string, extra ...string) (tx *sql.Tx, e error) {
-	if r == nil || (!r.fixture && r.guard == nil) {
+	if r == nil || (!r.fixture && r.guard == nil && r.botIdentity == nil) {
 		return nil, rooms.ErrUnavailable
 	}
 	tx, e = r.begin(ctx, false)
@@ -91,7 +91,11 @@ func (r *Repository) beginRoomWrite(ctx context.Context, actor, rid, permission,
 		return nil, e
 	}
 	fail := func(err error) (*sql.Tx, error) { _ = tx.Rollback(); return nil, err }
-	if !r.fixture {
+	botWrite, e := r.authenticateBotWrite(ctx, nil, actor)
+	if e != nil {
+		return fail(e)
+	}
+	if !r.fixture && !botWrite {
 		if e = r.preflight(ctx, tx, actor, permission); e != nil {
 			return fail(e)
 		}
@@ -125,13 +129,17 @@ func (r *Repository) beginRoomWrite(ctx context.Context, actor, rid, permission,
 			return fail(e)
 		}
 	}
-	if !r.fixture {
+	if !r.fixture && !botWrite {
 		if permission == "" {
 			_, e = r.guard.Authenticate(ctx, r.db, tx, actor)
 		} else {
 			_, e = r.guard.Authorize(ctx, r.db, tx, actor, permission)
 		}
 		if e != nil {
+			return fail(e)
+		}
+	} else if botWrite {
+		if _, e = r.authenticateBotWrite(ctx, tx, actor); e != nil {
 			return fail(e)
 		}
 	}
@@ -184,6 +192,12 @@ func hasID(ids []string, id string) bool {
 }
 func (r *Repository) commit(ctx context.Context, tx *sql.Tx, actor, permission string) error {
 	if !r.fixture {
+		if botWrite, e := r.authenticateBotWrite(ctx, tx, actor); botWrite {
+			if e != nil {
+				return e
+			}
+			return tx.Commit()
+		}
 		var e error
 		if permission == "" {
 			_, e = r.guard.Authenticate(ctx, r.db, tx, actor)

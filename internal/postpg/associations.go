@@ -18,6 +18,25 @@ type AssociationStore interface {
 	Load(context.Context, *sql.Tx, string, *posts.Post) error
 }
 
+// ProjectionRechecker refreshes retained association visibility after hydration
+// and all mutation lock waits. It must be read-only and acquire no new row locks.
+// Separate canonical reads are current policy observations, not an immutable
+// snapshot of every nested object at the eventual response time.
+type ProjectionRechecker interface {
+	RecheckProjection(context.Context, *sql.Tx, string, *posts.Post) error
+}
+
+func RecheckAssociations(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post, a AssociationStore) error {
+	if a == nil {
+		return nil
+	}
+	current, ok := a.(ProjectionRechecker)
+	if !ok {
+		return posts.ErrUnsupported
+	}
+	return current.RecheckProjection(ctx, tx, actor, p)
+}
+
 // AssociationPrelocker optionally acquires all publisher locks needed by an
 // association before the lifecycle takes the source publisher's editor lock.
 // The actor/proof is already locked. scope contains observed canonical IDs,

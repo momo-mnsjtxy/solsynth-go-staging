@@ -14,6 +14,7 @@ import (
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/develop"
 	"solsynth.local/go-migration/ports/develop/apps"
+	"solsynth.local/go-migration/ports/media"
 	"strconv"
 	"strings"
 	"time"
@@ -54,6 +55,11 @@ func failure(w http.ResponseWriter, e error, mini bool) {
 	}
 	if mini && errors.Is(e, ErrNotFound) {
 		send(w, 404, &Failure{"DEV_MINI_APP_NOT_FOUND", "Miniapp not found.", 404})
+		return
+	}
+	var m *media.Failure
+	if errors.As(e, &m) {
+		send(w, m.Status, &Failure{m.Code, "Canonical media operation failed.", m.Status})
 		return
 	}
 	var f *Failure
@@ -209,9 +215,11 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		fail(e)
 		return
 	}
+	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/"), "/")
+	botReplyRoute := !private && len(parts) == 4 && parts[0] == "api" && parts[1] == "bots" && parts[3] == "reply"
 	ctx := r.Context()
 	actor := ""
-	if private || authPresent || RoomCommandsRoute(r.URL.Path) {
+	if (private || authPresent || RoomCommandsRoute(r.URL.Path)) && !botReplyRoute {
 		if s.Authority == nil {
 			fail(authority.ErrUnavailable)
 			return
@@ -230,7 +238,6 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			ctx = s.Bind(ctx, p)
 		}
 	}
-	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/"), "/")
 	if RoomCommandsRoute(r.URL.Path) {
 		if r.Method != "GET" {
 			w.Header().Set("Allow", "GET")
@@ -252,6 +259,30 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		send(w, 200, v)
+		return
+	}
+	if botReplyRoute {
+		keys := r.Header.Values("X-Api-Key")
+		if r.Method != "POST" {
+			w.Header().Set("Allow", "POST")
+			w.WriteHeader(405)
+			return
+		}
+		if authPresent || len(keys) != 1 || strings.TrimSpace(keys[0]) != keys[0] || keys[0] == "" || !authority.ValidID(parts[2]) {
+			fail(ErrForbidden)
+			return
+		}
+		var request ReplyRequest
+		if e = decode(w, r, &request); e != nil {
+			fail(e)
+			return
+		}
+		out, e := s.Repository.Reply(ctx, parts[2], keys[0], request)
+		if e != nil {
+			fail(e)
+			return
+		}
+		send(w, 201, out)
 		return
 	}
 	if !private {
@@ -329,7 +360,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	scope := apps.Scope{Actor: actor, Developer: q.Get("dev"), Project: q.Get("proj"), App: q.Get("app")}
-	if scope.Developer == "" || !authority.ValidID(scope.Project) || !authority.ValidID(scope.App) {
+	if scope.Developer == "" || !authority.ValidID(scope.Project) || (scope.App != "" && !authority.ValidID(scope.App)) || (!mini && scope.App == "") {
 		fail(ErrInvalid)
 		return
 	}
@@ -342,6 +373,18 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if mini {
+		if scope.App == "" {
+			resolver, ok := s.Repository.(MiniScopeResolver)
+			if !ok {
+				fail(ErrUnsupported)
+				return
+			}
+			scope, e = resolver.ResolveMiniScope(ctx, scope, id)
+			if e != nil {
+				fail(e)
+				return
+			}
+		}
 		s.miniHTTP(w, r, ctx, scope, id, parts, offset, take)
 		return
 	}
@@ -413,11 +456,65 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(parts) >= 5 && parts[4] == "keys" {
-		if _, e = s.Repository.Bots(ctx, scope, id, nil, "read"); e != nil {
+		if len(parts) > 7 || len(parts) == 7 && parts[6] != "rotate" {
+			w.WriteHeader(404)
+			return
+		}
+		keyID := ""
+		if len(parts) >= 6 {
+			keyID = parts[5]
+			if !authority.ValidID(keyID) {
+				fail(ErrInvalid)
+				return
+			}
+		}
+		action := ""
+		var request *KeyRequest
+		switch {
+		case r.Method == "GET" && len(parts) <= 6:
+			action = "read"
+		case r.Method == "POST" && len(parts) == 5:
+			action, request = "create", &KeyRequest{}
+			if e = decode(w, r, request); e != nil {
+				fail(e)
+				return
+			}
+		case r.Method == "POST" && len(parts) == 7:
+			action = "rotate"
+			if r.ContentLength != 0 {
+				request = &KeyRequest{}
+				if e = decode(w, r, request); e != nil {
+					fail(e)
+					return
+				}
+			}
+		case r.Method == "DELETE" && len(parts) == 6:
+			action = "delete"
+			if e = empty(w, r); e != nil {
+				fail(e)
+				return
+			}
+		default:
+			w.Header().Set("Allow", "GET, POST, DELETE")
+			w.WriteHeader(405)
+			return
+		}
+		keys, e := s.Repository.Keys(ctx, scope, id, keyID, request, action)
+		if e != nil {
 			fail(e)
 			return
 		}
-		fail(ErrUnsupported)
+		if action == "delete" {
+			send(w, 204, nil)
+		} else if keyID != "" || action == "create" {
+			if len(keys) != 1 {
+				fail(ErrNotFound)
+				return
+			}
+			send(w, 200, keys[0])
+		} else {
+			send(w, 200, keys)
+		}
 		return
 	}
 	if len(parts) == 5 && parts[4] == "chat" && r.Method == "GET" {
@@ -532,6 +629,10 @@ func (s *Service) miniHTTP(w http.ResponseWriter, r *http.Request, ctx context.C
 		return
 	}
 	if len(parts) == 5 && parts[4] == "package" {
+		if r.Method == "POST" {
+			s.uploadPackage(w, r, ctx, scope, id)
+			return
+		}
 		if r.Method == "PUT" {
 			var input struct {
 				FileID string `json:"file_id"`

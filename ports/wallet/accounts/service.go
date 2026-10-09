@@ -176,7 +176,7 @@ func (s *Service) Transfer(ctx context.Context, p Principal, r TransferRequest, 
 	if r.Amount.Sign() <= 0 {
 		return Transaction{}, ErrAmount
 	}
-	if len(r.Currency) == 0 || utf8.RuneCountInString(r.Currency) > 128 || r.Currency != strings.TrimSpace(r.Currency) || strings.ContainsAny(r.Currency, "\x00\r\n") {
+	if !ValidCurrency(r.Currency) {
 		return Transaction{}, ErrInvalid
 	}
 	if r.Remark != nil && (utf8.RuneCountInString(*r.Remark) > 4096 || strings.ContainsRune(*r.Remark, 0)) {

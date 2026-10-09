@@ -135,7 +135,16 @@ There are at most 100 enrolled targets considered per message and an explicit
 per-room pending limit. Exceeding the limit fails message enqueue atomically; it
 does not silently lose the promised delivery. An operator should monitor failed
 and pending outbox records and explicitly decide whether to re-enroll or retry.
-There is no automatic deletion, manual replay, or background credential renewal.
+There is no automatic deletion or manual replay. Enrollment renewal runs only for
+an explicit persisted consent bound to the original enrollment generation,
+ordinary session/account version, publisher owner/member rows, room memberships,
+bot version, adapter binding and MLS device eligibility. Each consent has a
+caller-selected 5 minute to 24 hour extension, a 1 minute to 1 hour lead, and an
+absolute deadline no later than both the authorizing session and seven days after
+the request. The worker never extends that deadline. Expiry or any authority,
+membership, adapter, room, bot, application or MLS-device revocation permanently
+closes the consent; restoring the row cannot revive it. Re-enrollment and manual
+renewal also close the prior consent, so a later enrollment must opt in again.
 
 ## Host integration
 
@@ -143,7 +152,8 @@ Apply `botpg.ExecutionSchema` explicitly after authority/accounts, developer app
 bots and canonical chat schemas. No runtime constructor applies DDL. This is an unreleased initial schema: apply the reviewed ExecutionSchema to the
 fresh disposable database, including issuer_room_joined_at and lease columns.
 An earlier candidate schema is not a production migration baseline. The new
-schemas are `owned_bot_enrollments` and `owned_bot_message_outbox`.
+schemas are `owned_bot_enrollments`, `owned_bot_enrollment_renewals` and
+`owned_bot_message_outbox`.
 
 Construct adapters with immutable names, exact canonical automation bot IDs and
 nonsecret binding identifiers. `internal/botdispatch.New` offers an optional HTTPS
@@ -168,6 +178,7 @@ For explicit module composition:
 if err := botRepo.WithExecution(config, adapters...); err != nil { return err }
 chatRepo.WithTextMessageObserver(botRepo)
 if err := botRepo.ExecutionReady(ctx); err != nil { return err }
+renewed, renewalErr := botRepo.ProcessEnrollmentRenewalsDue(ctx, 100)
 processed, err := botRepo.ProcessMessagesDue(ctx, 100)
 ```
 
@@ -197,6 +208,11 @@ Required actual PostgreSQL cases, before restart:
 - TestPGBotExecutionTimeoutAndRevocationDuringDelivery
 - TestPGBotExecutionEnrollmentRoleAndSessionScope
 - TestPGBotExecutionRechecksAfterContention
+- TestPGBotReplyKeyMutationAccountBeforeKeyContention
+- TestPGBotEnrollmentAutomaticRenewalPolicyHTTPAndWorker
+- TestPGBotEnrollmentRenewalRevocationIsTerminal
+- TestPGBotEnrollmentRenewalConcurrentWorkers
+- TestPGBotEnrollmentRenewalRechecksMLSDevice
 
 After restart: TestPGBotExecutionRestartPersistence. It saves original pending
 message/event/account IDs in the disposable runner root and requires the later
@@ -210,8 +226,9 @@ handoff. Actual PostgreSQL execution, observed locking behavior, and the real
 before/after server restart remain mandatory external-runner gates; they were not
 run in this socket-restricted task. No live endpoint, production account, deployed
 credential, provider call, socket or remote write was used. No frontend was changed.
-This closes a coherent plain-group bot message delivery path, not full bot API-key,
-DM/realm/E2EE, bot reply, automatic renewal or whole-platform parity.
+The owned runtime includes bot API-key rotation/revocation, purpose-specific bot
+replies, direct/realm/opaque-MLS delivery, and bounded automatic enrollment
+renewal. It does not claim whole-platform parity.
 
 
 ## Standalone opt-in configuration

@@ -153,6 +153,10 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	if rest != "" {
 		p = strings.Split(strings.TrimPrefix(rest, "/"), "/")
 	}
+	if len(p) == 4 && p[1] == "messages" && p[3] == "thread" {
+		s.serveThread(w, r, p)
+		return
+	}
 	if len(p) >= 4 && p[1] == "messages" && p[3] == "reactions" {
 		s.serveReactions(w, r, p)
 		return
@@ -187,7 +191,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		permission = "chat.invites.manage"
 	case len(p) == 3 && p[1] == "members" && p[2] != "me" && r.Method == "DELETE":
 		permission = "chat.members.kick"
-	case len(p) == 2 && p[1] == "messages" && r.Method == "POST":
+	case (len(p) == 2 || len(p) == 3 && p[2] == "redirect") && p[1] == "messages" && r.Method == "POST":
 		permission = "chat.messages.create"
 	case len(p) == 3 && p[1] == "messages" && r.Method == "PATCH":
 		permission = "chat.messages.update"
@@ -466,6 +470,25 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			e = decode(w, r, &req, "message_id")
 			if e == nil {
 				result, e = s.Repository.MarkRead(ctx, actor, rid, req.MessageID)
+			}
+		case len(p) == 3 && p[1] == "messages" && p[2] == "redirect":
+			if r.Method != "POST" {
+				method(w, "POST")
+				return
+			}
+			repo, ok := s.Repository.(ThreadRepository)
+			if !ok {
+				e = ErrUnsupported
+				break
+			}
+			if len(r.Header.Values("Idempotency-Key")) > 1 {
+				e = ErrInvalid
+				break
+			}
+			var request RedirectRequest
+			e = decode(w, r, &request, "message_ids")
+			if e == nil {
+				result, e = repo.Redirect(ctx, actor, rid, request.MessageIDs, r.Header.Get("Idempotency-Key"))
 			}
 		case len(p) == 2 && p[1] == "messages":
 			if r.Method != "POST" {

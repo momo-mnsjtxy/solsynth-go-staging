@@ -88,7 +88,10 @@ func activeAccount(ctx context.Context, tx *sql.Tx, id string, now time.Time) er
 }
 
 const ancestry = ` FROM owned_custom_apps a JOIN owned_dev_projects project ON project.id=a.project_id JOIN owned_developers d ON d.id=project.developer_id JOIN owned_publishers pub ON pub.id=d.publisher_id`
-const liveAncestry = `a.deleted_at IS NULL AND project.deleted_at IS NULL AND pub.deleted_at IS NULL AND a.status<>2`
+
+// Keep the canonical app adapter's unsupported organization-app boundary for
+// imported bot/miniapp rows too; a NULL direct owner grants no authority.
+const liveAncestry = `a.deleted_at IS NULL AND project.deleted_at IS NULL AND pub.deleted_at IS NULL AND pub.type=0 AND a.status<>2`
 
 type appScope struct {
 	publisher, developer string
@@ -116,6 +119,9 @@ func (r *Repository) within(ctx context.Context, s apps.Scope, target, permissio
 	e = tx.QueryRowContext(ctx, `SELECT pub.account_id::text`+ancestry+` WHERE a.id=$1 AND project.id=$2 AND `+accountpg.PublisherNamePredicate("pub", "$3")+` AND `+liveAncestry, s.App, s.Project, s.Developer).Scan(&owner)
 	if e != nil {
 		return mapped(e)
+	}
+	if !owner.Valid {
+		return bots.ErrForbidden
 	}
 	ids := []string{s.Actor}
 	if owner.Valid {
@@ -261,4 +267,4 @@ func developer(ctx context.Context, tx *sql.Tx, app string) (v bots.Developer, e
 	return
 }
 
-const publicAncestry = `a.status=1 AND a.deleted_at IS NULL AND project.deleted_at IS NULL AND pub.deleted_at IS NULL AND(pub.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=pub.account_id AND NOT owner.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments pun WHERE pun.account_id=owner.id AND pun.kind='disable_account' AND(pun.starts_at IS NULL OR pun.starts_at<=statement_timestamp())AND(pun.expires_at IS NULL OR pun.expires_at>statement_timestamp()))))`
+const publicAncestry = `a.status=1 AND a.deleted_at IS NULL AND project.deleted_at IS NULL AND pub.deleted_at IS NULL AND pub.type=0 AND EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=pub.account_id AND NOT owner.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments pun WHERE pun.account_id=owner.id AND pun.kind='disable_account' AND(pun.starts_at IS NULL OR pun.starts_at<=statement_timestamp())AND(pun.expires_at IS NULL OR pun.expires_at>statement_timestamp())))`

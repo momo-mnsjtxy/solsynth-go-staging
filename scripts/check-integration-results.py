@@ -5,6 +5,24 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGChatThreadsRootReplyIsolationAndPagination",
+        "TestPGChatLiveForwardVisibilityAndNestedThreads",
+        "TestPGChatRedirectSnapshotProvenanceAndReplay",
+        "TestPGChatForwardRedirectWaitRevocationAndRollback",
+        "TestPGChatRedirectConcurrencyAndMembershipIncarnation",
+        "TestPGChatThreadForwardMediaAndEncryptionBoundaries",
+        "TestPGBackendChatThreadsForwardAndRedirectComposition",
+        "TestPGChatThreadsForwardRestartPersistence",
+        "TestPGChatForwardFileWaitCurrentSourcePolicy",
+        "TestPGChatForwardSourceDiscoveryRequiresBoundProof",
+        "TestPGChatRedirectPrecisionAndCanonicalReceipt",
+        "TestPGChatThreadCountsMatchVisibleReplyBoundary",
+        "TestPGAppPublisherOwnerEligibility",
+        "TestPGAppPublisherOwnerRecheckedAfterWait",
+        "TestPGAppSecretIssuerOwnerPolicy",
+        "TestPGAppSecretIssuerOwnerWaitRollback",
+        "TestPGBotImportedOrganizationAppBoundary",
+
         "TestPGShippingRollbackAndImmutableDestination",
         "TestPGShippingReviewCurrentScopeAndOwnerRevocation",
         "TestPGShippingRestartPersistence",
@@ -673,6 +691,8 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGChatThreadsForwardRestartPersistence",
+
         "TestPGShippingRestartPersistence",
         "TestPGPostScheduleSavedRestartPersistence",
         "TestPGDirectRecoveryPrivacyRestartPersistence",

@@ -1,5 +1,8 @@
 # Owned text-room lifecycle
 
+Subsequent plaintext thread and forwarding support is documented in
+`chat-threads-forwarding.md`; the original bounded lifecycle is described below.
+
 This continuation implements group-room creation, joined-room listing, metadata
 updates, room deletion, invitations, public-community joining, leaving/removal,
 notification preferences, read markers, and text send/edit/delete. It is an
@@ -77,9 +80,11 @@ excluded shared sanitizer implementation or a guarantee of HTML sanitization.
 
 ## Explicit remaining boundaries
 
-Unsupported media, E2EE/MLS, calls, attachments, threads, bot identities, realms,
+The original slice left media, E2EE/MLS, calls, attachments, threads, bot identities, realms,
 slugs, pin/reaction writes, groups, embeds, locations, payments and other provider
-fields/routes fail with 501. Unknown or duplicate JSON fields fail with 400.
+fields/routes unsupported. Subsequent slices extend several of these boundaries;
+see their continuation documents. Remaining unsupported routes fail with 501.
+Unknown or duplicate JSON fields fail with 400.
 The server does not deliver websocket/push events, external invite notifications,
 moderation messages, email or audit RPCs. Invitation acceptance is a local consent
 policy and does not claim legacy relationship-block/provider parity. The user

@@ -85,3 +85,20 @@ ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS owned_creation_client_id varc
 CREATE UNIQUE INDEX IF NOT EXISTS owned_chat_creation_idempotency
  ON chat_messages(chat_room_id,sender_id,coalesce(owned_creation_client_id,client_message_id))
  WHERE type='text' AND owned_request_hash IS NOT NULL;
+
+-- Server-authored explicit redirect snapshots; ordinary metadata is not proof.
+CREATE TABLE IF NOT EXISTS owned_chat_redirects (
+ message_id uuid PRIMARY KEY REFERENCES chat_messages(id),actor_id uuid NOT NULL REFERENCES owned_authority_accounts(id),
+ destination_room_id uuid NOT NULL REFERENCES chat_rooms(id),destination_member_id uuid NOT NULL REFERENCES chat_members(id),destination_joined_at timestamptz NOT NULL,
+ source_room_id uuid NOT NULL REFERENCES chat_rooms(id),source_member_id uuid NOT NULL REFERENCES chat_members(id),source_joined_at timestamptz NOT NULL,
+ source_ids jsonb NOT NULL CHECK(jsonb_typeof(source_ids)='array'),snapshot jsonb NOT NULL CHECK(jsonb_typeof(snapshot)='object'),
+ request_key text,request_hash bytea NOT NULL CHECK(octet_length(request_hash)=32),created_at timestamptz NOT NULL,
+ UNIQUE(actor_id,destination_room_id,request_key)
+);
+
+-- Source attribution and the explicit copy cannot be rewritten by later edits.
+CREATE OR REPLACE FUNCTION owned_chat_redirects_immutable() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN RAISE EXCEPTION 'chat redirect receipt is immutable'; END; $$;
+DROP TRIGGER IF EXISTS owned_chat_redirects_immutable ON owned_chat_redirects;
+CREATE TRIGGER owned_chat_redirects_immutable BEFORE UPDATE ON owned_chat_redirects
+ FOR EACH ROW EXECUTE FUNCTION owned_chat_redirects_immutable();

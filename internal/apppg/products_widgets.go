@@ -261,17 +261,21 @@ func activeClientByID(ctx context.Context, q queryer, app string, lock bool) (ap
 	if e = q.QueryRowContext(ctx, `SELECT account_id::text FROM owned_publishers WHERE id=$1 AND deleted_at IS NULL`, a.PublisherID).Scan(&owner); e != nil {
 		return a, mapped(e)
 	}
-	if owner.Valid {
-		if lock {
-			var id string
-			if e = q.QueryRowContext(ctx, `SELECT id::text FROM owned_authority_accounts WHERE id=$1 FOR SHARE`, owner.String).Scan(&id); e != nil {
-				return a, mapped(e)
-			}
-		}
-		if e = payloadAccountActive(ctx, q, owner.String); e != nil {
-			return a, e
+	// Only individual developer ancestry is supported. A missing direct owner
+	// must never turn into an unowned credential, even for malformed imports.
+	if !owner.Valid {
+		return a, apps.ErrForbidden
+	}
+	if lock {
+		var id string
+		if e = q.QueryRowContext(ctx, `SELECT id::text FROM owned_authority_accounts WHERE id=$1 FOR SHARE`, owner.String).Scan(&id); e != nil {
+			return a, mapped(e)
 		}
 	}
+	if e = payloadAccountActive(ctx, q, owner.String); e != nil {
+		return a, e
+	}
+	project, publisher := a.ProjectID, a.PublisherID
 	if lock {
 		// Match management lock order: publisher, project, then app. Re-read after waits.
 		var yes bool
@@ -286,13 +290,18 @@ func activeClientByID(ctx context.Context, q queryer, app string, lock bool) (ap
 			return a, e
 		}
 	}
-	if a.Status != apps.Production {
+	if a.Status != apps.Production || a.ProjectID != project || a.PublisherID != publisher {
 		return a, apps.ErrForbidden
 	}
-	if owner.Valid {
-		if e = payloadAccountActive(ctx, q, owner.String); e != nil {
-			return a, e
-		}
+	// Observe the complete identity and owner together after every ancestry
+	// wait. Do not follow a changed chain or acquire a late account lock.
+	var active bool
+	e = q.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1`+appJoins+` JOIN owned_authority_accounts owner ON owner.id=pub.account_id WHERE a.id=$1 AND a.project_id=$2 AND pub.id=$3 AND owner.id=$4 AND a.status=1 AND `+activeApp+` AND NOT owner.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments punishment WHERE punishment.account_id=owner.id AND punishment.kind='disable_account' AND(punishment.starts_at IS NULL OR punishment.starts_at<=statement_timestamp())AND(punishment.expires_at IS NULL OR punishment.expires_at>statement_timestamp())))`, app, project, publisher, owner.String).Scan(&active)
+	if e != nil {
+		return a, e
+	}
+	if !active {
+		return a, apps.ErrForbidden
 	}
 	return a, nil
 }

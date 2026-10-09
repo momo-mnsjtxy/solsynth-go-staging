@@ -29,7 +29,18 @@ var (
 // persisted fields and SQL reaction/thread hydration, without inventing a
 // sender/account DTO, nested related messages, or a cryptographic implementation.
 // JSONB is retained as RawMessage, preserving numbers beyond float64 precision.
+type ForwardPreview struct {
+	ID                 string          `json:"id"`
+	ChatRoomID         string          `json:"chat_room_id"`
+	SenderID           string          `json:"sender_id"`
+	Content            *string         `json:"content"`
+	CreatedAt          time.Time       `json:"created_at"`
+	ForwardedMessage   *ForwardPreview `json:"forwarded_message,omitempty"`
+	ForwardUnavailable bool            `json:"forwarded_message_unavailable,omitempty"`
+}
 type MessageProjection struct {
+	ForwardedMessage   *ForwardPreview `json:"forwarded_message,omitempty"`
+	ForwardUnavailable bool            `json:"forwarded_message_unavailable,omitempty"`
 	ID                 string          `json:"id"`
 	ChatRoomID         string          `json:"chat_room_id"`
 	SenderID           string          `json:"sender_id"`

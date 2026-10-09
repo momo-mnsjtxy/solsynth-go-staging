@@ -1,8 +1,8 @@
 {
-  "checkpoint": "reviewed-shipping-scheduling625",
-  "scope": "Reviewed address fulfillment and scheduled publication with current post-wait authority and media gates, fresh checkout owner eligibility including canonical realm ownership, plus explicit room fixture quota. Full combined offline build/vet/unit/race/source/SQL checks passed; actual625before/81restart candidate pending.",
+  "checkpoint": "Implement reviewed chat threads and app owner authority guards",
+  "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "c4d78b81fc70935c33af615a9ce944a42dea954a"
+    "remote_parent": "1ccac7bf0b9c13d01c44441cd95fab15bd7eafa1"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -227,8 +227,8 @@
     },
     {
       "path": "cmd/chat-service/main.go",
-      "bytes": 6907,
-      "sha256": "6ceb5bd175fdf116324e27bc0c897eca9f42a9a3076eaea4011e0cb4b42bd6e2"
+      "bytes": 6942,
+      "sha256": "1eaa690d9a5b1e99780b7f9ea0c5eb39638db2cd1f2efa70fddd2dc468413bb3"
     },
     {
       "path": "cmd/chat-service/main_test.go",
@@ -401,6 +401,11 @@
       "sha256": "0cadaeeb12ec6d7a3e8dcbdd597a3621880be4be6a6a70694d960fbdd1fc7467"
     },
     {
+      "path": "docs/app-publisher-owner-eligibility-review.md",
+      "bytes": 5545,
+      "sha256": "e4bc3575aca79a682f9bd422086298b981b46c17489a71eaa638468bb9e2b01e"
+    },
+    {
       "path": "docs/apple-wallet-passkit.md",
       "bytes": 11336,
       "sha256": "6baec88c620809a437993170f5ad4dfbaee715296b4144f1ad51533f5bb7222d"
@@ -447,18 +452,28 @@
     },
     {
       "path": "docs/chat-lifecycle-continuation.md",
-      "bytes": 7697,
-      "sha256": "768087ca1d5e18a0aa6a5850a2333b3a6f01315209c4fb9b68fe5923278c8052"
+      "bytes": 7989,
+      "sha256": "2130246d0a6984c259f01ec7ff540731e0acdae4c2496f150c4e4f0b10a1724b"
     },
     {
       "path": "docs/chat-media-continuation.md",
-      "bytes": 7463,
-      "sha256": "68db16435635839903922d7f535ca6afc3459cb958b1fa246bd7becdc4b10971"
+      "bytes": 7511,
+      "sha256": "88db0f57c380b0011721ff66f1555a70323dbd4d38dbcb472079a429803163d7"
     },
     {
       "path": "docs/chat-relations-continuation.md",
       "bytes": 14405,
       "sha256": "ebfba12f3cc0728a3bc565bceab0ac9f078cf08cbb114348dd82ee1d81b5f0f6"
+    },
+    {
+      "path": "docs/chat-thread-forward-acceptance.json",
+      "bytes": 4441,
+      "sha256": "9602fbf836e272a4f360da5729bd008aecc23ea6b1c9191193b3d0bb595f5515"
+    },
+    {
+      "path": "docs/chat-threads-forwarding.md",
+      "bytes": 10678,
+      "sha256": "584512456e2945540b9609d24906fa02adb60a58dd8920b94ec35b0d98853229"
     },
     {
       "path": "docs/checkout-owner-eligibility.md",
@@ -482,8 +497,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 95974,
-      "sha256": "9833f2d95a5540b217286bb071fb419bdc16c1ce35c0eb5a99f24463822fa53c"
+      "bytes": 97729,
+      "sha256": "9579e0c48762eda504f1e4f28c8c8074256adec58273f95e22d45c8f00ac05fc"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -1752,8 +1767,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 102801,
-      "sha256": "631de57426ee35ba6d9dda357fe06a8e98b1266fa26cd2a4833b6378a0816e78"
+      "bytes": 102634,
+      "sha256": "84a81246b220964579846e060f5055c337615a77ae94601f4b438b67ee9e4ca7"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -2192,8 +2207,8 @@
     },
     {
       "path": "internal/apppg/identity.go",
-      "bytes": 13483,
-      "sha256": "b971a9c472ffaa9901f462898b6cd9f43510e05c047c2d979c2c4eca3e6b3f09"
+      "bytes": 15905,
+      "sha256": "4683f30aa5e33a78831e29b67383fbf5ae7c50ea16a154403f72ec06b3427e76"
     },
     {
       "path": "internal/apppg/identity_test.go",
@@ -2212,8 +2227,8 @@
     },
     {
       "path": "internal/apppg/products_widgets.go",
-      "bytes": 11403,
-      "sha256": "7fcc9614ec482010f00abcbcaed4bdbcd43c072d5ea7b284edaf8d2f0b5bfa6f"
+      "bytes": 12430,
+      "sha256": "63e7fc0b47149bf9d3e737bea601e0ab94d85b454fccd2493e3a58a14178a5e8"
     },
     {
       "path": "internal/apppg/repository.go",
@@ -2422,8 +2437,8 @@
     },
     {
       "path": "internal/botpg/repository.go",
-      "bytes": 10104,
-      "sha256": "c6fc0e485d90cd78d280dd41d3d262f14a89367098460132ce9bd3f19132da9a"
+      "bytes": 10310,
+      "sha256": "0af99f7a99094302792337651e05484b9b06a4148bf7f0094fd1949d5e2f60ad"
     },
     {
       "path": "internal/botpg/schema.sql",
@@ -2472,8 +2487,8 @@
     },
     {
       "path": "internal/chatpg/access.go",
-      "bytes": 9405,
-      "sha256": "be8e575aa3ed8601f97f2ba41528b850bbec22397b63449a8b3909144a455f5c"
+      "bytes": 9487,
+      "sha256": "74f3cb1c2040a42c16cf5122c2e1bf49404a44a080911b51d2cd9156f940760f"
     },
     {
       "path": "internal/chatpg/access_test.go",
@@ -2482,8 +2497,18 @@
     },
     {
       "path": "internal/chatpg/associations.go",
-      "bytes": 2941,
-      "sha256": "d3570460b57ad480d6c2c40d7a80574592e6379105db4c75cd470a78707848cd"
+      "bytes": 2970,
+      "sha256": "38087ac52300a8d1fc2342f1cf37b506d150dc4837295b589ad14956062e57cc"
+    },
+    {
+      "path": "internal/chatpg/forward_hydration.go",
+      "bytes": 3612,
+      "sha256": "131d7907ed80c3ad69fe1e5f2a8e4fb3c455fae720effea912cd21df72482256"
+    },
+    {
+      "path": "internal/chatpg/forward_locks.go",
+      "bytes": 4521,
+      "sha256": "3fca2ddd5dcee5970bbb5ff4e13d651614044c21756c2ec2dbbd885ec004d0d2"
     },
     {
       "path": "internal/chatpg/members.go",
@@ -2492,8 +2517,8 @@
     },
     {
       "path": "internal/chatpg/messages.go",
-      "bytes": 13635,
-      "sha256": "60dd8b90ebe963c95bf924a9da67c9316cba3971fc85211eebb864908aee2422"
+      "bytes": 15763,
+      "sha256": "1fd2a76a0ff41bcaa3108701af149a8d4d2970704d2d775a7f5fe9e23f0d4182"
     },
     {
       "path": "internal/chatpg/mls.go",
@@ -2546,6 +2571,16 @@
       "sha256": "d4f65b97d3452895b2aa10693a4b0201b783e4b1f0f0b39d449ed9a491966345"
     },
     {
+      "path": "internal/chatpg/redirect.go",
+      "bytes": 9549,
+      "sha256": "cf9294a5cc4e779732df0d4528f6b109522bf38d77faeea99843df226e2c98e4"
+    },
+    {
+      "path": "internal/chatpg/redirect_test.go",
+      "bytes": 2681,
+      "sha256": "c40a89c939d019ec6396b1f36128a30ab609416fa8a85df15727f490051bde4d"
+    },
+    {
       "path": "internal/chatpg/relations.go",
       "bytes": 20982,
       "sha256": "746dda652dc47540eb1cfc1d6d38044d4f16a39c6099190c669521dc446b0188"
@@ -2577,8 +2612,13 @@
     },
     {
       "path": "internal/chatpg/schema.sql",
-      "bytes": 5164,
-      "sha256": "664ba0bf9b39a657e195c8f88cdcf291fc24a5aa5a13f97897759a5cba852a8b"
+      "bytes": 6517,
+      "sha256": "76e19a356e17b4c6b899d2ee754e6aa1f3c0450b673e0bfc48bffe1c8b0ec7cb"
+    },
+    {
+      "path": "internal/chatpg/threads.go",
+      "bytes": 6527,
+      "sha256": "0594d331977a99f4011a6bdde947a5493c2c72f305f204eb75509a66cd92b35a"
     },
     {
       "path": "internal/collectionadminpg/repository.go",
@@ -3157,8 +3197,8 @@
     },
     {
       "path": "internal/messagerpg/repository.go",
-      "bytes": 16890,
-      "sha256": "c09132cd9607bf983f74dd56f775e23bd04b9ce8ee3413f76b5948050bf7fc64"
+      "bytes": 18245,
+      "sha256": "d38eff38356f15596b7ed4d71e3f410cc6d303542a71cd313f80baf5b2ccb8ce"
     },
     {
       "path": "internal/messagerpg/repository_authority.go",
@@ -6787,13 +6827,13 @@
     },
     {
       "path": "ports/messager/rooms/http.go",
-      "bytes": 16913,
-      "sha256": "044e5a68ee392b7856bbf3b77d86d5b6c2a37bb9d7eef57373e5b9ba36ae8e98"
+      "bytes": 17559,
+      "sha256": "e5b775b20f2eea154640080359c92f290c53fab0663a58b4056dc38161480102"
     },
     {
       "path": "ports/messager/rooms/http_test.go",
-      "bytes": 7906,
-      "sha256": "a80009b7adb7de58e6fbcde90aca514b0fc8b8a8ef1989925e4cc288677441ec"
+      "bytes": 7867,
+      "sha256": "7ff5633dd7debd54b6bbe99f8c48f4cdbc830a710405f70029eee3fb22ca680b"
     },
     {
       "path": "ports/messager/rooms/mls.go",
@@ -6802,8 +6842,8 @@
     },
     {
       "path": "ports/messager/rooms/mls_http.go",
-      "bytes": 8772,
-      "sha256": "81642e37f1d7d0a089b81c69d22c3276d33a07110bd67c2c5b4484890f2fd97c"
+      "bytes": 8790,
+      "sha256": "4c0a9d3a88d4221b99b9e1af2f091a488ed818aa7adda3725999d65f863b1b83"
     },
     {
       "path": "ports/messager/rooms/mls_test.go",
@@ -6836,14 +6876,24 @@
       "sha256": "23274e490c47c23398bf5deee533a0f4817400ce780484551b726752f38cb959"
     },
     {
+      "path": "ports/messager/rooms/threads.go",
+      "bytes": 2100,
+      "sha256": "ea56f6df0bb55b4b322eae1946cec4f4c81cb8afbd85ccc0d5f1dade21e1514e"
+    },
+    {
+      "path": "ports/messager/rooms/threads_test.go",
+      "bytes": 2430,
+      "sha256": "a8b1a1fd97fa9005672b30dfe0b473099a61f7cf1b4133a2ee3dd0620145695a"
+    },
+    {
       "path": "ports/messager/rooms/types.go",
-      "bytes": 8313,
-      "sha256": "8b1dfd1028db68e53c28d221b8a34edaff44ca8392ad8619ed37827b6b6a147f"
+      "bytes": 8385,
+      "sha256": "f5a889c050cbc3ce3748b3b4ec7ea71a2ce0ddad8326c8064663484b0c620b23"
     },
     {
       "path": "ports/messager/rooms/validation.go",
-      "bytes": 4106,
-      "sha256": "c0b494d73d41c30c4496b894b272eca8b0ed641e2145ac54af49967c5b3b2344"
+      "bytes": 4502,
+      "sha256": "d77866c664e85d589ab894729b62eb4f392a2eddfd89668ac8d6f0d9659738b4"
     },
     {
       "path": "ports/messager/source/ChatController.cs",
@@ -6967,8 +7017,8 @@
     },
     {
       "path": "ports/messager/sync_service.go",
-      "bytes": 7600,
-      "sha256": "febd57ba41708fa84ca8a95af007561e7c3b6d7c272909e722afc81e4192588d"
+      "bytes": 8217,
+      "sha256": "25c5472f961e85ffa570627e3283f75143fc340d32a31bea1b96b0fa9dc79b02"
     },
     {
       "path": "ports/messager/unread-PROVENANCE.md",
@@ -9757,8 +9807,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 41907,
-      "sha256": "2b98991b473ab253f83244cb093f84025e2f3e6ca8bb76519f8124c22a178c2c"
+      "bytes": 42928,
+      "sha256": "53e4d4a6c5b91a21ccbd2cf6793f2f05c9a1744b0d65c1f5b94a4ff01abd8c28"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -9782,8 +9832,8 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 77620,
-      "sha256": "06c1967ce47132301aacc51e54ba6137d06fe8abf7a0fe0c22fa875f35a5ee66"
+      "bytes": 80464,
+      "sha256": "1b03e76002312f839d809b1ce8760c320fc3d4300ed488403ee21648f39426c9"
     },
     {
       "path": "scripts/integration-postgres.sh",
@@ -10136,6 +10186,11 @@
       "sha256": "b3eba31de9a0018b8928bec27f7d103188d8856678c3d4f85f690295c5319950"
     },
     {
+      "path": "tests/integration/app_publisher_owner_review_test.go",
+      "bytes": 17172,
+      "sha256": "6a5b2a14a2c5ed122cd73ff25429dcbd8d8eacd546ccd261153103335030f107"
+    },
+    {
       "path": "tests/integration/authority_atomic_test.go",
       "bytes": 13975,
       "sha256": "3ff6b784ff795890ebc130df44ea3095bc9d10b549ab97c1e4c7275e54865b05"
@@ -10324,6 +10379,16 @@
       "path": "tests/integration/chat_relations_test.go",
       "bytes": 19827,
       "sha256": "1335b0049f1c3ad659ff54bb2f57c67ff8f4c13cd2298e556662029bc63c1670"
+    },
+    {
+      "path": "tests/integration/chat_threads_forward_review_test.go",
+      "bytes": 6494,
+      "sha256": "25698bc9114e8c8ef1342f1cd68f9d31c838eba9e91a3c185ee347f5f298928c"
+    },
+    {
+      "path": "tests/integration/chat_threads_forward_test.go",
+      "bytes": 29220,
+      "sha256": "1042b607188e065e67a14398a1ca0d1f0d3dd0c81054d2548ebe5ff42b1dae26"
     },
     {
       "path": "tests/integration/checkout_owner_policy_test.go",
@@ -10769,6 +10834,11 @@
       "path": "tests/integration/watchpg_test.go",
       "bytes": 8617,
       "sha256": "be466d5ef4cfe6608c095c7fc72b49583e468018d4314a63c14165d9026e607f"
+    },
+    {
+      "path": "tests/transactionguard/chat_forward_preflight_test.go",
+      "bytes": 1733,
+      "sha256": "5e69c0014243bf4f68a44ffab00db9653a2c8462ad9d76d981f02eecd59dd20e"
     },
     {
       "path": "tests/transactionguard/chat_preflight_test.go",

@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed shipping/address fulfillment and scheduled-post lifecycle with post-wait publication corrections; current checkout owner eligibility including canonical realm chain. Room-media realm fixture now seeds its required canonical quota. Actual PostgreSQL pending for this625/81 candidate.",
+  "local_source_checkpoint": "Reviewed thread roots/replies, live forward references and explicit plaintext redirect snapshots, plus current app-owner/secret issuer checks and imported organization bot denial. All pending actualPG642/82 candidate.",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,14 +12,14 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "c4d78b81fc70935c33af615a9ce944a42dea954a",
-    "run": 37859695832,
-    "required_before": 601,
-    "required_after_restart": 79,
-    "status": "Failed aggregate:600/601 before passed; groupA302/303 and no restart, groupB298before+36restart passed zero skips. Sole room-media realm fixture lacked required quota, corrected locally; no new full green."
+    "commit": "1ccac7bf0b9c13d01c44441cd95fab15bd7eafa1",
+    "run": 37862930332,
+    "required_before": 625,
+    "required_after_restart": 81,
+    "status": "Running; no pass inferred. Previous601 candidate passed600before and groupB36restart, failed sole realm quota fixture corrected here."
   },
-  "local_required_before": 625,
-  "local_required_after_restart": 81,
+  "local_required_before": 642,
+  "local_required_after_restart": 82,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -1792,7 +1792,7 @@
     "delivered_not_integrated": []
   },
   "current_remaining": {
-    "as_of": "2026-10-08T23:55:00Z",
+    "as_of": "2026-10-09T00:07:00Z",
     "authoritative_for": "Known remaining flows, not a count of source operations. Partial/unresearched contracts remain research tasks; unavailable is never inferred from lack of prior research.",
     "families": [
       {
@@ -1817,7 +1817,7 @@
       {
         "family": "messager.messages",
         "remaining": [
-          "Full original system/message types and non-null thread/forward operations",
+          "Remaining original system/message types; thread/live-reference/explicit plaintext forwarding implemented pending CI, attachment forwarding requires separate canonical rights",
           "Later client integration for generation-aware reset and encrypted deletion; attachment cryptography remains deferred frontend work"
         ]
       },
@@ -2184,12 +2184,10 @@
       "Source-declaration818 acceptance map remains an operation inventory, not runtime endpoint count or proof of whole-platform completion"
     ],
     "active_implementation": [
-      "Shipping/address and scheduled publication reviewed and integrated625/81; actualPG pending",
-      "Thread/live-reference forwarding independently reviewed, integration pending",
-      "Opt-in owned coupon policy independently reviewed, integration pending",
-      "Automatic ranked-post enforcement independent review fixing evidence privacy",
-      "App credential owner wait revalidation under independent review",
-      "Realm boost contract reconstruction and implementation"
+      "Shipping/address and scheduled publication625/81 published, actualPG running",
+      "Thread/live-reference forwarding and app owner authority integrated642/82, actualPG pending",
+      "Opt-in owned coupon and automatic ranked-post enforcement independently reviewed, integration pending",
+      "Realm boosts, bot execution and blog flows in implementation"
     ],
     "not_remaining_missing_features": [
       "PIN enrollment/rotation/removal",

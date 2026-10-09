@@ -62,8 +62,16 @@ func (r *Repository) Secrets(ctx context.Context, s apps.Scope, ref string, req 
 		return nil, apps.ErrProvider
 	}
 	e := r.write(ctx, s.Actor, "developers.apps.secrets.manage", func(tx *sql.Tx, now time.Time) error {
-		if _, e := scope(ctx, tx, s, 50, true); e != nil {
+		d, e := scope(ctx, tx, s, 50, true)
+		if e != nil {
 			return e
+		}
+		var owner string
+		if action != "delete" {
+			owner, e = secretIssuerOwner(ctx, tx, s, d)
+			if e != nil {
+				return e
+			}
 		}
 		a, e := appScan(tx.QueryRowContext(ctx, `SELECT `+appColumns+appJoins+` WHERE a.id=$1 AND `+activeApp, s.App))
 		if e != nil {
@@ -131,10 +139,45 @@ func (r *Repository) Secrets(ctx context.Context, s apps.Scope, ref string, req 
 		if e != nil {
 			return e
 		}
+		if e = audit(ctx, tx, s.Actor, s.App, "developers.apps.secrets."+action, v.ID, now); e != nil {
+			return e
+		}
+		// Secret and audit writes can wait. Revalidate the original actor proof
+		// and current owner after those waits, without adding owner locks.
+		if _, e = r.guard.Authorize(ctx, r.db, tx, s.Actor, "developers.apps.secrets.manage"); e != nil {
+			return e
+		}
+		if action != "delete" {
+			currentOwner, e := secretIssuerOwner(ctx, tx, s, d)
+			if e != nil {
+				return e
+			}
+			if currentOwner != owner {
+				return apps.ErrForbidden
+			}
+		}
 		out = append(out, v)
-		return audit(ctx, tx, s.Actor, s.App, "developers.apps.secrets."+action, v.ID, now)
+		return nil
 	})
-	return out, e
+	if e != nil {
+		// A credential from a rolled-back or uncertain commit is never returned.
+		return nil, e
+	}
+	return out, nil
+}
+
+// Issuance is tied to a live direct owner and the exact locked management scope.
+// Existing lock order is unchanged: actor, publisher/member, project, app,
+// secret. The final READ COMMITTED observation is the eligibility boundary;
+// another owner's disable can commit afterward, making this credential unusable.
+// Revocation stays available to an authorized editor when the owner is disabled.
+func secretIssuerOwner(ctx context.Context, tx *sql.Tx, s apps.Scope, d apps.Developer) (string, error) {
+	var owner string
+	e := tx.QueryRowContext(ctx, `SELECT owner.id::text`+appJoins+` JOIN owned_authority_accounts owner ON owner.id=pub.account_id JOIN owned_publisher_members member ON member.publisher_id=pub.id WHERE a.id=$1 AND p.id=$2 AND d.id=$3 AND pub.id=$4 AND member.account_id=$5 AND member.joined_at IS NOT NULL AND member.revoked_at IS NULL AND member.role>=50 AND `+activeApp+` AND NOT owner.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments punishment WHERE punishment.account_id=owner.id AND punishment.kind='disable_account' AND(punishment.starts_at IS NULL OR punishment.starts_at<=statement_timestamp())AND(punishment.expires_at IS NULL OR punishment.expires_at>statement_timestamp()))`, s.App, s.Project, d.ID, d.PublisherID, s.Actor).Scan(&owner)
+	if e == sql.ErrNoRows {
+		return "", apps.ErrForbidden
+	}
+	return owner, e
 }
 func (r *Repository) Consent(ctx context.Context, actor, slug string, req *apps.ConsentRequest, revoke bool) (apps.Consent, error) {
 	var out apps.Consent
@@ -216,6 +259,12 @@ func authenticateClient(ctx context.Context, tx *sql.Tx, app, token, permission 
 	}
 	var declared []string
 	if json.Unmarshal(scopes, &declared) != nil || !active || !scopeContains(declared, permission) || subtle.ConstantTimeCompare(stored, secretDigest(app, token)) != 1 {
+		return authority.ErrInvalid
+	}
+	// The secret lock may have waited past a scheduled owner disable. Existing
+	// account/ancestry locks remain held; this final observation adds no locks.
+	fresh, e := activeClientByID(ctx, tx, app, false)
+	if e != nil || fresh.ProjectID != a.ProjectID || fresh.PublisherID != a.PublisherID {
 		return authority.ErrInvalid
 	}
 	return nil

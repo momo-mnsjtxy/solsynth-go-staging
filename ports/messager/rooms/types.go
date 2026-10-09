@@ -146,6 +146,7 @@ type TextRequest struct {
 	Embeds             *[]map[string]any `json:"embeds,omitempty"`
 	ClientMessageID    *string           `json:"client_message_id"`
 	Nonce              *string           `json:"nonce"`
+	IsThreadRoot       bool              `json:"is_thread_root,omitempty"`
 	ThreadID           *string           `json:"thread_id,omitempty"`
 	ForwardedMessageID *string           `json:"forwarded_message_id,omitempty"`
 	RepliedMessageID   *string           `json:"replied_message_id"`

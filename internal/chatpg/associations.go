@@ -32,10 +32,8 @@ func (r *Repository) loadMessage(ctx context.Context, tx *sql.Tx, actor string, 
 			v.EncryptionMeta = raw
 		}
 	}
-	if r.associations != nil {
-		if e := r.associations.Load(ctx, tx, actor, v); e != nil {
-			return e
-		}
+	if e := r.Load(ctx, tx, actor, v); e != nil {
+		return e
 	}
 	v.ReactionsMade = map[string]bool{}
 	rows, e := tx.QueryContext(ctx, `SELECT reaction.symbol FROM chat_reactions reaction JOIN chat_members sender ON sender.id=reaction.sender_id WHERE reaction.message_id=$1 AND sender.chat_room_id=$2 AND sender.account_id=$3 AND reaction.deleted_at IS NULL AND sender.deleted_at IS NULL`, v.ID, v.ChatRoomID, actor)
@@ -83,6 +81,9 @@ func mergeMeta(prior json.RawMessage, p rooms.TextRequest) json.RawMessage {
 	return out
 }
 func messageEmpty(v messager.MessageProjection) bool {
+	if v.ForwardedMessageID != nil || v.ForwardUnavailable {
+		return false
+	}
 	if len(v.EncryptionMeta) > 0 && string(v.EncryptionMeta) != "null" {
 		return false
 	}

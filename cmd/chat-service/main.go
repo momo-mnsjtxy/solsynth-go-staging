@@ -164,6 +164,7 @@ func run(args []string) error {
 	if e != nil {
 		return errors.New("invalid chat read configuration")
 	}
+	reader.WithRoomAccess(repository)
 	service := &rooms.Service{Repository: repository, Authority: verifier, Reader: reader}
 	serviceHandler := service.Handler()
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

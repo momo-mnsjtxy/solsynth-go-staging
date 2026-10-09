@@ -13,12 +13,12 @@ import (
 	"time"
 )
 
-const textColumns = `id::text,chat_room_id::text,sender_id::text,type,room_sequence,content,client_message_id,created_at,updated_at,deleted_at,edited_at,meta,replied_message_id::text,reactions_count`
+const textColumns = `id::text,chat_room_id::text,sender_id::text,type,room_sequence,content,client_message_id,created_at,updated_at,deleted_at,edited_at,meta,replied_message_id::text,reactions_count,thread_id::text,forwarded_message_id::text,encryption_meta`
 
 func textMessage(s scanner) (messager.MessageProjection, error) {
 	v := messager.MessageProjection{Meta: json.RawMessage(`null`), MembersMentioned: json.RawMessage(`[]`), Attachments: json.RawMessage(`[]`), EncryptionMeta: json.RawMessage(`null`), ReactionsCount: json.RawMessage(`{}`), ReactionsMade: map[string]bool{}}
-	var meta, reactions []byte
-	e := s.Scan(&v.ID, &v.ChatRoomID, &v.SenderID, &v.Type, &v.RoomSequence, &v.Content, &v.ClientMessageID, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt, &v.EditedAt, &meta, &v.RepliedMessageID, &reactions)
+	var meta, reactions, encryption []byte
+	e := s.Scan(&v.ID, &v.ChatRoomID, &v.SenderID, &v.Type, &v.RoomSequence, &v.Content, &v.ClientMessageID, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt, &v.EditedAt, &meta, &v.RepliedMessageID, &reactions, &v.ThreadID, &v.ForwardedMessageID, &encryption)
 	if errors.Is(e, sql.ErrNoRows) {
 		e = rooms.ErrNotFound
 	}
@@ -27,6 +27,9 @@ func textMessage(s scanner) (messager.MessageProjection, error) {
 	}
 	if len(reactions) > 0 {
 		v.ReactionsCount = reactions
+	}
+	if len(encryption) > 0 {
+		v.EncryptionMeta = encryption
 	}
 	return v, e
 }
@@ -90,7 +93,7 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
-	tx, e := r.beginRoomWrite(ctx, actor, rid, "chat.messages.create", "")
+	tx, e := r.beginMessageWrite(ctx, actor, rid, p.ForwardedMessageID)
 	if e != nil {
 		return messager.MessageProjection{}, e
 	}
@@ -101,6 +104,23 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 	}
 	if e = r.mlsMessageCheck(ctx, tx, actor, rid, p.EncryptionMeta, false); e != nil {
 		return messager.MessageProjection{}, e
+	}
+	if p.ThreadID != nil || p.ForwardedMessageID != nil || p.IsThreadRoot {
+		room, e := r.room(ctx, tx, rid, false)
+		if e != nil {
+			return messager.MessageProjection{}, e
+		}
+		if room.EncryptionMode != r.policy.NoneEncryptionMode {
+			return messager.MessageProjection{}, rooms.ErrUnsupported
+		}
+	}
+	if e = r.validateThread(ctx, tx, rid, p); e != nil {
+		return messager.MessageProjection{}, e
+	}
+	if p.ForwardedMessageID != nil {
+		if _, e = r.sourceMessage(ctx, tx, actor, *p.ForwardedMessageID, false); e != nil {
+			return messager.MessageProjection{}, e
+		}
 	}
 	p.EncryptionMeta = normalizedMLSEncryption(ctx, p.EncryptionMeta)
 	meta := mergeMeta(nil, p)
@@ -123,6 +143,13 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 			Encryption *rooms.EncryptionMeta
 		}{encoded, p.EncryptionMeta})
 	}
+	if p.ThreadID != nil || p.ForwardedMessageID != nil || p.IsThreadRoot {
+		encoded, _ = json.Marshal(struct {
+			Plain           json.RawMessage
+			Thread, Forward *string
+			Root            bool
+		}{encoded, p.ThreadID, p.ForwardedMessageID, p.IsThreadRoot})
+	}
 	digest := sha256.Sum256(encoded)
 	if p.ClientMessageID != nil {
 		var stored []byte
@@ -141,6 +168,14 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 			}
 			if e = r.loadMessage(ctx, tx, actor, &v); e != nil {
 				return v, e
+			}
+			if p.ForwardedMessageID != nil {
+				if _, e = r.sourceMessage(ctx, tx, actor, *p.ForwardedMessageID, false); e != nil {
+					return messager.MessageProjection{}, e
+				}
+			}
+			if _, e = r.writable(ctx, tx, actor, rid); e != nil {
+				return messager.MessageProjection{}, e
 			}
 			return v, r.commit(ctx, tx, actor, "chat.messages.create")
 		}
@@ -173,6 +208,12 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 	if e != nil {
 		return v, e
 	}
+	if p.ThreadID != nil || p.ForwardedMessageID != nil {
+		v, e = textMessage(tx.QueryRowContext(ctx, `UPDATE chat_messages SET thread_id=$2,forwarded_message_id=$3 WHERE id=$1 RETURNING `+textColumns, v.ID, p.ThreadID, p.ForwardedMessageID))
+		if e != nil {
+			return v, e
+		}
+	}
 	if e = setMessageEncryption(ctx, tx, &v, p.EncryptionMeta); e != nil {
 		return v, e
 	}
@@ -184,6 +225,14 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 	}
 	if messageEmpty(v) {
 		return messager.MessageProjection{}, rooms.ErrInvalid
+	}
+	if p.ForwardedMessageID != nil {
+		if _, e = r.sourceMessage(ctx, tx, actor, *p.ForwardedMessageID, false); e != nil {
+			return messager.MessageProjection{}, e
+		}
+	}
+	if _, e = r.writable(ctx, tx, actor, rid); e != nil {
+		return messager.MessageProjection{}, e
 	}
 	return v, r.commit(ctx, tx, actor, "chat.messages.create")
 }
@@ -214,6 +263,9 @@ func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.T
 	}
 	if v.SenderID != m.ID {
 		return messager.MessageProjection{}, rooms.ErrForbidden
+	}
+	if p.ThreadID != nil && !sameOptional(p.ThreadID, v.ThreadID) || p.ForwardedMessageID != nil && !sameOptional(p.ForwardedMessageID, v.ForwardedMessageID) || p.IsThreadRoot && (v.ThreadID != nil || v.RepliedMessageID != nil) {
+		return messager.MessageProjection{}, rooms.ErrConflict
 	}
 	if v.Type != "text" {
 		return messager.MessageProjection{}, rooms.ErrUnsupported

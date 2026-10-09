@@ -44,15 +44,35 @@ type MessageDecorator interface {
 
 func (r *Repository) WithMessageDecorator(d MessageDecorator) *Repository { r.decorator = d; return r }
 func (r *Repository) decorate(ctx context.Context, tx *sql.Tx, actor string, messages []messager.MessageProjection) error {
-	if r.decorator != nil {
-		for i := range messages {
+	for i := range messages {
+		if r.decorator != nil {
 			if e := r.decorator.Load(ctx, tx, actor, &messages[i]); e != nil {
 				return e
+			}
+		}
+		if r.owned {
+			if hydration, ok := r.roomAccess.(interface {
+				HydrateReferences(context.Context, *sql.Tx, string, *messager.MessageProjection) error
+			}); ok {
+				if e := hydration.HydrateReferences(ctx, tx, actor, &messages[i]); e != nil {
+					return e
+				}
+			} else {
+				if messages[i].ForwardedMessageID != nil {
+					messages[i].ForwardedMessageID = nil
+					messages[i].ForwardUnavailable = true
+				}
+				var meta map[string]json.RawMessage
+				if json.Unmarshal(messages[i].Meta, &meta) == nil && meta != nil {
+					delete(meta, "redirect")
+					messages[i].Meta, _ = json.Marshal(meta)
+				}
 			}
 		}
 	}
 	return nil
 }
+
 func (r *Repository) WithRoomAccess(p rooms.AccessPolicy) *Repository { r.roomAccess = p; return r }
 
 func New(db *sql.DB) *Repository { return &Repository{db: db} }
@@ -192,7 +212,7 @@ func (r *Repository) Sync(ctx context.Context, q messager.SyncQuery) (messager.S
 	if err != nil {
 		return messager.SyncResponse{}, err
 	}
-	messages, err := readMessages(ctx, tx, where+` ORDER BY m.room_sequence ASC,m.created_at ASC LIMIT 1000`, args, q.AccountID)
+	messages, err := r.readMessages(ctx, tx, where+` ORDER BY m.room_sequence ASC,m.created_at ASC LIMIT 1000`, args, q.AccountID)
 	if err != nil {
 		return messager.SyncResponse{}, err
 	}
@@ -232,7 +252,7 @@ func (r *Repository) ListMessages(ctx context.Context, q messager.MessageListQue
 	if err != nil {
 		return messager.MessagePage{}, err
 	}
-	messages, err := readMessages(ctx, tx, where+` ORDER BY m.room_sequence DESC,m.created_at DESC LIMIT $2 OFFSET $3`, []any{q.RoomID, q.Take, q.Offset}, q.AccountID)
+	messages, err := r.readMessages(ctx, tx, where+` ORDER BY m.room_sequence DESC,m.created_at DESC LIMIT $2 OFFSET $3`, []any{q.RoomID, q.Take, q.Offset}, q.AccountID)
 	if err != nil {
 		return messager.MessagePage{}, err
 	}
@@ -259,7 +279,7 @@ func (r *Repository) GetMessage(ctx context.Context, q messager.MessageQuery) (m
 	if err = r.requireRoom(ctx, tx, q.RoomID, q.AccountID); err != nil {
 		return messager.MessageProjection{}, err
 	}
-	messages, err := readMessages(ctx, tx, visibleMessages+` AND m.id=$2 LIMIT 1`, []any{q.RoomID, q.MessageID}, q.AccountID)
+	messages, err := r.readMessages(ctx, tx, visibleMessages+` AND m.id=$2 LIMIT 1`, []any{q.RoomID, q.MessageID}, q.AccountID)
 	if err != nil {
 		return messager.MessageProjection{}, err
 	}
@@ -286,7 +306,7 @@ func rawJSON(data []byte, shape byte, nullable bool) (json.RawMessage, error) {
 	}
 	return append(json.RawMessage{}, data...), nil
 }
-func readMessages(ctx context.Context, tx *sql.Tx, where string, args []any, account string) ([]messager.MessageProjection, error) {
+func (r *Repository) readMessages(ctx context.Context, tx *sql.Tx, where string, args []any, account string) ([]messager.MessageProjection, error) {
 	rows, err := tx.QueryContext(ctx, `SELECT `+projectionColumns+` FROM chat_messages m WHERE `+where, args...)
 	if err != nil {
 		return nil, err
@@ -369,10 +389,21 @@ func readMessages(ctx context.Context, tx *sql.Tx, where string, args []any, acc
 			return nil, err
 		}
 	}
-	// Source uses raw SQL with only thread_id and deleted_at filters. Preserve that
-	// boundary rather than guessing that reply sender/room membership affects count.
-	rows, err = tx.QueryContext(ctx, `SELECT thread_id::text,count(*) FROM chat_messages
- WHERE thread_id=ANY($1::uuid[]) AND deleted_at IS NULL GROUP BY thread_id`, array)
+	// Preserve the retained source query for synthetic projections. Owned roots
+	// use the same reply visibility boundary as the owned thread endpoint.
+	threadCounts := `SELECT thread_id::text,count(*) FROM chat_messages
+ WHERE thread_id=ANY($1::uuid[]) AND deleted_at IS NULL GROUP BY thread_id`
+	if r.owned {
+		threadCounts = `SELECT reply.thread_id::text,count(*) FROM chat_messages reply
+ JOIN chat_messages root ON root.id=reply.thread_id AND root.chat_room_id=reply.chat_room_id
+ WHERE reply.thread_id=ANY($1::uuid[]) AND reply.deleted_at IS NULL AND reply.type='text'
+ AND (reply.encryption_meta IS NULL OR reply.encryption_meta='null'::jsonb)
+ AND root.type='text' AND root.thread_id IS NULL AND root.replied_message_id IS NULL
+ AND (root.encryption_meta IS NULL OR root.encryption_meta='null'::jsonb)
+ AND EXISTS(SELECT 1 FROM chat_members sender WHERE sender.id=reply.sender_id AND sender.chat_room_id=reply.chat_room_id AND sender.deleted_at IS NULL)
+ GROUP BY reply.thread_id`
+	}
+	rows, err = tx.QueryContext(ctx, threadCounts, array)
 	if err != nil {
 		return nil, err
 	}

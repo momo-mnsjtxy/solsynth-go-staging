@@ -24,7 +24,8 @@ a bounded projection; complete legacy message/member DTO parity is not claimed.
   values, matching `UpdateMessageAsync`. Edit client_message_id values are
   stored/echoed while the original send key remains independently preserved.
   Null thread_id/forwarded_message_id fields in the authored Solian envelope
-  are accepted; non-null thread/forward operations remain unsupported.
+  preserve stored relationships. Plaintext thread and text-forward support is
+  documented in `chat-threads-forwarding.md`.
 - DELETE soft-deletes the original and old edit snapshots, removes live media
   associations and reactions, and appends the existing deletion event atomically.
   Room deletion immediately denies access through the room's deleted state.
@@ -108,8 +109,8 @@ for the parent-authorized private Actions runner; no local sockets were attempte
 All 65 maintained SQL files and nine PL/pgSQL bodies parsed under pinned pglast
 6.7 / PostgreSQL 16.1. This is syntax validation, not runtime DB validation.
 
-Still unsupported: full DTO parity, mention extraction, thread writes,
-cross-room forwarding/redirect, provider-created voice/transcoding, special
+Still unsupported: full DTO parity, mention extraction, attachment/encrypted
+forwarding/redirect, provider-created voice/transcoding, special
 fund/survey/calendar/location resolvers, custom subscription reactions, and live
 websocket/push notification publication. Rich payloads are currently unencrypted.
 Encrypted-room enablement stays fail-closed until authored key/epoch/membership

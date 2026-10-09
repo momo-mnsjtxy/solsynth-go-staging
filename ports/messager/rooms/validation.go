@@ -79,6 +79,9 @@ func ValidateText(p TextRequest, edit bool) (TextRequest, error) {
 		if len(p.Meta) > 16384 || json.Unmarshal(p.Meta, &value) != nil || value == nil {
 			return p, ErrInvalid
 		}
+		if _, reserved := value["redirect"]; reserved {
+			return p, ErrInvalid
+		}
 		p.Meta, _ = json.Marshal(value)
 	}
 	if p.Embeds != nil {
@@ -95,7 +98,7 @@ func ValidateText(p TextRequest, edit bool) (TextRequest, error) {
 			return p, ErrInvalid
 		}
 	}
-	if !edit && p.EncryptionMeta == nil && strings.TrimSpace(p.Content) == "" && (p.AttachmentsID == nil || len(*p.AttachmentsID) == 0) && (p.Embeds == nil || len(*p.Embeds) == 0) {
+	if !edit && p.ForwardedMessageID == nil && p.EncryptionMeta == nil && strings.TrimSpace(p.Content) == "" && (p.AttachmentsID == nil || len(*p.AttachmentsID) == 0) && (p.Embeds == nil || len(*p.Embeds) == 0) {
 		return p, ErrInvalid
 	}
 	if p.Nonce != nil && (!validText(*p.Nonce, 36) || strings.TrimSpace(*p.Nonce) == "") {
@@ -114,8 +117,14 @@ func ValidateText(p TextRequest, edit bool) (TextRequest, error) {
 	if p.RepliedMessageID != nil && !ValidID(*p.RepliedMessageID) {
 		return p, ErrInvalid
 	}
-	if p.ThreadID != nil || p.ForwardedMessageID != nil {
+	if p.ThreadID != nil && !ValidID(*p.ThreadID) || p.ForwardedMessageID != nil && !ValidID(*p.ForwardedMessageID) {
+		return p, ErrInvalid
+	}
+	if p.EncryptionMeta != nil && (p.ThreadID != nil || p.ForwardedMessageID != nil || p.IsThreadRoot) {
 		return p, ErrUnsupported
+	}
+	if p.IsThreadRoot && (p.ThreadID != nil || p.RepliedMessageID != nil) {
+		return p, ErrInvalid
 	}
 	return p, nil
 }

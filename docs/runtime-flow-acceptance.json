@@ -2,16 +2,15 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed realm labels/member filtering and scoped daily-tenure progression integrated; combined original experience array route and disabled boost-only fallback, DateStyle-safe reasons and original-token elapsed restart. Actual PostgreSQL pending.",
+  "local_source_checkpoint": "Narrow fixture correction: UTC checkin day, bounded retry before original deadline, synthetic post-job-wait generation probe without inverted grant/account locks; runtime unchanged. Actual PG pending.",
   "last_fully_passed_ci": {
-    "commit": "85674a81584fc05876446b80761f6c27917ed037",
-    "run": 37868140163,
+    "commit": "651c6302809de83a2682047c5820468befd15b1e",
+    "run": 37873421328,
     "attempt": 1,
-    "before": 674,
-    "after_restart": 84,
+    "before": 718,
+    "after_restart": 87,
     "skipped": 0,
-    "evidence": "All four jobs/head/attempt checked; complete independent named case sets from authorized job logs; CI aggregate verified both exact artifact digests and distinct restarted clusters/process smokes. Local raw ZIP verification unavailable: HTTP403/error1010 on supplied unexpired download URL.",
-    "acceptance_limit": "Known ordinary-editor automod evidence issue corrected in699;674 is CI-green, not production or whole-platform acceptance."
+    "evidence": "Exact all-job/head/attempt/required steps plus independent named raw-job-log cases; CI aggregate verified both artifactdigests and actual cluster/process restarts. Local ZIP recomputation unavailable403/error1010."
   },
   "latest_candidate": {
     "commit": "0a79937fb769650afb0c446de0bcb7ca0b815afd",
@@ -4121,19 +4120,17 @@
     "Passing configured adapters and owned policies does not establish upstream internal behavior, live provider activation, or production migration readiness."
   ],
   "prior_candidate_result": {
-    "commit": "1ccac7bf0b9c13d01c44441cd95fab15bd7eafa1",
-    "run": 37862930332,
-    "before_passed": 621,
-    "before_required": 625,
-    "after_restart_executed": 0,
+    "commit": "0a79937fb769650afb0c446de0bcb7ca0b815afd",
+    "run": 37874181155,
+    "before_passed": 739,
+    "before_failed": 3,
+    "after_restart": 0,
     "skipped": 0,
-    "failed_tests": [
-      "TestPGPostScheduleExplicitPublicationUsesCurrentGates",
-      "TestPGPostSchedulePublicationGatesAfterMediaWait",
-      "TestPGRoomMediaRealmRevocationAndDirectAudience",
-      "TestPGShippingAddressCRUDAndScopeIsolation"
-    ],
-    "diagnosis": "Canonical fixture setup/errors: missing paired shadowban reason, Join used for pending invitation, missing level2 moderator prerequisite, existing contact service maps unknown IDs to401. Corrected setup assertions preserve runtime gates and compare foreign/nonexistent denials with no disclosure/mutation."
+    "failures": [
+      "TestPGCalendarActivityStringProjectionPrivacyAndTimeZone",
+      "TestPGFederationDiscoveryRetryLeaseAndAtomicRollback",
+      "TestPGFederationDiscoveryCurrentPolicyAfterJobLockWait"
+    ]
   },
   "latest_job_log_verified_ci_pass": {
     "commit": "85674a81584fc05876446b80761f6c27917ed037",

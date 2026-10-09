@@ -267,14 +267,18 @@ func TestPGFederationDiscoveryCurrentPolicyAfterJobLockWait(t *testing.T) {
 	}
 	unblock()
 	waitAtomicBlocked(t, atomicAuthorityFixture{db: x.db, ctx: ctx}, pid, "owned_federation_discoveries")
-	// Direct maintained-table fixture writes deliberately bypass canonical locks
-	// to prove the completion's final post-job-wait statement reads fresh policy.
-	if _, e = hold.ExecContext(ctx, `UPDATE owned_authority_grants SET deny=true WHERE account_id=$1::uuid AND pattern='publishers.*'`, x.actor); e != nil {
+	// Synthetic history probe specifically tests a fresh generation read after
+	// the job-row wait. Canonical grant writers lock the account first;
+	// touching grants while holding this job would invert that order through
+	// the factor policy trigger. Actual grant revoke/restore is covered above.
+	var beforeRevision, afterRevision int64
+	if e = hold.QueryRowContext(ctx, `SELECT revision FROM owned_federation_discovery_epochs WHERE kind='account' AND entity_id=$1::uuid`, x.actor).Scan(&beforeRevision); e != nil {
 		t.Fatal(e)
 	}
-	if _, e = hold.ExecContext(ctx, `UPDATE owned_authority_grants SET deny=false WHERE account_id=$1::uuid AND pattern='publishers.*'`, x.actor); e != nil {
-		t.Fatal(e)
+	if e = hold.QueryRowContext(ctx, `UPDATE owned_federation_discovery_epochs SET revision=revision+2 WHERE kind='account' AND entity_id=$1::uuid RETURNING revision`, x.actor).Scan(&afterRevision); e != nil || afterRevision != beforeRevision+2 {
+		t.Fatal("history transition setup", e)
 	}
+
 	if e = hold.Commit(); e != nil {
 		t.Fatal(e)
 	}

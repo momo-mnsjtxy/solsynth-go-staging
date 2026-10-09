@@ -257,7 +257,9 @@ func TestPGFederationDiscoveryRetryLeaseAndAtomicRollback(t *testing.T) {
 	if _, e := x.r.ProcessDiscoveries(x.ctx, failure, 1); e != nil || calls != 2 {
 		t.Fatal("expired lease not reclaimed", e, calls)
 	}
-	x.clock.Add(3600)
+	// Attempt two backs off two minutes. Stay within the original session
+	// and job deadline; advancing an hour correctly cancels stale intent.
+	x.clock.Add(121)
 	if _, e := x.r.ProcessDiscoveries(x.ctx, failure, 1); e != nil || calls != 3 || discoveryState(t, x.db, job.ID) != "dead" {
 		t.Fatal("attempt limit", calls, e)
 	}

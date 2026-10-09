@@ -1,5 +1,5 @@
 {
-  "base_commit": "e96268b3c7fef9366d758e4b32630521df6d433f",
+  "base_commit": "eb76513b50125e3d0aaff54905e66d9df8e7f174",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -1821,7 +1821,7 @@
     },
     {
       "source": "tests/integration/calendar_activity_test.go",
-      "sha256": "072832e782bc6710b2b6471b25e1495d3ae0f6df0cabe3067647648edd8e9aa8"
+      "sha256": "c6ab591021d7db1225c33cfebf8c2a72299d6adbab4f38f570b60fb74559e0a4"
     },
     {
       "source": "tests/integration/calendar_media_review_test.go",
@@ -1953,11 +1953,11 @@
     },
     {
       "source": "tests/integration/federation_discovery_review_test.go",
-      "sha256": "df59d7722fe3255de263d925c4f959529f5287def90eccba3e03cddbb78274fc"
+      "sha256": "15f21f988ec7e30b3c6cefc6d21cdd43ef489a49b05b021ac336a69ab8711158"
     },
     {
       "source": "tests/integration/federation_discovery_test.go",
-      "sha256": "25e78c21170102e3a19bcd2053736badff477efbd3e9789ae49bdd2ebc2bd17c"
+      "sha256": "26fb23f810f5a6905a1a5926131f89a556689de28e572790afa37dbbb50ebade"
     },
     {
       "source": "tests/integration/federation_quotes_test.go",
@@ -2330,5 +2330,11 @@
     "after": 1,
     "independent_correction": "b983da25aa0435e29a98d76808ae0a9071f681c38f093078a1bd44d2f7380690",
     "coordinator_checks": "Combined original experience route array and disabled fallback; original-token elapsed restart; exact registered case/dependency/marker coverage. Actual PG pending."
+  },
+  "discovery_calendar_fixture_correction": {
+    "runtime_changes": false,
+    "utc_day": "Canonical UTC checkin day, unchanged NewYork local projection assertions",
+    "retry": "Third attempt after121seconds preserves two-minute backoff and original one-hour deadline; separate ancestor-deadline denial unchanged",
+    "job_wait": "Synthetic no-FK generation increment verifies final freshness only; canonical grant ABA remains separate. Verified ReplacePolicy\u2192WithinAccount locks account before grants; original fixture inverted job\u2192grant\u2192factor-trigger-account against completion account\u2192publisher\u2192job."
   }
 }

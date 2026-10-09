@@ -19,7 +19,7 @@ func TestPGCalendarActivityStringProjectionPrivacyAndTimeZone(t *testing.T) {
 	created := calendarTime("2026-10-08T01:00:00Z")
 	query(t, f.db, `INSERT INTO owned_presence_statuses(id,account_id,attitude,type,label,meta,created_at,updated_at,cleared_at)VALUES($1::uuid,$2::uuid,0,3,'Visible label','{"private_device":"do not project"}'::jsonb,$3::timestamptz,$3::timestamptz,$3::timestamptz+interval '1 hour')`, status, f.actor, created)
 	query(t, f.db, `INSERT INTO owned_presence_preferences(account_id,status_visibility,updated_at)VALUES($1::uuid,'private',$2::timestamptz)`, f.actor, f.now)
-	query(t, f.db, `INSERT INTO owned_progression_checkins(id,account_id,day,level,reward_experience,created_at)VALUES($1::uuid,$2::uuid,'2026-10-07'::date,2,100,$3::timestamptz)`, checkin, f.actor, created)
+	query(t, f.db, `INSERT INTO owned_progression_checkins(id,account_id,day,level,reward_experience,created_at)VALUES($1::uuid,$2::uuid,($3::timestamptz AT TIME ZONE 'UTC')::date,2,100,$3::timestamptz)`, checkin, f.actor, created)
 	f.config.Activity = notabledaypg.CanonicalActivityOverlay{}
 	f = calendarPool(t, f, f.db)
 	h := calendarHTTP(f)

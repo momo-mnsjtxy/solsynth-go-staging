@@ -51,6 +51,35 @@
       "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
       "bytes": 34522,
       "kind": "Existing pinned licensed source copied unchanged; see source provenance."
+    },
+    {
+      "file": "Solian__friend_status_listener.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_path": "lib/accounts/pods/friend_status_listener.dart",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/pods/friend_status_listener.dart",
+      "original_blob": "2382b4697c86b4ff9c9b855818e0dd7dd377527d",
+      "retained_line_ranges": null,
+      "blob": "2382b4697c86b4ff9c9b855818e0dd7dd377527d",
+      "sha256": "be2522a4442fb2e96cb8fa87785862d34a1809f8ea7f541fb93e6f001d3382e9",
+      "bytes": 10390
+    },
+    {
+      "file": "ServiceCollectionExtensions.friend_status.excerpt.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_path": "DysonNetwork.Passport/Startup/ServiceCollectionExtensions.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Startup/ServiceCollectionExtensions.cs",
+      "original_blob": "47d5a3175a5326b3919507513d6789ec41bc7ca8",
+      "retained_line_ranges": [
+        [
+          504,
+          536
+        ]
+      ],
+      "blob": "1511729688bde355d63727dede9739a8fdb47110",
+      "sha256": "16eeacba6dc2c7ebfab880fb3c9db6ba780dd61db1f3cf2a7010e14e70e95405",
+      "bytes": 1723
     }
   ]
 }

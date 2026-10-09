@@ -23,6 +23,7 @@ import (
 	"solsynth.local/go-migration/internal/chatpg"
 	"solsynth.local/go-migration/internal/commercepg"
 	"solsynth.local/go-migration/internal/fortunepg"
+	"solsynth.local/go-migration/internal/friendeventpg"
 	"solsynth.local/go-migration/internal/interactionpg"
 	"solsynth.local/go-migration/internal/livestreampg"
 	"solsynth.local/go-migration/internal/locationpg"
@@ -572,7 +573,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		}
 		settingsHTTP = (&accountsettings.Service{Repository: settingsRepo, Authority: v}).Handler()
 	}
-	notificationRepo := notificationpg.New(db, guard, c.NotificationApp).WithRoomAccess(cr)
+	notificationRepo := notificationpg.New(db, guard, c.NotificationApp).WithRoomAccess(cr).WithFriendEvents(friendeventpg.New(db, guard, activityRepo).WithStatus(presenceRepo))
 	timelineRepo.WithSubscriptionNotifications(publisherSubscriptionNotifications{notificationRepo, db, c.NotificationApp})
 	if settingsRepo != nil {
 		notificationRepo.WithPreferencePolicy(settingsRepo)

@@ -31,6 +31,10 @@ CREATE TABLE IF NOT EXISTS owned_progression_badges (
  UNIQUE(account_id,type),CHECK(jsonb_typeof(meta)='object')
 );
 CREATE UNIQUE INDEX IF NOT EXISTS owned_progression_one_active_badge ON owned_progression_badges(account_id)WHERE activated_at IS NOT NULL AND deleted_at IS NULL;
+-- Display badges never confer identity permissions. Retain manual provenance
+-- independently of editable labels/meta and the earned reward ledger.
+ALTER TABLE owned_progression_badges ADD COLUMN IF NOT EXISTS origin text NOT NULL DEFAULT 'progression' CHECK(origin IN('progression','admin'));
+ALTER TABLE owned_progression_badges ADD COLUMN IF NOT EXISTS granted_by uuid REFERENCES owned_authority_accounts(id) CONSTRAINT owned_progression_badge_provenance CHECK((origin='admin')=(granted_by IS NOT NULL));
 CREATE TABLE IF NOT EXISTS owned_progression_checkins (
  id uuid PRIMARY KEY,account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),day date NOT NULL,level integer NOT NULL CHECK(level BETWEEN 0 AND 4),
  reward_experience bigint NOT NULL CHECK(reward_experience=100),created_at timestamptz NOT NULL,

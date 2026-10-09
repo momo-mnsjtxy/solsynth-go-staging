@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"solsynth.local/go-migration/internal/friendeventpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/activities"
 )
@@ -39,7 +40,7 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if r == nil || r.db == nil || r.guard == nil {
 		return activities.ErrUnavailable
 	}
-	_, e := r.db.ExecContext(ctx, `SELECT id,document,session_id,revision FROM owned_presence_activities LIMIT 0;SELECT id,total_seconds,session_count FROM owned_activity_catalog LIMIT 0;SELECT activity_id,revision FROM owned_activity_events LIMIT 0`)
+	_, e := r.db.ExecContext(ctx, `SELECT id,document,session_id,revision FROM owned_presence_activities LIMIT 0;SELECT id,total_seconds,session_count FROM owned_activity_catalog LIMIT 0;SELECT activity_id,revision FROM owned_activity_events LIMIT 0;SELECT id,kind,presence_version FROM owned_friend_events LIMIT 0;SELECT event_id,recipient_id FROM owned_friend_audiences LIMIT 0;SELECT account_id,revision FROM owned_friend_presence_versions LIMIT 0`)
 	return e
 }
 func uuid() (string, error) {
@@ -216,7 +217,10 @@ func (r *Repository) eligible(ctx context.Context, tx *sql.Tx, v row) (bool, err
 }
 func (r *Repository) event(ctx context.Context, tx *sql.Tx, v row, action string) error {
 	_, e := tx.ExecContext(ctx, `INSERT INTO owned_activity_events(account_id,activity_id,revision,action,occurred_at)VALUES($1::uuid,$2::uuid,$3::bigint,$4::text,clock_timestamp())`, v.AccountID, v.ID, v.revision, action)
-	return e
+	if e != nil {
+		return e
+	}
+	return friendeventpg.CaptureActivity(ctx, tx, friendeventpg.Source{Owner: v.AccountID, Session: v.session, Activity: v.ID, Version: v.version, Epoch: v.epoch, Revision: v.revision}, v.Visibility)
 }
 
 // Hash references resolve only through canonical artwork associations. Writes

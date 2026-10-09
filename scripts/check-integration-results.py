@@ -5,6 +5,33 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGFederationCleanupReceiptAmbiguousDispatchAndNeverDispatched",
+        "TestPGFederationCleanupReceiptReplayBoundsAndTampering",
+        "TestPGFederationCleanupCurrentAuthorityAndBindingFences",
+        "TestPGFederationCleanupActivationRequiresExplicitRootGrant",
+        "TestPGFederationCleanupActivationRechecksAfterWait",
+        "TestPGFederationCleanupLeaseDeadlineAndRevocation",
+
+        "TestPGFriendEventsAccountWaitRechecksBothAudienceAndProof",
+        "TestPGFriendEventsArtworkWaitChecksOriginalSourceAndReader",
+        "TestPGFriendEventsCanonicalActivityAndStatusReplay",
+        "TestPGFriendEventsConcurrentImportRollbackAndBounds",
+        "TestPGFriendEventsOversizedSnapshotsDoNotPoisonQueue",
+        "TestPGFriendEventsPrivacyRevisionsAndSourceAuthority",
+        "TestPGFriendEventsSavedRestartPersistence",
+        "TestPGAccountAdminActivityMetricUTCWindows",
+        "TestPGAccountAdminBadgeAuditRollbackAndDuplicateRace",
+        "TestPGAccountAdminBadgeExpiryAndProofAfterDomainWait",
+        "TestPGAccountAdminBadgeLifecycleCanonicalProjection",
+        "TestPGAccountAdminExplicitAuthorityAndTargetIsolation",
+        "TestPGAccountAdminGrantAndRevokeRecheckDomainWait",
+        "TestPGAccountAdminOriginalProofAfterAccountWait",
+        "TestPGAccountAdminReciprocalLocksAndSessionABA",
+        "TestPGAccountAdminRootSessionsAndSingleConnection",
+        "TestPGAccountAdminSavedRestartPersistence",
+        "TestPGAccountAdminTargetRenameAfterWait",
+        "TestPGBackendAccountAdminSensitiveReadRoutes",
+
         "TestPGFriendsOverviewArtworkWaitExpiryAndCancellation",
         "TestPGFriendsOverviewAuthoredSelectionAndWire",
         "TestPGFriendsOverviewConcurrentReadsAndBounds",
@@ -925,6 +952,9 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGFriendEventsSavedRestartPersistence",
+        "TestPGAccountAdminSavedRestartPersistence",
+
         "TestPGFriendsOverviewSavedRestartPersistence",
 
         "TestPGBackendWalletReportingRestartPersistence",

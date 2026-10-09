@@ -41,13 +41,20 @@ func reportingWallets(t *testing.T, f backendFixture) (w.Wallet, w.Wallet) {
 }
 func TestPGBackendWalletReportingLifecyclePrivacyAndDates(t *testing.T) {
 	f := newBackendFixture(t)
+	// Distinct canonical creation instants are needed to test an inclusive
+	// single-instant range; the shared backend fixture normally freezes time.
+	fixtureNow := f.config.Now()
+	f.config.Now = func() time.Time { return fixtureNow }
+	f.app = backendApp(t, f.db, f.config)
 	a, b := reportingWallets(t, f)
 	empty := backendDecode[w.WalletStats](t, backendCall(t, f.app, "GET", "/api/wallets/stats", f.token, "", 200))
 	if empty.TotalIncome == nil || empty.TotalIncome.Sign() != 0 || len(empty.Summary) != 0 {
 		t.Fatal(empty)
 	}
 	settled := reportingTransfer(t, f, a, b, "1.001", "points", f.token, false)
+	fixtureNow = fixtureNow.Add(time.Second)
 	hold := reportingTransfer(t, f, a, b, "2.002", "points", f.token, true)
+	fixtureNow = fixtureNow.Add(time.Second)
 	refunded := reportingTransfer(t, f, a, b, "3.003", "points", f.token, true)
 	backendCall(t, f.app, "POST", "/api/wallets/transactions/"+refunded.ID+"/reject", f.otherToken, "", 200)
 	stats := backendDecode[w.WalletStats](t, backendCall(t, f.app, "GET", "/wallet/wallets/stats", f.token, "", 200))
@@ -76,7 +83,7 @@ func TestPGBackendWalletReportingLifecyclePrivacyAndDates(t *testing.T) {
 	backendCall(t, f.app, "GET", "/api/wallets/stats?wallets="+a.ID+"&wallets="+b.ID, f.token, "", 404)
 	// Canonical realm membership is required even for a public realm wallet.
 	query(t, f.db, `INSERT INTO owned_realm_quota(account_id,total,starts_at)VALUES($1,2,now())`, f.actor)
-	realm := backendDecode[social.Realm](t, backendJSONCall(t, f.app, "POST", "/passport/realms", f.token, map[string]any{"slug": "report-" + f.actor, "name": "Synthetic reporting realm", "is_public": true}, 200))
+	realm := backendDecode[social.Realm](t, backendJSONCall(t, f.app, "POST", "/passport/realms", f.token, map[string]any{"slug": "report-" + f.actor, "name": "Synthetic reporting realm", "is_public": true, "is_community": true}, 200))
 	realmWallet := backendDecode[w.Wallet](t, backendJSONCall(t, f.app, "POST", "/api/wallets", f.token, map[string]any{"realm_id": realm.ID}, 200))
 	backendCall(t, f.app, "GET", "/api/wallets/stats?wallets="+realmWallet.ID, f.token, "", 200)
 	backendCall(t, f.app, "GET", "/api/wallets/stats?wallets="+realmWallet.ID, f.otherToken, "", 404)

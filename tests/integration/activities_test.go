@@ -71,6 +71,10 @@ func TestPGBackendActivityAuthoredRoutesLifecycle(t *testing.T) {
 	f := newActivityFixture(t)
 	body := `{"type":"coding","manual_id":"editor","title":"Synthetic activity","provider":" OWNED ","reference_id":"ref-1","queryable_terms":[" IDE ","ide"],"tags":[{"slug":"work","name":"Work"}],"catalog_key":"catalog","lease_minutes":5,"visibility":1}`
 	first := backendDecode[activities.Activity](t, backendCall(t, f.app, "POST", "/passport/activities/sessions/start", f.token, body, 200))
+	var storedStart time.Time
+	if e := f.db.QueryRow(`SELECT started_at FROM owned_presence_activities WHERE id=$1`, first.ID).Scan(&storedStart); e != nil || first.StartedAt == nil || !first.StartedAt.Equal(storedStart) {
+		t.Fatal("start response differs from persisted transition", e)
+	}
 	again := backendDecode[activities.Activity](t, backendCall(t, f.app, "POST", "/api/activities/sessions/start", f.token, body, 200))
 	if first.ID != again.ID || first.CatalogID == nil || first.StartedAt == nil || !first.StartedAt.Equal(*again.StartedAt) || again.Provider == nil || *again.Provider != "owned" || len(again.QueryableTerms) != 1 {
 		t.Fatal("renewal lost session identity", first, again)
@@ -82,6 +86,10 @@ func TestPGBackendActivityAuthoredRoutesLifecycle(t *testing.T) {
 	// Real elapsed time establishes the floor-second calculation.
 	organizationWaitExpired(t, f.ctx, f.db, first.StartedAt.Add(1100*time.Millisecond))
 	ended := backendDecode[activities.Activity](t, backendCall(t, f.app, "POST", "/api/activities/sessions/end", f.token, `{"manual_id":"editor"}`, 200))
+	var storedEnd time.Time
+	if e := f.db.QueryRow(`SELECT ended_at FROM owned_presence_activities WHERE id=$1`, ended.ID).Scan(&storedEnd); e != nil || ended.EndedAt == nil || !ended.EndedAt.Equal(storedEnd) {
+		t.Fatal("end response differs from persisted transition", e)
+	}
 	if ended.EndedAt == nil {
 		t.Fatal(ended)
 	}

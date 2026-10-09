@@ -371,6 +371,7 @@ func TestPGContentModerationCurrentAuthorityAndMembershipAfterWait(t *testing.T)
 }
 func TestPGContentModerationFederationWithdrawalRetry(t *testing.T) {
 	x := newFederationFixture(t, false)
+	configureCleanup(t, x, true)
 	for _, schema := range []string{socialpg.Schema, postpg.RealmSchema, moderationpg.Schema} {
 		query(t, x.db, schema)
 	}
@@ -422,7 +423,7 @@ func TestPGContentModerationFederationWithdrawalRetry(t *testing.T) {
 		t.Fatal(e)
 	}
 	x.clock.Add(61)
-	reopened, e := federationpg.New(database(t), x.config, x.keys, nil)
+	reopened, e := federationpg.New(x.db, x.config, x.keys, x.guard)
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -447,6 +448,13 @@ func TestPGContentModerationFederationWithdrawalRetry(t *testing.T) {
 		t.Fatal("retired alias exposed moderated actor", e)
 	}
 	if _, e = r.Mutate(x.ctx, x.actor, c.PublisherKind, x.publisher, c.Command{Action: "unshadowban"}); e != nil {
+		t.Fatal(e)
+	}
+	// Restoring visibility cannot revive the pre-moderation publication intent.
+	if _, e = x.r.ReconcilePosts(x.ctx, 20); !errors.Is(e, federation.ErrForbidden) {
+		t.Fatal("old normal intent revived", e)
+	}
+	if e = x.r.Settings(x.ctx, x.actor, x.publisher, federation.Settings{Enabled: true, Manual: false}); e != nil {
 		t.Fatal(e)
 	}
 	if n, e := x.r.ReconcilePosts(x.ctx, 20); e != nil || n != 1 {

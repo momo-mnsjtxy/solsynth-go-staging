@@ -1,10 +1,24 @@
 {
-  "base_commit": "2482cb6cd002b7c2d4ba4bba4e42a8311378bb41",
+  "base_commit": "53c097b8c0ef1c0aba73f8c3b93af1533782862f",
   "restart_cases": [
+    {
+      "test": "TestPGAccountAdminSavedRestartPersistence",
+      "source": "tests/integration/account_admin_badges_test.go",
+      "function_sha256": "12d3b5d442b390b3f6776aea453e080a100998d5627b7c5e3a665d7f9b056ff4",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "account-admin-badges-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "account-admin-badges-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Original before-target one-hour root credential and public-verifier elapsed-clock snapshot; same account/target, active and revoked badge rows/provenance, immutable session/identity state and audit counts. After performs direct and composed original-proof reads without seed, issuance, refresh, private keys or authority changes. Same assigned disposable cluster and marker only."
+    },
     {
       "test": "TestPGAccountSettingsRestartPersistence",
       "source": "tests/integration/account_settings_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "5591e8188e777c8a968f82f65186cb4e622c7f9387e6bd6d1597d474fa042383",
       "marker_files": [
         "account-settings-record.json"
@@ -18,7 +32,7 @@
     {
       "test": "TestPGAccountsRestartPersistence",
       "source": "tests/integration/accounts_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "d73415ba1fbdcf32f104e347d3a7a5a942c3498573f3959af75c523ae4d3b930",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -29,7 +43,7 @@
       "test": "TestPGActivitySavedRestartPersistence",
       "source": "tests/integration/activities_test.go",
       "function_sha256": "7fa25506d4578ab400355e0c60562518d0ebf6b1730cae8c9532ae9881a7a12f",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "activities-state.json"
       ],
@@ -40,7 +54,7 @@
     {
       "test": "TestPGAdminExtensionsRestartPersistence",
       "source": "tests/integration/admin_extensions_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "083545f633dfe6bd290e0fc811d2006919f84240899b1eb2e9eb5481a7c1d1f4",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -54,7 +68,7 @@
       "test": "TestPGAffiliationRestartPersistence",
       "source": "tests/integration/affiliation_test.go",
       "function_sha256": "90c9ef6b8d2a4131d9bb996352b6feee226db2c089d92b775094669646dafb1a",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "affiliation-activation.json"
       ],
@@ -77,12 +91,12 @@
       "named_database_markers": {},
       "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
       "function_sha256": "b73456b05611e095c193c3cc3f1c71b92dead61e7f64d663102867bd0911354a",
-      "group_before_and_after": "group-a"
+      "group_before_and_after": "group-b"
     },
     {
       "test": "TestPGAuthorityRestartPersistence",
       "source": "tests/integration/authority_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "4644d2fb3ecf7cbe693abd12129845a4370ce9734e50fa26ca7694c5b4566850",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -95,7 +109,7 @@
     {
       "test": "TestPGAutocompleteRestartPersistence",
       "source": "tests/integration/content_autocomplete_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "630f5c5ec3a0c3a2b7711a9b06492e542051908c35a50d3d1efcee7becee4c6d",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -107,7 +121,7 @@
     {
       "test": "TestPGBackendCallsFederationRestartPersistence",
       "source": "tests/integration/backend_external_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "1c02b635b724987b893beb5652eff5254527b345db065c77b9db854550da5a9d",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -123,7 +137,7 @@
     {
       "test": "TestPGBackendRestartPersistence",
       "source": "tests/integration/backend_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "454432c1ab47e42cc5e650cac7219e77273d97a99c461375e63bcdbe71fbd47c",
       "marker_files": [
         "synthetic-hash.bin",
@@ -182,7 +196,7 @@
     {
       "test": "TestPGBoardDiscoveryRestartPersistence",
       "source": "tests/integration/board_discovery_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "0d2c460b0194f8c179bf68351a436dcc4f969a0e3218d1c5baa11c2ee75d9338",
       "marker_files": [
         "board-discovery.json"
@@ -230,7 +244,7 @@
     {
       "test": "TestPGBotsRestartPersistence",
       "source": "tests/integration/bots_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "727dedd7a301aa2bdd980187619ba0c156192e7dd3ac88e51c889d5efeb83188",
       "marker_files": [
         "synthetic-bots-restart.json"
@@ -357,7 +371,7 @@
     {
       "test": "TestPGCommerceMaintenanceQuarantineRestartPersistence",
       "source": "tests/integration/commerce_maintenance_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "ab30952c62daf008257295097cb7f02c1c17800a11804b068d90adaa3f132f12",
       "marker_files": [
         "commerce-maintenance-quarantine.json"
@@ -477,7 +491,7 @@
     {
       "test": "TestPGDomainTrustRestartPersistence",
       "source": "tests/integration/domain_trust_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "15452a8610fce37e5a901a776d04c975fb5525efe43bd90545036a0c4c11d74b",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -503,7 +517,7 @@
     {
       "test": "TestPGFederatedRenameRestartPersistence",
       "source": "tests/integration/federation_rename_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "8b45d2917f4f12513ae9cf645d3c28b6c99792ed1e188f72358490fbcfcff03f",
       "marker_files": [
         "federation-rename-record.json"
@@ -572,7 +586,7 @@
     {
       "test": "TestPGFederationRestartPersistence",
       "source": "tests/integration/federation_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "23a143e7320955ab44619dba9b72f0a59eb668bb833654eaeb5f2281174eb196",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -585,7 +599,7 @@
     {
       "test": "TestPGFortuneRestartPersistence",
       "source": "tests/integration/fortunes_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "6a420f9a32ecaa9a2a18b03e761e740c984b875412a6581a585a7eddf3aa2973",
       "marker_files": [
         "fortune-record.json"
@@ -597,10 +611,24 @@
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
     },
     {
+      "test": "TestPGFriendEventsSavedRestartPersistence",
+      "source": "tests/integration/friend_events_test.go",
+      "function_sha256": "95f5638efa3b02b03e68f49e501e7befed55fef6b537320f1d9f492546021989",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "friend-events-state.json"
+      ],
+      "persistent_directories_or_files": [
+        "friend-events-state.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Independently reviewed: original pre-target one-hour proofs, public verifier keys, elapsed wall clock, complete first-party replay page and pending outbox count are saved only in friend-events-state.json. The same named case and assigned disposable cluster retain before/after state. After rehydrates authorized events from existing markers and exercises backend HTTP replay in memory, without issuance, refresh, reseeding, authority rewriting or packet import. Actual PostgreSQL/restart execution remains pending coordinator private CI."
+    },
+    {
       "test": "TestPGFriendsOverviewSavedRestartPersistence",
       "source": "tests/integration/friends_overview_test.go",
       "function_sha256": "6f6b98e274b525706be93bfa002bc8ac63818c46dece79821ff8711abf341641",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "friends-overview-state.json"
       ],
@@ -627,7 +655,7 @@
     {
       "test": "TestPGLiveStreamChatOutboxRestartPersistence",
       "source": "tests/integration/livestream_chat_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "91c5caee508bfef444b96eec81c815d69967cf30fdea8f522859409e8488b6ea",
       "marker_files": [
         "synthetic-livestream-chat-restart.json"
@@ -683,7 +711,7 @@
     {
       "test": "TestPGMLSRestartPersistence",
       "source": "tests/integration/chat_mls_restart_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "b0f33fc222d7ca02237274d8cb489adec31258e507a3f07239fc66d21fe5d5d2",
       "marker_files": [
         "owned-mls-restart.json"
@@ -697,7 +725,7 @@
     {
       "test": "TestPGMediaRestartPersistence",
       "source": "tests/integration/media_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "03e9d3403e8203c3e3b2abcfd83ec3b120bfeca852fe156714ab90e6c186c41b",
       "marker_files": [
         "media-file.json"
@@ -712,7 +740,7 @@
     {
       "test": "TestPGMediaResumableRestartPersistence",
       "source": "tests/integration/media_resumable_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "405881c8e3b194713bdbd2778201efe8c0f847933861104d5c6dc61662c360d9",
       "marker_files": [
         "media-resumable.json"
@@ -766,7 +794,7 @@
     {
       "test": "TestPGNameCardRestartPersistence",
       "source": "tests/integration/namecards_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "e2667feaf175666c33d5d22e433ee850667ded24f5f9982b190cb4651c30499b",
       "marker_files": [
         "name-card-record.json"
@@ -808,7 +836,7 @@
     {
       "test": "TestPGOAuthRestartPersistence",
       "source": "tests/integration/oauth_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "680491a12d95614b9ac9984b109a9ece37cf3aba42b3f937dc96824f59dde087",
       "marker_files": [
         "state.json",
@@ -827,7 +855,7 @@
       "test": "TestPGPasskitRestartPersistence",
       "source": "tests/integration/passkit_test.go",
       "function_sha256": "5e578b0db1dd71e22c14267c5bbd28c2907c58cd1c62bb0a35562d074559f150",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "apple-pass-record.json"
       ],
@@ -855,7 +883,7 @@
       "test": "TestPGPostAutomodSavedDecisionRestartPersistence",
       "source": "tests/integration/post_automod_test.go",
       "function_sha256": "652191a4d7d6ac10ee6967404d2c3fa890c81abb0c630a7018ac3533ccb7073c",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "post-automod-saved.json"
       ],
@@ -881,7 +909,7 @@
       "test": "TestPGPostCompositionSavedRestartPersistence",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "662b6daf43fc47f42b80b3e7f8ad6a25cb4d58edd7f349241356a406ae490263",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "post-composition-state.json"
       ],
@@ -917,7 +945,7 @@
     {
       "test": "TestPGPostRealmRestartPersistence",
       "source": "tests/integration/post_realms_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "65f6570528b1265ca05c37d4836196f1c90917970be3549be200fde792cf0516",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -934,7 +962,7 @@
       "test": "TestPGPostScheduleSavedRestartPersistence",
       "source": "tests/integration/post_scheduling_test.go",
       "function_sha256": "50ef444f14e89e3bd1f02cd1070f0d9e4a5260c1d79a5a1269ae206c21af1cd5",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "post-scheduling.json"
       ],
@@ -958,7 +986,7 @@
     {
       "test": "TestPGPresenceProgressionRestartPersistence",
       "source": "tests/integration/presence_progression_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "a238a1023d8bd470617f2f2ca35a3bcbce5857380bdd2b1556a7edf4884aa4c9",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -970,7 +998,7 @@
     {
       "test": "TestPGProductStockRestartPersistence",
       "source": "tests/integration/product_stock_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "aeaa4b463e9fc5a15c20bff7ca8f01887e6aa63944c020020e968b3ab8c6709d",
       "marker_files": [
         "product-stock-restart.json"
@@ -997,7 +1025,7 @@
     {
       "test": "TestPGPublisherRatingRestartPersistence",
       "source": "tests/integration/publisher_ratings_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "4fe0153589f4db61db66612ca391ce04942da091943c9f9a33ee42d357119624",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1009,7 +1037,7 @@
     {
       "test": "TestPGPublisherSponsorshipRestartPersistence",
       "source": "tests/integration/publisher_sponsorship_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "eb7f74deca415f4e9bda92d8e1ecb27ac31cefdf2fdb8509335dd7d3456f79fc",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1022,7 +1050,7 @@
       "test": "TestPGPublisherSubscriptionSavedRestartPersistence",
       "source": "tests/integration/publisher_subscription_state_test.go",
       "function_sha256": "fef8693e6066be70b01beee2df717e92722191cc85546369dc5a120b1e791ea0",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "publisher-subscription-state.json"
       ],
@@ -1033,7 +1061,7 @@
     {
       "test": "TestPGReaderRestartPersistence",
       "source": "tests/integration/reader_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "9dbff46b612959d1b784768d709faba5bb839ebeefa2f9b6f29a59e307e80458",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1047,7 +1075,7 @@
       "test": "TestPGRealmBoostRestartPersistence",
       "source": "tests/integration/realm_boosts_test.go",
       "function_sha256": "bafa2ed2698fd0b8560837cdc62f7f07e90f9218131e30c6e5325951f43f1ba6",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "realm-boost-record.json"
       ],
@@ -1061,7 +1089,7 @@
       "test": "TestPGRealmMemberRestartPersistence",
       "source": "tests/integration/realm_members_test.go",
       "function_sha256": "753a485c68706942ad07608e78da21ad20d3fceffd754bbe31276361aabb3096",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "realm-member-record.json"
       ],
@@ -1081,13 +1109,13 @@
       "named_database_markers": {},
       "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
       "function_sha256": "f02f05c54a984575b46a5a1f890e77972db877fd4d31ad2cc3b27bd80b6a1cb0",
-      "group_before_and_after": "group-a"
+      "group_before_and_after": "group-b"
     },
     {
       "test": "TestPGRealmProfileAndLogRestartPersistence",
       "source": "tests/integration/realm_profile_restart_test.go",
       "function_sha256": "fc22dcf1c9979965926a95229d2b885de7d208c716993331248d97bebd225056",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "realm-profile-log-record.json"
       ],
@@ -1112,7 +1140,7 @@
     {
       "test": "TestPGRecurringProductRestartPersistence",
       "source": "tests/integration/recurring_products_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "7ac5a378bf7f7972ea7ce94c08dad639175f23b8498990adcb9c07637c358d64",
       "marker_files": [
         "recurring-product-restart.json"
@@ -1124,7 +1152,7 @@
     {
       "test": "TestPGRefreshContinuityRestartPersistence",
       "source": "tests/integration/refresh_continuity_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "e7db93ea05bd7d940b38ef274374077f9102a61cd5547c858f1e453698b5f770",
       "marker_files": [
         "synthetic-refresh-continuity.json"
@@ -1139,7 +1167,7 @@
       "test": "TestPGRelationshipExpiryRestartPersistence",
       "source": "tests/integration/relationship_expiry_test.go",
       "function_sha256": "d17580c666777f697966adbdb4e273b2b02eab960b608c285078e4e63fdbe5d2",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "relationship-expiry-restart.json"
       ],
@@ -1162,7 +1190,7 @@
     {
       "test": "TestPGRewindRestartPersistence",
       "source": "tests/integration/rewind_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "56d003807f99aeb5a3e4cbd1f3b1b00c4b3af073e5ca8c1a6cdc42ba906d02f8",
       "marker_files": [
         "rewind-record.json"
@@ -1177,7 +1205,7 @@
       "test": "TestPGRoomMediaSavedRestartPersistence",
       "source": "tests/integration/room_media_test.go",
       "function_sha256": "e0a1537a412dc150da7df071c5c883ab524a07a4a9b64016629d68f85de9de2f",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "room-media.json"
       ],
@@ -1192,7 +1220,7 @@
       "test": "TestPGShippingRestartPersistence",
       "source": "tests/integration/shipping_test.go",
       "function_sha256": "c07a02088594fbfa322ff4d0ed6153be4b968100465f6820f278b462a121faaa",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "shipping-destination.json"
       ],
@@ -1218,7 +1246,7 @@
     {
       "test": "TestPGSocialRestartPersistence",
       "source": "tests/integration/social_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "5ac4af3c6ecb76e856c615230e87c8281cbb80b2f15cab9c5046c43da13749ca",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1241,24 +1269,24 @@
       "named_database_markers": {},
       "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
       "function_sha256": "a2b8078781f6a1b1b625e58830dcc7e305e4f7cf0fc3d2ba3f6f059697546800",
-      "group_before_and_after": "group-b"
+      "group_before_and_after": "group-a"
     },
     {
       "test": "TestPGSurveySubscriptionsRestartPersistence",
       "source": "tests/integration/survey_subscriptions_test.go",
-      "function_sha256": "04e612607c3872fefc52509c532cbe7f90c5eb2c33fa7af44408cfb16bdde5c4",
-      "group_before_and_after": "group-a",
+      "function_sha256": "376285990fb68a26b6ee9cc450943e0aeb2002e17f9c0f09be08cdf88bea69db",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "survey-subscriptions.json"
       ],
       "persistent_directories_or_files": [],
       "named_database_markers": {},
-      "storage_contract": "Exclusive original survey/subscription incarnation/answer/queued revision/app namespace and pre-target one-hour bearer/public keys. After reads original state and resumes only existing work under the saved namespace; no seeding or credential issuance. Historical inbox and replay remain minimal; another namespace cannot consume saved pending work."
+      "storage_contract": "Exclusive original survey/subscription incarnation/answer/queued revision/app namespace and pre-target one-hour bearer/public keys. After reads original state and resumes only existing work under the saved namespace; no seeding or credential issuance. Historical inbox and replay remain minimal; another namespace cannot consume saved pending work. Ordinary fixture queue namespaces are now unique and bound across enqueue/host/direct repository/sink; this restart retains its original survey.restart.<actor> namespace. Failed lock-wait workers are cancelled and joined before pool cleanup. No after re-seeding."
     },
     {
       "test": "TestPGSurveysStickersRestartPersistence",
       "source": "tests/integration/surveys_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "3b97690b743146fa3b0cdb3ee1c9572c869e0ca3bbddeaad754301818212ad09",
       "marker_files": [
         "surveys-stickers-restart.json"
@@ -1273,7 +1301,7 @@
     {
       "test": "TestPGTaxonomyRestartPersistence",
       "source": "tests/integration/taxonomy_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "657569620ed00dd50b7ac81ea91c53140a80974d72ef29e7c551a5dfdc482bd1",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1283,7 +1311,7 @@
     {
       "test": "TestPGTicketMediaRestartPersistence",
       "source": "tests/integration/ticket_media_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "7d5684e6e013547e98910362251ad96854d6659756ab1e9df7fe5125b06b633b",
       "marker_files": [
         "ticket-media.json"
@@ -1298,7 +1326,7 @@
     {
       "test": "TestPGTicketsExamsRestartPersistence",
       "source": "tests/integration/tickets_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "12a71f882be725b67028e2a155acf702d0c62ed7892797a57daf674f9da400f0",
       "marker_files": [
         "tickets-exams-record.json"
@@ -1334,7 +1362,7 @@
     {
       "test": "TestPGWalletFundsRestartPersistence",
       "source": "tests/integration/wallet_funds_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "7d54eb5b844b52b3841618a10fa83b02da6b7cfa463429599c9c59bde60df453",
       "marker_files": [
         "wallet-funds-state.json"
@@ -1348,7 +1376,7 @@
     {
       "test": "TestPGWalletRestartPersistence",
       "source": "tests/integration/wallet_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "f14ecf960d14d80173932ebf8e394aa32dd9581490fbc86599def476500319ba",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1413,7 +1441,7 @@
     },
     {
       "test": "TestPGBackendSigninHTTPProcessRestart",
-      "group": "group-a",
+      "group": "group-b",
       "fixture": "The named test creates its own synthetic DB/file fixtures and starts/stops actual compiled processes; the entire case is indivisible."
     },
     {
@@ -1436,7 +1464,7 @@
     "parent_test": "TestPGAuthorityLifecycle",
     "helper": "TestAuthorityProcessHelper",
     "fixture": "Child test process uses its parent case synthetic keys/token directory and existing database; stays within one selected top-level case. Helper is not an extra TestPG assignment.",
-    "group": "group-a"
+    "group": "group-b"
   },
   "limits": [
     "Existing restart cases that reconstruct independent authentication/fixture services are preserved byte-for-byte; this change does not certify or alter those inherited fixture semantics.",
@@ -1447,8 +1475,14 @@
     {
       "test": "TestPGArtworkComposedUploadDedupOwnershipAndRemoval",
       "source": "tests/integration/presence_artwork_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "ad43adbeda79dd09f073e46d9ead5c063fb5abf82066956975e11c332f65c40c"
+    },
+    {
+      "test": "TestPGBackendAccountAdminSensitiveReadRoutes",
+      "source": "tests/integration/account_admin_badges_test.go",
+      "function_sha256": "ed503ce64e05347b770a37d792efd3cb8deef54d02b9d4abb7f3be39de26ede1",
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendAccountSettingsComposition",
@@ -1459,7 +1493,7 @@
     {
       "test": "TestPGBackendActivityAuthoredRoutesLifecycle",
       "source": "tests/integration/activities_test.go",
-      "function_sha256": "1a8c5356b885b82ba9c8dc85fd266b0b9fbf8f7d911dab00195ad32b28ce87d8",
+      "function_sha256": "1c9e26447a68cd3f9c3452b7b0062e41de5d87f7c13f5d61c21f68ca17a6a217",
       "group": "group-a"
     },
     {
@@ -1477,7 +1511,7 @@
     {
       "test": "TestPGBackendAutocompleteComposition",
       "source": "tests/integration/backend_utilities_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "8b59b7500c601b42b226ee7754bc3e0e098994fa54f7a9acd8aec289c37b84ad"
     },
     {
@@ -1507,13 +1541,13 @@
     {
       "test": "TestPGBackendCallsFederationRestartPersistence",
       "source": "tests/integration/backend_external_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "1c02b635b724987b893beb5652eff5254527b345db065c77b9db854550da5a9d"
     },
     {
       "test": "TestPGBackendChatMediaAndReactionsComposition",
       "source": "tests/integration/chat_media_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "9961bd4ceda9ff6fde0434675b3d171d39ca4f267872dc2233a49b3aa473ba43"
     },
     {
@@ -1537,13 +1571,13 @@
     {
       "test": "TestPGBackendContentComposition",
       "source": "tests/integration/backend_content_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "8e0d3ac240a78edba6553f7af46fc8aa1da3cbb9293df36c2a6f029bae3fbe9d"
     },
     {
       "test": "TestPGBackendContentModerationComposition",
       "source": "tests/integration/backend_content_moderation_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "bb511b9393cf5e2f38bed0125d4166b86c1ae81c7a86c2afb5ef40b73b69ed9a"
     },
     {
@@ -1585,7 +1619,7 @@
     {
       "test": "TestPGBackendFortuneComposition",
       "source": "tests/integration/backend_identity_reports_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "0e1c3476a663d87dfb8ca589fdb3e632fe3ae0a2ccc299393ee34385f15a3318"
     },
     {
@@ -1615,7 +1649,7 @@
     {
       "test": "TestPGBackendLivestreamChatComposition",
       "source": "tests/integration/backend_livestream_chat_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "891dde9ebcaecfe4c3f60727a6f1930fb18afe8b1d269fc919454bc921bb8183"
     },
     {
@@ -1633,7 +1667,7 @@
     {
       "test": "TestPGBackendMerchantCatalogComposition",
       "source": "tests/integration/backend_merchant_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "99abd206a935e10df14c14e82cb978c7acfead78c4ee5a96abb758e8fa61d1e2"
     },
     {
@@ -1663,7 +1697,7 @@
     {
       "test": "TestPGBackendPostAwardCheckoutAndRelease",
       "source": "tests/integration/backend_post_awards_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "5d5b558cdf445febbf0ec4a473f6700cb2861adf60c5847677ad757e8443b28c"
     },
     {
@@ -1681,13 +1715,13 @@
     {
       "test": "TestPGBackendPresenceProgressionLocationComposition",
       "source": "tests/integration/backend_presence_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "4ffd43fb64b18b3d9d6d89d52d249aa1de84043fb79567c830ed22f14ee23aab"
     },
     {
       "test": "TestPGBackendPublisherCommerceComposition",
       "source": "tests/integration/backend_publisher_commerce_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "68a5fffe9beeb71c8f6718ef0ac3fcbc19d5b0ba59d755ecf3f61b009814575d"
     },
     {
@@ -1711,13 +1745,13 @@
     {
       "test": "TestPGBackendRefreshContinuesBroadcastChatThenLogoutRevokes",
       "source": "tests/integration/refresh_continuity_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "c498f456869791254348b11bc03ce4d4895769176dc2ffe3e9ed95002a6708c3"
     },
     {
       "test": "TestPGBackendRestartPersistence",
       "source": "tests/integration/backend_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "454432c1ab47e42cc5e650cac7219e77273d97a99c461375e63bcdbe71fbd47c"
     },
     {
@@ -1735,7 +1769,7 @@
     {
       "test": "TestPGBackendSigninHTTPProcessRestart",
       "source": "tests/integration/backend_signin_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "18c02315b8a8053132f02e8df64ab5d4f4d6c358ed7bc31924febf52b6ac81d6"
     },
     {
@@ -1783,7 +1817,7 @@
     {
       "test": "TestPGBackendWalletReportingLifecyclePrivacyAndDates",
       "source": "tests/integration/wallet_reporting_test.go",
-      "function_sha256": "1f79e23de010aeb2227aa0e2374c4bb92d336394c81867f30c26fb61802417fb",
+      "function_sha256": "f717362400148668a17a787db4be889703c136f99b7574f7054abb0813432e6a",
       "group": "group-b"
     },
     {
@@ -1819,101 +1853,109 @@
     {
       "test": "TestPGMLSBackendAuthorityAndGatewayComposition",
       "source": "tests/integration/chat_mls_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "de6593c1672b799b0a894b32de15eb889382507cb4262b1114d5f5a561457a9b"
     },
     {
       "test": "TestPGPasskitCompositionRegistrationIsolationAndUpdates",
       "source": "tests/integration/passkit_test.go",
       "function_sha256": "0541ff9a8805dc918debc071efae1ede3d725bf75950886877848c3c02a28f43",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
       "source": "tests/integration/post_automod_editor_projection_test.go",
       "function_sha256": "097c1d4e3a1be5fd20424ebc378f42976b110ddc288c5be48082d5f69aa951cd",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostAutomodRealmAndNestedEvidenceIsolation",
       "source": "tests/integration/post_automod_review_test.go",
       "function_sha256": "ba8660369eeb754de2171e531c990098dfa69054cb4de392472b4cff7d87bacb",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostCompositionCanonicalLivePrivacy",
       "source": "tests/integration/post_composition_review_test.go",
       "function_sha256": "a1e9c781b53da11d8ca16c86da3ff4e3e4d3755d4f132ca84b3c3fb3b1a57651",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostCompositionCanonicalReferencesAndReplay",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "10b80f2e317029ec9f946c3127da94002d16eaad4a5310e6dac396e1c25a5caf",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostCompositionFinalWaitsRecheckReferences",
       "source": "tests/integration/post_composition_review_test.go",
       "function_sha256": "920fb141498858f1b812493f89eff9027838d9aa19cef64617945f90017a3132",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostCompositionLivePrivacyExpiryAndPublication",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "404742daffc5683b34f05e113fdb61247f94ce3a2cfde89eafc8ba07f02b9456",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostCompositionOwnershipAndAtomicRollback",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "f6f59f56e22aa0b83ef2bc3a4f3a5bd84f9f2d27799ce7c23562f771bce68b87",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostCompositionProofScopeAndMediaWait",
       "source": "tests/integration/post_composition_review_test.go",
       "function_sha256": "ea617b2c622d90e43bd7c43a4a0935138c06543a003c0ab70c9af449e15e3976",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostCompositionSavedRestartPersistence",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "662b6daf43fc47f42b80b3e7f8ad6a25cb4d58edd7f349241356a406ae490263",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostCompositionTargetWaitRechecksLifecycle",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "51d093db4560bfd29f29e08ec17ba2bf2b728f57c7f4986438bbe22c23cdf11d",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostScheduleBackendProjectionAndDeferredFederation",
       "source": "tests/integration/post_scheduling_test.go",
       "function_sha256": "f7147dd9bf1d0c32009cd630e84c01cfa007661ea20611f7ec85a472de27be6f",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGRealmPermissionBackendDTOAndNullClear",
       "source": "tests/integration/realm_permissions_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "649fb752ec68dee61b4f71f49c0c9e691074b75fb5adf2f66a1b35fc961a5f89"
     },
     {
       "test": "TestPGRoomMediaConcurrentSlotsAndBackendComposition",
       "source": "tests/integration/room_media_test.go",
       "function_sha256": "031cfbe08a811177d9aec74cba394d9d514415f7a2ffbe9f8bca52719e5d6cc8",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGTicketMediaComposedLifecycleAndPrivateAudience",
       "source": "tests/integration/ticket_media_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "6c5f78f818fabf0e7ae9b7f0dca5858faf7f3c5f6d4b76406e0ecc12fe2294ec"
     }
   ],
   "fixture_source_files": [
+    {
+      "source": "tests/integration/account_admin_badges_test.go",
+      "sha256": "973aac5376aaa18a7a0949c406ec360e101ed5f8922fe6ab3ea21d5a44f38480"
+    },
+    {
+      "source": "tests/integration/account_admin_review_test.go",
+      "sha256": "dcaca8e46986a5c5e3e3981c2be3d39dd2c81abc71382775def50411cf36f1a5"
+    },
     {
       "source": "tests/integration/account_settings_test.go",
       "sha256": "0024e97cda0d7a2d357c79d6845f07a28cabd5532d0131031b994fea7cfcdbfb"
@@ -1924,7 +1966,7 @@
     },
     {
       "source": "tests/integration/activities_test.go",
-      "sha256": "55c7b6680365626121e9d8e8cb1bfb12b2aea329e2ed3a631868371b79528ae5"
+      "sha256": "af14c70f6eda0d3fa2438934b9b3927e548589de4b08b6b5e2106a3ba8a57291"
     },
     {
       "source": "tests/integration/admin_extensions_test.go",
@@ -2172,7 +2214,7 @@
     },
     {
       "source": "tests/integration/content_moderation_test.go",
-      "sha256": "a4ef001f742123ebabf59cb1ac974a9bfcb5c35ee86ce69a904b98155eccf933"
+      "sha256": "a4a052b5a65dbe0de61e4af77533029f2f20a02f6cff2588bf6c13a3eb1062d8"
     },
     {
       "source": "tests/integration/content_translation_test.go",
@@ -2239,6 +2281,10 @@
       "sha256": "752efa65fdf334c4266037250acebeecf746359bc4d5b1ba07a0e642821e45fa"
     },
     {
+      "source": "tests/integration/federation_cleanup_receipts_test.go",
+      "sha256": "a24a27abf12a9eedc44a832218a7b8f02e96e64561e217f5d1165ccafce72285"
+    },
+    {
       "source": "tests/integration/federation_delivery_leases_test.go",
       "sha256": "cde0ea766fa424a6bd9447697b1b10d238c259d89ef524bbc66307c1299d6801"
     },
@@ -2280,15 +2326,23 @@
     },
     {
       "source": "tests/integration/federation_test.go",
-      "sha256": "39ff388b7823cce63fc1cb8afcc577a9b9ae09cba706d751a224ab3209750033"
+      "sha256": "fbae949d583afb73348f522c87380ef90d30c2ecde0d9c448ab29564322799f5"
     },
     {
       "source": "tests/integration/fortunes_test.go",
       "sha256": "dcf591d52248e2aeb4b450917c6e8027605cef879061df9da686e0329adf8ab0"
     },
     {
+      "source": "tests/integration/friend_events_test.go",
+      "sha256": "2f74fa879648948a81c0bb73f274ed714f3ce7d4e3161069c3db79253b356ba3"
+    },
+    {
+      "source": "tests/integration/friend_events_wait_test.go",
+      "sha256": "df12c63f575561a540961845dfd43d4e9f5e97909dd5142230c809ffff22be12"
+    },
+    {
       "source": "tests/integration/friends_overview_test.go",
-      "sha256": "8ef88d88adb2c266ec1f0da5dbc7d11bbc55dc46db43b815c1dad18102665fb4"
+      "sha256": "c635c4fba59fa4ff201a38cd19e65f3104fd2f3d4021d7fb7120172a8d0749b0"
     },
     {
       "source": "tests/integration/http_fixture_test.go",
@@ -2420,7 +2474,7 @@
     },
     {
       "source": "tests/integration/post_realms_test.go",
-      "sha256": "c08408526e8a9059917f3a8e93808bd2d3e4c9648708cf8da6b78b9e3c2bd72b"
+      "sha256": "5a0bba21eb12b497bc0c592f09b98609c03c10c5878886759c815546d7e05a48"
     },
     {
       "source": "tests/integration/post_scheduling_review_test.go",
@@ -2564,7 +2618,7 @@
     },
     {
       "source": "tests/integration/survey_subscriptions_test.go",
-      "sha256": "d08d9d16183db3e53957c0cb8bb4d5d7dff5d41348082a79f2c16b288409ef72"
+      "sha256": "4295eb79f4738b1f204ea038aadf46ef9a1362e5fd6cd96bfd88a6c491d1ccab"
     },
     {
       "source": "tests/integration/surveys_test.go",
@@ -2608,7 +2662,7 @@
     },
     {
       "source": "tests/integration/wallet_reporting_test.go",
-      "sha256": "46e6298eb2a1033922dc1ffee521121d54193e916145241317fe61eb053a6e20"
+      "sha256": "e27b641d7801ba9d50056a4956f2cb27980fb995da9884de2f9bb6b1f171e177"
     },
     {
       "source": "tests/integration/wallet_test.go",
@@ -2754,5 +2808,11 @@
     "after": 1,
     "correction_sha256": "a899189cf256a517cb058b88a47f65728c4546eb8b932d47c109d49187c659c2",
     "scope": "Current recipient and all source-owner eligibility, attached realm privacy, subscription incarnation and namespace fences; anonymous nested payload allowlist. Composite subscription FK and separate-pool answer/dispatch/unsubscribe/delete races preserve account-before-domain lock order."
+  },
+  "cleanup_receipt_review": {
+    "runtime": "Default-off explicitly activated permanent transport incarnation. Immutable historical dispatch receipt authorizes only one bounded content-free Tombstone; current original authority, keys, egress and policy remain required. Receipt INSERT final wait rechecked with rollback savepoint; cleanup row deletion cannot reset attempts.",
+    "cases": 6,
+    "fixture_scope": "Separate synthetic explicit activation; never-dispatched post emits no cleanup. Realm move test preserves both already-sent content-free withdrawal and never-sent denial. Saved lease uses separate original disposable database, no changes here.",
+    "correction_sha256": "1156dab592b8eef6327e4042d4be011fc43f349d542bef1ba8dee7ce81ab1816"
   }
 }

@@ -121,7 +121,7 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.realtime.ServeHTTP(w, r)
 		return
 	}
-	if h.public != nil && publicCatalogRoute(p) {
+	if h.public != nil && !(h.wallet != nil && r.Method == "POST" && strings.EqualFold(strings.TrimSuffix(p, "/"), "/api/wallets/exchange")) && publicCatalogRoute(p) {
 		h.public.ServeHTTP(w, r)
 		return
 	}

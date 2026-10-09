@@ -103,28 +103,26 @@ func (r *Repository) reconcilePost(ctx context.Context, id string) (bool, error)
 		return false, nil
 	}
 	revision++
-	if visible || wasPublic {
-		var object any
-		kind := "Delete"
-		if visible {
-			note, _, _, e := r.note(ctx, tx, id)
-			if e != nil {
-				return false, e
-			}
-			object = note
-			kind = "Create"
-			if wasPublic {
-				kind = "Update"
-			}
-		} else {
-			object = map[string]string{"id": r.objectID(id), "type": "Tombstone"}
+	if !visible && wasPublic {
+		if e = r.enqueueWithdrawals(ctx, tx, p, id); e != nil {
+			return false, e
+		}
+	}
+	if visible {
+		note, _, _, e := r.note(ctx, tx, id)
+		if e != nil {
+			return false, e
+		}
+		kind := "Create"
+		if wasPublic {
+			kind = "Update"
 		}
 		// First Create shares the stable ID returned by the public outbox.
 		aid := r.objectID(id) + "/activity"
 		if revision > 1 {
 			aid = fmt.Sprintf("%s/activities/%d", r.objectID(id), revision)
 		}
-		a := f.Activity{Context: f.Context, ID: aid, Type: kind, Actor: r.actorID(p), Object: marshal(object), To: []string{f.Public}, CC: []string{r.actorID(p) + "/followers"}}
+		a := f.Activity{Context: f.Context, ID: aid, Type: kind, Actor: r.actorID(p), Object: marshal(note), To: []string{f.Public}, CC: []string{r.actorID(p) + "/followers"}}
 		rows, e := tx.QueryContext(ctx, `SELECT x.actor_uri FROM owned_federation_relationships x WHERE x.publisher_id=$1 AND x.direction='in' AND x.status='accepted' AND NOT EXISTS(SELECT 1 FROM owned_federation_blocks b WHERE b.publisher_id=x.publisher_id AND b.actor_uri=x.actor_uri) ORDER BY x.actor_uri LIMIT 1001`, pid)
 		if e != nil {
 			return false, e
@@ -164,6 +162,7 @@ func (r *Repository) reconcilePost(ctx context.Context, id string) (bool, error)
 }
 
 type delivery struct {
+	cleanup                                  sql.NullInt64
 	quote                                    sql.NullString
 	peerSecurityEpoch                        sql.NullInt64
 	audit                                    sql.NullInt64
@@ -194,7 +193,7 @@ func (r *Repository) claim(ctx context.Context) (delivery, error) {
 		return d, e
 	}
 	var raw []byte
-	e = r.db.QueryRowContext(ctx, `WITH candidate AS(SELECT d.id FROM owned_federation_deliveries d WHERE d.origin_intent IS NOT NULL AND d.expires_at>clock_timestamp() AND d.attempts<LEAST(d.max_attempts,$1) AND ((d.status='pending' AND d.next_attempt<=$2) OR (d.status='inflight' AND d.lease_until<=clock_timestamp())) AND NOT EXISTS(SELECT 1 FROM owned_federation_deliveries prior WHERE prior.publisher_id=d.publisher_id AND prior.actor_uri=d.actor_uri AND prior.id<d.id AND prior.status IN('pending','inflight')) ORDER BY d.next_attempt,d.id FOR UPDATE OF d SKIP LOCKED LIMIT 1) UPDATE owned_federation_deliveries d SET status='inflight',attempts=attempts+1,lease_token=$3,lease_until=LEAST(clock_timestamp()+($4::bigint*interval '1 microsecond'),expires_at),dispatch_started_at=NULL FROM candidate c WHERE d.id=c.id RETURNING d.id,d.publisher_id::text,d.actor_uri,d.inbox_uri,d.activity_id,d.activity_type,d.payload,d.post_id::text,d.post_updated_at,d.post_audit_id,d.attempts,d.origin_intent,d.remote_binding,d.local_fingerprint,d.max_attempts,d.lease_until,d.expires_at,d.peer_epoch,d.peer_security_epoch,d.quote_id::text`, r.config.MaxAttempts, r.config.Clock(), token, (2*r.config.DeliveryTimeout).Microseconds()).Scan(&d.id, &d.publisher, &d.remote, &d.inbox, &d.activity, &d.kind, &d.body, &d.post, &d.updated, &d.audit, &d.attempts, &raw, &d.binding, &d.fingerprint, &d.maxAttempts, &d.lease, &d.expires, &d.peerEpoch, &d.peerSecurityEpoch, &d.quote)
+	e = r.db.QueryRowContext(ctx, `WITH candidate AS(SELECT d.id FROM owned_federation_deliveries d WHERE d.origin_intent IS NOT NULL AND d.expires_at>clock_timestamp() AND d.attempts<LEAST(d.max_attempts,$1) AND ((d.status='pending' AND d.next_attempt<=$2) OR (d.status='inflight' AND d.lease_until<=clock_timestamp())) AND NOT EXISTS(SELECT 1 FROM owned_federation_deliveries prior WHERE prior.publisher_id=d.publisher_id AND prior.actor_uri=d.actor_uri AND prior.id<d.id AND prior.status IN('pending','inflight')) ORDER BY d.next_attempt,d.id FOR UPDATE OF d SKIP LOCKED LIMIT 1) UPDATE owned_federation_deliveries d SET status='inflight',attempts=attempts+1,lease_token=$3,lease_until=LEAST(clock_timestamp()+($4::bigint*interval '1 microsecond'),expires_at),dispatch_started_at=NULL FROM candidate c WHERE d.id=c.id RETURNING d.id,d.publisher_id::text,d.actor_uri,d.inbox_uri,d.activity_id,d.activity_type,d.payload,d.post_id::text,d.post_updated_at,d.post_audit_id,d.attempts,d.origin_intent,d.remote_binding,d.local_fingerprint,d.max_attempts,d.lease_until,d.expires_at,d.peer_epoch,d.peer_security_epoch,d.quote_id::text,d.cleanup_receipt_id`, r.config.MaxAttempts, r.config.Clock(), token, (2*r.config.DeliveryTimeout).Microseconds()).Scan(&d.id, &d.publisher, &d.remote, &d.inbox, &d.activity, &d.kind, &d.body, &d.post, &d.updated, &d.audit, &d.attempts, &raw, &d.binding, &d.fingerprint, &d.maxAttempts, &d.lease, &d.expires, &d.peerEpoch, &d.peerSecurityEpoch, &d.quote, &d.cleanup)
 	d.token = token
 	if e == nil && json.Unmarshal(raw, &d.intent) != nil {
 		return d, f.ErrUnavailable
@@ -285,14 +284,19 @@ func (r *Repository) observeDelivery(ctx context.Context, d delivery, result str
 	if e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_publishers WHERE id=$1 FOR UPDATE`, d.publisher).Scan(&lock); e != nil {
 		return e
 	}
-	p, e := r.publisher(ctx, tx, d.publisher, true)
+	var p publisher
+	if d.cleanup.Valid {
+		p, e = r.withdrawalPublisher(ctx, tx, d.publisher)
+	} else {
+		p, e = r.publisher(ctx, tx, d.publisher, true)
+	}
 	if deliveryDenial(e) {
 		return finish("cancelled")
 	}
 	if e != nil {
 		return e
 	}
-	if allowed, err := r.deliveryAllowed(ctx, tx, p, d.intent); err != nil {
+	if allowed, err := r.deliveryAuthorityAllowed(ctx, tx, p, d); err != nil {
 		return err
 	} else if !allowed {
 		return finish("cancelled")
@@ -436,14 +440,30 @@ func (r *Repository) observeDelivery(ctx context.Context, d delivery, result str
 	if e = r.deliveryRemoteFence(ctx, tx, k); e != nil {
 		return finish("cancelled")
 	}
+	// Fence the optional receipt policy before the final normal authority
+	// observation; receipt insertion cannot add a policy wait after it.
+	if !d.cleanup.Valid && d.post.Valid && (d.kind == "Create" || d.kind == "Update") {
+		if _, e = r.cleanupPolicyCurrent(ctx, tx, d.publisher); e != nil {
+			return e
+		}
+	}
 	// Re-read current authority after every possible SQL/key/signing wait.
-	if allowed, err := r.deliveryAllowed(ctx, tx, p, d.intent); err != nil {
+	if allowed, err := r.deliveryAuthorityAllowed(ctx, tx, p, d); err != nil {
 		return err
 	} else if !allowed {
 		return finish("cancelled")
 	}
 	if result != "" {
 		return finish(result)
+	}
+	// Receipt insertion can wait on table/index locks after the observation above.
+	// Keep its provisional evidence behind a savepoint so a final denial cannot
+	// commit a receipt for a dispatch that never passed the observation boundary.
+	receiptCandidate := r.config.CleanupPolicyID != "" && !d.cleanup.Valid && d.post.Valid && (d.kind == "Create" || d.kind == "Update")
+	if receiptCandidate {
+		if _, e = tx.ExecContext(ctx, `SAVEPOINT federation_dispatch_receipt`); e != nil {
+			return e
+		}
 	}
 	res, e := tx.ExecContext(ctx, `UPDATE owned_federation_deliveries SET dispatch_started_at=clock_timestamp() WHERE id=$1 AND lease_token=$2 AND attempts=$3 AND status='inflight' AND lease_until>clock_timestamp() AND expires_at>clock_timestamp() AND dispatch_started_at IS NULL`, d.id, d.token, d.attempts)
 	if e != nil {
@@ -452,6 +472,19 @@ func (r *Repository) observeDelivery(ctx context.Context, d delivery, result str
 	n, e := res.RowsAffected()
 	if e != nil || n != 1 {
 		return e
+	}
+	if e = r.recordDispatchReceipt(ctx, tx, d); e != nil {
+		return e
+	}
+	if receiptCandidate {
+		if allowed, err := r.deliveryAuthorityAllowed(ctx, tx, p, d); err != nil {
+			return err
+		} else if !allowed {
+			if _, e = tx.ExecContext(ctx, `ROLLBACK TO SAVEPOINT federation_dispatch_receipt`); e != nil {
+				return e
+			}
+			return finish("cancelled")
+		}
 	}
 	if e = tx.Commit(); e != nil {
 		return e
@@ -489,18 +522,30 @@ func (r *Repository) deliver(ctx context.Context, transport f.Transport, d deliv
 }
 func (r *Repository) Ready(ctx context.Context) error {
 	var ok bool
-	e := r.db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name) IS NOT NULL) FROM (VALUES ('owned_federation_publishers'),('owned_federation_peers'),('owned_federation_relationships'),('owned_federation_blocks'),('owned_federation_inbox'),('owned_federation_objects'),('owned_federation_post_state'),('owned_federation_deliveries'),('owned_federation_audit'),('owned_federation_quote_authorizations')) x(name)`).Scan(&ok)
+	e := r.db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name) IS NOT NULL) FROM (VALUES ('owned_federation_publishers'),('owned_federation_peers'),('owned_federation_relationships'),('owned_federation_blocks'),('owned_federation_inbox'),('owned_federation_objects'),('owned_federation_post_state'),('owned_federation_deliveries'),('owned_federation_audit'),('owned_federation_quote_authorizations'),('owned_federation_dispatch_receipts'),('owned_federation_cleanup_policies'),('owned_federation_cleanup_epochs')) x(name)`).Scan(&ok)
 	if e != nil || !ok {
 		return f.ErrUnavailable
 	}
-	if _, e = r.db.ExecContext(ctx, `SELECT quote_id,origin_intent,remote_binding,local_fingerprint,max_attempts,expires_at,peer_epoch,peer_security_epoch,dispatch_started_at FROM owned_federation_deliveries LIMIT 0;SELECT revision,security_revision FROM owned_federation_delivery_peer_epochs LIMIT 0;SELECT identity_handle,actor_uri,key_id,delivery_intent FROM owned_federation_publishers LIMIT 0;SELECT folded_name,publisher_id FROM owned_publisher_name_reservations LIMIT 0`); e != nil {
+	if _, e = r.db.ExecContext(ctx, `SELECT cleanup_receipt_id,quote_id,origin_intent,remote_binding,local_fingerprint,max_attempts,expires_at,peer_epoch,peer_security_epoch,dispatch_started_at FROM owned_federation_deliveries LIMIT 0;SELECT revision,security_revision FROM owned_federation_delivery_peer_epochs LIMIT 0;SELECT identity_handle,actor_uri,key_id,delivery_intent FROM owned_federation_publishers LIMIT 0;SELECT folded_name,publisher_id FROM owned_publisher_name_reservations LIMIT 0`); e != nil {
 		return f.ErrUnavailable
 	}
 	if e = r.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='owned_federation_deliveries'::regclass AND conname='owned_federation_delivery_bounds' AND convalidated)`).Scan(&ok); e != nil || !ok {
 		return f.ErrUnavailable
 	}
-	if e = r.db.QueryRowContext(ctx, `SELECT count(*)=13 FROM pg_trigger WHERE NOT tgisinternal AND tgenabled='O' AND tgname IN('owned_delivery_authority_grants','owned_delivery_authority_punishments','owned_delivery_authority_group_members','owned_delivery_publisher_members','owned_delivery_group_grants','owned_delivery_account','owned_delivery_publisher','owned_delivery_federation','owned_delivery_session','owned_delivery_session_delete','owned_delivery_relationships','owned_delivery_blocks','owned_delivery_immutable')`).Scan(&ok); e != nil || !ok {
+	if e = r.db.QueryRowContext(ctx, `SELECT count(*)=19 FROM pg_trigger WHERE NOT tgisinternal AND tgenabled='O' AND tgname IN('owned_delivery_authority_grants','owned_delivery_authority_punishments','owned_delivery_authority_group_members','owned_delivery_publisher_members','owned_delivery_group_grants','owned_delivery_account','owned_delivery_publisher','owned_delivery_federation','owned_delivery_session','owned_delivery_session_delete','owned_delivery_relationships','owned_delivery_blocks','owned_delivery_immutable','owned_cleanup_policy_immutable','owned_cleanup_publisher','owned_cleanup_members','owned_cleanup_enabled','owned_dispatch_receipt_guard','owned_cleanup_delivery_guard')`).Scan(&ok); e != nil || !ok {
 		return f.ErrUnavailable
 	}
 	return nil
+}
+
+// Historical cleanup has its own restricted receipt authority. Normal delivery
+// always retains its original current-authority and no-revival checks.
+func (r *Repository) deliveryAuthorityAllowed(ctx context.Context, tx *sql.Tx, p publisher, d delivery) (bool, error) {
+	if d.post.Valid && d.kind == "Delete" && !d.cleanup.Valid {
+		return false, nil
+	}
+	if d.cleanup.Valid {
+		return r.cleanupAllowed(ctx, tx, p, d)
+	}
+	return r.deliveryAllowed(ctx, tx, p, d.intent)
 }

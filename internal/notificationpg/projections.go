@@ -215,6 +215,11 @@ func (w Worker) Step(ctx context.Context) (int, error) {
 			return n, e
 		}
 	}
+	v, e = w.Repository.ProjectFriends(ctx, 32)
+	n += v
+	if e != nil {
+		return n, e
+	}
 	sent, e := w.Repository.DispatchOne(ctx, w.Sender)
 	if sent {
 		n++

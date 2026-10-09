@@ -54,9 +54,11 @@ headers are rejected. Responses are no-store.
 The retained complete authored activity broadcast method proves event payload
 fields `account_id`, `activities`, and `timestamp`; the authored Solian caller
 proves event names `account.presence.activities.updated` and
-`account.status.updated`. This overview patch does not yet emit those events.
-Friend-audience durable local replay is a separate change. No live external
-provider, notification channel, WebSocket fanout or guessed packet is added.
+`account.status.updated`. The separate friend-event continuation now wires these events through the
+existing first-party replay/WebSocket/SSE stream; its source, privacy fences
+and explicit device_id omission are documented in
+`docs/friend-events-continuation.md`. No live external provider or external
+notification sender is added.
 
 Verification distinguishes offline compilation/unit/race/SQL grammar from real
 PostgreSQL. Six exact PG cases are registered, including wait/cancellation,

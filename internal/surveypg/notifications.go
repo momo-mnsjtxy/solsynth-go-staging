@@ -217,7 +217,7 @@ func (r *Repository) processNotification(ctx context.Context, sink LocalNotifica
 			return false, e
 		}
 	}
-	_, e = tx.ExecContext(ctx, `UPDATE owned_survey_notifications SET app_id=$2,processed_at=$3,suppressed_at=CASE WHEN $4::boolean THEN NULL ELSE $3 END WHERE id=$1`, id, app, now, active)
+	_, e = tx.ExecContext(ctx, `UPDATE owned_survey_notifications SET app_id=$2::text,processed_at=$3::timestamptz,suppressed_at=CASE WHEN $4::boolean THEN NULL::timestamptz ELSE $3::timestamptz END WHERE id=$1::uuid`, id, app, now, active)
 	if e != nil {
 		return false, e
 	}

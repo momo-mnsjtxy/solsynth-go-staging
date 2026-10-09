@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"solsynth.local/go-migration/internal/friendeventpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/presence"
 	"time"
@@ -67,6 +68,16 @@ func (r *Repository) within(ctx context.Context, actor string, permissions []str
 	if e = fn(tx, p, now.UTC()); e != nil {
 		return e
 	}
+	if actor != "" {
+		if len(permissions) > 0 {
+			_, e = r.guard.Authorize(ctx, r.db, tx, actor, permissions...)
+		} else {
+			_, e = r.guard.Authenticate(ctx, r.db, tx, actor)
+		}
+		if e != nil {
+			return e
+		}
+	}
 	return tx.Commit()
 }
 func newID() (string, error) {
@@ -105,9 +116,12 @@ func (r *Repository) SetPreferences(ctx context.Context, actor string, v presenc
 	if actor == "" {
 		return v, authority.ErrInvalid
 	}
-	e := r.within(ctx, actor, nil, func(tx *sql.Tx, _ authority.Principal, now time.Time) error {
+	e := r.within(ctx, actor, nil, func(tx *sql.Tx, p authority.Principal, now time.Time) error {
 		_, e := tx.ExecContext(ctx, `INSERT INTO owned_presence_preferences(account_id,online_visibility,last_seen_visibility,status_visibility,updated_at)VALUES($1,$2,$3,$4,$5) ON CONFLICT(account_id)DO UPDATE SET online_visibility=EXCLUDED.online_visibility,last_seen_visibility=EXCLUDED.last_seen_visibility,status_visibility=EXCLUDED.status_visibility,updated_at=EXCLUDED.updated_at`, actor, v.OnlineVisibility, v.LastSeenVisibility, v.StatusVisibility, now)
-		return e
+		if e != nil {
+			return e
+		}
+		return friendeventpg.FencePresence(ctx, tx, p)
 	})
 	return v, e
 }
@@ -146,7 +160,10 @@ func (r *Repository) Heartbeat(ctx context.Context, actor string, idle bool) (v 
 			return x
 		}
 		_, e = tx.ExecContext(ctx, `INSERT INTO owned_presence_activity_days(id,account_id,day,occurred_at) VALUES($1,$2,$3,$4) ON CONFLICT(account_id,day)DO NOTHING`, id, actor, now.In(loc).Format("2006-01-02"), now)
-		return e
+		if e != nil {
+			return e
+		}
+		return friendeventpg.CaptureConnection(ctx, tx, p)
 	})
 	return
 }
@@ -156,7 +173,10 @@ func (r *Repository) Disconnect(ctx context.Context, actor string) error {
 	}
 	return r.within(ctx, actor, nil, func(tx *sql.Tx, p authority.Principal, now time.Time) error {
 		_, e := tx.ExecContext(ctx, `DELETE FROM owned_presence_sessions WHERE account_id=$1 AND session_id=$2 AND epoch=$3`, actor, p.Session.ID, p.Session.Epoch)
-		return e
+		if e != nil {
+			return e
+		}
+		return friendeventpg.CaptureConnection(ctx, tx, p)
 	})
 }
 
@@ -265,7 +285,7 @@ func (r *Repository) SetStatus(ctx context.Context, actor string, req presence.S
 	if update {
 		permission = "accounts.statuses.update"
 	}
-	e = r.within(ctx, actor, []string{permission}, func(tx *sql.Tx, _ authority.Principal, now time.Time) error {
+	e = r.within(ctx, actor, []string{permission}, func(tx *sql.Tx, p authority.Principal, now time.Time) error {
 		if req.ClearedAt != nil && !now.Before(*req.ClearedAt) {
 			return presence.ErrInvalid
 		}
@@ -312,7 +332,10 @@ func (r *Repository) SetStatus(ctx context.Context, actor string, req presence.S
 		}
 		var e error
 		v, e = scanStatus(tx.QueryRowContext(ctx, `INSERT INTO owned_presence_statuses(id,account_id,attitude,type,label,symbol,app_identifier,is_automated,meta,cleared_at,created_at,updated_at)VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)ON CONFLICT(id)DO UPDATE SET attitude=EXCLUDED.attitude,type=EXCLUDED.type,label=EXCLUDED.label,symbol=EXCLUDED.symbol,app_identifier=EXCLUDED.app_identifier,is_automated=EXCLUDED.is_automated,meta=EXCLUDED.meta,cleared_at=EXCLUDED.cleared_at,updated_at=EXCLUDED.updated_at RETURNING `+statusColumns, id, actor, req.Attitude, req.Type, req.Label, req.Symbol, req.AppIdentifier, req.IsAutomated, meta, req.ClearedAt, created, now))
-		return e
+		if e != nil {
+			return e
+		}
+		return friendeventpg.CaptureStatus(ctx, tx, p)
 	})
 	return
 }
@@ -320,7 +343,7 @@ func (r *Repository) ClearStatus(ctx context.Context, actor, app string) error {
 	if actor == "" {
 		return authority.ErrInvalid
 	}
-	return r.within(ctx, actor, nil, func(tx *sql.Tx, _ authority.Principal, now time.Time) error {
+	return r.within(ctx, actor, nil, func(tx *sql.Tx, p authority.Principal, now time.Time) error {
 		res, e := tx.ExecContext(ctx, `UPDATE owned_presence_statuses SET cleared_at=$2,updated_at=$2 WHERE id=(SELECT id FROM owned_presence_statuses WHERE account_id=$1 AND(cleared_at IS NULL OR cleared_at>$2)AND($3='' OR(is_automated AND app_identifier=$3))ORDER BY created_at DESC,id LIMIT 1)`, actor, now, app)
 		if e != nil {
 			return e
@@ -332,6 +355,6 @@ func (r *Repository) ClearStatus(ctx context.Context, actor, app string) error {
 		if n == 0 {
 			return presence.ErrNotFound
 		}
-		return nil
+		return friendeventpg.CaptureStatus(ctx, tx, p)
 	})
 }

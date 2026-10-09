@@ -152,3 +152,20 @@ func TestHostBoundProofSurvivesRemovedBearerHeader(t *testing.T) {
 		t.Fatal(rec.Code, repo.actor)
 	}
 }
+
+func TestArbitraryRealmProfilePathDoesNotResolveTarget(t *testing.T) {
+	spy := &repositorySpy{}
+	service := &Service{Repository: spy, Authority: &fakeAuthority{trusted: true}}
+	for _, target := range []string{testTarget, "missing"} {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("PATCH", "/api/realms/example/members/"+target+"/profile", strings.NewReader(`{"nick":"blocked"}`))
+		r.Header.Set("Content-Type", "application/json")
+		service.Handler().ServeHTTP(w, r)
+		if w.Code != 404 || strings.Contains(w.Body.String(), target) {
+			t.Fatal(w.Code, w.Body.String())
+		}
+	}
+	if spy.calls != 0 {
+		t.Fatal("arbitrary profile reached repository", spy.calls)
+	}
+}

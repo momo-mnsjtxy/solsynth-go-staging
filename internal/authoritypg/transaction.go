@@ -63,6 +63,17 @@ func (g *TransactionGuard) Preflight(ctx context.Context, db *sql.DB, tx *sql.Tx
 	return g.check(ctx, db, tx, actor, len(permissions) > 0, permissions, false)
 }
 
+// PreflightWithGrant is the observation-only counterpart of AuthorizeWithGrant.
+// Sensitive cross-account reads must establish an explicit current grant before
+// even resolving a target. It acquires no account lock; callers must repeat the
+// guarded authorization after their sorted account/domain locks.
+func (g *TransactionGuard) PreflightWithGrant(ctx context.Context, db *sql.DB, tx *sql.Tx, actor, requiredGrant string, permissions ...string) (authority.Principal, error) {
+	if requiredGrant == "" {
+		return authority.Principal{}, authority.ErrForbidden
+	}
+	return g.check(ctx, db, tx, actor, true, permissions, false, requiredGrant)
+}
+
 func (g *TransactionGuard) check(ctx context.Context, db *sql.DB, tx *sql.Tx, actor string, authorize bool, permissions []string, lock bool, requiredGrant ...string) (authority.Principal, error) {
 	if g == nil || g.db == nil || g.db != db || g.verifier == nil || tx == nil {
 		return authority.Principal{}, authority.ErrUnavailable

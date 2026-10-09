@@ -367,17 +367,24 @@ func TestPGFriendsOverviewArtworkWaitExpiryAndCancellation(t *testing.T) {
 				t.Fatal(e)
 			}
 			before := commerceCount(t, f.db, `SELECT count(*) FROM owned_activity_events WHERE account_id=$1`, f.actor)
-			locks := atomicAuthorityFixture{db: f.db, ctx: ctx}
+			// Reader cancellation must not cancel the independent transaction
+			// supplying its lock barrier; Commit below tests barrier release.
+			lockCtx, releaseLockContext := context.WithTimeout(context.Background(), 15*time.Second)
+			defer releaseLockContext()
+			locks := atomicAuthorityFixture{db: f.db, ctx: lockCtx}
 			blocker, pid := atomicBlocker(t, locks, "owned_media_files", file)
 			type result struct {
 				rows []friends.Item
 				e    error
 			}
 			done := make(chan result, 1)
+			finished := make(chan struct{})
 			go func() {
+				defer close(finished)
 				rows, _, e := activitypg.New(f.db, f.guard).Overview(ctx, f.other, friends.Filter{Take: 1000})
 				done <- result{rows, e}
 			}()
+			t.Cleanup(func() { cancel(); _ = blocker.Rollback(); <-finished })
 			waitAtomicBlocked(t, locks, pid, "owned_media_files")
 			if cancelRead {
 				cancel()

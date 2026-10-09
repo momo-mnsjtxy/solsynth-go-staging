@@ -10,6 +10,8 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	"solsynth.local/go-migration/ports/authority"
 )
 
 func ParseURL(raw string) (*url.URL, error) {
@@ -47,6 +49,9 @@ func Origin(raw string) (string, error) {
 	return u.Scheme + "://" + u.Host, nil
 }
 func (c Config) Validate() error {
+	if c.CleanupPolicyID != "" && !authority.ValidID(c.CleanupPolicyID) {
+		return ErrInvalid
+	}
 	u, e := ParseURL(c.Origin)
 	if e != nil || u.Path != "" || u.Fragment != "" || u.String() != c.Origin {
 		return ErrInvalid

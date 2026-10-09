@@ -18,6 +18,7 @@ const Context = "https://www.w3.org/ns/activitystreams"
 const Public = Context + "#Public"
 const MediaType = "application/activity+json"
 const Permission = "publishers.update"
+const CleanupPermission = "federation.cleanup.activate"
 const MaxBody = 1 << 20
 
 type Failure struct {
@@ -144,6 +145,8 @@ type Transport interface {
 	Send(context.Context, *http.Request) (int, error)
 }
 type Config struct {
+	// CleanupPolicyID opts into explicitly activated, non-reusable cleanup policy.
+	CleanupPolicyID string
 	Origin          string
 	AllowedOrigins  []string
 	Now             func() time.Time

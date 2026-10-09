@@ -24,6 +24,7 @@ type Repository struct {
 	db     *sql.DB
 	global *moderationpg.Repository
 	now    func() time.Time
+	guard  *authoritypg.TransactionGuard
 }
 
 func New(db *sql.DB, g *authoritypg.TransactionGuard, now func() time.Time) (*Repository, error) {
@@ -34,7 +35,7 @@ func New(db *sql.DB, g *authoritypg.TransactionGuard, now func() time.Time) (*Re
 	if e != nil {
 		return nil, e
 	}
-	return &Repository{db, global, now}, nil
+	return &Repository{db: db, global: global, now: now, guard: g}, nil
 }
 func (r *Repository) BindAuthority(ctx context.Context, p authority.Principal) context.Context {
 	return r.global.BindAuthority(ctx, p)
@@ -75,6 +76,6 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if !ready {
 		return c.ErrUnavailable
 	}
-	_, e = r.db.ExecContext(ctx, `SELECT a.verification,p.verification,r.verification FROM owned_accounts_profiles a CROSS JOIN owned_publishers p CROSS JOIN owned_realms r LIMIT 0;SELECT automod_revision,automod_decision FROM owned_text_posts LIMIT 0`)
+	_, e = r.db.ExecContext(ctx, `SELECT a.verification,p.verification,r.verification FROM owned_accounts_profiles a CROSS JOIN owned_publishers p CROSS JOIN owned_realms r LIMIT 0;SELECT automod_revision,automod_decision FROM owned_text_posts LIMIT 0;SELECT origin,granted_by FROM owned_progression_badges LIMIT 0`)
 	return e
 }

@@ -34,6 +34,18 @@ def check(root):
         if hashlib.sha256(data).hexdigest() != entry["sha256"] or blob != entry["git_blob"] or len(data) != entry["bytes"]:
             raise ValueError("blog source evidence mismatch: " + entry["file"])
         count += 1
+    for entry in json.loads((root / "ports/admin/accounts/source-evidence.json").read_text())["files"]:
+        data = (root / entry["file"]).read_bytes()
+        blob = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
+        if len(data) != entry["bytes"] or hashlib.sha256(data).hexdigest() != entry["sha256"] or blob != entry["git_blob"]:
+            raise ValueError("account admin source evidence mismatch: " + entry["file"])
+        if "storage_transform" in entry:
+            if entry["storage_transform"] != "one_appended_line_feed" or not data.endswith(b"\n\n"):
+                raise ValueError("unknown account admin source storage transform")
+            original = data[:-1]
+            if hashlib.sha1(b"blob " + str(len(original)).encode() + b"\0" + original).hexdigest() != entry["upstream_blob"]:
+                raise ValueError("account admin original source mismatch: " + entry["file"])
+        count += 1
     base = root / "ports/sphere"
     for entry in json.loads((base / "source-manifest.json").read_text())["files"]:
         data = (base / entry["snapshot"]).read_bytes()

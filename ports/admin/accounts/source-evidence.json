@@ -1,0 +1,74 @@
+{
+  "license": "AGPL-3.0-only",
+  "basis": "Existing immutable authored snapshots; no new remote content, excluded protocol or submodule code.",
+  "files": [
+    {
+      "file": "ports/passport/board/source/AccountAdminController.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountAdminController.cs",
+      "sha256": "744864a688167eceb954e4232265eb1362c1556dc87898fd446bc62de7c4eeda",
+      "bytes": 26714,
+      "git_blob": "ce1c3465960fcb9f92dff30b648df0d3af96419d",
+      "source_integrity": "Existing pinned board source manifest."
+    },
+    {
+      "file": "ports/passport/board/source/DysonNetwork.Passport__Migrations__AppDatabaseModelSnapshot.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Migrations/AppDatabaseModelSnapshot.cs",
+      "sha256": "658c4de4fe6560aa25c46be9ad9f42eea79129f60bd995a28c772c07b1b6d39a",
+      "bytes": 164129,
+      "git_blob": "4330f59e10b9e6fd6587a8fd82f9140d0b4d2a8c",
+      "source_integrity": "Existing pinned board source manifest."
+    },
+    {
+      "file": "ports/passport/board/source/Passport-AppDatabase.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/AppDatabase.cs",
+      "sha256": "fc268cd596a7d2d28ddee476a8294b84e70626f6b9ee80b969c358da95a2aa7f",
+      "bytes": 18632,
+      "git_blob": "8f6490605000f29d0059a58622b193b9a2f56a4f",
+      "source_integrity": "Existing pinned board source manifest."
+    },
+    {
+      "file": "ports/passport/board/source/docs__ACCOUNT_ADMIN_API.md",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/ACCOUNT_ADMIN_API.md",
+      "sha256": "7bb6da553507c913ed0f0ce6dda55e430c205659d66c19a98597ed368cd543a3",
+      "bytes": 26375,
+      "git_blob": "884b8efe7d672e9d9ccaff13977982ec5ade1889",
+      "source_integrity": "Existing pinned board source manifest."
+    },
+    {
+      "file": "ports/passport/board/source/SOLIAN-LICENSE.txt",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/LICENSE.txt",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "git_blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "source_integrity": "Existing pinned board source manifest."
+    },
+    {
+      "file": "ports/passport/progression/source/AccountService.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountService.cs",
+      "sha256": "350ccb8abdcaa0e17ac61abe49c264490897de375772487e0e36da492a703536",
+      "bytes": 14185,
+      "git_blob": "d60822331222aaaf376a5fdfa4177becdfdf1014",
+      "upstream_blob": "270436f5665cf8a2539c32719ed55580139ddfb9",
+      "storage_transform": "one_appended_line_feed",
+      "source_integrity": "Existing retained file has exactly one appended LF; removing only that byte reproduces the already-pinned original Git blob. Original source is unchanged."
+    },
+    {
+      "file": "ports/passport/progression/source/Solian__lib__accounts__badge.dart",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/badge.dart",
+      "sha256": "af1042a0fd74684f889dfcd71fabc5d11d04cdff888852ff37ead00cf1eaab20",
+      "bytes": 7891,
+      "git_blob": "57b6742b149e519ded8d921642151adff6390980",
+      "upstream_blob": "52a4e1759012cc9272df1d9c228fdb109186c202",
+      "storage_transform": "one_appended_line_feed",
+      "source_integrity": "Existing retained file has exactly one appended LF; removing only that byte reproduces the already-pinned original Git blob. Original source is unchanged."
+    },
+    {
+      "file": "inventory/operation-sources/LICENSE.txt",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/LICENSE.txt",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "git_blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "source_integrity": "Existing pinned root license."
+    }
+  ]
+}

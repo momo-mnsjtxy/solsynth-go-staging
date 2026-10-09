@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"solsynth.local/go-migration/internal/adminpg"
 	"solsynth.local/go-migration/internal/authoritypg"
+	adminaccounts "solsynth.local/go-migration/ports/admin/accounts"
 	"solsynth.local/go-migration/ports/admin/statistics"
 	"solsynth.local/go-migration/ports/admin/verification"
 	"solsynth.local/go-migration/ports/authority"
@@ -16,6 +17,7 @@ import (
 type adminModules struct {
 	repo                                                       *adminpg.Repository
 	verification, automod, qualified, passport, sphere, wallet http.Handler
+	accounts                                                   http.Handler
 }
 
 func adminModulesFor(db *sql.DB, g *authoritypg.TransactionGuard, v *authority.Verifier, now func() time.Time) (out adminModules, err error) {
@@ -31,10 +33,12 @@ func adminModulesFor(db *sql.DB, g *authoritypg.TransactionGuard, v *authority.V
 	var vr verification.Repository
 	var ar automod.Repository
 	var sr statistics.Repository
+	var acr adminaccounts.Repository
 	if out.repo != nil {
 		vr = out.repo
 		ar = out.repo
 		sr = out.repo
+		acr = out.repo
 	}
 	out.verification = wrap(verification.NewHandler(vr, auth))
 	out.automod = wrap(automod.NewHandler(ar, auth))
@@ -42,9 +46,13 @@ func adminModulesFor(db *sql.DB, g *authoritypg.TransactionGuard, v *authority.V
 	out.passport = wrap(statistics.NewHandler(sr, auth, statistics.Passport))
 	out.sphere = wrap(statistics.NewHandler(sr, auth, statistics.Sphere))
 	out.wallet = wrap(statistics.NewHandler(sr, auth, statistics.Wallet))
+	out.accounts = wrap(adminaccounts.NewHandler(acr, auth))
 	return
 }
 func (a adminModules) route(service, path string) http.Handler {
+	if adminaccounts.Handles(path) && (service == "api" || service == "passport") {
+		return a.accounts
+	}
 	if path == "/api/admin/stats" {
 		switch service {
 		case "passport":

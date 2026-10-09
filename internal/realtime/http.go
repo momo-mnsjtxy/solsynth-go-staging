@@ -196,6 +196,17 @@ func (h *Handler) pump(ctx context.Context, r *http.Request, actor string, after
 			if a != actor {
 				return notifications.ErrInvalid
 			}
+			if validator, ok := h.store.(notifications.EventRevalidator); ok {
+				fresh, visible, x := validator.RevalidateEvent(ctx, actor, h.cfg.App, event)
+				if x != nil {
+					return x
+				}
+				if !visible {
+					after = event.Sequence
+					continue
+				}
+				event = fresh
+			}
 			if e = send(packet{Type: event.Type, Data: event.Data, Sequence: event.Sequence}); e != nil {
 				return e
 			}

@@ -498,6 +498,7 @@ func TestPGPostRealmFederationWithdrawal(t *testing.T) {
 	if e := authoritypg.New(x.db).ReplacePolicy(x.ctx, x.actor, []authority.Rule{{Pattern: "*"}}, nil); e != nil {
 		t.Fatal(e)
 	}
+	configureCleanup(t, x, true)
 	// Explicit fresh enablement after policy setup, before tested inbound traffic.
 	if e := x.r.Settings(x.ctx, x.actor, x.publisher, federation.Settings{Enabled: true, Manual: false}); e != nil {
 		t.Fatal(e)
@@ -550,15 +551,21 @@ func TestPGPostRealmFederationWithdrawal(t *testing.T) {
 		if n, e := x.r.ReconcilePosts(x.ctx, 20); e != nil || n != 1 {
 			t.Fatal("realm attachment withdrawal", n, e)
 		}
-		if n, e := x.r.ProcessDeliveries(x.ctx, transport, 20); e != nil || n != 1 {
-			t.Fatal("synthetic tombstone delivery", n, e)
+		want := 0
+		if alreadySent {
+			want = 1
 		}
-		if len(transport.requests) != before+1 {
-			t.Fatal("expected exactly one withdrawal")
+		if n, e := x.r.ProcessDeliveries(x.ctx, transport, 20); e != nil || n != want {
+			t.Fatal("receipt-bound synthetic tombstone delivery", n, e)
 		}
-		var activity federation.Activity
-		if e = json.Unmarshal(transport.requests[before], &activity); e != nil || activity.Type != "Delete" || bytes.Contains(transport.requests[before], []byte(privateBody)) || bytes.Contains(activity.Object, []byte("Previously public")) {
-			t.Fatal("withdrawal contains content", activity, e)
+		if len(transport.requests) != before+want {
+			t.Fatal("withdrawal did not match actual historical dispatch")
+		}
+		if alreadySent {
+			var activity federation.Activity
+			if e = json.Unmarshal(transport.requests[before], &activity); e != nil || activity.Type != "Delete" || bytes.Contains(transport.requests[before], []byte(privateBody)) || bytes.Contains(activity.Object, []byte("Previously public")) {
+				t.Fatal("withdrawal contains content", activity, e)
+			}
 		}
 		var public bool
 		if e = x.db.QueryRow(`SELECT public FROM owned_federation_post_state WHERE post_id=$1`, post.ID).Scan(&public); e != nil || public {

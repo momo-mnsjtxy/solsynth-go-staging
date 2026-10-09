@@ -318,6 +318,12 @@ func (s *Service) relationshipHTTP(w http.ResponseWriter, r *http.Request, p []s
 	}
 }
 func (s *Service) realmHTTP(w http.ResponseWriter, r *http.Request, actor string, p []string) {
+	// The authored override route addresses only members/me. An arbitrary member
+	// profile is not a provider-backed operation and must not imply target existence.
+	if len(p) == 4 && p[1] == "members" && p[3] == "profile" && p[2] != "me" {
+		failure(w, ErrNotFound)
+		return
+	}
 	ctx := r.Context()
 	if r.Method == "GET" {
 		off, take, e := page(r)

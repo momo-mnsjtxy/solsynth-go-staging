@@ -30,15 +30,20 @@ type surveySubscriptionFixture struct {
 	pub    profiles.Publisher
 	survey surveys.Survey
 	post   posts.Post
+	appID  string
 }
 
 func newSurveySubscriptionFixture(t *testing.T, publish bool) surveySubscriptionFixture {
 	t.Helper()
-	return surveySubscriptionFixtureWithBackend(t, newBackendFixture(t), publish)
+	base := newBackendFixture(t)
+	return surveySubscriptionFixtureWithBackend(t, base, "survey.fixture."+base.actor, publish)
 }
-func surveySubscriptionFixtureWithBackend(t *testing.T, base backendFixture, publish bool) surveySubscriptionFixture {
+func surveySubscriptionFixtureWithBackend(t *testing.T, base backendFixture, appID string, publish bool) surveySubscriptionFixture {
 	t.Helper()
-	f := surveySubscriptionFixture{backendFixture: base}
+	// Configure enqueue and dispatch together before creating any target state.
+	// Failed cases must not leave work in the next case's worker namespace.
+	base.app = surveySubscriptionBackend(t, base.db, base.config, appID)
+	f := surveySubscriptionFixture{backendFixture: base, appID: appID}
 	query(t, f.db, `INSERT INTO owned_publisher_quota(account_id,total,starts_at) VALUES($1,2,now())`, f.actor)
 	name := "survey_" + strings.ReplaceAll(f.actor, "-", "")
 	f.pub = backendDecode[profiles.Publisher](t, backendJSONCall(t, f.app, "POST", "/sphere/publishers/individual", f.token, map[string]any{"name": name, "nick": "Survey subscriptions"}, 200))
@@ -88,8 +93,35 @@ func surveyRepo(t *testing.T, f surveySubscriptionFixture, db *sql.DB) (*surveyp
 		t.Fatal(e)
 	}
 	g := authoritypg.NewTransactionGuard(store, v)
-	return surveypg.NewWithAuthority(db, g).WithVisibility(socialpg.NewWithAuthority(db, g)), g, v
+	return surveypg.NewWithAuthority(db, g).WithVisibility(socialpg.NewWithAuthority(db, g)).WithNotificationApp(f.appID), g, v
 }
+
+// surveyWorker joins even when a lock observation or assertion calls Fatal.
+// Cancel and release the blocker before waiting, while fixture pools remain open.
+func surveyWorker(t *testing.T, cancel context.CancelFunc, blocker *sql.Tx, run func() error) <-chan error {
+	t.Helper()
+	result := make(chan error, 1)
+	finished := make(chan struct{})
+	go func() {
+		defer close(finished)
+		result <- run()
+	}()
+	t.Cleanup(func() {
+		cancel()
+		_ = blocker.Rollback()
+		<-finished
+	})
+	return result
+}
+
+func newSurveyRealmFixture(t *testing.T) (*realmPublishingFixture, string) {
+	t.Helper()
+	f := newRealmPublishingFixture(t)
+	appID := "survey.realm." + f.actor
+	f.surveys.WithNotificationApp(appID)
+	return f, appID
+}
+
 func TestPGSurveySubscriptionsAuthoredRoutesAndPrivacy(t *testing.T) {
 	f := newSurveySubscriptionFixture(t, false)
 	path := "/api/surveys/" + f.survey.ID
@@ -141,6 +173,10 @@ func TestPGSurveySubscriptionsAuthoredRoutesAndPrivacy(t *testing.T) {
 	backendCall(t, f.app, "POST", path+"/unsubscribe", f.otherToken, "", 403)
 }
 func TestPGSurveyNotificationsAtomicReplayAndRollback(t *testing.T) {
+	// Leave an older item pending in a different namespace. Both racing hosts
+	// must process only their own queue, including when projection rolls back.
+	foreign := newSurveySubscriptionFixture(t, true)
+	surveySendAnswer(t, foreign, foreign.otherToken, surveyAnswers(foreign.survey), 200)
 	f := newSurveySubscriptionFixture(t, true)
 	surveySubscribe(t, f, f.otherToken)
 	answer := surveyAnswers(f.survey)
@@ -160,7 +196,8 @@ func TestPGSurveyNotificationsAtomicReplayAndRollback(t *testing.T) {
 		t.Fatal("queue recipient ancestry not enforced", mismatchErr)
 	}
 	// Queue and response write must roll back together, including failed audit.
-	query(t, f.db, `ALTER TABLE owned_survey_audit ADD CONSTRAINT survey_subscription_answer_failure CHECK(survey_id<>'`+f.survey.ID+`'::uuid OR action<>'answer')`)
+	// NOT VALID preserves existing successful audit rows; every new row is still checked.
+	query(t, f.db, `ALTER TABLE owned_survey_audit ADD CONSTRAINT survey_subscription_answer_failure CHECK(survey_id<>'`+f.survey.ID+`'::uuid OR action<>'answer') NOT VALID`)
 	t.Cleanup(func() {
 		query(t, f.db, `ALTER TABLE owned_survey_audit DROP CONSTRAINT IF EXISTS survey_subscription_answer_failure`)
 	})
@@ -201,7 +238,7 @@ func TestPGSurveyNotificationsAtomicReplayAndRollback(t *testing.T) {
 	query(t, f.db, `ALTER TABLE owned_survey_notifications DROP CONSTRAINT survey_projection_failure`)
 	// Independent pools race over the same durable queue.
 	db2 := database(t)
-	app2 := backendApp(t, db2, f.config)
+	app2 := surveySubscriptionBackend(t, db2, f.config, f.appID)
 	start := make(chan struct{})
 	errs := make(chan error, 2)
 	var wg sync.WaitGroup
@@ -243,6 +280,16 @@ func TestPGSurveyNotificationsAtomicReplayAndRollback(t *testing.T) {
 	}
 	if n := surveyCount(t, f.db, `SELECT count(*) FROM notification_v1.deliveries d JOIN notification_v1.inbox n ON n.id=d.notification_id WHERE n.account_id=$1`, f.actor); n != 0 {
 		t.Fatal("external delivery was queued", n)
+	}
+	if n := surveyCount(t, foreign.db, `SELECT count(*) FROM owned_survey_notifications WHERE survey_id=$1 AND app_id=$2 AND processed_at IS NULL`, foreign.survey.ID, foreign.appID); n != 1 {
+		t.Fatal("another namespace consumed pending work", n)
+	}
+	if n := surveyCount(t, foreign.db, `SELECT count(*) FROM notification_v1.inbox WHERE account_id=$1 AND topic='surveys.answer'`, foreign.actor); n != 0 {
+		t.Fatal("another namespace projected an inbox item", n)
+	}
+	surveyProcess(t, foreign)
+	if n := surveyCount(t, foreign.db, `SELECT count(*) FROM notification_v1.inbox WHERE account_id=$1 AND app_id=$2 AND topic='surveys.answer'`, foreign.actor, foreign.appID); n != 1 {
+		t.Fatal("original namespace lost pending work", n)
 	}
 }
 func TestPGSurveyNotificationsCurrentAudience(t *testing.T) {
@@ -360,7 +407,7 @@ func TestPGSurveySubscriptionsConcurrentAndAuditRollback(t *testing.T) {
 	if a, b := <-ids, <-ids; a == "" || a != b {
 		t.Fatal("duplicate live subscription", a, b)
 	}
-	query(t, f.db, `ALTER TABLE owned_survey_audit ADD CONSTRAINT survey_unsubscribe_failure CHECK(survey_id<>'`+f.survey.ID+`'::uuid OR action<>'unsubscribe')`)
+	query(t, f.db, `ALTER TABLE owned_survey_audit ADD CONSTRAINT survey_unsubscribe_failure CHECK(survey_id<>'`+f.survey.ID+`'::uuid OR action<>'unsubscribe') NOT VALID`)
 	t.Cleanup(func() {
 		query(t, f.db, `ALTER TABLE owned_survey_audit DROP CONSTRAINT IF EXISTS survey_unsubscribe_failure`)
 	})
@@ -374,7 +421,7 @@ func TestPGSurveySubscriptionsConcurrentAndAuditRollback(t *testing.T) {
 	if e := repos[0].Unsubscribe(contexts[0], f.other, f.survey.ID); e != nil {
 		t.Fatal(e)
 	}
-	query(t, f.db, `ALTER TABLE owned_survey_audit ADD CONSTRAINT survey_subscribe_failure CHECK(survey_id<>'`+f.survey.ID+`'::uuid OR action<>'subscribe')`)
+	query(t, f.db, `ALTER TABLE owned_survey_audit ADD CONSTRAINT survey_subscribe_failure CHECK(survey_id<>'`+f.survey.ID+`'::uuid OR action<>'subscribe') NOT VALID`)
 	t.Cleanup(func() {
 		query(t, f.db, `ALTER TABLE owned_survey_audit DROP CONSTRAINT IF EXISTS survey_subscribe_failure`)
 	})
@@ -422,8 +469,10 @@ func TestPGSurveySubscriptionsWaitRechecksAuthorityAndExpiry(t *testing.T) {
 			if _, e = blocker.ExecContext(ctx, `SELECT id FROM `+table+` WHERE id=$1 FOR UPDATE`, id); e != nil {
 				t.Fatal(e)
 			}
-			done := make(chan error, 1)
-			go func() { _, e := r.Subscribe(ctx, f.other, f.survey.ID); done <- e }()
+			done := surveyWorker(t, cancel, blocker, func() error {
+				_, e := r.Subscribe(ctx, f.other, f.survey.ID)
+				return e
+			})
 			waitAtomicBlocked(t, atomicAuthorityFixture{db: f.db, ctx: ctx}, pid, table)
 			switch mode {
 			case "session":
@@ -478,8 +527,10 @@ func TestPGSurveyNotificationsWaitRechecksAudienceAndExpiry(t *testing.T) {
 			if _, e = blocker.ExecContext(ctx, `SELECT id FROM owned_authority_accounts WHERE id=$1 FOR UPDATE`, f.other); e != nil {
 				t.Fatal(e)
 			}
-			done := make(chan error, 1)
-			go func() { _, e := f.app.ProcessSurveyNotifications(ctx, 100); done <- e }()
+			done := surveyWorker(t, cancel, blocker, func() error {
+				_, e := f.app.ProcessSurveyNotifications(ctx, 100)
+				return e
+			})
 			waitAtomicBlocked(t, atomicAuthorityFixture{db: f.db, ctx: ctx}, pid, "owned_authority_accounts")
 			switch mode {
 			case "unsubscribe":
@@ -508,7 +559,7 @@ func TestPGSurveyNotificationsWaitRechecksAudienceAndExpiry(t *testing.T) {
 	}
 }
 func TestPGSurveySubscriptionsRealmRevocation(t *testing.T) {
-	f := newRealmPublishingFixture(t)
+	f, appID := newSurveyRealmFixture(t)
 	q := surveyQuestions()
 	notify := true
 	s, e := f.surveys.Create(f.ctx, f.actor, f.privatePub.ID, surveys.Patch{Questions: &q, NotifySubscribers: &notify})
@@ -541,9 +592,11 @@ func TestPGSurveySubscriptionsRealmRevocation(t *testing.T) {
 	if _, e = blocker.ExecContext(ctx, `SELECT id FROM owned_realms WHERE id=$1 FOR UPDATE`, f.private.ID); e != nil {
 		t.Fatal(e)
 	}
-	sink := notificationpg.New(f.db, f.guard, "dev.solsynth.solian")
-	done := make(chan error, 1)
-	go func() { _, e := f.surveys.ProcessNotifications(ctx, sink, "dev.solsynth.solian", 100); done <- e }()
+	sink := notificationpg.New(f.db, f.guard, appID)
+	done := surveyWorker(t, cancel, blocker, func() error {
+		_, e := f.surveys.ProcessNotifications(ctx, sink, appID, 100)
+		return e
+	})
 	waitAtomicBlocked(t, atomicAuthorityFixture{db: f.db, ctx: ctx}, pid, "owned_realms")
 	if _, e = blocker.ExecContext(ctx, `UPDATE owned_realm_members SET leave_at=clock_timestamp() WHERE realm_id=$1 AND account_id=$2`, f.private.ID, f.other); e != nil {
 		t.Fatal(e)
@@ -565,7 +618,7 @@ func TestPGSurveySubscriptionsRealmRevocation(t *testing.T) {
 	}
 	for _, mode := range []string{"active", "punished", "expired_punishment", "future_punishment"} {
 		t.Run("attached_post_realm_owner_"+mode, func(t *testing.T) {
-			f := newRealmPublishingFixture(t)
+			f, appID := newSurveyRealmFixture(t)
 			// The post realm owner differs from both publisher owner and recipient.
 			realm, e := f.social.CreateRealm(f.outsideCtx, f.outside, social.RealmPatch{Slug: postString("survey-notify-realm-" + f.outside), Name: postString("Synthetic notification realm"), IsPublic: boolean(true)})
 			if e != nil {
@@ -600,8 +653,8 @@ func TestPGSurveySubscriptionsRealmRevocation(t *testing.T) {
 			case "future_punishment":
 				query(t, f.db, `INSERT INTO owned_authority_punishments(account_id,kind,pattern,starts_at) VALUES($1,'disable_account','*',clock_timestamp()+interval '1 hour')`, f.outside)
 			}
-			sink := notificationpg.New(f.db, f.guard, "dev.solsynth.solian")
-			if _, e = f.surveys.ProcessNotifications(context.Background(), sink, "dev.solsynth.solian", 100); e != nil {
+			sink := notificationpg.New(f.db, f.guard, appID)
+			if _, e = f.surveys.ProcessNotifications(context.Background(), sink, appID, 100); e != nil {
 				t.Fatal(e)
 			}
 			want := 1
@@ -640,8 +693,7 @@ func TestPGSurveySubscriptionsRestartPersistence(t *testing.T) {
 		base.token = pgIssue(t, issuer, base.actor).Token
 		base.otherToken = pgIssue(t, issuer, base.other).Token
 		appID := "survey.restart." + base.actor
-		base.app = surveySubscriptionBackend(t, base.db, base.config, appID)
-		f := surveySubscriptionFixtureWithBackend(t, base, true)
+		f := surveySubscriptionFixtureWithBackend(t, base, appID, true)
 		subscription := surveySubscribe(t, f, f.token)
 		a := backendDecode[surveys.Answer](t, surveySendAnswer(t, f, f.otherToken, surveyAnswers(f.survey), 200))
 		surveyProcess(t, f)
@@ -650,7 +702,7 @@ func TestPGSurveySubscriptionsRestartPersistence(t *testing.T) {
 		surveySendAnswer(t, f, f.otherToken, changed, 200)
 		// A different composed namespace must not consume or redirect this
 		// fixture's durable pending item before its own restart worker resumes.
-		otherNamespace := backendApp(t, f.db, f.config)
+		otherNamespace := surveySubscriptionBackend(t, f.db, f.config, "survey.other."+f.actor)
 		if _, e = otherNamespace.ProcessSurveyNotifications(context.Background(), 100); e != nil {
 			t.Fatal(e)
 		}
@@ -768,22 +820,23 @@ func TestPGSurveyNotificationsConcurrentAnswerDispatchLockOrder(t *testing.T) {
 			}
 			changed := surveyAnswers(f.survey)
 			changed[f.survey.Questions[4].ID] = json.RawMessage(`"concurrent private response"`)
-			answerDone := make(chan error, 1)
-			go func() { _, e := r.Answer(ctx, f.other, f.survey.ID, changed); answerDone <- e }()
+			answerDone := surveyWorker(t, cancel, blocker, func() error {
+				_, e := r.Answer(ctx, f.other, f.survey.ID, changed)
+				return e
+			})
 			locks := atomicAuthorityFixture{db: f.db, ctx: base}
 			answerPID := waitAtomicBlocked(t, locks, blockerPID, "owned_survey_notifications")
-			otherDone := make(chan error, 1)
-			go func() {
+			otherDone := surveyWorker(t, cancel, blocker, func() error {
 				switch mode {
 				case "dispatch":
 					_, e := f.app.ProcessSurveyNotifications(base, 100)
-					otherDone <- e
+					return e
 				case "unsubscribe":
-					otherDone <- competitor.Unsubscribe(ownerCtx, f.actor, f.survey.ID)
-				case "delete":
-					otherDone <- competitor.Delete(ownerCtx, f.actor, f.survey.ID)
+					return competitor.Unsubscribe(ownerCtx, f.actor, f.survey.ID)
+				default:
+					return competitor.Delete(ownerCtx, f.actor, f.survey.ID)
 				}
-			}()
+			})
 			waitTable := "owned_surveys"
 			if mode == "delete" {
 				waitTable = "owned_publishers"

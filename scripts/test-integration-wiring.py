@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
- "internal/activitypg/schema.sql",
+ "internal/activitypg/schema.sql", "internal/friendeventpg/schema.sql", "internal/notificationpg/friend_schema.sql",
  "internal/federationpg/delivery_schema.sql",
  "internal/timelinepg/subscription_state_schema.sql",
  "internal/chatpg/organization_schema.sql",

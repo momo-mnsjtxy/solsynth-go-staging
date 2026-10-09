@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Independently reviewed current-friend overview integrated with final lease expiry, fallback and visible paging checks. Full combined offline checks passed; actual PostgreSQL/restart pending.",
+  "local_source_checkpoint": "Reviewed friend events, root-bound account administration/badges and opt-in immutable federation cleanup receipts integrated. Activity timestamp alias, canonical exchange routing and survey receipt SQL corrections plus isolated queue/rollback fixtures pass full combined offline verification; actual PG/restart pending.",
   "last_fully_passed_ci": {
     "commit": "8d00c0cee85ebd10328ed5d51fa0e876141bf411",
     "run": 37878791797,
@@ -14,13 +14,13 @@
     "acceptance_limit": "Immutable implementation CI-green; remaining original flows, configured external providers and production rollout are separate."
   },
   "latest_candidate": {
-    "commit": "9ed610e11e50b0cf41e00c127aa4d5b38b089195",
-    "required_before": 842,
-    "required_after_restart": 100,
-    "status": "Published reviewed survey subscriptions/local notifications candidate; actual CI pending. Inherits known Tombstone cleanup and saved lease-fixture isolation failures from816."
+    "commit": "00d6ba1c357451a3e46797d72c7ecf06f242a670",
+    "required_before": 859,
+    "required_after_restart": 103,
+    "status": "Published original-database restart isolation correction; run37886556917 pending. Earlier853/859 schema-isolation candidates retain known database-wide readiness interference; no acceptance."
   },
-  "local_required_before": 859,
-  "local_required_after_restart": 103,
+  "local_required_before": 884,
+  "local_required_after_restart": 105,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2128,7 +2128,7 @@
     "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
-    "as_of": "2026-10-09T04:49:00Z",
+    "as_of": "2026-10-09T05:09:00Z",
     "authoritative_for": "Current source-backed remaining flow bundles, implementation candidates and operational gaps; no percentage or endpoint-total inference.",
     "families": [
       {
@@ -2915,7 +2915,7 @@
         "families": [
           "passport.accounts_presence"
         ],
-        "remaining": "Authored account activity/catalog/session/stat routes and friend overview are integrated pending actualPG. Friend broadcast is delivered under independent review; provider/sensor activity remains unimplemented.",
+        "remaining": "Authored activity/catalog/session/stat, friend overview and existing-stream activity/status delivery integrated pending actualPG. Provider/sensor activity remains unimplemented.",
         "source": [
           {
             "path": "DysonNetwork.Passport/Account/PresenceActivityController.cs",
@@ -2943,8 +2943,8 @@
           "internal/presencepg",
           "internal/mediapg/artwork.go"
         ],
-        "current_boundary": "Ten authored activity/catalog routes and GET /api/friends/overview are wired. Overview uses canonical bilateral friendship/block, original proof and source authority, artwork gates, final elapsed-clock filtering and visible-only pagination. No provider sensor ingestion.",
-        "next_slice": "Integrate reviewed existing-stream activity/status notifications, then verify composed PG/restart flows; provider activity remains separate."
+        "current_boundary": "Canonical source/account/session/friendship generations, current per-event audience projection and encoded64KiB cap. Existing replay/WebSocket/SSE shape; unused device_id omitted, no credential identifier substitute.",
+        "next_slice": "Actual PG/restart validation; provider/sensor integration remains separate."
       },
       {
         "id": "account_admin_badges",
@@ -2952,7 +2952,7 @@
           "passport.accounts_presence",
           "passport.badges"
         ],
-        "remaining": "Account admin listing/detail/activity metrics/contact/factor reads and explicit badge grant/activate/revoke are missing.",
+        "remaining": "Seven activity-metric/contact/redacted-factor/badge read and grant/activate/revoke routes integrated pending actualPG. Aggregate account list/detail and administrative credential/contact/session mutations remain unimplemented.",
         "source": [
           {
             "path": "DysonNetwork.Passport/Account/AccountAdminController.cs",
@@ -2973,8 +2973,8 @@
           "internal/progressionpg",
           "internal/accountpg"
         ],
-        "current_boundary": "Account verification and admin board routes are implemented elsewhere and excluded from this gap. Current global stats are a separate owned aggregate and do not implement the source activity-metrics route. Earned badge projection is not admin grant/revoke.",
-        "next_slice": "First deliver admin read projections with explicit global permissions and no secret factor material; then source-backed badge writes with atomic audit and source/provenance distinctions."
+        "current_boundary": "Current root ordinary superuser plus explicit matching grant is required before target observation and after waits; badge labels never create staff permission. Existing canonical badge provenance reused.",
+        "next_slice": "Actual PG/restart validation; then separately reconstruct aggregate account list/detail privacy projections and administrative mutations."
       },
       {
         "id": "account_history_credit_connections",
@@ -3709,6 +3709,30 @@
           "ports/passport/friends/PROVENANCE.md",
           "tests/integration/friends_overview_test.go"
         ]
+      },
+      {
+        "id": "passport.friend_activity_status_events",
+        "status": "integrated_pending_actual_PG",
+        "tests": "7 before +1 original-proof restart",
+        "evidence": [
+          "docs/friend-events-continuation.md"
+        ]
+      },
+      {
+        "id": "admin.account_badges_sensitive_reads",
+        "status": "integrated_pending_actual_PG",
+        "tests": "12 before +1 original-proof restart",
+        "evidence": [
+          "docs/account-admin-badges-continuation.md"
+        ]
+      },
+      {
+        "id": "federation.receipt_bound_cleanup",
+        "status": "integrated_pending_actual_PG",
+        "tests": "6 new before cases plus preserved moderation/realm withdrawal tests",
+        "evidence": [
+          "docs/federation-cleanup-receipts.md"
+        ]
       }
     ],
     "owned_contract_differences": [
@@ -3892,6 +3916,13 @@
         "evidence": [
           "docs/wallet-treasury-exchange.md",
           "docs/wallet-reporting-continuation.md"
+        ]
+      },
+      {
+        "id": "federation_opt_in_cleanup_receipt",
+        "difference": "No historical receipt backfill or cleanup for never-dispatched content. Explicit repository-only root-owner activation with matching grant and permanent transport incarnation; constructor/readiness/default configuration never activate. Receipt permits only bounded content-free Tombstone, retains current source session/account revocation and original deadline; credential revocation may prevent cleanup. No production activation or live transport.",
+        "evidence": [
+          "docs/federation-cleanup-receipts.md"
         ]
       }
     ],
@@ -4214,13 +4245,29 @@
     "Passing configured adapters and owned policies does not establish upstream internal behavior, live provider activation, or production migration readiness."
   ],
   "prior_candidate_result": {
-    "commit": "5a4a2736f9bcbdf121e555ea4498ab73d2f9a5a6",
-    "run": 37879839331,
-    "before_passed": 810,
-    "before_failed": 6,
-    "after_restart": 0,
-    "skipped": 0,
-    "note": "Five inherited811failures (onequote runtime independence regression/four setupfixtures) plus invalidunpaired developer shadowbanfixture. Independentquotefix reviewactive; no newfullgreen."
+    "832": {
+      "commit": "641a503b1173cb04888f45bbbf5fe0cceb238a52",
+      "run": 37884733241,
+      "before_pass": 828,
+      "before_fail": 4,
+      "restart": "not reached"
+    },
+    "842": {
+      "commit": "9ed610e11e50b0cf41e00c127aa4d5b38b089195",
+      "run": 37885246903,
+      "before_pass": 831,
+      "before_fail": 11,
+      "restart": "not reached"
+    },
+    "classification": "Activity transition-time pointer alias and survey receipt timestamp inference are runtime defects; failure constraints and queue namespace/wait isolation are fixture defects; foreign-member profile path falls through generic501 despite self route passing. No passing claim until composed rerun.",
+    "853": {
+      "commit": "5717edf4aec8a78a1eef1a2484ffbd64c69c8364",
+      "run": 37885809938,
+      "before_pass": 834,
+      "before_fail": 19,
+      "restart": "not reached",
+      "additional_findings": "Six readiness failures from second schema, canonical exchangePOST earlycatalog intercept, reporting range fixture identical frozen timestamps. Current corrections are unverified in PG."
+    }
   },
   "latest_job_log_verified_ci_pass": {
     "commit": "8d00c0cee85ebd10328ed5d51fa0e876141bf411",

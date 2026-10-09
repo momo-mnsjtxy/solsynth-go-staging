@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"solsynth.local/go-migration/internal/authoritypg"
@@ -18,9 +19,15 @@ import (
 )
 
 //go:embed schema.sql
-var Schema string
+var baseSchema string
+
+//go:embed friend_schema.sql
+var FriendSchema string
+
+var Schema = baseSchema + "\n" + FriendSchema
 
 type Repository struct {
+	friends     notifications.AudienceEventProjector
 	preferences PreferencePolicy
 	roomAccess  rooms.AccessPolicy
 	db          *sql.DB
@@ -194,14 +201,20 @@ func (r *Repository) change(ctx context.Context, actor, app, id string, dismiss 
 // the authority lock on every call. Filtered events still advance Cursor.
 func (r *Repository) Replay(ctx context.Context, actor, app string, after int64, take int) (notifications.Page, error) {
 	p := notifications.Page{Events: []notifications.Event{}}
-	if after < 0 || take < 1 || take > 100 {
+	if r == nil || r.guard == nil {
+		return p, notifications.ErrUnavailable
+	}
+	if !authority.ValidID(actor) || app != r.app || after < 0 || take < 1 || take > 100 {
 		return p, notifications.ErrInvalid
 	}
-	tx, e := r.authorized(ctx, actor, app)
+	tx, e := r.begin(ctx)
 	if e != nil {
 		return p, e
 	}
 	defer tx.Rollback()
+	if _, e = r.guard.Preflight(ctx, r.db, tx, actor); e != nil {
+		return p, e
+	}
 	var floor int64
 	e = tx.QueryRowContext(ctx, `SELECT sequence,floor FROM notification_v1.streams WHERE account_id=$1 AND app_id=$2`, actor, app).Scan(&p.HighWater, &floor)
 	if e != nil && !errors.Is(e, sql.ErrNoRows) {
@@ -211,7 +224,9 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 		return p, notifications.ErrCursor
 	}
 	p.Cursor = after
-	rows, e := tx.QueryContext(ctx, `SELECT sequence,type,data,created_at,audience,audience_id::text FROM notification_v1.events WHERE account_id=$1 AND app_id=$2 AND sequence>$3 ORDER BY sequence LIMIT $4`, actor, app, after, take)
+	// Freeze the finite committed page before discovering its complete account
+	// lock set. New commits above HighWater are observed on the next replay call.
+	rows, e := tx.QueryContext(ctx, `SELECT sequence,type,data,created_at,audience,audience_id::text FROM notification_v1.events WHERE account_id=$1 AND app_id=$2 AND sequence>$3 AND sequence<=$5 ORDER BY sequence LIMIT $4`, actor, app, after, take, p.HighWater)
 	if e != nil {
 		return p, e
 	}
@@ -236,6 +251,33 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 	if e != nil {
 		return p, e
 	}
+	ids := map[string]bool{actor: true}
+	if r.friends != nil {
+		for _, v := range items {
+			if v.audience == "friend" && v.id != nil {
+				owner, x := r.friends.AudienceEventOwner(ctx, tx, actor, *v.id)
+				if x != nil {
+					return p, x
+				}
+				if owner != "" {
+					ids[owner] = true
+				}
+			}
+		}
+	}
+	locks := []string{}
+	for id := range ids {
+		locks = append(locks, id)
+	}
+	sort.Strings(locks)
+	for _, id := range locks {
+		if _, e = lockAccount(ctx, tx, id); e != nil {
+			return p, e
+		}
+	}
+	if _, e = r.guard.Authenticate(ctx, r.db, tx, actor); e != nil {
+		return p, e
+	}
 	for _, v := range items {
 		p.Cursor = v.event.Sequence
 		visible := v.audience == "account"
@@ -245,6 +287,13 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 		if v.audience == "chat" {
 			e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM chat_members m JOIN chat_rooms r ON r.id=m.chat_room_id WHERE m.account_id=$1 AND r.id=$2 AND m.joined_at IS NOT NULL AND m.joined_at<=$3 AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned AND r.deleted_at IS NULL AND `+r.chatFilter("r.id", "$1")+`)`, actor, v.id, v.event.CreatedAt).Scan(&visible)
 		}
+		if v.audience == "friend" && r.friends != nil && v.id != nil {
+			event, allow, x := r.friends.ProjectAudienceEvent(ctx, tx, actor, *v.id)
+			e = x
+			visible = allow
+			event.Sequence = v.event.Sequence
+			v.event = event
+		}
 		if e != nil {
 			return p, e
 		}
@@ -252,8 +301,36 @@ func (r *Repository) Replay(ctx context.Context, actor, app string, after int64,
 			p.Events = append(p.Events, v.event)
 		}
 	}
+	// A later artwork wait can consume an earlier event's source lifetime. With
+	// all locks held, reproject every friend event and check the original reader.
+	final := []notifications.Event{}
+	for _, event := range p.Events {
+		var source *string
+		for _, v := range items {
+			if v.event.Sequence == event.Sequence && v.audience == "friend" {
+				source = v.id
+				break
+			}
+		}
+		if source != nil {
+			fresh, allow, x := r.friends.ProjectAudienceEvent(ctx, tx, actor, *source)
+			if x != nil {
+				return p, x
+			}
+			if !allow {
+				continue
+			}
+			fresh.Sequence = event.Sequence
+			event = fresh
+		}
+		final = append(final, event)
+	}
+	p.Events = final
 	if len(items) == 0 {
 		p.Cursor = p.HighWater
+	}
+	if _, e = r.guard.Authenticate(ctx, r.db, tx, actor); e != nil {
+		return notifications.Page{}, e
 	}
 	return p, tx.Commit()
 }

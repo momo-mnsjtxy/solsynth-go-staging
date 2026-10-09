@@ -76,7 +76,8 @@ func (r *Repository) Set(ctx context.Context, actor string, q activities.Request
 			return
 		}
 		if session {
-			v.StartedAt = &now
+			startedAt := now
+			v.StartedAt = &startedAt
 		}
 	} else {
 		v.revision++
@@ -287,7 +288,8 @@ func (r *Repository) End(ctx context.Context, actor, manual string) (out activit
 	if e != nil {
 		return
 	}
-	v.EndedAt = &now
+	endedAt := now
+	v.EndedAt = &endedAt
 	v.LeaseExpiresAt = now
 	v.UpdatedAt = now
 	v.revision++

@@ -501,12 +501,11 @@ func TestPGFederationDurableDeliveryAndPrivacy(t *testing.T) {
 	if n, e := x.r.ReconcilePosts(x.ctx, 20); e != nil || n != 1 {
 		t.Fatal("privacy tombstone", n, e)
 	}
-	if n, e := x.r.ProcessDeliveries(x.ctx, transport, 20); e != nil || n != 1 {
+	if n, e := x.r.ProcessDeliveries(x.ctx, transport, 20); e != nil || n != 0 {
 		t.Fatal(n, e)
 	}
-	var last f.Activity
-	if e = json.Unmarshal(transport.requests[2], &last); e != nil || last.Type != "Delete" || bytes.Contains(last.Object, []byte("public before")) {
-		t.Fatal("tombstone payload", last, e)
+	if len(transport.requests) != 2 {
+		t.Fatal("never-dispatched post created cleanup authority")
 	}
 	// Explicitly exhausted lease is recovered to terminal dead, never retried.
 	if e = x.r.Change(x.ctx, x.actor, x.publisher, f.Change{Action: "follow", RemoteActor: x.keys.remote.Actor}); e != nil {

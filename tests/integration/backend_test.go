@@ -59,11 +59,19 @@ func backendApp(t *testing.T, db *sql.DB, config authority.Config) *application.
 
 func newBackendFixture(t *testing.T) backendFixture {
 	t.Helper()
+	return newBackendFixtureWithAccessTTL(t, 0)
+}
+
+func newBackendFixtureWithAccessTTL(t *testing.T, accessTTL time.Duration) backendFixture {
+	t.Helper()
 	db := database(t)
 	keys := authorityKeys(t)
 	now := &atomic.Int64{}
 	now.Store(time.Now().UTC().Unix())
 	config := authorityConfig(t, keys, now)
+	if accessTTL != 0 {
+		config.AccessTTL = accessTTL
+	}
 	f := backendFixture{db: db, keys: keys, config: config, actor: authorityUUID(t), other: authorityUUID(t)}
 	for _, id := range []string{f.actor, f.other} {
 		if err := authoritypg.SeedSynthetic(context.Background(), db, id, "synthetic_backend_"+strings.ReplaceAll(id, "-", ""), time.Now().UTC()); err != nil {
@@ -400,10 +408,14 @@ func TestPGBackendHTTPProcessRestart(t *testing.T) {
 }
 
 func TestPGBackendRestartPersistence(t *testing.T) {
+	// The complete private CI job is bounded at fifty minutes. Issue the
+	// original token with a one-hour lifetime before writing restart targets;
+	// the after phase must still validate that same token at current wall time.
+	const accessTTL = time.Hour
 	db := database(t)
 	dir := filepath.Join(os.Getenv("SOLSYNTH_DISPOSABLE_PG"), "backend-restart")
 	if os.Getenv("PG_TEST_PHASE") == "before" {
-		f := newBackendFixture(t)
+		f := newBackendFixtureWithAccessTTL(t, accessTTL)
 		if err := os.Mkdir(dir, 0700); err != nil {
 			t.Fatal(err)
 		}
@@ -429,7 +441,9 @@ func TestPGBackendRestartPersistence(t *testing.T) {
 	}
 	now := &atomic.Int64{}
 	now.Store(time.Now().UTC().Unix())
-	app := backendApp(t, db, authorityConfig(t, dir, now))
+	config := authorityConfig(t, dir, now)
+	config.AccessTTL = accessTTL
+	app := backendApp(t, db, config)
 	token, err := os.ReadFile(filepath.Join(dir, "synthetic-token.txt"))
 	if err != nil {
 		t.Fatal(err)

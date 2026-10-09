@@ -152,7 +152,7 @@
       "test": "TestPGBackendRestartPersistence",
       "source": "tests/integration/backend_test.go",
       "group_before_and_after": "group-b",
-      "function_sha256": "454432c1ab47e42cc5e650cac7219e77273d97a99c461375e63bcdbe71fbd47c",
+      "function_sha256": "730debacfb02ced55dbf58c92e0317ebc6506b81598bf075ef7495632c4fcf64",
       "marker_files": [
         "synthetic-hash.bin",
         "synthetic-seal.bin",
@@ -163,7 +163,7 @@
         "backend-restart"
       ],
       "named_database_markers": {},
-      "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+      "storage_contract": "The original synthetic bearer is issued before board/wallet target writes with a one-hour AccessTTL, matching the existing one-hour SessionTTL and covering the fifty-minute CI job bound. After reads the same saved token and validates it at current wall time with the same configured maximum lifetime; no issuance, refresh, timestamp rewrite or expiry bypass occurs. Existing private marker files, target reads/assertions and same-group database restart remain unchanged. The shared fixture keeps its default lifetime for every caller that does not explicitly opt in."
     },
     {
       "test": "TestPGBackendWalletExchangeOriginalProofRestartPersistence",
@@ -1855,7 +1855,7 @@
       "test": "TestPGBackendRestartPersistence",
       "source": "tests/integration/backend_test.go",
       "group": "group-b",
-      "function_sha256": "454432c1ab47e42cc5e650cac7219e77273d97a99c461375e63bcdbe71fbd47c"
+      "function_sha256": "730debacfb02ced55dbf58c92e0317ebc6506b81598bf075ef7495632c4fcf64"
     },
     {
       "test": "TestPGBackendRewindComposition",
@@ -2323,7 +2323,7 @@
     },
     {
       "source": "tests/integration/backend_test.go",
-      "sha256": "3d6e94c61eec11e5c22d7cf46a1691f13c54b4580bf2e85a9173a377dd93fa07"
+      "sha256": "f707d7aa5a71cc6ab814e866bf6ef06df402a72705f0d30d77328af914c1bdcb"
     },
     {
       "source": "tests/integration/backend_ticket_test.go",

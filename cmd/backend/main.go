@@ -71,6 +71,7 @@ func run(args []string, out io.Writer) error {
 	ticketSettings := ticketFlags(fs)
 	fortuneSettings := fortuneFlags(fs)
 	readerSettings := readerFlags(fs)
+	blogSettings := blogFlags(fs)
 	translationSettings := translationFlags(fs)
 	ipCheckSettings := ipCheckFlags(fs)
 	accountExtrasSettings := accountExtraFlags(fs)
@@ -289,6 +290,10 @@ func run(args []string, out io.Writer) error {
 		return err
 	}
 	appConfig.Reader, err = readerSettings.config()
+	if err != nil {
+		return err
+	}
+	appConfig.Blogs, err = blogSettings.config()
 	if err != nil {
 		return err
 	}

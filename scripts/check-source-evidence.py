@@ -28,6 +28,12 @@ def check(root):
             if hashlib.sha256(data).hexdigest() != entry["sha256"] or blob != entry["blob"]:
                 raise ValueError(f"source evidence mismatch: {directory}/{entry['file']}")
             count += 1
+    for entry in json.loads((root / "ports/sphere/blogs/source/manifest.json").read_text())["files"]:
+        data = (root / entry["file"]).read_bytes()
+        blob = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
+        if hashlib.sha256(data).hexdigest() != entry["sha256"] or blob != entry["git_blob"] or len(data) != entry["bytes"]:
+            raise ValueError("blog source evidence mismatch: " + entry["file"])
+        count += 1
     base = root / "ports/sphere"
     for entry in json.loads((base / "source-manifest.json").read_text())["files"]:
         data = (base / entry["snapshot"]).read_bytes()

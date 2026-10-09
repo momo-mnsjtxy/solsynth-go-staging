@@ -14,6 +14,7 @@ import (
 	"solsynth.local/go-migration/internal/apppg"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/autocompletepg"
+	"solsynth.local/go-migration/internal/blogpg"
 	"solsynth.local/go-migration/internal/boardpg"
 	"solsynth.local/go-migration/internal/botpg"
 	"solsynth.local/go-migration/internal/chatmediapg"
@@ -77,6 +78,7 @@ import (
 	"solsynth.local/go-migration/ports/passport/social"
 	"solsynth.local/go-migration/ports/passport/tickets"
 	"solsynth.local/go-migration/ports/sphere/autocomplete"
+	"solsynth.local/go-migration/ports/sphere/blogshttp"
 	"solsynth.local/go-migration/ports/sphere/interactions"
 	"solsynth.local/go-migration/ports/sphere/locations"
 	"solsynth.local/go-migration/ports/sphere/posts"
@@ -111,6 +113,7 @@ type Config struct {
 	IPCheck                       *ipcheck.Config
 	Translation                   *translationpg.Config
 	Reader                        *readerpg.Config
+	Blogs                         *blogpg.Config
 	OAuthEnabled                  bool
 	OAuthConsentURL               string
 	Fortunes                      *fortunepg.Config
@@ -134,6 +137,7 @@ type Config struct {
 	Federation                    *FederationConfig
 }
 type Backend struct {
+	blogs                    *blogpg.Repository
 	realmBoosts              realmBoostModules
 	scheduledPosts           *postpg.Repository
 	affiliations             *affiliationpg.Repository
@@ -366,6 +370,26 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if guard != nil {
 		scheduledPosts = postRepository.WithScheduling()
 	}
+	var blogRepo *blogpg.Repository
+	var blogHTTP http.Handler = blogshttp.NewHandler(nil, nil)
+	if c.Blogs != nil {
+		if guard == nil || authorityDB != db {
+			return nil, errors.New("blogs require canonical same-pool authority")
+		}
+		cfg := *c.Blogs
+		if cfg.Now == nil {
+			cfg.Now = c.Authority.Now
+		}
+		if cfg.Previewer == nil && readerRepo != nil {
+			cfg.Previewer = readerRepo
+		}
+		blogRepo, err = blogpg.New(db, guard, cfg)
+		if err != nil {
+			return nil, err
+		}
+		postRepository.WithBlogs(blogRepo)
+		blogHTTP = bindIdentity(v, bindTransactionAuthority(guard, blogshttp.NewHandler(blogRepo, postIdentity{identity})))
+	}
 	ph := posts.NewHandler(postRepository, postIdentity{identity})
 	wh, wallet := walletHandler(db, identity, paymentPIN, guard, socialRepo)
 	wallet.WithClock(c.Authority.Now)
@@ -550,8 +574,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{realmBoosts: realmBoosts.handler, affiliations: affiliationHTTP, passkit: passkitModule, artwork: bindIdentity(v, bindTransactionAuthority(guard, artworkHTTP)), publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, livestreams: streamHTTP, moderation: moderationHTTP, namecards: extras.cardsHTTP, rewind: extras.rewindHTTP, ipcheck: ipHTTP, accountSettings: settingsHTTP, translation: translationHTTP, autocomplete: autocompleteHTTP, reader: readerHTTP, oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{realmBoosts: realmBoosts, scheduledPosts: scheduledPosts, affiliations: affiliationRepo, social: socialRepo, passkit: passkitModule, publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, moderation: moderationRepo, moderationSink: notificationRepo, moderationApp: c.NotificationApp, accountExtras: extras, accountSettings: settingsRepo, translation: translationRepo, autocomplete: autocompleteRepo, chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	h := router{modules{blogs: blogHTTP, realmBoosts: realmBoosts.handler, affiliations: affiliationHTTP, passkit: passkitModule, artwork: bindIdentity(v, bindTransactionAuthority(guard, artworkHTTP)), publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, livestreams: streamHTTP, moderation: moderationHTTP, namecards: extras.cardsHTTP, rewind: extras.rewindHTTP, ipcheck: ipHTTP, accountSettings: settingsHTTP, translation: translationHTTP, autocomplete: autocompleteHTTP, reader: readerHTTP, oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
+	return &Backend{blogs: blogRepo, realmBoosts: realmBoosts, scheduledPosts: scheduledPosts, affiliations: affiliationRepo, social: socialRepo, passkit: passkitModule, publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, moderation: moderationRepo, moderationSink: notificationRepo, moderationApp: c.NotificationApp, accountExtras: extras, accountSettings: settingsRepo, translation: translationRepo, autocomplete: autocompleteRepo, chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 
 }
 
@@ -581,6 +605,11 @@ func (b *Backend) ProcessDue(ctx context.Context, limit int) (int, error) {
 		return 0, errors.New("lifecycle batch size must be between 1 and 1000")
 	}
 	n, e := b.wallet.ProcessDue(ctx, limit)
+	if b.blogs != nil && b.blogs.VerificationEnabled() {
+		m, x := b.blogs.ProcessPending(ctx, min(limit, 100))
+		n += m
+		e = errors.Join(e, x)
+	}
 	if b.bots != nil && b.bots.ExecutionEnabled() {
 		m, x := b.bots.ProcessMessagesDue(ctx, min(limit, 100))
 		n += m

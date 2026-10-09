@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Close rejected bot request bodies and verify standalone policy",
+  "checkpoint": "Record exact 674 CI evidence and pending reviewed blog candidate",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "85674a81584fc05876446b80761f6c27917ed037"
+    "remote_parent": "7ebd4a768441145995b5c6e2e080c88cb2b639c3"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -74,6 +74,16 @@
       "path": "cmd/backend/account_extras_config_test.go",
       "bytes": 1264,
       "sha256": "cc005393e91619fdaa7a2b675d659355808beb710cfa6dfa74cc72d98f3c03be"
+    },
+    {
+      "path": "cmd/backend/blog_config.go",
+      "bytes": 1409,
+      "sha256": "497f854118be7723705d40d54c662552489ad0f806988008cfb7fef8909b3c1c"
+    },
+    {
+      "path": "cmd/backend/blog_config_test.go",
+      "bytes": 1155,
+      "sha256": "250e78815b62b8faa8b684061ecbde54bb67641619384464cf92c15677f0cc99"
     },
     {
       "path": "cmd/backend/bot_execution_config.go",
@@ -177,8 +187,8 @@
     },
     {
       "path": "cmd/backend/main.go",
-      "bytes": 16241,
-      "sha256": "21fe8da9f443ac6a2c7d56427cfba5c53714a851aeea746d81474c097f62a4b8"
+      "bytes": 16351,
+      "sha256": "b016eb1cbd26aedd09ac92d287e8c463c2b7038d7818f0189cbe1821c49d8edc"
     },
     {
       "path": "cmd/backend/passkit_config.go",
@@ -532,8 +542,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 105749,
-      "sha256": "2665d418d58bdd94c3a8a249249f876fa8567a3874f341c34cf8c5851aad7bd4"
+      "bytes": 107678,
+      "sha256": "5fdf1993492873b407bc3af2de69bd6dcbdc486a70e7019830649b617d6c98dd"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -1526,6 +1536,16 @@
       "sha256": "72b9c0b65c658a1f31cbd778bfcc04996b7cc3d16c414e2c77f6f982ad2b45f4"
     },
     {
+      "path": "docs/post-blog-acceptance.json",
+      "bytes": 3484,
+      "sha256": "9586677c01776fd89e53c514c74c05008747e27b05be289d2cabe2974c2a3ae3"
+    },
+    {
+      "path": "docs/post-blog-continuation.md",
+      "bytes": 9962,
+      "sha256": "d8b81e9c585cae1e6494451b62b849ea7992b753c8a7a73c432c1ec8913e8f7f"
+    },
+    {
       "path": "docs/post-interactions-canonical-schema.patch",
       "bytes": 2165,
       "sha256": "82b3ede16ae4040ff1ce5883c1ee8c7a7f72e00ea373dd363de2dec3cf8e23b0"
@@ -1832,8 +1852,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 116109,
-      "sha256": "7aca4c5b1a9a9ee9357140ee4c258365959458a7790e249b50a1a3cf504977bb"
+      "bytes": 119564,
+      "sha256": "d0fc6bf5fabe7fa7a7c6c34e6a13aba2e18a1405990c6906129b651aa1f13ae2"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -2097,8 +2117,13 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 31423,
-      "sha256": "0a018e99e3358e83ad0cc63054a6a777c5e997e22778b1ed45b643837b1293e4"
+      "bytes": 32426,
+      "sha256": "150690dc29a45ae96eb3f94ec7cca7fcfc077fb0630e47a5c8ef5fd604a6ba9b"
+    },
+    {
+      "path": "internal/application/blog_routing_test.go",
+      "bytes": 770,
+      "sha256": "54e0ea5245dd6f4a4f855a2ab621783fb6c6d29af0e99db6e543f8c33bfd018e"
     },
     {
       "path": "internal/application/bot_execution.go",
@@ -2222,8 +2247,8 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 9258,
-      "sha256": "f76f7b01186f86d6a47a672377148d933b6ae4796f6ec812f3de7d01b4af64a1"
+      "bytes": 9353,
+      "sha256": "5745b4437e8c93aa3ceab1534c0a76be71d102b8521b00d5b648d7f2b3ffa5a9"
     },
     {
       "path": "internal/application/realm_boosts.go",
@@ -2232,8 +2257,8 @@
     },
     {
       "path": "internal/application/router.go",
-      "bytes": 20211,
-      "sha256": "44072fadfeeb3c11c66c8d68ff7e107285966702004d401057646d1de9fe6848"
+      "bytes": 20644,
+      "sha256": "7055be7a09893c558d2e7f6318b384a8c2ecb133dbd52b79a1b747492ac8b6cc"
     },
     {
       "path": "internal/application/router_test.go",
@@ -2459,6 +2484,21 @@
       "path": "internal/autocompletepg/repository.go",
       "bytes": 7606,
       "sha256": "8415a559b2a1e65a197e17c6206ea8570add51c8fd6bdeefe0e82f895a8983cb"
+    },
+    {
+      "path": "internal/blogpg/pending.go",
+      "bytes": 11474,
+      "sha256": "782dc88bd8ef5f24fe658535365c2f35c07f0706029b76b48a10ff8077434e2d"
+    },
+    {
+      "path": "internal/blogpg/repository.go",
+      "bytes": 13643,
+      "sha256": "9d687161de08e168f9191e4b1b7e875019b145933aa4b9c2c2e83f352a336d9e"
+    },
+    {
+      "path": "internal/blogpg/schema.sql",
+      "bytes": 8243,
+      "sha256": "defd7c9168c4a01e8ad6ef1fd44904c0b1d5a7cb3918c2b3469c91e00c04d0b9"
     },
     {
       "path": "internal/boardpg/README.md",
@@ -3427,8 +3467,8 @@
     },
     {
       "path": "internal/moderationpg/reads.go",
-      "bytes": 6261,
-      "sha256": "98291d98b4d86f0da1c445ad46c2c19552019f1c608edadf252102bcdda28ff2"
+      "bytes": 6414,
+      "sha256": "90dc36b78c0a537c2e68ac9bd40aafd9f023ac0d57c3dee7cacb733fdfa4ab06"
     },
     {
       "path": "internal/moderationpg/realms.go",
@@ -3617,8 +3657,8 @@
     },
     {
       "path": "internal/postpg/associations.go",
-      "bytes": 4441,
-      "sha256": "ae93caef2cc8e828cbfef8305ed8d9eaf23a330246595970f899db79c9d46ed4"
+      "bytes": 4517,
+      "sha256": "259de6411bc70bf0eacdd39a49bdbecbbbc46aa6fe4df7529cf6ae7268fb4787"
     },
     {
       "path": "internal/postpg/automod.go",
@@ -3634,6 +3674,16 @@
       "path": "internal/postpg/automod_test.go",
       "bytes": 1501,
       "sha256": "033df90cc5b7c5bd2c888532fe5dcdade331f6da1d243715f4655ddfb58b94bb"
+    },
+    {
+      "path": "internal/postpg/blog.go",
+      "bytes": 10592,
+      "sha256": "56e2096a517db82f3e7f6f17c35356e6a48375741290487216dc3d990274da3f"
+    },
+    {
+      "path": "internal/postpg/blog_test.go",
+      "bytes": 1633,
+      "sha256": "4de6908e662bc8d6a816755dd0d9fa1df800a49a644a8b7a9477d3aa79bc1874"
     },
     {
       "path": "internal/postpg/moderation.go",
@@ -3657,8 +3707,8 @@
     },
     {
       "path": "internal/postpg/repository.go",
-      "bytes": 18713,
-      "sha256": "b25692c54428d5c5ff1384fb678a49e0aa74eddea8afd9f446091f1cfc3524ab"
+      "bytes": 19705,
+      "sha256": "ef7f22d8bf7d877e65037ec6dac1e34174b5a167c508e614d8d7618fe6783bdd"
     },
     {
       "path": "internal/postpg/repository_test.go",
@@ -3667,8 +3717,8 @@
     },
     {
       "path": "internal/postpg/scheduling.go",
-      "bytes": 19430,
-      "sha256": "d389b9a02b9d59bda421deccb910b281804d5a35152160efb00cdcc7c863d861"
+      "bytes": 20203,
+      "sha256": "b2b7b8cd220a59069d2970b70479b504d9958b78b49e7579b612768078e44fc1"
     },
     {
       "path": "internal/postpg/scheduling_schema.sql",
@@ -3677,8 +3727,8 @@
     },
     {
       "path": "internal/postpg/schema.sql",
-      "bytes": 3408,
-      "sha256": "15f318a70541f9f1dbe9abd65d225df7eeb95fb1da338ef93bdee4b5e75bac33"
+      "bytes": 4029,
+      "sha256": "d9a698aa8c8e5deb5a149b09c65f6f18b18b3cda369fc244446fcea412f07ceb"
     },
     {
       "path": "internal/postpg/scope_observation.go",
@@ -3687,8 +3737,8 @@
     },
     {
       "path": "internal/postpg/visibility.go",
-      "bytes": 5115,
-      "sha256": "42b2fa88461540615750b9920fff1b26a00ec7c66a14cfad41c9010950059530"
+      "bytes": 5196,
+      "sha256": "7496eeee472cf07477593e5e2702350c53e3dcaea07916e4ba7b4bff98ea8048"
     },
     {
       "path": "internal/presencepg/repository.go",
@@ -3779,6 +3829,16 @@
       "path": "internal/publisherratingpg/schema.sql",
       "bytes": 1404,
       "sha256": "48723013a083cd44986245425821793f3a05a71e7ea1d51ac89bbc75b4521767"
+    },
+    {
+      "path": "internal/readerfetch/domains.go",
+      "bytes": 2230,
+      "sha256": "f2a4a3daac8e03402589d223fa9227de54725fb03fbaa62d06ee63a1acdba1f5"
+    },
+    {
+      "path": "internal/readerfetch/domains_test.go",
+      "bytes": 1855,
+      "sha256": "7ea65ac4ee34b65e837a6544cdf8e8c435a23a33ae722e1c8844ae45e0b3768e"
     },
     {
       "path": "internal/readerfetch/extract.go",
@@ -4247,13 +4307,13 @@
     },
     {
       "path": "internal/timelinepg/discovery.go",
-      "bytes": 16741,
-      "sha256": "748c02d0efc179c1158d0cdfa3b54de675d752e185c7cab7f365679bdd9f79ce"
+      "bytes": 16792,
+      "sha256": "4a5e9b28338eb517e49781d4cd3503c6e0801cc9ab131b8b7991ddfe57466d3b"
     },
     {
       "path": "internal/timelinepg/feeds.go",
-      "bytes": 13501,
-      "sha256": "d54c7e36ac7d8eeebe032da2653f2e79f5d54ddb0dd31f32f782cad5640c8fc5"
+      "bytes": 13578,
+      "sha256": "2548013785e9d7bd01325a9fc062078187ca6b02854c4b3c30c8110d11299433"
     },
     {
       "path": "internal/timelinepg/follows.go",
@@ -6102,13 +6162,18 @@
     },
     {
       "path": "ports/admin/content/http.go",
-      "bytes": 12332,
-      "sha256": "9f6832a2125ee9d8f48c95a1a2108d772a96651e720faae655bc0bbac710e178"
+      "bytes": 12613,
+      "sha256": "e546594b936d37d0030a92842bfcdad41dad713caf20187d34b4b8e439d37fb4"
     },
     {
       "path": "ports/admin/content/http_test.go",
       "bytes": 4308,
       "sha256": "c0e11ea8cf7e0911f45ce081f6bda67f7682a5d02d81b4b6d2d15ccad1f4c8c6"
+    },
+    {
+      "path": "ports/admin/content/post_queries_test.go",
+      "bytes": 808,
+      "sha256": "1a19c0783e496bfc73a871832851833b7c5139df081309ced063cdd0e8f6e9ac"
     },
     {
       "path": "ports/admin/content/types.go",
@@ -8616,6 +8681,71 @@
       "sha256": "17b47783f42c850e0f4b06dcdfd621c671ad157e7e9de8288512b9df773c0cb8"
     },
     {
+      "path": "ports/sphere/blogs/provenance_test.go",
+      "bytes": 1157,
+      "sha256": "2a1cfce6def91e83be06668489c6c89349417e1c00fc7b16f9d0d9657f50a4fa"
+    },
+    {
+      "path": "ports/sphere/blogs/source/DysonNetwork.Sphere__Models__PublisherVerifiedDomain.cs",
+      "bytes": 1096,
+      "sha256": "d4000554e4ab6249ec41e436f54e0e7b2fe41dc590152b8811044e3bb3087e59"
+    },
+    {
+      "path": "ports/sphere/blogs/source/DysonNetwork.Sphere__Publisher__DomainVerificationService.cs",
+      "bytes": 4114,
+      "sha256": "3292fa1708809b51fd47e9a2f820bff2403a6cef8c96b4990c901b2a75802a83"
+    },
+    {
+      "path": "ports/sphere/blogs/source/DysonNetwork.Sphere__Reader__WebReaderService.cs",
+      "bytes": 17497,
+      "sha256": "6d8fce0b47e73c1ad13495dc51aa43f4b62078e3cff5565c538a5513e7e579ec"
+    },
+    {
+      "path": "ports/sphere/blogs/source/lib__core__widgets__embeds__link.dart",
+      "bytes": 16164,
+      "sha256": "a5f271d97483bf34fc9d171f9c00256b73fbc777a40f0d556b8b3654081d8276"
+    },
+    {
+      "path": "ports/sphere/blogs/source/lib__creators__screens__domains__domain_manage.dart",
+      "bytes": 9001,
+      "sha256": "dd4a09e5c3723fb90af6ea3d62b07158ca54d79436b6f86eaf18a7888043eb29"
+    },
+    {
+      "path": "ports/sphere/blogs/source/lib__posts__screens__compose_blog.dart",
+      "bytes": 19558,
+      "sha256": "af9fdecdd4deb401eb39d3f982eeb0134ee51ddd4402c211ab32250dcfad3fb7"
+    },
+    {
+      "path": "ports/sphere/blogs/source/lib__posts__widgets__compose__embed_view_renderer.dart",
+      "bytes": 13809,
+      "sha256": "4a2f8de5b641a141ef372ba2dabb6d28fa0a00203523b6e349f7511c1b26e1c0"
+    },
+    {
+      "path": "ports/sphere/blogs/source/manifest.json",
+      "bytes": 7021,
+      "sha256": "3d1ed241a86d52f63026513e3f5b10d9ca4ffc347e20c14d69cc4278a2633bb3"
+    },
+    {
+      "path": "ports/sphere/blogs/types.go",
+      "bytes": 3997,
+      "sha256": "3e891a821feacb8ceffd570e6a39b73610d3e7e2a105a1c8247950e8782f41ab"
+    },
+    {
+      "path": "ports/sphere/blogs/types_test.go",
+      "bytes": 924,
+      "sha256": "cd520c0069bc4c974f6bdd875411719cd5f13775f3d06e681833e53e2f7c4ed2"
+    },
+    {
+      "path": "ports/sphere/blogshttp/http.go",
+      "bytes": 2294,
+      "sha256": "333918b51820f22bdf29cd53f68b0df890dff75218d3cc40471312dc0c2e0ebc"
+    },
+    {
+      "path": "ports/sphere/blogshttp/http_test.go",
+      "bytes": 2474,
+      "sha256": "7c598319484f7f56778cb099a496fa6840bdf9c3c441a9582e5c82e98a5651d1"
+    },
+    {
       "path": "ports/sphere/discovery-PROVENANCE.md",
       "bytes": 3801,
       "sha256": "f8335eb07639054e05520e763765ebe1b383771b6fa92b85080e1566860c409e"
@@ -9046,14 +9176,24 @@
       "sha256": "4b2d2a36712d3eb816618e64f5737a67e991204e61b4b5f932e6348d8a294574"
     },
     {
+      "path": "ports/sphere/posts/blog.go",
+      "bytes": 2191,
+      "sha256": "15f32c2d3a5d3bd39bb9386420aa549ba108328e429018cbb5e3a244ab2ab83e"
+    },
+    {
+      "path": "ports/sphere/posts/blog_test.go",
+      "bytes": 1711,
+      "sha256": "b4fb023f66ab676898b8418eda15c4f1d116feee3af09f2e8639e3e67b4c4ff8"
+    },
+    {
       "path": "ports/sphere/posts/evidence-inventory.json",
       "bytes": 100651,
       "sha256": "aafcaa823c4a8c48431266ddebaa15cd14244925af4c4df98f3119876958503e"
     },
     {
       "path": "ports/sphere/posts/http.go",
-      "bytes": 9779,
-      "sha256": "08bbdbc3e5798691cbcd541ce2c372258871d0e14af87d655bc66196f77184d6"
+      "bytes": 10206,
+      "sha256": "4892c4f9f64c7dee12e9884c41bc07db9832a68f362d2acc9c2d7f7a3db8d784"
     },
     {
       "path": "ports/sphere/posts/http_test.go",
@@ -9082,8 +9222,8 @@
     },
     {
       "path": "ports/sphere/posts/types.go",
-      "bytes": 9575,
-      "sha256": "c0a9793064ce59c1840d96ba25d92b70fda14dcb373c26c11b871bdd0921d1ca"
+      "bytes": 9805,
+      "sha256": "be5c22f963c32040be82a5d1cfc04ba92f4121bdb3147a379ad7faffea4825f7"
     },
     {
       "path": "ports/sphere/posts/upstream/DYSON-LICENSE.txt",
@@ -10157,8 +10297,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 46449,
-      "sha256": "7c1e8a2ade43d18701b5569fa0964cd05e4ad076d73c480613851adab27ed33d"
+      "bytes": 47687,
+      "sha256": "8a375231029288911446b4763c1360293a656dbb915ec7f3cae02677ea307924"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -10167,8 +10307,8 @@
     },
     {
       "path": "scripts/check-source-evidence.py",
-      "bytes": 6858,
-      "sha256": "d0c1dff00d2aeb9b512d7f8859a45245712c6d3c412687dd5c510624a0e3958b"
+      "bytes": 7325,
+      "sha256": "3644b8b319b4c549d4af4b45e865d10b1c2faecefd6d836587da46fcc0691e9e"
     },
     {
       "path": "scripts/check-sql-argument-count.py",
@@ -10182,13 +10322,13 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 90235,
-      "sha256": "a526744944b8400e39d0943994ef44221b13d4a995266f9269c91216d5add778"
+      "bytes": 93751,
+      "sha256": "5f1a7596ff70f07516e02a1034cace624b1f21651a699f91df3a7b3df21e0e85"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 12284,
-      "sha256": "4477e13cc4c1a58d7d44e18edabd3c047662175ae0081e1e8b53b27f9d79c9bc"
+      "bytes": 12384,
+      "sha256": "da78f79c31d11509c55ec3c9552096dbe8d356baede8214b807384e90553a8e9"
     },
     {
       "path": "scripts/integration_groups.py",
@@ -10227,13 +10367,13 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 19969,
-      "sha256": "7346f12fc10aa3d0537fd140fd7c8c57c1e226b13a8887b4d05b9f1730c57943"
+      "bytes": 20533,
+      "sha256": "6227618727b63ed7ee55b041f084078f9610c35d226d0af01d3051187a202846"
     },
     {
       "path": "scripts/test-source-evidence.py",
-      "bytes": 3683,
-      "sha256": "4207bb4625385ff3e9b83e4a3986b4d7792ba059c75980121ba18d8485136fd6"
+      "bytes": 3785,
+      "sha256": "7d73af87bb401e370a913957a6593ab7b2df82cf6fa1b66347cfb82f4c6ea038"
     },
     {
       "path": "scripts/verify-candidate-http.py",
@@ -10681,6 +10821,21 @@
       "sha256": "86565936e40094e10b45cbe3158aa3e80265a3679ff61bd8e4d88b723dee6b95"
     },
     {
+      "path": "tests/integration/blog_automod_composition_test.go",
+      "bytes": 2579,
+      "sha256": "b869064a0760acf59ccb9ffcdb21b2085c8ad5b223b8f0a25722347fa0477a80"
+    },
+    {
+      "path": "tests/integration/blog_posts_test.go",
+      "bytes": 22952,
+      "sha256": "c172d9d2ef73d1663554956304016bdc33ce9b3c33ff0941f270c90b052fb43b"
+    },
+    {
+      "path": "tests/integration/blog_review_test.go",
+      "bytes": 11293,
+      "sha256": "592e0693151045deb0143e78a39419c93a3e8cb6841149cb5eff64522f398b17"
+    },
+    {
       "path": "tests/integration/board_discovery_test.go",
       "bytes": 6451,
       "sha256": "3636a7ad8ebb6f4abd4d5dcddc570bef71517f8f43245e09387818ce4da9a7dc"
@@ -10984,6 +11139,11 @@
       "path": "tests/integration/payment_pin_test.go",
       "bytes": 34419,
       "sha256": "491e2caeefa84b36827908569775493960295f003ca9cb6c9aedcb3d90aef13f"
+    },
+    {
+      "path": "tests/integration/post_admin_queries_test.go",
+      "bytes": 1577,
+      "sha256": "7b2af968a3a4c9b2c3201469d23ed1ebc688f0bf7010c5960be3ebee51dfb79a"
     },
     {
       "path": "tests/integration/post_automod_editor_projection_test.go",

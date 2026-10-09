@@ -53,7 +53,7 @@ func validateSearch(o timeline.SearchOptions) error {
 	if o.Offset < 0 || o.Offset > 1000000 || o.Take < 1 || o.Take > 100 || len(o.Realm) > 256 || len(o.Publisher) > 256 || len(o.Query) > 1024 || !utf8.ValidString(o.Query) || strings.ContainsRune(o.Query, 0) {
 		return timeline.ErrInvalid
 	}
-	if o.Type != nil && *o.Type != posts.Moment && *o.Type != posts.Article {
+	if o.Type != nil && *o.Type != posts.Moment && *o.Type != posts.Article && *o.Type != posts.Blog {
 		return posts.ErrUnsupported
 	}
 	if o.Order != "" && o.Order != "date" && o.Order != "created_at" && o.Order != "created" && o.Order != "createdat" && o.Order != "rank" {
@@ -283,6 +283,9 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 		rp := sphere.Post{ID: p.ID, PublisherID: p.PublisherID, CreatedAt: p.CreatedAt, PublishedAt: p.PublishedAt, ThreadRepliesCount: int(p.ThreadRepliesCount)}
 		if p.Type == posts.Article {
 			rp.Type = "Article"
+		}
+		if p.Type == posts.Blog {
+			rp.Type = "Blog"
 		}
 		if e = tx.QueryRowContext(ctx, `SELECT COALESCE(sum(CASE WHEN attitude=0 THEN 1 WHEN attitude=2 THEN -1 ELSE 0 END),0) FROM owned_post_reactions r JOIN owned_authority_accounts a ON a.id=r.account_id WHERE r.post_id=$1 AND NOT a.disabled`, p.ID).Scan(&rp.ReactionScore); e != nil {
 			return page, e

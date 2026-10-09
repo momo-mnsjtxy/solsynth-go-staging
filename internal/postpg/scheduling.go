@@ -10,6 +10,7 @@ import (
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/social"
+	"solsynth.local/go-migration/ports/sphere/blogs"
 	"solsynth.local/go-migration/ports/sphere/posts"
 	"strings"
 	"time"
@@ -90,7 +91,7 @@ func (r *Repository) syncSchedule(ctx context.Context, tx *sql.Tx, actor string,
 		if proof.Session.Type != 0 || proof.Session.ClientID != "" {
 			return posts.ErrUnsupported
 		}
-		stamp, e := schedulePolicyStamp(ctx, tx, actor, p.PublisherID, p.ID)
+		stamp, e := r.blogScheduleStamp(ctx, tx, actor, p)
 		if e != nil {
 			return e
 		}
@@ -219,6 +220,10 @@ func (r *Repository) ProcessScheduled(ctx context.Context, limit int) (int, erro
 }
 func publicationDenial(e error) bool {
 	var p *posts.Failure
+	var blog *blogs.Failure
+	if errors.As(e, &blog) && blog.Status < 500 {
+		return true
+	}
 	var a *authority.Failure
 	var account *accounts.Failure
 	return errors.As(e, &p) && p.Status < 500 || errors.As(e, &a) && a.Status < 500 || errors.As(e, &account) && account.Status < 500
@@ -338,12 +343,24 @@ func (r *Repository) checkScheduledPost(ctx context.Context, tx *sql.Tx, s dueSc
 	if currentAudit != s.audit {
 		return "post_changed", nil
 	}
-	stamp, e := schedulePolicyStamp(ctx, tx, s.actor, s.publisher, s.post)
+	stamp, e := r.blogScheduleStamp(ctx, tx, s.actor, p)
 	if e != nil {
+		if publicationDenial(e) {
+			return "blog_domain_unverified", nil
+		}
 		return "", e
 	}
 	if !bytes.Equal(stamp, s.stamp) {
 		return "policy_changed", nil
+	}
+	if p.Type == posts.Blog {
+		eligible, e := r.authority.StoredSessionEligible(ctx, r.db, tx, s.actor, s.session, s.version, s.epoch, "posts.create.blog")
+		if e != nil {
+			return "", e
+		}
+		if !eligible {
+			return "authority_revoked", nil
+		}
 	}
 	return r.checkPublication(ctx, tx, s.actor, p)
 }
@@ -388,6 +405,20 @@ func (r *Repository) preparePublication(ctx context.Context, tx *sql.Tx, actor s
 // It never restores an old schedule's authority; recorded intent additionally
 // passes its own session, revision and policy-stamp checks above.
 func (r *Repository) checkPublication(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post) (string, error) {
+	if p.Type == posts.Blog {
+		if r.blogs == nil {
+			return "", blogs.ErrUnavailable
+		}
+		if p.Meta == nil || len(p.Meta.Embeds) != 1 {
+			return "blog_unavailable", nil
+		}
+		if e := r.blogs.RequireDomain(ctx, tx, p.Publisher, p.Content); e != nil {
+			if publicationDenial(e) {
+				return "blog_domain_unverified", nil
+			}
+			return "", e
+		}
+	}
 	var blocked bool
 	e := tx.QueryRowContext(ctx, `SELECT p.locked_at IS NOT NULL OR p.shadowbanned_at IS NOT NULL OR u.shadowbanned_at IS NOT NULL OR EXISTS(SELECT 1 FROM owned_authority_punishments x WHERE x.account_id=u.account_id AND x.kind='disable_account' AND(x.starts_at IS NULL OR x.starts_at<=clock_timestamp())AND(x.expires_at IS NULL OR x.expires_at>clock_timestamp())) FROM owned_text_posts p JOIN owned_publishers u ON u.id=p.publisher_id WHERE p.id=$1`, p.ID).Scan(&blocked)
 	if e != nil {

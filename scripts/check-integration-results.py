@@ -5,6 +5,26 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGBlogBackendAliasesAndStrictPermissionRequest",
+        "TestPGBlogCreationEditingMediaAndVisibility",
+        "TestPGBlogDomainLifecyclePermissionsAndProof",
+        "TestPGBlogInterruptedVerificationRecoveryAndRevokedIntent",
+        "TestPGBlogMetadataRollbackAndDraftPublication",
+        "TestPGBlogPendingRecoveryFencesRevokedThenRestoredIntent",
+        "TestPGBlogPendingRecoveryRechecksAfterProviderPolicyABA",
+        "TestPGBlogPendingRecoveryRetainsOriginalSessionDeadline",
+        "TestPGBlogPreviewFailureAndRevocationNeverCommit",
+        "TestPGBlogPreviewFencesDomainAndPolicyABA",
+        "TestPGBlogProviderWaitsRecheckAuthorityAndManagerRole",
+        "TestPGBlogRealmPublisherMaintainsMembershipPrivacy",
+        "TestPGBlogSavedRestartPersistence",
+        "TestPGBlogScheduledPublicationFencesTransientPolicyRevocation",
+        "TestPGBlogScheduledPublicationRechecksPermissionAndDomainIncarnation",
+        "TestPGBlogVerificationFencesDeletionAndLateResults",
+        "TestPGBlogVerificationFencesPublisherIdentityABA",
+        "TestPGPostAdminDescriptionSearchAndPublishedOrdering",
+        "TestPGBlogAutomodUsesPreparedMetadataAndSafeProjection",
+
         "TestPGPostAutomodEvidenceGrantExpiryAtResponse",
         "TestPGPostAutomodEvidenceRevocationAfterAccountWait",
         "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
@@ -751,6 +771,8 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGBlogSavedRestartPersistence",
+
         "TestPGBotExecutionRestartPersistence",
 
         "TestPGRealmBoostRestartPersistence",

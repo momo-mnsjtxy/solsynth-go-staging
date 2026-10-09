@@ -18,6 +18,7 @@ import (
 	"solsynth.local/go-migration/ports/passport/realmboosts"
 	"solsynth.local/go-migration/ports/passport/rewind"
 	"solsynth.local/go-migration/ports/sphere/autocomplete"
+	"solsynth.local/go-migration/ports/sphere/blogshttp"
 	"solsynth.local/go-migration/ports/sphere/livestreams"
 	"solsynth.local/go-migration/ports/sphere/timeline"
 	"strings"
@@ -26,6 +27,7 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	blogs                                                                                                                                                                                                                                                http.Handler
 	realmBoosts                                                                                                                                                                                                                                          http.Handler
 	affiliations                                                                                                                                                                                                                                         http.Handler
 	artwork                                                                                                                                                                                                                                              http.Handler
@@ -288,6 +290,9 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if h.accounts != nil && (under(canonical, "/api/publishers") || under(canonical, "/api/accounts") && !boardRoute(canonical) && canonical != "/api/accounts/me/pin-status") && (service == "sphere" || service == "passport" || service == "api") {
 		target = h.accounts
+	}
+	if h.blogs != nil && (service == "sphere" || service == "api") && blogshttp.Handles(canonical) {
+		target = h.blogs
 	}
 	if h.notifications != nil && (under(canonical, "/api/notifications") || under(canonical, "/metoer/notifications")) && (service == "api" || service == "metoer") {
 		target = h.notifications

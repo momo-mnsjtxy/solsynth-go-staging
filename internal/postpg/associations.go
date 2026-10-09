@@ -50,6 +50,9 @@ func (r *Repository) WithAssociations(a AssociationStore) *Repository {
 	return r
 }
 func (r *Repository) applyAssociations(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post, v posts.Patch, create bool) error {
+	if v.BlogEmbeds && p.Type != posts.Blog {
+		return posts.ErrUnsupported
+	}
 	// Existing taxonomy/interaction-only adapters must not silently consume
 	// newly recognized relation inputs. The relation adapter opts in explicitly.
 	if v.RepliedPostID != nil || v.ForwardedPostID != nil || v.ChainedPostID != nil {

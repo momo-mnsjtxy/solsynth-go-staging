@@ -19,6 +19,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if b == nil || b.db == nil || b.authorityDB == nil {
 		return errors.New("backend unavailable")
 	}
+	if b.blogs != nil {
+		if e := b.blogs.Ready(ctx); e != nil {
+			return e
+		}
+	}
 	if e := b.realmBoosts.ready(ctx); e != nil {
 		return e
 	}
@@ -56,7 +61,7 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err := b.publisherCommerce.ready(ctx); err != nil {
 		return err
 	}
-	if _, err := b.db.ExecContext(ctx, `SELECT awarded_score FROM owned_text_posts LIMIT 0`); err != nil {
+	if _, err := b.db.ExecContext(ctx, `SELECT awarded_score,blog_metadata FROM owned_text_posts LIMIT 0`); err != nil {
 		return err
 	}
 	if b.wallet != nil {

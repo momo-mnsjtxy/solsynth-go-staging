@@ -43,3 +43,11 @@ CREATE TABLE IF NOT EXISTS owned_post_automod_events(
  decision jsonb NOT NULL CHECK(jsonb_typeof(decision)='object' AND octet_length(decision::text)<=2097152),
  occurred_at timestamptz NOT NULL,PRIMARY KEY(post_id,revision)
 );
+
+
+-- Owned blog support stores only server-produced, bounded link metadata.
+ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS blog_metadata jsonb;
+ALTER TABLE owned_text_posts DROP CONSTRAINT IF EXISTS owned_text_posts_type_check;
+ALTER TABLE owned_text_posts ADD CONSTRAINT owned_text_posts_type_check CHECK(type IN(0,1,2));
+ALTER TABLE owned_text_posts DROP CONSTRAINT IF EXISTS owned_text_posts_blog_metadata_check;
+ALTER TABLE owned_text_posts ADD CONSTRAINT owned_text_posts_blog_metadata_check CHECK(blog_metadata IS NULL OR (jsonb_typeof(blog_metadata)='object' AND octet_length(blog_metadata::text)<=65536));

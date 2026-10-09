@@ -16,6 +16,7 @@ import (
 
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/accounts"
+	"solsynth.local/go-migration/ports/sphere/blogs"
 )
 
 func respond(w http.ResponseWriter, status int, v any) {
@@ -30,10 +31,13 @@ func respond(w http.ResponseWriter, status int, v any) {
 func failure(w http.ResponseWriter, e error) {
 	e = NormalizeError(e)
 	status := 503
+	var b *blogs.Failure
 	var p *Failure
 	var a *authority.Failure
 	var c *accounts.Failure
 	switch {
+	case errors.As(e, &b):
+		status = b.Status
 	case errors.As(e, &p):
 		status = p.Status
 	case errors.As(e, &a):
@@ -124,9 +128,21 @@ func decode(w http.ResponseWriter, r *http.Request) (Patch, error) {
 			if json.Unmarshal(b, &a) != nil {
 				return p, ErrInvalid
 			}
-			if len(a) > 0 {
-				return p, ErrUnsupported
+			if len(a) > 16 {
+				return p, ErrInvalid
 			}
+			for _, raw := range a {
+				var v LinkEmbed
+				d := json.NewDecoder(bytes.NewReader(raw))
+				d.DisallowUnknownFields()
+				if d.Decode(&v) != nil {
+					return p, ErrInvalid
+				}
+				if v.Type != "link" {
+					return p, ErrUnsupported
+				}
+			}
+			p.BlogEmbeds = len(a) > 0
 		case "meta":
 			var m map[string]json.RawMessage
 			if json.Unmarshal(b, &m) != nil {
@@ -258,6 +274,7 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 		}
 		return id, true
 	}
+	registerBlog(m, repo, identity)
 	list := func(drafts bool) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			permission := ""

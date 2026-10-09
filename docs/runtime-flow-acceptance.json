@@ -2,24 +2,26 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed realm boost checkout/XP/live entitlement, ordinary-group bot durable dispatch and editor-safe automod evidence projections. Explicit standalone opt-ins; full combined build/vet/unit/race/source/SQL checks passed, actual699/86 pending.",
+  "local_source_checkpoint": "Reviewed verified-domain blog lifecycle and original-intent recovery, source-correct post-admin aliases/search/order, composed server metadata before automod and safe projections. Full local718/87 build/vet/unit/race/source/SQL verification passed; actualPG pending.",
   "last_fully_passed_ci": {
-    "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-    "run": 37829272433,
-    "job": 113490073832,
-    "before": 455,
-    "after_restart": 60,
-    "skipped": 0
-  },
-  "latest_candidate": {
     "commit": "85674a81584fc05876446b80761f6c27917ed037",
     "run": 37868140163,
-    "required_before": 674,
-    "required_after_restart": 84,
-    "status": "Running narrow fixture correction. Prior674 groupA339before+38restart passed, groupB333/335before failed. Editor automod privacy correction is in local699; no acceptance yet."
+    "attempt": 1,
+    "before": 674,
+    "after_restart": 84,
+    "skipped": 0,
+    "evidence": "All four jobs/head/attempt checked; complete independent named case sets from authorized job logs; CI aggregate verified both exact artifact digests and distinct restarted clusters/process smokes. Local raw ZIP verification unavailable: HTTP403/error1010 on supplied unexpired download URL.",
+    "acceptance_limit": "Known ordinary-editor automod evidence issue corrected in699;674 is CI-green, not production or whole-platform acceptance."
   },
-  "local_required_before": 699,
-  "local_required_after_restart": 86,
+  "latest_candidate": {
+    "commit": "7ebd4a768441145995b5c6e2e080c88cb2b639c3",
+    "run": 37869428465,
+    "required_before": 699,
+    "required_after_restart": 86,
+    "status": "Running reviewed boost/bot/editor privacy candidate; no actualPG pass inferred."
+  },
+  "local_required_before": 718,
+  "local_required_after_restart": 87,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -1872,6 +1874,39 @@
         "TestPGPostAutomodEvidenceRevocationAfterAccountWait"
       ],
       "remaining_reference": "current_remaining.families:owned.automod_evidence_privacy"
+    },
+    {
+      "source_family": "sphere.blog_domains",
+      "local_status": "implemented_pending_actual_ci",
+      "supported_flows": [
+        "Strict domain add/list/delete/recheck and bounded pending verification recovery",
+        "Source-supported blog permission and metadata-backed post lifecycle through existing routes",
+        "Exact domain/publisher/policy incarnation and original session deadline fence provider work and scheduled publication",
+        "Server-produced metadata reaches automod before ranking; editor evidence remains sanitized",
+        "Existing admin description search/publication ordering/camelCase aliases restored"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBlogAutomodUsesPreparedMetadataAndSafeProjection",
+        "TestPGBlogBackendAliasesAndStrictPermissionRequest",
+        "TestPGBlogCreationEditingMediaAndVisibility",
+        "TestPGBlogDomainLifecyclePermissionsAndProof",
+        "TestPGBlogInterruptedVerificationRecoveryAndRevokedIntent",
+        "TestPGBlogMetadataRollbackAndDraftPublication",
+        "TestPGBlogPendingRecoveryFencesRevokedThenRestoredIntent",
+        "TestPGBlogPendingRecoveryRechecksAfterProviderPolicyABA",
+        "TestPGBlogPendingRecoveryRetainsOriginalSessionDeadline",
+        "TestPGBlogPreviewFailureAndRevocationNeverCommit",
+        "TestPGBlogPreviewFencesDomainAndPolicyABA",
+        "TestPGBlogProviderWaitsRecheckAuthorityAndManagerRole",
+        "TestPGBlogRealmPublisherMaintainsMembershipPrivacy",
+        "TestPGBlogSavedRestartPersistence",
+        "TestPGBlogScheduledPublicationFencesTransientPolicyRevocation",
+        "TestPGBlogScheduledPublicationRechecksPermissionAndDomainIncarnation",
+        "TestPGBlogVerificationFencesDeletionAndLateResults",
+        "TestPGBlogVerificationFencesPublisherIdentityABA",
+        "TestPGPostAdminDescriptionSearchAndPublishedOrdering"
+      ],
+      "remaining_reference": "current_remaining.families:sphere.blog_domains"
     }
   ],
   "additional_cross_service_flows": [
@@ -1983,12 +2018,13 @@
       "messager.threads_and_forwarding",
       "passport.realm_boosts",
       "develop.bot_dispatch",
-      "owned.automod_evidence_privacy"
+      "owned.automod_evidence_privacy",
+      "sphere.blog_domains"
     ],
     "delivered_not_integrated": []
   },
   "current_remaining": {
-    "as_of": "2026-10-09T01:10:00Z",
+    "as_of": "2026-10-09T01:20:00Z",
     "authoritative_for": "Known remaining flows, not a count of source operations. Partial/unresearched contracts remain research tasks; unavailable is never inferred from lack of prior research.",
     "families": [
       {
@@ -2137,7 +2173,8 @@
       {
         "family": "sphere.posts",
         "remaining": [
-          "Blog and remaining original admin/statistics operations; scheduling implemented pending CI and automatic ranking enforcement under review"
+          "Remaining original admin/statistics semantics beyond implemented controllers; blog and scheduling delivered pending actualPG",
+          "External source/provider activation and historical-data compatibility remain operational gaps"
         ]
       },
       {
@@ -2425,6 +2462,13 @@
         "remaining": [
           "ActualPG regression validation pending"
         ]
+      },
+      {
+        "family": "sphere.blog_domains",
+        "remaining": [
+          "Live domain verification/preview provider activation not performed",
+          "Explicit owned policy conservatively invalidates domain admissions on relevant identity or grant changes"
+        ]
       }
     ],
     "cross_platform": [
@@ -2436,9 +2480,9 @@
       "Source-declaration818 acceptance map remains an operation inventory, not runtime endpoint count or proof of whole-platform completion"
     ],
     "active_implementation": [
-      "Reviewed boost/bot/editor privacy699/86 in local aggregate validation",
-      "Blog/domain publication independent review fixing incarnation and original-intent lifetime",
-      "Federation server actor and bounded discovery implementation"
+      "Reviewed699 boost/bot/privacy candidate uploading",
+      "Reviewed blog/domain composition718/87 local validation",
+      "Federation server/discovery, realm labels/progression and calendar media implementation"
     ],
     "not_remaining_missing_features": [
       "PIN enrollment/rotation/removal",
@@ -2447,7 +2491,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last fullgreen455/60.625 failed621/625;642 failed632/642,neither ran restart. Corrected674/84 passed full offline checks,actualPG pending."
+    "verification_note": "Last CI-green674/84 at85674a8 with raw job-log case verification and CI aggregate receipts; local artifact download blocked403. Known editor privacy corrected only in699 pending its actualPG.718 blog composition locally verified."
   },
   "global_remaining": [
     "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",
@@ -2467,5 +2511,14 @@
       "TestPGShippingAddressCRUDAndScopeIsolation"
     ],
     "diagnosis": "Canonical fixture setup/errors: missing paired shadowban reason, Join used for pending invitation, missing level2 moderator prerequisite, existing contact service maps unknown IDs to401. Corrected setup assertions preserve runtime gates and compare foreign/nonexistent denials with no disclosure/mutation."
+  },
+  "latest_job_log_verified_ci_pass": {
+    "commit": "85674a81584fc05876446b80761f6c27917ed037",
+    "run": 37868140163,
+    "before": 674,
+    "after_restart": 84,
+    "skipped": 0,
+    "verification": "Exact four jobs/head/attempt and complete independent case sets from authorized job logs; aggregate reports verified artifact digests and two distinct real restarted clusters/process smokes. Local artifact-byte recheck blocked HTTP403/error1010 on supplied unexpired URL.",
+    "known_pending_correction": "Ordinary-editor automod global evidence privacy corrected only in699; passing674 is not production acceptance."
   }
 }

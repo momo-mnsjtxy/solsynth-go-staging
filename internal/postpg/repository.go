@@ -24,6 +24,7 @@ import (
 var Schema string
 
 type Repository struct {
+	blogs         BlogProvider
 	db            *sql.DB
 	publishers    *accountpg.Repository
 	now           func() time.Time
@@ -85,7 +86,7 @@ func optional(s *string) *string {
 	return &v
 }
 
-const columns = `p.id::text,p.publisher_id::text,p.title,p.description,p.slug,p.content,p.visibility,p.type,p.language,p.drafted_at,p.published_at,p.created_at,p.updated_at,p.deleted_at,p.locked_at,p.realm_id::text,p.awarded_score::text,u.id::text,u.name,u.nick,u.bio,u.type,u.account_id::text,u.realm_id::text,u.created_at,u.updated_at,u.verification`
+const columns = `p.id::text,p.publisher_id::text,p.title,p.description,p.slug,p.content,p.visibility,p.type,p.language,p.drafted_at,p.published_at,p.created_at,p.updated_at,p.deleted_at,p.locked_at,p.realm_id::text,p.awarded_score::text,u.id::text,u.name,u.nick,u.bio,u.type,u.account_id::text,u.realm_id::text,u.created_at,u.updated_at,u.verification,p.blog_metadata`
 const base = ` FROM owned_text_posts p JOIN owned_publishers u ON u.id=p.publisher_id WHERE p.deleted_at IS NULL AND u.deleted_at IS NULL AND (u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=u.account_id AND NOT owner.disabled))`
 
 // The owned privacy rule is editor-only access for private/draft posts. This is
@@ -94,11 +95,14 @@ const editor = `EXISTS(SELECT 1 FROM owned_publisher_members m JOIN owned_author
 
 func scan(s scanner) (posts.Post, error) {
 	var p posts.Post
-	var verification []byte
+	var verification, blog []byte
 	e := s.Scan(&p.ID, &p.PublisherID, &p.Title, &p.Description, &p.Slug, &p.Content, &p.Visibility, &p.Type, &p.Language, &p.DraftedAt, &p.PublishedAt, &p.CreatedAt, &p.UpdatedAt, &p.DeletedAt, &p.LockedAt, &p.RealmID, &p.AwardedScore,
-		&p.Publisher.ID, &p.Publisher.Name, &p.Publisher.Nick, &p.Publisher.Bio, &p.Publisher.Type, &p.Publisher.AccountID, &p.Publisher.RealmID, &p.Publisher.CreatedAt, &p.Publisher.UpdatedAt, &verification)
+		&p.Publisher.ID, &p.Publisher.Name, &p.Publisher.Nick, &p.Publisher.Bio, &p.Publisher.Type, &p.Publisher.AccountID, &p.Publisher.RealmID, &p.Publisher.CreatedAt, &p.Publisher.UpdatedAt, &verification, &blog)
 	if e == nil {
 		p.Publisher.Verification, e = accounts.DecodeVerification(verification)
+	}
+	if e == nil {
+		e = decodeBlog(&p, blog)
 	}
 	return p, mapped(e)
 }
@@ -181,7 +185,11 @@ func apply(p *posts.Post, v posts.Patch) {
 }
 func (r *Repository) Create(ctx context.Context, actor, selector string, v posts.Patch) (posts.Post, error) {
 	var p posts.Post
-	e := r.write(ctx, actor, "posts.create", func(tx *sql.Tx, now time.Time) error {
+	prepared, e := r.prepareBlog(ctx, actor, selector, "", "create", v)
+	if e != nil {
+		return p, e
+	}
+	e = r.write(ctx, actor, "posts.create", func(tx *sql.Tx, now time.Time) error {
 		if e := r.validatePatch(v, true, now); e != nil {
 			return e
 		}
@@ -213,10 +221,17 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 		}
 		p = posts.Post{ID: id, PublisherID: pub.ID, Publisher: pub, CreatedAt: now, UpdatedAt: now, PublishedAt: &now}
 		apply(&p, v)
+		if e = r.applyBlog(ctx, tx, actor, &p, prepared, v.BlogEmbeds); e != nil {
+			return e
+		}
+		blog, e := encodeBlog(p)
+		if e != nil {
+			return e
+		}
 		if e = r.prepareSchedule(ctx, tx, actor, &p, v, now); e != nil {
 			return e
 		}
-		_, e = tx.ExecContext(ctx, `INSERT INTO owned_text_posts(id,publisher_id,title,description,slug,content,visibility,type,language,drafted_at,published_at,created_at,updated_at,realm_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12,$13)`, p.ID, p.PublisherID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, now, p.RealmID)
+		_, e = tx.ExecContext(ctx, `INSERT INTO owned_text_posts(id,publisher_id,title,description,slug,content,visibility,type,language,drafted_at,published_at,created_at,updated_at,realm_id,blog_metadata) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12,$13,$14::jsonb)`, p.ID, p.PublisherID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, now, p.RealmID, blog)
 		if e != nil {
 			return e
 		}
@@ -229,7 +244,13 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 		if e = audit(ctx, tx, actor, p.ID, "create", now); e != nil {
 			return e
 		}
-		return r.syncSchedule(ctx, tx, actor, &p, v, "create", now)
+		if e = r.syncSchedule(ctx, tx, actor, &p, v, "create", now); e != nil {
+			return e
+		}
+		if p.Type == posts.Blog {
+			return r.matchBlogPreparation(ctx, tx, actor, p, prepared)
+		}
+		return nil
 	})
 	if e != nil {
 		return posts.Post{}, e
@@ -297,16 +318,24 @@ func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v
 	return p, nil
 }
 func save(ctx context.Context, tx *sql.Tx, p posts.Post) error {
-	_, e := tx.ExecContext(ctx, `UPDATE owned_text_posts SET title=$2,description=$3,slug=$4,content=$5,visibility=$6,type=$7,language=$8,drafted_at=$9,published_at=$10,updated_at=$11,deleted_at=$12,realm_id=$13 WHERE id=$1`, p.ID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, p.UpdatedAt, p.DeletedAt, p.RealmID)
+	blog, e := encodeBlog(p)
+	if e != nil {
+		return e
+	}
+	_, e = tx.ExecContext(ctx, `UPDATE owned_text_posts SET title=$2,description=$3,slug=$4,content=$5,visibility=$6,type=$7,language=$8,drafted_at=$9,published_at=$10,updated_at=$11,deleted_at=$12,realm_id=$13,blog_metadata=$14::jsonb WHERE id=$1`, p.ID, p.Title, p.Description, p.Slug, p.Content, p.Visibility, p.Type, p.Language, p.DraftedAt, p.PublishedAt, p.UpdatedAt, p.DeletedAt, p.RealmID, blog)
 	return e
 }
 func (r *Repository) mutate(ctx context.Context, actor, id, action string, v posts.Patch) (posts.Post, error) {
 	var p posts.Post
+	prepared, e := r.prepareBlog(ctx, actor, "", id, action, v)
+	if e != nil {
+		return p, e
+	}
 	permission := "posts." + action
 	if action == "publish" {
 		permission = "posts.create"
 	}
-	e := r.write(ctx, actor, permission, func(tx *sql.Tx, now time.Time) error {
+	e = r.write(ctx, actor, permission, func(tx *sql.Tx, now time.Time) error {
 		if action == "update" {
 			if e := r.validatePatch(v, false, now); e != nil {
 				return e
@@ -337,6 +366,9 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 			return posts.ErrInvalid
 		}
 		p.UpdatedAt = now
+		if e = r.applyBlog(ctx, tx, actor, &p, prepared, v.BlogEmbeds); e != nil {
+			return e
+		}
 		if e = r.prepareSchedule(ctx, tx, actor, &p, v, now); e != nil {
 			return e
 		}
@@ -375,7 +407,13 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 		if e = audit(ctx, tx, actor, id, action, now); e != nil {
 			return e
 		}
-		return r.syncSchedule(ctx, tx, actor, &p, v, action, now)
+		if e = r.syncSchedule(ctx, tx, actor, &p, v, action, now); e != nil {
+			return e
+		}
+		if p.Type == posts.Blog && p.DeletedAt == nil {
+			return r.matchBlogPreparation(ctx, tx, actor, p, prepared)
+		}
+		return nil
 	})
 	if e != nil {
 		return posts.Post{}, e
@@ -462,7 +500,7 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	if o.Offset < 0 || o.Take < 1 || o.Take > 100 || len(o.Publisher) > 256 || len(o.Realm) > 256 {
 		return nil, 0, posts.ErrInvalid
 	}
-	if o.Type != nil && *o.Type != posts.Moment && *o.Type != posts.Article {
+	if o.Type != nil && *o.Type != posts.Moment && *o.Type != posts.Article && (*o.Type != posts.Blog || r.blogs == nil) {
 		return nil, 0, posts.ErrUnsupported
 	}
 	if o.Drafts && actor == "" {

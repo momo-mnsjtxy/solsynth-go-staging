@@ -14,6 +14,7 @@ import (
 
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/accounts"
+	"solsynth.local/go-migration/ports/sphere/blogs"
 	"solsynth.local/go-migration/ports/sphere/postmedia"
 	"solsynth.local/go-migration/ports/sphere/taxonomy"
 )
@@ -69,6 +70,7 @@ type Collection struct {
 }
 
 type Post struct {
+	Meta                 *Metadata                     `json:"meta,omitempty"`
 	Schedule             *Schedule                     `json:"schedule,omitempty"`
 	Automod              *AutomodDecision              `json:"automod,omitempty"`
 	AwardedScore         wallet.Amount                 `json:"awarded_score"`
@@ -108,6 +110,7 @@ type Post struct {
 	LockedAt             *time.Time                    `json:"locked_at"`
 }
 type Patch struct {
+	BlogEmbeds      bool       `json:"-"`
 	RealmID         *string    `json:"realm_id,omitempty"`
 	ClearRealm      bool       `json:"-"`
 	Attachments     *[]string  `json:"attachments"`
@@ -234,6 +237,10 @@ func NormalizeError(e error) error {
 	}
 	var a *authority.Failure
 	if errors.As(e, &a) {
+		return e
+	}
+	var blog *blogs.Failure
+	if errors.As(e, &blog) {
 		return e
 	}
 	var p *accounts.Failure

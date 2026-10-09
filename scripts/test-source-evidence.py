@@ -18,6 +18,7 @@ def check():
         shutil.copytree(root, copy, ignore=shutil.ignore_patterns('.git', '.cache', '__pycache__', 'bin', 'obj'))
         assert evidence.check(copy) == baseline_count
         mutations = [
+            "ports/sphere/blogs/source/DysonNetwork.Sphere__Publisher__DomainVerificationService.cs",
             "ports/passport/realmboosts/source/RealmExperienceService.cs",
             "ports/passport/realmboosts/source/LICENSE.txt",
             "ports/sphere/posts/scheduling-evidence/PostService.cs",

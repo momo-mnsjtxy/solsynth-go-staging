@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "base_commit": "b5221d15306dfcd8f363831be3e86d2c35cccce4",
+  "scope": "Owned blog/domain lifecycle and bounded existing post-admin query corrections",
+  "implemented_routes": [
+    "GET/POST /api/publishers/{name}/domains",
+    "DELETE /api/publishers/{name}/domains/{id}",
+    "POST /api/publishers/{name}/domains/{id}/recheck",
+    "POST /api/posts/blog/check-permission",
+    "existing post lifecycle and timeline type=2 with explicit blog configuration"
+  ],
+  "preserved_boundaries": [
+    "fresh same-pool authority",
+    "publisher editor/manager membership",
+    "canonical realm visibility",
+    "canonical media links and owner state",
+    "transactional association/audit rollback",
+    "scheduled post draft visibility and stored-session authority",
+    "original session ancestry deadline and authorization incarnation",
+    "permanent publisher identity and policy revoke/restore fences across unlocked provider work"
+  ],
+  "postgres_cases": [
+    "TestPGBlogBackendAliasesAndStrictPermissionRequest",
+    "TestPGBlogCreationEditingMediaAndVisibility",
+    "TestPGBlogDomainLifecyclePermissionsAndProof",
+    "TestPGBlogInterruptedVerificationRecoveryAndRevokedIntent",
+    "TestPGBlogMetadataRollbackAndDraftPublication",
+    "TestPGBlogPendingRecoveryFencesRevokedThenRestoredIntent",
+    "TestPGBlogPendingRecoveryRechecksAfterProviderPolicyABA",
+    "TestPGBlogPendingRecoveryRetainsOriginalSessionDeadline",
+    "TestPGBlogPreviewFailureAndRevocationNeverCommit",
+    "TestPGBlogPreviewFencesDomainAndPolicyABA",
+    "TestPGBlogProviderWaitsRecheckAuthorityAndManagerRole",
+    "TestPGBlogRealmPublisherMaintainsMembershipPrivacy",
+    "TestPGBlogSavedRestartPersistence",
+    "TestPGBlogScheduledPublicationFencesTransientPolicyRevocation",
+    "TestPGBlogScheduledPublicationRechecksPermissionAndDomainIncarnation",
+    "TestPGBlogVerificationFencesDeletionAndLateResults",
+    "TestPGBlogVerificationFencesPublisherIdentityABA",
+    "TestPGPostAdminDescriptionSearchAndPublishedOrdering"
+  ],
+  "restart_cases": [
+    "TestPGBlogSavedRestartPersistence"
+  ],
+  "validation": {
+    "local_aggregate": "passed full scripts/verify.sh; final fixture changes additionally checked by focused race, registry/wiring and SQL guards",
+    "actual_postgresql": "not run: no database/socket execution authorized in this local assignment",
+    "restart_execution": "not run locally; saved-state fixture and exact before/after registration supplied",
+    "live_provider": "not run; only injected synthetic resolver/transport/provider responses",
+    "combined_automod": "merge required against coordinator current; evaluate server-populated blog metadata before automatic moderation"
+  },
+  "deliberate_differences": [
+    "exact-origin HTTPS allowlist; refuse proof redirects and cross-domain preview canonical",
+    "synchronous first verification plus revision/session-fenced recovery",
+    "soft-delete domain tombstones and bounded records",
+    "strict named body/query fields and rejected duplicate mixed aliases",
+    "only owned server-generated link metadata; unsupported rich embeds fail explicitly",
+    "owned default-publisher/member policy retained"
+  ],
+  "remaining": [
+    "actual PostgreSQL and database restart validation",
+    "current automod composition validation",
+    "configured live providers and operational acceptance",
+    "legacy data migration, excluded model serializers and full existing-client E2E parity"
+  ]
+}

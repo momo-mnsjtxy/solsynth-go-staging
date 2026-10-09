@@ -143,7 +143,22 @@ func query(r *http.Request, k Kind, members bool) (Query, error) {
 	if e != nil || len(r.URL.RawQuery) > 4096 {
 		return p, ErrInvalid
 	}
+	seen := map[string]bool{}
 	for key, v := range q {
+		if k == PostKind {
+			switch key {
+			case "publisherId":
+				key = "publisher_id"
+			case "realmId":
+				key = "realm_id"
+			case "shadowbanReason":
+				key = "shadowban_reason"
+			}
+		}
+		if seen[key] {
+			return p, ErrInvalid
+		}
+		seen[key] = true
 		if len(v) != 1 {
 			return p, ErrInvalid
 		}

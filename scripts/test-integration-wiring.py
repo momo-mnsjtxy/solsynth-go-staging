@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/blogpg/schema.sql",
  "internal/botpg/execution_schema.sql",
  "internal/realmboostpg/schema.sql",
  "internal/postpg/scheduling_schema.sql",
@@ -148,6 +149,10 @@ def check(runner, read_schema=None):
     for name in ("walletpg", "application", "postpg"):
         if schemas.index("internal/accountpg/schema.sql") >= schemas.index(f"internal/{name}/schema.sql"):
             raise ValueError("owned dependent schema must follow accounts: " + name)
+    if schemas.index("internal/blogpg/schema.sql") <= max(schemas.index("internal/authoritypg/continuity_schema.sql"), schemas.index("internal/accountpg/schema.sql"), schemas.index("internal/socialpg/schema.sql"), schemas.index("internal/postpg/schema.sql")):
+        raise ValueError("blog policy fences require canonical dependencies")
+    if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/blogpg/schema.sql' not in runner:
+        raise ValueError("blog policy fence migration must be atomic")
     if schemas.index("internal/socialpg/expiry_schema.sql") <= schemas.index("internal/socialpg/schema.sql"):
         raise ValueError("relationship expiry requires canonical social tables first")
     if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/socialpg/expiry_schema.sql' not in runner:

@@ -370,6 +370,9 @@ func (r *Repository) Discovery(ctx context.Context, actor string) (timeline.Prof
 		if p.Type == posts.Article {
 			v.Type = "Article"
 		}
+		if p.Type == posts.Blog {
+			v.Type = "Blog"
+		}
 		if e = tx.QueryRowContext(ctx, `SELECT COALESCE(sum(CASE WHEN attitude=0 THEN 1 WHEN attitude=2 THEN -1 ELSE 0 END),0) FROM owned_post_reactions r JOIN owned_authority_accounts a ON a.id=r.account_id WHERE r.post_id=$1 AND NOT a.disabled`, p.ID).Scan(&v.ReactionScore); e != nil {
 			return out, e
 		}

@@ -49,7 +49,7 @@ func (r *Repository) List(ctx context.Context, actor string, kind c.Kind, q c.Qu
 		table = "owned_text_posts"
 		f.where = append(f.where, `EXISTS(SELECT 1 FROM owned_publishers publisher WHERE publisher.id=v.publisher_id AND publisher.deleted_at IS NULL)`)
 		if q.Text != "" {
-			f.add(`strpos(lower(v.content||' '||coalesce(v.title,'')),lower($%d::text))>0`, q.Text)
+			f.add(`(v.title ILIKE $%[1]d::text OR v.description ILIKE $%[1]d::text OR v.content ILIKE $%[1]d::text)`, "%"+strings.TrimSpace(q.Text)+"%")
 		}
 		if q.PublisherID != "" {
 			f.add(`v.publisher_id=$%d::uuid`, q.PublisherID)
@@ -119,7 +119,11 @@ func (r *Repository) List(ctx context.Context, actor string, kind c.Kind, q c.Qu
 		return nil, 0, e
 	}
 	args := append(append([]any{}, f.args...), q.Take, q.Offset)
-	rows, e := tx.QueryContext(ctx, `SELECT v.id::text FROM `+table+` v WHERE `+f.sql()+fmt.Sprintf(` ORDER BY v.created_at DESC,v.id LIMIT $%d OFFSET $%d`, len(args)-1, len(args)), args...)
+	order := "v.created_at"
+	if kind == c.PostKind {
+		order = "COALESCE(v.published_at,v.created_at)"
+	}
+	rows, e := tx.QueryContext(ctx, `SELECT v.id::text FROM `+table+` v WHERE `+f.sql()+fmt.Sprintf(` ORDER BY `+order+` DESC,v.id LIMIT $%d OFFSET $%d`, len(args)-1, len(args)), args...)
 	if e != nil {
 		return nil, 0, e
 	}

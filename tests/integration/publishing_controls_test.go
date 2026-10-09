@@ -32,7 +32,13 @@ func publishingApp(t *testing.T, f postMediaFixture) *application.Backend {
 	t.Helper()
 	visibility := int32(0)
 	policy := messagerpg.IndependentPolicy{NoneEncryptionMode: 77, NotifyAll: 10, NotifyMentions: 20, NotifyNone: 30}
-	app, e := application.NewPostgres(f.db, nil, application.Config{Authority: f.config, PublicVisibility: &visibility, MessagerPolicy: &policy, MediaStore: f.store, MaxMediaBytes: 65536})
+	config := application.Config{Authority: f.config, PublicVisibility: &visibility, MessagerPolicy: &policy, MaxMediaBytes: 65536}
+	// Text-only restart fixtures have no store. Keep the interface nil instead
+	// of enabling media with a typed nil filesystem pointer.
+	if f.store != nil {
+		config.MediaStore = f.store
+	}
+	app, e := application.NewPostgres(f.db, nil, config)
 	if e != nil {
 		t.Fatal(e)
 	}

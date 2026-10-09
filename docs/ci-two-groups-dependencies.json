@@ -1129,7 +1129,7 @@
         "publishing-controls.json"
       ],
       "named_database_markers": {},
-      "storage_contract": "Before issues original one-hour credentials before settings/post lifecycle targets; saves original settings/post/audit snapshot, session row and public verifier with elapsed wall time. After compares exact saved rows before constructing a read-only host, uses the original saved bearer/public verifier only, asserts unchanged session and full snapshot afterward. No after fixture/account creation, issuance, refresh, private signer or target reconstruction. Media store remains unconfigured because saved posts have no attachments."
+      "storage_contract": "Before issues original one-hour credentials before settings/post lifecycle targets; saves original settings/post/audit snapshot, session row and public verifier with elapsed wall time. After compares exact saved rows before constructing a read-only host, uses the original saved bearer/public verifier only, asserts unchanged session and full snapshot afterward. No after fixture/account creation, issuance, refresh, private signer or target reconstruction. Media store remains unconfigured because saved posts have no attachments. Reviewed publishingApp helper assigns MediaStore only for a non-nil filesystem pointer; configured media fixtures retain their original store, while text-only restart keeps a nil interface. Test bodies, assertions, markers and group assignments are unchanged."
     },
     {
       "test": "TestPGReaderRestartPersistence",
@@ -2767,7 +2767,7 @@
     },
     {
       "source": "tests/integration/publishing_controls_test.go",
-      "sha256": "3ae7399f3e712f89d0b670ca58665dc2ed2a8d69d7c5c2b4da228e68cd490e5b"
+      "sha256": "ed277e736ba0b76803ea80129c18d109974c338ea9d9cf895bf39f4ba050e3d3"
     },
     {
       "source": "tests/integration/reader_test.go",

@@ -29,7 +29,7 @@ func historyRepository(f activityFixture) *accounthistorypg.Repository {
 func historyCredit(t *testing.T, db *sql.DB, account string, delta float64, created time.Time, expired *time.Time) string {
 	t.Helper()
 	id := authorityUUID(t)
-	query(t, db, `INSERT INTO owned_account_credit_records(id,account_id,reason_type,reason,delta,created_at,expired_at,source_kind,source_ref,source_record)VALUES($1,$2,'synthetic.policy','Synthetic authored formula fixture',$3,$4,$5,'owned-policy','synthetic:history-fixture',$1::text)`, id, account, delta, created, expired)
+	query(t, db, `INSERT INTO owned_account_credit_records(id,account_id,reason_type,reason,delta,created_at,expired_at,source_kind,source_ref,source_record)VALUES($1::uuid,$2::uuid,'synthetic.policy','Synthetic authored formula fixture',$3::double precision,$4::timestamptz,$5::timestamptz,'owned-policy','synthetic:history-fixture',$1::uuid::text)`, id, account, delta, created, expired)
 	return id
 }
 func historyConnection(t *testing.T, db *sql.DB, account, provider string) string {

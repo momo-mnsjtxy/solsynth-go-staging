@@ -160,11 +160,11 @@ func TestPGPublishingSettingsFederationRequiresEnabledActor(t *testing.T) {
 	if _, e = otherRepo.UpdatePublishingSettings(f.ctx, f.actor, accounts.PublishingSettingsPatch{DefaultPostingPublisherID: &f.publisher, DefaultFediversePublisherID: &f.publisher}); !errors.Is(e, accounts.ErrPublishingFederation) {
 		t.Fatal("accepted actor from a different origin", e)
 	}
-	query(t, f.db, `UPDATE owned_publishers SET shadowbanned_at=clock_timestamp() WHERE id=$1`, f.publisher)
+	fixturePublisherShadowban(t, f.db, f.publisher, "other", time.Now().UTC())
 	if _, e = r.UpdatePublishingSettings(f.ctx, f.actor, accounts.PublishingSettingsPatch{DefaultFediversePublisherID: &f.publisher}); !errors.Is(e, accounts.ErrPublishingFederation) {
 		t.Fatal("accepted unavailable local actor", e)
 	}
-	query(t, f.db, `UPDATE owned_publishers SET shadowbanned_at=NULL WHERE id=$1`, f.publisher)
+	fixturePublisherShadowban(t, f.db, f.publisher, "", time.Time{})
 	if e = f.r.Settings(f.ctx, f.actor, f.publisher, federation.Settings{Enabled: false, Manual: true}); e != nil {
 		t.Fatal(e)
 	}
@@ -176,6 +176,25 @@ func TestPGPublishingSettingsFederationRequiresEnabledActor(t *testing.T) {
 		t.Fatal("partial failed federation update", s, e)
 	}
 }
+
+// Issue the bounded original request proof before acquiring a later-order lock.
+// Embedded token and canonical session deadlines agree from issuance onward.
+func publishingExpiringProof(t *testing.T, f postMediaFixture) (context.Context, time.Time) {
+	t.Helper()
+	cfg := f.config
+	cfg.AccessTTL, cfg.SessionTTL = 3*time.Second, 3*time.Second
+	issuer, err := authority.New(authoritypg.New(f.db), cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	token := pgIssue(t, issuer, f.actor).Token
+	principal, err := f.verifier.Authenticate(f.ctx, token)
+	if err != nil {
+		t.Fatal("original expiring proof invalid before wait", err)
+	}
+	return f.guard.Bind(f.ctx, principal), principal.Session.ExpiresAt
+}
+
 func TestPGPublishingSettingsWaitProofMembershipAndAuditRollback(t *testing.T) {
 	for _, mode := range []string{"member", "proof", "owner", "cancel"} {
 		t.Run(mode, func(t *testing.T) {
@@ -190,9 +209,17 @@ func TestPGPublishingSettingsWaitProofMembershipAndAuditRollback(t *testing.T) {
 				publisher = publishingExtra(t, f, f.other).ID
 				query(t, f.db, `INSERT INTO owned_publisher_members(id,publisher_id,account_id,role,joined_at,created_at,updated_at)VALUES($1,$2,$3,0,clock_timestamp(),clock_timestamp(),clock_timestamp())`, authorityUUID(t), publisher, f.actor)
 			}
-			ctx, cancel := context.WithTimeout(f.ctx, 8*time.Second)
+			requestCtx := f.ctx
+			var expires time.Time
+			if mode == "proof" {
+				requestCtx, expires = publishingExpiringProof(t, f)
+			}
+			ctx, cancel := context.WithTimeout(requestCtx, 8*time.Second)
 			defer cancel()
-			locks := atomicAuthorityFixture{db: f.db, ctx: ctx}
+			// Blocker lifetime is independent of the reader cancellation/deadline.
+			blockCtx, cancelBlock := context.WithTimeout(context.Background(), 15*time.Second)
+			defer cancelBlock()
+			locks := atomicAuthorityFixture{db: f.db, ctx: blockCtx}
 			table, id := "owned_publishers", publisher
 			if mode != "member" {
 				table, id = "owned_publishing_settings", s.ID
@@ -210,7 +237,7 @@ func TestPGPublishingSettingsWaitProofMembershipAndAuditRollback(t *testing.T) {
 					t.Fatal(e)
 				}
 			case "proof":
-				query(t, f.db, `UPDATE owned_authority_sessions SET expires_at=clock_timestamp()-interval '1 second' WHERE account_id=$1`, f.actor)
+				organizationWaitExpired(t, ctx, f.db, expires)
 			case "owner":
 				query(t, f.db, `UPDATE owned_authority_accounts SET disabled=true WHERE id=$1`, f.other)
 			case "cancel":
@@ -458,11 +485,20 @@ func TestPGPostBatchReversedConcurrencyAndProofWait(t *testing.T) {
 	if n := commerceCount(t, f.db, `SELECT count(DISTINCT visibility) FROM owned_text_posts WHERE id=ANY($1::uuid[])`, []string{a.ID, b.ID}); n != 1 {
 		t.Fatal("split batch commit", n)
 	}
-	locks := atomicAuthorityFixture{db: f.db, ctx: ctx}
+	// Natural expiry is established before holding a later-order domain lock.
+	// Direct session mutation here would invoke account-FK history triggers.
+	proofCtx, expires := publishingExpiringProof(t, f)
+	proofCtx, cancelProof := context.WithTimeout(proofCtx, 10*time.Second)
+	defer cancelProof()
+	blockCtx, cancelBlock := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancelBlock()
+	locks := atomicAuthorityFixture{db: f.db, ctx: blockCtx}
 	tx, pid := atomicBlocker(t, locks, "owned_text_posts", b.ID)
-	go func() { done <- f.posts.Batch(ctx, f.actor, posts.BatchRequest{PostIDs: []string{b.ID, a.ID}}, true) }()
+	go func() {
+		done <- f.posts.Batch(proofCtx, f.actor, posts.BatchRequest{PostIDs: []string{b.ID, a.ID}}, true)
+	}()
 	waitAtomicBlocked(t, locks, pid, "owned_text_posts")
-	query(t, f.db, `UPDATE owned_authority_sessions SET expires_at=clock_timestamp()-interval '1 second' WHERE account_id=$1`, f.actor)
+	organizationWaitExpired(t, proofCtx, f.db, expires)
 	if e := tx.Commit(); e != nil {
 		t.Fatal(e)
 	}

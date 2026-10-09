@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Restore authored account history and preserve historical visibility semantics",
+  "checkpoint": "Type canonical history fixture identity without changing credit assertions",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "29eaa74046f6df6fd548eba71035a9a2448cb7d6"
+    "remote_parent": "3ac0a7d8bdd2034cf0b6a3c32ebe778a786887af"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -664,7 +664,7 @@
     {
       "path": "docs/ci-two-groups-dependencies.json",
       "bytes": 156234,
-      "sha256": "ad4edc998b01ac8ba915cb67385fc67c8cd997d4928a3abd0c52be1a0f49e15a"
+      "sha256": "9dac5edd2d42e30782023aafc9809059f1b10869af7124d30a1eb22492ec64b4"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -11898,8 +11898,8 @@
     },
     {
       "path": "tests/integration/account_history_test.go",
-      "bytes": 29013,
-      "sha256": "b80efd850fc80d6bf090a251cbca6373cfb5667f29fd10089f693089fa7fba65"
+      "bytes": 29075,
+      "sha256": "a6ce9cf5d4da36e6fcad5933f6925c6ffd71d00c3dcacbb9bf6eabd3703fd8ff"
     },
     {
       "path": "tests/integration/account_settings_test.go",
@@ -12628,8 +12628,8 @@
     },
     {
       "path": "tests/integration/publishing_controls_test.go",
-      "bytes": 31542,
-      "sha256": "d67f687a3eb740caf085ea5134e90125e6968d47f51e2164ed2d23c7d057cb76"
+      "bytes": 32753,
+      "sha256": "3ae7399f3e712f89d0b670ca58665dc2ed2a8d69d7c5c2b4da228e68cd490e5b"
     },
     {
       "path": "tests/integration/reader_test.go",

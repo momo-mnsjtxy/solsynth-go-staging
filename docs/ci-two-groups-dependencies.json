@@ -2037,7 +2037,7 @@
     },
     {
       "source": "tests/integration/account_history_test.go",
-      "sha256": "b80efd850fc80d6bf090a251cbca6373cfb5667f29fd10089f693089fa7fba65"
+      "sha256": "a6ce9cf5d4da36e6fcad5933f6925c6ffd71d00c3dcacbb9bf6eabd3703fd8ff"
     },
     {
       "source": "tests/integration/account_settings_test.go",
@@ -2621,7 +2621,7 @@
     },
     {
       "source": "tests/integration/publishing_controls_test.go",
-      "sha256": "d67f687a3eb740caf085ea5134e90125e6968d47f51e2164ed2d23c7d057cb76"
+      "sha256": "3ae7399f3e712f89d0b670ca58665dc2ed2a8d69d7c5c2b4da228e68cd490e5b"
     },
     {
       "source": "tests/integration/reader_test.go",

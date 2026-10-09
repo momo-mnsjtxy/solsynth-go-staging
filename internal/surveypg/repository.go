@@ -16,6 +16,7 @@ import (
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/media"
+	"solsynth.local/go-migration/ports/notifications"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/sphere/surveys"
 	"sort"
@@ -27,16 +28,17 @@ import (
 var Schema string
 
 type Repository struct {
-	db         *sql.DB
-	publishers *accountpg.Repository
-	guard      *authoritypg.TransactionGuard
-	visibility postpg.VisibilityProvider
-	media      surveys.MediaResolver
-	now        func() time.Time
+	notificationApp string
+	db              *sql.DB
+	publishers      *accountpg.Repository
+	guard           *authoritypg.TransactionGuard
+	visibility      postpg.VisibilityProvider
+	media           surveys.MediaResolver
+	now             func() time.Time
 }
 
 func New(db *sql.DB) *Repository {
-	return &Repository{db: db, publishers: accountpg.New(db), now: time.Now}
+	return &Repository{notificationApp: notifications.DefaultApp, db: db, publishers: accountpg.New(db), now: time.Now}
 }
 func NewWithAuthority(db *sql.DB, g *authoritypg.TransactionGuard) *Repository {
 	r := New(db)
@@ -166,7 +168,7 @@ func (r *Repository) loadWithPost(ctx context.Context, tx *sql.Tx, actor, id str
 	}
 	var questions, attachments []byte
 	var verification []byte
-	e = tx.QueryRowContext(ctx, `SELECT s.id::text,s.publisher_id::text,s.post_id::text,s.title,s.description,s.ended_at,s.is_anonymous,s.hide_results,s.status,s.questions,s.attachment_ids,s.created_at,s.updated_at,s.published_at,p.id::text,p.name,p.nick,p.bio,p.type,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at,p.verification FROM owned_surveys s JOIN owned_publishers p ON p.id=s.publisher_id WHERE s.id=$1 AND s.deleted_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled))`+lock, id).Scan(&x.s.ID, &x.s.PublisherID, &x.s.PostID, &x.s.Title, &x.s.Description, &x.s.EndedAt, &x.s.Anonymous, &x.s.HideResults, &x.s.Status, &questions, &attachments, &x.s.CreatedAt, &x.s.UpdatedAt, &x.s.PublishedAt, &x.s.Publisher.ID, &x.s.Publisher.Name, &x.s.Publisher.Nick, &x.s.Publisher.Bio, &x.s.Publisher.Type, &x.s.Publisher.AccountID, &x.s.Publisher.RealmID, &x.s.Publisher.CreatedAt, &x.s.Publisher.UpdatedAt, &verification)
+	e = tx.QueryRowContext(ctx, `SELECT s.id::text,s.publisher_id::text,s.post_id::text,s.title,s.description,s.ended_at,s.is_anonymous,s.notify_subscribers,s.hide_results,s.status,s.questions,s.attachment_ids,s.created_at,s.updated_at,s.published_at,p.id::text,p.name,p.nick,p.bio,p.type,p.account_id::text,p.realm_id::text,p.created_at,p.updated_at,p.verification FROM owned_surveys s JOIN owned_publishers p ON p.id=s.publisher_id WHERE s.id=$1 AND s.deleted_at IS NULL AND p.deleted_at IS NULL AND (p.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=p.account_id AND NOT a.disabled))`+lock, id).Scan(&x.s.ID, &x.s.PublisherID, &x.s.PostID, &x.s.Title, &x.s.Description, &x.s.EndedAt, &x.s.Anonymous, &x.s.NotifySubscribers, &x.s.HideResults, &x.s.Status, &questions, &attachments, &x.s.CreatedAt, &x.s.UpdatedAt, &x.s.PublishedAt, &x.s.Publisher.ID, &x.s.Publisher.Name, &x.s.Publisher.Nick, &x.s.Publisher.Bio, &x.s.Publisher.Type, &x.s.Publisher.AccountID, &x.s.Publisher.RealmID, &x.s.Publisher.CreatedAt, &x.s.Publisher.UpdatedAt, &verification)
 	if e != nil {
 		return x, mapped(e)
 	}
@@ -279,8 +281,8 @@ func prepareQuestions(q []surveys.Question) ([]surveys.Question, error) {
 	return out, nil
 }
 func (r *Repository) apply(ctx context.Context, tx *sql.Tx, actor string, x *record, p surveys.Patch) error {
-	if p.NotifySubscribers != nil && *p.NotifySubscribers {
-		return surveys.ErrUnsupported
+	if p.NotifySubscribers != nil {
+		x.s.NotifySubscribers = *p.NotifySubscribers
 	}
 	if p.Title != nil {
 		x.s.Title = p.Title
@@ -360,7 +362,7 @@ func insert(ctx context.Context, tx *sql.Tx, x record) error {
 	if e != nil {
 		return e
 	}
-	_, e = tx.ExecContext(ctx, `INSERT INTO owned_surveys(id,publisher_id,post_id,title,description,ended_at,is_anonymous,hide_results,status,questions,attachment_ids,created_at,updated_at,published_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`, x.s.ID, x.s.PublisherID, x.s.PostID, x.s.Title, x.s.Description, x.s.EndedAt, x.s.Anonymous, x.s.HideResults, x.s.Status, q, a, x.s.CreatedAt, x.s.UpdatedAt, x.s.PublishedAt)
+	_, e = tx.ExecContext(ctx, `INSERT INTO owned_surveys(id,publisher_id,post_id,title,description,ended_at,is_anonymous,hide_results,status,questions,attachment_ids,created_at,updated_at,published_at,notify_subscribers) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`, x.s.ID, x.s.PublisherID, x.s.PostID, x.s.Title, x.s.Description, x.s.EndedAt, x.s.Anonymous, x.s.HideResults, x.s.Status, q, a, x.s.CreatedAt, x.s.UpdatedAt, x.s.PublishedAt, x.s.NotifySubscribers)
 	return e
 }
 func (r *Repository) Create(ctx context.Context, actor, selector string, p surveys.Patch) (surveys.Survey, error) {
@@ -402,6 +404,14 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, p surve
 	if e = insert(ctx, tx, x); e != nil {
 		return surveys.Survey{}, mapped(e)
 	}
+	if x.s.NotifySubscribers {
+		if _, e = ensureSubscription(ctx, tx, actor, id, now); e != nil {
+			return surveys.Survey{}, e
+		}
+	}
+	if e = r.recheck(ctx, tx, actor, "surveys.create"); e != nil {
+		return surveys.Survey{}, e
+	}
 	if e = audit(ctx, tx, actor, id, "create", now); e != nil {
 		return surveys.Survey{}, e
 	}
@@ -429,8 +439,16 @@ func (r *Repository) Update(ctx context.Context, actor, id string, p surveys.Pat
 	x.s.UpdatedAt = r.now().UTC()
 	q, _ := json.Marshal(x.s.Questions)
 	a, _ := json.Marshal(x.attachments)
-	_, e = tx.ExecContext(ctx, `UPDATE owned_surveys SET title=$2,description=$3,ended_at=$4,is_anonymous=$5,hide_results=$6,questions=$7,attachment_ids=$8,post_id=$9,updated_at=$10 WHERE id=$1`, id, x.s.Title, x.s.Description, x.s.EndedAt, x.s.Anonymous, x.s.HideResults, q, a, x.s.PostID, x.s.UpdatedAt)
+	_, e = tx.ExecContext(ctx, `UPDATE owned_surveys SET title=$2,description=$3,ended_at=$4,is_anonymous=$5,hide_results=$6,questions=$7,attachment_ids=$8,post_id=$9,updated_at=$10,notify_subscribers=$11 WHERE id=$1`, id, x.s.Title, x.s.Description, x.s.EndedAt, x.s.Anonymous, x.s.HideResults, q, a, x.s.PostID, x.s.UpdatedAt, x.s.NotifySubscribers)
 	if e != nil {
+		return surveys.Survey{}, e
+	}
+	if x.s.NotifySubscribers {
+		if _, e = ensureSubscription(ctx, tx, actor, id, x.s.UpdatedAt); e != nil {
+			return surveys.Survey{}, e
+		}
+	}
+	if e = r.recheck(ctx, tx, actor, "surveys.update"); e != nil {
 		return surveys.Survey{}, e
 	}
 	if e = audit(ctx, tx, actor, id, "update", x.s.UpdatedAt); e != nil {
@@ -572,13 +590,35 @@ func (r *Repository) Answer(ctx context.Context, actor, id string, v map[string]
 	if e != nil || len(raw) > 256<<10 {
 		return surveys.Answer{}, surveys.ErrValidation
 	}
+	if e = r.recheck(ctx, tx, actor, "surveys.answer"); e != nil {
+		return surveys.Answer{}, e
+	}
+	var unchanged bool
+	if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_survey_answers WHERE survey_id=$1 AND account_id=$2 AND answer=$3::jsonb)`, id, actor, raw).Scan(&unchanged); e != nil {
+		return surveys.Answer{}, e
+	}
+	if unchanged {
+		a, e := scanAnswer(tx.QueryRowContext(ctx, `SELECT `+answerFields+` FROM owned_survey_answers WHERE survey_id=$1 AND account_id=$2`, id, actor), x.s.Anonymous)
+		if e != nil {
+			return surveys.Answer{}, e
+		}
+		return a, tx.Commit()
+	}
 	key, e := uid()
 	if e != nil {
 		return surveys.Answer{}, e
 	}
-	a, e := scanAnswer(tx.QueryRowContext(ctx, `INSERT INTO owned_survey_answers(id,survey_id,account_id,answer,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$5) ON CONFLICT(survey_id,account_id) DO UPDATE SET answer=EXCLUDED.answer,updated_at=EXCLUDED.updated_at RETURNING `+answerFields, key, id, actor, raw, now), x.s.Anonymous)
+	a, e := scanAnswer(tx.QueryRowContext(ctx, `INSERT INTO owned_survey_answers(id,survey_id,account_id,answer,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$5) ON CONFLICT(survey_id,account_id) DO UPDATE SET answer=EXCLUDED.answer,updated_at=EXCLUDED.updated_at,revision=owned_survey_answers.revision+1 RETURNING `+answerFields, key, id, actor, raw, now), x.s.Anonymous)
 	if e != nil {
 		return a, e
+	}
+	if x.s.NotifySubscribers {
+		if e = enqueueAnswer(ctx, tx, actor, x.s, a.ID, r.notificationApp, now); e != nil {
+			return surveys.Answer{}, e
+		}
+	}
+	if e = r.recheck(ctx, tx, actor, "surveys.answer"); e != nil {
+		return surveys.Answer{}, e
 	}
 	if e = audit(ctx, tx, actor, id, "answer", now); e != nil {
 		return surveys.Answer{}, e

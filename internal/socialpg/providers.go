@@ -172,3 +172,17 @@ func (r *Repository) RealmRoleForWriteInTransaction(ctx context.Context, tx *sql
 	}
 	return m.Role, e
 }
+
+// IsMutedInTransaction uses effective relationship expiry/degradation semantics
+// for publisher-side notification exclusions, without returning relationship data.
+func (r *Repository) IsMutedInTransaction(ctx context.Context, tx *sql.Tx, actor, target string) (bool, error) {
+	if tx == nil {
+		return false, social.ErrUnavailable
+	}
+	if !authority.ValidID(actor) || !authority.ValidID(target) {
+		return false, social.ErrInvalid
+	}
+	var muted bool
+	e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE account_id=$1 AND related_id=$2 AND status=-50)`, actor, target).Scan(&muted)
+	return muted, e
+}

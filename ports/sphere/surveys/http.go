@@ -195,6 +195,8 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 				permission = "surveys.update"
 			case len(parts) == 1 && r.Method == "DELETE":
 				permission = "surveys.delete"
+			case len(parts) == 2 && parts[1] == "unsubscribe":
+				permission = "surveys.subscribe"
 			case len(parts) == 2:
 				permission = "surveys." + parts[1]
 			}
@@ -261,6 +263,26 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 		case len(parts) == 2 && authority.ValidID(parts[0]):
 			id, action := parts[0], parts[1]
 			switch {
+			case (action == "subscribe" || action == "unsubscribe") && r.Method == "POST":
+				if r.URL.RawQuery != "" {
+					e = ErrInvalid
+				} else {
+					e = empty(w, r)
+				}
+				if e == nil {
+					if action == "subscribe" {
+						out, e = repo.Subscribe(r.Context(), actor, id)
+					} else {
+						e = repo.Unsubscribe(r.Context(), actor, id)
+						status = 204
+					}
+				}
+			case action == "subscription" && r.Method == "GET":
+				if r.URL.RawQuery != "" {
+					e = ErrInvalid
+				} else {
+					out, e = repo.Subscription(r.Context(), actor, id)
+				}
 			case action == "answer" && r.Method == "POST":
 				var req struct {
 					Answer map[string]json.RawMessage `json:"answer"`

@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed realm profile, configured quota, realm moderation logs and account activity/catalog routes are integrated. Combined build, vet, unit/race, source, SQL and grouping checks passed. The independently reviewed quote correction is included; actual PostgreSQL validation remains pending.",
+  "local_source_checkpoint": "Reviewed survey subscription routes and durable local answer notifications are integrated with current audience and source-owner checks. Combined offline and actual PostgreSQL validation pending.",
   "last_fully_passed_ci": {
     "commit": "8d00c0cee85ebd10328ed5d51fa0e876141bf411",
     "run": 37878791797,
@@ -19,8 +19,8 @@
     "required_after_restart": 97,
     "status": "Published narrow, independently reviewed quote security-generation correction and validation fixture repairs; actual CI pending."
   },
-  "local_required_before": 832,
-  "local_required_after_restart": 99,
+  "local_required_before": 842,
+  "local_required_after_restart": 100,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2128,7 +2128,7 @@
     "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
-    "as_of": "2026-10-09T04:09:00Z",
+    "as_of": "2026-10-09T04:20:00Z",
     "authoritative_for": "Current source-backed remaining flow bundles, implementation candidates and operational gaps; no percentage or endpoint-total inference.",
     "families": [
       {
@@ -3632,31 +3632,6 @@
         ],
         "current_boundary": "Generic provider interface/webhook-restore-checkout orchestration and synthetic idempotency tests exist; no real provider implementation is configured. Free trials explicitly fail. Address snapshots/fulfillment handoff and opt-in owned coupon arithmetic are implemented, not missing.",
         "next_slice": "Choose one supported provider and define verified callback, reconciliation/refund and expiry behavior with synthetic contracts; no live payment or provider probing is authorized by this audit."
-      },
-      {
-        "id": "survey_subscriptions",
-        "families": [
-          "sphere.stickers_surveys"
-        ],
-        "remaining": "Per-survey subscribe/unsubscribe/status and subscriber answer-notification projection remain unimplemented.",
-        "source": [
-          {
-            "path": "DysonNetwork.Sphere/Survey/SurveyController.cs",
-            "blob": "856e6696b21738dc5e9997bea450ed144f30ece8",
-            "methods": "SubscribeToSurvey@842; UnsubscribeFromSurvey@873; GetSurveySubscription@893",
-            "route_examples": [
-              "POST /api/surveys/{id:guid}/subscribe",
-              "POST /api/surveys/{id:guid}/unsubscribe",
-              "GET /api/surveys/{id:guid}/subscription"
-            ]
-          }
-        ],
-        "runtime_owner_or_rejection": [
-          "ports/sphere/surveys/http.go",
-          "internal/surveypg/repository.go"
-        ],
-        "current_boundary": "Survey CRUD/lifecycle/answers/feedback/results are implemented. The three subscription paths are not registered; NotifySubscribers=true is explicitly rejected. Standalone sticker operations are implemented within their documented owned policy; third-party assets/migration remain separate.",
-        "next_slice": "Add idempotent current-audience subscriptions and canonical notification outbox production; retain privacy/withdrawal/answer-anonymity boundaries."
       }
     ],
     "implemented_pending_verification": [
@@ -3689,6 +3664,38 @@
         "status": "integrated_pending_actual_PG",
         "scope": "Ten activity/session/catalog/stat routes andaliases, source-supported lease/endaccounting andownedprivacy/revocation",
         "limits": "Friends overview/broadcast,provider/sensoractivities andcompletelegacyvisibilitymapping remainunsupported."
+      },
+      {
+        "id": "survey.subscription_notifications",
+        "status": "integrated_pending_actual_PG",
+        "scope": "Caller subscription routes, notify_subscribers persistence, idempotent answer revision queue and atomic local inbox/replay",
+        "limits": "External push, retention administration and per-question attachments remain unsupported. Account-level subscriptions persist across sign-out; previously delivered minimal history is not retroactively erased."
+      },
+      {
+        "id": "survey_subscriptions",
+        "families": [
+          "sphere.stickers_surveys"
+        ],
+        "remaining": "Core subscription and local answer notification flow integrated; external push, retention administration and per-question attachments remain unsupported.",
+        "source": [
+          {
+            "path": "DysonNetwork.Sphere/Survey/SurveyController.cs",
+            "blob": "856e6696b21738dc5e9997bea450ed144f30ece8",
+            "methods": "SubscribeToSurvey@842; UnsubscribeFromSurvey@873; GetSurveySubscription@893",
+            "route_examples": [
+              "POST /api/surveys/{id:guid}/subscribe",
+              "POST /api/surveys/{id:guid}/unsubscribe",
+              "GET /api/surveys/{id:guid}/subscription"
+            ]
+          }
+        ],
+        "runtime_owner_or_rejection": [
+          "ports/sphere/surveys/http.go",
+          "internal/surveypg/repository.go"
+        ],
+        "current_boundary": "Survey CRUD/lifecycle/answers/feedback/results are implemented. The three subscription paths are not registered; NotifySubscribers=true is explicitly rejected. Standalone sticker operations are implemented within their documented owned policy; third-party assets/migration remain separate.",
+        "next_slice": "Add idempotent current-audience subscriptions and canonical notification outbox production; retain privacy/withdrawal/answer-anonymity boundaries.",
+        "status": "implemented_pending_actual_PG"
       }
     ],
     "owned_contract_differences": [
@@ -3929,16 +3936,16 @@
     },
     "reviewed_pending_integration": [
       {
-        "id": "survey.subscription_notifications",
-        "state": "Ten-case delivery independently reviewed, including source realm-owner punishment and privacy correction; integration pending."
+        "id": "wallet.reporting",
+        "state": "Five-case reporting independently reviewed with final scope/proof correction; integration pending."
       },
       {
-        "id": "wallet.reporting",
-        "state": "Five-case reporting delivery under independent review; separate opt-in treasury exchange implementation continues."
+        "id": "wallet.treasury_exchange",
+        "state": "Six-case owned opt-in exchange under independent review; client adaptation and operator policy required."
       },
       {
         "id": "friends.activity_overview",
-        "state": "Source-backed overview implementation active; friend activity broadcast follows as a separate local replay flow."
+        "state": "Six-case overview frozen, awaiting independent review. Authored local friend activity broadcast implementation continues."
       }
     ],
     "implemented_and_CI_green": [

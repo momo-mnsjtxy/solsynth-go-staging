@@ -171,6 +171,7 @@ func (r *Repository) walletNotification(ctx context.Context, tx *sql.Tx, account
 }
 
 type Worker struct {
+	LocalProjections       []func(context.Context, int) (int, error)
 	Repository             *Repository
 	Wallet                 bool
 	Chat                   bool
@@ -184,7 +185,19 @@ func (w Worker) Step(ctx context.Context) (int, error) {
 	if w.Repository == nil {
 		return 0, notifications.ErrUnavailable
 	}
-	n, e := w.Repository.ProcessPending(ctx, 32)
+	n := 0
+	for _, project := range w.LocalProjections {
+		if project == nil {
+			return n, notifications.ErrUnavailable
+		}
+		v, e := project(ctx, 32)
+		n += v
+		if e != nil {
+			return n, e
+		}
+	}
+	v, e := w.Repository.ProcessPending(ctx, 32)
+	n += v
 	if e != nil {
 		return n, e
 	}

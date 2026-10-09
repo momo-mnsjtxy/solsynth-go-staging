@@ -1,5 +1,5 @@
 {
-  "base_commit": "d1946b98df96608baf34a4ca3f67d96e01167e05",
+  "base_commit": "f9af28ef286c451ccce7a26d215f4dbf5447f374",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -1197,6 +1197,18 @@
       "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
       "function_sha256": "a2b8078781f6a1b1b625e58830dcc7e305e4f7cf0fc3d2ba3f6f059697546800",
       "group_before_and_after": "group-b"
+    },
+    {
+      "test": "TestPGSurveySubscriptionsRestartPersistence",
+      "source": "tests/integration/survey_subscriptions_test.go",
+      "function_sha256": "04e612607c3872fefc52509c532cbe7f90c5eb2c33fa7af44408cfb16bdde5c4",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "survey-subscriptions.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Exclusive original survey/subscription incarnation/answer/queued revision/app namespace and pre-target one-hour bearer/public keys. After reads original state and resumes only existing work under the saved namespace; no seeding or credential issuance. Historical inbox and replay remain minimal; another namespace cannot consume saved pending work."
     },
     {
       "test": "TestPGSurveysStickersRestartPersistence",
@@ -2466,6 +2478,10 @@
       "sha256": "9567efe86d954c065e5af6451cc4dff53b030015653b6049efc8e109a4cc6751"
     },
     {
+      "source": "tests/integration/survey_subscriptions_test.go",
+      "sha256": "d08d9d16183db3e53957c0cb8bb4d5d7dff5d41348082a79f2c16b288409ef72"
+    },
+    {
       "source": "tests/integration/surveys_test.go",
       "sha256": "12dcd5d5fa30a4ee856d80a60480f5e7b5db3ec638fcb2ed33a7eee92e493d6f"
     },
@@ -2639,5 +2655,11 @@
     "runtime": "Quote jobs capture independent durable block/security generation; unrelated FollowUndo no longercancels validconsent. Otherpeer lifecycle jobs retainoriginalgeneration. LegacyNULL failclosed, currentquote/account/session/key/owner checks retained.",
     "reviewed_correction_sha256": "2f0635a8287fc31a39544b99df3c4f19eabd680c6e49dc6a576a97dde5099249",
     "fixtures": "Explicitfresh enablement afterpolicysetup; valid originalancestor deadline; mandatoryMessagerPolicy; canonicalpairedshadowban helper. No selector/countchanges."
+  },
+  "survey_subscription_review": {
+    "before": 10,
+    "after": 1,
+    "correction_sha256": "a899189cf256a517cb058b88a47f65728c4546eb8b932d47c109d49187c659c2",
+    "scope": "Current recipient and all source-owner eligibility, attached realm privacy, subscription incarnation and namespace fences; anonymous nested payload allowlist. Composite subscription FK and separate-pool answer/dispatch/unsubscribe/delete races preserve account-before-domain lock order."
   }
 }

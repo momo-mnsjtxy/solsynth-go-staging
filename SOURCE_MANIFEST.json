@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Add reviewed realm profile quota logs and account activity flows",
+  "checkpoint": "Add reviewed survey subscription and local notification flows",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "32c1cc5225d138f72a66aa30f4a596006649eecd"
+    "remote_parent": "641a503b1173cb04888f45bbbf5fe0cceb238a52"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -618,8 +618,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 131621,
-      "sha256": "e815217cb2ca30c2e531779923f7d9eb778089743e4fcbffb0e14db82f35fe75"
+      "bytes": 133054,
+      "sha256": "c645591fb83aa6652b43249982a48abef6c68ab6d298226878be9916c2510e74"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -2003,8 +2003,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 210427,
-      "sha256": "2dfe0438deafdc49e626fb88cce1d26a9a251daa7b201e76bce6e4772d155e19"
+      "bytes": 210881,
+      "sha256": "5434badee3cdf72a5a38ae6ab78e228f26eed15221f91731cfab608a19c69a54"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -2027,9 +2027,14 @@
       "sha256": "c632dad46042aeb77109b8e2238b8327d0b2fee0e19f9944cc6df3d6485087cc"
     },
     {
+      "path": "docs/survey-subscriptions-continuation.md",
+      "bytes": 8424,
+      "sha256": "10cb7bd82be7f7d9c792bbeb5c77b187d09eb55a1df23403a0bfe834772061ac"
+    },
+    {
       "path": "docs/surveys-stickers-continuation.md",
-      "bytes": 11918,
-      "sha256": "ff0a903e43806f3232b793135ee7a2254204d638199cd952e425362cfd9f4d4f"
+      "bytes": 12164,
+      "sha256": "0a2629f20bfdc79ac13ccb4ee8e3ca2a05835c7195524502a0572eaccec0a3d3"
     },
     {
       "path": "docs/taxonomy-continuation.md",
@@ -2308,8 +2313,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 34683,
-      "sha256": "e13916d1b87f25cacc162ae0e0697079a261bc2db1e8fde377949fc4dd9ceac6"
+      "bytes": 35095,
+      "sha256": "e6dd2a8a66d212469d24d50fee01d5da83471c41a46111f9e3d05d776486a219"
     },
     {
       "path": "internal/application/blog_routing_test.go",
@@ -2378,8 +2383,8 @@
     },
     {
       "path": "internal/application/notifications.go",
-      "bytes": 445,
-      "sha256": "2259de80598a6793a9c45455f3386ae933567adca8067e8df7cb55af13d411ce"
+      "bytes": 869,
+      "sha256": "26b01881dbba2e54f0973196b69d61f40cbdd8e8f1a0dd07d5e35941e7d416dc"
     },
     {
       "path": "internal/application/passkit.go",
@@ -2443,8 +2448,8 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 10159,
-      "sha256": "712195fc3bb6bea8da7e02406b47be0aa4e05437c4d805b0d8a5c226c010655d"
+      "bytes": 10390,
+      "sha256": "1b1551edd17d9f78140e7e1bd7a32b938d4c602b22110db59dcdd19f5cefd09d"
     },
     {
       "path": "internal/application/realm_boosts.go",
@@ -3897,6 +3902,16 @@
       "sha256": "4efeb782609a3592bd6cca1aa0cd0eb02535ab459a5bb5ad08b9fe576040c75a"
     },
     {
+      "path": "internal/notificationpg/local_transaction.go",
+      "bytes": 2467,
+      "sha256": "cdf3e9241a7864b60718c91fe4b7bf464b25444ab6c21825edf18dec54f68d1f"
+    },
+    {
+      "path": "internal/notificationpg/local_transaction_test.go",
+      "bytes": 1145,
+      "sha256": "688edd1da1ef212a48982d6a70429215c8db665e4f86024032c1d91346f1a601"
+    },
+    {
       "path": "internal/notificationpg/outbox.go",
       "bytes": 9075,
       "sha256": "c39041b4b27ca997602e666da19fd378216c8bcd042ab8303710aeaf86671033"
@@ -3908,8 +3923,8 @@
     },
     {
       "path": "internal/notificationpg/projections.go",
-      "bytes": 8889,
-      "sha256": "bb941af0d30a7ef4b8adf0efa7030ac28dcad528e0129bfcc75894a19389945e"
+      "bytes": 9159,
+      "sha256": "b5a9fc6f9c21ce79665cb67f1d9502a263f7a54ae4eab91d869b63abc6e03aa5"
     },
     {
       "path": "internal/notificationpg/repository.go",
@@ -4528,8 +4543,8 @@
     },
     {
       "path": "internal/socialpg/providers.go",
-      "bytes": 7129,
-      "sha256": "92db19d8ae737cae8ebdeb08eea0ab4ace1f2ae9557c74b795af1a30cd29769c"
+      "bytes": 7779,
+      "sha256": "eb91d71a103fd838228f12c3387d92dff99452d3cbccf3e6baca6fd75b605b1f"
     },
     {
       "path": "internal/socialpg/publisher_provider.go",
@@ -4617,19 +4632,34 @@
       "sha256": "11dbc8a7c4d28969a28c823a4065ad945de1fe790e7b8a92d20db2bd6d496680"
     },
     {
+      "path": "internal/surveypg/notifications.go",
+      "bytes": 9173,
+      "sha256": "eda2e0c3a9041d885fbf5d533e74e0f0e2108b7077fc4e0f38d72549b76976a6"
+    },
+    {
+      "path": "internal/surveypg/notifications_test.go",
+      "bytes": 736,
+      "sha256": "e319b355adbe3bc37ed89e4c0a4bc32bf7758aace60bdaca700f06e4471d93fe"
+    },
+    {
       "path": "internal/surveypg/post_scopes.go",
       "bytes": 1615,
       "sha256": "edb6d4ac0505b541e924a4853e14e1a3dc85a042e4f0138f84bfdcb4fec6e0e3"
     },
     {
       "path": "internal/surveypg/repository.go",
-      "bytes": 24975,
-      "sha256": "f4d25e4dc024460c5e134995df474b6659df3fab8bdc2421b12513109f0c91a0"
+      "bytes": 26598,
+      "sha256": "17d00dbc4836e3f4e835ccd56678a1f844056c2257b4056a35f97a68598df9f1"
     },
     {
       "path": "internal/surveypg/schema.sql",
-      "bytes": 1660,
-      "sha256": "6f4573ec97b8016ff2cbc3f7f4296ee2995136d500832a6a95925d8282cb40a8"
+      "bytes": 3983,
+      "sha256": "102520272aacfd62ad5b73b6a42eb472096d8f256b2f64723fe76a32e2423353"
+    },
+    {
+      "path": "internal/surveypg/subscriptions.go",
+      "bytes": 4386,
+      "sha256": "fc809d3b13a6a7cf3b5a80794119e38bfbf746a4b11ad74dfb5606d7ff8f4443"
     },
     {
       "path": "internal/taxonomypg/repository.go",
@@ -10053,8 +10083,8 @@
     },
     {
       "path": "ports/sphere/surveys/http.go",
-      "bytes": 7262,
-      "sha256": "9e15babc2e8b539c2ed2811b6cd22bae07daeede178c86aa4d4e868fc98e7307"
+      "bytes": 7906,
+      "sha256": "06abbd1265ef521cdf0ae69716a3aa4747983a1cf5c1f9faac345944c74f4048"
     },
     {
       "path": "ports/sphere/surveys/source/LICENSE.txt",
@@ -10107,9 +10137,14 @@
       "sha256": "ed57f613696422b95edf6c49373e952d6698704ef2c94da27de1cdcd0f7842c4"
     },
     {
+      "path": "ports/sphere/surveys/subscription_http_test.go",
+      "bytes": 2054,
+      "sha256": "4f4d9a904a21ca41c002bcfbb77b696f53f946fec57ba92ff7edbf08b7711c79"
+    },
+    {
       "path": "ports/sphere/surveys/types.go",
-      "bytes": 5315,
-      "sha256": "db9512432349e366710446b337b8390fd3dbbb67c28703f9b241932f9a467b45"
+      "bytes": 6143,
+      "sha256": "49d33cabff5e23d1a786b0904baa4cda8c012ca84dd10c0c889c5bec0de9f950"
     },
     {
       "path": "ports/sphere/surveys/validation.go",
@@ -10983,8 +11018,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 55436,
-      "sha256": "d9717f3fbf23440572a8c9c9ac1c0d74faddf44852d84dcbf51efafc9203cdd8"
+      "bytes": 56090,
+      "sha256": "5edcbae7844363f935ed5d23db9595cc14b34cc4a6c811da8b676ab7c3b71e7a"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -11008,8 +11043,8 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 114595,
-      "sha256": "daf9bbc30625d064cf32d0cc9c8c8a2e36bef7e92ade512d4672b8f8ebf67cc6"
+      "bytes": 116359,
+      "sha256": "79b14af7d1501fb945ab6f2d67ece20046973397d4b58d53be3236c9b0b7f599"
     },
     {
       "path": "scripts/integration-postgres.sh",
@@ -12145,6 +12180,11 @@
       "path": "tests/integration/subscription_activation_test.go",
       "bytes": 16553,
       "sha256": "9567efe86d954c065e5af6451cc4dff53b030015653b6049efc8e109a4cc6751"
+    },
+    {
+      "path": "tests/integration/survey_subscriptions_test.go",
+      "bytes": 38284,
+      "sha256": "d08d9d16183db3e53957c0cb8bb4d5d7dff5d41348082a79f2c16b288409ef72"
     },
     {
       "path": "tests/integration/surveys_test.go",

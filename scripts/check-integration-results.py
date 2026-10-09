@@ -5,6 +5,17 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGSurveySubscriptionsAuthoredRoutesAndPrivacy",
+        "TestPGSurveyNotificationsAtomicReplayAndRollback",
+        "TestPGSurveyNotificationsCurrentAudience",
+        "TestPGSurveySubscriptionsConcurrentAndAuditRollback",
+        "TestPGSurveySubscriptionsWaitRechecksAuthorityAndExpiry",
+        "TestPGSurveyNotificationsWaitRechecksAudienceAndExpiry",
+        "TestPGSurveySubscriptionsRealmRevocation",
+        "TestPGSurveySubscriptionsRestartPersistence",
+        "TestPGSurveySubscriptionsBoundedCapacity",
+        "TestPGSurveyNotificationsConcurrentAnswerDispatchLockOrder",
+
         "TestPGBackendActivityAuthoredRoutesLifecycle",
         "TestPGActivityPrivacyIsolationAndCurrentAuthority",
         "TestPGActivityConcurrentRenewalEndAndCatalogAccounting",
@@ -895,6 +906,7 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGSurveySubscriptionsRestartPersistence",
         "TestPGActivitySavedRestartPersistence",
 
         "TestPGRealmProfileAndLogRestartPersistence",

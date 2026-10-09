@@ -3,6 +3,7 @@ package application
 
 import (
 	"context"
+	"errors"
 	"net/http"
 )
 
@@ -17,4 +18,13 @@ func (i notificationIdentity) Account(r *http.Request) (string, error) {
 }
 func (b *Backend) RunNotifications(ctx context.Context, onError func(string)) error {
 	return b.notificationWorker.Run(ctx, onError)
+}
+
+// ProcessSurveyNotifications performs a bounded local-only step through the same
+// projector registered in RunNotifications. It never dispatches external push.
+func (b *Backend) ProcessSurveyNotifications(ctx context.Context, limit int) (int, error) {
+	if b == nil || b.surveyNotifications == nil {
+		return 0, errors.New("survey notification worker unavailable")
+	}
+	return b.surveyNotifications(ctx, limit)
 }

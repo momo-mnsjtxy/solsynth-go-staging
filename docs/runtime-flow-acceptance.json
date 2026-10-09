@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed wallet statistics, overview, linked order history and opt-in funded treasury exchange integrated. Combined offline checks running; actual PostgreSQL/restart pending.",
+  "local_source_checkpoint": "Independently reviewed current-friend overview integrated with final lease expiry, fallback and visible paging checks. Full combined offline checks passed; actual PostgreSQL/restart pending.",
   "last_fully_passed_ci": {
     "commit": "8d00c0cee85ebd10328ed5d51fa0e876141bf411",
     "run": 37878791797,
@@ -19,8 +19,8 @@
     "required_after_restart": 100,
     "status": "Published reviewed survey subscriptions/local notifications candidate; actual CI pending. Inherits known Tombstone cleanup and saved lease-fixture isolation failures from816."
   },
-  "local_required_before": 853,
-  "local_required_after_restart": 102,
+  "local_required_before": 859,
+  "local_required_after_restart": 103,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2128,7 +2128,7 @@
     "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
-    "as_of": "2026-10-09T04:45:00Z",
+    "as_of": "2026-10-09T04:49:00Z",
     "authoritative_for": "Current source-backed remaining flow bundles, implementation candidates and operational gaps; no percentage or endpoint-total inference.",
     "families": [
       {
@@ -2915,7 +2915,7 @@
         "families": [
           "passport.accounts_presence"
         ],
-        "remaining": "Ten accountactivity/catalog/session/stat routes integrated pendingPG; friends overview/broadcast and provider/sensoractivity remain unsupported.",
+        "remaining": "Authored account activity/catalog/session/stat routes and friend overview are integrated pending actualPG. Friend broadcast is delivered under independent review; provider/sensor activity remains unimplemented.",
         "source": [
           {
             "path": "DysonNetwork.Passport/Account/PresenceActivityController.cs",
@@ -2943,8 +2943,8 @@
           "internal/presencepg",
           "internal/mediapg/artwork.go"
         ],
-        "current_boundary": "Canonical online status/session leases/privacy and artwork upload/hash reads exist. They are not the /api/activities CRUD/session/catalog flow. GET /api/friends/overview is also unrouted.",
-        "next_slice": "Implement account-owned activity rows and duration accounting using current privacy and artwork ownership; derive friend overview only from authorized current activity/status reads."
+        "current_boundary": "Ten authored activity/catalog routes and GET /api/friends/overview are wired. Overview uses canonical bilateral friendship/block, original proof and source authority, artwork gates, final elapsed-clock filtering and visible-only pagination. No provider sensor ingestion.",
+        "next_slice": "Integrate reviewed existing-stream activity/status notifications, then verify composed PG/restart flows; provider activity remains separate."
       },
       {
         "id": "account_admin_badges",
@@ -3697,6 +3697,18 @@
         "current_boundary": "Authored stats/overview/order-history routes wired with final scope/current proof checks. Owned treasury exchange requires existing funded treasury and explicit immutable active policy; absent config disabled. No null-counterparty minting, inferred fee or live transaction.",
         "next_slice": "Actual PG/restart validation and later client adaptation; no production activation.",
         "status": "implemented_pending_actual_PG"
+      },
+      {
+        "id": "passport.friends_overview",
+        "status": "integrated_pending_actual_PG",
+        "routes": [
+          "GET /api/friends/overview"
+        ],
+        "scope": "Authored account/status/activities array and includeOffline selection; current privacy, source-session generation, artwork and final lease filtering. Original-proof restart marker and6PG cases.",
+        "evidence": [
+          "ports/passport/friends/PROVENANCE.md",
+          "tests/integration/friends_overview_test.go"
+        ]
       }
     ],
     "owned_contract_differences": [

@@ -1,0 +1,56 @@
+{
+  "license": "AGPL-3.0-only",
+  "scope": "Complete authored friend controller and Solian overview caller; complete authored broadcast method excerpt, no imported Shared implementations or protocol schemas.",
+  "files": [
+    {
+      "file": "Solian__friends_overview.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "source_path": "lib/accounts/widgets/account/friends_overview.dart",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/widgets/account/friends_overview.dart",
+      "original_blob": "f9b188460193a9902a9c9c631d1d70900b2a3da3",
+      "retained_line_ranges": null,
+      "blob": "f9b188460193a9902a9c9c631d1d70900b2a3da3",
+      "sha256": "19d8014f5810affd57c018c7ed59a9b5e8148da2e6040b36ecf9a06e7a7dc141",
+      "bytes": 18214
+    },
+    {
+      "file": "AccountEventService.friend_broadcast.excerpt.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "source_path": "DysonNetwork.Passport/Account/AccountEventService.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/AccountEventService.cs",
+      "original_blob": "1f9891d9bfc97ffbc7306213e0d7f5a10d63b4ce",
+      "retained_line_ranges": [
+        [
+          240,
+          275
+        ]
+      ],
+      "blob": "b44829839f643f5df75ddad28d3f3142bb1c445c",
+      "sha256": "f2916bbe2d263110ae8bd12a7ced3b8182958824500a9f3a3240a654458a9f9c",
+      "bytes": 1224
+    },
+    {
+      "file": "FriendsController.cs",
+      "blob": "ea1b00027cce94342ac274164c01c71055b1a3a8",
+      "sha256": "994d87a726ef08913b7964c54f22e5dde216c684ddd3672f5237bae5b18ba9fe",
+      "bytes": 3149,
+      "kind": "Existing pinned licensed source copied unchanged; see source provenance."
+    },
+    {
+      "file": "DYSON-LICENSE.txt",
+      "blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "kind": "Existing pinned licensed source copied unchanged; see source provenance."
+    },
+    {
+      "file": "SOLIAN-LICENSE.txt",
+      "blob": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+      "bytes": 34522,
+      "kind": "Existing pinned licensed source copied unchanged; see source provenance."
+    }
+  ]
+}

@@ -14,7 +14,7 @@ def check(root):
     for directory in ("ports/passport/realmmembers/source", "ports/sphere/timeline/subscription-source", "ports/passport/realmboosts/source", "ports/messager/room-media-evidence", "ports/messager/source", "ports/messager/contract-evidence", "ports/develop/source",
                       "ports/develop/product-source", "ports/develop/package-source",
                       "ports/sphere/nodeinfo/source", "ports/wallet/productcatalog/source",
-                      "inventory/product-client-evidence", "ports/passport/artwork/source", "ports/passport/activities/source",
+                      "inventory/product-client-evidence", "ports/passport/artwork/source", "ports/passport/activities/source", "ports/passport/friends/source",
                       "ports/passport/affiliation/source", "ports/passport/social/contract-evidence",
                       "inventory/operation-sources", "ports/federation/quote-evidence", "ports/federation/discovery-evidence", "ports/passport/passkit/source", "ports/passport/social/expiry-evidence"):
 

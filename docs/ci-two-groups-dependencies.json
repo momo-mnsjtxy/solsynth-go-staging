@@ -1,5 +1,5 @@
 {
-  "base_commit": "b9d9484053982647d75321024ccd847b0d605078",
+  "base_commit": "d488788551bb069f2b09eddc74e02d6339ff3b99",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -594,6 +594,20 @@
       ],
       "named_database_markers": {},
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGFriendsOverviewSavedRestartPersistence",
+      "source": "tests/integration/friends_overview_test.go",
+      "function_sha256": "6f6b98e274b525706be93bfa002bc8ac63818c46dece79821ff8711abf341641",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "friends-overview-state.json"
+      ],
+      "persistent_directories_or_files": [
+        "friends-overview-state.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Independently reviewed original before-phase synthetic account IDs, one-hour bearer credentials issued before target state, public verifier keys and elapsed wall clock, exact visible overview and source event count. After a real restart the unchanged case reads the same canonical state using the original saved credential, compares the complete projection and unchanged source event count, and rejects cross-actor proof substitution. No target seeding, issuance, refresh, lifetime extension, private signing key or authority rewrite occurs in the after phase. Marker remains private to its assigned cluster; actual execution is coordinator CI only."
     },
     {
       "test": "TestPGLiveStreamAwardsPayoutRestartPersistence",
@@ -2270,6 +2284,10 @@
     {
       "source": "tests/integration/fortunes_test.go",
       "sha256": "dcf591d52248e2aeb4b450917c6e8027605cef879061df9da686e0329adf8ab0"
+    },
+    {
+      "source": "tests/integration/friends_overview_test.go",
+      "sha256": "8ef88d88adb2c266ec1f0da5dbc7d11bbc55dc46db43b815c1dad18102665fb4"
     },
     {
       "source": "tests/integration/http_fixture_test.go",

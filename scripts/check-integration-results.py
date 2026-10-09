@@ -5,6 +5,13 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGFriendsOverviewArtworkWaitExpiryAndCancellation",
+        "TestPGFriendsOverviewAuthoredSelectionAndWire",
+        "TestPGFriendsOverviewConcurrentReadsAndBounds",
+        "TestPGFriendsOverviewPrivateNestedAndCurrentAudience",
+        "TestPGFriendsOverviewSavedRestartPersistence",
+        "TestPGFriendsOverviewWaitRechecksPolicyAndOriginalProof",
+
         "TestPGBackendWalletReportingLifecyclePrivacyAndDates",
         "TestPGWalletReportingOrderPaginationAndSettlement",
         "TestPGBackendWalletReportingFundsDoNotDoubleCount",
@@ -918,6 +925,8 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGFriendsOverviewSavedRestartPersistence",
+
         "TestPGBackendWalletReportingRestartPersistence",
         "TestPGBackendWalletExchangeOriginalProofRestartPersistence",
 

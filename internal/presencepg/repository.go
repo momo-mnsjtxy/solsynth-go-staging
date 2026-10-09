@@ -180,73 +180,79 @@ func (r *Repository) GetStatus(ctx context.Context, viewer, reference string) (v
 		return v, presence.ErrInvalid
 	}
 	e = r.within(ctx, viewer, nil, func(tx *sql.Tx, _ authority.Principal, now time.Time) error {
-		column := "name"
-		if authority.ValidID(reference) {
-			column = "id::text"
-		}
-		var id string
-		var created time.Time
-		if e := tx.QueryRowContext(ctx, `SELECT id::text,created_at FROM owned_authority_accounts WHERE `+column+`=$1 AND NOT disabled`, reference).Scan(&id, &created); e != nil {
-			if errors.Is(e, sql.ErrNoRows) {
-				return presence.ErrNotFound
-			}
-			return e
-		}
-		var blocked, friend bool
-		if viewer != "" && viewer != id {
-			if e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE ((account_id=$1 AND related_id=$2)OR(account_id=$2 AND related_id=$1))AND status=-100),(EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE account_id=$1 AND related_id=$2 AND status>=100) AND EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE account_id=$2 AND related_id=$1 AND status>=100))`, id, viewer).Scan(&blocked, &friend); e != nil {
-				return e
-			}
-		}
-		if blocked {
-			return presence.ErrNotFound
-		}
-		pref, e := prefs(ctx, tx, id)
-		if e != nil {
-			return e
-		}
-		allowed := func(s string) bool { return viewer == id || s == "public" || s == "friends" && friend }
-		label := "Offline"
-		v = presence.Status{ID: id, AccountID: id, Label: &label, Meta: json.RawMessage(`null`), CreatedAt: created, UpdatedAt: created}
-		actual, e := currentStatus(ctx, tx, id, now)
-		if e != nil && !errors.Is(e, sql.ErrNoRows) {
-			return e
-		}
-		invisible := e == nil && actual.Type == presence.Invisible
-		if e == nil && allowed(pref.StatusVisibility) {
-			v = actual
-		}
-		if invisible && viewer != id {
-			v.Type = presence.Default
-		}
-		if allowed(pref.OnlineVisibility) && !invisible {
-			var n, active int
-			var idle sql.NullTime
-			e = tx.QueryRowContext(ctx, `SELECT count(*),count(*)FILTER(WHERE p.idle_since IS NULL),max(p.idle_since) FROM owned_presence_sessions p JOIN owned_authority_sessions s ON s.id=p.session_id AND s.account_id=p.account_id JOIN owned_authority_accounts a ON a.id=p.account_id WHERE p.account_id=$1 AND p.expires_at>$2 AND s.expires_at>$2 AND s.revoked_at IS NULL AND NOT a.disabled AND p.epoch=s.epoch AND p.account_version=a.version AND s.account_version=a.version AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments u WHERE u.account_id=a.id AND u.kind='disable_account' AND(u.starts_at IS NULL OR u.starts_at<=$2)AND(u.expires_at IS NULL OR u.expires_at>$2))`, id, now).Scan(&n, &active, &idle)
-			if e != nil {
-				return e
-			}
-			v.IsOnline = n > 0
-			v.IsIdle = n > 0 && active == 0
-			if v.IsIdle && idle.Valid {
-				v.IdleSince = &idle.Time
-			}
-		}
-		if allowed(pref.LastSeenVisibility) && (!invisible || viewer == id) {
-			var seen time.Time
-			e = tx.QueryRowContext(ctx, `SELECT last_seen_at FROM owned_presence_last_seen WHERE account_id=$1`, id).Scan(&seen)
-			if e == nil {
-				v.LastSeenAt = &seen
-			} else if !errors.Is(e, sql.ErrNoRows) {
-				return e
-			}
-		}
-		if !v.IsCustomized && v.IsOnline {
-			label = "Online"
-		}
-		return nil
+		v, e = projectStatus(ctx, tx, viewer, reference, now)
+		return e
 	})
 	return
+}
+
+// projectStatus is the canonical projection shared by account and friend reads.
+func projectStatus(ctx context.Context, tx *sql.Tx, viewer, reference string, now time.Time) (v presence.Status, e error) {
+	column := "name"
+	if authority.ValidID(reference) {
+		column = "id::text"
+	}
+	var id string
+	var created time.Time
+	if e := tx.QueryRowContext(ctx, `SELECT id::text,created_at FROM owned_authority_accounts WHERE `+column+`=$1 AND NOT disabled`, reference).Scan(&id, &created); e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
+			return v, presence.ErrNotFound
+		}
+		return v, e
+	}
+	var blocked, friend bool
+	if viewer != "" && viewer != id {
+		if e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE ((account_id=$1 AND related_id=$2)OR(account_id=$2 AND related_id=$1))AND status=-100),(EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE account_id=$1 AND related_id=$2 AND status>=100) AND EXISTS(SELECT 1 FROM owned_social_effective_relationships WHERE account_id=$2 AND related_id=$1 AND status>=100))`, id, viewer).Scan(&blocked, &friend); e != nil {
+			return v, e
+		}
+	}
+	if blocked {
+		return v, presence.ErrNotFound
+	}
+	pref, e := prefs(ctx, tx, id)
+	if e != nil {
+		return v, e
+	}
+	allowed := func(s string) bool { return viewer == id || s == "public" || s == "friends" && friend }
+	label := "Offline"
+	v = presence.Status{ID: id, AccountID: id, Label: &label, Meta: json.RawMessage(`null`), CreatedAt: created, UpdatedAt: created}
+	actual, e := currentStatus(ctx, tx, id, now)
+	if e != nil && !errors.Is(e, sql.ErrNoRows) {
+		return v, e
+	}
+	invisible := e == nil && actual.Type == presence.Invisible
+	if e == nil && allowed(pref.StatusVisibility) {
+		v = actual
+	}
+	if invisible && viewer != id {
+		v.Type = presence.Default
+	}
+	if allowed(pref.OnlineVisibility) && !invisible {
+		var n, active int
+		var idle sql.NullTime
+		e = tx.QueryRowContext(ctx, `SELECT count(*),count(*)FILTER(WHERE p.idle_since IS NULL),max(p.idle_since) FROM owned_presence_sessions p JOIN owned_authority_sessions s ON s.id=p.session_id AND s.account_id=p.account_id JOIN owned_authority_accounts a ON a.id=p.account_id WHERE p.account_id=$1 AND p.expires_at>$2 AND s.expires_at>$2 AND s.revoked_at IS NULL AND NOT a.disabled AND p.epoch=s.epoch AND p.account_version=a.version AND s.account_version=a.version AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments u WHERE u.account_id=a.id AND u.kind='disable_account' AND(u.starts_at IS NULL OR u.starts_at<=$2)AND(u.expires_at IS NULL OR u.expires_at>$2))`, id, now).Scan(&n, &active, &idle)
+		if e != nil {
+			return v, e
+		}
+		v.IsOnline = n > 0
+		v.IsIdle = n > 0 && active == 0
+		if v.IsIdle && idle.Valid {
+			v.IdleSince = &idle.Time
+		}
+	}
+	if allowed(pref.LastSeenVisibility) && (!invisible || viewer == id) {
+		var seen time.Time
+		e = tx.QueryRowContext(ctx, `SELECT last_seen_at FROM owned_presence_last_seen WHERE account_id=$1`, id).Scan(&seen)
+		if e == nil {
+			v.LastSeenAt = &seen
+		} else if !errors.Is(e, sql.ErrNoRows) {
+			return v, e
+		}
+	}
+	if !v.IsCustomized && v.IsOnline {
+		label = "Online"
+	}
+	return v, nil
 }
 func (r *Repository) SetStatus(ctx context.Context, actor string, req presence.StatusRequest, update bool) (v presence.Status, e error) {
 	if e = presence.ValidateRequest(req); e != nil {

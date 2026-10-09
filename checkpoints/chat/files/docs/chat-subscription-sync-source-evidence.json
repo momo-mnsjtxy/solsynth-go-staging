@@ -1,0 +1,49 @@
+{
+  "license": "AGPL-3.0-only",
+  "base": "e330428767a6aaf2e27650b62f8f431c571bf492",
+  "sources": [
+    {
+      "path": "ports/messager/source/DysonNetwork.Messager__Chat__ChatController.cs",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "lines": "190-229;284-351;1604-1624;1675-1726",
+      "sha256": "22d8a19becdab64fefa234d0213591f49ab3d08458c186b4900609bb02d38c98",
+      "git_blob": "29e748e8c585ed766c9e20dddfc2eae65509f9a2"
+    },
+    {
+      "path": "ports/messager/source/DysonNetwork.Messager__Chat__ChatRoomController.cs",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "lines": "44-83;167-357",
+      "sha256": "fbf9898e12c73cb47568035a168203243cab6dbcdd7545cf02861967d6d1d41e",
+      "git_blob": "373efa01d468a76ba5085bf5c2b59bede71bd7ec"
+    },
+    {
+      "path": "internal/messagerpg/source/ChatRoomService.cs",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "lines": "19-40;462-699",
+      "sha256": "b366429d359958219f8a55172bfb8d8eb054f9115a5a8aaad5cf48cc3dc744ef",
+      "git_blob": "9cf43ace02eac8a03749b157a16e890c102cafc4"
+    },
+    {
+      "path": "inventory/product-client-evidence/Solian__lib__chat__pods__chat_room.dart",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "lines": "965-1043;1255-1337",
+      "sha256": "e4eb3a1c84a8029c549c8525bc17aa399f1ad307c25bbbbcc01aaa5263277984",
+      "git_blob": "79ab12b99084948a8935c1fab15941edb9780406"
+    },
+    {
+      "path": "ports/messager/source/LICENSE.txt",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "lines": "all",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "git_blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e"
+    },
+    {
+      "path": "internal/messagerpg/source/LICENSE.txt",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "lines": "all",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "git_blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e"
+    }
+  ],
+  "exclusions": "No generated/binding/protocol/shared/Socommon/Suki/canceled content inspected; no external fetch."
+}

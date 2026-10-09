@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "archive_commit": "ccf5f5dfab3f2f85d5c9d17f25e8185870f99567",
+  "base_main": "b1c55b5ca81817df7b00ee87507200c03d85ff6f",
+  "excluded": [
+    "external payment channels/provider integration",
+    "migration/deployment work",
+    "legacy/version compatibility"
+  ],
+  "meaning": "Implementation status is tracked separately from current SHA CI and external activation. No completed-platform claim until all in-scope items have reviewed implementation and executable evidence.",
+  "items": [
+    {
+      "id": "draft-transient-developer-media",
+      "scope": "语音、placeholder、developer quota与媒体关联",
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "3e53853",
+        "caff00dddc01bdb1913d17cbb7c398764eb5523a"
+      ]
+    },
+    {
+      "id": "draft-chat-sync",
+      "scope": "房间/账户订阅、状态、全局/房间同步",
+      "status": "implemented_pending_independent_review",
+      "evidence": [
+        "715a091e566bdd03f45d8e5625df8e314f28b934"
+      ]
+    },
+    {
+      "id": "draft-chat-live",
+      "scope": "聊天消息与已读事件实时投递/回放",
+      "status": "implemented_pending_independent_review",
+      "evidence": [
+        "715a091e566bdd03f45d8e5625df8e314f28b934"
+      ]
+    },
+    {
+      "id": "draft-post-pins",
+      "scope": "publisher/realm置顶与筛选",
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "88997cfd20960d0bcd66c64e46302e69f394e374",
+        "d25226e"
+      ]
+    },
+    {
+      "id": "draft-miniapp-upload",
+      "scope": "multipart ZIP与icon/background关联",
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "07d783782392a3b421cb6ae35338f5724680a79c",
+        "9b1de07"
+      ]
+    },
+    {
+      "id": "bot-credentials-execution",
+      "scope": "Bot密钥/身份回复/DM-realm-MLS执行与renewal",
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "07d783782392a3b421cb6ae35338f5724680a79c",
+        "9b1de07"
+      ]
+    },
+    {
+      "id": "typed-chat-compositions",
+      "scope": "非text fund/survey等消息组合",
+      "status": "implemented_pending_independent_review",
+      "evidence": [
+        "715a091e566bdd03f45d8e5625df8e314f28b934"
+      ]
+    },
+    {
+      "id": "account-admin-history",
+      "scope": "账户聚合管理及auth侧contact/factor/session、provider links与credit writers",
+      "status": "implementing",
+      "evidence": [
+        "492cc28"
+      ]
+    },
+    {
+      "id": "realm-progression",
+      "scope": "成员filter/order/status/search、XP触发/tenure、source-point/birthday/backdate/trusted/admin业务",
+      "status": "implementing",
+      "evidence": [
+        "492cc28"
+      ]
+    },
+    {
+      "id": "nearby-nfc-location-media",
+      "scope": "附近presence tokens与resolve、加密NFC管理/claim/lock/SUN、location图片",
+      "status": "implementing",
+      "evidence": [
+        "872f6f64c1addc67e49b3956c768354c810d9f07"
+      ]
+    },
+    {
+      "id": "media-management",
+      "scope": "resumable stats/task/bulk cleanup、remote upload/dedup/thumb/pools/folders/E2EE/expiry",
+      "status": "implementing",
+      "evidence": [
+        "872f6f64c1addc67e49b3956c768354c810d9f07"
+      ]
+    },
+    {
+      "id": "publisher-post-collection",
+      "scope": "publisher quota/search/stats/feature/rewards/ads/block-mute、post boost/navigation/reaction/replies、org collection CRUD/artwork/search",
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "88997cfd20960d0bcd66c64e46302e69f394e374",
+        "d25226e"
+      ]
+    },
+    {
+      "id": "federation-oauth",
+      "scope": "actor/search/posts/follow/availability、realm ActivityPub/admin/moderation/private-media",
+      "status": "fixing_review",
+      "evidence": [
+        "5c0f115dc19e0a4682762f292d1d0f908196fc00"
+      ]
+    },
+    {
+      "id": "internal-wallet-commerce",
+      "scope": "admin/buyer reads、maintenance/quarantine、funded adjustments、paid-product apply、settlement/payout/refund conservation",
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "142e917747765e34a0fc403b1567c55e571f32a2",
+        "9fd90e5"
+      ]
+    },
+    {
+      "id": "affiliation-livestream-operations",
+      "scope": "内部余额付费邀请码、HLS archive/download/MP4、award/beneficiary/refund、持久retention/purge/redrive/inspection",
+      "status": "implementing",
+      "evidence": [
+        "4814d19"
+      ]
+    },
+    {
+      "id": "oauth-resources",
+      "scope": "OAuth device/registration/introspection及明示HTTP资源scope接线",
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "e1e7a1f949dc89e79873305245c88b98f5e83d59",
+        "45cc8a0"
+      ]
+    },
+    {
+      "id": "device-push-registration",
+      "scope": "provider实际possession挑战、加密device token、单次确认与push_enable canonical progression、复核及撤销",
+      "status": "implementing",
+      "evidence": [
+        "492cc28"
+      ]
+    }
+  ],
+  "current_validation": {
+    "head": "9fd90e5",
+    "ordinary_go_tests": "affected packages passed after each integration; integration PG tests compile; actual PostgreSQL not run locally",
+    "first_combined_ci_run": 37947319307,
+    "first_combined_ci_head": "0b59486bf1b6a74905e7587fbcdc9fea9987acfe",
+    "first_combined_ci_result": "checks passed; both PostgreSQL groups and contracts failed; three specific causes fixed and independently reviewed locally, pending combined rerun"
+  }
+}

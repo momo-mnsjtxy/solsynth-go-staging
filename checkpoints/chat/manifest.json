@@ -1,0 +1,444 @@
+{
+  "status": "committed source checkpoint; not final acceptance; real PostgreSQL and restart validation outstanding",
+  "published_base_commit": "0b59486bf1b6a74905e7587fbcdc9fea9987acfe",
+  "local_base_commit": "7bfc7f9b2efd9b3dad9297aad8bb3207b40a2c08",
+  "local_head_commit": "715a091e566bdd03f45d8e5625df8e314f28b934",
+  "changed_or_added": {
+    "docs/chat-live-provenance.json": {
+      "path": "checkpoints/chat/files/docs/chat-live-provenance.json",
+      "sha256": "ce102d9c8662b36f7ac1259bcfe63f5574471d0fb500fa908a3b8ee3966c9dff",
+      "bytes": 2566,
+      "mode": "100644",
+      "git_blob": "2eda51caf04ab1580a5ec9eaa3d030d4c3b30dc9"
+    },
+    "docs/chat-subscription-sync-continuation.md": {
+      "path": "checkpoints/chat/files/docs/chat-subscription-sync-continuation.md",
+      "sha256": "fc77617320fe3a2761a83ad0fe7d116788fea6a6eec2d71fec7812b508230f45",
+      "bytes": 7552,
+      "mode": "100644",
+      "git_blob": "100e5c46ba1acbbd77b14dba7082c2d584d180f4"
+    },
+    "docs/chat-subscription-sync-dependencies.json": {
+      "path": "checkpoints/chat/files/docs/chat-subscription-sync-dependencies.json",
+      "sha256": "56dfe4fc6be0f54c3118c90627e018ffe6bd22bbc0a4a91c7d6cd8893c75ff79",
+      "bytes": 1793,
+      "mode": "100644",
+      "git_blob": "4d71550a30d295a3bade6a6995b16eebd3410441"
+    },
+    "docs/chat-subscription-sync-integration-cases.json": {
+      "path": "checkpoints/chat/files/docs/chat-subscription-sync-integration-cases.json",
+      "sha256": "7c1a2e0158c1a980c6331d552c44bd6c5b59ea06ba04a1219fc69344cc4ac29e",
+      "bytes": 967,
+      "mode": "100644",
+      "git_blob": "3399d1a4ff7d1b7a0877d2b1760eacfb6b8cabdb"
+    },
+    "docs/chat-subscription-sync-source-evidence.json": {
+      "path": "checkpoints/chat/files/docs/chat-subscription-sync-source-evidence.json",
+      "sha256": "4132deae784d0e3207aca83aea8fbd649392d916b772ec4bab68c2c4d8df7d27",
+      "bytes": 2179,
+      "mode": "100644",
+      "git_blob": "0145d99d8451f886903cb055fa7bc4d6feca6eac"
+    },
+    "docs/runtime-flow-acceptance.json": {
+      "path": "checkpoints/chat/files/docs/runtime-flow-acceptance.json",
+      "sha256": "a2d685c0cc00f9c4f32dab576b849aa4287b79c7672db07824b9f188818ac5fd",
+      "bytes": 220687,
+      "mode": "100644",
+      "git_blob": "6d8d1a7d0836675d93b446610a03900f6e76b067"
+    },
+    "internal/application/backend.go": {
+      "path": "checkpoints/chat/files/internal/application/backend.go",
+      "sha256": "75bf43858cf481d244159fb3a9bc86b43a980432f4ea5cb52537bdd5d66796e7",
+      "bytes": 38497,
+      "mode": "100644",
+      "git_blob": "9aea9a7b43b6b0b082675df6d262d488099b9aac"
+    },
+    "internal/application/chat_composition.go": {
+      "path": "checkpoints/chat/files/internal/application/chat_composition.go",
+      "sha256": "a2190007873447b69d53347cc9ec777790dca0ff1f400ba1f97c2572f99174e7",
+      "bytes": 7113,
+      "mode": "100644",
+      "git_blob": "df5d5013534b409f04ce86bce69278f3603e654b"
+    },
+    "internal/application/chat_composition_test.go": {
+      "path": "checkpoints/chat/files/internal/application/chat_composition_test.go",
+      "sha256": "10c36abc8c633cfa24e80f4cc0a910b8e25b0ee5a7806e45f2bc00527f4bde65",
+      "bytes": 1450,
+      "mode": "100644",
+      "git_blob": "b14c0fccd9c4355e3f7a56909a4b92bdf9665cbc"
+    },
+    "internal/application/chat_maintenance.go": {
+      "path": "checkpoints/chat/files/internal/application/chat_maintenance.go",
+      "sha256": "2499526a6114909bc5584e622bf236197fa00c020b6aa934788efec99ac10b61",
+      "bytes": 1182,
+      "mode": "100644",
+      "git_blob": "9152ee541f2549dffafa443d2ee823f556960b7a"
+    },
+    "internal/application/readiness.go": {
+      "path": "checkpoints/chat/files/internal/application/readiness.go",
+      "sha256": "d9305e8f3ce945b8d0f14392eefbfd9a1705e999de095479a68a86e7fca6ee84",
+      "bytes": 11224,
+      "mode": "100644",
+      "git_blob": "f737ea982f9e14fe6430aee796bf9e51eb7890b9"
+    },
+    "internal/application/stream_tickets.go": {
+      "path": "checkpoints/chat/files/internal/application/stream_tickets.go",
+      "sha256": "61d5c6c572013a6eab2c59c534e954a5923a3689a49654ae5db323464f3d4714",
+      "bytes": 5973,
+      "mode": "100644",
+      "git_blob": "23577670ae850ddeb7d7f252c26bc7a91c9cd4c5"
+    },
+    "internal/authoritypg/browser_ticket.go": {
+      "path": "checkpoints/chat/files/internal/authoritypg/browser_ticket.go",
+      "sha256": "cb23e495e294d2799e59f939830c721038d595f1e3ac4035fd56f47bcf3f2f06",
+      "bytes": 1127,
+      "mode": "100644",
+      "git_blob": "97959bb362ee48d48e607d5337d533ca569459b4"
+    },
+    "internal/authoritypg/recorded_session.go": {
+      "path": "checkpoints/chat/files/internal/authoritypg/recorded_session.go",
+      "sha256": "514e9dde59cbfba7da25395f02b449da9d2a9d2570100ef9202d5265d8eec215",
+      "bytes": 3122,
+      "mode": "100644",
+      "git_blob": "537a31d4350f830f974097039142a70aba4e6867"
+    },
+    "internal/authoritypg/repository.go": {
+      "path": "checkpoints/chat/files/internal/authoritypg/repository.go",
+      "sha256": "1a7fc109f4bfce599c4a82b1bc32e2fc198e79c962064bf683b04430019dce11",
+      "bytes": 13835,
+      "mode": "100644",
+      "git_blob": "176841be1cc2f9f9ecd60576790df934e1c55e32"
+    },
+    "internal/authoritypg/stream_ticket_schema.sql": {
+      "path": "checkpoints/chat/files/internal/authoritypg/stream_ticket_schema.sql",
+      "sha256": "ca382fbf80c05c729f0fae982700b518f0ade92c4703e395c672b96fc2287a57",
+      "bytes": 1118,
+      "mode": "100644",
+      "git_blob": "7417298194a77d410eb67fc34a6e0c45d8d55d36"
+    },
+    "internal/chatpg/associations.go": {
+      "path": "checkpoints/chat/files/internal/chatpg/associations.go",
+      "sha256": "bef81bd3a3214d95f35c52206651be815aec3d7e544f0028a3eb351a09acdb9f",
+      "bytes": 4158,
+      "mode": "100644",
+      "git_blob": "f42bc70f2470f570298676234240bed86fbe0bdb"
+    },
+    "internal/chatpg/live_events.go": {
+      "path": "checkpoints/chat/files/internal/chatpg/live_events.go",
+      "sha256": "ed876e09e0e42a3442d2ddcaaef527e483b01e6849e16ee02f90792d77aa4d8a",
+      "bytes": 13738,
+      "mode": "100644",
+      "git_blob": "c8b121685cba44333540d6f4a289504b25f04cd0"
+    },
+    "internal/chatpg/live_events_test.go": {
+      "path": "checkpoints/chat/files/internal/chatpg/live_events_test.go",
+      "sha256": "9339fac17db1be68d43c4b6baa845a961e24f7e23822660d61d0af6abffe9196",
+      "bytes": 3006,
+      "mode": "100644",
+      "git_blob": "eea98dbfcdf0eecc8e2d75c477682c7ee4a2f777"
+    },
+    "internal/chatpg/members.go": {
+      "path": "checkpoints/chat/files/internal/chatpg/members.go",
+      "sha256": "e89189a98a48ec99b69590ce3a255425dded04f5a88bdb2f728b390f59b80a07",
+      "bytes": 11935,
+      "mode": "100644",
+      "git_blob": "5c819db7b4dfae80b9fb2da2fb273d77cf363b47"
+    },
+    "internal/chatpg/messages.go": {
+      "path": "checkpoints/chat/files/internal/chatpg/messages.go",
+      "sha256": "4394c50d36548ee73cc53fdcae99e36246687fe80e901f51dbde6b198305b098",
+      "bytes": 16242,
+      "mode": "100644",
+      "git_blob": "e8a009a81dd5d71bbc17f21dcd813a42c101fa7c"
+    },
+    "internal/chatpg/organization.go": {
+      "path": "checkpoints/chat/files/internal/chatpg/organization.go",
+      "sha256": "40fe391ef7f55615e46dde268f266b9ed380a67493af3c2eba12ec01e0421af8",
+      "bytes": 5952,
+      "mode": "100644",
+      "git_blob": "1d4e6a611c0f9a5869d742b7fd0680a75e199997"
+    },
+    "internal/chatpg/organization_reads.go": {
+      "path": "checkpoints/chat/files/internal/chatpg/organization_reads.go",
+      "sha256": "3c200bbf790faf044866a874d408b719b206e39754673da33255cf6f0a79d4a1",
+      "bytes": 8960,
+      "mode": "100644",
+      "git_blob": "73d2403bab63632d90bac32f9aa93fad5697e9b3"
+    },
+    "internal/chatpg/organization_schema.sql": {
+      "path": "checkpoints/chat/files/internal/chatpg/organization_schema.sql",
+      "sha256": "445b7efbf352889b174c856ad76a6de58d22c05b7c35cde319e407a4c331bb7e",
+      "bytes": 3894,
+      "mode": "100644",
+      "git_blob": "bad320e8abfe9c8942533a93dade6573be20db71"
+    },
+    "internal/chatpg/repository.go": {
+      "path": "checkpoints/chat/files/internal/chatpg/repository.go",
+      "sha256": "9f152086d8a1147083b38e79c108bde5f0dfbf2548cea9c9b0ea9babe4bea068",
+      "bytes": 14694,
+      "mode": "100644",
+      "git_blob": "9232f557c17caa555156c0e16c0e854a9249afbb"
+    },
+    "internal/chatpg/schema.sql": {
+      "path": "checkpoints/chat/files/internal/chatpg/schema.sql",
+      "sha256": "c2d1b8e208d29ca8c04825958d58edc4d30f4d81b738696f502148c167f0198c",
+      "bytes": 8031,
+      "mode": "100644",
+      "git_blob": "569c045e7f6f28cda9fe56f8795a61568bbd5bb8"
+    },
+    "internal/chatpg/subscription_connections.go": {
+      "path": "checkpoints/chat/files/internal/chatpg/subscription_connections.go",
+      "sha256": "bd8dfe71449c8c8e808ddf8bd8f0d4a42c31e0bbd20d9425aea5e214ace7428e",
+      "bytes": 8146,
+      "mode": "100644",
+      "git_blob": "32c5c73320991b894569ebd89008b547d09aa8b4"
+    },
+    "internal/chatpg/subscription_reads.go": {
+      "path": "checkpoints/chat/files/internal/chatpg/subscription_reads.go",
+      "sha256": "2757dff9abcc3e7e226caeea6967c17353c1fff5b5c39603b0be6783f4426b32",
+      "bytes": 8393,
+      "mode": "100644",
+      "git_blob": "235147cba2b47d615c8cdedc6447a7356c61f50a"
+    },
+    "internal/chatpg/subscription_sync.go": {
+      "path": "checkpoints/chat/files/internal/chatpg/subscription_sync.go",
+      "sha256": "be73a3c18cbcb92743d7a230f06ad8156e25c609e3c935bb86af58bc7aaa7111",
+      "bytes": 9402,
+      "mode": "100644",
+      "git_blob": "06514877c302d789de9d7b9eccf071d47b5a1381"
+    },
+    "internal/chatpg/subscription_sync_test.go": {
+      "path": "checkpoints/chat/files/internal/chatpg/subscription_sync_test.go",
+      "sha256": "88c872c3b8c598f26370e2715a9e5295f2cf68d4f30a203ab18613462071aec5",
+      "bytes": 819,
+      "mode": "100644",
+      "git_blob": "f070299e04df77f1f0825d7af2a42bf7bfa49a32"
+    },
+    "internal/notificationpg/chat_events.go": {
+      "path": "checkpoints/chat/files/internal/notificationpg/chat_events.go",
+      "sha256": "60c4f1eb3b27931b439938de18b8b6d3273e311e7ed7e796a241e545829a4b0b",
+      "bytes": 7521,
+      "mode": "100644",
+      "git_blob": "7c49843870ad4e252fdaeea0ad7c4395ef6c6633"
+    },
+    "internal/notificationpg/chat_maintenance.go": {
+      "path": "checkpoints/chat/files/internal/notificationpg/chat_maintenance.go",
+      "sha256": "16c2b1229b9ef2df2e7c9cd6b12a3a022db68169723f913e611afdb9be01ebd9",
+      "bytes": 7578,
+      "mode": "100644",
+      "git_blob": "13c1389e7d107befc7aca329b229cada13fcd0e6"
+    },
+    "internal/notificationpg/projections.go": {
+      "path": "checkpoints/chat/files/internal/notificationpg/projections.go",
+      "sha256": "88e09b96e46cad2b0b2b5868dbcd7b3dc04ad47cb39c5ed700986798972d1a14",
+      "bytes": 9487,
+      "mode": "100644",
+      "git_blob": "81d6a78adba7d5988e4a69ce5849fe144f4d8809"
+    },
+    "internal/notificationpg/repository.go": {
+      "path": "checkpoints/chat/files/internal/notificationpg/repository.go",
+      "sha256": "0bc355308a580b297db28eff41ebb088dc01125a7ab24f3e8ffd6ff7d2738108",
+      "bytes": 15031,
+      "mode": "100644",
+      "git_blob": "1291fc6042dc43e848c079e4a493621e79e3cd12"
+    },
+    "internal/realtime/chat_events_test.go": {
+      "path": "checkpoints/chat/files/internal/realtime/chat_events_test.go",
+      "sha256": "b625d98576994bbe5bc4949f30e466e6018c02c7d65c75d6ba7fd4fc7bc669e3",
+      "bytes": 9104,
+      "mode": "100644",
+      "git_blob": "90be8b47360e6fbf2ebd0b20d839363de7ff1133"
+    },
+    "internal/realtime/connections.go": {
+      "path": "checkpoints/chat/files/internal/realtime/connections.go",
+      "sha256": "c8c38bca5d547397f567998afd0fb136e4fbc0dd6caaf3b6eae36b820d4ea88a",
+      "bytes": 1787,
+      "mode": "100644",
+      "git_blob": "b22a7fb1d3153896e59aad70710bb1f39b50ba40"
+    },
+    "internal/realtime/http.go": {
+      "path": "checkpoints/chat/files/internal/realtime/http.go",
+      "sha256": "12bf988520f1852e5e65bd7f54f9eeea6ba692ed3ec9104a0a947651f0af2a76",
+      "bytes": 13707,
+      "mode": "100644",
+      "git_blob": "976361058b0bc4871e328cbe696906bb856223ec"
+    },
+    "internal/realtime/http_test.go": {
+      "path": "checkpoints/chat/files/internal/realtime/http_test.go",
+      "sha256": "ac6319f87b62bc3c4ae40c55424b57b2b3ffde542b4e408ec21545b3ba10e760",
+      "bytes": 5526,
+      "mode": "100644",
+      "git_blob": "5661f7d1cb333bd7df40f1d44506c68892c26c09"
+    },
+    "internal/surveypg/repository.go": {
+      "path": "checkpoints/chat/files/internal/surveypg/repository.go",
+      "sha256": "50d2d0ecfdc8b705949b0f9e6ce76974ca178d09c23cdeb10e3896f1312e872d",
+      "bytes": 27017,
+      "mode": "100644",
+      "git_blob": "c687ad77580538c4ec172ac6854e3b487ea3fa66"
+    },
+    "internal/walletpg/funds.go": {
+      "path": "checkpoints/chat/files/internal/walletpg/funds.go",
+      "sha256": "faa0147937a42f343e8bc2f45c9af85a1b2195c025a9ce8e8017017b42e5b260",
+      "bytes": 27925,
+      "mode": "100644",
+      "git_blob": "651b230c7bb22966013fcf2c3ddbe72543824124"
+    },
+    "ports/authority/browser_ticket.go": {
+      "path": "checkpoints/chat/files/ports/authority/browser_ticket.go",
+      "sha256": "b1d629f5b321d883a50b2672bf37d507c5ab2f83da4303b8e7008985f1b073f6",
+      "bytes": 2535,
+      "mode": "100644",
+      "git_blob": "6e3ba274c0e4aea2190f9c55381c04426108179b"
+    },
+    "ports/authority/browser_ticket_test.go": {
+      "path": "checkpoints/chat/files/ports/authority/browser_ticket_test.go",
+      "sha256": "34bdd05ab7315959952d7adf9ebe0eed19e1c25a4262380d5267c8fd304ab1ba",
+      "bytes": 2533,
+      "mode": "100644",
+      "git_blob": "e6fca1648db156f568de8f4bfb22055fb27dba02"
+    },
+    "ports/authority/recorded_connection_test.go": {
+      "path": "checkpoints/chat/files/ports/authority/recorded_connection_test.go",
+      "sha256": "4cc37d7fdb79d9f974382f8bdc0f4788d8a45cf087d330551bd477f308a4437a",
+      "bytes": 2467,
+      "mode": "100644",
+      "git_blob": "bfc7d8ac62ad5bd7682adaa4571d524c39f3c3a3"
+    },
+    "ports/authority/recorded_session.go": {
+      "path": "checkpoints/chat/files/ports/authority/recorded_session.go",
+      "sha256": "72b7d985574618ead4653f6f8626b522a19479a37e9f7d9143507ed5e7388643",
+      "bytes": 3683,
+      "mode": "100644",
+      "git_blob": "88afffa022f19257ce317021b527e54af5d8b589"
+    },
+    "ports/messager/rooms/chat_connections.go": {
+      "path": "checkpoints/chat/files/ports/messager/rooms/chat_connections.go",
+      "sha256": "bd3fcc3ef736d73ea483e5b9ce03a20837d1c3a4abeb03353d8000f20a0018d7",
+      "bytes": 923,
+      "mode": "100644",
+      "git_blob": "ca14d7318948caf4af6870934062aed58b6c2b35"
+    },
+    "ports/messager/rooms/http.go": {
+      "path": "checkpoints/chat/files/ports/messager/rooms/http.go",
+      "sha256": "0296ed358967b1cef686f149e18f83b52a8b1606e82be16e07a3cd155bf77bbd",
+      "bytes": 17937,
+      "mode": "100644",
+      "git_blob": "fe6341f4f0a254d5d5c9bc1e1c4dc4f4f54ba062"
+    },
+    "ports/messager/rooms/http_test.go": {
+      "path": "checkpoints/chat/files/ports/messager/rooms/http_test.go",
+      "sha256": "2fa115a2fe920de1c26f52e3f4371b6a2afbe8411261eaa706d006f3e1cc45d6",
+      "bytes": 8159,
+      "mode": "100644",
+      "git_blob": "25fbc1c05ca343a81580abce3ac26bb3533e7231"
+    },
+    "ports/messager/rooms/mls_http.go": {
+      "path": "checkpoints/chat/files/ports/messager/rooms/mls_http.go",
+      "sha256": "00398a2fd9af70eb359257a3e37d4c76d18876151b7ed3b21be4fae17a3b8f58",
+      "bytes": 8893,
+      "mode": "100644",
+      "git_blob": "0121ec358f290811c1b17278c553922d4fa9af25"
+    },
+    "ports/messager/rooms/rich_test.go": {
+      "path": "checkpoints/chat/files/ports/messager/rooms/rich_test.go",
+      "sha256": "4845c35c73e8dfea798095fcf876f51b06182aaaecaf4be11c849b277c4176a4",
+      "bytes": 3223,
+      "mode": "100644",
+      "git_blob": "bc742fe961f0cd26d9f0cf4dfd2e97e044dfc858"
+    },
+    "ports/messager/rooms/subscription_sync.go": {
+      "path": "checkpoints/chat/files/ports/messager/rooms/subscription_sync.go",
+      "sha256": "3f2e2695f51f9e3b4e8eacaa6ebd8820bc43580004ae31be634920340842ffe8",
+      "bytes": 5617,
+      "mode": "100644",
+      "git_blob": "06418e91c9cb74d10ee1d1e01d1ece66e103ae34"
+    },
+    "ports/messager/rooms/subscription_sync_http.go": {
+      "path": "checkpoints/chat/files/ports/messager/rooms/subscription_sync_http.go",
+      "sha256": "5e95e0c3912628d859b65bb433279a5dbfb96fb957751aaf42861d5eafb50bcc",
+      "bytes": 1843,
+      "mode": "100644",
+      "git_blob": "5c07c290b2fbe7df279daec91a98441a3623bdcf"
+    },
+    "ports/messager/rooms/subscription_sync_provenance_test.go": {
+      "path": "checkpoints/chat/files/ports/messager/rooms/subscription_sync_provenance_test.go",
+      "sha256": "a931d65e047b82e461db718d93a069c87490205e031a1958e3d42ccec7af7f0c",
+      "bytes": 1305,
+      "mode": "100644",
+      "git_blob": "e06a4f06d180aa7583b7b956cb79c5fbfb9f2029"
+    },
+    "ports/messager/rooms/subscription_sync_test.go": {
+      "path": "checkpoints/chat/files/ports/messager/rooms/subscription_sync_test.go",
+      "sha256": "f9f1b8b60a103cf94b4d2366ce146df6ba3e9409d00dfc4cfbcbb2ff8d34cc7d",
+      "bytes": 5046,
+      "mode": "100644",
+      "git_blob": "31c75af85986448272f5846008e9474d4247f869"
+    },
+    "ports/messager/rooms/types.go": {
+      "path": "checkpoints/chat/files/ports/messager/rooms/types.go",
+      "sha256": "aae2f7f39e182a50e8f9a391b4fb62cb182d42f9c29354763338eab242413576",
+      "bytes": 9448,
+      "mode": "100644",
+      "git_blob": "0c799cc0b04caa8a0252253a19fa8c7f0abc1f5c"
+    },
+    "ports/messager/rooms/validation.go": {
+      "path": "checkpoints/chat/files/ports/messager/rooms/validation.go",
+      "sha256": "667fb0d5924bb6eb4f5a47737de459c66a6b656bb704c4f9212dcfeb7a876b5c",
+      "bytes": 6379,
+      "mode": "100644",
+      "git_blob": "0cce74dfa963181337dd29c0d8425fc0bcab3950"
+    },
+    "ports/notifications/chat_events.go": {
+      "path": "checkpoints/chat/files/ports/notifications/chat_events.go",
+      "sha256": "1fe76333604ec62b4b59eb266c403e2d27a94807af53d29097c5890161172ced",
+      "bytes": 933,
+      "mode": "100644",
+      "git_blob": "26bc2a63c1f4531aa09e2d87c22ab0c619ad8c49"
+    },
+    "ports/notifications/http.go": {
+      "path": "checkpoints/chat/files/ports/notifications/http.go",
+      "sha256": "abe02289c913a0907a2fb2885e675ff392835543990b5e9d1251855ad3ca3432",
+      "bytes": 5313,
+      "mode": "100644",
+      "git_blob": "e4fcee44706e5ca33bcd51bc7cfaafea4382f689"
+    },
+    "ports/notifications/model.go": {
+      "path": "checkpoints/chat/files/ports/notifications/model.go",
+      "sha256": "fce99d187e3806395a52fb3215d081b65fe98c8c27a61b6e6afdf1685c840e52",
+      "bytes": 4134,
+      "mode": "100644",
+      "git_blob": "08f3742c2ff74efff939af523d2740ae6d1935d7"
+    },
+    "tests/integration/backend_test.go": {
+      "path": "checkpoints/chat/files/tests/integration/backend_test.go",
+      "sha256": "03eb2c36384dd65a44d0aaf9d11d6f1bebe74f71356d7c2752eac5ebbd6191d6",
+      "bytes": 24360,
+      "mode": "100644",
+      "git_blob": "dee33f48d28503b29c631a50bfb965fc8e78a33c"
+    },
+    "tests/integration/chat_composition_test.go": {
+      "path": "checkpoints/chat/files/tests/integration/chat_composition_test.go",
+      "sha256": "de0e1ee2d0f9efff4216ee0db9b7d940594c2100a6fb50e2c37fdc151c336074",
+      "bytes": 9335,
+      "mode": "100644",
+      "git_blob": "80840dcb7ccfa448b85641745fbfc27585bfdd97"
+    },
+    "tests/integration/chat_live_events_test.go": {
+      "path": "checkpoints/chat/files/tests/integration/chat_live_events_test.go",
+      "sha256": "9c5dda046e76924b24c11118bc954b4e5026ec8e0f6ee7e79a8c4471163daeba",
+      "bytes": 26084,
+      "mode": "100644",
+      "git_blob": "d7dc81b5bfa74994922f140296e145d7f3c25e1b"
+    },
+    "tests/integration/chat_subscription_sync_test.go": {
+      "path": "checkpoints/chat/files/tests/integration/chat_subscription_sync_test.go",
+      "sha256": "2a5d7c43aa089b32b5391e32feda98d042bfde75a004d4fe7958f0b59c6a4399",
+      "bytes": 20786,
+      "mode": "100644",
+      "git_blob": "b2b4c503d89085bb8b0aac2038d5f39c6437e35b"
+    }
+  },
+  "absent_base_paths": [],
+  "restore": "Start from published_base_commit in an isolated checkout. Verify saved file sha256/bytes and copy to original path preserving mode. Only explicit absent_base_paths are deletions. Lane snapshots are alternatives; do not stack them. Integrate reviewed feature hunks into the integration lane."
+}

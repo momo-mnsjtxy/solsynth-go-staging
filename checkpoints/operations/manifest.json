@@ -1,0 +1,339 @@
+{
+  "status": "committed source checkpoint; not final acceptance; real PostgreSQL and restart validation outstanding",
+  "published_base_commit": "0b59486bf1b6a74905e7587fbcdc9fea9987acfe",
+  "local_base_commit": "7bfc7f9b2efd9b3dad9297aad8bb3207b40a2c08",
+  "local_head_commit": "4814d194192b3430073fefb2ee89174eff9f7c34",
+  "changed_or_added": {
+    "cmd/backend/affiliation_purchase_config.go": {
+      "path": "checkpoints/operations/files/cmd/backend/affiliation_purchase_config.go",
+      "sha256": "cbc10daa199856acba9340db31bdc8412e0f7e9f28bcc7e38788a5c9c7e1c11d",
+      "bytes": 2237,
+      "mode": "100644",
+      "git_blob": "07ce15215fe24d56bd9ecc92b3416ba0104265e3"
+    },
+    "cmd/backend/affiliation_purchase_config_test.go": {
+      "path": "checkpoints/operations/files/cmd/backend/affiliation_purchase_config_test.go",
+      "sha256": "22618432f146f6c6860832da43f8dc71e58e14c5e51d6e6578ee631a9849c914",
+      "bytes": 1615,
+      "mode": "100644",
+      "git_blob": "fe1340314eee98e187df7f751421114a85f101c9"
+    },
+    "cmd/backend/livestream_awards_config.go": {
+      "path": "checkpoints/operations/files/cmd/backend/livestream_awards_config.go",
+      "sha256": "2371dcc2c45db686fc7a839f24d7d2f4dafd0bd2966ad65f801d1af439161a3f",
+      "bytes": 3602,
+      "mode": "100644",
+      "git_blob": "938db3a669bb3a593dab118055626cb6f01362a5"
+    },
+    "cmd/backend/livestream_awards_config_test.go": {
+      "path": "checkpoints/operations/files/cmd/backend/livestream_awards_config_test.go",
+      "sha256": "a3b9a18aedf0b90369474d21a90e85f5ac1ff2db230a18984f399ef18d558d86",
+      "bytes": 2598,
+      "mode": "100644",
+      "git_blob": "0bebe1d66f846022bf13bcf99225ebcccf3c7e98"
+    },
+    "cmd/backend/main.go": {
+      "path": "checkpoints/operations/files/cmd/backend/main.go",
+      "sha256": "7398d40324d48311732294ac62d1f034c29034e724b2d3faf7e25c42640c4eb2",
+      "bytes": 18228,
+      "mode": "100644",
+      "git_blob": "fbf8195e8a23ae74e51ef72885754af8c793888b"
+    },
+    "cmd/backend/operations_retention_config.go": {
+      "path": "checkpoints/operations/files/cmd/backend/operations_retention_config.go",
+      "sha256": "6a47e28aa5e4c07e12538a676a4ff584718c431f4cae1c0019a5bf889e2393b6",
+      "bytes": 1631,
+      "mode": "100644",
+      "git_blob": "a836c73e635178b57d0c4e0a867bbf3a4d4a8404"
+    },
+    "cmd/backend/operations_retention_config_test.go": {
+      "path": "checkpoints/operations/files/cmd/backend/operations_retention_config_test.go",
+      "sha256": "3663e1ae476b20c655cee3cea5455449c050b83eac47ca8f2a7e536a26d934b4",
+      "bytes": 1367,
+      "mode": "100644",
+      "git_blob": "60e60c2c78e5589eecea177890f9ca3636c0b562"
+    },
+    "internal/affiliationpg/paid_schema.sql": {
+      "path": "checkpoints/operations/files/internal/affiliationpg/paid_schema.sql",
+      "sha256": "44fba68af9f3fde5ba87e2894c4faf3d2c8fb1f2f0c57712310a4c8e1dc48ac3",
+      "bytes": 610,
+      "mode": "100644",
+      "git_blob": "46275b64d48975f9a47ea6941c851a9e08c990ae"
+    },
+    "internal/affiliationpg/repository.go": {
+      "path": "checkpoints/operations/files/internal/affiliationpg/repository.go",
+      "sha256": "d069cf98b921c47f59449cf1a101411e68623491a79b42685a8636480179fc2a",
+      "bytes": 22418,
+      "mode": "100644",
+      "git_blob": "276e99550930b59b5a4eea95cb041c456e1e723f"
+    },
+    "internal/application/backend.go": {
+      "path": "checkpoints/operations/files/internal/application/backend.go",
+      "sha256": "fbbf188d5e20bf4ba6af55780e9edf072a4301391e645bc44ac5509ed54c6946",
+      "bytes": 38790,
+      "mode": "100644",
+      "git_blob": "d4fa5282a330437d296749897cc03ba209df3e3e"
+    },
+    "internal/application/operations_retention.go": {
+      "path": "checkpoints/operations/files/internal/application/operations_retention.go",
+      "sha256": "bb3f8f922117e669639bc9da0cbff8bc8262625fb17cb0a2ac5c8db994639d5e",
+      "bytes": 1156,
+      "mode": "100644",
+      "git_blob": "208e672a83488f9f54990d1789651376c3166c8d"
+    },
+    "internal/commercepg/livestream_awards.go": {
+      "path": "checkpoints/operations/files/internal/commercepg/livestream_awards.go",
+      "sha256": "8b93e4eff1862d11467da71213b6b2645366e5286bbb1526ddae3bed07924e16",
+      "bytes": 12823,
+      "mode": "100644",
+      "git_blob": "2636115d3b3a186a461bf077b2910fa4b2eb84e5"
+    },
+    "internal/domaintrustpg/repository.go": {
+      "path": "checkpoints/operations/files/internal/domaintrustpg/repository.go",
+      "sha256": "380ce3cddf815b66be520d39af57ddc7cbff1e18ac7c0314c6b08f0ec7a587da",
+      "bytes": 12383,
+      "mode": "100644",
+      "git_blob": "5a0d27fde35d47242070db684834850dbd41f892"
+    },
+    "internal/livestreampg/archive_import.go": {
+      "path": "checkpoints/operations/files/internal/livestreampg/archive_import.go",
+      "sha256": "8f0109837465223cc8e69ddc76fdec2b04b09eacf50d74cd630f4d05d4a09c2f",
+      "bytes": 9976,
+      "mode": "100644",
+      "git_blob": "fb086d052c6e5f627278530bdcf6de1f9a438898"
+    },
+    "internal/livestreampg/award_refunds.go": {
+      "path": "checkpoints/operations/files/internal/livestreampg/award_refunds.go",
+      "sha256": "d6dd627fd69af6b9a755996a1425ac7035c222133dfad264f850d84db16e27c0",
+      "bytes": 6227,
+      "mode": "100644",
+      "git_blob": "3193d5ee67555d12ffe3799a2d13475e24a6c0e2"
+    },
+    "internal/livestreampg/awards.go": {
+      "path": "checkpoints/operations/files/internal/livestreampg/awards.go",
+      "sha256": "897e0b9dbc8653fa6db0277fa0b9ed99131cdb6432acf7288e1e842b1fd5c34a",
+      "bytes": 19917,
+      "mode": "100644",
+      "git_blob": "e525e6dc90add8d1baea070a812d6ac6f4b80ea2"
+    },
+    "internal/livestreampg/awards_payout.go": {
+      "path": "checkpoints/operations/files/internal/livestreampg/awards_payout.go",
+      "sha256": "a4003e3ac8a8eaebd187c54361dce2022175ec898e5eb5e2eacc57476d5c1bd4",
+      "bytes": 6501,
+      "mode": "100644",
+      "git_blob": "8646e6d357f53df476c7d5cc117cedaa175b96c6"
+    },
+    "internal/livestreampg/awards_read.go": {
+      "path": "checkpoints/operations/files/internal/livestreampg/awards_read.go",
+      "sha256": "19f3601b19524b6404b9df9a3c91e12a0c4cabaab825483a28853aec4d900015",
+      "bytes": 4435,
+      "mode": "100644",
+      "git_blob": "af5199ae1b4da0c115863fc412646fc6732c6269"
+    },
+    "internal/livestreampg/awards_schema.sql": {
+      "path": "checkpoints/operations/files/internal/livestreampg/awards_schema.sql",
+      "sha256": "306780fb1dd6d87e6e32df1b4c176d7d6a9184949ab3ed967c86d09326004747",
+      "bytes": 4428,
+      "mode": "100644",
+      "git_blob": "9e1771f883788e749bdbe05aeaeb094d23436e2e"
+    },
+    "internal/livestreampg/maintenance.go": {
+      "path": "checkpoints/operations/files/internal/livestreampg/maintenance.go",
+      "sha256": "c3244fb4e5fad7df3c73c977217eab27c440a4917f15bf196ce5195265919f2e",
+      "bytes": 13464,
+      "mode": "100644",
+      "git_blob": "ad066e78b53fd12780c6f3b09f4c5f2ba6fc8a3b"
+    },
+    "internal/livestreampg/operations.go": {
+      "path": "checkpoints/operations/files/internal/livestreampg/operations.go",
+      "sha256": "389010e692e4ac6ecdf91bca9be0c0fb93b895ddedc5a8c606f8af940069cd24",
+      "bytes": 5969,
+      "mode": "100644",
+      "git_blob": "a8eb946111bd0327dea9f02088f1463c582492a1"
+    },
+    "internal/livestreampg/output_playback.go": {
+      "path": "checkpoints/operations/files/internal/livestreampg/output_playback.go",
+      "sha256": "bbe7dcf37351accdca9bdb8701fd2e997fbdf9cf2eddf70638d3f1751a039514",
+      "bytes": 4564,
+      "mode": "100644",
+      "git_blob": "5a2550a730f052c06dc0a10051422ab486cf5efb"
+    },
+    "internal/livestreampg/outputs.go": {
+      "path": "checkpoints/operations/files/internal/livestreampg/outputs.go",
+      "sha256": "c6529c21bcced52e648ec01c3c815739dc381382d7d83b1c879beb7015af1b0d",
+      "bytes": 12849,
+      "mode": "100644",
+      "git_blob": "38c326508b1d2c9c9df31b0474d7a0fe1b579d8a"
+    },
+    "internal/livestreampg/outputs_schema.sql": {
+      "path": "checkpoints/operations/files/internal/livestreampg/outputs_schema.sql",
+      "sha256": "ec259edb8346c6e0dcf502d51ef5dd07ddf40613cfdf039000d6330b52adf8eb",
+      "bytes": 3603,
+      "mode": "100644",
+      "git_blob": "7d75ac61df523f0352b6460b2de34d1a586f8491"
+    },
+    "internal/walletpg/funded_transfer.go": {
+      "path": "checkpoints/operations/files/internal/walletpg/funded_transfer.go",
+      "sha256": "b000d504043454a5dd109f1ce00579c0e79819ad4631a01870b0726a7cf3a8b9",
+      "bytes": 7099,
+      "mode": "100644",
+      "git_blob": "90c76770a311fe1d4cb786f624b8e6ebdc2f2a1a"
+    },
+    "internal/walletpg/transfer_requests.go": {
+      "path": "checkpoints/operations/files/internal/walletpg/transfer_requests.go",
+      "sha256": "a76ffc9cd3b1ab4b6d48ccff4ad89ae55a9567ec4a26dfaffa727e90802713ef",
+      "bytes": 11516,
+      "mode": "100644",
+      "git_blob": "04c10cda78419cafcfc38f163a28f5b6cd59de84"
+    },
+    "ports/passport/affiliation/http.go": {
+      "path": "checkpoints/operations/files/ports/passport/affiliation/http.go",
+      "sha256": "b636f7d2a0c606d372ded7f83edd1a2ff5e7aa7f23aa65cb1ebd76c4caef08cf",
+      "bytes": 6575,
+      "mode": "100644",
+      "git_blob": "61f5fd3e1828f16907a59b106cacc9a1ffd23131"
+    },
+    "ports/passport/affiliation/http_test.go": {
+      "path": "checkpoints/operations/files/ports/passport/affiliation/http_test.go",
+      "sha256": "d87f3c6633e629581e768269a38d98ef39aee294192f0e775a05036de95c3070",
+      "bytes": 4217,
+      "mode": "100644",
+      "git_blob": "30a049532478138adbcc5c6819e71eeae2a91492"
+    },
+    "ports/passport/affiliation/types.go": {
+      "path": "checkpoints/operations/files/ports/passport/affiliation/types.go",
+      "sha256": "c960165a58ccdfb0a6fa3fbe95792c5aade869da266892406b410cfa15e18594",
+      "bytes": 4424,
+      "mode": "100644",
+      "git_blob": "e10fd39144fec027b608db715aa3109884d5e090"
+    },
+    "ports/passport/domaintrust/http.go": {
+      "path": "checkpoints/operations/files/ports/passport/domaintrust/http.go",
+      "sha256": "71756d0d35cba6f0e38f8c71fc3f32fe80e594a6c0da0f21407e9e9f78cf1803",
+      "bytes": 4728,
+      "mode": "100644",
+      "git_blob": "b321815eb0ceb708e0c879abcdd2c070390caeae"
+    },
+    "ports/passport/domaintrust/types.go": {
+      "path": "checkpoints/operations/files/ports/passport/domaintrust/types.go",
+      "sha256": "e43d67862cd10bb4df918d86ce3440cee2ca6d767346d701f5044b04ccfb0a61",
+      "bytes": 3749,
+      "mode": "100644",
+      "git_blob": "3ee0c70bc2081054193893bcac18146f5ebb8f92"
+    },
+    "ports/sphere/livestreams/awards.go": {
+      "path": "checkpoints/operations/files/ports/sphere/livestreams/awards.go",
+      "sha256": "e79863549480700b08d1d0b3f1e54ccb8872542a7bb3536d46bf04fcae2eea2e",
+      "bytes": 4035,
+      "mode": "100644",
+      "git_blob": "a1a3a195991fe1fe9846a8ac7c530cdfcc2efe39"
+    },
+    "ports/sphere/livestreams/awards_http.go": {
+      "path": "checkpoints/operations/files/ports/sphere/livestreams/awards_http.go",
+      "sha256": "ee1f5eac21348b505258c8a6da02ca4ca0ffc489cf6005e339b495d9fda7f7c6",
+      "bytes": 1803,
+      "mode": "100644",
+      "git_blob": "9b99eb7a4c4427e9d142d92a2a2a69560d4010af"
+    },
+    "ports/sphere/livestreams/http.go": {
+      "path": "checkpoints/operations/files/ports/sphere/livestreams/http.go",
+      "sha256": "e2496e6904155c0aee5b24b19499eab3e63e4b7f66395addba88fb1de5048ee1",
+      "bytes": 10026,
+      "mode": "100644",
+      "git_blob": "da29617d94d3b8424c1dc883e5565d157d97e55b"
+    },
+    "ports/sphere/livestreams/http_test.go": {
+      "path": "checkpoints/operations/files/ports/sphere/livestreams/http_test.go",
+      "sha256": "1fbf5125a75ef0bed67b4c006d9a323ad7be0c4347e449de88e8f13b25fe92aa",
+      "bytes": 9055,
+      "mode": "100644",
+      "git_blob": "e2842e30ea70fc64c4d5e726af167e358a876872"
+    },
+    "ports/sphere/livestreams/operations.go": {
+      "path": "checkpoints/operations/files/ports/sphere/livestreams/operations.go",
+      "sha256": "40e010acf9add810d0cb8d880da0e84707f56e071947ceb37f1e3de1cd0d73c6",
+      "bytes": 620,
+      "mode": "100644",
+      "git_blob": "163b025928b05d448348f7deaa7863e2143d9268"
+    },
+    "ports/sphere/livestreams/operations_http.go": {
+      "path": "checkpoints/operations/files/ports/sphere/livestreams/operations_http.go",
+      "sha256": "c27a6961e23b3568ec842df79b143d044f8677cdef732c9841a5fd3e7ae9665b",
+      "bytes": 918,
+      "mode": "100644",
+      "git_blob": "2dac642cba95d986b8ecca4b920c3c625b08be99"
+    },
+    "ports/sphere/livestreams/outputs.go": {
+      "path": "checkpoints/operations/files/ports/sphere/livestreams/outputs.go",
+      "sha256": "e645ddd7d9c7679ca09099ed2f5793a69834d87c86f84effc656a4fd2cbc65d6",
+      "bytes": 5102,
+      "mode": "100644",
+      "git_blob": "db222d3408ea8c9681b9fb2dc29559775710e112"
+    },
+    "ports/sphere/livestreams/outputs_http.go": {
+      "path": "checkpoints/operations/files/ports/sphere/livestreams/outputs_http.go",
+      "sha256": "4530052bd1036a7ce265d41e97c94021054121ede888fa5bcab3a6631b9d9443",
+      "bytes": 2819,
+      "mode": "100644",
+      "git_blob": "7f72aa818885f7c4da754875e4d017773668aa6b"
+    },
+    "ports/wallet/accounts/http.go": {
+      "path": "checkpoints/operations/files/ports/wallet/accounts/http.go",
+      "sha256": "88ed28401ff66069405a8993c96c3c4fc03ddada244d8245378ff28d27e062bf",
+      "bytes": 8916,
+      "mode": "100644",
+      "git_blob": "35d8b2a55f5f62e1cd3c575e8e2a000a52c5e744"
+    },
+    "ports/wallet/accounts/http_test.go": {
+      "path": "checkpoints/operations/files/ports/wallet/accounts/http_test.go",
+      "sha256": "04b2269274925c4eb6076fc5e43ca87825afaeaed2962800e044854023a6d651",
+      "bytes": 5107,
+      "mode": "100644",
+      "git_blob": "1f0a3a0aa35a765f0a7b562f876d8400983a70a7"
+    },
+    "ports/wallet/accounts/money.go": {
+      "path": "checkpoints/operations/files/ports/wallet/accounts/money.go",
+      "sha256": "bfe548df549e3f4c6a47b429300e953fd574c12c1247266c7934a8155a254af5",
+      "bytes": 3286,
+      "mode": "100644",
+      "git_blob": "79b0b7dec68f6c2807b4ea0f2b597435515c12a9"
+    },
+    "ports/wallet/accounts/service_test.go": {
+      "path": "checkpoints/operations/files/ports/wallet/accounts/service_test.go",
+      "sha256": "05ffaa0d598e357f141c2a555c5363ac5ebb9d14e3c951471a7d2f24632fe9ac",
+      "bytes": 6977,
+      "mode": "100644",
+      "git_blob": "cf4ccd4749924e984445fe0e5aeab379c26dcebe"
+    },
+    "ports/wallet/accounts/transfer_requests.go": {
+      "path": "checkpoints/operations/files/ports/wallet/accounts/transfer_requests.go",
+      "sha256": "7dc239753f8b03ba8a7fc387b9688fbbb4aed964f7a25770156505bc7a9b791e",
+      "bytes": 3777,
+      "mode": "100644",
+      "git_blob": "74c9bda756ef3bb24fec5b401dfe1f3d0d0ded63"
+    },
+    "tests/integration/affiliation_test.go": {
+      "path": "checkpoints/operations/files/tests/integration/affiliation_test.go",
+      "sha256": "4018aeb1f1ec5491b1a58378b72f27f0f059bef5d32beb506622969c66cf9e30",
+      "bytes": 30547,
+      "mode": "100644",
+      "git_blob": "805822142952bfd1d1acec179ab7feb8380191cf"
+    },
+    "tests/integration/livestream_awards_test.go": {
+      "path": "checkpoints/operations/files/tests/integration/livestream_awards_test.go",
+      "sha256": "fc85167e693c9494c906298ed9a1689fcd6451f9a2703e4ebc80fc4166b00595",
+      "bytes": 32206,
+      "mode": "100644",
+      "git_blob": "a697079b0fdd3754f03247b6f46585423f51fa2e"
+    },
+    "tests/integration/livestream_outputs_test.go": {
+      "path": "checkpoints/operations/files/tests/integration/livestream_outputs_test.go",
+      "sha256": "7c337f6f8d7849ea6064dc78b082674370e63e645000c86f037576e67b094321",
+      "bytes": 26286,
+      "mode": "100644",
+      "git_blob": "119130a675a0a7c492598b7ebda025926d8be56b"
+    }
+  },
+  "absent_base_paths": [],
+  "restore": "Start from published_base_commit in an isolated checkout. Verify saved file sha256/bytes and copy to original path preserving mode. Only explicit absent_base_paths are deletions. Lane snapshots are alternatives; do not stack them. Integrate reviewed feature hunks into the integration lane."
+}

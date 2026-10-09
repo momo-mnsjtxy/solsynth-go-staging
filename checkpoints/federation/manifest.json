@@ -1,0 +1,122 @@
+{
+  "status": "committed source checkpoint; not final acceptance; real PostgreSQL and restart validation outstanding",
+  "published_base_commit": "0b59486bf1b6a74905e7587fbcdc9fea9987acfe",
+  "local_base_commit": "7bfc7f9b2efd9b3dad9297aad8bb3207b40a2c08",
+  "local_head_commit": "5c0f115dc19e0a4682762f292d1d0f908196fc00",
+  "changed_or_added": {
+    "internal/application/external_modules.go": {
+      "path": "checkpoints/federation/files/internal/application/external_modules.go",
+      "sha256": "173a4c9486f56324ba2a42b50588c5d3985a11746ab55bf7e3f332f2ea60f86f",
+      "bytes": 7334,
+      "mode": "100644",
+      "git_blob": "cccdd8848d54eb8396f4b4122fdeac3d2d320ffe"
+    },
+    "internal/federationhttp/broader.go": {
+      "path": "checkpoints/federation/files/internal/federationhttp/broader.go",
+      "sha256": "85a5ca9c02509be8ae193af798fd5be0d42e8dd6cddd276d4e081a11f98883bc",
+      "bytes": 10986,
+      "mode": "100644",
+      "git_blob": "a4be81fd70010cb70df2a1b39fe7651c6399607b"
+    },
+    "internal/federationhttp/broader_test.go": {
+      "path": "checkpoints/federation/files/internal/federationhttp/broader_test.go",
+      "sha256": "ffc434d85c2ae6ff7456225e7fc65b19007e63447d13cd985160e095f0158ca4",
+      "bytes": 3817,
+      "mode": "100644",
+      "git_blob": "ccaa957412077d3faa84a51fe2d8c89caa20cc96"
+    },
+    "internal/federationhttp/handler.go": {
+      "path": "checkpoints/federation/files/internal/federationhttp/handler.go",
+      "sha256": "5a8f7515abe9999a39aed60724a20524798f57e10072616a0108aa97724a147b",
+      "bytes": 11662,
+      "mode": "100644",
+      "git_blob": "0298bdbf55b0727016ffb4231e75ae10ca8bf75f"
+    },
+    "internal/federationpg/broader.go": {
+      "path": "checkpoints/federation/files/internal/federationpg/broader.go",
+      "sha256": "bd59d614eb7a1a286c69503c94abeec43813f1d47dbf2741d702258c05adad39",
+      "bytes": 35874,
+      "mode": "100644",
+      "git_blob": "ead61ef89b635249aa3249575acf1dad2007e110"
+    },
+    "internal/federationpg/broader_schema.sql": {
+      "path": "checkpoints/federation/files/internal/federationpg/broader_schema.sql",
+      "sha256": "4a14762cf8eb72e76d001b2b02b326b77f99b79bc1cb84bf850ddb1fc3639a0c",
+      "bytes": 5031,
+      "mode": "100644",
+      "git_blob": "30541bc5241836af9dd26a3b7454afbd5e23fbc9"
+    },
+    "internal/federationpg/broader_test.go": {
+      "path": "checkpoints/federation/files/internal/federationpg/broader_test.go",
+      "sha256": "c36cb636fedf78a28adbfba5150d8536e4cdc27130f09ef5724d68cf91296c74",
+      "bytes": 2490,
+      "mode": "100644",
+      "git_blob": "b02ef2e7901e7ee93786ad63d5672ddbc18ae7b3"
+    },
+    "internal/federationpg/delivery.go": {
+      "path": "checkpoints/federation/files/internal/federationpg/delivery.go",
+      "sha256": "9fffa7bc6794fe1436523ecd5b3109856d5f3c85e7990a57c0d4f9f9540edcf5",
+      "bytes": 23348,
+      "mode": "100644",
+      "git_blob": "ab091865dae775461faf5077493d5344327416ce"
+    },
+    "internal/federationpg/inbox.go": {
+      "path": "checkpoints/federation/files/internal/federationpg/inbox.go",
+      "sha256": "0b6183d985c73d03229b9f49d8b3e6b4532f48fc64af07455c628eff3eb75428",
+      "bytes": 10418,
+      "mode": "100644",
+      "git_blob": "a58faba57b4f3c8b03bdbd73fa45741213cb0bd6"
+    },
+    "internal/federationpg/realm_inbox.go": {
+      "path": "checkpoints/federation/files/internal/federationpg/realm_inbox.go",
+      "sha256": "8fc1264d28051c84b8e70759d1ecb482197fe73015a40cea18364d2d7b2c58f1",
+      "bytes": 12687,
+      "mode": "100644",
+      "git_blob": "42b92c171d7be8daf29debbf3b20574d4038d86b"
+    },
+    "internal/federationpg/repository.go": {
+      "path": "checkpoints/federation/files/internal/federationpg/repository.go",
+      "sha256": "2110e10e579a0f557cabc105af8a17f7edd05e237d0e30e1807bcf925481602a",
+      "bytes": 20007,
+      "mode": "100644",
+      "git_blob": "ef9a97d3e4cfa2b5553b42d717bc26aecad752fe"
+    },
+    "ports/federation/signature.go": {
+      "path": "checkpoints/federation/files/ports/federation/signature.go",
+      "sha256": "264271e79aeb03b75a6578d4e9e0eb1400b4d43a6ede269c25c7e584d6945fff",
+      "bytes": 6513,
+      "mode": "100644",
+      "git_blob": "18b29a3399c1ba5664829a50fc95b620aacbec81"
+    },
+    "ports/federation/signature_test.go": {
+      "path": "checkpoints/federation/files/ports/federation/signature_test.go",
+      "sha256": "d6f3c675b706b8ecd56bd8554244b2e48f71a9405c71ae76993f38f9d3fee147",
+      "bytes": 5614,
+      "mode": "100644",
+      "git_blob": "4dd7d0c3482d02ad38c03b3025177d1aed9ab295"
+    },
+    "ports/federation/types.go": {
+      "path": "checkpoints/federation/files/ports/federation/types.go",
+      "sha256": "19ecad3bc0fb9ffd101bc31015ee72e44212931a2a8c81eac322809691b8bd1f",
+      "bytes": 11210,
+      "mode": "100644",
+      "git_blob": "8555eebc3872699f4750c8bf2d85b5277915495a"
+    },
+    "ports/federation/validation.go": {
+      "path": "checkpoints/federation/files/ports/federation/validation.go",
+      "sha256": "79189741318d1a74f2cf8e22fc39c702cafc934cfd96ff9a70181abee19cbcb4",
+      "bytes": 5427,
+      "mode": "100644",
+      "git_blob": "8551f4a90a3f969266386742c96ed88b74e5f9b0"
+    },
+    "tests/integration/federation_broader_test.go": {
+      "path": "checkpoints/federation/files/tests/integration/federation_broader_test.go",
+      "sha256": "e07aaf5a364a27b9ee4073a2a528a3bacfc4fe7fdb7f969b02e40b7ad4e643da",
+      "bytes": 7224,
+      "mode": "100644",
+      "git_blob": "fb06c1de569e9f4d33b640cdc67b69588204dd29"
+    }
+  },
+  "absent_base_paths": [],
+  "restore": "Start from published_base_commit in an isolated checkout. Verify saved file sha256/bytes and copy to original path preserving mode. Only explicit absent_base_paths are deletions. Lane snapshots are alternatives; do not stack them. Integrate reviewed feature hunks into the integration lane."
+}

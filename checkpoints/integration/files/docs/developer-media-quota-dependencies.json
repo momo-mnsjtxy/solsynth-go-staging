@@ -1,0 +1,56 @@
+{
+  "status": "review_required_not_activated",
+  "source": "tests/integration/developer_media_quota_test.go",
+  "before": [
+    "TestPGDeveloperBotMediaCreateRollbackAndQuotaExpiry",
+    "TestPGDeveloperMediaComposedAppProductBotLifecycle",
+    "TestPGDeveloperMediaCurrentAudienceAndNestedProjection",
+    "TestPGDeveloperMediaManagerOwnerAfterFileAndAuditWait",
+    "TestPGDeveloperMediaOwnershipReadinessAndAtomicRollback",
+    "TestPGDeveloperMediaQuotaSavedRestartPersistence",
+    "TestPGDeveloperMediaReadWaitRechecksPrivacy",
+    "TestPGDeveloperMediaWriteWaitPreservesOriginalProof",
+    "TestPGDeveloperQuotaConfiguredPolicyAndIsolation",
+    "TestPGDeveloperQuotaWaitUsesCurrentPolicyAndProof"
+  ],
+  "after": [
+    "TestPGDeveloperMediaQuotaSavedRestartPersistence"
+  ],
+  "helpers": [
+    "newBotFixture",
+    "newDeveloperFixture",
+    "accountDB",
+    "database",
+    "authorityConfig",
+    "authorityKeys",
+    "atomicBlocker",
+    "waitAtomicBlocked",
+    "backendJSONCall",
+    "backendCall",
+    "profilePNG",
+    "commerceCount",
+    "fixtureRestartPhase",
+    "saveRestartFixture",
+    "loadRestartFixture",
+    "saveAuthoritySnapshot",
+    "restoreAuthoritySnapshot"
+  ],
+  "fixture_dependencies": "All cases own fresh synthetic canonical resources in the per-case disposable database. New schema must be in runner template. No cross-test fixture dependencies. Existing source hashes/helper graph require final combined group refresh.",
+  "restart": "Same test assigned to same group in both phases; exclusive developer-media-quota.json marker and original object directory; no after-phase seed, token issue, policy rewrite or TTL extension.",
+  "shared_files": [
+    "internal/application/backend.go",
+    "internal/application/router.go",
+    "internal/botpg/repository.go",
+    "internal/botpg/schema.sql",
+    "scripts/integration-postgres.sh",
+    "scripts/test-integration-wiring.py",
+    "scripts/check-integration-results.py"
+  ],
+  "miniapp_interaction": "No package/upload/manifest changes. Shared bot repository capacity now observes current wall-clock policy after row wait; bot-create final expiry fence. Coordinate repository/schema hunks with separate package review.",
+  "candidate_registry_counts": {
+    "before": 931,
+    "after": 109
+  },
+  "schema_fingerprint_pending": "a0fb752fbb69b3e91fd8b34a4d56d3c0efc70eb04848b8194003d3b2729ed69a",
+  "pending_guard": "test-fixture-isolation.py still expects the prior reviewed schema hash; active grouping/dependency audit is intentionally untouched until independent combined review."
+}

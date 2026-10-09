@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "implementation": "owned-miniapp-multipart-v1",
+  "baseline": "5ac8adc3a810a565c4f004073e4d20b37ce27660",
+  "license": "AGPL-3.0-only",
+  "files": [
+    {
+      "file": "DysonNetwork.Develop/MiniApp/MiniAppController.cs",
+      "blob": "2f60539dba4ded617efd90f0b4417b926f6ddfa4",
+      "sha256": "332f0b605ed9bdd1aba0574fcb314be4f0a7a35760f1d91d9cb6442651192493",
+      "bytes": 14082,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/MiniApp/MiniAppController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review",
+      "local_file": "inventory/operation-sources/DysonNetwork.Develop/MiniApp/MiniAppController.cs",
+      "source_manifest": "inventory/operation-sources/manifest.json",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Develop/MiniApp/MiniAppController.cs"
+    },
+    {
+      "file": "DysonNetwork.Develop/MiniApp/MiniAppPublicController.cs",
+      "blob": "269da397f764d828ce50e95d31a5eacb9003584c",
+      "sha256": "a1c12172fa27bf9040b4ffcf9a8140724c732d9175e9f3e5fc5f259aea231abe",
+      "bytes": 3108,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/MiniApp/MiniAppPublicController.cs",
+      "license": "AGPL-3.0; root LICENSE.txt; embedded third-party content requires independent review",
+      "local_file": "inventory/operation-sources/DysonNetwork.Develop/MiniApp/MiniAppPublicController.cs",
+      "source_manifest": "inventory/operation-sources/manifest.json",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Develop/MiniApp/MiniAppPublicController.cs"
+    },
+    {
+      "file": "DYSON-LICENSE.txt",
+      "path": "LICENSE.txt",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "local_file": "ports/develop/product-source/DYSON-LICENSE.txt",
+      "source_manifest": "ports/develop/product-source/manifest.json"
+    },
+    {
+      "file": "DysonNetwork.Develop__MiniApp__MiniAppService.cs",
+      "path": "DysonNetwork.Develop/MiniApp/MiniAppService.cs",
+      "blob": "29c51b9c9e3dec97bb2e2c277dee4b87127dc42a",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "sha256": "936cdd41a56024ada9ef938729aa693c8091e58ed163e4479f4de6f298ddd489",
+      "local_file": "ports/develop/package-source/DysonNetwork.Develop__MiniApp__MiniAppService.cs",
+      "source_manifest": "ports/develop/package-source/manifest.json"
+    },
+    {
+      "file": "DysonNetwork.Develop__MiniApp__MiniAppStorageService.cs",
+      "path": "DysonNetwork.Develop/MiniApp/MiniAppStorageService.cs",
+      "blob": "b53128728283a6b41802414270b0330f44d94d4a",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "sha256": "46a596159864208af443f625f0ac1140a6a9ccd2e871d0eda39ac259fbf72edc",
+      "local_file": "ports/develop/package-source/DysonNetwork.Develop__MiniApp__MiniAppStorageService.cs",
+      "source_manifest": "ports/develop/package-source/manifest.json"
+    },
+    {
+      "file": "DysonNetwork.Develop__Models__MiniApp.cs",
+      "path": "DysonNetwork.Develop/Models/MiniApp.cs",
+      "blob": "a4a059457d5b1149cd3f25a48ae8d97afee6cbc6",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "sha256": "40ef23c52ab516e5434e52b4f7457d5a57b23754c53c8808a6eb10729e4bf111",
+      "local_file": "ports/develop/package-source/DysonNetwork.Develop__Models__MiniApp.cs",
+      "source_manifest": "ports/develop/package-source/manifest.json"
+    }
+  ]
+}

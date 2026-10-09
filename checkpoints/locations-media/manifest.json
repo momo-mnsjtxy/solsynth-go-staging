@@ -1,0 +1,409 @@
+{
+  "status": "committed source checkpoint; not final acceptance; real PostgreSQL and restart validation outstanding",
+  "published_base_commit": "b1c55b5ca81817df7b00ee87507200c03d85ff6f",
+  "local_base_commit": "b1c55b5ca81817df7b00ee87507200c03d85ff6f",
+  "local_head_commit": "872f6f64c1addc67e49b3956c768354c810d9f07",
+  "changed_or_added": {
+    "cmd/backend/main.go": {
+      "path": "checkpoints/locations-media/files/cmd/backend/main.go",
+      "sha256": "c7dc6136ee83b0d2d453f0f0df139552cb8f2834971d70aeeff3b4ebda6e20a8",
+      "bytes": 17942,
+      "mode": "100644",
+      "git_blob": "df0485fa255f28b80d64ba88feeea30b3043ebd8"
+    },
+    "cmd/backend/media_locations_config.go": {
+      "path": "checkpoints/locations-media/files/cmd/backend/media_locations_config.go",
+      "sha256": "96b1be437343314fd272b1976e6cc7c3a2c0e62d7ba6af5c6aca029931cdfec6",
+      "bytes": 4414,
+      "mode": "100644",
+      "git_blob": "169fe3140470352096128838ce29a821ac3bdabe"
+    },
+    "cmd/backend/media_locations_config_test.go": {
+      "path": "checkpoints/locations-media/files/cmd/backend/media_locations_config_test.go",
+      "sha256": "027f4f4696aa39aafa8ef950512f9f8348b951fa07d45400d6f85489d16dac6f",
+      "bytes": 1929,
+      "mode": "100644",
+      "git_blob": "3d8aa4a968bbdacaf8d733362296f1a01f0e5216"
+    },
+    "go.mod": {
+      "path": "checkpoints/locations-media/files/go.mod",
+      "sha256": "8157ef455ad474194f0d9f88dc66f73881ffdd5eb5460fd597da630c22b98aff",
+      "bytes": 439,
+      "mode": "100644",
+      "git_blob": "9a1a95d1d3d22869e0cc9a52f7fbc81e176ff6db"
+    },
+    "go.sum": {
+      "path": "checkpoints/locations-media/files/go.sum",
+      "sha256": "899c6683c912cc2b0239759bd0e7c9d967353cc7323fdd19e4fa8e674a608493",
+      "bytes": 2786,
+      "mode": "100644",
+      "git_blob": "5bd1df65c1d8b78d733c7b504f7bf13945573870"
+    },
+    "internal/application/backend.go": {
+      "path": "checkpoints/locations-media/files/internal/application/backend.go",
+      "sha256": "e267bf2e2dedcc0699cde2cb9fe586ece845e36ebc2314b18c055d6428be0b5d",
+      "bytes": 38061,
+      "mode": "100644",
+      "git_blob": "a5b608045bae076bcb43ecb0fe8fb6231bf4a4ed"
+    },
+    "internal/application/readiness.go": {
+      "path": "checkpoints/locations-media/files/internal/application/readiness.go",
+      "sha256": "ccb33cef4b76970427fcaa216559f59b1ad27ccde32de152fa6899192c3adf7b",
+      "bytes": 11169,
+      "mode": "100644",
+      "git_blob": "2ad99dbffe5a4faeb4b4a6de83db8582cf031402"
+    },
+    "internal/application/router.go": {
+      "path": "checkpoints/locations-media/files/internal/application/router.go",
+      "sha256": "e509452e726260d31b66af7e15e6d58003e6e7d9f211a52adf37563c3691c40c",
+      "bytes": 23179,
+      "mode": "100644",
+      "git_blob": "446455cbe8a1ecd98a93675912c161928359f2e0"
+    },
+    "internal/locationpg/encrypted_nfc.go": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/encrypted_nfc.go",
+      "sha256": "fe5b4c0c7571aab097d10dfd959b8d14006d9647b4c1ea16579f9217840d8976",
+      "bytes": 10859,
+      "mode": "100644",
+      "git_blob": "ed73d0aa0911002d8fbe01f7f6268520f6db642e"
+    },
+    "internal/locationpg/geocoding.go": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/geocoding.go",
+      "sha256": "61b501e1933157a3396edeb14632c5b78394fe624a3f4486ad1c0805ea1d4da0",
+      "bytes": 4466,
+      "mode": "100644",
+      "git_blob": "b561748d94466f81f993215d1ae2d838c69e0cf6"
+    },
+    "internal/locationpg/geocoding_test.go": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/geocoding_test.go",
+      "sha256": "d66373c3f13522661cab2b0d7c2a642c9aab5de76e97675bc53aaa2b50492c63",
+      "bytes": 853,
+      "mode": "100644",
+      "git_blob": "6a998a634b25f2464657179ab7b7f18c903d8b57"
+    },
+    "internal/locationpg/media.go": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/media.go",
+      "sha256": "22bd4fca5df217a4da1c6acabe19e353b728ffda4e24130316e2ec7924d25cdf",
+      "bytes": 3692,
+      "mode": "100644",
+      "git_blob": "2ecfdd826801c379f61048fe32f058563e078085"
+    },
+    "internal/locationpg/meets.go": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/meets.go",
+      "sha256": "f7851de31c9a17439a7bcfa28cc3691747b0bf97bc54e59e79205f8914ad4a27",
+      "bytes": 12496,
+      "mode": "100644",
+      "git_blob": "81a6e9c2397f25782ae0499c23eb10ca5c1c1788"
+    },
+    "internal/locationpg/nearby.go": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/nearby.go",
+      "sha256": "a94159ad031ef554161cb811dff2405557e30d3872e361ea8d88f6d369ea195a",
+      "bytes": 7483,
+      "mode": "100644",
+      "git_blob": "ab55379cd7d4c88650f370ad56e8ceaf633f57d4"
+    },
+    "internal/locationpg/nfc.go": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/nfc.go",
+      "sha256": "fd908dfcb8f7b0cc12ba36f492825bd6d4773d7dfb6d0cd63cfce2d4d92d9120",
+      "bytes": 5749,
+      "mode": "100644",
+      "git_blob": "5899b6be6c09fee99ab6eb5804542ab2914151db"
+    },
+    "internal/locationpg/pins.go": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/pins.go",
+      "sha256": "2e03a6c870a9f5a322993af53b2ca1f0347b4c79df54b476ef10af3e2c0015e4",
+      "bytes": 14600,
+      "mode": "100644",
+      "git_blob": "8744138a5cce72251066f6c849a8b3a6ba022556"
+    },
+    "internal/locationpg/replay.go": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/replay.go",
+      "sha256": "e78312fe896951641c350dd2b19c3049e097a387ba21be88ea29920f202ba684",
+      "bytes": 4153,
+      "mode": "100644",
+      "git_blob": "ea8fee313de6715627c6841a4ebcfc1bdb22b2f1"
+    },
+    "internal/locationpg/repository.go": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/repository.go",
+      "sha256": "dd75089bb0e475638b0f17e31394c958e50d8b9065b111e9544cdb8f86d3fb9e",
+      "bytes": 5142,
+      "mode": "100644",
+      "git_blob": "7440d6f534be5432aee31fa56b079a8bd284f968"
+    },
+    "internal/locationpg/schema.sql": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/schema.sql",
+      "sha256": "d647f452389d0b4a6faa3aea0dc0cf4464982e51b8aed52b59f8e2cb0e84ba2d",
+      "bytes": 4472,
+      "mode": "100644",
+      "git_blob": "d2e20cc0f88b1886156c2d569db0645887b91709"
+    },
+    "internal/locationpg/sun.go": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/sun.go",
+      "sha256": "77e32adc2e0adf39251795b45df1d0fa5ba15a2388acd5d996d153b46645b7f0",
+      "bytes": 2775,
+      "mode": "100644",
+      "git_blob": "0c891fbdefd508b4c13d517b8cb12c4460a7abd7"
+    },
+    "internal/locationpg/sun_test.go": {
+      "path": "checkpoints/locations-media/files/internal/locationpg/sun_test.go",
+      "sha256": "c081f91429f031d5994c7f524a175ee79d2043b89fc15696ec4055b2d9cd3b7e",
+      "bytes": 1748,
+      "mode": "100644",
+      "git_blob": "68338c79807761d8e170e2e64582ce584b622a3b"
+    },
+    "internal/mediapg/billing.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/billing.go",
+      "sha256": "38976fb650761906b7fe6ec802b3271884694be94d1d5bfc57e89e91e1382e39",
+      "bytes": 8144,
+      "mode": "100644",
+      "git_blob": "2efda6b02ee67a31a5d922b2ea14f2e5e50b984d"
+    },
+    "internal/mediapg/bundle_access.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/bundle_access.go",
+      "sha256": "608f411507e68dc1af55ec3491650b862fc14848c87c794ef87b64b2c810acc8",
+      "bytes": 3553,
+      "mode": "100644",
+      "git_blob": "d23729b1477eb9ff6fed1d83c6895878054566e2"
+    },
+    "internal/mediapg/bundles.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/bundles.go",
+      "sha256": "b89ec401310ca424e6d5cb545e67790653626ea1915763bb846801382ca4e2d5",
+      "bytes": 8059,
+      "mode": "100644",
+      "git_blob": "f580a2bb467eaa6be3fb08811c94a75ad3a72eec"
+    },
+    "internal/mediapg/compositions.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/compositions.go",
+      "sha256": "5bf425124d990939b47573145394e9d85df24b659de6763a3bec0c05cc3f4e3e",
+      "bytes": 6970,
+      "mode": "100644",
+      "git_blob": "192b88a05e7ee26b2bef26d516b7527f5645e470"
+    },
+    "internal/mediapg/dedup.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/dedup.go",
+      "sha256": "9d7c2e916cd9df8fde50105eb26c90296acdcd641bd0803900619a727cd172ca",
+      "bytes": 1510,
+      "mode": "100644",
+      "git_blob": "2f6d4c625f80ab0f07fbd170bab0ae51562295c8"
+    },
+    "internal/mediapg/management.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/management.go",
+      "sha256": "7559954e4d3d8ad811fd28549c87f8c19bea3937f7fa7a550bd7713bfa4e2129",
+      "bytes": 24472,
+      "mode": "100644",
+      "git_blob": "b9f8ea1fd6695401a6cf04580188792567b3c229"
+    },
+    "internal/mediapg/owner_cleanup.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/owner_cleanup.go",
+      "sha256": "91cd638284e600d324fada499675d6971bb1d7e8804cf546b3f09523747164b6",
+      "bytes": 1326,
+      "mode": "100644",
+      "git_blob": "c2bd8439b56a9411428560c9c09ae360032ab4c6"
+    },
+    "internal/mediapg/remote.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/remote.go",
+      "sha256": "db6b206d123279b2069aaf5f81ee1e31a3f4d0ceff606479bb91b98ce9cc874e",
+      "bytes": 3616,
+      "mode": "100644",
+      "git_blob": "da5d61618c370e6e1da43ddae4233af39ca3ac80"
+    },
+    "internal/mediapg/remote_test.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/remote_test.go",
+      "sha256": "f780a7bf1607bc45f9d3114d9be982743cb74b2fa8425a7059019a0fb228d4ff",
+      "bytes": 1050,
+      "mode": "100644",
+      "git_blob": "b5d7966e780d8ddf2bd035830b2c22d1c2ce01f4"
+    },
+    "internal/mediapg/renderer.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/renderer.go",
+      "sha256": "efe5a901205224176bc17e38ab7cb388569b29eff4c78f51d252fef2eb8985cd",
+      "bytes": 3249,
+      "mode": "100644",
+      "git_blob": "8c2dfd3ef3535ef3154630c9f93e34ec0abaeccf"
+    },
+    "internal/mediapg/renderer_test.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/renderer_test.go",
+      "sha256": "bb9eeded5074d573ea6675e5e77975b243bda19cebab2c6f98cfd979fe5a61a3",
+      "bytes": 2443,
+      "mode": "100644",
+      "git_blob": "c225c7be29d3c10246c42476625d21290eb8facd"
+    },
+    "internal/mediapg/repository.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/repository.go",
+      "sha256": "6ff59f5361cbdb99f225791c7fbb81c51012cb948c7c7ff72aa4f08757dc65ee",
+      "bytes": 22489,
+      "mode": "100644",
+      "git_blob": "f8796494acbcfc21cf5b6f47185f1984b990539e"
+    },
+    "internal/mediapg/resumable.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/resumable.go",
+      "sha256": "a375e02f5102f162e86bbdcbbfccaa7b92c2f44856dc727de9a4dcb5e85fc70e",
+      "bytes": 21264,
+      "mode": "100644",
+      "git_blob": "492c1c8abbe7dd13bd6c46595e485326f1aafdef"
+    },
+    "internal/mediapg/schema.sql": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/schema.sql",
+      "sha256": "afc5958074f02cd0484c964815e5b5bdbd1318872cab0c8c6777f847408f49b4",
+      "bytes": 4730,
+      "mode": "100644",
+      "git_blob": "50d7c5bf8f8f525dcc6599cf3d60c24302b94ad6"
+    },
+    "internal/mediapg/thumbnail.go": {
+      "path": "checkpoints/locations-media/files/internal/mediapg/thumbnail.go",
+      "sha256": "9cbab51f60990e2beeaa53c36090122265246a0b0399f03ffe495cd87f8025b2",
+      "bytes": 2257,
+      "mode": "100644",
+      "git_blob": "508a8360d797252237de6c18817b09e928a954ff"
+    },
+    "ports/media/billing_http.go": {
+      "path": "checkpoints/locations-media/files/ports/media/billing_http.go",
+      "sha256": "0dc833b94ebd290e1df4635e0924e0418e7e0cb5f8533d888c935ff32d882fcf",
+      "bytes": 2713,
+      "mode": "100644",
+      "git_blob": "6ee5f8b28ac9a3d4c4e76f6e72385d24a87b8edf"
+    },
+    "ports/media/direct.go": {
+      "path": "checkpoints/locations-media/files/ports/media/direct.go",
+      "sha256": "409481f5b3031940844a22af6a015d7da186fb82e9834932d0c1329fa5b6941e",
+      "bytes": 6549,
+      "mode": "100644",
+      "git_blob": "2e95772fd4b5b5fb22ecb5403c0ea27b7c05f8f4"
+    },
+    "ports/media/http.go": {
+      "path": "checkpoints/locations-media/files/ports/media/http.go",
+      "sha256": "e8f764802c7d33222151554501cdcf15f4367f5f83c4cd94b9137a288cabb2bc",
+      "bytes": 7443,
+      "mode": "100644",
+      "git_blob": "c35a667ad0bd6aac3bee50784f46bd697142a53e"
+    },
+    "ports/media/management.go": {
+      "path": "checkpoints/locations-media/files/ports/media/management.go",
+      "sha256": "5342c66b6055785b8b765f7d19962d285fc5cd7c76c163ea53cfcdca55943742",
+      "bytes": 9099,
+      "mode": "100644",
+      "git_blob": "932611d7a85a8791928d84de7d227dd9e316f6cb"
+    },
+    "ports/media/management_http.go": {
+      "path": "checkpoints/locations-media/files/ports/media/management_http.go",
+      "sha256": "5061ed3b95faec252f29b5806bb2b9c7941e7007330604e2d7d6f96a12501fc7",
+      "bytes": 9465,
+      "mode": "100644",
+      "git_blob": "0b3ce031c161221b8826d078c30e2eda728f0c2e"
+    },
+    "ports/media/management_test.go": {
+      "path": "checkpoints/locations-media/files/ports/media/management_test.go",
+      "sha256": "694893f65b9f289123783a8f730014fa5679c3293110556fb28bd0d8f63a37d5",
+      "bytes": 1337,
+      "mode": "100644",
+      "git_blob": "ab2a57993f199126bfcbfb89345c497dd9007d20"
+    },
+    "ports/media/types.go": {
+      "path": "checkpoints/locations-media/files/ports/media/types.go",
+      "sha256": "da7033459420eaef15c5ef7c31f5a328432311ce42b172a13a5e1db09deafbe0",
+      "bytes": 3766,
+      "mode": "100644",
+      "git_blob": "d75083ccce385d1a4a665efa0462b1e17172abba"
+    },
+    "ports/sphere/locations/encrypted_nfc.go": {
+      "path": "checkpoints/locations-media/files/ports/sphere/locations/encrypted_nfc.go",
+      "sha256": "19cf43394a4c76744c1c5dfbfa7092b85f7e5413823a6edacf7a738c1923ae66",
+      "bytes": 1222,
+      "mode": "100644",
+      "git_blob": "ffc2371f5e650255e2eb38e5bf0eb35b98f698cd"
+    },
+    "ports/sphere/locations/encrypted_nfc_http.go": {
+      "path": "checkpoints/locations-media/files/ports/sphere/locations/encrypted_nfc_http.go",
+      "sha256": "9dd8a13fd2e8b0fa06df9a3230af4e53d0f14acf8825be9bdf079408596b033b",
+      "bytes": 1733,
+      "mode": "100644",
+      "git_blob": "973a6c9bbea7b75020e24872c4cd079b5e652bda"
+    },
+    "ports/sphere/locations/geocoding.go": {
+      "path": "checkpoints/locations-media/files/ports/sphere/locations/geocoding.go",
+      "sha256": "c20d10211c6c960f09ae19bff6543af355713856de0cddeffc457349f5f9f09e",
+      "bytes": 906,
+      "mode": "100644",
+      "git_blob": "b74acdd1b9fa0242e30d78785278238bc44fcf75"
+    },
+    "ports/sphere/locations/geocoding_http.go": {
+      "path": "checkpoints/locations-media/files/ports/sphere/locations/geocoding_http.go",
+      "sha256": "97f993a1aca41e838746bc258e38e7eed3f59d8f08a254456c4c68aaa5aa1a4d",
+      "bytes": 833,
+      "mode": "100644",
+      "git_blob": "3f23832cf7128f0849705c3ad3e647cd60c94754"
+    },
+    "ports/sphere/locations/nearby.go": {
+      "path": "checkpoints/locations-media/files/ports/sphere/locations/nearby.go",
+      "sha256": "f1063b6d9761bbca94e373a67b8b5bde31e4e7eb5060d71f5417f10cad31faf7",
+      "bytes": 2900,
+      "mode": "100644",
+      "git_blob": "518eca51eac08a18c360f94a45560de2bbf312c7"
+    },
+    "ports/sphere/locations/nearby_http.go": {
+      "path": "checkpoints/locations-media/files/ports/sphere/locations/nearby_http.go",
+      "sha256": "3edc03c0935a487243d0e15e5d4b03d23cdeb9bb290b4c71ced6b9103616b600",
+      "bytes": 1285,
+      "mode": "100644",
+      "git_blob": "7418ec174fd499b3af71e4582a7499a166ac13e8"
+    },
+    "ports/sphere/locations/nearby_test.go": {
+      "path": "checkpoints/locations-media/files/ports/sphere/locations/nearby_test.go",
+      "sha256": "65a9c0ad4c956c6b219df57ec8c07a8b58cd2f13d92297b6fe585c6cb5ce7ea3",
+      "bytes": 923,
+      "mode": "100644",
+      "git_blob": "3384e3f07847aa38d3c0baf1ab86e55f19fcddc6"
+    },
+    "ports/sphere/locations/replay.go": {
+      "path": "checkpoints/locations-media/files/ports/sphere/locations/replay.go",
+      "sha256": "7854a6cb999a40108e9d6d7e4098b6591c24217c11d1b7eee270d08e52a1017d",
+      "bytes": 546,
+      "mode": "100644",
+      "git_blob": "f2e9f1d21d67851e57486560cceb30e894c6115a"
+    },
+    "ports/sphere/locations/replay_http.go": {
+      "path": "checkpoints/locations-media/files/ports/sphere/locations/replay_http.go",
+      "sha256": "6f3c0b905b9c5f392177d94faeb695e6e4630c3b0cb416594080dce7323cdf1a",
+      "bytes": 3149,
+      "mode": "100644",
+      "git_blob": "fc081722db7497902be5a4f0f513f0689f59a86c"
+    },
+    "ports/sphere/locations/routes.go": {
+      "path": "checkpoints/locations-media/files/ports/sphere/locations/routes.go",
+      "sha256": "66ee4477b60ff0bbcc8c4c594d80c67ab609a730a7d8259a7b330f7767dead4f",
+      "bytes": 13770,
+      "mode": "100644",
+      "git_blob": "060f2fd34acb725c71e41edd071536e2c63bdfc7"
+    },
+    "ports/sphere/locations/types.go": {
+      "path": "checkpoints/locations-media/files/ports/sphere/locations/types.go",
+      "sha256": "92e841e7768a3d6f9fe4fd17f6c0a4c769be53a70967841e9b288079cbc71e6b",
+      "bytes": 7033,
+      "mode": "100644",
+      "git_blob": "df097c1291cf25108ccf6a4550a516c8815226e0"
+    },
+    "ports/sphere/locations/validation.go": {
+      "path": "checkpoints/locations-media/files/ports/sphere/locations/validation.go",
+      "sha256": "276b81cffb83f0215ac6b1aa5657d2bd33ae8b93f6adf16d96b647d1b4c1813d",
+      "bytes": 3001,
+      "mode": "100644",
+      "git_blob": "92d55f7af20e48bdf7adfd268a5f6d546863ddf3"
+    },
+    "tests/integration/locations_completion_test.go": {
+      "path": "checkpoints/locations-media/files/tests/integration/locations_completion_test.go",
+      "sha256": "8c3babddaf0ec4ffc4d1445768da42e6b1feea8d56ae8eb86db97d6ab9e035f9",
+      "bytes": 11824,
+      "mode": "100644",
+      "git_blob": "b57e955496c5a884f9d8e5550a10dfc642b2569c"
+    },
+    "tests/integration/media_management_test.go": {
+      "path": "checkpoints/locations-media/files/tests/integration/media_management_test.go",
+      "sha256": "eb3b54cb507b36eba5bb9d1eacc1679a6100a55c55781d148feacddac8430284",
+      "bytes": 15392,
+      "mode": "100644",
+      "git_blob": "860f6471c2572a91f064febb59bbb7bec37964ab"
+    }
+  },
+  "absent_base_paths": [],
+  "restore": "Start from published_base_commit in an isolated checkout. Verify saved file sha256/bytes and copy to original path preserving mode. Only explicit absent_base_paths are deletions. Lane snapshots are alternatives; do not stack them. Integrate reviewed feature hunks into the integration lane."
+}

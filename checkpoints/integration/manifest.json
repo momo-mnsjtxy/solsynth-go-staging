@@ -1,0 +1,1459 @@
+{
+  "status": "committed source checkpoint; not final acceptance; real PostgreSQL and restart validation outstanding",
+  "published_base_commit": "b1c55b5ca81817df7b00ee87507200c03d85ff6f",
+  "local_base_commit": "b1c55b5ca81817df7b00ee87507200c03d85ff6f",
+  "local_head_commit": "4f4cc44992b112a19e26c0f62a948d35b4cf3f34",
+  "changed_or_added": {
+    "SOURCE_MANIFEST.json": {
+      "path": "checkpoints/integration/files/SOURCE_MANIFEST.json",
+      "sha256": "1a928637de0f446e654c66a61e268a0e2c3af96e8f6236a294e0372258b7dfe5",
+      "bytes": 476300,
+      "mode": "100644",
+      "git_blob": "6fdecacec002d349dd05621c0e13165e9427a48d"
+    },
+    "cmd/backend/bot_execution_config.go": {
+      "path": "checkpoints/integration/files/cmd/backend/bot_execution_config.go",
+      "sha256": "602953c6b4b9e95f827c9b15263d561739c9ada5a011f0ce7cd644d6899964fe",
+      "bytes": 5018,
+      "mode": "100644",
+      "git_blob": "649df38d955e24e436bb5effdfeef70437f88c5d"
+    },
+    "cmd/backend/bot_renewal_worker.go": {
+      "path": "checkpoints/integration/files/cmd/backend/bot_renewal_worker.go",
+      "sha256": "581263771c7a644d5a37566e819760b5e81fd243f0f3b25d73530da49ede94a7",
+      "bytes": 1004,
+      "mode": "100644",
+      "git_blob": "0335cea752b74885feee000b632a46675e1b31ba"
+    },
+    "cmd/backend/bot_renewal_worker_test.go": {
+      "path": "checkpoints/integration/files/cmd/backend/bot_renewal_worker_test.go",
+      "sha256": "8416b8183d584273078171d966214a4d50f0b787c540f3964c95fdc656014a0d",
+      "bytes": 1748,
+      "mode": "100644",
+      "git_blob": "921bccfad5a694fdccf26a6d7993018d8094a9c7"
+    },
+    "cmd/backend/main.go": {
+      "path": "checkpoints/integration/files/cmd/backend/main.go",
+      "sha256": "edbffaa456e513bc467cb0c8fb6ceebc02788c78af1dbbafb037c9d89c910e65",
+      "bytes": 19005,
+      "mode": "100644",
+      "git_blob": "7dfd75d19ecf265d6f10fc704a5c6917fa566c80"
+    },
+    "docs/all-drafts-completion-scope.json": {
+      "path": "checkpoints/integration/files/docs/all-drafts-completion-scope.json",
+      "sha256": "3cddadf35cb49f8c391c4012ac92393afaa4ec24f15681e15c9cf47f5a113b9f",
+      "bytes": 5580,
+      "mode": "100644",
+      "git_blob": "fca623c9d2de80cf56197a52044d71338a8c5f41"
+    },
+    "docs/bot-execution-continuation.md": {
+      "path": "checkpoints/integration/files/docs/bot-execution-continuation.md",
+      "sha256": "cf14c9a5b41564905414878a1f60d2e8e3625bdf177a2a1172361d4b37618b22",
+      "bytes": 15733,
+      "mode": "100644",
+      "git_blob": "a3bea9b371abf8a53b2e829e1f3e7980e043be34"
+    },
+    "docs/chat-transient-lifecycle.md": {
+      "path": "checkpoints/integration/files/docs/chat-transient-lifecycle.md",
+      "sha256": "485059ea64f56dd73a41a2c376e741b60dab8308aac1a153552d5680d74e88af",
+      "bytes": 7394,
+      "mode": "100644",
+      "git_blob": "90f6ba7684bf7698a9e9f9678ce3a9e57b0789a5"
+    },
+    "docs/chat-transient-provenance.json": {
+      "path": "checkpoints/integration/files/docs/chat-transient-provenance.json",
+      "sha256": "e446c74f355a1d03a832c7267bcfbbb400cfc434343b7e0a7526c683c5d22945",
+      "bytes": 1611,
+      "mode": "100644",
+      "git_blob": "aaeccb52ed7e5c925e5ca4a703e2bd0a3c38dbaa"
+    },
+    "docs/ci-two-groups-dependencies.json": {
+      "path": "checkpoints/integration/files/docs/ci-two-groups-dependencies.json",
+      "sha256": "512b9e387f0af9e8d524accd8389b44f6e4939c0a797227c69b16032f8eef1c8",
+      "bytes": 171871,
+      "mode": "100644",
+      "git_blob": "4ea94883de9f0ea06a526904adae29a68e523538"
+    },
+    "docs/developer-apps-continuation.md": {
+      "path": "checkpoints/integration/files/docs/developer-apps-continuation.md",
+      "sha256": "4a213d71335710d47f928f18d9cc68dedd767eb91fd0982a28a88b46610a9c40",
+      "bytes": 8635,
+      "mode": "100644",
+      "git_blob": "0ad1eca9fc905af53c6fe6a84c93eb137f208148"
+    },
+    "docs/developer-chat-composed-review.json": {
+      "path": "checkpoints/integration/files/docs/developer-chat-composed-review.json",
+      "sha256": "2cf003ef7f3b79cdc975182f1df1232fd271ba0d58b7b8be8a166613516bae2b",
+      "bytes": 2258,
+      "mode": "100644",
+      "git_blob": "a6c6014aff51c4d754ba4fd713b62615cd782a16"
+    },
+    "docs/developer-media-quota-continuation.md": {
+      "path": "checkpoints/integration/files/docs/developer-media-quota-continuation.md",
+      "sha256": "2b1b87ed51cb5835ef65ffce91f75636774f4f0d6a6310e001f0c8547bb87e57",
+      "bytes": 7615,
+      "mode": "100644",
+      "git_blob": "ed8c994786d6205584db53412c2ed8fb50652481"
+    },
+    "docs/developer-media-quota-dependencies.json": {
+      "path": "checkpoints/integration/files/docs/developer-media-quota-dependencies.json",
+      "sha256": "3d512872b9e0d5e94b5dd27f4e7626debca53e5d4008a917b16ccb20177f0109",
+      "bytes": 2571,
+      "mode": "100644",
+      "git_blob": "ba53ba05f851de63dae2b5e97bf16f112513e52c"
+    },
+    "docs/developer-media-quota-source.json": {
+      "path": "checkpoints/integration/files/docs/developer-media-quota-source.json",
+      "sha256": "1b45f7401ca468bddabc9520e70905b2a33b6d9d8d90e2444ff3b1948a251c24",
+      "bytes": 3680,
+      "mode": "100644",
+      "git_blob": "c0079d4028c5d133c723d14f8da5a2674defe283"
+    },
+    "docs/oauth-resource-completion.md": {
+      "path": "checkpoints/integration/files/docs/oauth-resource-completion.md",
+      "sha256": "a38e38e6a0593d9156e7cfe70e2d1e9b95e4468556bb0e17aff7495bd2d16bcc",
+      "bytes": 2837,
+      "mode": "100644",
+      "git_blob": "415275c7ee7b10adfa111b49ff3898747aef6ee1"
+    },
+    "docs/post-pin-continuation.md": {
+      "path": "checkpoints/integration/files/docs/post-pin-continuation.md",
+      "sha256": "2797f14e51d2a1ceadeeb5fdb7c5609fa8dece0c82344c89fe1c545fb2f732ae",
+      "bytes": 7560,
+      "mode": "100644",
+      "git_blob": "59bdbfea1241003849808b2ba01db8d3426457d0"
+    },
+    "docs/post-pin-source-evidence.json": {
+      "path": "checkpoints/integration/files/docs/post-pin-source-evidence.json",
+      "sha256": "642fe7b22752e2f9cdef2576f4069614f2b5a243500b8418c1469fc16029601d",
+      "bytes": 5978,
+      "mode": "100644",
+      "git_blob": "edf660c18ac0677f2c24836fdf909a31bd722277"
+    },
+    "docs/runtime-flow-acceptance.json": {
+      "path": "checkpoints/integration/files/docs/runtime-flow-acceptance.json",
+      "sha256": "c7e21ec005e56c88acf44f8a38c260cd804e554124ef8b795b889b3439125230",
+      "bytes": 220315,
+      "mode": "100644",
+      "git_blob": "06bdbb0d09086074f6d6a07ea542e2c4ce298940"
+    },
+    "internal/accountpg/publisher_completion.go": {
+      "path": "checkpoints/integration/files/internal/accountpg/publisher_completion.go",
+      "sha256": "8991e424ac9c231b3c51dff6659c254f94217f0fd704ee999614a7a1d03302be",
+      "bytes": 12816,
+      "mode": "100644",
+      "git_blob": "6131497446be7ab4490143fe96390260f66faaae"
+    },
+    "internal/accountpg/publisher_owner_eligibility.go": {
+      "path": "checkpoints/integration/files/internal/accountpg/publisher_owner_eligibility.go",
+      "sha256": "5de54db370fa87133ceff79923432173b582caa62846428c0a58ce00640553b5",
+      "bytes": 2585,
+      "mode": "100644",
+      "git_blob": "67a5be05c421e8b65194885179ee92588be85aaf"
+    },
+    "internal/accountpg/realm_provider.go": {
+      "path": "checkpoints/integration/files/internal/accountpg/realm_provider.go",
+      "sha256": "d074a23bafb87a7231b8e50ccf3deacbbea18eebfd22e699c1a605f5052f26f9",
+      "bytes": 4815,
+      "mode": "100644",
+      "git_blob": "fe7560a237a50b742823ae4c3158473072a91f36"
+    },
+    "internal/accountpg/repository.go": {
+      "path": "checkpoints/integration/files/internal/accountpg/repository.go",
+      "sha256": "edda86f24707695d6c15fdaf52868c8ca85ed63f1620d2d5b1a8fa85c608784f",
+      "bytes": 17423,
+      "mode": "100644",
+      "git_blob": "8f694d17b83985c31069a4125871dbef53659649"
+    },
+    "internal/accountpg/schema.sql": {
+      "path": "checkpoints/integration/files/internal/accountpg/schema.sql",
+      "sha256": "41c3440fb6008634cc4e5ad970bf4ac845fd3786647007cd0bea09fbe51bbe61",
+      "bytes": 6143,
+      "mode": "100644",
+      "git_blob": "6495f32cc13c408ba2032d2e06eb000d6b180375"
+    },
+    "internal/application/backend.go": {
+      "path": "checkpoints/integration/files/internal/application/backend.go",
+      "sha256": "067f31ebc42c5346f6c9f88ebeeb3bff58f3f0edc50181175165ddfd5bfc44d9",
+      "bytes": 39603,
+      "mode": "100644",
+      "git_blob": "6c2f3371ff69fb5003951b2a38ab60aff7d064e0"
+    },
+    "internal/application/bot_execution.go": {
+      "path": "checkpoints/integration/files/internal/application/bot_execution.go",
+      "sha256": "fe343ce6f5c3e2d67ce4d193b6bd56fd7e5355307a848bc3166563b6d1b83fcf",
+      "bytes": 1106,
+      "mode": "100644",
+      "git_blob": "161796aed01683dc85909a6db61a016b575cac1d"
+    },
+    "internal/application/chat_transient.go": {
+      "path": "checkpoints/integration/files/internal/application/chat_transient.go",
+      "sha256": "7dbbb85b6c0adb50035d82e2c5837e2f4d7a48bcd02be806aa1c8555219cc58e",
+      "bytes": 2477,
+      "mode": "100644",
+      "git_blob": "d16ace88bb727a8036f46eaded086125ec0e32e2"
+    },
+    "internal/application/chat_transient_test.go": {
+      "path": "checkpoints/integration/files/internal/application/chat_transient_test.go",
+      "sha256": "21150cbd2c57b2ea9ecb99695853fa7794e9e778c653fb0b5850dfef3aba5dbf",
+      "bytes": 2258,
+      "mode": "100644",
+      "git_blob": "5c1832461972d57b148f0375f7c1216d0117a2e3"
+    },
+    "internal/application/identity.go": {
+      "path": "checkpoints/integration/files/internal/application/identity.go",
+      "sha256": "aa9d68306ecc8618d67327438842c4e4f347c0b6d38f0e3883eb48b1418ca3a3",
+      "bytes": 5361,
+      "mode": "100644",
+      "git_blob": "1c80e3bdf50f06ececb27d65164acae906090ac3"
+    },
+    "internal/application/media.go": {
+      "path": "checkpoints/integration/files/internal/application/media.go",
+      "sha256": "1ffecc29b750a11a4a7c24c3ac2c526640391938d9e90d6ea350a4c73e19c2ab",
+      "bytes": 549,
+      "mode": "100644",
+      "git_blob": "a3f8e55f30f10d5c4f19b7869f34441b641815fb"
+    },
+    "internal/application/oauth_resources.go": {
+      "path": "checkpoints/integration/files/internal/application/oauth_resources.go",
+      "sha256": "c4779f93f648cb4b1d82c94d21e088f9180fd8650a2bc0808358b11f221ae26a",
+      "bytes": 2405,
+      "mode": "100644",
+      "git_blob": "3b096b2929ec16328083f7a42d952c9bdf54e557"
+    },
+    "internal/application/oauth_resources_test.go": {
+      "path": "checkpoints/integration/files/internal/application/oauth_resources_test.go",
+      "sha256": "2b6caa73a380656489c57c24b532b5c0d32a49cf08362f1e7c4ea40c9184bcd0",
+      "bytes": 877,
+      "mode": "100644",
+      "git_blob": "0b2b98ad23205bfb2e8faa9fcea1a00d6d8474f3"
+    },
+    "internal/application/post_pin_routing_test.go": {
+      "path": "checkpoints/integration/files/internal/application/post_pin_routing_test.go",
+      "sha256": "963f8694a4243890b80301407d2b22c7841408fecf77f804be8952fbd5f957e5",
+      "bytes": 848,
+      "mode": "100644",
+      "git_blob": "5730c4fb45167a228de7d30589e19f06901b8c98"
+    },
+    "internal/application/readiness.go": {
+      "path": "checkpoints/integration/files/internal/application/readiness.go",
+      "sha256": "3e7e42608e2a34c4b494c4da1e11009df4b42e41754f005cded14fe162351b9a",
+      "bytes": 11469,
+      "mode": "100644",
+      "git_blob": "a7c2020ddd3aeded0e5dc7a876939557a7fcc594"
+    },
+    "internal/application/router.go": {
+      "path": "checkpoints/integration/files/internal/application/router.go",
+      "sha256": "b7bfbe86b4e5d8c3b5d570b9e4d8ac6fdb90284aef6169c6fbb90acaac0b3449",
+      "bytes": 23166,
+      "mode": "100644",
+      "git_blob": "3cc47e4d6448cbde880859a40de33fc3a7d69b22"
+    },
+    "internal/apppg/identity.go": {
+      "path": "checkpoints/integration/files/internal/apppg/identity.go",
+      "sha256": "e0ed7cfd4ff99c54e68b29090eb594d798b912f2719ddac6ec27c882589277db",
+      "bytes": 15940,
+      "mode": "100644",
+      "git_blob": "67647fab95466dc3b94ad710fc0f261dc27897da"
+    },
+    "internal/apppg/media.go": {
+      "path": "checkpoints/integration/files/internal/apppg/media.go",
+      "sha256": "84cf5be1ad93463ee23a7baa64ccfaeb93d65a93448d757688be12156999f7cc",
+      "bytes": 2292,
+      "mode": "100644",
+      "git_blob": "cc50bbc66589a60aa0f2b4a57dc2f7c7e069b472"
+    },
+    "internal/apppg/oauth_registration.go": {
+      "path": "checkpoints/integration/files/internal/apppg/oauth_registration.go",
+      "sha256": "e618a6134bb8b998ed3427e17bceb1c8e93364225d61192907d1666426e4e654",
+      "bytes": 3415,
+      "mode": "100644",
+      "git_blob": "fa489d9b30acc5e84dada0a39505749d42b491a4"
+    },
+    "internal/apppg/products_widgets.go": {
+      "path": "checkpoints/integration/files/internal/apppg/products_widgets.go",
+      "sha256": "40a930147da81032ca7799fe8307aeecf47c095ab3110248631f73b944873ff0",
+      "bytes": 13725,
+      "mode": "100644",
+      "git_blob": "399cf2dae9b1be123618488d3d790407f95d9e8a"
+    },
+    "internal/apppg/repository.go": {
+      "path": "checkpoints/integration/files/internal/apppg/repository.go",
+      "sha256": "e58b835520492ca80cc86f759017a9d3365824357b3f34e3e2b9cb7a6a1d2acc",
+      "bytes": 18095,
+      "mode": "100644",
+      "git_blob": "444c7f6d3750547744047696e035cde7d6c982a6"
+    },
+    "internal/botpg/bots.go": {
+      "path": "checkpoints/integration/files/internal/botpg/bots.go",
+      "sha256": "69ffecbce3662accf375dcb41a44887631a21d9db465a8bd8b8b4f82e6707653",
+      "bytes": 11164,
+      "mode": "100644",
+      "git_blob": "bcaddb93ecdfd040eaf648a394d0a0fac0c2e8e2"
+    },
+    "internal/botpg/execution.go": {
+      "path": "checkpoints/integration/files/internal/botpg/execution.go",
+      "sha256": "5eebd5feb3d1c74c6acc8418d71b9dfc2037eb7d5e823c4c96c4322e9df8f8fe",
+      "bytes": 28727,
+      "mode": "100644",
+      "git_blob": "d6aac9f1c761e8858b494e1f1192b030a2c4f4ae"
+    },
+    "internal/botpg/execution_delivery.go": {
+      "path": "checkpoints/integration/files/internal/botpg/execution_delivery.go",
+      "sha256": "2f4dcdf7f90c52d2b4dab1066108475319a40fd0d43cbcd84bafe5e97fa180ef",
+      "bytes": 19379,
+      "mode": "100644",
+      "git_blob": "6fedf303f8d62c90a5c8382c3e5addaa125e01a5"
+    },
+    "internal/botpg/execution_renewal.go": {
+      "path": "checkpoints/integration/files/internal/botpg/execution_renewal.go",
+      "sha256": "3d256647fc0913fe3c57b8a7418488b913e7c113782d2e716265b5ebe332f2e0",
+      "bytes": 21907,
+      "mode": "100644",
+      "git_blob": "08fd7c8bc56d407b30a87aa39d5049161c4d6c21"
+    },
+    "internal/botpg/execution_schema.sql": {
+      "path": "checkpoints/integration/files/internal/botpg/execution_schema.sql",
+      "sha256": "9a269fbd5188c6acde815a7a148055982372905e6dd962efa944e125e2cd0a74",
+      "bytes": 3796,
+      "mode": "100644",
+      "git_blob": "b0fd3961d8197e9d41adb0c6fea9bd7ed5f80db3"
+    },
+    "internal/botpg/keys.go": {
+      "path": "checkpoints/integration/files/internal/botpg/keys.go",
+      "sha256": "ff1a01e2058dff2e03ccce0370b11efe6969795704c55047b033df9daf0a6413",
+      "bytes": 8187,
+      "mode": "100644",
+      "git_blob": "140cc645773cc24ae4da7ff59a07fd1121791b29"
+    },
+    "internal/botpg/keys_test.go": {
+      "path": "checkpoints/integration/files/internal/botpg/keys_test.go",
+      "sha256": "e28e244c21ddb4c071518fdeb7b1b7950acc3b95a10eb1fdb8c8ab22d222951c",
+      "bytes": 2076,
+      "mode": "100644",
+      "git_blob": "c01ecee31256a9fc44bc21d588218744c97f1db5"
+    },
+    "internal/botpg/miniapp_media.go": {
+      "path": "checkpoints/integration/files/internal/botpg/miniapp_media.go",
+      "sha256": "338c3ea4c8b9ec4e09657c71626c2adaa389ed3524c224820694d8587d064365",
+      "bytes": 5079,
+      "mode": "100644",
+      "git_blob": "847517f5a98e54b4ea7b091e10ad212061d4ef48"
+    },
+    "internal/botpg/miniapp_media_schema.sql": {
+      "path": "checkpoints/integration/files/internal/botpg/miniapp_media_schema.sql",
+      "sha256": "9025350dbb82c289c64f294807098036cae5cba47afa59d65f167401077b5023",
+      "bytes": 702,
+      "mode": "100644",
+      "git_blob": "808fd76f27987bb43e28e104f2674dc11fce046d"
+    },
+    "internal/botpg/miniapps.go": {
+      "path": "checkpoints/integration/files/internal/botpg/miniapps.go",
+      "sha256": "febb43373274985ff9661e7553928876ab9057a4e95ea90e624221c6c3ed0f02",
+      "bytes": 8544,
+      "mode": "100644",
+      "git_blob": "884e88a5a0ce668a80746f7736dfcaa18df7e1c7"
+    },
+    "internal/botpg/package_upload.go": {
+      "path": "checkpoints/integration/files/internal/botpg/package_upload.go",
+      "sha256": "e6e792ea602d1d4a1bdb9f596fc5b10254ad11f8dab2e97ae38576d222fd08f5",
+      "bytes": 6050,
+      "mode": "100644",
+      "git_blob": "b141d15c9fe1f0081d4915dbe3a308460f7a9441"
+    },
+    "internal/botpg/packages.go": {
+      "path": "checkpoints/integration/files/internal/botpg/packages.go",
+      "sha256": "947c79e7fa08c715be28fe48cb53f5c373fdbef54183e46306bb25dc4a5b5a6a",
+      "bytes": 12565,
+      "mode": "100644",
+      "git_blob": "c3ce6f5e1ea4b302e1382be459480fd5f2a47e35"
+    },
+    "internal/botpg/packages_test.go": {
+      "path": "checkpoints/integration/files/internal/botpg/packages_test.go",
+      "sha256": "9a86eea72aea66b8334ad25a22108d56a5b97ec8c1b94246bf24bb0ea69d3583",
+      "bytes": 6412,
+      "mode": "100644",
+      "git_blob": "ceab51bbd5e2360163fd1bd01295b8d2960d9571"
+    },
+    "internal/botpg/profile_media.go": {
+      "path": "checkpoints/integration/files/internal/botpg/profile_media.go",
+      "sha256": "c59fc9f4732a1cd7296ab4bef4e5fbec9254bb960d48d67c8160abae7aba0395",
+      "bytes": 1423,
+      "mode": "100644",
+      "git_blob": "729b59c459d04597bb86fedadc6719c61dc13e5c"
+    },
+    "internal/botpg/quota.go": {
+      "path": "checkpoints/integration/files/internal/botpg/quota.go",
+      "sha256": "1ea945d609c929d8971448d538eba33976260be56d374570a074516494a8312d",
+      "bytes": 3771,
+      "mode": "100644",
+      "git_blob": "eb5757a287e0fa8e0ce687b96f4158523daf0998"
+    },
+    "internal/botpg/replies.go": {
+      "path": "checkpoints/integration/files/internal/botpg/replies.go",
+      "sha256": "6eeb6c520c897209497fbe309a8e80f6756a1532da83a8c09f52640b19ec99fd",
+      "bytes": 2316,
+      "mode": "100644",
+      "git_blob": "9aa3d05d8ea414431775c7ff5fea6ab08e1bf92e"
+    },
+    "internal/botpg/repository.go": {
+      "path": "checkpoints/integration/files/internal/botpg/repository.go",
+      "sha256": "4be60b13514524473aa2d2c52abfcc617d4bea94b234c07585876de43aa73509",
+      "bytes": 12366,
+      "mode": "100644",
+      "git_blob": "a5c25371e81ee6fac5f7cc9f74a9a69bdd0eca7d"
+    },
+    "internal/botpg/schema.sql": {
+      "path": "checkpoints/integration/files/internal/botpg/schema.sql",
+      "sha256": "88727ca695a274e8ed46401dca6acec0db954b7f46c448705029d74e9d592367",
+      "bytes": 4715,
+      "mode": "100644",
+      "git_blob": "ab97098d7c391b71416bf22273854c241795001f"
+    },
+    "internal/chatmediapg/repository.go": {
+      "path": "checkpoints/integration/files/internal/chatmediapg/repository.go",
+      "sha256": "c64c59f7e3e8cfaba2014e0c55185228c73b0a26f8ae33675fcd1a66a0a7f0cc",
+      "bytes": 6935,
+      "mode": "100644",
+      "git_blob": "d745955a004eac6dbf3c78352661532fc23f00be"
+    },
+    "internal/chatpg/messages.go": {
+      "path": "checkpoints/integration/files/internal/chatpg/messages.go",
+      "sha256": "51988e249cfa980e7daf983a6ba4bec35297d08be3d4bc0ff0082b62774bfeca",
+      "bytes": 16045,
+      "mode": "100644",
+      "git_blob": "41a9a5a3715bbc408b221204ab76f0b7b6d64d51"
+    },
+    "internal/chatpg/placeholders.go": {
+      "path": "checkpoints/integration/files/internal/chatpg/placeholders.go",
+      "sha256": "82661b01afba8e64385b9f9275fd55b3a96cb3616e5b1d98825c7c534c26503b",
+      "bytes": 13549,
+      "mode": "100644",
+      "git_blob": "75677e3dd7e3b69c67b83ed95916fdbb1438bcab"
+    },
+    "internal/chatpg/relations.go": {
+      "path": "checkpoints/integration/files/internal/chatpg/relations.go",
+      "sha256": "4005db7e992d4668ff37308291b37e35258cdd383cbf2b600132e82be3da4c0e",
+      "bytes": 21362,
+      "mode": "100644",
+      "git_blob": "5e0903477f4d8eb747d81e0c127ef83ff082f0f2"
+    },
+    "internal/chatpg/repository.go": {
+      "path": "checkpoints/integration/files/internal/chatpg/repository.go",
+      "sha256": "486a2016714bbcb2916235ac2ede413b11179f5b8feda5e139dff3d1bfad4fa6",
+      "bytes": 16533,
+      "mode": "100644",
+      "git_blob": "0aa32d2e05f699a1d073eab3b055a4c6d706d9de"
+    },
+    "internal/chatpg/transient_schema.sql": {
+      "path": "checkpoints/integration/files/internal/chatpg/transient_schema.sql",
+      "sha256": "cc02eb25a3624107605a51e89373c1bbb5dcb06045f689da9575eb12e4d82bc9",
+      "bytes": 595,
+      "mode": "100644",
+      "git_blob": "e7055a3ae96bc1f9b5f865a454cee04ea8d2b170"
+    },
+    "internal/chatpg/voice.go": {
+      "path": "checkpoints/integration/files/internal/chatpg/voice.go",
+      "sha256": "1d2f22e544ffe39400a2a40a1d094db1adc38480443cb9bd33cb9cd30054b822",
+      "bytes": 7317,
+      "mode": "100644",
+      "git_blob": "90ebee7de68e067c29309d942057491e01ae1385"
+    },
+    "internal/commercepg/gifts.go": {
+      "path": "checkpoints/integration/files/internal/commercepg/gifts.go",
+      "sha256": "b16c5869bc02d8a9017a1d47ee5c7a1e24aca65cb1ac280c10233ad39f1e6a3a",
+      "bytes": 13588,
+      "mode": "100644",
+      "git_blob": "e211c0bd61b942e7ce717588ea938549e62ed2d1"
+    },
+    "internal/commercepg/lifecycle.go": {
+      "path": "checkpoints/integration/files/internal/commercepg/lifecycle.go",
+      "sha256": "3cdea694e05b28c45b0ca2a9b379d659c3d374d40fa316a122dfdbb7b32440d2",
+      "bytes": 29222,
+      "mode": "100644",
+      "git_blob": "083c7c87b7b32b99426f2fb46eb81168caf8fa43"
+    },
+    "internal/commercepg/maintenance.go": {
+      "path": "checkpoints/integration/files/internal/commercepg/maintenance.go",
+      "sha256": "8687209d182d1f9eef54794eaf917e56efc66476e920f0ae7ab2c1e8e514e92d",
+      "bytes": 13203,
+      "mode": "100644",
+      "git_blob": "cdad7d947f92035a6c3518eb3e97b165cf98d820"
+    },
+    "internal/commercepg/maintenance_quarantine.go": {
+      "path": "checkpoints/integration/files/internal/commercepg/maintenance_quarantine.go",
+      "sha256": "2f961a6dc2fd0382f2f413747cfbbadf6140c1f9ab02519e7f31847e706b54aa",
+      "bytes": 7646,
+      "mode": "100644",
+      "git_blob": "7cd44f8b592baf5a81d728857c61aa50bba2dd26"
+    },
+    "internal/commercepg/payouts.go": {
+      "path": "checkpoints/integration/files/internal/commercepg/payouts.go",
+      "sha256": "6aec92e0fab829208954e61f12882dcfb358e955f493ec98b169b44c9e51165f",
+      "bytes": 2013,
+      "mode": "100644",
+      "git_blob": "7109acedc6e46acb6e5fb2074d26ea46297965c2"
+    },
+    "internal/commercepg/schema.sql": {
+      "path": "checkpoints/integration/files/internal/commercepg/schema.sql",
+      "sha256": "e3c58d99004d412cb624ceb07b05334d54ca4025fcac2b7d82b9e94c22a11a09",
+      "bytes": 5439,
+      "mode": "100644",
+      "git_blob": "63ef6a9b33b2a4b367013a5cafdb1dee5b24c01f"
+    },
+    "internal/commercepg/settlement.go": {
+      "path": "checkpoints/integration/files/internal/commercepg/settlement.go",
+      "sha256": "94bd0224e6fee8918e7afe1b92ae733fd94eefdcb60e8eae11b4a6c0b9c2eda9",
+      "bytes": 2470,
+      "mode": "100644",
+      "git_blob": "61cc459a829f4a051e154bcb7af6fdf793b87fc1"
+    },
+    "internal/developmediapg/repository.go": {
+      "path": "checkpoints/integration/files/internal/developmediapg/repository.go",
+      "sha256": "40861c63309d9eee1996cbf519bf719ec0bb89e9c3bd548c4bc41ddae04303c1",
+      "bytes": 7866,
+      "mode": "100644",
+      "git_blob": "590a3ed3516ae64b34982a98d77a6ae4af9f5e43"
+    },
+    "internal/developmediapg/schema.sql": {
+      "path": "checkpoints/integration/files/internal/developmediapg/schema.sql",
+      "sha256": "2d9e8f110db5934433201923794b7a12503a5a00721ab2085f36f511e12c648c",
+      "bytes": 610,
+      "mode": "100644",
+      "git_blob": "43f2bf663dd66ca6dcbcb965cc764edc9874cd9d"
+    },
+    "internal/interactionpg/associations.go": {
+      "path": "checkpoints/integration/files/internal/interactionpg/associations.go",
+      "sha256": "78df3c1994f956a85b943f6daa470a2b3e7a874f62d2b2ad61d54847352feea2",
+      "bytes": 8538,
+      "mode": "100644",
+      "git_blob": "f95a118dde2ce3c6927125aacef3936baad38147"
+    },
+    "internal/interactionpg/collection_subscription.go": {
+      "path": "checkpoints/integration/files/internal/interactionpg/collection_subscription.go",
+      "sha256": "bef04db5f0fee15868277e77d22b900e89452e84059d309dc28164b87963c2d5",
+      "bytes": 9378,
+      "mode": "100644",
+      "git_blob": "a543b13a7e8b348d55a820bd93dffef3b99c1d90"
+    },
+    "internal/interactionpg/collections.go": {
+      "path": "checkpoints/integration/files/internal/interactionpg/collections.go",
+      "sha256": "c50d8310b9f6657f69e6a4d12f02482f5a9f02154808face87e04a24540e807e",
+      "bytes": 17661,
+      "mode": "100644",
+      "git_blob": "7ed63f4661d439cf6dcee72f90333998ea4180af"
+    },
+    "internal/interactionpg/repository.go": {
+      "path": "checkpoints/integration/files/internal/interactionpg/repository.go",
+      "sha256": "b66f3840928a6f1cd43d56be78819f26e9a493fd424cd0aece249df34534832d",
+      "bytes": 13261,
+      "mode": "100644",
+      "git_blob": "c870918ac330a0f5721643531b0ecf750fa655d9"
+    },
+    "internal/interactionpg/repository_test.go": {
+      "path": "checkpoints/integration/files/internal/interactionpg/repository_test.go",
+      "sha256": "c7d246ef7afa7bbcf67a2bda40b139d4acd701566545a64daa619c5d156dbd17",
+      "bytes": 995,
+      "mode": "100644",
+      "git_blob": "08ccb5b659c06318341fee0f5a0c2bfeaae5eed5"
+    },
+    "internal/interactionpg/schema.sql": {
+      "path": "checkpoints/integration/files/internal/interactionpg/schema.sql",
+      "sha256": "aa72fba194880feba7af264ca7054249c4c7d7b15d109e00520f6188d9cdd3c8",
+      "bytes": 3264,
+      "mode": "100644",
+      "git_blob": "45fe99b2055d1061630ccb3716e621363de4fa4a"
+    },
+    "internal/mediapg/owner_cleanup.go": {
+      "path": "checkpoints/integration/files/internal/mediapg/owner_cleanup.go",
+      "sha256": "91cd638284e600d324fada499675d6971bb1d7e8804cf546b3f09523747164b6",
+      "bytes": 1326,
+      "mode": "100644",
+      "git_blob": "c2bd8439b56a9411428560c9c09ae360032ab4c6"
+    },
+    "internal/mediapg/transaction_upload.go": {
+      "path": "checkpoints/integration/files/internal/mediapg/transaction_upload.go",
+      "sha256": "20efc97d6620fcb92b69dc37fb8d80585b66ed588a5951b7323e5c5aa4046ec4",
+      "bytes": 4449,
+      "mode": "100644",
+      "git_blob": "0c778de11359a1c7a7aa9f2589ea72ea446ff070"
+    },
+    "internal/mediapg/voice.go": {
+      "path": "checkpoints/integration/files/internal/mediapg/voice.go",
+      "sha256": "d92596b2564d5b0fdfde8ec2aa34fe2d1c6b19bc342bcc1d217e0b385f04108d",
+      "bytes": 11600,
+      "mode": "100644",
+      "git_blob": "8d5f0e8ef5ebe18f0c01a9886a759bb17c881b0b"
+    },
+    "internal/mediapg/voice_schema.sql": {
+      "path": "checkpoints/integration/files/internal/mediapg/voice_schema.sql",
+      "sha256": "40c789a4b947e01cddb7c9141eff2f120bfab145db411100ad57cfce9cadf11e",
+      "bytes": 1000,
+      "mode": "100644",
+      "git_blob": "c2e0b8075242ae5588e0cbbc58b05a2be6c43890"
+    },
+    "internal/merchantpg/admin.go": {
+      "path": "checkpoints/integration/files/internal/merchantpg/admin.go",
+      "sha256": "47f8b3eaa7637dc7da658022cfac1de78cea5aef658436f6a9aa839c813fbaf9",
+      "bytes": 24538,
+      "mode": "100644",
+      "git_blob": "b2e43809263f360478196c9225479dd4f35b0605"
+    },
+    "internal/merchantpg/repository.go": {
+      "path": "checkpoints/integration/files/internal/merchantpg/repository.go",
+      "sha256": "ebc88ada690c082bc39a0e02e7d2ce246d1ac2070352ac2648d0a050944349ad",
+      "bytes": 9370,
+      "mode": "100644",
+      "git_blob": "4677fedfe14139fed924fce10b4588fb89343feb"
+    },
+    "internal/merchantpg/schema.sql": {
+      "path": "checkpoints/integration/files/internal/merchantpg/schema.sql",
+      "sha256": "ff67179947a1270bfb173d59c8338c434a56ecabbde1fa968e2616f71ece6898",
+      "bytes": 709,
+      "mode": "100644",
+      "git_blob": "d5abd4036a973afb7992f8570efa9ba298450833"
+    },
+    "internal/merchantpg/settlements.go": {
+      "path": "checkpoints/integration/files/internal/merchantpg/settlements.go",
+      "sha256": "8467825314a2a72f0c44a5ee5593cd5c17169771f75d7595839b8e52f64a35ab",
+      "bytes": 9336,
+      "mode": "100644",
+      "git_blob": "8963bfcf8abe39bee178d08f2fedcc6cc5faf5a7"
+    },
+    "internal/moderationpg/posts.go": {
+      "path": "checkpoints/integration/files/internal/moderationpg/posts.go",
+      "sha256": "518bbbcec594d5f1bf677b5f789c0bf7065c3ad619be6cb29f244bbf9f6f1b19",
+      "bytes": 8054,
+      "mode": "100644",
+      "git_blob": "3bb7ad13bdfdd98e27ddf3c7365b3ec4ef0efefe"
+    },
+    "internal/notificationpg/projections.go": {
+      "path": "checkpoints/integration/files/internal/notificationpg/projections.go",
+      "sha256": "dfc4df7b26725800ecaf06c25aa910ada94c0239199eb82885af7ba4ac019b30",
+      "bytes": 9352,
+      "mode": "100644",
+      "git_blob": "762def7a376d67e39508850b12913eb58b7792cf"
+    },
+    "internal/oauthpg/devices.go": {
+      "path": "checkpoints/integration/files/internal/oauthpg/devices.go",
+      "sha256": "9172b76b1c1288aa7c60b8ad3d342e32c3f19d3d2fbb27279037d180a8e7cb4b",
+      "bytes": 14081,
+      "mode": "100644",
+      "git_blob": "31416952c7e6a75f94d899c032d015b06677b02a"
+    },
+    "internal/oauthpg/introspection.go": {
+      "path": "checkpoints/integration/files/internal/oauthpg/introspection.go",
+      "sha256": "b2e8d37eefa7b3c5adbc0b6381d3de771d9910cbae72255f0caff8c8ebc28ec5",
+      "bytes": 1917,
+      "mode": "100644",
+      "git_blob": "5d018384adfdbbef371574e7c1e3cac50126449f"
+    },
+    "internal/oauthpg/maintenance.go": {
+      "path": "checkpoints/integration/files/internal/oauthpg/maintenance.go",
+      "sha256": "833dd95665cd57c23395f0d15467dda7fdbed251457c251eb54b8a300fbaa2eb",
+      "bytes": 2181,
+      "mode": "100644",
+      "git_blob": "9620788434728be4b4f38516d025103af1de5cae"
+    },
+    "internal/oauthpg/registration.go": {
+      "path": "checkpoints/integration/files/internal/oauthpg/registration.go",
+      "sha256": "421397db3dea6b462370b93085fd9c12d1f42e267138841a18f3989fc750a2a7",
+      "bytes": 614,
+      "mode": "100644",
+      "git_blob": "95002cd904421801eac0313c98ef532629816d02"
+    },
+    "internal/oauthpg/repository.go": {
+      "path": "checkpoints/integration/files/internal/oauthpg/repository.go",
+      "sha256": "8b2532371d838d01e9c1637e7965a4e8878d2e54c6f61762670b230a286e70ed",
+      "bytes": 11353,
+      "mode": "100644",
+      "git_blob": "afe8e37f35f911a255890ff725cb32a403910c81"
+    },
+    "internal/oauthpg/schema.sql": {
+      "path": "checkpoints/integration/files/internal/oauthpg/schema.sql",
+      "sha256": "a0fe5adf1c17bcbc7294c2fb26de67cfb3cd57b4e98f6613da59eb28492ac4df",
+      "bytes": 4980,
+      "mode": "100644",
+      "git_blob": "66ee41c851a321d928925be36a8ae954db935511"
+    },
+    "internal/oauthpg/tokens.go": {
+      "path": "checkpoints/integration/files/internal/oauthpg/tokens.go",
+      "sha256": "97cff61e400deb1c27d94a4184d1d071957855c26c42904bc47e2423f22e4881",
+      "bytes": 15313,
+      "mode": "100644",
+      "git_blob": "e9b46554291c4fea10eb9f18063e5dfe9e78bf22"
+    },
+    "internal/postawardpg/settlement.go": {
+      "path": "checkpoints/integration/files/internal/postawardpg/settlement.go",
+      "sha256": "701ebb00146c794971a611c3b881c3414ef7f6fd0af0ba449478246a79a0fa8a",
+      "bytes": 8522,
+      "mode": "100644",
+      "git_blob": "b4e34b76fa113b42db21232d8628037d3611a3cd"
+    },
+    "internal/postembedpg/repository.go": {
+      "path": "checkpoints/integration/files/internal/postembedpg/repository.go",
+      "sha256": "c7de647e515c6ef00ef7ad2d3be656198a2aef1193cd5be372eae13dc9bda283",
+      "bytes": 9799,
+      "mode": "100644",
+      "git_blob": "06f98e09ec9ea012317526afdcc51a1932f4ca0e"
+    },
+    "internal/postmediapg/repository.go": {
+      "path": "checkpoints/integration/files/internal/postmediapg/repository.go",
+      "sha256": "c31255ffa141edb5bc7d662b832518abd4aad433988e5eefa68b4e97b7ce122b",
+      "bytes": 8482,
+      "mode": "100644",
+      "git_blob": "212e968fe280d638b122acd9bbdd837c8dbde3a2"
+    },
+    "internal/postpg/associations.go": {
+      "path": "checkpoints/integration/files/internal/postpg/associations.go",
+      "sha256": "c0c790d932f29d352e315477781fae273d4ee7b566e5316129e5ef6d9ad53d86",
+      "bytes": 6928,
+      "mode": "100644",
+      "git_blob": "ce5939939feddd193ef4bb9e8aafd54c02e5bbc8"
+    },
+    "internal/postpg/completion.go": {
+      "path": "checkpoints/integration/files/internal/postpg/completion.go",
+      "sha256": "2917fd97e206a21de0859b53d4893096ecb93277e39df05361d8afa9e7763f17",
+      "bytes": 14273,
+      "mode": "100644",
+      "git_blob": "655ebcde5db79c02864e3d41557c739a013f9007"
+    },
+    "internal/postpg/pins.go": {
+      "path": "checkpoints/integration/files/internal/postpg/pins.go",
+      "sha256": "cdf60cf6150532f0ccae3d8f5385be56c581ba31ca5f3b6a13f825f75b0645b4",
+      "bytes": 12065,
+      "mode": "100644",
+      "git_blob": "104a2368c44161c54caec6851e9f635f6fbb67c3"
+    },
+    "internal/postpg/pins_test.go": {
+      "path": "checkpoints/integration/files/internal/postpg/pins_test.go",
+      "sha256": "a6dba23071155fe112eb3ee90e10d90b907a5747bd455f514489409c2c0ecb79",
+      "bytes": 1543,
+      "mode": "100644",
+      "git_blob": "cfb3ebd6e6602662defd2a7ad05048ba0c867e99"
+    },
+    "internal/postpg/repository.go": {
+      "path": "checkpoints/integration/files/internal/postpg/repository.go",
+      "sha256": "6ec78e933a4bd4a1c2935d9758343471e48738d76814771c4c6cb73ba9e637a5",
+      "bytes": 21983,
+      "mode": "100644",
+      "git_blob": "c086dedaa4bfa0821335aa2b2ebbfa05a5fecf4f"
+    },
+    "internal/postpg/schema.sql": {
+      "path": "checkpoints/integration/files/internal/postpg/schema.sql",
+      "sha256": "eb8f4ac912935f32a9c1ccb5be91321c2bd98c6f33febd5d755d317038764fac",
+      "bytes": 5599,
+      "mode": "100644",
+      "git_blob": "82bc86bc21b314bb8ddfe9f4eaf3bc25041a4f4f"
+    },
+    "internal/postpg/visibility.go": {
+      "path": "checkpoints/integration/files/internal/postpg/visibility.go",
+      "sha256": "a7857505ab4a06c05c46f4bdc7feae48f54b8165db145ffb91b3c6851f47f3bb",
+      "bytes": 6492,
+      "mode": "100644",
+      "git_blob": "b5c7a56bfde71ad9ff5b8421d77d94451621902c"
+    },
+    "internal/realtime/commands.go": {
+      "path": "checkpoints/integration/files/internal/realtime/commands.go",
+      "sha256": "c0edae34c598da0a0269ae6f57b135657b1a64b698f74bc192f062c7f094e117",
+      "bytes": 2045,
+      "mode": "100644",
+      "git_blob": "4530333a5407996c98c189fa6c1d68319cd07589"
+    },
+    "internal/realtime/commands_test.go": {
+      "path": "checkpoints/integration/files/internal/realtime/commands_test.go",
+      "sha256": "62d2e334d97ff767a386ca2e88ef6e95f644c547dafef6dc544760c957529e71",
+      "bytes": 2241,
+      "mode": "100644",
+      "git_blob": "b5bc8c95dd4bff3f242454162be77efde06dc06f"
+    },
+    "internal/realtime/http.go": {
+      "path": "checkpoints/integration/files/internal/realtime/http.go",
+      "sha256": "da286d90d750bcaade060a9f29bbc45385f11b03036ee22148dc063044815af2",
+      "bytes": 11442,
+      "mode": "100644",
+      "git_blob": "10ecf3153a3d09172ea141048ad73980cbb42efd"
+    },
+    "internal/socialpg/post_realm_provider.go": {
+      "path": "checkpoints/integration/files/internal/socialpg/post_realm_provider.go",
+      "sha256": "76a50778e5570d732b74fb4a1f337012a3366fe8ce4eabbebb7aa0c7068fe9bd",
+      "bytes": 3063,
+      "mode": "100644",
+      "git_blob": "3b433e28e74b91b6a08566a6fb7f78c6d9fe4387"
+    },
+    "internal/socialpg/providers.go": {
+      "path": "checkpoints/integration/files/internal/socialpg/providers.go",
+      "sha256": "3b6c006244b3801680f861b26e3274afb1304644f9aeadcac08296636a508e68",
+      "bytes": 7940,
+      "mode": "100644",
+      "git_blob": "63c5fd4b72b113ff6a9e0ee5b28a1dacbd70f7d8"
+    },
+    "internal/timelinepg/feeds.go": {
+      "path": "checkpoints/integration/files/internal/timelinepg/feeds.go",
+      "sha256": "a100dea29a90666ba8ec575f95deaef49d3c1a85217cb27d5b252eb7e86a02fe",
+      "bytes": 14859,
+      "mode": "100644",
+      "git_blob": "7800204663f5f6268cb8362225c098ec84bbdbe7"
+    },
+    "internal/timelinepg/follows.go": {
+      "path": "checkpoints/integration/files/internal/timelinepg/follows.go",
+      "sha256": "5492ec7a410968d1f8191a6a70672e387681c92ef5d9422d0d41a71613fe1d96",
+      "bytes": 10492,
+      "mode": "100644",
+      "git_blob": "fc2d772ca8cfcc561e492ab1407c03196088d805"
+    },
+    "internal/timelinepg/relations.go": {
+      "path": "checkpoints/integration/files/internal/timelinepg/relations.go",
+      "sha256": "3b3a5e7cb6ce6ce70351cb06160e5b82d530d86c11a189a6bc87a7e68c4c05a5",
+      "bytes": 11751,
+      "mode": "100644",
+      "git_blob": "e0ad1729cb953c7f287bb32c0b2377e27a050513"
+    },
+    "internal/timelinepg/repository.go": {
+      "path": "checkpoints/integration/files/internal/timelinepg/repository.go",
+      "sha256": "aa056594ab73ba239c1e26b8f1dee0a62b9295c84862d2ac298fd02698e177a9",
+      "bytes": 7305,
+      "mode": "100644",
+      "git_blob": "32b6e2120cb6a836105f3e4b5fe85edc5a1c3604"
+    },
+    "internal/timelinepg/schema.sql": {
+      "path": "checkpoints/integration/files/internal/timelinepg/schema.sql",
+      "sha256": "823eab9f284386e1479ea94a5826f1bf853b19f36f5c22c00efb545c45ff4879",
+      "bytes": 3521,
+      "mode": "100644",
+      "git_blob": "1249607a25a4dd7a85523b6aaad99d8b506faad0"
+    },
+    "internal/walletpg/commerce.go": {
+      "path": "checkpoints/integration/files/internal/walletpg/commerce.go",
+      "sha256": "86d3418e7e3ca02c7373e0262799a23f7658553b6f6f2f41c81698ce50170e96",
+      "bytes": 4827,
+      "mode": "100644",
+      "git_blob": "65f0b80867f8b0f0388a50ffe531e3a96fc59764"
+    },
+    "internal/walletpg/funded_transfer.go": {
+      "path": "checkpoints/integration/files/internal/walletpg/funded_transfer.go",
+      "sha256": "b000d504043454a5dd109f1ce00579c0e79819ad4631a01870b0726a7cf3a8b9",
+      "bytes": 7099,
+      "mode": "100644",
+      "git_blob": "90c76770a311fe1d4cb786f624b8e6ebdc2f2a1a"
+    },
+    "internal/walletpg/repository.go": {
+      "path": "checkpoints/integration/files/internal/walletpg/repository.go",
+      "sha256": "b3b9aecf03de108d297231d1d5fb982363aeddf227fa16ecf54ed6f2ab3406ea",
+      "bytes": 11857,
+      "mode": "100644",
+      "git_blob": "344671a538f6c65fc85131aa94bc5220f0c727ac"
+    },
+    "internal/walletpg/trusted_primary.go": {
+      "path": "checkpoints/integration/files/internal/walletpg/trusted_primary.go",
+      "sha256": "152fd061f12b93f23698ca503c06743f856a5af86557d5eefc97a324c431671b",
+      "bytes": 2915,
+      "mode": "100644",
+      "git_blob": "ad718a784388a3e23bdd66fc7385b0b70528291e"
+    },
+    "ports/authority/oauth/extension_http.go": {
+      "path": "checkpoints/integration/files/ports/authority/oauth/extension_http.go",
+      "sha256": "1f12d3f5bfd94281715e0a88911ce2ce79a17ee63bfbc82218e8ea9f5794b619",
+      "bytes": 3745,
+      "mode": "100644",
+      "git_blob": "39945e31f3445a024cc2387ca17864c1c9e99a05"
+    },
+    "ports/authority/oauth/extensions.go": {
+      "path": "checkpoints/integration/files/ports/authority/oauth/extensions.go",
+      "sha256": "baa9c6045f341ccb15b8efe0071fadad64523fe49a590cf090e9639ae850f07a",
+      "bytes": 1051,
+      "mode": "100644",
+      "git_blob": "69da9b4710f6510be82acf3a5f59ee0459b164e2"
+    },
+    "ports/authority/oauth/http.go": {
+      "path": "checkpoints/integration/files/ports/authority/oauth/http.go",
+      "sha256": "d580f6c4dc9c569a1709842839275cd1a21e0f8df3b67b2cc13db4d649ee5ffb",
+      "bytes": 10104,
+      "mode": "100644",
+      "git_blob": "87fd34df4f443cd39cbcfa20105b9252a669d005"
+    },
+    "ports/authority/oauth/registration.go": {
+      "path": "checkpoints/integration/files/ports/authority/oauth/registration.go",
+      "sha256": "0868bbf9f294943bc9b5187d5d55318b7de8628c9771f0387bee4b2a9f2c92ed",
+      "bytes": 3125,
+      "mode": "100644",
+      "git_blob": "9c87781b0878f934bbf5da852962aa39ac3964b2"
+    },
+    "ports/authority/oauth/registration_test.go": {
+      "path": "checkpoints/integration/files/ports/authority/oauth/registration_test.go",
+      "sha256": "1e882d21347108aed0ac6aaf013e6d443db012cd325bed020b1653659d56e736",
+      "bytes": 1164,
+      "mode": "100644",
+      "git_blob": "55fbd4914ce29cb6f6f166d43974798e04c68fa0"
+    },
+    "ports/authority/oauth/types.go": {
+      "path": "checkpoints/integration/files/ports/authority/oauth/types.go",
+      "sha256": "e51b74013430e505f6fa9d3d5b9b47424ab0c2f8e174a15f589021d109edb7fb",
+      "bytes": 6069,
+      "mode": "100644",
+      "git_blob": "90c58121a9c4eb040d0127671cbff7e5b54221ac"
+    },
+    "ports/authority/oauth_transaction.go": {
+      "path": "checkpoints/integration/files/ports/authority/oauth_transaction.go",
+      "sha256": "d4c9e80a1ebd0e09fdfdc94d76acfb39539bd6455851afed78acbd37bd4f83e8",
+      "bytes": 7982,
+      "mode": "100644",
+      "git_blob": "625cace3f32d1f6cbf16f8b9b52fdc28a760403e"
+    },
+    "ports/develop/apps/http.go": {
+      "path": "checkpoints/integration/files/ports/develop/apps/http.go",
+      "sha256": "f064e77d626cf8bea6e287e5df8b81f55488cc786762a025a9ae82ca31b47e05",
+      "bytes": 13065,
+      "mode": "100644",
+      "git_blob": "12ea58c5317df3e6dfe2050008d4917aeef28a89"
+    },
+    "ports/develop/apps/http_test.go": {
+      "path": "checkpoints/integration/files/ports/develop/apps/http_test.go",
+      "sha256": "3d8d9865dcb2c7d02483564f1ff853ffea9ce43c6276992a4b9e3e9745f78449",
+      "bytes": 4200,
+      "mode": "100644",
+      "git_blob": "4ab59b073e9b832ef821652a1bfd7f4ddfb885f6"
+    },
+    "ports/develop/apps/media.go": {
+      "path": "checkpoints/integration/files/ports/develop/apps/media.go",
+      "sha256": "73036fb57eca627b2a0a12136aa507bcd131f1c800b2323fa9ff9c150ed0b962",
+      "bytes": 592,
+      "mode": "100644",
+      "git_blob": "fd8df56a9bd671bae9eae7d26c4dd19cc37cb4fc"
+    },
+    "ports/develop/apps/quota.go": {
+      "path": "checkpoints/integration/files/ports/develop/apps/quota.go",
+      "sha256": "7e159f17b3ed7011cce78c93cabf9ed58732ccffecdf69c73a96153f5c7adac8",
+      "bytes": 982,
+      "mode": "100644",
+      "git_blob": "00244062951bc2e04dddeb57866f6a22386a95a7"
+    },
+    "ports/develop/apps/quota_test.go": {
+      "path": "checkpoints/integration/files/ports/develop/apps/quota_test.go",
+      "sha256": "8cd35133bbb5e6557690441e9db5b9437089bd363685a1d5bf1230788bd7b2b9",
+      "bytes": 1133,
+      "mode": "100644",
+      "git_blob": "c315f5160558d5cf2a393c3b12fecff730b59b3e"
+    },
+    "ports/develop/apps/types.go": {
+      "path": "checkpoints/integration/files/ports/develop/apps/types.go",
+      "sha256": "3064b299ae8f22bac7e4d66920057d2e60c7140040b0fe16ed37211854b0bc56",
+      "bytes": 12747,
+      "mode": "100644",
+      "git_blob": "0257c3e3b597d2065853b4494359531e61ab002c"
+    },
+    "ports/develop/bots/execution.go": {
+      "path": "checkpoints/integration/files/ports/develop/bots/execution.go",
+      "sha256": "71dbfe7572afb3a217cedb53cb4bd38f695cebad30f12b2deb0a89c51feb6a3e",
+      "bytes": 4638,
+      "mode": "100644",
+      "git_blob": "3af7380f0436d1af5874fe8f465fe1b6fda43840"
+    },
+    "ports/develop/bots/execution_http.go": {
+      "path": "checkpoints/integration/files/ports/develop/bots/execution_http.go",
+      "sha256": "bad802c9db3c1976270c97c55fc60123b1cc8da6c6d8bcb624d698eec30c486d",
+      "bytes": 2607,
+      "mode": "100644",
+      "git_blob": "ae75acf7201f24d91dcd3e7172599e1253de169d"
+    },
+    "ports/develop/bots/http.go": {
+      "path": "checkpoints/integration/files/ports/develop/bots/http.go",
+      "sha256": "2c27170dc97e347616553318d7dd20418eb9eb6bbed77ebe0dd98ef342abaee7",
+      "bytes": 15937,
+      "mode": "100644",
+      "git_blob": "939c009e5c3ce909f006db18fad7f353aade6013"
+    },
+    "ports/develop/bots/http_test.go": {
+      "path": "checkpoints/integration/files/ports/develop/bots/http_test.go",
+      "sha256": "9c4e08f0d374aea01bba2c9d61067700eb6c619744762a157370ea0c72a67858",
+      "bytes": 10875,
+      "mode": "100644",
+      "git_blob": "427c13ec3ac09e6c3b45a6c67e088747a171f21b"
+    },
+    "ports/develop/bots/miniapp-upload-source-evidence.json": {
+      "path": "checkpoints/integration/files/ports/develop/bots/miniapp-upload-source-evidence.json",
+      "sha256": "c6edced02f2222dbda68eecac09ee328e7748a3612150b235d17452c5ebdfcf8",
+      "bytes": 4062,
+      "mode": "100644",
+      "git_blob": "c2253b8b6886e8468481b7c676aa98de6c1f7956"
+    },
+    "ports/develop/bots/miniapp_upload_source_test.go": {
+      "path": "checkpoints/integration/files/ports/develop/bots/miniapp_upload_source_test.go",
+      "sha256": "35692295e4e9435374eeeab0e3aac412b3a31a13b9eac177a7d819ac45bc0efd",
+      "bytes": 1457,
+      "mode": "100644",
+      "git_blob": "c0dc48331b9bb4374b194591950d979c4b1084fd"
+    },
+    "ports/develop/bots/package_upload_http.go": {
+      "path": "checkpoints/integration/files/ports/develop/bots/package_upload_http.go",
+      "sha256": "d3881962881deae910fad7bcc7522643e228023edfeaefe475256c70137252cd",
+      "bytes": 2604,
+      "mode": "100644",
+      "git_blob": "5d948015a6d50d324b99272a9d01b5245f007531"
+    },
+    "ports/develop/bots/package_upload_http_test.go": {
+      "path": "checkpoints/integration/files/ports/develop/bots/package_upload_http_test.go",
+      "sha256": "d1fe2f3a5dcc98fa6dfa03975f2ed041943f8b875f24ec3bdb1c2aa7399ee29a",
+      "bytes": 5501,
+      "mode": "100644",
+      "git_blob": "6e095c573431e58587902a17fff8387d46ce5dab"
+    },
+    "ports/develop/bots/types.go": {
+      "path": "checkpoints/integration/files/ports/develop/bots/types.go",
+      "sha256": "995bb0cc3ef66e1488da1f60267cc6f9341c56e508560ea1a9bb187244c11cd1",
+      "bytes": 10031,
+      "mode": "100644",
+      "git_blob": "2012377507109eab78968649d129d2c86358e6e3"
+    },
+    "ports/develop/bots/validation.go": {
+      "path": "checkpoints/integration/files/ports/develop/bots/validation.go",
+      "sha256": "e9e1c5315b225e0ef3a8e90e173853993b98d159d0be746c8e50da6e2151dc2d",
+      "bytes": 5598,
+      "mode": "100644",
+      "git_blob": "6ebc1e4411e79559990c3b4bc0ffc48e79d96893"
+    },
+    "ports/messager/rooms/http.go": {
+      "path": "checkpoints/integration/files/ports/messager/rooms/http.go",
+      "sha256": "22c2d369982960366cd3164c2c95c34aa7dea7685efac0614bb36dc920cc5fe0",
+      "bytes": 17865,
+      "mode": "100644",
+      "git_blob": "da7b9f6b9d29dddd35d32b87429dbd67aa74f464"
+    },
+    "ports/messager/rooms/transient.go": {
+      "path": "checkpoints/integration/files/ports/messager/rooms/transient.go",
+      "sha256": "22eeeac336842196b02709f71ce4c4aa1f86ba205705b232381578fe16ea40d5",
+      "bytes": 3848,
+      "mode": "100644",
+      "git_blob": "6d62cd4d7b2cb057aa19128698a71607696c4ffb"
+    },
+    "ports/messager/rooms/transient_http.go": {
+      "path": "checkpoints/integration/files/ports/messager/rooms/transient_http.go",
+      "sha256": "be88cf2b804376fe92ceda2347bd835d6ff50d7f6fd2fb06814c5173cb7faabd",
+      "bytes": 5507,
+      "mode": "100644",
+      "git_blob": "5140936002af6573ca27a24c923c3fa2c9b9f209"
+    },
+    "ports/messager/rooms/transient_test.go": {
+      "path": "checkpoints/integration/files/ports/messager/rooms/transient_test.go",
+      "sha256": "27866dd7126000b3315dc542fd79386f8396558adce2b69810fed3da8632a053",
+      "bytes": 6617,
+      "mode": "100644",
+      "git_blob": "8eeee662db3616a5ee982a219e687c0a91d34ea5"
+    },
+    "ports/passport/accounts/http.go": {
+      "path": "checkpoints/integration/files/ports/passport/accounts/http.go",
+      "sha256": "041c3eb2670d49438ab7b3e3d168c83b991568d90e855410786792f864c252d2",
+      "bytes": 18408,
+      "mode": "100644",
+      "git_blob": "0dbdfd504145209d11ec98d0d44877ebb7dd7766"
+    },
+    "ports/passport/accounts/publisher_completion_http_test.go": {
+      "path": "checkpoints/integration/files/ports/passport/accounts/publisher_completion_http_test.go",
+      "sha256": "405fd537e3331d3788292145fb82690f7fbfb0a3a90cff20ba8d5f98f31d3986",
+      "bytes": 5145,
+      "mode": "100644",
+      "git_blob": "a662d4df6a1a14c4da262aec6d8e25c62578556b"
+    },
+    "ports/passport/accounts/types.go": {
+      "path": "checkpoints/integration/files/ports/passport/accounts/types.go",
+      "sha256": "6ea2368ee819ce70a15b67a312143bb6aa116130fe637c583e576a530beee34e",
+      "bytes": 10307,
+      "mode": "100644",
+      "git_blob": "cc02a312b681f2e746847b2f62157c2a21a7725b"
+    },
+    "ports/sphere/interactions/http.go": {
+      "path": "checkpoints/integration/files/ports/sphere/interactions/http.go",
+      "sha256": "e13e51d8e88ad49de75168e4e899bb9191677b3baa8026f4cf246c1e5947498e",
+      "bytes": 15653,
+      "mode": "100644",
+      "git_blob": "ca9acba855eb394dcfa61352648a26a949a49f40"
+    },
+    "ports/sphere/interactions/http_test.go": {
+      "path": "checkpoints/integration/files/ports/sphere/interactions/http_test.go",
+      "sha256": "242f14f971bde7beb665a5a67ad580b4d98b16ea50e6463b83c7bffb2d639ada",
+      "bytes": 5242,
+      "mode": "100644",
+      "git_blob": "91ea1f8ab6bb4fe6f50aca0a6552a1837c94962b"
+    },
+    "ports/sphere/interactions/types.go": {
+      "path": "checkpoints/integration/files/ports/sphere/interactions/types.go",
+      "sha256": "d2b0d97066e558f0a82cd8f5bc10e71ed9e02315bb56b2abaede30ed21dbd51a",
+      "bytes": 6454,
+      "mode": "100644",
+      "git_blob": "b291b01f0efa5c2e7491cc8a444e4f6fd16bb9f8"
+    },
+    "ports/sphere/postawards/http.go": {
+      "path": "checkpoints/integration/files/ports/sphere/postawards/http.go",
+      "sha256": "a410fd58a9f1ba3bb8329db969164291e33bbfe139677341e64c7dc84b20d9dc",
+      "bytes": 4803,
+      "mode": "100644",
+      "git_blob": "20df1f53c1c70c2227cc2798f40c835f484b0c74"
+    },
+    "ports/sphere/postawards/http_test.go": {
+      "path": "checkpoints/integration/files/ports/sphere/postawards/http_test.go",
+      "sha256": "57a2266d610c201dcd4f7822983dc6879c41be9f9e4b1f5df3f47f384019b5e2",
+      "bytes": 3250,
+      "mode": "100644",
+      "git_blob": "c8173749fb380b20ee46d42cc50204277f5f5600"
+    },
+    "ports/sphere/postawards/types.go": {
+      "path": "checkpoints/integration/files/ports/sphere/postawards/types.go",
+      "sha256": "eff1c475020a0e506e07ae83e0d8dd6307f499082fcf658cb8bbfedfd20fc01f",
+      "bytes": 5010,
+      "mode": "100644",
+      "git_blob": "0487547419ca1c7b04a9a36dc30af2e405945aae"
+    },
+    "ports/sphere/posts/completion_http.go": {
+      "path": "checkpoints/integration/files/ports/sphere/posts/completion_http.go",
+      "sha256": "30324c79b8acd53975223e89397de6fb1a3d4ab8ee18ee12c9c3ebce209bd4c3",
+      "bytes": 7267,
+      "mode": "100644",
+      "git_blob": "bd45a4a7f204aaae0702b86d70bedc227da7d7ea"
+    },
+    "ports/sphere/posts/completion_http_test.go": {
+      "path": "checkpoints/integration/files/ports/sphere/posts/completion_http_test.go",
+      "sha256": "bccebcdfb1197f05aaf33d9137903bcc8e2b66c31dccfd976a144d0d5e7ffb53",
+      "bytes": 4091,
+      "mode": "100644",
+      "git_blob": "195328233799b92f8beb17d087b5f461aea5ef50"
+    },
+    "ports/sphere/posts/http.go": {
+      "path": "checkpoints/integration/files/ports/sphere/posts/http.go",
+      "sha256": "bdd152e20ef2ecc44703b7273a2ba518612ce36546019c14f71ec108d0cf4022",
+      "bytes": 12992,
+      "mode": "100644",
+      "git_blob": "6194bee89ffe6e22350afa78160f2fd4836da17e"
+    },
+    "ports/sphere/posts/pin-evidence/Solian__post_pin_sheet.dart": {
+      "path": "checkpoints/integration/files/ports/sphere/posts/pin-evidence/Solian__post_pin_sheet.dart",
+      "sha256": "198541ab116d897f3b29d54af0c81a4e590ef54d74f499c4bd16c79b1a00fbd0",
+      "bytes": 4272,
+      "mode": "100644",
+      "git_blob": "a9d73591fad64ba5f36416d6b8e9036dccdbb5e7"
+    },
+    "ports/sphere/posts/pins.go": {
+      "path": "checkpoints/integration/files/ports/sphere/posts/pins.go",
+      "sha256": "efa39356e5300ed87ec6d6cc33a46639e0b38a8c88dd0e1fade97647099fd5de",
+      "bytes": 3201,
+      "mode": "100644",
+      "git_blob": "e4f284aff92c8bee04cb922d8b8bafa4b7fd6269"
+    },
+    "ports/sphere/posts/pins_source_test.go": {
+      "path": "checkpoints/integration/files/ports/sphere/posts/pins_source_test.go",
+      "sha256": "429a9b294ba5f763a6a4c0f9de451aa0094ea9dc96e663be54ccdacbe51476df",
+      "bytes": 1897,
+      "mode": "100644",
+      "git_blob": "f59bbc07d0344ef96e4cdeec2a1cd4cfae402b80"
+    },
+    "ports/sphere/posts/pins_test.go": {
+      "path": "checkpoints/integration/files/ports/sphere/posts/pins_test.go",
+      "sha256": "b5909a27005c6c2f1b72b2de4dc5d36f8d5dad3b61a3c6bd27e8ae5c25e0c98a",
+      "bytes": 4181,
+      "mode": "100644",
+      "git_blob": "04eb5c8f162f39a8f1c7a0cbdf81b9e44694bdc1"
+    },
+    "ports/sphere/posts/types.go": {
+      "path": "checkpoints/integration/files/ports/sphere/posts/types.go",
+      "sha256": "9ed0e222ea9f046142f979b32208dc396ffc6f1d61ee0b68388fc9b2c4aefa47",
+      "bytes": 12104,
+      "mode": "100644",
+      "git_blob": "41b1f1f2702c09d38bf8d441b334a39023f74f94"
+    },
+    "ports/wallet/accounts/money.go": {
+      "path": "checkpoints/integration/files/ports/wallet/accounts/money.go",
+      "sha256": "26f754e19d53f0f350eb899f38019f57ac963d99b9a0e822a16635a1c825c197",
+      "bytes": 3463,
+      "mode": "100644",
+      "git_blob": "c48832f4d53696e577dd6e33251b60aa83a6d57d"
+    },
+    "ports/wallet/accounts/money_test.go": {
+      "path": "checkpoints/integration/files/ports/wallet/accounts/money_test.go",
+      "sha256": "c9e6cfa4b120c9b72090288a8cb70482eebc4219182b44c5a023dd9c2d820fef",
+      "bytes": 2407,
+      "mode": "100644",
+      "git_blob": "f211ebe4367860bf1be37746f8bbb3ca60664493"
+    },
+    "ports/wallet/accounts/service.go": {
+      "path": "checkpoints/integration/files/ports/wallet/accounts/service.go",
+      "sha256": "c1c8a89c4598e3ca3b034999ad2a65ce7159578ef03fe95acbeaaddd2e2b892f",
+      "bytes": 8927,
+      "mode": "100644",
+      "git_blob": "a1b626dd965b0ec6c3cb7642263d260c344c62a4"
+    },
+    "ports/wallet/commerce/commerce_test.go": {
+      "path": "checkpoints/integration/files/ports/wallet/commerce/commerce_test.go",
+      "sha256": "8514ae16e2edb97b90dd653fd02f2af9727fab077f98d5e28acad13068aae5ff",
+      "bytes": 6149,
+      "mode": "100644",
+      "git_blob": "b2f77b6b1b36edda330dffd866389e5a61f711f2"
+    },
+    "ports/wallet/commerce/http.go": {
+      "path": "checkpoints/integration/files/ports/wallet/commerce/http.go",
+      "sha256": "a820621cce912e7414ee3d6b65d2f229a0b23295bf7b4ef532f13ec2e5101ef1",
+      "bytes": 17027,
+      "mode": "100644",
+      "git_blob": "28e2303ba796bf8f6fb234bd13974a4632ea1a33"
+    },
+    "ports/wallet/commerce/model.go": {
+      "path": "checkpoints/integration/files/ports/wallet/commerce/model.go",
+      "sha256": "60b87f4c88e583e8f0a6f03b109a8253f901235ce3beb15440eb131523ea837d",
+      "bytes": 14881,
+      "mode": "100644",
+      "git_blob": "71dd935540b8edb0d5948dc6a0dac73aea6a4302"
+    },
+    "ports/wallet/merchants/routes.go": {
+      "path": "checkpoints/integration/files/ports/wallet/merchants/routes.go",
+      "sha256": "5142ef77b21d071ab2bb2abc31394e0ba288764de4c83c724608f8911a4fb6b1",
+      "bytes": 4872,
+      "mode": "100644",
+      "git_blob": "b4913fd09ccf114641d1c802ea929573c5ea407a"
+    },
+    "ports/wallet/merchants/routes_extended.go": {
+      "path": "checkpoints/integration/files/ports/wallet/merchants/routes_extended.go",
+      "sha256": "6d9945be79f78dc7c8d770160a1aa45c8e35fcc74a3cc602bf00016a87050926",
+      "bytes": 9068,
+      "mode": "100644",
+      "git_blob": "6d2eed25d408cad4b625f9dc6b5cfa4615548c9c"
+    },
+    "ports/wallet/merchants/routes_extended_test.go": {
+      "path": "checkpoints/integration/files/ports/wallet/merchants/routes_extended_test.go",
+      "sha256": "64180e419013d9c7cfcdc7aa825ea72f8691f0a195b82eebbc157261f7ad1530",
+      "bytes": 3471,
+      "mode": "100644",
+      "git_blob": "6fbe84526a181d7fae51df28dc282bad1d1cdc88"
+    },
+    "ports/wallet/merchants/types.go": {
+      "path": "checkpoints/integration/files/ports/wallet/merchants/types.go",
+      "sha256": "d386bb22ee3157d15506dce71504d0d905f93883f6976695aa0f7311035041da",
+      "bytes": 10015,
+      "mode": "100644",
+      "git_blob": "dc7faf12f5e1e9575a91cb86bc803c6be088454d"
+    },
+    "ports/wallet/merchants/validation.go": {
+      "path": "checkpoints/integration/files/ports/wallet/merchants/validation.go",
+      "sha256": "4342b98465897878b2002c5f2400116f4db47c587245678f98775e2059eec14a",
+      "bytes": 4241,
+      "mode": "100644",
+      "git_blob": "c65e34f59cec01a27543bd73981292b5397cfee3"
+    },
+    "ports/wallet/merchants/validation_test.go": {
+      "path": "checkpoints/integration/files/ports/wallet/merchants/validation_test.go",
+      "sha256": "125aaf623d7d4f7a6eb8ba1163ce3a29aa37a45e51720be3b2a9007575f0a2c5",
+      "bytes": 1810,
+      "mode": "100644",
+      "git_blob": "173c9ed7fde14776a7d2532065498dd1c7526220"
+    },
+    "scripts/check-integration-results.py": {
+      "path": "checkpoints/integration/files/scripts/check-integration-results.py",
+      "sha256": "59a2d5af10d50bfae4bb2c117f9fd4850f81f81c92db789411d9ee158a747210",
+      "bytes": 64569,
+      "mode": "100644",
+      "git_blob": "d1d1400395aa082119b05d2413a15c31449b546d"
+    },
+    "scripts/check-readiness-relations.py": {
+      "path": "checkpoints/integration/files/scripts/check-readiness-relations.py",
+      "sha256": "68defab14c49d73d6987e766be630d32a16b36068302ac227fe0e0b8afc90a52",
+      "bytes": 4094,
+      "mode": "100644",
+      "git_blob": "6df0d15ec15501388fc6fda3e9e57b1b6e3ed238"
+    },
+    "scripts/integration-groups.json": {
+      "path": "checkpoints/integration/files/scripts/integration-groups.json",
+      "sha256": "3bfac86b80a81ba6fe474bfc14b9dd9fef7872edcb5f592241759f730a3ebfba",
+      "bytes": 139261,
+      "mode": "100644",
+      "git_blob": "82cc5d74a23e6a760e46e46d3aced86e74c9e4f4"
+    },
+    "scripts/integration-postgres.sh": {
+      "path": "checkpoints/integration/files/scripts/integration-postgres.sh",
+      "sha256": "08e2046538852ec8a18a76e12eeb2a709fa5d40f503a16f2ba6a11e912af780b",
+      "bytes": 14962,
+      "mode": "100644",
+      "git_blob": "4113cb48066a2d5736aebdb1a7f71236630e3f59"
+    },
+    "scripts/test-fixture-isolation.py": {
+      "path": "checkpoints/integration/files/scripts/test-fixture-isolation.py",
+      "sha256": "54a23c5dd6264d234bcb552c55c4982d94b14349c4ad79a203b9365cbadf7fc4",
+      "bytes": 14408,
+      "mode": "100644",
+      "git_blob": "35706dd044b7355e4d0edcf5b16e1b4c79b245a5"
+    },
+    "scripts/test-integration-wiring.py": {
+      "path": "checkpoints/integration/files/scripts/test-integration-wiring.py",
+      "sha256": "23c763bc6b908fcd9187734b5a5bcc4bbad65c5fc2cc80ad1ed28b99fe472fd6",
+      "bytes": 25643,
+      "mode": "100644",
+      "git_blob": "23d4e051d2ee577d0a907377d59c51da8a93c25d"
+    },
+    "scripts/verify.sh": {
+      "path": "checkpoints/integration/files/scripts/verify.sh",
+      "sha256": "df3dbea544f20a6dd675355e91f7b3e357419065473b553dd320800570553b0d",
+      "bytes": 1622,
+      "mode": "100644",
+      "git_blob": "7d687b7487b83c45a28ade8de840262a32a3885d"
+    },
+    "tests/integration/bot_execution_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/bot_execution_test.go",
+      "sha256": "f1d5cb84acdcd1a3e1910887846c7a44f9fa40946c3546615de07aa91ce3dd2b",
+      "bytes": 59185,
+      "mode": "100644",
+      "git_blob": "cf568966ce7f6a3b5a238c44164603fe110c61a3"
+    },
+    "tests/integration/bots_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/bots_test.go",
+      "sha256": "cdb37adbe508fe477b77a6a63c3b980d692aaf73026a4d8e78e8f40b948b8eeb",
+      "bytes": 22166,
+      "mode": "100644",
+      "git_blob": "8c55f64f294272873ac8ddb06e70e92a5b39555f"
+    },
+    "tests/integration/chat_transient_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/chat_transient_test.go",
+      "sha256": "441f101af6f6d96fc04f62297a9e515cc21d368abbd2030dfb3671aea81c6b79",
+      "bytes": 26234,
+      "mode": "100644",
+      "git_blob": "69ba6172e34b635326e774e648be470c8c50d670"
+    },
+    "tests/integration/chat_voice_configuration_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/chat_voice_configuration_test.go",
+      "sha256": "807af0f10ab574b2e70da77bc3d816760740e730001a02958f6e0f8b36efabc5",
+      "bytes": 1072,
+      "mode": "100644",
+      "git_blob": "43be387eb302266f81d418bd76bd4852b67cc38e"
+    },
+    "tests/integration/commerce_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/commerce_test.go",
+      "sha256": "ca964d8d2850e17acc142240204a39396d0481939a728fcada6d39a3ff4fec61",
+      "bytes": 25876,
+      "mode": "100644",
+      "git_blob": "5a004fc206cb8e4c047bf407123c5b7cc2f5ae8c"
+    },
+    "tests/integration/coupon_catalog_review_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/coupon_catalog_review_test.go",
+      "sha256": "99066824a69995d64f1f2ab5f3965f55d8a27ff91c2906f91b385bf5f572ec3c",
+      "bytes": 12260,
+      "mode": "100644",
+      "git_blob": "9b922bb7c2f4a86b32ca27d4e33ed45dc7e17a1f"
+    },
+    "tests/integration/coupon_checkout_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/coupon_checkout_test.go",
+      "sha256": "a76930cc511805a98e31cf2a23619ed3d44b9240efe81d5fa898253936abe6aa",
+      "bytes": 25619,
+      "mode": "100644",
+      "git_blob": "c40ba25ff59455d6ff107d8eeb3a40700a681557"
+    },
+    "tests/integration/developer_management_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/developer_management_test.go",
+      "sha256": "678cf4fc4ff5e2635e6a953ba7fb731069602be41d91992060485ba3eb560dd5",
+      "bytes": 23549,
+      "mode": "100644",
+      "git_blob": "10e16342e55a416c038fd6eb7c8ef53d2c8dda4e"
+    },
+    "tests/integration/developer_media_quota_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/developer_media_quota_test.go",
+      "sha256": "8a75a358211a6f50a5f70ae679732e60c68a8a06b611309db61af6723508ac8d",
+      "bytes": 33495,
+      "mode": "100644",
+      "git_blob": "a56172da76484c714d40926c63aa4c6e6f3d6fba"
+    },
+    "tests/integration/merchants_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/merchants_test.go",
+      "sha256": "0646f5e82e641559bf9f4f2ff56a1005c5a096e06ae3c79ade39e219ca2df6f4",
+      "bytes": 20855,
+      "mode": "100644",
+      "git_blob": "58cefb4b2693187f0f3192bb9c0d82deec655548"
+    },
+    "tests/integration/miniapp_upload_authority_review_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/miniapp_upload_authority_review_test.go",
+      "sha256": "d5485f1b28de9f8e391ee746523413f18cd9ec1077dbc5766eb3abc80c4b2496",
+      "bytes": 3461,
+      "mode": "100644",
+      "git_blob": "efb87edeecacae935e83346075808f8353aded13"
+    },
+    "tests/integration/miniapp_upload_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/miniapp_upload_test.go",
+      "sha256": "e2156faf8e267269de048b6ba06fbc75cfb68d38d8c69a24577e7ee9b0cb1b33",
+      "bytes": 25483,
+      "mode": "100644",
+      "git_blob": "f2c57629fe908fab69469a16fd7714a409f791a1"
+    },
+    "tests/integration/oauth_extensions_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/oauth_extensions_test.go",
+      "sha256": "f3463dbf2bc3daef5a2147c9fc0c7e04403194cb6ed5e343a8f03bfb1e02f54b",
+      "bytes": 17831,
+      "mode": "100644",
+      "git_blob": "5479c744cc293904b7e33f8bad268a20d81cf54a"
+    },
+    "tests/integration/post_awards_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/post_awards_test.go",
+      "sha256": "df026b6c82d79db5e354057c49875fc2408732fbc8334417dc9ce136757d92ab",
+      "bytes": 26113,
+      "mode": "100644",
+      "git_blob": "ac6cc8655d08199d38de35270a8ec7f8549ca507"
+    },
+    "tests/integration/post_pins_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/post_pins_test.go",
+      "sha256": "879f7024a4894d23f8f90ef20284f8454fa6d3c56101d38e8aed4a96a8a216ac",
+      "bytes": 30419,
+      "mode": "100644",
+      "git_blob": "fd726be027ba0b3812c17378be5c6c0c4363070d"
+    },
+    "tests/integration/product_stock_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/product_stock_test.go",
+      "sha256": "67f8e075f6a2262dddd03b0fdd8e558712d8005a94a335d105967945a44d4170",
+      "bytes": 24550,
+      "mode": "100644",
+      "git_blob": "94fa3ce663e38964c9f3b5d27997d3cee00206e8"
+    },
+    "tests/integration/publishing_config_offline_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/publishing_config_offline_test.go",
+      "sha256": "13405f98467c65b38950aa5f3dd779ad035ea8d5a647657d0c7558bb411dc77c",
+      "bytes": 1219,
+      "mode": "100644",
+      "git_blob": "39c4081103477ecbe1c409bd732dc33a5390d355"
+    },
+    "tests/integration/publishing_controls_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/publishing_controls_test.go",
+      "sha256": "7ee8808f0543621f8cd55ad1d1ce57468f70b46189c947f8948bd0a6307be92f",
+      "bytes": 33040,
+      "mode": "100644",
+      "git_blob": "707e631c8a3e126a0656952ba8edf428b01560e8"
+    },
+    "tests/integration/realm_publishing_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/realm_publishing_test.go",
+      "sha256": "e1c351a43c5b98bfd176d7d2b864fedfc933d288f05a8d40f569d1c34e8c291c",
+      "bytes": 59618,
+      "mode": "100644",
+      "git_blob": "374ad3d45b7dfb9206748d218cc32c99ba31ce75"
+    },
+    "tests/integration/recurring_products_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/recurring_products_test.go",
+      "sha256": "05feb4a13676ea2a6c97ab10740c6547714ea1c0f8800b9e0cf2170baf2660ec",
+      "bytes": 18032,
+      "mode": "100644",
+      "git_blob": "9d1c9a7aff243ece8163afde597c0f46663b4a76"
+    },
+    "tests/integration/shipping_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/shipping_test.go",
+      "sha256": "c674f65d98f8302cea0220c6ad796543b6278c7beb1fd2a0568f791577bc6227",
+      "bytes": 27909,
+      "mode": "100644",
+      "git_blob": "a2fb7be125bca7a8666904057e20f975ef7ceb53"
+    },
+    "tests/integration/wallet_completion_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/wallet_completion_test.go",
+      "sha256": "d6ad66c3230d114f4491b5713ed5f9bfbf5aaeb4f2101faeb3f250a0bfea8133",
+      "bytes": 49525,
+      "mode": "100644",
+      "git_blob": "2f15205cdb2fc4118b07081d279386b669b51c9c"
+    },
+    "tests/integration/wallet_reporting_test.go": {
+      "path": "checkpoints/integration/files/tests/integration/wallet_reporting_test.go",
+      "sha256": "7e1ee1f708f47179d6aed318096f562dafaabab707b12c468afc51c5535e2d6e",
+      "bytes": 14698,
+      "mode": "100644",
+      "git_blob": "3d72c112679c811baa922d46814f427cbaab0c06"
+    }
+  },
+  "absent_base_paths": [],
+  "restore": "Start from published_base_commit in an isolated checkout. Verify saved file sha256/bytes and copy to original path preserving mode. Only explicit absent_base_paths are deletions. Lane snapshots are alternatives; do not stack them. Integrate reviewed feature hunks into the integration lane."
+}

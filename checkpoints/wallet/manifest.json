@@ -1,0 +1,311 @@
+{
+  "status": "committed source checkpoint; not final acceptance; real PostgreSQL and restart validation outstanding",
+  "published_base_commit": "b1c55b5ca81817df7b00ee87507200c03d85ff6f",
+  "local_base_commit": "b1c55b5ca81817df7b00ee87507200c03d85ff6f",
+  "local_head_commit": "142e917747765e34a0fc403b1567c55e571f32a2",
+  "changed_or_added": {
+    "cmd/backend/main.go": {
+      "path": "checkpoints/wallet/files/cmd/backend/main.go",
+      "sha256": "f91a15b9c00c0811b35742f8d7d278a1aaa7efed3b6de561bdb0c776ce196416",
+      "bytes": 18182,
+      "mode": "100644",
+      "git_blob": "7e8e7dd6ff9049e31d74cab20e3b2a2eacc3e92d"
+    },
+    "internal/application/backend.go": {
+      "path": "checkpoints/wallet/files/internal/application/backend.go",
+      "sha256": "4de4ed34d18e5a67ba3a543272116ed76a7efac5fa8a9b719ef835af09b10c15",
+      "bytes": 37882,
+      "mode": "100644",
+      "git_blob": "ef1b11c312018832d33414f70dd860fe7adc2782"
+    },
+    "internal/application/readiness.go": {
+      "path": "checkpoints/wallet/files/internal/application/readiness.go",
+      "sha256": "f341a3e2372b0061042cdf329942ad9b7cc97b4936a3decc7a85d9b106b29dfb",
+      "bytes": 11134,
+      "mode": "100644",
+      "git_blob": "d648f6f811d97fe6653c08774f93d2be83d8c9e8"
+    },
+    "internal/application/router.go": {
+      "path": "checkpoints/wallet/files/internal/application/router.go",
+      "sha256": "9570958c6e9df744c5764fa79994f2695775ee31a469cc59d1d5d530021eefcf",
+      "bytes": 23137,
+      "mode": "100644",
+      "git_blob": "474ac52a92cb917e24dfc6decd5cb1a06f9843c7"
+    },
+    "internal/commercepg/gifts.go": {
+      "path": "checkpoints/wallet/files/internal/commercepg/gifts.go",
+      "sha256": "b16c5869bc02d8a9017a1d47ee5c7a1e24aca65cb1ac280c10233ad39f1e6a3a",
+      "bytes": 13588,
+      "mode": "100644",
+      "git_blob": "e211c0bd61b942e7ce717588ea938549e62ed2d1"
+    },
+    "internal/commercepg/lifecycle.go": {
+      "path": "checkpoints/wallet/files/internal/commercepg/lifecycle.go",
+      "sha256": "3cdea694e05b28c45b0ca2a9b379d659c3d374d40fa316a122dfdbb7b32440d2",
+      "bytes": 29222,
+      "mode": "100644",
+      "git_blob": "083c7c87b7b32b99426f2fb46eb81168caf8fa43"
+    },
+    "internal/commercepg/maintenance.go": {
+      "path": "checkpoints/wallet/files/internal/commercepg/maintenance.go",
+      "sha256": "8687209d182d1f9eef54794eaf917e56efc66476e920f0ae7ab2c1e8e514e92d",
+      "bytes": 13203,
+      "mode": "100644",
+      "git_blob": "cdad7d947f92035a6c3518eb3e97b165cf98d820"
+    },
+    "internal/commercepg/maintenance_quarantine.go": {
+      "path": "checkpoints/wallet/files/internal/commercepg/maintenance_quarantine.go",
+      "sha256": "2f961a6dc2fd0382f2f413747cfbbadf6140c1f9ab02519e7f31847e706b54aa",
+      "bytes": 7646,
+      "mode": "100644",
+      "git_blob": "7cd44f8b592baf5a81d728857c61aa50bba2dd26"
+    },
+    "internal/commercepg/payouts.go": {
+      "path": "checkpoints/wallet/files/internal/commercepg/payouts.go",
+      "sha256": "6aec92e0fab829208954e61f12882dcfb358e955f493ec98b169b44c9e51165f",
+      "bytes": 2013,
+      "mode": "100644",
+      "git_blob": "7109acedc6e46acb6e5fb2074d26ea46297965c2"
+    },
+    "internal/commercepg/schema.sql": {
+      "path": "checkpoints/wallet/files/internal/commercepg/schema.sql",
+      "sha256": "e3c58d99004d412cb624ceb07b05334d54ca4025fcac2b7d82b9e94c22a11a09",
+      "bytes": 5439,
+      "mode": "100644",
+      "git_blob": "63ef6a9b33b2a4b367013a5cafdb1dee5b24c01f"
+    },
+    "internal/commercepg/settlement.go": {
+      "path": "checkpoints/wallet/files/internal/commercepg/settlement.go",
+      "sha256": "94bd0224e6fee8918e7afe1b92ae733fd94eefdcb60e8eae11b4a6c0b9c2eda9",
+      "bytes": 2470,
+      "mode": "100644",
+      "git_blob": "61cc459a829f4a051e154bcb7af6fdf793b87fc1"
+    },
+    "internal/merchantpg/admin.go": {
+      "path": "checkpoints/wallet/files/internal/merchantpg/admin.go",
+      "sha256": "47f8b3eaa7637dc7da658022cfac1de78cea5aef658436f6a9aa839c813fbaf9",
+      "bytes": 24538,
+      "mode": "100644",
+      "git_blob": "b2e43809263f360478196c9225479dd4f35b0605"
+    },
+    "internal/merchantpg/repository.go": {
+      "path": "checkpoints/wallet/files/internal/merchantpg/repository.go",
+      "sha256": "ebc88ada690c082bc39a0e02e7d2ce246d1ac2070352ac2648d0a050944349ad",
+      "bytes": 9370,
+      "mode": "100644",
+      "git_blob": "4677fedfe14139fed924fce10b4588fb89343feb"
+    },
+    "internal/merchantpg/schema.sql": {
+      "path": "checkpoints/wallet/files/internal/merchantpg/schema.sql",
+      "sha256": "ff67179947a1270bfb173d59c8338c434a56ecabbde1fa968e2616f71ece6898",
+      "bytes": 709,
+      "mode": "100644",
+      "git_blob": "d5abd4036a973afb7992f8570efa9ba298450833"
+    },
+    "internal/merchantpg/settlements.go": {
+      "path": "checkpoints/wallet/files/internal/merchantpg/settlements.go",
+      "sha256": "8467825314a2a72f0c44a5ee5593cd5c17169771f75d7595839b8e52f64a35ab",
+      "bytes": 9336,
+      "mode": "100644",
+      "git_blob": "8963bfcf8abe39bee178d08f2fedcc6cc5faf5a7"
+    },
+    "internal/walletpg/commerce.go": {
+      "path": "checkpoints/wallet/files/internal/walletpg/commerce.go",
+      "sha256": "86d3418e7e3ca02c7373e0262799a23f7658553b6f6f2f41c81698ce50170e96",
+      "bytes": 4827,
+      "mode": "100644",
+      "git_blob": "65f0b80867f8b0f0388a50ffe531e3a96fc59764"
+    },
+    "internal/walletpg/funded_transfer.go": {
+      "path": "checkpoints/wallet/files/internal/walletpg/funded_transfer.go",
+      "sha256": "b000d504043454a5dd109f1ce00579c0e79819ad4631a01870b0726a7cf3a8b9",
+      "bytes": 7099,
+      "mode": "100644",
+      "git_blob": "90c76770a311fe1d4cb786f624b8e6ebdc2f2a1a"
+    },
+    "internal/walletpg/repository.go": {
+      "path": "checkpoints/wallet/files/internal/walletpg/repository.go",
+      "sha256": "b3b9aecf03de108d297231d1d5fb982363aeddf227fa16ecf54ed6f2ab3406ea",
+      "bytes": 11857,
+      "mode": "100644",
+      "git_blob": "344671a538f6c65fc85131aa94bc5220f0c727ac"
+    },
+    "internal/walletpg/trusted_primary.go": {
+      "path": "checkpoints/wallet/files/internal/walletpg/trusted_primary.go",
+      "sha256": "152fd061f12b93f23698ca503c06743f856a5af86557d5eefc97a324c431671b",
+      "bytes": 2915,
+      "mode": "100644",
+      "git_blob": "ad718a784388a3e23bdd66fc7385b0b70528291e"
+    },
+    "ports/develop/apps/http_test.go": {
+      "path": "checkpoints/wallet/files/ports/develop/apps/http_test.go",
+      "sha256": "3d8d9865dcb2c7d02483564f1ff853ffea9ce43c6276992a4b9e3e9745f78449",
+      "bytes": 4200,
+      "mode": "100644",
+      "git_blob": "4ab59b073e9b832ef821652a1bfd7f4ddfb885f6"
+    },
+    "ports/develop/apps/types.go": {
+      "path": "checkpoints/wallet/files/ports/develop/apps/types.go",
+      "sha256": "2a5ad7b25c94706658ac778f553c9a982b31487c5535d73dfadb1f2305f68510",
+      "bytes": 12332,
+      "mode": "100644",
+      "git_blob": "0b5a3770bc4b3da0d1742f2f3ff4e4bcbcb6591e"
+    },
+    "ports/wallet/accounts/money.go": {
+      "path": "checkpoints/wallet/files/ports/wallet/accounts/money.go",
+      "sha256": "26f754e19d53f0f350eb899f38019f57ac963d99b9a0e822a16635a1c825c197",
+      "bytes": 3463,
+      "mode": "100644",
+      "git_blob": "c48832f4d53696e577dd6e33251b60aa83a6d57d"
+    },
+    "ports/wallet/accounts/money_test.go": {
+      "path": "checkpoints/wallet/files/ports/wallet/accounts/money_test.go",
+      "sha256": "c9e6cfa4b120c9b72090288a8cb70482eebc4219182b44c5a023dd9c2d820fef",
+      "bytes": 2407,
+      "mode": "100644",
+      "git_blob": "f211ebe4367860bf1be37746f8bbb3ca60664493"
+    },
+    "ports/wallet/accounts/service.go": {
+      "path": "checkpoints/wallet/files/ports/wallet/accounts/service.go",
+      "sha256": "c1c8a89c4598e3ca3b034999ad2a65ce7159578ef03fe95acbeaaddd2e2b892f",
+      "bytes": 8927,
+      "mode": "100644",
+      "git_blob": "a1b626dd965b0ec6c3cb7642263d260c344c62a4"
+    },
+    "ports/wallet/commerce/commerce_test.go": {
+      "path": "checkpoints/wallet/files/ports/wallet/commerce/commerce_test.go",
+      "sha256": "8514ae16e2edb97b90dd653fd02f2af9727fab077f98d5e28acad13068aae5ff",
+      "bytes": 6149,
+      "mode": "100644",
+      "git_blob": "b2f77b6b1b36edda330dffd866389e5a61f711f2"
+    },
+    "ports/wallet/commerce/http.go": {
+      "path": "checkpoints/wallet/files/ports/wallet/commerce/http.go",
+      "sha256": "a820621cce912e7414ee3d6b65d2f229a0b23295bf7b4ef532f13ec2e5101ef1",
+      "bytes": 17027,
+      "mode": "100644",
+      "git_blob": "28e2303ba796bf8f6fb234bd13974a4632ea1a33"
+    },
+    "ports/wallet/commerce/model.go": {
+      "path": "checkpoints/wallet/files/ports/wallet/commerce/model.go",
+      "sha256": "60b87f4c88e583e8f0a6f03b109a8253f901235ce3beb15440eb131523ea837d",
+      "bytes": 14881,
+      "mode": "100644",
+      "git_blob": "71dd935540b8edb0d5948dc6a0dac73aea6a4302"
+    },
+    "ports/wallet/merchants/routes.go": {
+      "path": "checkpoints/wallet/files/ports/wallet/merchants/routes.go",
+      "sha256": "5142ef77b21d071ab2bb2abc31394e0ba288764de4c83c724608f8911a4fb6b1",
+      "bytes": 4872,
+      "mode": "100644",
+      "git_blob": "b4913fd09ccf114641d1c802ea929573c5ea407a"
+    },
+    "ports/wallet/merchants/routes_extended.go": {
+      "path": "checkpoints/wallet/files/ports/wallet/merchants/routes_extended.go",
+      "sha256": "6d9945be79f78dc7c8d770160a1aa45c8e35fcc74a3cc602bf00016a87050926",
+      "bytes": 9068,
+      "mode": "100644",
+      "git_blob": "6d2eed25d408cad4b625f9dc6b5cfa4615548c9c"
+    },
+    "ports/wallet/merchants/routes_extended_test.go": {
+      "path": "checkpoints/wallet/files/ports/wallet/merchants/routes_extended_test.go",
+      "sha256": "64180e419013d9c7cfcdc7aa825ea72f8691f0a195b82eebbc157261f7ad1530",
+      "bytes": 3471,
+      "mode": "100644",
+      "git_blob": "6fbe84526a181d7fae51df28dc282bad1d1cdc88"
+    },
+    "ports/wallet/merchants/types.go": {
+      "path": "checkpoints/wallet/files/ports/wallet/merchants/types.go",
+      "sha256": "d386bb22ee3157d15506dce71504d0d905f93883f6976695aa0f7311035041da",
+      "bytes": 10015,
+      "mode": "100644",
+      "git_blob": "dc7faf12f5e1e9575a91cb86bc803c6be088454d"
+    },
+    "ports/wallet/merchants/validation.go": {
+      "path": "checkpoints/wallet/files/ports/wallet/merchants/validation.go",
+      "sha256": "4342b98465897878b2002c5f2400116f4db47c587245678f98775e2059eec14a",
+      "bytes": 4241,
+      "mode": "100644",
+      "git_blob": "c65e34f59cec01a27543bd73981292b5397cfee3"
+    },
+    "ports/wallet/merchants/validation_test.go": {
+      "path": "checkpoints/wallet/files/ports/wallet/merchants/validation_test.go",
+      "sha256": "125aaf623d7d4f7a6eb8ba1163ce3a29aa37a45e51720be3b2a9007575f0a2c5",
+      "bytes": 1810,
+      "mode": "100644",
+      "git_blob": "173c9ed7fde14776a7d2532065498dd1c7526220"
+    },
+    "tests/integration/commerce_test.go": {
+      "path": "checkpoints/wallet/files/tests/integration/commerce_test.go",
+      "sha256": "ca964d8d2850e17acc142240204a39396d0481939a728fcada6d39a3ff4fec61",
+      "bytes": 25876,
+      "mode": "100644",
+      "git_blob": "5a004fc206cb8e4c047bf407123c5b7cc2f5ae8c"
+    },
+    "tests/integration/coupon_catalog_review_test.go": {
+      "path": "checkpoints/wallet/files/tests/integration/coupon_catalog_review_test.go",
+      "sha256": "99066824a69995d64f1f2ab5f3965f55d8a27ff91c2906f91b385bf5f572ec3c",
+      "bytes": 12260,
+      "mode": "100644",
+      "git_blob": "9b922bb7c2f4a86b32ca27d4e33ed45dc7e17a1f"
+    },
+    "tests/integration/coupon_checkout_test.go": {
+      "path": "checkpoints/wallet/files/tests/integration/coupon_checkout_test.go",
+      "sha256": "a76930cc511805a98e31cf2a23619ed3d44b9240efe81d5fa898253936abe6aa",
+      "bytes": 25619,
+      "mode": "100644",
+      "git_blob": "c40ba25ff59455d6ff107d8eeb3a40700a681557"
+    },
+    "tests/integration/developer_management_test.go": {
+      "path": "checkpoints/wallet/files/tests/integration/developer_management_test.go",
+      "sha256": "678cf4fc4ff5e2635e6a953ba7fb731069602be41d91992060485ba3eb560dd5",
+      "bytes": 23549,
+      "mode": "100644",
+      "git_blob": "10e16342e55a416c038fd6eb7c8ef53d2c8dda4e"
+    },
+    "tests/integration/merchants_test.go": {
+      "path": "checkpoints/wallet/files/tests/integration/merchants_test.go",
+      "sha256": "0646f5e82e641559bf9f4f2ff56a1005c5a096e06ae3c79ade39e219ca2df6f4",
+      "bytes": 20855,
+      "mode": "100644",
+      "git_blob": "58cefb4b2693187f0f3192bb9c0d82deec655548"
+    },
+    "tests/integration/product_stock_test.go": {
+      "path": "checkpoints/wallet/files/tests/integration/product_stock_test.go",
+      "sha256": "67f8e075f6a2262dddd03b0fdd8e558712d8005a94a335d105967945a44d4170",
+      "bytes": 24550,
+      "mode": "100644",
+      "git_blob": "94fa3ce663e38964c9f3b5d27997d3cee00206e8"
+    },
+    "tests/integration/recurring_products_test.go": {
+      "path": "checkpoints/wallet/files/tests/integration/recurring_products_test.go",
+      "sha256": "05feb4a13676ea2a6c97ab10740c6547714ea1c0f8800b9e0cf2170baf2660ec",
+      "bytes": 18032,
+      "mode": "100644",
+      "git_blob": "9d1c9a7aff243ece8163afde597c0f46663b4a76"
+    },
+    "tests/integration/shipping_test.go": {
+      "path": "checkpoints/wallet/files/tests/integration/shipping_test.go",
+      "sha256": "c674f65d98f8302cea0220c6ad796543b6278c7beb1fd2a0568f791577bc6227",
+      "bytes": 27909,
+      "mode": "100644",
+      "git_blob": "a2fb7be125bca7a8666904057e20f975ef7ceb53"
+    },
+    "tests/integration/wallet_completion_test.go": {
+      "path": "checkpoints/wallet/files/tests/integration/wallet_completion_test.go",
+      "sha256": "d6ad66c3230d114f4491b5713ed5f9bfbf5aaeb4f2101faeb3f250a0bfea8133",
+      "bytes": 49525,
+      "mode": "100644",
+      "git_blob": "2f15205cdb2fc4118b07081d279386b669b51c9c"
+    },
+    "tests/integration/wallet_reporting_test.go": {
+      "path": "checkpoints/wallet/files/tests/integration/wallet_reporting_test.go",
+      "sha256": "7e1ee1f708f47179d6aed318096f562dafaabab707b12c468afc51c5535e2d6e",
+      "bytes": 14698,
+      "mode": "100644",
+      "git_blob": "3d72c112679c811baa922d46814f427cbaab0c06"
+    }
+  },
+  "absent_base_paths": [],
+  "restore": "Start from published_base_commit in an isolated checkout. Verify saved file sha256/bytes and copy to original path preserving mode. Only explicit absent_base_paths are deletions. Lane snapshots are alternatives; do not stack them. Integrate reviewed feature hunks into the integration lane."
+}

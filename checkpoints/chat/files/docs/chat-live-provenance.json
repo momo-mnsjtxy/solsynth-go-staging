@@ -1,0 +1,41 @@
+{
+  "basis": "Retained separately licensed AGPL DysonNetwork/Solian authored service and client sources only. No new source retrieval, excluded shared/protocol/SDK files or generated bindings.",
+  "files": [
+    {
+      "path": "ports/messager/source/ChatService.cs",
+      "sha256": "75a18068893f878c7a5d24529d88415e632f0947894ceea971620ebf1558fb9a"
+    },
+    {
+      "path": "ports/messager/contract-evidence/lib__chat__realtime__message_handler.dart",
+      "sha256": "7cb906dd11414186348cafb5e99fba75d7d1e3972674f44a359152f8e0a99263"
+    },
+    {
+      "path": "ports/messager/contract-evidence/lib__chat__e2ee_message_service.dart",
+      "sha256": "764787db80c6e0d22f8156c2c987f52ef4c484e8e51e0f6a7b089028d4130d36"
+    },
+    {
+      "path": "ports/messager/contract-evidence/lib__data__message.dart",
+      "sha256": "28b63fe37b859e09525cf9de489f39bd4f26fe128dad655dabd497ae2d955119"
+    },
+    {
+      "path": "ports/notifications/source/Solian__ios__SolianWatchApp__Models__Models.swift",
+      "sha256": "6c85316dae35bdf17c19b5f9590e2f9593be37921621e1bb40967e1279b73ad4"
+    },
+    {
+      "path": "ports/messager/contract-evidence/LICENSE.txt",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/notifications/source/SOLIAN-LICENSE.txt",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/messager/source/LICENSE.txt",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    }
+  ],
+  "wire": "The service sends messages.new even when DeliverMessageAsync receives MessageUpdate. Client handlers accept both outer packet types and dispatch by inner message.type. Placeholder updates/expiry use dedicated packet types.",
+  "native_decoder": "Retained authored Swift SnChatMessage, SnChatMember, SnAccount and SnUserProfile decode methods explicitly permit omitted optional sender timestamps, privilege and profile/progression fields; required account id/name/nick are actual canonical values. Native Swift execution was not available locally.",
+  "flutter_decoder": "Full solar_network_sdk SnChatMessage.fromJson remains excluded/unverified. Authored constructors are evidence of fields, not sufficient proof of requiredness or JSON omission/default behavior. Full original Flutter DTO/deserializer parity remains unresolved.",
+  "lifecycle": "Current authorized owned replay and transport leases are independent extensions; not exactly-once network delivery or proof of MLS key possession."
+}

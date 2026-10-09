@@ -1,0 +1,39 @@
+{
+  "base": "e330428767a6aaf2e27650b62f8f431c571bf492",
+  "reviewed_items": [
+    "case:TestPGBackendChatTransientMultipartAndWebSocketComposition",
+    "case:TestPGChatPlaceholderExpiryRaceAndAtomicRollback",
+    "case:TestPGChatPlaceholderLifecycleReplacementAndFinalization",
+    "case:TestPGChatTransientOriginalProofMembershipAndEncryptedBoundaries",
+    "case:TestPGChatTransientSavedRestartPersistence",
+    "case:TestPGChatVoiceDurableDeletionFailureAndUnboundExpiry",
+    "case:TestPGChatVoiceReadWaitRechecksOriginalProofAudienceAndExpiry",
+    "case:TestPGChatVoiceSendRevalidatesAfterStorageAndMembershipABA",
+    "case:TestPGChatVoiceStagingRollbackAndCleanupRecovery",
+    "case:TestPGChatVoiceStorageQuotaPrivacyAndExpiry",
+    "case:TestPGDeveloperBotMediaCreateRollbackAndQuotaExpiry",
+    "case:TestPGDeveloperBotUpdateWaitUsesCurrentPunishment",
+    "case:TestPGDeveloperMediaAuditWaitUsesCurrentUploader",
+    "case:TestPGDeveloperMediaComposedAppProductBotLifecycle",
+    "case:TestPGDeveloperMediaCurrentAudienceAndNestedProjection",
+    "case:TestPGDeveloperMediaManagerOwnerAfterFileAndAuditWait",
+    "case:TestPGDeveloperMediaOwnershipReadinessAndAtomicRollback",
+    "case:TestPGDeveloperMediaQuotaSavedRestartPersistence",
+    "case:TestPGDeveloperMediaReadWaitRechecksPrivacy",
+    "case:TestPGDeveloperMediaWriteWaitPreservesOriginalProof",
+    "case:TestPGDeveloperQuotaConfiguredPolicyAndIsolation",
+    "case:TestPGDeveloperQuotaWaitUsesCurrentPolicyAndProof",
+    "dependency:TestPGBackendChatTransientMultipartAndWebSocketComposition",
+    "dependency:TestPGChatTransientSavedRestartPersistence",
+    "dependency:TestPGDeveloperMediaComposedAppProductBotLifecycle",
+    "dependency:TestPGDeveloperMediaQuotaSavedRestartPersistence",
+    "fixture-source:tests/integration/chat_transient_test.go",
+    "fixture-source:tests/integration/developer_media_quota_test.go"
+  ],
+  "counts": {
+    "before": 962,
+    "after": 112
+  },
+  "schema": "Three new explicit schema inputs; reviewed empty application tables, no new startup seeds. Original template baseline audit preserved.",
+  "basis": "Both independent scoped reviews and exact current function hashes, original restart markers and immutable proofs. Actual PG pending."
+}

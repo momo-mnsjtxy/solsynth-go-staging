@@ -1,0 +1,465 @@
+{
+  "status": "committed source checkpoint; not final acceptance; real PostgreSQL and restart validation outstanding",
+  "published_base_commit": "b1c55b5ca81817df7b00ee87507200c03d85ff6f",
+  "local_base_commit": "b1c55b5ca81817df7b00ee87507200c03d85ff6f",
+  "local_head_commit": "492cc28f35afa70571205e776e79e12976a36b4a",
+  "changed_or_added": {
+    "cmd/backend/account_connections_config.go": {
+      "path": "checkpoints/identity-realm/files/cmd/backend/account_connections_config.go",
+      "sha256": "506d0ce1665ee3c68dd9dca587558c07094a13a3bcd4180463e860e867dffc62",
+      "bytes": 5052,
+      "mode": "100644",
+      "git_blob": "69c847a0f6e2badde669a7eecb89518b8d6987be"
+    },
+    "cmd/backend/main.go": {
+      "path": "checkpoints/identity-realm/files/cmd/backend/main.go",
+      "sha256": "f7e69e10e7cf6f413bc731f68c315a8d8d684d189a5a248747b7c918abb7f4f4",
+      "bytes": 18155,
+      "mode": "100644",
+      "git_blob": "55d6688f3ae53b61b2f5b2172ff4c46ebf3da6d6"
+    },
+    "cmd/backend/progression_extensions_config.go": {
+      "path": "checkpoints/identity-realm/files/cmd/backend/progression_extensions_config.go",
+      "sha256": "297b84dadb34e80b918022f85cbb272502782274d8b86ae60708cc4dde2f0f46",
+      "bytes": 2365,
+      "mode": "100644",
+      "git_blob": "f8d4e39461ee0e7d5367a4a7d44ce23894ca9592"
+    },
+    "cmd/backend/push_devices_config.go": {
+      "path": "checkpoints/identity-realm/files/cmd/backend/push_devices_config.go",
+      "sha256": "a779b6229afb2cc90bbd988e71f961f80bdda9af4a6cff711086b0ce04906f5f",
+      "bytes": 1795,
+      "mode": "100644",
+      "git_blob": "3d2bfc41156da2728c8225f6070a7c2cf7168ef7"
+    },
+    "internal/accounthistorypg/credits.go": {
+      "path": "checkpoints/identity-realm/files/internal/accounthistorypg/credits.go",
+      "sha256": "1a5af3e06c26aeeaa4c0ae0ce474566a2cb6cfa4efdbbad8baf9859d627d4317",
+      "bytes": 3552,
+      "mode": "100644",
+      "git_blob": "7ebe10c6dae4a9f2cb0e2b8db6681dfaff28130a"
+    },
+    "internal/accounthistorypg/repository.go": {
+      "path": "checkpoints/identity-realm/files/internal/accounthistorypg/repository.go",
+      "sha256": "842f10e9ec44e990696b91e15cd7389a7d438372f60a1f7efac87240b81d993a",
+      "bytes": 12077,
+      "mode": "100644",
+      "git_blob": "436d6d1baeb2f16d3d4625979bb6a3ae69f2f6b2"
+    },
+    "internal/activitypg/admin_reads.go": {
+      "path": "checkpoints/identity-realm/files/internal/activitypg/admin_reads.go",
+      "sha256": "78436bef148d222fc468b3b721f87cd37276febd193f8637dc20d71c2134053d",
+      "bytes": 1655,
+      "mode": "100644",
+      "git_blob": "5412a735d3a7f7073e47b67762a3b57d7573f67c"
+    },
+    "internal/activitypg/mutations.go": {
+      "path": "checkpoints/identity-realm/files/internal/activitypg/mutations.go",
+      "sha256": "91f06ae96fe269a14b42fb0d1ba585222833ecfced6ba0d82a91b43b3bf682df",
+      "bytes": 12745,
+      "mode": "100644",
+      "git_blob": "22b80d8ee7969240439f658220715595e7da0f59"
+    },
+    "internal/activitypg/provider_poll.go": {
+      "path": "checkpoints/identity-realm/files/internal/activitypg/provider_poll.go",
+      "sha256": "640b16e721af6f7ad59a31f4edc353606a3279b78d6b9a9c74cbe180a4215849",
+      "bytes": 11633,
+      "mode": "100644",
+      "git_blob": "d45ae846a16d7b793c2b31b49ecbe1dc5bc9cca5"
+    },
+    "internal/activitypg/repository.go": {
+      "path": "checkpoints/identity-realm/files/internal/activitypg/repository.go",
+      "sha256": "3beaa9fbfdbe9277171aff1c7d4cbefd3c1c77354daa7d971cda94b703649266",
+      "bytes": 11066,
+      "mode": "100644",
+      "git_blob": "52893f9d504a35929a59b806cfb9cab3ab1f9501"
+    },
+    "internal/activitypg/schema.sql": {
+      "path": "checkpoints/identity-realm/files/internal/activitypg/schema.sql",
+      "sha256": "5929921132b1d0ee715dbf1590b11c063c829de21b3db304fc5022da3703828b",
+      "bytes": 3830,
+      "mode": "100644",
+      "git_blob": "869d9ba64dd5749a68faaf374acd98d545b00a72"
+    },
+    "internal/activitypg/sensors.go": {
+      "path": "checkpoints/identity-realm/files/internal/activitypg/sensors.go",
+      "sha256": "3ef21656ec73a4602cec292c5d5ef95485069e5eac7f9db8d4ba7ec8ce941e1f",
+      "bytes": 3944,
+      "mode": "100644",
+      "git_blob": "28c111de18761f39112ba619fea77570c12a847d"
+    },
+    "internal/adminpg/account_extensions.go": {
+      "path": "checkpoints/identity-realm/files/internal/adminpg/account_extensions.go",
+      "sha256": "0dddb4ee3e607ad097bd6276ac2b40623987e21803dd29ca0f4a01106536e025",
+      "bytes": 9068,
+      "mode": "100644",
+      "git_blob": "d45fe4c8eb3c22ddafd7a3a5be65b67437f18703"
+    },
+    "internal/application/account_connections.go": {
+      "path": "checkpoints/identity-realm/files/internal/application/account_connections.go",
+      "sha256": "7f66035213da1e94d9dc3b4dc898ab7d6e8fdb7ebf8e6da6137c0bd76a602aac",
+      "bytes": 1142,
+      "mode": "100644",
+      "git_blob": "13ab7ceeb34836e06a07e9fbc1bdc19989ab5018"
+    },
+    "internal/application/backend.go": {
+      "path": "checkpoints/identity-realm/files/internal/application/backend.go",
+      "sha256": "d367e5e23d596d46a9e5f948d705ef90119032dba82b4878841f03880d699bfd",
+      "bytes": 39584,
+      "mode": "100644",
+      "git_blob": "dcb93631d24af347384af270ed2e0f9bb47ac0b1"
+    },
+    "internal/application/notification_devices.go": {
+      "path": "checkpoints/identity-realm/files/internal/application/notification_devices.go",
+      "sha256": "b74758096a972bfe89c2224643896c15e84dd7b97bfd90448d0b7c91a6a20106",
+      "bytes": 1185,
+      "mode": "100644",
+      "git_blob": "9fe47002df18ad11b7d058e8f8fb1457b94c4041"
+    },
+    "internal/application/readiness.go": {
+      "path": "checkpoints/identity-realm/files/internal/application/readiness.go",
+      "sha256": "235bccc3fa8bfb39a8b6fcb003b0a208fe507aa5c1a0bb97f915b70f1db396b7",
+      "bytes": 11254,
+      "mode": "100644",
+      "git_blob": "c75a94541a39e609707e9f7a591d0ecec15c2241"
+    },
+    "internal/application/router.go": {
+      "path": "checkpoints/identity-realm/files/internal/application/router.go",
+      "sha256": "64452d5859a0769b8235ad7a2499040c0213db17555bc63b5a5eaee66f198bce",
+      "bytes": 24629,
+      "mode": "100644",
+      "git_blob": "47c1f5756e09f2cec64a36ab03bc2e9c6eff0854"
+    },
+    "internal/commercepg/realm_member_perks.go": {
+      "path": "checkpoints/identity-realm/files/internal/commercepg/realm_member_perks.go",
+      "sha256": "0fb12fb72af233a2916b850ff724faed5b7716da58fedc5e05dca1533129c362",
+      "bytes": 8420,
+      "mode": "100644",
+      "git_blob": "dd8d0d1d0eec8c0e453f9a72931f3c6b4503bac4"
+    },
+    "internal/connectionpg/repository.go": {
+      "path": "checkpoints/identity-realm/files/internal/connectionpg/repository.go",
+      "sha256": "950785c1c04facb86e48576dfd510673decaf0920ef66882e6f6ee2d5477a210",
+      "bytes": 10497,
+      "mode": "100644",
+      "git_blob": "0da78c3ee6e42e6be8e3dfd53df198a8ffccba10"
+    },
+    "internal/connectionpg/schema.sql": {
+      "path": "checkpoints/identity-realm/files/internal/connectionpg/schema.sql",
+      "sha256": "263c81c9e118f1075cc67133ff3d80c9040abe3a874c6a24823246accfa676ca",
+      "bytes": 912,
+      "mode": "100644",
+      "git_blob": "e7591ce46a3c8e35e0489d2152f167c0c29dbd95"
+    },
+    "internal/connectionprovider/lastfm.go": {
+      "path": "checkpoints/identity-realm/files/internal/connectionprovider/lastfm.go",
+      "sha256": "ad6030ac1cf87fef864cae0c5c7c73d00f856ba9cc9b806257b9aaf21766026c",
+      "bytes": 4768,
+      "mode": "100644",
+      "git_blob": "7029aab88dea6aceb3c7c11934b2723ee0d41b37"
+    },
+    "internal/connectionprovider/oauth.go": {
+      "path": "checkpoints/identity-realm/files/internal/connectionprovider/oauth.go",
+      "sha256": "f79446d97c778f487da8c8502ba25f5bc776b884253fb69594be00871ab46400",
+      "bytes": 4454,
+      "mode": "100644",
+      "git_blob": "0eb7caf401701f17de0722c03b6b22c2927563ad"
+    },
+    "internal/connectionprovider/providers_test.go": {
+      "path": "checkpoints/identity-realm/files/internal/connectionprovider/providers_test.go",
+      "sha256": "3ff376827643598cc646da69eb17da39f9e5b048f43856eb4905566d7a90b464",
+      "bytes": 6249,
+      "mode": "100644",
+      "git_blob": "347bb801985c4a42d567656bf6936207f5e8bc46"
+    },
+    "internal/connectionprovider/steam.go": {
+      "path": "checkpoints/identity-realm/files/internal/connectionprovider/steam.go",
+      "sha256": "5a33be6576faddd002ebb04ae6e68f6ae4e81b029deea5a0ed26f195dd7b6e15",
+      "bytes": 3547,
+      "mode": "100644",
+      "git_blob": "e265a2ea03f2bf841ff71c1e31f21745e997f428"
+    },
+    "internal/connectionprovider/steam_presence.go": {
+      "path": "checkpoints/identity-realm/files/internal/connectionprovider/steam_presence.go",
+      "sha256": "1096e8903820828fe1e4f1cc23c2827ce85ab587a54585cc671d5ac42936c6b9",
+      "bytes": 2122,
+      "mode": "100644",
+      "git_blob": "cadea0d47456d2bf80ea40109926d94a342e7760"
+    },
+    "internal/notificationpg/devices.go": {
+      "path": "checkpoints/identity-realm/files/internal/notificationpg/devices.go",
+      "sha256": "6a500fe667aa515b1107609d7b14c200f4dc0c66c14fef7b97d4c864eafb84cb",
+      "bytes": 14615,
+      "mode": "100644",
+      "git_blob": "83afdfa46a6ef541173014c5bdbb788c58cbb8fa"
+    },
+    "internal/notificationpg/devices_schema.sql": {
+      "path": "checkpoints/identity-realm/files/internal/notificationpg/devices_schema.sql",
+      "sha256": "c1448ae672bbbcef319e85bb8e444ffcb38290a03f3b0622cb2d4df534716083",
+      "bytes": 1648,
+      "mode": "100644",
+      "git_blob": "ae2e48baaa1ec424cc911da4cc016f45e2745955"
+    },
+    "internal/notificationpg/repository.go": {
+      "path": "checkpoints/identity-realm/files/internal/notificationpg/repository.go",
+      "sha256": "d36e6540ea8b7c47fc06c23f19c71297d646ea4e173d804982452c240caa4578",
+      "bytes": 14309,
+      "mode": "100644",
+      "git_blob": "c0f07c1c6903a7e45ed4a09db3c665796ab54ba5"
+    },
+    "internal/presencepg/repository.go": {
+      "path": "checkpoints/identity-realm/files/internal/presencepg/repository.go",
+      "sha256": "609bd5529772352d5b580d1551a949658ecb3b5b90c2659574701620f9416403",
+      "bytes": 14775,
+      "mode": "100644",
+      "git_blob": "f50f24120d48d1d443eb5b57b0938e7566dd5017"
+    },
+    "internal/progressionpg/badges_checkins.go": {
+      "path": "checkpoints/identity-realm/files/internal/progressionpg/badges_checkins.go",
+      "sha256": "b3c0def04cb44fa957dd3dba4e2f3751e6feb9bb54c6d76e5ac245c2a1da8a6c",
+      "bytes": 8159,
+      "mode": "100644",
+      "git_blob": "f8dba62a5a8d496089a18a3482a2e04a06fffc0b"
+    },
+    "internal/progressionpg/events.go": {
+      "path": "checkpoints/identity-realm/files/internal/progressionpg/events.go",
+      "sha256": "6120b9799ae5fbbe6097aab103e18c78c33a37b0a57446aaf7b5fe370aaa3ebf",
+      "bytes": 12394,
+      "mode": "100644",
+      "git_blob": "bff7d36b8caee98032294efe6697b4678ddadc0b"
+    },
+    "internal/progressionpg/extensions.go": {
+      "path": "checkpoints/identity-realm/files/internal/progressionpg/extensions.go",
+      "sha256": "450f56a8e7752966963b9bcbc5bc69980f49f1f40f75ea15ebaf7ef637d11bf7",
+      "bytes": 4372,
+      "mode": "100644",
+      "git_blob": "7cf6f45e5135342eab3d11f2915bdd03f9e2e3b3"
+    },
+    "internal/progressionpg/extensions_test.go": {
+      "path": "checkpoints/identity-realm/files/internal/progressionpg/extensions_test.go",
+      "sha256": "1a912964b5af8175099f0d1afba5951dadb3e36f315a87b83aa526409f99e3cc",
+      "bytes": 834,
+      "mode": "100644",
+      "git_blob": "1db32f2ed44a59cac364d3d23e1645220c8e998f"
+    },
+    "internal/progressionpg/projector.go": {
+      "path": "checkpoints/identity-realm/files/internal/progressionpg/projector.go",
+      "sha256": "5802b7aa407861663d76e634289339b040c4a56726f37b0d2cf6e2078b4ce50e",
+      "bytes": 8794,
+      "mode": "100644",
+      "git_blob": "5707b7b86f9aea131bbd39c5a339cc70dabf76da"
+    },
+    "internal/progressionpg/repository.go": {
+      "path": "checkpoints/identity-realm/files/internal/progressionpg/repository.go",
+      "sha256": "f3e1030942d992aec6559d364b9ecc953ffc589d0192c33210de69833a62e239",
+      "bytes": 8682,
+      "mode": "100644",
+      "git_blob": "c5ad5f83f634dbe79b255187fdd3ca8b89d2e3cd"
+    },
+    "internal/progressionpg/schema.sql": {
+      "path": "checkpoints/identity-realm/files/internal/progressionpg/schema.sql",
+      "sha256": "f0ce303b8ec8da2c49de6c05487c3097968837cd1ee1ac928fe5d44b0e36418b",
+      "bytes": 53030,
+      "mode": "100644",
+      "git_blob": "bae8234dce6b8451def5f38f724acd5fdb8fd4e8"
+    },
+    "internal/progressionpg/source_points.go": {
+      "path": "checkpoints/identity-realm/files/internal/progressionpg/source_points.go",
+      "sha256": "133ca2baad261d18c0737082bc56a5298c96b105f4d3eb1a9d7a1f676d5da38e",
+      "bytes": 11832,
+      "mode": "100644",
+      "git_blob": "7662e46186a9d8bc3d4ee7952463e34cbbb8ea52"
+    },
+    "internal/pushprovider/fcm.go": {
+      "path": "checkpoints/identity-realm/files/internal/pushprovider/fcm.go",
+      "sha256": "aac882a26fafa054a0c4a28f985ba544dcab23aa0648d2709a44fe590ead2ff2",
+      "bytes": 5542,
+      "mode": "100644",
+      "git_blob": "c752b0eb6c583752af261375e2ce7bcfa8061366"
+    },
+    "internal/pushprovider/fcm_test.go": {
+      "path": "checkpoints/identity-realm/files/internal/pushprovider/fcm_test.go",
+      "sha256": "af8148f02f0937073d037e646562ef86731780196975b4de4d7a7f1e18c52a7a",
+      "bytes": 3342,
+      "mode": "100644",
+      "git_blob": "fb9393f6acc971d4bf3e981622e7f3cd499d8f18"
+    },
+    "internal/realmboostpg/member_policy.go": {
+      "path": "checkpoints/identity-realm/files/internal/realmboostpg/member_policy.go",
+      "sha256": "043510aab9e6f12f0ac3ee411e8820ccae4bb71677a3af0cdeb182af108d710e",
+      "bytes": 3163,
+      "mode": "100644",
+      "git_blob": "f0f227c1d71733fcd30c400014fd7f734cb10f66"
+    },
+    "internal/realmmemberpg/reads.go": {
+      "path": "checkpoints/identity-realm/files/internal/realmmemberpg/reads.go",
+      "sha256": "4642f64ea7c63c92624e8d58905ce9e33ac760ac51499f1b0d26e6b47e25b0a6",
+      "bytes": 7640,
+      "mode": "100644",
+      "git_blob": "016464e71e1c9d079eed218b1f0fcfdd018f5e91"
+    },
+    "internal/realmmemberpg/repository.go": {
+      "path": "checkpoints/identity-realm/files/internal/realmmemberpg/repository.go",
+      "sha256": "de8bbdcb91ffd804bba3d16124cc49095fa87e42b9a7a7ef91a8d95ee8f00b4b",
+      "bytes": 8793,
+      "mode": "100644",
+      "git_blob": "37bffec7aa5d9f22ab2bf6730196175e48d27a0c"
+    },
+    "internal/realmmemberpg/schema.sql": {
+      "path": "checkpoints/identity-realm/files/internal/realmmemberpg/schema.sql",
+      "sha256": "662373c904c6c00469c40cbb13c940a267e5ec172397f3e7b6776e82c420b2aa",
+      "bytes": 4755,
+      "mode": "100644",
+      "git_blob": "c2e91d84be69c76c89bd470f1407430f66bfc5ac"
+    },
+    "internal/realmmemberpg/workers.go": {
+      "path": "checkpoints/identity-realm/files/internal/realmmemberpg/workers.go",
+      "sha256": "8008b8de678255078cad928a6c89a1bc8a9cb5989b89a970a67adf29e3f5ad15",
+      "bytes": 11188,
+      "mode": "100644",
+      "git_blob": "3c451b6a9d921305c120021cc32bf72de078c3a0"
+    },
+    "internal/signinpg/admin_mutations.go": {
+      "path": "checkpoints/identity-realm/files/internal/signinpg/admin_mutations.go",
+      "sha256": "2949e6797eaf8cd01881832ac5d901bbde2a62f3bf062a2d0cb30fd642d87404",
+      "bytes": 7835,
+      "mode": "100644",
+      "git_blob": "33be15242befcf28b5d3c0796358c089c5aaf7a5"
+    },
+    "internal/socialpg/member_queries.go": {
+      "path": "checkpoints/identity-realm/files/internal/socialpg/member_queries.go",
+      "sha256": "9c9cc11a0a2796b872eb1b172ed5d2cc19a7c4cc7284adefc5dbfc31ba13a984",
+      "bytes": 5985,
+      "mode": "100644",
+      "git_blob": "fb2fb2bd2b89468c4790a181e06c43c1e97f1a40"
+    },
+    "ports/admin/accounts/extensions.go": {
+      "path": "checkpoints/identity-realm/files/ports/admin/accounts/extensions.go",
+      "sha256": "1d9869fd5d4a4f50a1bf63176e5a0983f35bc6e52f185e0281a3103a5edc4b0c",
+      "bytes": 3600,
+      "mode": "100644",
+      "git_blob": "bb6cfb0cf61c25c3be6dd82c5b9a95d4075370dc"
+    },
+    "ports/admin/accounts/extensions_http.go": {
+      "path": "checkpoints/identity-realm/files/ports/admin/accounts/extensions_http.go",
+      "sha256": "d2d8c86c321f2ea9dd7eb699e0c51c558557ed1c5032fd8613ff5db7ec153b84",
+      "bytes": 3558,
+      "mode": "100644",
+      "git_blob": "082f288e8c1b3fd675c0256727e709b3f4961b74"
+    },
+    "ports/admin/accounts/http.go": {
+      "path": "checkpoints/identity-realm/files/ports/admin/accounts/http.go",
+      "sha256": "60eea584ae7fa694139eb89020ab223ee494f1a135fe7a87ba1080755dfc51c3",
+      "bytes": 3180,
+      "mode": "100644",
+      "git_blob": "5ed4271aeb6170375a21b8e09a9928290bed445e"
+    },
+    "ports/admin/accounts/http_test.go": {
+      "path": "checkpoints/identity-realm/files/ports/admin/accounts/http_test.go",
+      "sha256": "ad44f429f830026c652ae1b2e02d92d82e89c8f47fede64888fecd6f05465edb",
+      "bytes": 4696,
+      "mode": "100644",
+      "git_blob": "fc2c59433af0a2e53ba93bdae9b7eb8c7f97a4af"
+    },
+    "ports/authority/signin/crypto.go": {
+      "path": "checkpoints/identity-realm/files/ports/authority/signin/crypto.go",
+      "sha256": "c603c5057364bea2faecdc59a3a9f6d1aff699c94118718262f5e66eafd88487",
+      "bytes": 3989,
+      "mode": "100644",
+      "git_blob": "ac83daa78c3ba7abf40d52035ad6d9f348a645d7"
+    },
+    "ports/notifications/devices.go": {
+      "path": "checkpoints/identity-realm/files/ports/notifications/devices.go",
+      "sha256": "7a611ade4822b69d0a993499081aca5626a37f7d7ab54f9bebfe845f518a3118",
+      "bytes": 3625,
+      "mode": "100644",
+      "git_blob": "6ccab24bfb5a1225cb26819daf92f3d6e9935c15"
+    },
+    "ports/passport/activities/sensors.go": {
+      "path": "checkpoints/identity-realm/files/ports/passport/activities/sensors.go",
+      "sha256": "c9724cef36beb941c04491f74c48b11adc7b5c6a0785c0fdd10bd47e7714b190",
+      "bytes": 3277,
+      "mode": "100644",
+      "git_blob": "4fb7e8b187b5bf30ef833af92e407c2c9e646c53"
+    },
+    "ports/passport/activities/types.go": {
+      "path": "checkpoints/identity-realm/files/ports/passport/activities/types.go",
+      "sha256": "05215dd2c899a2756584fa238fabec4af3523b5a63032807fbca73d74cc79bf7",
+      "bytes": 8139,
+      "mode": "100644",
+      "git_blob": "ccdeffe36a3fa2acbe935157479c702ff08e61c7"
+    },
+    "ports/passport/connections/http.go": {
+      "path": "checkpoints/identity-realm/files/ports/passport/connections/http.go",
+      "sha256": "e79f37597553aa3834b3ecf337ca7ac0617c64ee550dba5ed5b31548a645e878",
+      "bytes": 2195,
+      "mode": "100644",
+      "git_blob": "527d6be7b201da21fa2dcdb49e7c54b5a1f0f569"
+    },
+    "ports/passport/connections/types.go": {
+      "path": "checkpoints/identity-realm/files/ports/passport/connections/types.go",
+      "sha256": "40413b557a043461578eaabcc0fac76182bf8e4db729113feea249c6dfd6cb37",
+      "bytes": 2287,
+      "mode": "100644",
+      "git_blob": "0f4adfef6d809ead63ee1ad8e2787de140db5038"
+    },
+    "ports/passport/progression/http.go": {
+      "path": "checkpoints/identity-realm/files/ports/passport/progression/http.go",
+      "sha256": "2db1567da09583e55d9453614804715cf1977ccd7f0ebda0f7ea1cb33834e327",
+      "bytes": 8992,
+      "mode": "100644",
+      "git_blob": "681811884cf5ce1c2421e612de2e0edce114d7a7"
+    },
+    "ports/passport/progression/seeds.go": {
+      "path": "checkpoints/identity-realm/files/ports/passport/progression/seeds.go",
+      "sha256": "f6f39650b5cd6e9f254e4e35c98796e0c4f2f6e413ca13731b2c87a8b6b11c70",
+      "bytes": 534,
+      "mode": "100644",
+      "git_blob": "c8e0385351994ad0c835598339c72884b1694b2e"
+    },
+    "ports/passport/social/http.go": {
+      "path": "checkpoints/identity-realm/files/ports/passport/social/http.go",
+      "sha256": "99ef184c7c4b6dd8f3be58042392c2734dade51a3950a49761ac65e4dfd6c561",
+      "bytes": 13130,
+      "mode": "100644",
+      "git_blob": "82075fc6481b5e374d8fe7eefc0736cb52abd7bb"
+    },
+    "ports/passport/social/member_details.go": {
+      "path": "checkpoints/identity-realm/files/ports/passport/social/member_details.go",
+      "sha256": "615857398dbe0fb164dab7fbdae830570e36177e415a1f4e707299bb7b0cfe2a",
+      "bytes": 2029,
+      "mode": "100644",
+      "git_blob": "8371d4c9bd91102244a6529e74f33e5f93bf4a67"
+    },
+    "ports/passport/social/types.go": {
+      "path": "checkpoints/identity-realm/files/ports/passport/social/types.go",
+      "sha256": "c262318c238474a396328c05b8fc4bec83d079c58f077533b2c6c8f4ffe1b3c3",
+      "bytes": 7041,
+      "mode": "100644",
+      "git_blob": "8bc19559a9f92fc7cee05d816851671fb805552c"
+    },
+    "tests/integration/identity_completion_test.go": {
+      "path": "checkpoints/identity-realm/files/tests/integration/identity_completion_test.go",
+      "sha256": "0ef4d12e667cca699762a5a796f366406b9f2f61066e5ba640367bf740e6ca5c",
+      "bytes": 29688,
+      "mode": "100644",
+      "git_blob": "492255f072a6d8df8b9e86fa359da7be8d151fe1"
+    },
+    "tests/integration/presence_progression_test.go": {
+      "path": "checkpoints/identity-realm/files/tests/integration/presence_progression_test.go",
+      "sha256": "08cf55a2bc70ebeac45145564596dbf20a47a5bf9ec843172589bff108e9a949",
+      "bytes": 21471,
+      "mode": "100644",
+      "git_blob": "078504943467523ee8624bf55a079f8b11d13983"
+    },
+    "web/notification-device-client.js": {
+      "path": "checkpoints/identity-realm/files/web/notification-device-client.js",
+      "sha256": "5aa332d44856e2503904e2c79ecd748e1823c56c4fa7c74c2875b1752b3a7fa1",
+      "bytes": 2295,
+      "mode": "100644",
+      "git_blob": "1f237d8171e853b76784b951ad38b3193a3e2a89"
+    }
+  },
+  "absent_base_paths": [],
+  "restore": "Start from published_base_commit in an isolated checkout. Verify saved file sha256/bytes and copy to original path preserving mode. Only explicit absent_base_paths are deletions. Lane snapshots are alternatives; do not stack them. Integrate reviewed feature hunks into the integration lane."
+}

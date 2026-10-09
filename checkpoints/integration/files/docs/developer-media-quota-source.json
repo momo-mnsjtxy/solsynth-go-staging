@@ -1,0 +1,73 @@
+{
+  "server_revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "client_revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+  "license": "Retained AGPL-3.0 root/license manifests; authored controllers/services/client only",
+  "quota_limit": "Only authenticated GET route and total/used are evidenced; no retained formula/record shape; explicit configured account-to-publisher mapping is owned",
+  "bot_null_limit": "Authored service clears an optional outgoing RPC field. Receiver semantics are not retained; retention is an owned policy.",
+  "exclusions": "No excluded shared/generated definitions, NeTo/Spec, canceled Socommon/SoSYS, external fetch or production data.",
+  "files": [
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/DevelopQuotaController.cs",
+      "manifest": "inventory/operation-sources/manifest.json",
+      "bytes": 1071,
+      "sha256": "40ee8df2a7ce7cd8ba02838921da318773cae5de53ba659a7e94785a565266ad",
+      "git_blob": "b95feeaa845c087971a51282738fbe1774399980"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/BotAccountController.cs",
+      "manifest": "inventory/operation-sources/manifest.json",
+      "bytes": 28631,
+      "sha256": "fb0e1938f1d238d19f668c03ee8ee16336b9c275e641003ceb73dc0086bea9a7",
+      "git_blob": "a6095069043325ca9e2226f5c8d878dab54b3e71"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/AppProductController.cs",
+      "manifest": "inventory/operation-sources/manifest.json",
+      "bytes": 11199,
+      "sha256": "72ad83b26523cd52c78b4c6f50b8e55a9f01588ab1d48c46a30dc618fed2a78c",
+      "git_blob": "a1c2e16cef2cfa4e9c5cd593e66d7f56f7583521"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/CustomAppController.cs",
+      "manifest": "inventory/operation-sources/manifest.json",
+      "bytes": 37254,
+      "sha256": "6ae6dbccb103875225109b5babd7c08ec90a8f8de922f12721b7b005970438ce",
+      "git_blob": "6d8c005d5c90a93c394df012382a98fd49799d1d"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Identity__CustomAppService.cs",
+      "manifest": "ports/develop/source/manifest.json",
+      "bytes": 19007,
+      "sha256": "025883b599df33148927b5bc740802179d92584727aabf65a750f81d526f8bb0",
+      "git_blob": "d62f67b1c2409b9ffc8f1e777b92fdba717da052"
+    },
+    {
+      "path": "ports/develop/product-source/DysonNetwork.Develop__Identity__BotAccountService.cs",
+      "manifest": "ports/develop/product-source/manifest.json",
+      "bytes": 7392,
+      "sha256": "90251ebebba8f7ecdb1f77b5f425c18617fd4de3c476080ba267ffd24d66ba19",
+      "git_blob": "8a91ad2989d173bcb9daaaf43a8fc344c80c81a9"
+    },
+    {
+      "path": "ports/develop/product-source/DysonNetwork.Develop__Identity__AppProductService.cs",
+      "manifest": "ports/develop/product-source/manifest.json",
+      "bytes": 4705,
+      "sha256": "79f0bffb50102dd1e68432ca309cacd4ea7a307b6f99a5b8e25d99da2d3e5766",
+      "git_blob": "9d1d1f9abcb5d700c81cef13d88d9533dc158582"
+    },
+    {
+      "path": "ports/develop/source/Solian__custom_app.dart",
+      "manifest": "ports/develop/source/manifest.json",
+      "bytes": 2153,
+      "sha256": "2b2f3024e22b6d37e423020cd2b298b7cbbf12fd37fdb84a38d2b721ddcb76ae",
+      "git_blob": "77208a82a9f8ebef6be639754c8206961201f939"
+    },
+    {
+      "path": "ports/develop/product-source/Solian__bot.dart",
+      "manifest": "ports/develop/product-source/manifest.json",
+      "bytes": 1646,
+      "sha256": "c2ce8b7c897a550270ca38588d262930a087b463598ddcfce5b23a430db46ff0",
+      "git_blob": "35e4bc2b22a98dafb48b481daac253136abb5e6c"
+    }
+  ]
+}

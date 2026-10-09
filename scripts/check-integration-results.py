@@ -5,6 +5,12 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGDeveloperStatisticsCanonicalCountsAndVisibility",
+        "TestPGDeveloperCustomOrderAuthorityAndIsolation",
+        "TestPGDeveloperCustomOrderConcurrencyAtomicityAndSettlement",
+        "TestPGDeveloperCustomOrderWaitRechecksOwnerAndProof",
+        "TestPGDeveloperCustomOrderSavedRestartPersistence",
+
         "TestPGFederationDeliverySingleConnection",
         "TestPGFederationDeliverySaturatedPool",
         "TestPGFederationTransactionalLookupSingleConnection",
@@ -871,6 +877,8 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGDeveloperCustomOrderSavedRestartPersistence",
+
         "TestPGFederationDeliverySavedRestartPersistence",
         "TestPGPublisherSubscriptionSavedRestartPersistence",
 

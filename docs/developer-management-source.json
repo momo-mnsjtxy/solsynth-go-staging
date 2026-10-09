@@ -1,0 +1,56 @@
+{
+  "server_revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+  "client_revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+  "license": "AGPL-3.0 root and retained package manifests; existing source hashes are unchanged",
+  "scope": "Authored controllers/services/client only; no protocol/generated or unlicensed models",
+  "files": [
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/DeveloperController.cs",
+      "bytes": 4985,
+      "git_blob": "6e43f3a40fb0488c601bc4fedadb260459a1352c",
+      "sha256": "3b1fc0afa746078b9e45468aec2d86e630933b4a1ae12cd3238efbc0525e8c33"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/CustomAppController.cs",
+      "bytes": 37254,
+      "git_blob": "6d8c005d5c90a93c394df012382a98fd49799d1d",
+      "sha256": "6ae6dbccb103875225109b5babd7c08ec90a8f8de922f12721b7b005970438ce"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Identity/DevelopQuotaController.cs",
+      "bytes": 1071,
+      "git_blob": "b95feeaa845c087971a51282738fbe1774399980",
+      "sha256": "40ee8df2a7ce7cd8ba02838921da318773cae5de53ba659a7e94785a565266ad"
+    },
+    {
+      "path": "inventory/operation-sources/DysonNetwork.Develop/Project/DevProjectController.cs",
+      "bytes": 5437,
+      "git_blob": "6b1bc7048817ed6237560ecd053efd562e51264c",
+      "sha256": "f9b96952d3bb7667f6319dc14f3a71daa8b4abe9f7435f709c3507cf8a21075a"
+    },
+    {
+      "path": "ports/develop/source/DysonNetwork.Develop__Identity__CustomAppService.cs",
+      "bytes": 19007,
+      "git_blob": "d62f67b1c2409b9ffc8f1e777b92fdba717da052",
+      "sha256": "025883b599df33148927b5bc740802179d92584727aabf65a750f81d526f8bb0"
+    },
+    {
+      "path": "ports/develop/source/Solian__custom_app.dart",
+      "bytes": 2153,
+      "git_blob": "77208a82a9f8ebef6be639754c8206961201f939",
+      "sha256": "2b2f3024e22b6d37e423020cd2b298b7cbbf12fd37fdb84a38d2b721ddcb76ae"
+    },
+    {
+      "path": "ports/wallet/accounts/source/DysonNetwork.Wallet__Payment__PaymentService.cs",
+      "bytes": 76079,
+      "git_blob": "1d599181db3e6482b21e1e86463739d3cf2dadd1",
+      "sha256": "055dbb24b268c12936e5b02b9558526461ab993de94ca6d24ac8c13a61d173bb"
+    },
+    {
+      "path": "ports/sphere/taxonomy/source/PostTagService.cs",
+      "bytes": 10646,
+      "git_blob": "3a3d3b7f7336cd8fb8d43b13bd5801a334dc2a8d",
+      "sha256": "d3d7944aff5d93e2fbd94478449f833a55304fb12e88ee14fabd6d6d85cc447d"
+    }
+  ]
+}

@@ -46,6 +46,9 @@ func (b *Backend) Ready(ctx context.Context) error {
 		}
 	}
 	if b.commerce != nil {
+		if e := b.commerce.ManagedOrdersReady(ctx); e != nil {
+			return e
+		}
 		if e := b.commerce.CouponsReady(ctx); e != nil {
 			return e
 		}

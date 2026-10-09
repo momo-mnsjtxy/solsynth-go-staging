@@ -272,6 +272,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	}
 	commerceRepo := commercepg.New(db, guard, commercepg.AppAdapters(appRepo)).WithPaymentAuthorization(paymentPIN).WithCouponPolicy(c.CommerceCouponPolicy)
 	appRepo.WithProductCatalog(commerceRepo)
+	appService.CustomOrders = commercepg.NewManagedOrders(commerceRepo, appRepo)
 	if c.Authority.Now != nil {
 		commerceRepo.WithClock(c.Authority.Now)
 	}

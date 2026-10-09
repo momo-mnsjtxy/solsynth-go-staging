@@ -19,6 +19,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 //go:embed schema.sql
@@ -253,7 +254,7 @@ func (r *Repository) CreateOrder(ctx context.Context, req c.CreateOrder, key str
 	if req.DurationHours == 0 {
 		req.DurationHours = 24
 	}
-	if req.DurationHours < 1 || req.DurationHours > 24*30 || len(req.Currency) > 128 || len(req.Items) > 100 || req.Remarks != nil && len(*req.Remarks) > 4096 {
+	if req.DurationHours < 1 || req.DurationHours > 24*30 || len(req.Currency) > 128 || len(req.Items) > 100 || req.Remarks != nil && len(*req.Remarks) > 4096 || req.ProductIdentifier != nil && utf8.RuneCountInString(*req.ProductIdentifier) > 256 {
 		return o, c.ErrInvalid
 	}
 	if len(req.Meta) > 0 {

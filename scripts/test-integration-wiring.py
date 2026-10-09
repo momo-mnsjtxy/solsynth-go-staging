@@ -71,6 +71,7 @@ REQUIRED_SCHEMAS = {
     "internal/signinpg/schema.sql",
  "internal/signinpg/address_schema.sql",
     "internal/commercepg/schema.sql",
+    "internal/commercepg/custom_order_identifier.sql",
     "internal/commercepg/coupon_schema.sql",
  "internal/commercepg/shipping_schema.sql",
     "internal/commercepg/order_index_scope.sql",
@@ -162,6 +163,10 @@ def check(runner, read_schema=None):
         raise ValueError("discovery migration must be atomic")
     if schemas.index("internal/commercepg/order_index_scope.sql") <= schemas.index("internal/commercepg/schema.sql"):
         raise ValueError("commerce index migration requires the base commerce schema first")
+    if schemas.index("internal/commercepg/custom_order_identifier.sql") <= schemas.index("internal/commercepg/schema.sql"):
+        raise ValueError("custom order identifier migration requires the base commerce schema first")
+    if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/commercepg/custom_order_identifier.sql' not in runner:
+        raise ValueError("custom order identifier migration must be atomic")
     if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/commercepg/order_index_scope.sql' not in runner:
         raise ValueError("commerce index migration must be atomic")
     if schemas.index("internal/commercepg/maintenance_schema.sql") <= schemas.index("internal/commercepg/schema.sql"):
@@ -272,6 +277,7 @@ def main():
     authority = PSQL + "internal/authoritypg/schema.sql"
     accounts = PSQL + "internal/accountpg/schema.sql"
     mutations = [
+        source.replace("--single-transaction -f internal/commercepg/custom_order_identifier.sql", "-f internal/commercepg/custom_order_identifier.sql"),
         source.replace("--single-transaction -f internal/socialpg/expiry_schema.sql", "-f internal/socialpg/expiry_schema.sql"),
         source.replace("--single-transaction -f internal/socialpg/permissions_schema.sql", "-f internal/socialpg/permissions_schema.sql"),
         source.replace("--single-transaction -f internal/federationpg/quote_schema.sql", "-f internal/federationpg/quote_schema.sql"),
@@ -301,6 +307,9 @@ def main():
         source.replace("host=$run/socket", "host=external.example.invalid"),
         source.replace("-c listen_addresses=''", "-c listen_addresses='*'"),
     ]
+    custom_identifier = '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/commercepg/custom_order_identifier.sql'
+    commerce = PSQL + "internal/commercepg/schema.sql"
+    mutations.append(source.replace(custom_identifier + "\n", "").replace(commerce, custom_identifier + "\n" + commerce))
     oauth = PSQL + "internal/oauthpg/schema.sql"
     signin = PSQL + "internal/signinpg/schema.sql"
     mutations.append(source.replace(oauth + "\n", "").replace(signin, signin + "\n" + oauth))

@@ -209,8 +209,9 @@ type Authority interface {
 	Require(context.Context, ...string) (authority.Principal, error)
 }
 type Service struct {
-	Repository Repository
-	Authority  Authority
+	Repository   Repository
+	Authority    Authority
+	CustomOrders CustomOrderStore
 }
 
 var keyPattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$`)

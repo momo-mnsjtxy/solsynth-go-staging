@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Integrate reviewed publisher subscription and lock-free federation delivery flows",
+  "checkpoint": "Add reviewed developer statistics and private custom-order flow",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "8d00c0cee85ebd10328ed5d51fa0e876141bf411"
+    "remote_parent": "d9c14c06258e55c5ad340212587b44745bdfb555"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -613,8 +613,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 126717,
-      "sha256": "e38f8cdc574432b46839fa4c9a30c4c26b63a0a5d5ec9eb2d084d5d8746f1d08"
+      "bytes": 128110,
+      "sha256": "b4f86879afc4540a14a9bcd41562765d67ba09ef614e12e2db0b08c4f962cb55"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -690,6 +690,16 @@
       "path": "docs/developer-apps-continuation.md",
       "bytes": 8411,
       "sha256": "1cb0369e39e1ee3d88d5dad5f77067842910a022ba5996c2ab257db6a620fb4c"
+    },
+    {
+      "path": "docs/developer-management-orders.md",
+      "bytes": 6897,
+      "sha256": "b5d5eb738adad5b5b7aa95cb04556586dec4e69f6a1230ced0210e30ccf42dc4"
+    },
+    {
+      "path": "docs/developer-management-source.json",
+      "bytes": 2490,
+      "sha256": "46e386674e5f6b63e7a73bc2b2ece4cdabae74057783600808fe26cbb6da1050"
     },
     {
       "path": "docs/domain-trust-collections-continuation.md",
@@ -1978,8 +1988,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 207978,
-      "sha256": "700a6f604fc5cb2fe3f6914daf918bb4dba6c56cc683e5220a7443e90ab02fa8"
+      "bytes": 208526,
+      "sha256": "5f4558e7cf3ef2e3398f20e77c96ab6cefc21a76e65048f0da78847c4bbe3882"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -2253,8 +2263,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 34247,
-      "sha256": "2a7aa60a874f07c536ba9afcc41db7ba821610ad94d85eca8f43881a2e1a8321"
+      "bytes": 34325,
+      "sha256": "e3252d79ad5e6f10150ac287b22f7d409c1ab6750f5aeba4375813747327fef5"
     },
     {
       "path": "internal/application/blog_routing_test.go",
@@ -2388,8 +2398,8 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 9909,
-      "sha256": "7c40af9d59087dcbcd75176dfdd6b7ce9d60a691b48510f94ead0ddee8da1b34"
+      "bytes": 9982,
+      "sha256": "b286260101a19cd5876621445bee6c29358efadf69830ce545a53449685015d6"
     },
     {
       "path": "internal/application/realm_boosts.go",
@@ -2465,6 +2475,11 @@
       "path": "internal/apppg/identity_test.go",
       "bytes": 656,
       "sha256": "b4efeb91e9ffaf75e826a5d41602d0d14a3e3ec289911b87b3e601bb98189498"
+    },
+    {
+      "path": "internal/apppg/management.go",
+      "bytes": 4091,
+      "sha256": "b18d717321569ef991e7cfbc75b140cce63f2be2caf6a56f6f8c99a118af8340"
     },
     {
       "path": "internal/apppg/oauth.go",
@@ -3022,6 +3037,11 @@
       "sha256": "10267bd28af40ddbde3adc08e50f73274a4abe9f7bac54b7503f0a541a5b80e2"
     },
     {
+      "path": "internal/commercepg/custom_order_identifier.sql",
+      "bytes": 611,
+      "sha256": "dc238086a06f1ec3e827939385fd6220d654eaa2696425991a543753716f8d23"
+    },
+    {
       "path": "internal/commercepg/gifts.go",
       "bytes": 12588,
       "sha256": "7956973930f3d676b9c071d922c969df066640922bd07a2106328da9ea61c435"
@@ -3060,6 +3080,11 @@
       "path": "internal/commercepg/maintenance_schema.sql",
       "bytes": 839,
       "sha256": "1b7c468fb97995d1f4a4cbae85cddbaa90e7c137330a18e2151a9eb216d950ce"
+    },
+    {
+      "path": "internal/commercepg/managed_orders.go",
+      "bytes": 4318,
+      "sha256": "f553ff9aef104ec543a643df48151ad0913ed93831b052b7533f8745754beaf9"
     },
     {
       "path": "internal/commercepg/namecards.go",
@@ -3113,8 +3138,8 @@
     },
     {
       "path": "internal/commercepg/repository.go",
-      "bytes": 18115,
-      "sha256": "fd7b234b3a4c6d705af8a82bca3f17f204ecb10a77d244b87aa7bb05c92ef2d8"
+      "bytes": 18219,
+      "sha256": "cc72746448d129bed3b4c0325551074660bb59c507222e2aca10ff687239749f"
     },
     {
       "path": "internal/commercepg/schema.sql",
@@ -6803,8 +6828,8 @@
     },
     {
       "path": "ports/develop/apps/http.go",
-      "bytes": 12980,
-      "sha256": "f0af95c29581494d466e898c79fe1e5c952511877ec6891316d7044c123e0e61"
+      "bytes": 13028,
+      "sha256": "b568d44b2ff593532f975f518291b85d69698b3733eb1e189bd95f33f5f03c39"
     },
     {
       "path": "ports/develop/apps/http_test.go",
@@ -6812,9 +6837,19 @@
       "sha256": "f7801e188c7ba0b8448200c3463676c1d9d2b7f8139eb761fe3893a3b1d8906b"
     },
     {
+      "path": "ports/develop/apps/management.go",
+      "bytes": 5458,
+      "sha256": "99f1561e0357d15f0ec1a4c475e2207ec684440f736a6b9f1a83e4fd68b97a87"
+    },
+    {
+      "path": "ports/develop/apps/management_test.go",
+      "bytes": 3959,
+      "sha256": "8d65839a8fc4d971ad4287d77dc412a73f172513d7c6b28454149fbed36c6ab9"
+    },
+    {
       "path": "ports/develop/apps/types.go",
-      "bytes": 12272,
-      "sha256": "e37b2974a4411c8450187466e3d84198bd43a42350b8e3a2328643af09369715"
+      "bytes": 12307,
+      "sha256": "854cd91c6953d3af8826c0e04304241a2698bbdc38c07d6fe3ff64e95d114d18"
     },
     {
       "path": "ports/develop/bot-commands-PROVENANCE.md",
@@ -10798,8 +10833,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 53945,
-      "sha256": "f5c367d2c72b6e4bacffb4529b2c79164b7d98015fbf824165c788104e0fed91"
+      "bytes": 54327,
+      "sha256": "a1bc8be02b9984bb05c1300bcf66e679ef0f909b5c0ea992f8e5537f8ed1933c"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -10823,13 +10858,13 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 110695,
-      "sha256": "b0e8b0da4bca137510c9df401343654d3ec732a490503860f75101686a236645"
+      "bytes": 111637,
+      "sha256": "943c838512cdf22aa5b5cf5698238eaad91e58525837a4a864cb3a64f5300f48"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 13274,
-      "sha256": "649bb821dfa3064f9cbc131748f248c5d3144784b7f029909a7f00d66383b20e"
+      "bytes": 13395,
+      "sha256": "4c62868c8a92119cc52e1c499d443f4db0ff261cb873dcda5ee62132432676d2"
     },
     {
       "path": "scripts/integration_groups.py",
@@ -10868,8 +10903,8 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 22695,
-      "sha256": "5faefb3d00bee893ba524b846f8b2506b74dd1f0cbcbd31a064f4c8e4a1795fa"
+      "bytes": 23675,
+      "sha256": "a0aa465a71ccea49103c8c64e16086b15ce71fe45f580176735bb2fc715e1f8f"
     },
     {
       "path": "scripts/test-source-evidence.py",
@@ -11515,6 +11550,11 @@
       "path": "tests/integration/developer_apps_test.go",
       "bytes": 16831,
       "sha256": "f27495c2cbbab90fdfc3d911788f233bc81a5d0e2853f350344643b3457b14ff"
+    },
+    {
+      "path": "tests/integration/developer_management_test.go",
+      "bytes": 23056,
+      "sha256": "03b87e666598e6e2cb809eebbf6ccad94cb03d40b6957c363035714df910f6de"
     },
     {
       "path": "tests/integration/direct_recovery_privacy_test.go",

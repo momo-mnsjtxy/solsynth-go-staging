@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed federation leased dispatch, transaction-local remote lookups, and publisher subscriber state integrated with table-lock, punished-owner and synthetic wait-fixture corrections. Combined offline build/vet/unit/race/source/SQL checks passed; actualPG pending.",
+  "local_source_checkpoint": "Reviewed developer public stats/private custom orders and bounded identifier migration integrated; combined offline build/vet/unit/race/source/SQL checks passed; actualPG pending. Existing811 dispatch/publisher checkpoint frozen separately.",
   "last_fully_passed_ci": {
     "commit": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e",
     "run": 37876162176,
@@ -14,13 +14,13 @@
     "acceptance_limit": "Immutable CI-green, not all original functionality or production readiness."
   },
   "latest_candidate": {
-    "commit": "8d00c0cee85ebd10328ed5d51fa0e876141bf411",
-    "required_before": 786,
-    "required_after_restart": 94,
-    "status": "Published narrow admission wait fixture correction; actualCI pending."
+    "commit": "d9c14c06258e55c5ad340212587b44745bdfb555",
+    "required_before": 811,
+    "required_after_restart": 96,
+    "status": "Published reviewed publisher/federation delivery and pool corrections; actualCI pending."
   },
-  "local_required_before": 811,
-  "local_required_after_restart": 96,
+  "local_required_before": 816,
+  "local_required_after_restart": 97,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2128,7 +2128,7 @@
     "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
-    "as_of": "2026-10-09T03:15:00Z",
+    "as_of": "2026-10-09T03:23:00Z",
     "authoritative_for": "Current source-backed remaining flow bundles, implementation candidates and operational gaps; no percentage or endpoint-total inference.",
     "families": [
       {
@@ -2789,7 +2789,7 @@
           "develop.bots",
           "develop.developers"
         ],
-        "remaining": "Developer quota/statistics reads, publisher-authorized ad-hoc custom order creation, and app/product/bot imagery are missing.",
+        "remaining": "Developer stats and private-app custom orders integrated pendingPG. Developer quota, broader project/app statistics/media/remaining management contracts require source-backed completion; no inferred quota aggregation.",
         "source": [
           {
             "path": "DysonNetwork.Develop/Identity/DevelopQuotaController.cs",
@@ -3895,6 +3895,12 @@
         "status": "integrated_pending_actual_PG",
         "scope": "Committed original-intent/current-trust observation, bounded fenced acknowledgement, noSQLlocks acrossSend",
         "limits": "Noexactlyonce/no send recall. Transactional small-pool lookup fix integrated; actualPG single/saturatedpool regressions pending."
+      },
+      {
+        "id": "develop.management_custom_orders",
+        "status": "integrated_pending_actual_PG",
+        "scope": "Exact public total_custom_apps, authenticated editor custom-order creation with explicit amount/expiry/identifier; canonical merchant capturedbeneficiary and internal settlement path",
+        "limits": "Developer quota remains partiallyevidenced/unresearched; no guessed accountwide aggregation. No externalproviderpayments."
       }
     ],
     "owned_contract_differences": [

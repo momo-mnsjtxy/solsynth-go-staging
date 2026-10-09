@@ -149,6 +149,9 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	if s.serveManagement(w, r, p, q) {
+		return
+	}
 	if p[1] == "apps" {
 		s.public(w, r, p, q)
 		return

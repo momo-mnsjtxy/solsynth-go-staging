@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Add independently reviewed current friend overview and expiry-safe paging",
+  "checkpoint": "Isolate saved federation delivery in its original disposable database across restart",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "5717edf4aec8a78a1eef1a2484ffbd64c69c8364"
+    "remote_parent": "e7e53a843662d94168f8874f3c2af8943a972b8b"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -628,8 +628,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 138155,
-      "sha256": "5612682834f98dc2ebdef4348f26644503e2dd0f9e6c8df8f9f0df277aec9791"
+      "bytes": 138435,
+      "sha256": "5dce73a9f4053d0792bbd3e133540974ce3db799a7a34f943816c80f0fd76d6d"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -11179,7 +11179,7 @@
     {
       "path": "scripts/integration-groups.json",
       "bytes": 119527,
-      "sha256": "d59d7ac00158e8001be5e5c521cf434bcd9f6ff4f8205a1acb27e2b108e967ff"
+      "sha256": "d55c77bf48bd2aff6997e2e5ba1a5270d157d9649353334688f6b9e8a8a1034d"
     },
     {
       "path": "scripts/integration-postgres.sh",
@@ -11918,8 +11918,8 @@
     },
     {
       "path": "tests/integration/federation_delivery_restart_test.go",
-      "bytes": 8444,
-      "sha256": "061d5bb5074ff6ef5be7397d5cfc1a16776c1e7097cb331fedaaac5b6c395ac3"
+      "bytes": 9210,
+      "sha256": "080d6d36cde99bf33385f35d56310b0433ecd25048d185272b84df7d7b6ab041"
     },
     {
       "path": "tests/integration/federation_discovery_review_test.go",

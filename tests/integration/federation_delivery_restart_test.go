@@ -26,6 +26,8 @@ import (
 func TestPGFederationDeliverySavedRestartPersistence(t *testing.T) {
 	type savedState struct {
 		Authority                             restartAuthoritySnapshot
+		DatabaseName                          string
+		DatabaseOID                           int64
 		Token, Actor, Publisher, Session      string
 		Delivery                              int64
 		DeliveryRow, SessionRow, PublisherRow string
@@ -41,19 +43,20 @@ func TestPGFederationDeliverySavedRestartPersistence(t *testing.T) {
 	var saved savedState
 	phase := fixtureRestartPhase(t)
 	// A global delivery worker in another fixture must not consume this saved
-	// ambiguous attempt before the actual restart. Every pool in this test uses
-	// the same isolated schema; the after phase only opens the existing schema.
-	const schema = "federation_delivery_restart_candidate"
+	// ambiguous attempt before the actual cluster restart. A database also keeps
+	// database-wide readiness catalogs isolated. Every pool in this test uses
+	// the same isolated database; the after phase only opens the existing database.
+	const databaseName = "federation_delivery_restart_candidate"
 	guardDB := database(t)
 	if phase == "before" {
-		query(t, guardDB, `CREATE SCHEMA `+schema)
+		query(t, guardDB, `CREATE DATABASE `+databaseName)
 	} else {
 		var exists bool
-		if err := guardDB.QueryRow(`SELECT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname=$1)`, schema).Scan(&exists); err != nil || !exists {
-			t.Fatal("original restart schema missing", err)
+		if err := guardDB.QueryRow(`SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname=$1)`, databaseName).Scan(&exists); err != nil || !exists {
+			t.Fatal("original restart database missing", err)
 		}
 	}
-	t.Setenv("PG_TEST_DSN", os.Getenv("PG_TEST_DSN")+" search_path="+schema)
+	t.Setenv("PG_TEST_DSN", os.Getenv("PG_TEST_DSN")+" dbname="+databaseName)
 	if phase == "before" {
 		x := newFederationFixtureWithAuthority(t, true, func(c *authority.Config) {
 			initial, wall := c.Now().UTC(), time.Now()
@@ -62,6 +65,10 @@ func TestPGFederationDeliverySavedRestartPersistence(t *testing.T) {
 			c.Now = func() time.Time { return initial.Add(time.Since(wall)) }
 		})
 		x.preserve = true
+		saved.DatabaseName = databaseName
+		if e := x.db.QueryRow(`SELECT oid::bigint FROM pg_database WHERE datname=current_database()`).Scan(&saved.DatabaseOID); e != nil {
+			t.Fatal(e)
+		}
 		saved.Authority = saveAuthoritySnapshot(t, x.authConfig)
 		saved.Token, saved.Actor, saved.Publisher = x.token, x.actor, x.publisher
 		saved.Delivery = queueDeliveryFollow(t, x)
@@ -101,6 +108,11 @@ func TestPGFederationDeliverySavedRestartPersistence(t *testing.T) {
 	}
 	loadRestartFixture(t, "federation-delivery-restart.json", &saved)
 	db := database(t)
+	var currentDatabase string
+	var currentOID int64
+	if e := db.QueryRow(`SELECT current_database(),oid::bigint FROM pg_database WHERE datname=current_database()`).Scan(&currentDatabase, &currentOID); e != nil || currentDatabase != saved.DatabaseName || currentDatabase != databaseName || currentOID != saved.DatabaseOID {
+		t.Fatal("original restart database identity changed", e)
+	}
 	for _, item := range []struct {
 		name, statement string
 		arg             any

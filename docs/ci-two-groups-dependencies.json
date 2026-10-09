@@ -1,5 +1,5 @@
 {
-  "base_commit": "d488788551bb069f2b09eddc74e02d6339ff3b99",
+  "base_commit": "2482cb6cd002b7c2d4ba4bba4e42a8311378bb41",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -517,16 +517,17 @@
     {
       "test": "TestPGFederationDeliverySavedRestartPersistence",
       "source": "tests/integration/federation_delivery_restart_test.go",
-      "function_sha256": "5baf7b1d3e849eae1efd4ae823fc73b66c189f6d43df76bbfbdc0807f2ee280c",
+      "function_sha256": "b9fface4e760da74443d2cb503e7bcb67750590b409584bbbb5a980febd4241b",
       "group_before_and_after": "group-a",
       "marker_files": [
         "federation-delivery-restart.json"
       ],
       "persistent_directories_or_files": [],
       "named_database_markers": {
-        "schema": "federation_delivery_restart_candidate"
+        "database": "federation_delivery_restart_candidate",
+        "identity": "Database name and pg_database OID saved before and compared after"
       },
-      "storage_contract": "Before creates a dedicated schema and sets per-connection search_path for every fixture pool, then saves original delivery/session/publisher rows and public verification material. The same schema survives actual cluster restart; after only verifies schema existence and saved original rows before reclaiming the original expired lease. Public-schema workers cannot consume this job. No after target recreation, credentials, token renewal or private keys. Disposable cluster teardown owns cleanup after verification."
+      "storage_contract": "Before creates one isolated database in the same guarded disposable cluster and directs every fixture pool there; saves original database OID/name, delivery/session/publisher rows, original bearer and public verifier. After the actual cluster restart only verifies database existence/OID and original rows before reclaiming the original expired lease. Other tests/process workers use the primary database and cannot consume this queue. No after CREATE/seed/refresh/private key. Cluster teardown removes the disposable database only after verification. Production readiness currently assumes one application schema per database; this fixture preserves that assumption rather than weakening trigger counts."
     },
     {
       "test": "TestPGFederationDiscoverySavedRestartPersistence",
@@ -2243,7 +2244,7 @@
     },
     {
       "source": "tests/integration/federation_delivery_restart_test.go",
-      "sha256": "061d5bb5074ff6ef5be7397d5cfc1a16776c1e7097cb331fedaaac5b6c395ac3"
+      "sha256": "080d6d36cde99bf33385f35d56310b0433ecd25048d185272b84df7d7b6ab041"
     },
     {
       "source": "tests/integration/federation_discovery_review_test.go",

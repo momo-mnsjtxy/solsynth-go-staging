@@ -168,6 +168,9 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		s.serveReactions(w, r, p)
 		return
 	}
+	if s.serveTransient(w, r, p) {
+		return
+	}
 	if isReadRoute(r, p) {
 		if s == nil || s.Reader == nil {
 			failure(w, ErrUnavailable)

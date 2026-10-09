@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "archive_commit": "ccf5f5dfab3f2f85d5c9d17f25e8185870f99567",
+  "base_main": "b1c55b5ca81817df7b00ee87507200c03d85ff6f",
+  "excluded": [
+    "external payment channels/provider integration",
+    "migration/deployment work",
+    "legacy/version compatibility"
+  ],
+  "meaning": "Implementation status is tracked separately from current SHA CI and external activation. No completed-platform claim until all in-scope items have reviewed implementation and executable evidence.",
+  "items": [
+    {
+      "id": "draft-transient-developer-media",
+      "scope": "语音、placeholder、developer quota与媒体关联",
+      "status": "integrating",
+      "evidence": []
+    },
+    {
+      "id": "draft-chat-sync",
+      "scope": "房间/账户订阅、状态、全局/房间同步",
+      "status": "reviewing",
+      "evidence": []
+    },
+    {
+      "id": "draft-chat-live",
+      "scope": "聊天消息与已读事件实时投递/回放",
+      "status": "reviewing",
+      "evidence": []
+    },
+    {
+      "id": "draft-post-pins",
+      "scope": "publisher/realm置顶与筛选",
+      "status": "reviewing",
+      "evidence": []
+    },
+    {
+      "id": "draft-miniapp-upload",
+      "scope": "multipart ZIP与icon/background关联",
+      "status": "reviewing",
+      "evidence": []
+    },
+    {
+      "id": "bot-credentials-execution",
+      "scope": "Bot密钥/身份回复/DM-realm-MLS执行与renewal",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "typed-chat-compositions",
+      "scope": "非text fund/survey等消息组合",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "account-admin-history",
+      "scope": "账户聚合管理及auth侧contact/factor/session、provider links与credit writers",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "realm-progression",
+      "scope": "成员filter/order/status/search、XP触发/tenure、source-point/birthday/backdate/trusted/admin业务",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "nearby-nfc-location-media",
+      "scope": "附近presence tokens与resolve、加密NFC管理/claim/lock/SUN、location图片",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "media-management",
+      "scope": "resumable stats/task/bulk cleanup、remote upload/dedup/thumb/pools/folders/E2EE/expiry",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "publisher-post-collection",
+      "scope": "publisher quota/search/stats/feature/rewards/ads/block-mute、post boost/navigation/reaction/replies、org collection CRUD/artwork/search",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "federation-oauth",
+      "scope": "actor/search/posts/follow/availability、realm ActivityPub/admin/moderation/private-media、OAuth device/registration/introspection/scope wiring",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "internal-wallet-commerce",
+      "scope": "admin/buyer reads、maintenance/quarantine、funded adjustments、paid-product apply、settlement/payout/refund conservation",
+      "status": "implementing",
+      "evidence": []
+    },
+    {
+      "id": "affiliation-livestream-operations",
+      "scope": "内部余额付费邀请码、HLS archive/download/MP4、award/beneficiary/refund、持久retention/purge/redrive/inspection",
+      "status": "pending",
+      "evidence": []
+    }
+  ]
+}

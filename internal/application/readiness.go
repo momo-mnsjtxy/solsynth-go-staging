@@ -148,6 +148,9 @@ func (b *Backend) Ready(ctx context.Context) error {
 		}
 	}
 	if b.chat != nil {
+		if e := b.chat.TransientReady(ctx); e != nil {
+			return e
+		}
 		if err := b.chat.RelationsReady(ctx); err != nil {
 			return err
 		}
@@ -214,6 +217,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 		return errors.New("chat write schema unavailable")
 	}
 	if b.media != nil {
+		if b.voiceEnabled {
+			if err := b.media.VoiceReady(ctx); err != nil {
+				return err
+			}
+		}
 		if err := b.media.ArtworkReady(ctx); err != nil {
 			return err
 		}

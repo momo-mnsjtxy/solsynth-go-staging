@@ -168,6 +168,11 @@ func (r *Repository) Bots(ctx context.Context, s apps.Scope, ref string, p *bots
 				if _, e = tx.ExecContext(ctx, `UPDATE owned_authority_accounts SET disabled=true,version=version+1 WHERE id=$1`, row.bot.Account.ID); e != nil {
 					return e
 				}
+				if r.profileMedia != nil {
+					if e = r.profileMedia.Remove(ctx, tx, "bot", ref); e != nil {
+						return e
+					}
+				}
 				return audit(ctx, tx, s, "bot.delete", ref, now)
 			}
 			if action == "update" {
@@ -194,15 +199,29 @@ func (r *Repository) Bots(ctx context.Context, s apps.Scope, ref string, p *bots
 				}
 			}
 		}
+		if action != "read" && p != nil {
+			if r.profileMedia == nil {
+				if p.PictureID != nil || p.BackgroundID != nil {
+					return bots.ErrUnsupported
+				}
+			} else if e := r.profileMedia.Apply(ctx, tx, s.Actor, "bot", ref, p.PictureID, p.BackgroundID); e != nil {
+				return botMediaError(e)
+			}
+		}
 		row, e := loadBot(ctx, tx, s.App, ref)
 		if e != nil {
 			return e
 		}
-		out = append(out, row.bot)
-		if action == "read" {
-			return nil
+		if action != "read" {
+			if e = audit(ctx, tx, s, "bot."+action, ref, now); e != nil {
+				return e
+			}
 		}
-		return audit(ctx, tx, s, "bot."+action, ref, now)
+		if e = r.loadBotMedia(ctx, tx, s.Actor, &row.bot); e != nil {
+			return e
+		}
+		out = append(out, row.bot)
+		return nil
 	})
 	return
 }
@@ -238,6 +257,9 @@ func (r *Repository) ListBots(ctx context.Context, s apps.Scope, offset, take in
 			if e != nil {
 				return e
 			}
+			if e = r.loadBotMedia(ctx, tx, s.Actor, &v.bot); e != nil {
+				return e
+			}
 			out = append(out, v.bot)
 		}
 		return nil
@@ -253,7 +275,7 @@ func publicBotApp(ctx context.Context, tx *sql.Tx, id string) (string, error) {
 	return app, mapped(e)
 }
 func (r *Repository) PublicBot(ctx context.Context, id string) (v bots.Bot, e error) {
-	e = r.public(ctx, func(tx *sql.Tx, _ time.Time) error {
+	e = r.publicBotCurrent(ctx, func(tx *sql.Tx, _ time.Time) error {
 		app, e := publicBotApp(ctx, tx, id)
 		if e != nil {
 			return e
@@ -268,7 +290,7 @@ func (r *Repository) PublicBot(ctx context.Context, id string) (v bots.Bot, e er
 			return e
 		}
 		v.Developer = &d
-		return nil
+		return r.loadBotMedia(ctx, tx, "", &v)
 	})
 	return
 }

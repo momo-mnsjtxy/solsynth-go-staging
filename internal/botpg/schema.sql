@@ -28,3 +28,10 @@ CREATE TABLE IF NOT EXISTS owned_bot_miniapps (
 CREATE UNIQUE INDEX IF NOT EXISTS owned_bot_miniapps_slug ON owned_bot_miniapps(lower(slug));
 CREATE UNIQUE INDEX IF NOT EXISTS owned_bot_miniapps_plugin ON owned_bot_miniapps(plugin_id)WHERE plugin_id IS NOT NULL;
 CREATE TABLE IF NOT EXISTS owned_bot_audit(id bigserial PRIMARY KEY,actor_id uuid NOT NULL REFERENCES owned_authority_accounts(id),app_id uuid NOT NULL REFERENCES owned_custom_apps(id),action text NOT NULL,target_id uuid NOT NULL,occurred_at timestamptz NOT NULL);
+
+-- Explicit owned mapping for the authenticated account quota endpoint. It is
+-- deliberately empty until configured; publisher capacities are not aggregated.
+CREATE TABLE IF NOT EXISTS owned_developer_quota_accounts (
+ account_id uuid PRIMARY KEY REFERENCES owned_authority_accounts(id),
+ publisher_id uuid NOT NULL REFERENCES owned_bot_quotas(publisher_id)
+);

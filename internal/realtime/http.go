@@ -19,6 +19,7 @@ import (
 )
 
 type Config struct {
+	Commands                      CommandHandler
 	App                           string
 	PollInterval, WriteTimeout    time.Duration
 	MaxConnections, MaxPerAccount int
@@ -172,6 +173,9 @@ type sink interface {
 // Slow writers stop fetching; transport deadlines close them. Nothing relies on
 // an in-memory broadcast queue, so reconnect/restart replay comes from SQL.
 func (h *Handler) pump(ctx context.Context, r *http.Request, actor string, after int64, first notifications.Page, s sink, pings <-chan struct{}) error {
+	return h.pumpCommands(ctx, r, actor, after, first, s, pings, nil)
+}
+func (h *Handler) pumpCommands(ctx context.Context, r *http.Request, actor string, after int64, first notifications.Page, s sink, pings <-chan struct{}, commands <-chan Command) error {
 	ticker := time.NewTicker(h.cfg.PollInterval)
 	defer ticker.Stop()
 	heartbeat := time.NewTicker(20 * time.Second)
@@ -233,6 +237,31 @@ func (h *Handler) pump(ctx context.Context, r *http.Request, actor string, after
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
+		case command := <-commands:
+			if h.cfg.Commands == nil {
+				return notifications.ErrInvalid
+			}
+			fresh, e := h.identity.Account(r)
+			if e != nil {
+				return e
+			}
+			if fresh != actor {
+				return notifications.ErrInvalid
+			}
+			data, e := h.cfg.Commands.HandleCommand(ctx, actor, command)
+			if e != nil {
+				return e
+			}
+			fresh, e = h.identity.Account(r)
+			if e != nil {
+				return e
+			}
+			if fresh != actor {
+				return notifications.ErrInvalid
+			}
+			if e = send(packet{Type: command.Type, Data: data}); e != nil {
+				return e
+			}
 		case <-pings:
 			if _, e := h.store.Replay(ctx, actor, h.cfg.App, after, 1); e != nil {
 				return e
@@ -283,8 +312,9 @@ func (h *Handler) websocket(w http.ResponseWriter, r *http.Request, actor string
 	defer cancel()
 	r = r.WithContext(ctx)
 	pings := make(chan struct{}, 1)
+	commands := make(chan Command)
 	readerDone := make(chan struct{})
-	c.SetReadLimit(1024)
+	c.SetReadLimit(32768)
 	go func() {
 		defer close(readerDone)
 		defer cancel()
@@ -297,13 +327,25 @@ func (h *Handler) websocket(w http.ResponseWriter, r *http.Request, actor string
 			if kind != websocket.TextMessage {
 				return
 			}
-			var p struct {
-				Type string          `json:"type"`
-				Data json.RawMessage `json:"data"`
-			}
-			if json.Unmarshal(b, &p) != nil || p.Type != "ping" {
+			p, e := decodeCommand(b)
+			if e != nil {
 				return
 			}
+			if p.Type != "ping" {
+				if h.cfg.Commands == nil {
+					return
+				}
+				select {
+				case commands <- p:
+				case <-ctx.Done():
+					return
+				}
+				continue
+			}
+			if p.Endpoint != "" {
+				return
+			}
+
 			select {
 			case pings <- struct{}{}:
 			default:
@@ -311,7 +353,7 @@ func (h *Handler) websocket(w http.ResponseWriter, r *http.Request, actor string
 			}
 		}
 	}()
-	e = h.pump(ctx, r, actor, after, page, wsSink{c}, pings)
+	e = h.pumpCommands(ctx, r, actor, after, page, wsSink{c}, pings, commands)
 	code := websocket.ClosePolicyViolation
 	reason := "stream authorization ended"
 	if errors.Is(e, context.Canceled) {

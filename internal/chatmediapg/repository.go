@@ -118,7 +118,7 @@ func (r *Repository) Load(ctx context.Context, tx *sql.Tx, actor string, m *mess
 		return nil
 	}
 	mid := m.ID
-	if m.Type == "messages.update" {
+	if m.Type == "messages.update" || m.Type == "messages.sync.finalize" {
 		var meta struct {
 			ID string `json:"message_id"`
 		}

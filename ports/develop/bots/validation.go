@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"path"
 	"regexp"
+	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/develop"
 	"strings"
 	"time"
@@ -45,8 +46,8 @@ func ValidatePatch(p Patch, create bool) error {
 	if p.Birthday != nil && (p.Birthday.Year() < 1900 || p.Birthday.Year() > 2200) {
 		return ErrInvalid
 	}
-	if p.PictureID != nil || p.BackgroundID != nil {
-		return ErrUnsupported
+	if p.PictureID != nil && !authority.ValidID(*p.PictureID) || p.BackgroundID != nil && !authority.ValidID(*p.BackgroundID) {
+		return ErrInvalid
 	}
 	return nil
 }

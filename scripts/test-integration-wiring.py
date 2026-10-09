@@ -5,6 +5,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/chatpg/transient_schema.sql", "internal/mediapg/voice_schema.sql",
+ "internal/developmediapg/schema.sql",
  "internal/interactionpg/collection_publication_schema.sql",
  "internal/accounthistorypg/schema.sql",
  "internal/activitypg/schema.sql", "internal/friendeventpg/schema.sql", "internal/notificationpg/friend_schema.sql",
@@ -125,6 +127,10 @@ def check(runner, read_schema=None):
     schemas = [match.group(1) for match in installs]
     if set(schemas) != REQUIRED_SCHEMAS or len(schemas) != len(REQUIRED_SCHEMAS):
         raise ValueError("missing, unexpected or duplicate disposable schema install")
+    if schemas.index("internal/chatpg/transient_schema.sql") <= schemas.index("internal/chatpg/schema.sql"):
+        raise ValueError("placeholder lifecycle requires canonical chat first")
+    if schemas.index("internal/mediapg/voice_schema.sql") <= max(schemas.index(x) for x in ("internal/chatpg/schema.sql","internal/mediapg/schema.sql")):
+        raise ValueError("voice staging requires canonical chat and quota/media first")
     before = runner.index("PG_TEST_PHASE=before ")
     after = runner.index("PG_TEST_PHASE=after ")
     if before >= after or any(match.start() > before for match in installs):

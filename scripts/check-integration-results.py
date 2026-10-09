@@ -5,6 +5,30 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGBackendDisabledVoiceRequiresNoVoiceSchemaOrWorker",
+        "TestPGDeveloperBotMediaCreateRollbackAndQuotaExpiry",
+        "TestPGDeveloperBotUpdateWaitUsesCurrentPunishment",
+        "TestPGDeveloperMediaAuditWaitUsesCurrentUploader",
+        "TestPGDeveloperMediaComposedAppProductBotLifecycle",
+        "TestPGDeveloperMediaCurrentAudienceAndNestedProjection",
+        "TestPGDeveloperMediaManagerOwnerAfterFileAndAuditWait",
+        "TestPGDeveloperMediaOwnershipReadinessAndAtomicRollback",
+        "TestPGDeveloperMediaQuotaSavedRestartPersistence",
+        "TestPGDeveloperMediaReadWaitRechecksPrivacy",
+        "TestPGDeveloperMediaWriteWaitPreservesOriginalProof",
+        "TestPGDeveloperQuotaConfiguredPolicyAndIsolation",
+        "TestPGDeveloperQuotaWaitUsesCurrentPolicyAndProof",
+        "TestPGBackendChatTransientMultipartAndWebSocketComposition",
+        "TestPGChatPlaceholderExpiryRaceAndAtomicRollback",
+        "TestPGChatPlaceholderLifecycleReplacementAndFinalization",
+        "TestPGChatTransientOriginalProofMembershipAndEncryptedBoundaries",
+        "TestPGChatTransientSavedRestartPersistence",
+        "TestPGChatVoiceDurableDeletionFailureAndUnboundExpiry",
+        "TestPGChatVoiceReadWaitRechecksOriginalProofAudienceAndExpiry",
+        "TestPGChatVoiceSendRevalidatesAfterStorageAndMembershipABA",
+        "TestPGChatVoiceStagingRollbackAndCleanupRecovery",
+        "TestPGChatVoiceStorageQuotaPrivacyAndExpiry",
+
         "TestPGCollectionNavigationAuthoredOrderingAndHiddenAnchors",
         "TestPGCollectionNavigationMediaWaitRechecksProjectionAndProof",
         "TestPGCollectionNavigationNestedMediaAndCurrentPrivacy",
@@ -1012,6 +1036,9 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGDeveloperMediaQuotaSavedRestartPersistence",
+        "TestPGChatTransientSavedRestartPersistence",
+
         "TestPGCollectionNavigationSinglePoolAndRestartPersistence",
         "TestPGCollectionPublicationSavedRestartPersistence",
 

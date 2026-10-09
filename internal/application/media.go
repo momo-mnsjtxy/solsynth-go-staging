@@ -14,7 +14,12 @@ func (b *Backend) CleanupMedia(ctx context.Context, limit int) (int, error) {
 	if limit < 1 || limit > 1000 {
 		return 0, media.ErrInvalid
 	}
+	var v int
+	var ve error
+	if b.voiceEnabled {
+		v, ve = b.media.CleanupVoices(ctx, limit)
+	}
 	n, e := b.media.CleanupArtworks(ctx, min(limit, 200))
 	m, x := b.media.Cleanup(ctx, limit)
-	return n + m, errors.Join(e, x)
+	return v + n + m, errors.Join(ve, e, x)
 }

@@ -27,16 +27,19 @@ type TransactionGuard interface {
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
 }
 type Repository struct {
-	db        *sql.DB
-	guard     TransactionGuard
-	media     bots.MediaProvider
-	execution *executionRuntime
+	db           *sql.DB
+	guard        TransactionGuard
+	media        bots.MediaProvider
+	profileMedia apps.MediaStore
+	execution    *executionRuntime
 }
 
 func New(db *sql.DB) *Repository { return &Repository{db: db} }
 func NewWithAuthority(db *sql.DB, g TransactionGuard) *Repository {
 	return &Repository{db: db, guard: g}
 }
+
+func (r *Repository) WithProfileMedia(m apps.MediaStore) *Repository { r.profileMedia = m; return r }
 
 func (r *Repository) WithMedia(m bots.MediaProvider) *Repository { r.media = m; return r }
 
@@ -45,7 +48,7 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if r == nil || r.db == nil || r.guard == nil {
 		return bots.ErrUnavailable
 	}
-	_, e := r.db.ExecContext(ctx, `SELECT account_id,app_id,project_id,controlled_disabled_version FROM owned_bots LIMIT 0; SELECT commands,subscribed_events FROM owned_bot_chat LIMIT 0; SELECT package_file_id,package_fingerprint,download_count FROM owned_bot_miniapps LIMIT 0; SELECT publisher_id,bots_total,miniapps_total,starts_at,expires_at FROM owned_bot_quotas LIMIT 0; SELECT actor_id,app_id,action,target_id,occurred_at FROM owned_bot_audit LIMIT 0`)
+	_, e := r.db.ExecContext(ctx, `SELECT account_id,app_id,project_id,controlled_disabled_version FROM owned_bots LIMIT 0; SELECT commands,subscribed_events FROM owned_bot_chat LIMIT 0; SELECT package_file_id,package_fingerprint,download_count FROM owned_bot_miniapps LIMIT 0; SELECT publisher_id,bots_total,miniapps_total,starts_at,expires_at FROM owned_bot_quotas LIMIT 0; SELECT actor_id,app_id,action,target_id,occurred_at FROM owned_bot_audit LIMIT 0; SELECT account_id,publisher_id FROM owned_developer_quota_accounts LIMIT 0`)
 	return e
 }
 
@@ -215,6 +218,25 @@ func (r *Repository) within(ctx context.Context, s apps.Scope, target, permissio
 	if e = revalidate(); e != nil {
 		return e
 	}
+	// The target account lock prevents concurrent moderation edits, but an
+	// already scheduled punishment can become active during media/audit waits.
+	// Preserve controlled deactivation while rejecting newly forbidden updates.
+	if permission == "developers.bots.update" {
+		row, err := loadBot(ctx, tx, s.App, target)
+		if err != nil {
+			return err
+		}
+		if e = mutableBot(ctx, tx, row, now.UTC()); e != nil {
+			return e
+		}
+	}
+	// Creation may wait on media or audit after admission. A now-expired policy
+	// cannot authorize the newly created bot at commit (the quota row is locked).
+	if permission == "developers.bots.create" {
+		if e = currentBotQuota(ctx, tx, out.publisher); e != nil {
+			return e
+		}
+	}
 	return tx.Commit()
 }
 func (r *Repository) public(ctx context.Context, fn func(*sql.Tx, time.Time) error) error {
@@ -243,11 +265,14 @@ func capacity(ctx context.Context, tx *sql.Tx, publisher string, mini bool, now 
 		table = "owned_bot_miniapps"
 	}
 	var total, used int
-	e := tx.QueryRowContext(ctx, `SELECT `+column+` FROM owned_bot_quotas WHERE publisher_id=$1 AND starts_at<=$2 AND(expires_at IS NULL OR expires_at>$2)FOR UPDATE`, publisher, now).Scan(&total)
+	e := tx.QueryRowContext(ctx, `SELECT `+column+` FROM owned_bot_quotas WHERE publisher_id=$1 FOR UPDATE`, publisher).Scan(&total)
 	if errors.Is(e, sql.ErrNoRows) {
 		return bots.ErrQuota
 	}
 	if e != nil {
+		return e
+	}
+	if e = currentBotQuota(ctx, tx, publisher); e != nil {
 		return e
 	}
 	e = tx.QueryRowContext(ctx, `SELECT count(*) FROM `+table+` b JOIN owned_custom_apps a ON a.id=b.app_id JOIN owned_dev_projects p ON p.id=a.project_id JOIN owned_developers d ON d.id=p.developer_id WHERE d.publisher_id=$1 AND b.deleted_at IS NULL`, publisher).Scan(&used)

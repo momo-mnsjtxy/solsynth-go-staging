@@ -487,7 +487,7 @@ func socialRoute(p string) bool {
 }
 
 func appRoute(p string) bool {
-	return under(p, "/api/developers") || under(p, "/api/private/projects") || under(p, "/api/private/apps") || under(p, "/api/apps")
+	return p == "/api/develop/quota" || under(p, "/api/developers") || under(p, "/api/private/projects") || under(p, "/api/private/apps") || under(p, "/api/apps")
 }
 
 // Credential protocol endpoints perform their own factor/session verification;

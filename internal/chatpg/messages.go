@@ -388,7 +388,7 @@ func (r *Repository) DeleteMessage(ctx context.Context, actor, rid, mid string) 
 	if v.SenderID != m.ID {
 		return rooms.ErrForbidden
 	}
-	if v.Type != "text" {
+	if v.Type != "text" && v.Type != "voice" && v.Type != "placeholder" {
 		return rooms.ErrUnsupported
 	}
 	if v.DeletedAt != nil {
@@ -404,7 +404,7 @@ func (r *Repository) DeleteMessage(ctx context.Context, actor, rid, mid string) 
 	}
 	// Hide previous edit snapshots along with the original text. The tombstone
 	// remains sync-visible without retaining plaintext in its event metadata.
-	_, e = tx.ExecContext(ctx, `UPDATE chat_messages SET deleted_at=$3,updated_at=$3 WHERE chat_room_id=$1 AND (id=$2::uuid OR type='messages.update' AND meta->>'message_id'=$2::text) AND deleted_at IS NULL`, rid, mid, event.CreatedAt)
+	_, e = tx.ExecContext(ctx, `UPDATE chat_messages SET deleted_at=$3,updated_at=$3 WHERE chat_room_id=$1 AND (id=$2::uuid OR type IN('messages.update','messages.sync.finalize','messages.placeholder.update') AND meta->>'message_id'=$2::text) AND deleted_at IS NULL`, rid, mid, event.CreatedAt)
 	if e != nil {
 		return e
 	}

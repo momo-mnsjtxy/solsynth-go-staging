@@ -23,6 +23,7 @@ import (
 	"solsynth.local/go-migration/internal/chatmediapg"
 	"solsynth.local/go-migration/internal/chatpg"
 	"solsynth.local/go-migration/internal/commercepg"
+	"solsynth.local/go-migration/internal/developmediapg"
 	"solsynth.local/go-migration/internal/fortunepg"
 	"solsynth.local/go-migration/internal/friendeventpg"
 	"solsynth.local/go-migration/internal/interactionpg"
@@ -107,12 +108,13 @@ import (
 // Config is injected by the embedding application. Enum values are mandatory
 // explicit database-policy decisions; zero is never silently treated as public.
 type Config struct {
-	WalletExchange   *walletaccounts.ExchangeConfig // Explicit opt-in funded treasury policy; no provisioning.
-	ChatProfilePerks map[string]int                 // Explicit level-2 nickname entitlement; nil fails closed.
-	ChatSearchPerks  map[string]int                 // Explicit canonical subscription-to-perk policy.
-	RealmMembers     *realmmemberpg.Config
-	BotExecution     *BotExecutionConfig
-	RealmBoosts      *realmboostpg.Config
+	WalletExchange     *walletaccounts.ExchangeConfig // Explicit opt-in funded treasury policy; no provisioning.
+	ChatVoiceRetention time.Duration                  // Explicit owned retention; zero leaves voice storage unconfigured.
+	ChatProfilePerks   map[string]int                 // Explicit level-2 nickname entitlement; nil fails closed.
+	ChatSearchPerks    map[string]int                 // Explicit canonical subscription-to-perk policy.
+	RealmMembers       *realmmemberpg.Config
+	BotExecution       *BotExecutionConfig
+	RealmBoosts        *realmboostpg.Config
 	// PostAutomodReview enables the owned version-checked review extension.
 	PostAutomodReview             bool
 	AppleWallet                   *passkit.Config
@@ -183,6 +185,7 @@ type Backend struct {
 	db, authorityDB          *sql.DB
 	wallet                   *walletpg.Repository
 	media                    *mediapg.Repository
+	voiceEnabled             bool
 	notificationWorker       *notificationpg.Worker
 	collectionNotifications  func(context.Context, int) (int, error)
 	commerce                 *commercepg.Repository
@@ -344,6 +347,9 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		}
 		cr.WithProfilePerks(perks)
 	}
+	if c.ChatVoiceRetention != 0 && (c.MediaStore == nil || c.ChatVoiceRetention < time.Hour || c.ChatVoiceRetention > 365*24*time.Hour) {
+		return nil, errors.New("voice requires canonical media and explicit retention from one hour to one year")
+	}
 	chatOrganization := chatpg.NewOrganization(cr, mr, chatSearch)
 	mh := (&rooms.Service{Repository: cr, Organization: chatOrganization, Authority: proofIdentity{identity}, Reader: mr}).Handler()
 	th := taxonomy.NewAuthorityHandler(taxonomypg.NewWithAuthority(db, *c.PublicVisibility, guard), taxonomyIdentity{identity, publisherRepository{accountRepo}}, time.Now)
@@ -498,6 +504,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	}
 	var mediaRepo *mediapg.Repository
 	var calendarMedia *calendarmediapg.Repository
+	var developerMedia *developmediapg.Repository
 	var artworkHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "MEDIA_STORAGE_UNCONFIGURED") })
 	var mediaHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "MEDIA_STORAGE_UNCONFIGURED") })
 	if c.MediaStore != nil {
@@ -508,10 +515,17 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		if err != nil {
 			return nil, err
 		}
+		if c.ChatVoiceRetention != 0 {
+			if err = cr.WithVoiceStorage(mediaRepo, c.ChatVoiceRetention); err != nil {
+				return nil, err
+			}
+		}
 		ticketMedia := ticketmediapg.New(db, ticketRepo)
 		ticketRepo.WithMedia(ticketMedia)
 		calendarMedia = calendarmediapg.New(db)
-		profileMedia := profilemediapg.New(db, mediapg.AnyReadVisibility{postMedia, chatMedia, roomMedia, ticketMedia, calendarMedia})
+		developerMedia = developmediapg.New(db)
+		appRepo.WithMedia(developerMedia)
+		profileMedia := profilemediapg.New(db, mediapg.AnyReadVisibility{postMedia, chatMedia, roomMedia, ticketMedia, calendarMedia, developerMedia})
 		accountRepo.WithProfileMedia(profileMedia)
 		mediaRepo.WithReadVisibility(profileMedia)
 		artworkHTTP = (&artwork.Service{Repository: mediaRepo, Authority: proofIdentity{identity}}).Handler()
@@ -544,8 +558,9 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	}
 	if guard != nil {
 		botRepo = botpg.NewWithAuthority(db, guard)
+		appService.Quota = botRepo
 		if mediaRepo != nil {
-			botRepo.WithMedia(mediaRepo)
+			botRepo.WithMedia(mediaRepo).WithProfileMedia(developerMedia)
 		}
 		if c.BotExecution != nil {
 			if cr == nil || c.MessagerPolicy == nil || c.BotExecution.Runtime.NoneEncryptionMode != int(c.MessagerPolicy.NoneEncryptionMode) {
@@ -597,7 +612,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	}
 	notificationIdentity := notificationIdentity{identity}
 	notificationHTTP := (notifications.HTTP{Repository: notificationRepo, Identity: notificationIdentity, App: c.NotificationApp}).Handler()
-	realtimeHTTP, err := realtime.New(notificationRepo, notificationIdentity, realtime.Config{App: c.NotificationApp})
+	realtimeHTTP, err := realtime.New(notificationRepo, notificationIdentity, realtime.Config{App: c.NotificationApp, Commands: placeholderCommands(cr)})
 	if err != nil {
 		return nil, err
 	}
@@ -662,7 +677,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		return nil, err
 	}
 	h := router{modules{accountHistory: accountHistoryHTTP, realmMemberHistory: realmMembers.repo != nil, realmMembers: realmMembers.handler, blogs: blogHTTP, realmBoosts: realmBoosts.handler, affiliations: affiliationHTTP, passkit: passkitModule, artwork: bindIdentity(v, bindTransactionAuthority(guard, artworkHTTP)), publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, livestreams: streamHTTP, moderation: moderationHTTP, namecards: extras.cardsHTTP, rewind: extras.rewindHTTP, ipcheck: ipHTTP, accountSettings: settingsHTTP, translation: translationHTTP, autocomplete: autocompleteHTTP, reader: readerHTTP, oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, activities: activityHTTP, friends: friendsHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newStreamTickets(v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{collectionNotifications: collectionNotifications, accountHistory: accountHistoryRepo, surveyNotifications: surveyNotifications, activities: activityRepo, chatOrganization: chatOrganization, postComposition: postComposition, realmMembers: realmMembers, blogs: blogRepo, realmBoosts: realmBoosts, scheduledPosts: scheduledPosts, affiliations: affiliationRepo, social: socialRepo, passkit: passkitModule, publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, moderation: moderationRepo, moderationSink: notificationRepo, moderationApp: c.NotificationApp, accountExtras: extras, accountSettings: settingsRepo, translation: translationRepo, autocomplete: autocompleteRepo, chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	return &Backend{collectionNotifications: collectionNotifications, accountHistory: accountHistoryRepo, surveyNotifications: surveyNotifications, activities: activityRepo, chatOrganization: chatOrganization, postComposition: postComposition, realmMembers: realmMembers, blogs: blogRepo, realmBoosts: realmBoosts, scheduledPosts: scheduledPosts, affiliations: affiliationRepo, social: socialRepo, passkit: passkitModule, publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, moderation: moderationRepo, moderationSink: notificationRepo, moderationApp: c.NotificationApp, accountExtras: extras, accountSettings: settingsRepo, translation: translationRepo, autocomplete: autocompleteRepo, chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: h, verifier: v, wallet: wallet, media: mediaRepo, voiceEnabled: c.ChatVoiceRetention != 0, notificationWorker: notificationWorker, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
 
 }
 
@@ -692,6 +707,11 @@ func (b *Backend) ProcessDue(ctx context.Context, limit int) (int, error) {
 		return 0, errors.New("lifecycle batch size must be between 1 and 1000")
 	}
 	n, e := b.wallet.ProcessDue(ctx, limit)
+	if b.chat != nil {
+		m, x := b.chat.ExpirePlaceholders(ctx, limit)
+		n += m
+		e = errors.Join(e, x)
+	}
 	if b.blogs != nil && b.blogs.VerificationEnabled() {
 		m, x := b.blogs.ProcessPending(ctx, min(limit, 100))
 		n += m

@@ -102,6 +102,7 @@ func run(args []string, out io.Writer) error {
 	memberGrants := fs.String("initial-member-permissions", "", "explicit comma-separated concrete initial registration permissions")
 	notificationApp := fs.String("notification-app", "dev.solsynth.solian", "explicit first-party inbox and stream namespace")
 	mediaRoot := fs.String("media-root", "", "explicit preprovisioned private filesystem media directory")
+	voiceRetention := fs.Duration("chat-voice-retention", 0, "explicit owned voice retention (1h to 8760h); zero disables voice uploads")
 	mediaMax := fs.Int64("media-max-bytes", 20<<20, "maximum streamed media object bytes")
 	catalogFile := fs.String("catalog-config", "", "optional explicit catalog JSON snapshot")
 	badgeIcons := fs.String("badge-icons", "", "optional directory of licensed badge icons")
@@ -248,7 +249,7 @@ func run(args []string, out io.Writer) error {
 		}
 		catalogProviders = []exchangecatalog.Provider{provider}
 	}
-	appConfig := application.Config{PostAutomodReview: *enableAutomodReview, EnableMLSDelivery: *enableMLS, Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
+	appConfig := application.Config{ChatVoiceRetention: *voiceRetention, PostAutomodReview: *enableAutomodReview, EnableMLSDelivery: *enableMLS, Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
 	if err := applyChatOrganization(&appConfig, *chatOrganizationSettings); err != nil {
 		return err
 	}

@@ -20,16 +20,18 @@ import (
 var Schema string
 
 type Repository struct {
-	db           *sql.DB
-	policy       rooms.Policy
-	guard        TransactionGuard
-	fixture      bool
-	mls          bool
-	social       rooms.SocialProvider
-	associations MessageAssociations
-	roomMedia    RoomMedia
-	textObserver TextMessageObserver
-	profilePerks rooms.ProfileEntitlement
+	db             *sql.DB
+	policy         rooms.Policy
+	guard          TransactionGuard
+	fixture        bool
+	mls            bool
+	social         rooms.SocialProvider
+	associations   MessageAssociations
+	roomMedia      RoomMedia
+	textObserver   TextMessageObserver
+	profilePerks   rooms.ProfileEntitlement
+	voice          VoiceStorage
+	voiceRetention time.Duration
 }
 
 func (r *Repository) WithSocial(p rooms.SocialProvider) *Repository { r.social = p; return r }

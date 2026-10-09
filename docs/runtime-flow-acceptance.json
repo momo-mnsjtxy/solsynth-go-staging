@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed thread roots/replies, live forward references and explicit plaintext redirect snapshots, plus current app-owner/secret issuer checks and imported organization bot denial. All pending actualPG642/82 candidate.",
+  "local_source_checkpoint": "Reviewed opt-in seller-funded fixed-mills coupons and source-compatible ranked automod, preserving Latest bypass and non-enforcing Flag default. Independent review fixes privacy, rollback, quote drift, gift escrow and issuer waits. Actual674/84 pending. Includes reviewed canonical fixture corrections from failed625 candidate; fullgreen remains455/60. Anonymous thread hydration now omits only requester-specific reactions while retaining aggregate counts, current visibility and malformed identity denial. Owner ancestry fixtures use explicit UUID/text casts; implemented thread route missing-root expectation corrected.",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,14 +12,14 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "1ccac7bf0b9c13d01c44441cd95fab15bd7eafa1",
-    "run": 37862930332,
-    "required_before": 625,
-    "required_after_restart": 81,
-    "status": "Running; no pass inferred. Previous601 candidate passed600before and groupB36restart, failed sole realm quota fixture corrected here."
+    "commit": "a8a6e600bd7f6c9f2254c47e820b2731d6a4aab9",
+    "run": 37863667479,
+    "required_before": 642,
+    "required_after_restart": 82,
+    "status": "Failed:632/642 before passed,10 failed,zero skips,no restart. Four inherited625 fixture cases,three UUID/text fixture casts,two anonymous reaction runtime failures,and obsolete501 expectation for now-supported thread input. All corrected in this674 candidate; no fullgreen claim."
   },
-  "local_required_before": 642,
-  "local_required_after_restart": 82,
+  "local_required_before": 674,
+  "local_required_after_restart": 84,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -1684,6 +1684,86 @@
         "TestPGBackendAffiliationRoutesAndActivation"
       ],
       "remaining_reference": "current_remaining.families:passport.affiliation_and_owned_activation"
+    },
+    {
+      "source_family": "wallet.owned_coupons",
+      "local_status": "implemented_pending_actual_ci",
+      "supported_flows": [
+        "Explicit seller_fixed_mills_v1 opt-in, disabled absent valid policy; positive net and exact conservation",
+        "Atomic usage/hold, immutable buyer-bound quotes, live source catalog checks, gift escrow isolation",
+        "Explicit retain_usage cancellation policy; first purchase only, no platform subsidy/provider payment or legacy formula claim"
+      ],
+      "guarded_pg_cases": [
+        "TestPGCouponAppProductSubscriptionAndCheckout",
+        "TestPGCouponAppSubscriptionVersionChangeRejectsPayment",
+        "TestPGCouponBackendHTTPPolicyAndBinding",
+        "TestPGCouponBuyerScopeIssuerAndQuoteChanges",
+        "TestPGCouponCapacityConcurrentCheckoutAndFailureRollback",
+        "TestPGCouponCatalogChangesRejectPayment",
+        "TestPGCouponCheckoutConservationReplayRefundFreshRepository",
+        "TestPGCouponConfiguredDefinitionChangesRejectPayment",
+        "TestPGCouponDisabledAndUnknownPolicies",
+        "TestPGCouponGiftIssuerCannotSettleEscrow",
+        "TestPGCouponGiftRedemptionPreservesFirstCyclePolicy",
+        "TestPGCouponIssuerDisableAfterBuyerWalletWait",
+        "TestPGCouponPerBuyerUsageIsolatedFromGlobalCapacity",
+        "TestPGCouponQuoteReplayRechecksIssuerAfterMerchantWait",
+        "TestPGCouponRealmIssuerAuthority",
+        "TestPGCouponRevocationAndExpiryAfterWait",
+        "TestPGCouponSavedRestartPersistence",
+        "TestPGCouponSubscriptionGiftFirstPurchase"
+      ],
+      "remaining_reference": "current_remaining.families:wallet.owned_coupons"
+    },
+    {
+      "source_family": "sphere.ranked_automod",
+      "local_status": "implemented_pending_actual_ci",
+      "supported_flows": [
+        "Current-rule ranked Hide/Derank; Latest bypass and default Flag non-enforcement preserved",
+        "Bounded RE2 and URL normalization; manual moderation independent, no network fetch",
+        "Owned opt-in versioned review with global evidence authorization; fresh rule generations and scheduled publication checks"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBackendPostAutomodCompositionAndExplicitReview",
+        "TestPGPostAutomodAuditRollbackAndUnboundedDelete",
+        "TestPGPostAutomodCurrentRuleEditsRemovalAndExpiry",
+        "TestPGPostAutomodExpiryAfterGenerationWait",
+        "TestPGPostAutomodManualRemovalIgnoresMalformedEvidence",
+        "TestPGPostAutomodOptionalReviewReplayAndInvalidation",
+        "TestPGPostAutomodRankedHideDerankFlagAndLatestContract",
+        "TestPGPostAutomodRealmAndNestedEvidenceIsolation",
+        "TestPGPostAutomodReviewReplayRevalidatesProof",
+        "TestPGPostAutomodRuleGenerationWaitUsesCurrentRules",
+        "TestPGPostAutomodSavedDecisionRestartPersistence",
+        "TestPGPostAutomodScheduledGenerationWaitRechecksSession",
+        "TestPGPostAutomodScheduledPublicationCurrentRulesAndReplay",
+        "TestPGPostAutomodWriteDecisionsPrivacyAndPublish"
+      ],
+      "remaining_reference": "current_remaining.families:sphere.ranked_automod"
+    },
+    {
+      "source_family": "messager.threads_and_forwarding",
+      "local_status": "implemented_pending_actual_ci",
+      "supported_flows": [
+        "Canonical plaintext thread roots/replies and visible reply counts",
+        "Live forwarded source references recheck visibility, including nested hydration",
+        "Explicit <=100-message text-only redirect snapshots with current source/destination authority and server receipts"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBackendChatThreadsForwardAndRedirectComposition",
+        "TestPGChatForwardFileWaitCurrentSourcePolicy",
+        "TestPGChatForwardRedirectWaitRevocationAndRollback",
+        "TestPGChatForwardSourceDiscoveryRequiresBoundProof",
+        "TestPGChatLiveForwardVisibilityAndNestedThreads",
+        "TestPGChatRedirectConcurrencyAndMembershipIncarnation",
+        "TestPGChatRedirectPrecisionAndCanonicalReceipt",
+        "TestPGChatRedirectSnapshotProvenanceAndReplay",
+        "TestPGChatThreadCountsMatchVisibleReplyBoundary",
+        "TestPGChatThreadForwardMediaAndEncryptionBoundaries",
+        "TestPGChatThreadsForwardRestartPersistence",
+        "TestPGChatThreadsRootReplyIsolationAndPagination"
+      ],
+      "remaining_reference": "current_remaining.families:messager.threads_and_forwarding"
     }
   ],
   "additional_cross_service_flows": [
@@ -1792,7 +1872,7 @@
     "delivered_not_integrated": []
   },
   "current_remaining": {
-    "as_of": "2026-10-09T00:07:00Z",
+    "as_of": "2026-10-09T00:16:00Z",
     "authoritative_for": "Known remaining flows, not a count of source operations. Partial/unresearched contracts remain research tasks; unavailable is never inferred from lack of prior research.",
     "families": [
       {
@@ -1958,7 +2038,7 @@
       {
         "family": "wallet.orders_payments",
         "remaining": [
-          "Live provider clients and payouts; address fulfillment implemented pending CI; opt-in owned coupons reviewed pending integration"
+          "Live provider clients and payouts; address fulfillment implemented pending CI; opt-in owned coupons implemented pending CI"
         ]
       },
       {
@@ -2027,7 +2107,7 @@
         "family": "admin.verification_statistics_automod",
         "remaining": [
           "Unknown verification enum string-to-number aliases",
-          "Automatic post enforcement/deranking remains separate",
+          "Automatic ranked enforcement/deranking implemented pending CI; owned review explicitly opt-in",
           "Excluded original RPC/model semantics",
           "Original .NET regex features outside RE2 intentionally rejected"
         ]
@@ -2173,21 +2253,41 @@
           "Excluded legacy type/group mapping; owned type and member permission policy documented",
           "No implicit administrative grant or restoration of revoked activation grants"
         ]
+      },
+      {
+        "family": "wallet.owned_coupons",
+        "remaining": [
+          "Legacy formula/schema/enum parity not evidenced; owned configured economics explicitly different",
+          "External provider/platform-funded coupons and coupon auto-renewal unsupported"
+        ]
+      },
+      {
+        "family": "sphere.ranked_automod",
+        "remaining": [
+          "Original .NET regex outside bounded RE2 rejected",
+          "Optional review/evidence is owned extension; no classifier invented"
+        ]
+      },
+      {
+        "family": "messager.threads_and_forwarding",
+        "remaining": [
+          "Attachment forwarding requires separate canonical rights and remains rejected",
+          "Encrypted content is not downgraded; broader legacy system-message types remain partial"
+        ]
       }
     ],
     "cross_platform": [
       "Original data migration/import, rollback and compatibility fixtures for historical data",
       "Broader federation actor/realm/follow/moderation/key-management and remote discovery contracts; implemented bounded quote authorization tracked separately",
       "Original external provider execution, settlement/payout and production operational acceptance; live actions require separate authorization",
-      "Coupon issuance/discount/usage semantics remain only partially evidenced: retained callers accept coupon strings but calculation delegates to excluded/unavailable model code; explicit opt-in owned coupon policy reviewed pending integration, legacy formula remains unproven",
+      "Coupon issuance/discount/usage semantics remain only partially evidenced: retained callers accept coupon strings but calculation delegates to excluded/unavailable model code; explicit opt-in owned coupon policy implemented pending CI, legacy formula remains unproven",
       "Provider-specific recurring workspace execution; address fulfillment implemented pending CI",
       "Source-declaration818 acceptance map remains an operation inventory, not runtime endpoint count or proof of whole-platform completion"
     ],
     "active_implementation": [
-      "Shipping/address and scheduled publication625/81 published, actualPG running",
-      "Thread/live-reference forwarding and app owner authority integrated642/82, actualPG pending",
-      "Opt-in owned coupon and automatic ranked-post enforcement independently reviewed, integration pending",
-      "Realm boosts, bot execution and blog flows in implementation"
+      "Shipping/scheduling625 and thread/owner642 candidates in actualPG validation",
+      "Reviewed coupon and automod integrated674/84, actualPG pending",
+      "Realm boosts, ordinary-message bot execution and verified-domain blog flows in implementation"
     ],
     "not_remaining_missing_features": [
       "PIN enrollment/rotation/removal",
@@ -2196,10 +2296,25 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Failed aggregate:600/601 before passed; groupA302/303 and no restart, groupB298before+36restart passed zero skips. Sole room-media realm fixture lacked required quota, corrected locally; no new full green."
+    "verification_note": "Last fullgreen455/60.625 failed621/625;642 failed632/642,neither ran restart. Corrected674/84 passed full offline checks,actualPG pending."
   },
   "global_remaining": [
     "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",
     "Passing configured adapters and owned policies does not establish upstream internal behavior, live provider activation, or production migration readiness."
-  ]
+  ],
+  "prior_candidate_result": {
+    "commit": "1ccac7bf0b9c13d01c44441cd95fab15bd7eafa1",
+    "run": 37862930332,
+    "before_passed": 621,
+    "before_required": 625,
+    "after_restart_executed": 0,
+    "skipped": 0,
+    "failed_tests": [
+      "TestPGPostScheduleExplicitPublicationUsesCurrentGates",
+      "TestPGPostSchedulePublicationGatesAfterMediaWait",
+      "TestPGRoomMediaRealmRevocationAndDirectAudience",
+      "TestPGShippingAddressCRUDAndScopeIsolation"
+    ],
+    "diagnosis": "Canonical fixture setup/errors: missing paired shadowban reason, Join used for pending invitation, missing level2 moderator prerequisite, existing contact service maps unknown IDs to401. Corrected setup assertions preserve runtime gates and compare foreign/nonexistent denials with no disclosure/mutation."
+  }
 }

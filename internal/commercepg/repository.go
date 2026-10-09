@@ -44,15 +44,16 @@ type Adapters struct {
 	Product func(context.Context, *sql.Tx, string, string) (Product, error)
 }
 type Repository struct {
-	postAwards  PostAwardFulfillment
-	sponsorship SponsorFulfillment
-	payments    PaymentAuthorization
-	namecards   NameCardFulfillment
-	liveAwards  LiveStreamAwardFulfillment
-	db          *sql.DB
-	guard       *authoritypg.TransactionGuard
-	adapters    Adapters
-	now         func() time.Time
+	couponPolicy c.CouponPolicy
+	postAwards   PostAwardFulfillment
+	sponsorship  SponsorFulfillment
+	payments     PaymentAuthorization
+	namecards    NameCardFulfillment
+	liveAwards   LiveStreamAwardFulfillment
+	db           *sql.DB
+	guard        *authoritypg.TransactionGuard
+	adapters     Adapters
+	now          func() time.Time
 }
 
 func New(db *sql.DB, guard *authoritypg.TransactionGuard, adapters Adapters) *Repository {
@@ -460,6 +461,7 @@ func (r *Repository) GetOrder(ctx context.Context, actor, idv string, public boo
 			publicMeta["fulfillment"] = json.RawMessage(`{"requires_address":true}`)
 		}
 		o.Meta = publicMeta
+		o.Coupon = nil
 		o.PayerWalletID = nil
 		o.TransactionID = nil
 	}

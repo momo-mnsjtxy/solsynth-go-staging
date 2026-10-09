@@ -79,7 +79,7 @@ func TestPGAppPublisherOwnerEligibility(t *testing.T) {
 	// cannot use the NULL direct account as a credential or scoped-management gate.
 	query(t, f.db, socialpg.Schema)
 	realm := authorityUUID(t)
-	query(t, f.db, `INSERT INTO owned_realms(id,slug,name,account_id,created_at,updated_at)VALUES($1,$1::text,'Synthetic app realm',$2,now(),now())`, realm, f.other)
+	query(t, f.db, `INSERT INTO owned_realms(id,slug,name,account_id,created_at,updated_at)VALUES($1::uuid,$1::text,'Synthetic app realm',$2,now(),now())`, realm, f.other)
 	query(t, f.db, `UPDATE owned_publishers SET type=1,account_id=NULL,realm_id=$2 WHERE id=$1`, a.PublisherID, realm)
 	check(false)
 	s := apps.Scope{Actor: f.actor, Developer: f.dev, Project: p.ID, App: a.ID}
@@ -169,7 +169,7 @@ func TestPGAppPublisherOwnerRecheckedAfterWait(t *testing.T) {
 				}
 			case "project_changed":
 				otherProject := authorityUUID(t)
-				if _, e = blocker.ExecContext(ctx, `INSERT INTO owned_dev_projects(id,developer_id,slug,name,created_at,updated_at)SELECT $1,developer_id,$1::text,'Changed ancestry',now(),now() FROM owned_dev_projects WHERE id=$2`, otherProject, p.ID); e != nil {
+				if _, e = blocker.ExecContext(ctx, `INSERT INTO owned_dev_projects(id,developer_id,slug,name,created_at,updated_at)SELECT $1::uuid,developer_id,$1::text,'Changed ancestry',now(),now() FROM owned_dev_projects WHERE id=$2`, otherProject, p.ID); e != nil {
 					t.Fatal(e)
 				}
 				if _, e = blocker.ExecContext(ctx, `UPDATE owned_custom_apps SET project_id=$2 WHERE id=$1`, a.ID, otherProject); e != nil {
@@ -350,7 +350,7 @@ func TestPGBotImportedOrganizationAppBoundary(t *testing.T) {
 	}
 	query(t, f.db, socialpg.Schema)
 	realm := authorityUUID(t)
-	query(t, f.db, `INSERT INTO owned_realms(id,slug,name,account_id,created_at,updated_at)VALUES($1,$1::text,'Synthetic imported app realm',$2,now(),now())`, realm, f.other)
+	query(t, f.db, `INSERT INTO owned_realms(id,slug,name,account_id,created_at,updated_at)VALUES($1::uuid,$1::text,'Synthetic imported app realm',$2,now(),now())`, realm, f.other)
 	query(t, f.db, `UPDATE owned_publishers SET type=1,account_id=NULL,realm_id=$2 WHERE id=$1`, f.app.PublisherID, realm)
 	before := botCount(t, f, `SELECT count(*) FROM owned_bot_audit WHERE app_id=$1`, f.app.ID)
 	deny := func() {

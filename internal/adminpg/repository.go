@@ -68,13 +68,13 @@ func (r *Repository) audit(ctx context.Context, tx *sql.Tx, actor, kind, target,
 }
 func (r *Repository) Ready(ctx context.Context) error {
 	var ready bool
-	e := r.db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name)IS NOT NULL)FROM(VALUES('owned_admin_extension_audit'),('owned_automod_rules'),('owned_automod_state'))required(name)`).Scan(&ready)
+	e := r.db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name)IS NOT NULL)FROM(VALUES('owned_admin_extension_audit'),('owned_automod_rules'),('owned_automod_state'),('owned_post_automod_events'))required(name)`).Scan(&ready)
 	if e != nil {
 		return e
 	}
 	if !ready {
 		return c.ErrUnavailable
 	}
-	_, e = r.db.ExecContext(ctx, `SELECT a.verification,p.verification,r.verification FROM owned_accounts_profiles a CROSS JOIN owned_publishers p CROSS JOIN owned_realms r LIMIT 0`)
+	_, e = r.db.ExecContext(ctx, `SELECT a.verification,p.verification,r.verification FROM owned_accounts_profiles a CROSS JOIN owned_publishers p CROSS JOIN owned_realms r LIMIT 0;SELECT automod_revision,automod_decision FROM owned_text_posts LIMIT 0`)
 	return e
 }

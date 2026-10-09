@@ -104,3 +104,19 @@ func TestAdminContentDoesNotCaptureTaxonomyOrSimilarPrefixes(t *testing.T) {
 		}
 	}
 }
+
+func TestOptionalAutomodReviewRouteStrictBody(t *testing.T) {
+	f := &testRepo{}
+	path := "/api/admin/posts/" + testID + "/automod-review"
+	w := send(t, f, "POST", path, `{"expected_revision":7,"action":"dismiss","reason":"Synthetic reviewed case"}`)
+	if w.Code != 200 || f.cmd.Action != "automod_review" || f.cmd.Automod == nil || f.cmd.Automod.ExpectedRevision != 7 {
+		t.Fatal(w.Code, f.cmd)
+	}
+	for _, body := range []string{`{"expected_revision":7,"expected_revision":8}`, `{"action":"dismiss","grant":"*"}`, `{"expected_revision":"7"}`, `{} {}`} {
+		before := f.calls
+		w = send(t, f, "POST", path, body)
+		if w.Code != 400 || f.calls != before {
+			t.Fatal(body, w.Code)
+		}
+	}
+}

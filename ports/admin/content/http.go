@@ -431,6 +431,10 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 		c := Command{}
 		status := 200
 		switch {
+		case kind == PostKind && len(tail) == 2 && tail[1] == "automod-review" && r.Method == "POST":
+			c.Action = "automod_review"
+			c.Automod = &AutomodReview{}
+			e = decode(w, r, c.Automod)
 		case len(tail) == 1 && r.Method == "DELETE":
 			c.Action = "delete"
 			status = 204

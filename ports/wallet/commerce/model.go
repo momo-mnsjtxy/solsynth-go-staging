@@ -59,6 +59,7 @@ type OrderItem struct {
 	Currency          string      `json:"currency"`
 }
 type Order struct {
+	Coupon            *CouponQuote               `json:"coupon,omitempty"`
 	ID                string                     `json:"id"`
 	Status            OrderStatus                `json:"status"`
 	Currency          string                     `json:"currency"`
@@ -144,6 +145,7 @@ type CreateSubscription struct {
 	IsAutoRenewal     *bool          `json:"is_auto_renewal"`
 }
 type Subscription struct {
+	Coupon            *CouponQuote       `json:"coupon,omitempty"`
 	AppIdentifier     *string            `json:"app_identifier,omitempty"`
 	ProductTerms      string             `json:"product_terms,omitempty"`
 	ConsentVersion    int64              `json:"consent_version,omitempty"`
@@ -179,6 +181,7 @@ type PurchaseGift struct {
 	SubscriptionDurationDays *int           `json:"subscription_duration_days"`
 }
 type Gift struct {
+	Coupon                 *CouponQuote   `json:"coupon,omitempty"`
 	ID                     string         `json:"id"`
 	GifterID               string         `json:"gifter_id"`
 	RecipientID            *string        `json:"recipient_id"`

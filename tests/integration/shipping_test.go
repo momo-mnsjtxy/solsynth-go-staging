@@ -130,9 +130,25 @@ func TestPGShippingAddressCRUDAndScopeIsolation(t *testing.T) {
 	settingsCall(t, h, "PATCH", path, child.Token, body, 403)
 	other, _, _ := merchantOther(t, f.commerceFixture)
 	otherToken := pgIssue(t, f.issuer, other).Token
-	settingsCall(t, h, "GET", path, otherToken, "", 404)
-	settingsCall(t, h, "PATCH", path, otherToken, body, 404)
-	settingsCall(t, h, "DELETE", path, otherToken, "", 404)
+	// The shared contact service masks foreign/missing IDs as INVALID_CREDENTIALS.
+	// Prove this token is valid independently, then preserve the denial contract.
+	settingsCall(t, h, "GET", "/stargate/contacts", otherToken, "", 200)
+	missingPath := "/stargate/contacts/" + authorityUUID(t)
+	for _, method := range []string{"GET", "PATCH", "DELETE"} {
+		requestBody := ""
+		if method == "PATCH" {
+			requestBody = body
+		}
+		foreign := settingsCall(t, h, method, path, otherToken, requestBody, 401)
+		missing := settingsCall(t, h, method, missingPath, otherToken, requestBody, 401)
+		if foreign.Body.String() != missing.Body.String() || strings.Contains(foreign.Body.String(), f.contact.ID) || strings.Contains(foreign.Body.String(), "Synthetic Recipient") {
+			t.Fatal("foreign and missing contact denial must be indistinguishable and private")
+		}
+	}
+	unchanged := backendDecode[signin.Contact](t, settingsCall(t, h, "GET", path, f.token, "", 200))
+	if unchanged.Content != "Synthetic Recipient, 2 Test Way, Example Town" || unchanged.DeletedAt != nil || commerceCount(t, f.db, `SELECT count(*) FROM owned_authority_contact_audit WHERE contact_id=$1 AND action='address.update'`, f.contact.ID) != 1 {
+		t.Fatal("foreign attempts changed owned contact")
+	}
 	if e = f.contacts.SendContactVerification(f.ctx, f.token, f.contact.ID); !errors.Is(e, signin.ErrUnsupported) {
 		t.Fatal("fake physical address verification", e)
 	}

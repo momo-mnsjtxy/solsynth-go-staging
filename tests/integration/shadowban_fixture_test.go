@@ -42,3 +42,27 @@ func fixturePublisherShadowbanName(t *testing.T, db *sql.DB, name, reason string
 	}
 	fixturePublisherShadowban(t, db, id, reason, at)
 }
+
+// fixturePostShadowban uses the same canonical reason/timestamp invariant.
+func fixturePostShadowban(t *testing.T, db *sql.DB, id, reason string, at time.Time) {
+	t.Helper()
+	var timestamp, value any
+	if reason == "" {
+		if !at.IsZero() {
+			t.Fatal("cleared shadowban requires a zero timestamp")
+		}
+	} else {
+		if !admin.ValidReason(reason, false) || at.IsZero() {
+			t.Fatal("shadowban fixture requires a canonical reason and timestamp")
+		}
+		timestamp, value = at.UTC(), reason
+	}
+	r, err := db.Exec(`UPDATE owned_text_posts SET shadowbanned_at=$2::timestamptz,shadowban_reason=$3::text WHERE id=$1::uuid`, id, timestamp, value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	n, err := r.RowsAffected()
+	if err != nil || n != 1 {
+		t.Fatal("shadowban fixture must update exactly one post", n, err)
+	}
+}

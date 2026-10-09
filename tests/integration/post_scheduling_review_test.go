@@ -58,8 +58,11 @@ func TestPGPostSchedulePublicationGatesAfterMediaWait(t *testing.T) {
 				if _, e = r.ChangeMember(f.ctx, owner, realm.ID, social.MemberChange{Action: social.Invite, AccountID: f.other}); e != nil {
 					t.Fatal(e)
 				}
-				if _, e = r.ChangeMember(f.otherCtx, f.other, realm.ID, social.MemberChange{Action: social.Join}); e != nil {
+				if _, e = r.ChangeMember(f.otherCtx, f.other, realm.ID, social.MemberChange{Action: social.Accept}); e != nil {
 					t.Fatal(e)
+				}
+				if n := commerceCount(t, f.db, `SELECT count(*) FROM owned_realm_members WHERE realm_id=$1 AND account_id=$2 AND joined_at IS NOT NULL AND leave_at IS NULL`, realm.ID, f.other); n != 1 {
+					t.Fatal("accepted membership missing", n)
 				}
 				f.pub, e = accountpg.NewForCompatibilityTests(f.db).CreatePublisher(context.Background(), f.other, accounts.PublisherPatch{Name: postString("scheduled-" + f.other), Nick: postString("Scheduled editor")})
 				if e != nil {
@@ -140,9 +143,9 @@ func TestPGPostScheduleExplicitPublicationUsesCurrentGates(t *testing.T) {
 						t.Fatal(e)
 					}
 				case "post_shadowban":
-					query(t, f.db, `UPDATE owned_text_posts SET shadowbanned_at=clock_timestamp() WHERE id=$1`, p.ID)
+					fixturePostShadowban(t, f.db, p.ID, "spam", time.Now().UTC())
 				case "publisher_shadowban":
-					query(t, f.db, `UPDATE owned_publishers SET shadowbanned_at=clock_timestamp() WHERE id=$1`, f.pub.ID)
+					fixturePublisherShadowban(t, f.db, f.pub.ID, "spam", time.Now().UTC())
 				case "fresh_intent":
 					// A fresh editor request is independent of a stale schedule's
 					// policy stamp, while still requiring all current gates.

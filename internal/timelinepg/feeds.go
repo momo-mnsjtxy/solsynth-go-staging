@@ -271,6 +271,14 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 	if e != nil {
 		return page, e
 	}
+	evaluationWork := 0
+	var automatic postpg.AutomodSnapshot
+	if r.automod && o.Mode != sphere.Latest {
+		automatic, e = postpg.ReadAutomodSnapshot(ctx, tx, false)
+		if e != nil {
+			return page, e
+		}
+	}
 	for _, p := range out {
 		rp := sphere.Post{ID: p.ID, PublisherID: p.PublisherID, CreatedAt: p.CreatedAt, PublishedAt: p.PublishedAt, ThreadRepliesCount: int(p.ThreadRepliesCount)}
 		if p.Type == posts.Article {
@@ -280,6 +288,25 @@ func (r *Repository) Feed(ctx context.Context, actor string, o timeline.Options)
 			return page, e
 		}
 		signal := sphere.Signals{}
+		if r.automod && o.Mode != sphere.Latest {
+			var prior *posts.AutomodDecision
+			if r.automodReview {
+				prior, e = postpg.LoadAutomodInTransaction(ctx, tx, p.ID)
+				if e != nil {
+					return page, e
+				}
+			}
+			decision, err := postpg.ComputeAutomod(ctx, automatic, p, prior, !r.automodReview)
+			if err != nil {
+				return page, err
+			}
+			evaluationWork += decision.EvaluationWork
+			if evaluationWork > 64<<20 {
+				return page, posts.ErrUnavailable
+			}
+			signal.ShouldHide = decision.Hidden
+			signal.AutomodPenalty = float64(decision.Penalty)
+		}
 		if actor != "" {
 			signal.PersonalizationBonus = r.bonus(p, interests, r.now())
 			var followed bool

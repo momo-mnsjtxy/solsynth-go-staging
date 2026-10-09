@@ -60,6 +60,7 @@ REQUIRED_SCHEMAS = {
     "internal/signinpg/schema.sql",
  "internal/signinpg/address_schema.sql",
     "internal/commercepg/schema.sql",
+    "internal/commercepg/coupon_schema.sql",
  "internal/commercepg/shipping_schema.sql",
     "internal/commercepg/order_index_scope.sql",
     "internal/commercepg/maintenance_schema.sql",

@@ -35,7 +35,7 @@ func (r *Repository) PurchaseGift(ctx context.Context, actor string, req c.Purch
 		return g, e
 	}
 	defer tx.Rollback()
-	if req.PaymentMethod != "solian.wallet" || req.Coupon != nil {
+	if req.PaymentMethod != "solian.wallet" {
 		return g, c.ErrUnavailable
 	}
 	d, e := definition(ctx, tx, req.SubscriptionIdentifier)
@@ -111,6 +111,17 @@ func (r *Repository) PurchaseGift(ctx context.Context, actor string, req c.Purch
 	}
 	now := r.now().UTC()
 	g = c.Gift{ID: gid, GifterID: actor, RecipientID: req.RecipientID, GiftCode: hex.EncodeToString(random), SubscriptionIdentifier: d.Identifier, Message: req.Message, Status: c.GiftCreated, IsOpenGift: req.RecipientID == nil, BasePrice: d.BasePrice, FinalPrice: d.BasePrice, PaymentMethod: req.PaymentMethod, PaymentDetails: c.PaymentDetails{Currency: d.Currency, PayerWalletID: &payer}, ExpiresAt: now.Add(time.Duration(days) * 24 * time.Hour), CreatedAt: now, UpdatedAt: now}
+	if req.Coupon != nil {
+		app, err := couponApp(d)
+		if err != nil {
+			return g, err
+		}
+		g.Coupon, e = r.quoteCoupon(ctx, tx, actor, app, d.PayeeWalletID, "gift", d.Currency, *req.Coupon, []string{d.Identifier}, d.BasePrice)
+		if e != nil {
+			return g, e
+		}
+		g.FinalPrice = g.Coupon.Net
+	}
 	b, e := jsonBytes(g)
 	if e != nil {
 		return g, e
@@ -124,6 +135,17 @@ func (r *Repository) PurchaseGift(ctx context.Context, actor string, req c.Purch
 	}
 	if e = event(ctx, tx, "gift.created", g.ID, g, now); e != nil {
 		return g, e
+	}
+	if g.Coupon != nil {
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "subscriptions.gifts.purchase"); e != nil {
+			return g, e
+		}
+		if e = couponIssuer(ctx, tx, g.Coupon.AppID, g.Coupon.PublisherID, g.Coupon.PayeeWalletID); e != nil {
+			return g, e
+		}
+		if !g.Coupon.ExpiresAt.After(r.now().UTC()) {
+			return g, c.ErrConflict
+		}
 	}
 	return g, tx.Commit()
 }
@@ -214,7 +236,7 @@ func (r *Repository) GiftOrder(ctx context.Context, actor, gid string) (c.Order,
 	if e != nil {
 		return o, e
 	}
-	o, e = r.resourceOrder(ctx, tx, actor, d, "", g.ID, g.PaymentDetails.PayerWalletID, g.FinalPrice)
+	o, e = r.resourceOrder(ctx, tx, actor, d, "", g.ID, g.PaymentDetails.PayerWalletID, g.FinalPrice, g.Coupon)
 	if e != nil {
 		return o, e
 	}
@@ -367,7 +389,7 @@ func (r *Repository) RedeemGift(ctx context.Context, actor, code string) (c.Rede
 	if e != nil {
 		return out, e
 	}
-	if o.Status != c.Paid {
+	if o.Status != c.Paid || o.Amount.Cmp(g.FinalPrice) != 0 || !sameCoupon(o.Coupon, g.Coupon) {
 		return out, c.ErrConflict
 	}
 	d, e := definition(ctx, tx, g.SubscriptionIdentifier)
@@ -383,7 +405,10 @@ func (r *Repository) RedeemGift(ctx context.Context, actor, code string) (c.Rede
 		return out, e
 	}
 
-	s := c.Subscription{ID: sid, AccountID: actor, Identifier: d.Identifier, GroupIdentifier: d.GroupIdentifier, DisplayName: d.DisplayName, Status: c.SubscriptionActive, IsActive: true, PaymentMethod: "gift", PaymentDetails: c.PaymentDetails{Currency: g.PaymentDetails.Currency, OrderID: g.ID}, BasePrice: g.BasePrice, FinalPrice: g.FinalPrice, BegunAt: begin, EndedAt: begin.Add(time.Duration(days) * 24 * time.Hour), CreatedAt: now, UpdatedAt: now}
+	s := c.Subscription{Coupon: g.Coupon, ID: sid, AccountID: actor, Identifier: d.Identifier, GroupIdentifier: d.GroupIdentifier, DisplayName: d.DisplayName, Status: c.SubscriptionActive, IsActive: true, PaymentMethod: "gift", PaymentDetails: c.PaymentDetails{Currency: g.PaymentDetails.Currency, OrderID: g.ID}, BasePrice: g.BasePrice, FinalPrice: g.FinalPrice, BegunAt: begin, EndedAt: begin.Add(time.Duration(days) * 24 * time.Hour), CreatedAt: now, UpdatedAt: now}
+	if g.Coupon != nil {
+		s.AppIdentifier = d.AppIdentifier
+	}
 	if e = insertSubscription(ctx, tx, s, days, false); e != nil {
 		return out, e
 	}

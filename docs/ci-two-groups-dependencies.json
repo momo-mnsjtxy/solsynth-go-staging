@@ -1,5 +1,5 @@
 {
-  "base_commit": "b5221d15306dfcd8f363831be3e86d2c35cccce4",
+  "base_commit": "63e91fb37217f9f50c9798e4b24165c38326f948",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -235,7 +235,7 @@
       "test": "TestPGChatThreadsForwardRestartPersistence",
       "source": "tests/integration/chat_threads_forward_test.go",
       "function_sha256": "b8ce438678999b111ff7ccd778eec1ecc81d313d889bd2702371dd568e82d934",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "chat-thread-forward.json"
       ],
@@ -280,6 +280,20 @@
         "marker": "Synthetic durable content moderation checkpoint"
       },
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGCouponSavedRestartPersistence",
+      "source": "tests/integration/coupon_restart_test.go",
+      "function_sha256": "3f1a8a1965279bc55ea7da5e0111e88ba3a66a7f42ba203f1c35aabcaecf3f60",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "coupon-checkout-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "coupon-checkout-restart.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before exclusively saves exact random canonical IDs and original projections. After validates saved IDs/state only in the same restarted database; no recreation or reseeding."
     },
     {
       "test": "TestPGDevelopBotCommandsRestartPersistence",
@@ -329,7 +343,7 @@
       "test": "TestPGDirectRecoveryPrivacyRestartPersistence",
       "source": "tests/integration/direct_recovery_privacy_test.go",
       "function_sha256": "3f26ff14f07d34ebad9de3d0e92b1d1862fc2c0a98332669062b5d6d3e5ce249",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "direct-recovery-privacy.json"
       ],
@@ -383,7 +397,7 @@
       "test": "TestPGFederationQuoteRestartPersistence",
       "source": "tests/integration/federation_quotes_test.go",
       "function_sha256": "df32f9cd0863f0453f632c78e6cfec1e3b9d50eefc19ece87cb08e310dca90c1",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "federation-quote-restart.json"
       ],
@@ -493,7 +507,7 @@
     {
       "test": "TestPGMLSRestartPersistence",
       "source": "tests/integration/chat_mls_restart_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "b0f33fc222d7ca02237274d8cb489adec31258e507a3f07239fc66d21fe5d5d2",
       "marker_files": [
         "owned-mls-restart.json"
@@ -637,7 +651,7 @@
       "test": "TestPGPasskitRestartPersistence",
       "source": "tests/integration/passkit_test.go",
       "function_sha256": "5e578b0db1dd71e22c14267c5bbd28c2907c58cd1c62bb0a35562d074559f150",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "apple-pass-record.json"
       ],
@@ -660,6 +674,20 @@
       ],
       "named_database_markers": {},
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGPostAutomodSavedDecisionRestartPersistence",
+      "source": "tests/integration/post_automod_test.go",
+      "function_sha256": "652191a4d7d6ac10ee6967404d2c3fa890c81abb0c630a7018ac3533ccb7073c",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "post-automod-saved.json"
+      ],
+      "persistent_directories_or_files": [
+        "post-automod-saved.json"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before exclusively saves exact random canonical IDs and original projections. After validates saved IDs/state only in the same restarted database; no recreation or reseeding."
     },
     {
       "test": "TestPGPostAwardRestartPersistence",
@@ -1347,6 +1375,12 @@
       "function_sha256": "b8183991aa375edc13c0d59ead4bf9f5386fe65fd10c1690b533ffdcd2ba9190"
     },
     {
+      "test": "TestPGBackendPostAutomodCompositionAndExplicitReview",
+      "source": "tests/integration/backend_post_automod_test.go",
+      "function_sha256": "13cd0631136f633228cc0a480fada19a47771ef185d29bf9dac6ff1aa9c87102",
+      "group": "group-b"
+    },
+    {
       "test": "TestPGBackendPostAwardCheckoutAndRelease",
       "source": "tests/integration/backend_post_awards_test.go",
       "group": "group-a",
@@ -1398,7 +1432,7 @@
       "test": "TestPGBackendShippingAddressCheckout",
       "source": "tests/integration/shipping_test.go",
       "function_sha256": "4610b8e7c43a54626cc9b505db3405092d92b055b6b8d9f0fe442c6bae05604f",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendSigninHTTPProcessRestart",
@@ -1409,7 +1443,7 @@
     {
       "test": "TestPGBackendSubscriptionActivationRoutes",
       "source": "tests/integration/subscription_activation_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "81bf4ee7163be5f5b661325b717615390f5d4530c4f081b7255415708bcc70c3"
     },
     {
@@ -1425,16 +1459,28 @@
       "function_sha256": "4d9520c4305ca427cdf4c7184858fb28bfdacba60695a24412803c34dadb20ce"
     },
     {
+      "test": "TestPGCouponBackendHTTPPolicyAndBinding",
+      "source": "tests/integration/coupon_backend_test.go",
+      "function_sha256": "6a3208a3bd7ab76b9c4a3da9647d5fd4fadf2d28647d4e6bad442fe345341edf",
+      "group": "group-b"
+    },
+    {
       "test": "TestPGMLSBackendAuthorityAndGatewayComposition",
       "source": "tests/integration/chat_mls_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "de6593c1672b799b0a894b32de15eb889382507cb4262b1114d5f5a561457a9b"
     },
     {
       "test": "TestPGPasskitCompositionRegistrationIsolationAndUpdates",
       "source": "tests/integration/passkit_test.go",
       "function_sha256": "0541ff9a8805dc918debc071efae1ede3d725bf75950886877848c3c02a28f43",
-      "group": "group-b"
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGPostAutomodRealmAndNestedEvidenceIsolation",
+      "source": "tests/integration/post_automod_review_test.go",
+      "function_sha256": "7ebd37d2e65c763cc6515d6285e058e9647bf337e1a06176dc9087f0272222e0",
+      "group": "group-a"
     },
     {
       "test": "TestPGPostScheduleBackendProjectionAndDeferredFederation",
@@ -1484,7 +1530,7 @@
     },
     {
       "source": "tests/integration/app_publisher_owner_review_test.go",
-      "sha256": "6a5b2a14a2c5ed122cd73ff25429dcbd8d8eacd546ccd261153103335030f107"
+      "sha256": "0e9acbb1fc655e09b0428f53a71b0c310fed92141cd6ae70e49baa545efbe6fa"
     },
     {
       "source": "tests/integration/authority_atomic_test.go",
@@ -1563,6 +1609,10 @@
       "sha256": "75c3803ddfa732714abea2f2d8a4e234be29effc68be4debb011bc4c2f8982b9"
     },
     {
+      "source": "tests/integration/backend_post_automod_test.go",
+      "sha256": "00972a556ae4e13c0c1fec3e83e6ac12f8e0b9f893137f4d9fc414665d4fcdf4"
+    },
+    {
       "source": "tests/integration/backend_post_awards_test.go",
       "sha256": "dd01282e69ba0bb371ceaeba244fbe8d3fef1021e5d94ff883a0f055cc7cdc6e"
     },
@@ -1616,7 +1666,7 @@
     },
     {
       "source": "tests/integration/chat_lifecycle_test.go",
-      "sha256": "75d59434b6e6373a6698ac345e9d699dcea6169c06c74a3400bc66381ff65065"
+      "sha256": "4be9dc5a2a5f13dc2f7b75d4ef6afeb92417d3641959c305e7072c859f982ab6"
     },
     {
       "source": "tests/integration/chat_media_test.go",
@@ -1644,7 +1694,7 @@
     },
     {
       "source": "tests/integration/chat_threads_forward_test.go",
-      "sha256": "1042b607188e065e67a14398a1ca0d1f0d3dd0c81054d2548ebe5ff42b1dae26"
+      "sha256": "2b6d80bd12315ce3d582b45cd3eceb944a98149bbad0221d6dfb6daeacfc4f15"
     },
     {
       "source": "tests/integration/checkout_owner_policy_test.go",
@@ -1673,6 +1723,22 @@
     {
       "source": "tests/integration/content_translation_test.go",
       "sha256": "6bffe6bed38058ba77d0731e37679c2da64b28cd58eec37ce2608941b2ce89b1"
+    },
+    {
+      "source": "tests/integration/coupon_backend_test.go",
+      "sha256": "8aaf970563c9a62555b771a6b034b387c19b031e48ca44f85af82713a11d5c2a"
+    },
+    {
+      "source": "tests/integration/coupon_catalog_review_test.go",
+      "sha256": "f8b967613c23c44009f2d86da82616be2cd0f7cba77fab49ba50747d492119ad"
+    },
+    {
+      "source": "tests/integration/coupon_checkout_test.go",
+      "sha256": "d3dcb255917d5416d969e8898b100768ec28ecdd69ff0fdeb32283fb7c85dd1b"
+    },
+    {
+      "source": "tests/integration/coupon_restart_test.go",
+      "sha256": "b4dccd63031f6fb6e7df4910b4d96fa94ed8cd33d47d80bf8c9b774963298455"
     },
     {
       "source": "tests/integration/develop_bot_commands_test.go",
@@ -1819,6 +1885,18 @@
       "sha256": "491e2caeefa84b36827908569775493960295f003ca9cb6c9aedcb3d90aef13f"
     },
     {
+      "source": "tests/integration/post_automod_review_test.go",
+      "sha256": "5fa36eec93bf26fbc1846159991ed7074cac9cbe1bdb29bb4a5bd48fb4f6bb13"
+    },
+    {
+      "source": "tests/integration/post_automod_scheduling_test.go",
+      "sha256": "a286984750f903824c12e17da2ab9517046d032e9fbe4cdb14f306114c5ba2b3"
+    },
+    {
+      "source": "tests/integration/post_automod_test.go",
+      "sha256": "f40ca8cb43a1db4230bead8b5b3e09d4bcaa8958bb9b7eca7c6e7f9854d331fc"
+    },
+    {
       "source": "tests/integration/post_awards_test.go",
       "sha256": "ad8bce5bc4eceaf484f69278f1945413a14f2f593bba69d2e33545cb216bb7eb"
     },
@@ -1836,7 +1914,7 @@
     },
     {
       "source": "tests/integration/post_scheduling_review_test.go",
-      "sha256": "e01c062deab78f402af7aa492e072a4e7401eb3804774a54b238dba1cee48f03"
+      "sha256": "48a00eca62d6a11eeb9a9cf413b45dbc85cf2f38935008dabd1d6f4200c5d7b7"
     },
     {
       "source": "tests/integration/post_scheduling_test.go",
@@ -1920,11 +1998,11 @@
     },
     {
       "source": "tests/integration/room_media_test.go",
-      "sha256": "a6ad017a4d69f97906add8820cb0c6c1c815ebbf44fe1514cfbe6055649b4cf5"
+      "sha256": "f2e674d2222d784d311de9688c153d948713e86ec865fc68834d9203e8772521"
     },
     {
       "source": "tests/integration/shadowban_fixture_test.go",
-      "sha256": "a7f6300654e8276d3ae1615aadf1d025e29300c80dbd337d0bbd38fb03b63517"
+      "sha256": "1bafc3f772ade70bd90ad78efa3244a29e0065a40ccf3a9716e4c3252ab751e2"
     },
     {
       "source": "tests/integration/shipping_review_test.go",
@@ -1932,7 +2010,7 @@
     },
     {
       "source": "tests/integration/shipping_test.go",
-      "sha256": "0559b9e45ec7c3f492bd603b152abc2c4a5f4ace5ecd9e4798b2361082ea8c63"
+      "sha256": "a2d47af7784f51be8181b0ce391f16490e19abc9c400238fcf59696dbba8568d"
     },
     {
       "source": "tests/integration/signin_test.go",
@@ -2032,5 +2110,11 @@
   "social_rollback_fixture_review": "Successful finite blocking resets via authored DELETE relationship and POST friend request before the independent audit rollback test. Preconditions require no relation in either direction and exactly one pending request; failure must be PostgreSQL23514 for social_test_rollback. Original rollback and post-wait permission assertions retained. No case/group count change.",
   "shipping_schedule_rebase_review": "24 added cases reviewed: source-shaped address APIs, current contact/scoped app/merchant authority after waits, immutable paid destination and amounts, ordinary quote invariance, exact ledger/proof rollback, current direct/realm publisher owner observations without extra locks. Schedule cases retain current proof/intent, current post/publisher/realm/related/media gates after all waits and positive explicit-publication controls; short-lived real access expiry avoids mixed clocks. Synthetic-only isolated fixture states and marker ownership recorded. Source and schema guard registration complete. Actual625/81 pending.",
   "room_media_quota_review": "601 failure occurred before room-media assertions: realm creation lacked required canonical quota. Add one current explicit quota grant only; preserve runtime enforcement and all existing assertions. Other queued realm fixtures already seed canonical quota.",
-  "thread_owner_review": "Seventeen self-contained synthetic cases reviewed; unchanged schemas installed by existing runner; composed backend uses existing fixture adapters. One exact saved-state restart marker, same group before/after, no external provider or copied state."
+  "thread_owner_review": "Seventeen self-contained synthetic cases reviewed; unchanged schemas installed by existing runner; composed backend uses existing fixture adapters. One exact saved-state restart marker, same group before/after, no external provider or copied state.",
+  "coupon_automod_review": "Thirty-two self-contained cases, two genuine restart markers, existing host fixtures and new coupon schema installed. Automod restart uses validated phase and saved exact ID/bytes; fresh repository coupon case explicitly renamed to avoid restart claim. Preserves all existing cases and zero-skip/disjoint group invariants.",
+  "canonical_fixture_correction": "Reviewed four fixture sources: invitation accepted using canonical action with joined assertion; moderator boost prerequisite and exact state assertion; paired canonical shadowban reason/time helpers; foreign/nonexistent contact denials equal with no disclosure or mutation. Runtime gates unchanged.",
+  "owner_sql_fixture_review": "Explicit UUID/text casts on three synthetic owner ancestry INSERTs; exact prior case set retained. Anonymous reaction projection fix covered by existing thread before/restart plus focused local nil-transaction negative control.",
+  "anonymous_thread_review": "Existing thread case expanded with anonymous/private denial, malformed nonempty identity denial, equal aggregate reactions and distinct personal reactions. Existing saved restart target unchanged; updated exact fixture/function hashes reviewed.",
+  "anonymous_reaction_symbol_review": "New boundary assertion uses canonical thumb_up reaction symbol; exact changed fixture hash reviewed.",
+  "thread_implemented_boundary_review": "Previously unsupported thread input now returns404 for unknown canonical root, with zero-message assertion. Encryption/fund/alternate-identity unsupported boundaries retained. Current exact unchanged declaration set."
 }

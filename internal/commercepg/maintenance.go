@@ -149,13 +149,13 @@ func (r *Repository) dueOne(ctx context.Context, kind string) (bool, error) {
 		if e != nil {
 			return false, e
 		}
-		canRenew = old.PayeeWalletID == d.PayeeWalletID && old.Amount.Cmp(s.FinalPrice) == 0 && old.Currency == s.PaymentDetails.Currency && old.Status == c.Finished && old.TransactionID != nil && old.PayerWalletID != nil && *old.PayerWalletID == *s.PaymentDetails.PayerWalletID
+		canRenew = s.Coupon == nil && old.Coupon == nil && old.PayeeWalletID == d.PayeeWalletID && old.Amount.Cmp(s.FinalPrice) == 0 && old.Currency == s.PaymentDetails.Currency && old.Status == c.Finished && old.TransactionID != nil && old.PayerWalletID != nil && *old.PayerWalletID == *s.PaymentDetails.PayerWalletID
 	}
 	if canRenew {
 		if _, e = tx.ExecContext(ctx, `SAVEPOINT renewal_attempt`); e != nil {
 			return false, e
 		}
-		o, e := r.resourceOrder(ctx, tx, actor, d, s.ID, "", s.PaymentDetails.PayerWalletID, s.FinalPrice)
+		o, e := r.resourceOrder(ctx, tx, actor, d, s.ID, "", s.PaymentDetails.PayerWalletID, s.FinalPrice, nil)
 		if e != nil && !errors.Is(e, c.ErrStock) {
 			return false, e
 		}

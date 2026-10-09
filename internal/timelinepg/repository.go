@@ -22,11 +22,20 @@ import (
 var Schema string
 
 type Repository struct {
-	db           *sql.DB
-	guard        *authoritypg.TransactionGuard
-	visibility   postpg.VisibilityProvider
-	associations postpg.AssociationStore
-	now          func() time.Time
+	db            *sql.DB
+	guard         *authoritypg.TransactionGuard
+	visibility    postpg.VisibilityProvider
+	associations  postpg.AssociationStore
+	now           func() time.Time
+	automod       bool
+	automodReview bool
+}
+
+// WithAutomod enables source-observed ranked-feed effects; Latest bypasses them.
+func (r *Repository) WithAutomod(review bool) *Repository {
+	r.automod = true
+	r.automodReview = review
+	return r
 }
 
 func New(db *sql.DB) *Repository {

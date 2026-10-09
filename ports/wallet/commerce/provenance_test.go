@@ -12,6 +12,9 @@ import (
 	"testing"
 )
 
+func TestRetainedCouponInvestigationSourceBytes(t *testing.T) {
+	checkCommerceSources(t, "coupon-source/manifest.json")
+}
 func TestRetainedCommerceSourceBytes(t *testing.T) {
 	checkCommerceSources(t, "source/manifest.json")
 }

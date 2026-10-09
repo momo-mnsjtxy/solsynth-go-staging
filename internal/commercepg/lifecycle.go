@@ -63,6 +63,11 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		if e = lockOrderApp(ctx, tx, peek); e != nil {
 			return o, e
 		}
+		if peek.Coupon != nil && peek.Coupon.Scope == "order" {
+			if e = lockCouponOrderProducts(ctx, tx, peek); e != nil {
+				return o, e
+			}
+		}
 		if _, _, e = prepareRecurringOrder(ctx, tx, actor, peek); e != nil {
 			return o, e
 		}
@@ -165,8 +170,14 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 	if e = r.captureDestination(ctx, tx, actor, &o); e != nil {
 		return c.Order{}, e
 	}
+	if e = r.validateCouponQuote(ctx, tx, actor, o, false); e != nil {
+		return o, e
+	}
 	tr, e := walletpg.CommerceHold(ctx, tx, o.ID, actor, payer, o.PayeeWalletID, o.Currency, o.Amount, now)
 	if e != nil {
+		return o, e
+	}
+	if e = redeemCoupon(ctx, tx, o, r.now().UTC()); e != nil {
 		return o, e
 	}
 	o.Status = c.Paid
@@ -293,6 +304,9 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 			return o, e
 		}
 	}
+	if e = r.validateCouponQuote(ctx, tx, actor, o, true); e != nil {
+		return c.Order{}, e
+	}
 	// Wallet/fulfillment locks may have waited after the initial deadline check.
 	// Rejecting here rolls back the hold, settlement, entitlement and outboxes
 	// together; an earlier clock sample must not extend this checkout's lifetime.
@@ -324,6 +338,14 @@ func (r *Repository) UpdateOrder(ctx context.Context, idv string, req c.UpdateSt
 	}
 	if o.AppIdentifier != "developer.app:"+app.AppID {
 		return o, c.ErrNotFound
+	}
+	// App coupon issuance never delegates gift escrow settlement.
+	var giftManaged bool
+	if e = tx.QueryRowContext(ctx, `SELECT gift_id IS NOT NULL FROM commerce_v1.orders WHERE id=$1`, o.ID).Scan(&giftManaged); e != nil {
+		return o, e
+	}
+	if giftManaged {
+		return o, c.ErrForbidden
 	}
 	if o.Status == req.Status {
 		if _, e = r.client(ctx, tx, req.Credentials, "orders.status.manage"); e != nil {
@@ -488,7 +510,10 @@ func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c
 	if req.PaymentMethod == "" {
 		req.PaymentMethod = "solian.wallet"
 	}
-	if req.PaymentMethod != "solian.wallet" || req.Coupon != nil || req.IsFreeTrial {
+	if req.Coupon != nil && req.IsAutoRenewal != nil && *req.IsAutoRenewal {
+		return s, c.ErrInvalid
+	}
+	if req.PaymentMethod != "solian.wallet" || req.IsFreeTrial {
 		return s, c.ErrUnavailable
 	}
 	d, e := definition(ctx, tx, req.Identifier)
@@ -532,7 +557,7 @@ func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c
 	}
 	old, e := lookupSubscriptionDefinition(ctx, tx, actor, req.Identifier)
 	if e == nil && (old.Status == c.SubscriptionUnpaid || old.Status == c.SubscriptionActive) {
-		if noop {
+		if noop && req.Coupon == nil {
 			return old, tx.Commit()
 		}
 		return old, c.ErrConflict
@@ -554,6 +579,19 @@ func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c
 		renew = d.AllowInternalWalletRenewal && req.IsAutoRenewal != nil && *req.IsAutoRenewal
 	}
 	s = c.Subscription{AppIdentifier: d.AppIdentifier, ProductTerms: d.ProductTerms, ConsentVersion: consentVersion, CycleDurationDays: days, IsAutoRenewal: renew, ID: sid, AccountID: actor, Identifier: d.Identifier, GroupIdentifier: d.GroupIdentifier, DisplayName: d.DisplayName, Status: c.SubscriptionUnpaid, PaymentMethod: req.PaymentMethod, PaymentDetails: c.PaymentDetails{Currency: d.Currency, PayerWalletID: &payer}, BasePrice: d.BasePrice, FinalPrice: price, BegunAt: now, EndedAt: now.Add(time.Duration(days) * 24 * time.Hour), CreatedAt: now, UpdatedAt: now}
+	if req.Coupon != nil {
+		app, err := couponApp(d)
+		if err != nil {
+			return s, err
+		}
+		s.Coupon, e = r.quoteCoupon(ctx, tx, actor, app, d.PayeeWalletID, "subscription", d.Currency, *req.Coupon, []string{d.Identifier}, price)
+		if e != nil {
+			return s, e
+		}
+		s.FinalPrice = s.Coupon.Net
+		s.IsAutoRenewal = false
+		renew = false
+	}
 	if e = insertSubscription(ctx, tx, s, days, renew); e != nil {
 		return s, e
 	}
@@ -562,6 +600,17 @@ func (r *Repository) CreateSubscription(ctx context.Context, actor string, req c
 	}
 	if e = event(ctx, tx, "subscription.created", s.ID, s, now); e != nil {
 		return s, e
+	}
+	if s.Coupon != nil {
+		if _, e = r.guard.Authenticate(ctx, r.db, tx, actor); e != nil {
+			return s, e
+		}
+		if e = couponIssuer(ctx, tx, s.Coupon.AppID, s.Coupon.PublisherID, s.Coupon.PayeeWalletID); e != nil {
+			return s, e
+		}
+		if !s.Coupon.ExpiresAt.After(r.now().UTC()) {
+			return s, c.ErrConflict
+		}
 	}
 	return s, tx.Commit()
 }
@@ -674,7 +723,7 @@ func (r *Repository) SubscriptionOrder(ctx context.Context, actor, identifier st
 	if e != nil {
 		return o, e
 	}
-	if s.Status == c.SubscriptionCancelled {
+	if s.Status == c.SubscriptionCancelled || s.Coupon != nil && s.Status != c.SubscriptionUnpaid {
 		return o, c.ErrConflict
 	}
 	d, e := definitionForOrder(ctx, tx, s.Identifier)
@@ -684,16 +733,19 @@ func (r *Repository) SubscriptionOrder(ctx context.Context, actor, identifier st
 	if e = subscriptionEconomics(ctx, tx, s, d); e != nil {
 		return o, e
 	}
-	o, e = r.resourceOrder(ctx, tx, actor, d, s.ID, "", s.PaymentDetails.PayerWalletID, s.FinalPrice)
+	o, e = r.resourceOrder(ctx, tx, actor, d, s.ID, "", s.PaymentDetails.PayerWalletID, s.FinalPrice, s.Coupon)
 	if e != nil {
 		return o, e
 	}
 	return o, tx.Commit()
 }
-func (r *Repository) resourceOrder(ctx context.Context, tx *sql.Tx, actor string, d c.Definition, sub, gift string, payer *string, price wallet.Amount) (c.Order, error) {
+func (r *Repository) resourceOrder(ctx context.Context, tx *sql.Tx, actor string, d c.Definition, sub, gift string, payer *string, price wallet.Amount, coupon *c.CouponQuote) (c.Order, error) {
 	now := r.now().UTC()
 	o, e := decode[c.Order](tx.QueryRowContext(ctx, `SELECT document FROM commerce_v1.orders WHERE actor_id=$1 AND subscription_id IS NOT DISTINCT FROM $2::uuid AND gift_id IS NOT DISTINCT FROM $3::uuid AND status=0 AND expires_at>$4 ORDER BY created_at DESC LIMIT 1 FOR UPDATE`, actor, nullable(sub), nullable(gift), now))
 	if e == nil {
+		if !sameCoupon(o.Coupon, coupon) {
+			return o, c.ErrConflict
+		}
 		return o, nil
 	}
 	if !errors.Is(e, c.ErrNotFound) {
@@ -705,7 +757,7 @@ func (r *Repository) resourceOrder(ctx context.Context, tx *sql.Tx, actor string
 		return o, e
 	}
 	product := d.Identifier
-	o = c.Order{ID: oid, Status: c.Unpaid, Currency: d.Currency, Amount: price, AppIdentifier: "internal", ProductIdentifier: &product, PayeeWalletID: d.PayeeWalletID, PayerWalletID: payer, Meta: map[string]json.RawMessage{}, Items: []c.OrderItem{}, CreatedAt: now, UpdatedAt: now, ExpiredAt: now.Add(24 * time.Hour)}
+	o = c.Order{Coupon: coupon, ID: oid, Status: c.Unpaid, Currency: d.Currency, Amount: price, AppIdentifier: "internal", ProductIdentifier: &product, PayeeWalletID: d.PayeeWalletID, PayerWalletID: payer, Meta: map[string]json.RawMessage{}, Items: []c.OrderItem{}, CreatedAt: now, UpdatedAt: now, ExpiredAt: now.Add(24 * time.Hour)}
 	if sub != "" {
 		o.Meta["subscription_id"], _ = json.Marshal(sub)
 		o.Meta["subscription_identifier"], _ = json.Marshal(d.Identifier)
@@ -727,13 +779,18 @@ func (r *Repository) resourceOrder(ctx context.Context, tx *sql.Tx, actor string
 		}
 		o.Items = []c.OrderItem{{ProductIdentifier: stockProduct.Identifier, Quantity: quantity, UnitPrice: stockProduct.Price, Currency: stockProduct.Currency}}
 		captured, err := c.Total(o.Items)
-		if err != nil || captured.Cmp(o.Amount) != 0 || stockProduct.Currency != o.Currency {
+		if err != nil || captured.Cmp(o.GrossAmount()) != 0 || stockProduct.Currency != o.Currency {
 			return o, c.ErrConflict
 		}
 	}
-	if d.ProductID != "" && d.AppIdentifier != nil {
+	if d.AppIdentifier != nil && (d.ProductID != "" || coupon != nil) {
 		o.AppIdentifier = *d.AppIdentifier
 		app = strings.TrimPrefix(*d.AppIdentifier, "developer.app:")
+	}
+	if coupon != nil {
+		if e = r.validateCouponQuote(ctx, tx, actor, o, false); e != nil {
+			return o, e
+		}
 	}
 	if e = insertOrder(ctx, tx, o, app, actor, sub, gift); e != nil {
 		return o, e
@@ -764,7 +821,7 @@ func (r *Repository) activateSubscription(ctx context.Context, tx *sql.Tx, sid s
 	if e = subscriptionEconomics(ctx, tx, s, d); e != nil {
 		return e
 	}
-	if s.FinalPrice.Cmp(o.Amount) != 0 || s.PaymentDetails.Currency != o.Currency || o.PayeeWalletID != d.PayeeWalletID {
+	if !sameCoupon(s.Coupon, o.Coupon) || s.FinalPrice.Cmp(o.Amount) != 0 || s.PaymentDetails.Currency != o.Currency || o.PayeeWalletID != d.PayeeWalletID {
 		return c.ErrConflict
 	}
 	if s.Status == c.SubscriptionActive && s.EndedAt.After(now) {

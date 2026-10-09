@@ -70,6 +70,7 @@ type Collection struct {
 
 type Post struct {
 	Schedule             *Schedule                     `json:"schedule,omitempty"`
+	Automod              *AutomodDecision              `json:"automod,omitempty"`
 	AwardedScore         wallet.Amount                 `json:"awarded_score"`
 	Attachments          []postmedia.Attachment        `json:"attachments"`
 	RepliedPostID        *string                       `json:"replied_post_id"`

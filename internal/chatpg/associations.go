@@ -36,6 +36,10 @@ func (r *Repository) loadMessage(ctx context.Context, tx *sql.Tx, actor string, 
 		return e
 	}
 	v.ReactionsMade = map[string]bool{}
+	// Anonymous public readers have no account-specific reaction state.
+	if actor == "" {
+		return nil
+	}
 	rows, e := tx.QueryContext(ctx, `SELECT reaction.symbol FROM chat_reactions reaction JOIN chat_members sender ON sender.id=reaction.sender_id WHERE reaction.message_id=$1 AND sender.chat_room_id=$2 AND sender.account_id=$3 AND reaction.deleted_at IS NULL AND sender.deleted_at IS NULL`, v.ID, v.ChatRoomID, actor)
 	if e != nil {
 		return e

@@ -29,6 +29,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 			return e
 		}
 	}
+	if b.commerce != nil {
+		if e := b.commerce.CouponsReady(ctx); e != nil {
+			return e
+		}
+	}
 	var ready bool
 	err := b.authorityDB.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name) IS NOT NULL) FROM (VALUES ('owned_authority_accounts'), ('owned_authority_sessions'), ('owned_authority_grants'), ('owned_authority_groups'), ('owned_authority_group_members'), ('owned_authority_group_grants'), ('owned_authority_punishments')) AS required(name)`).Scan(&ready)
 	if err != nil || !ready {

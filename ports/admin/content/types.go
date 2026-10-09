@@ -128,7 +128,13 @@ type RealmPatch struct {
 	IsCommunity *bool   `json:"is_community"`
 	AccountID   *string `json:"account_id"`
 }
+type AutomodReview struct {
+	ExpectedRevision int64  `json:"expected_revision"`
+	Action           string `json:"action"`
+	Reason           string `json:"reason"`
+}
 type Command struct {
+	Automod    *AutomodReview
 	Action     string
 	IDs        []string
 	Reason     *string

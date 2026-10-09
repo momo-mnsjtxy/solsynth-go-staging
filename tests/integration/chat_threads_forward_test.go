@@ -111,6 +111,35 @@ func TestPGChatThreadsRootReplyIsolationAndPagination(t *testing.T) {
 	if _, e := f.chats.Thread(f.contexts[f.third], f.third, room.ID, root.ID, 20, 0); !errors.Is(e, rooms.ErrForbidden) {
 		t.Fatal("outsider thread", e)
 	}
+	if _, e := f.chats.Thread(f.base, "", room.ID, root.ID, 20, 0); !errors.Is(e, rooms.ErrForbidden) {
+		t.Fatal("anonymous private thread", e)
+	}
+	if _, e := f.chats.Thread(f.base, "not-an-account", room.ID, root.ID, 20, 0); !errors.Is(e, rooms.ErrInvalid) {
+		t.Fatal("malformed nonempty identity", e)
+	}
+	publicRoom := threadRoom(t, f, true)
+	publicRoot := relationSend(t, f, f.owner, publicRoom.ID, "Public reaction root")
+	if _, e := f.chats.React(f.contexts[f.owner], f.owner, publicRoom.ID, publicRoot.ID, rooms.ReactionRequest{Symbol: "thumb_up"}); e != nil {
+		t.Fatal(e)
+	}
+	anonymous, e := f.chats.Thread(f.base, "", publicRoom.ID, publicRoot.ID, 20, 0)
+	if e != nil {
+		t.Fatal("anonymous public projection", e)
+	}
+	memberView, e := f.chats.Thread(f.contexts[f.owner], f.owner, publicRoom.ID, publicRoot.ID, 20, 0)
+	if e != nil {
+		t.Fatal(e)
+	}
+	var anonymousCounts, memberCounts map[string]int
+	if e := json.Unmarshal(anonymous.Root.ReactionsCount, &anonymousCounts); e != nil {
+		t.Fatal(e)
+	}
+	if e := json.Unmarshal(memberView.Root.ReactionsCount, &memberCounts); e != nil {
+		t.Fatal(e)
+	}
+	if !reflect.DeepEqual(anonymousCounts, memberCounts) || anonymousCounts["thumb_up"] != 1 || len(anonymous.Root.ReactionsMade) != 0 || !memberView.Root.ReactionsMade["thumb_up"] {
+		t.Fatal("aggregate/personal reaction boundary", anonymous.Root, memberView.Root)
+	}
 	page, e := f.chats.Thread(f.contexts[f.other], f.other, room.ID, root.ID, 2, 0)
 	if e != nil || page.Total != 3 || !page.Root.IsThreadRoot || page.Root.ThreadRepliesCount != 3 || len(page.Replies) != 2 || page.Replies[0].Message.ID != third.ID || page.Replies[0].Depth != 2 || page.Replies[1].Depth != 1 {
 		t.Fatal("thread page/depth", page, e)

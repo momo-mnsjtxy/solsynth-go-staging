@@ -55,6 +55,7 @@ func run(args []string, out io.Writer) error {
 	keyFile := fs.String("trusted-public-key-file", "", "explicit RSA public PEM, no certificates or private keys")
 	maxLifetime := fs.Duration("max-access-lifetime", 10*time.Minute, "maximum access-token lifetime, matching issuer policy")
 	public := fs.String("taxonomy-public-visibility", "", "explicit public visibility enum stored in database")
+	enableAutomodReview := fs.Bool("enable-automod-review", false, "explicitly enable owned version-checked post rule review; source ranking remains default")
 	enableMLS := fs.Bool("enable-mls-delivery", false, "opt in to owned opaque MLS delivery; requires explicit MLS schema and client validation")
 	none := fs.String("messager-none-encryption", "", "explicit unencrypted room mode stored in database")
 	all := fs.String("messager-notify-all", "", "explicit all-notifications mode stored in database")
@@ -72,6 +73,7 @@ func run(args []string, out io.Writer) error {
 	ipCheckSettings := ipCheckFlags(fs)
 	accountExtrasSettings := accountExtraFlags(fs)
 	passkitSettings := passkitFlags(fs)
+	couponSettings := couponFlags(fs)
 	factorIssuer := fs.String("factor-issuer-label", "SoSYS", "human-readable TOTP issuer label")
 	enableOAuth := fs.Bool("enable-oauth", false, "enable owned OAuth authorization-code and OIDC userinfo flows")
 	consentURL := fs.String("oauth-consent-url", "", "deployed HTTPS consent UI calling the owned authorization API")
@@ -229,7 +231,7 @@ func run(args []string, out io.Writer) error {
 		}
 		catalogProviders = []exchangecatalog.Provider{provider}
 	}
-	appConfig := application.Config{EnableMLSDelivery: *enableMLS, Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
+	appConfig := application.Config{PostAutomodReview: *enableAutomodReview, EnableMLSDelivery: *enableMLS, Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
 	if *enablePINEnrollment {
 		appConfig.PINEnrollmentPepperID = *pepperID
 	}
@@ -266,6 +268,10 @@ func run(args []string, out io.Writer) error {
 		return err
 	}
 	appConfig.Fortunes = fortuneConfig
+	appConfig.CommerceCouponPolicy, err = couponSettings.config()
+	if err != nil {
+		return err
+	}
 	appConfig.IPCheck, err = ipCheckSettings.config()
 	if err != nil {
 		return err

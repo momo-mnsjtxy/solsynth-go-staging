@@ -101,6 +101,9 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimPrefix(r.URL.Path, "/api/")
 	parts := strings.Split(path, "/")
 	method := r.Method
+	if s.couponIssuerHTTP(w, r, parts) {
+		return
+	}
 	ctx := r.Context()
 	done := func(v any, e error, code string) {
 		if e != nil {
@@ -212,6 +215,32 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx = r.Context()
 	actor := p.AccountID
+	if method == "POST" && len(parts) >= 3 && parts[0] == "orders" && parts[2] == "coupon" && (len(parts) == 3 || len(parts) == 4 && parts[3] == "preview") {
+		var q struct {
+			Coupon string `json:"coupon"`
+		}
+		if e = body(r, &q); e != nil || q.Coupon == "" {
+			problem(w, ErrInvalid, "COUPON_INVALID")
+			return
+		}
+		a, ok := s.Identity.(Authorizer)
+		if !ok {
+			problem(w, ErrUnavailable, "COUPON_UNAVAILABLE")
+			return
+		}
+		if e = a.Require(ctx, p, "orders.pay"); e != nil {
+			problem(w, e, "COUPON_FORBIDDEN")
+			return
+		}
+		repo, ok := s.Store.(CouponStore)
+		if !ok {
+			problem(w, ErrUnavailable, "COUPON_UNAVAILABLE")
+			return
+		}
+		v, err := repo.ApplyOrderCoupon(ctx, actor, parts[1], q.Coupon, len(parts) == 4)
+		done(v, err, "COUPON_FAILED")
+		return
+	}
 	if path == "subscriptions/pending-activations" && method == "GET" {
 		repo, ok := s.Store.(ActivationStore)
 		if !ok {

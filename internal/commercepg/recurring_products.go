@@ -184,7 +184,7 @@ func prepareRecurringOrder(ctx context.Context, tx *sql.Tx, actor string, o c.Or
 	if e != nil {
 		return d, true, e
 	}
-	if d.ProductTerms != snapshot.ProductTerms || d.BasePrice.Cmp(o.Amount) != 0 || d.Currency != o.Currency || d.PayeeWalletID != o.PayeeWalletID {
+	if d.ProductTerms != snapshot.ProductTerms || d.BasePrice.Cmp(o.GrossAmount()) != 0 || d.Currency != o.Currency || d.PayeeWalletID != o.PayeeWalletID {
 		return d, true, c.ErrConflict
 	}
 	_, e = recurringConsent(ctx, tx, actor, d, 0)
@@ -201,7 +201,7 @@ func (r *Repository) fulfillRecurringOrder(ctx context.Context, tx *sql.Tx, acto
 		return e
 	}
 	// A merchant-created order cannot authorize standing charges for its buyer.
-	s := c.Subscription{ID: sid, AccountID: actor, Identifier: d.Identifier, AppIdentifier: d.AppIdentifier, ProductTerms: d.ProductTerms, ConsentVersion: version, CycleDurationDays: d.CycleDurationDays, GroupIdentifier: d.GroupIdentifier, DisplayName: d.DisplayName, Status: c.SubscriptionUnpaid, PaymentMethod: "solian.wallet", PaymentDetails: c.PaymentDetails{Currency: d.Currency, PayerWalletID: o.PayerWalletID}, BasePrice: d.BasePrice, FinalPrice: d.BasePrice, BegunAt: now, EndedAt: now.Add(time.Duration(d.CycleDurationDays) * 24 * time.Hour), CreatedAt: now, UpdatedAt: now}
+	s := c.Subscription{ID: sid, AccountID: actor, Identifier: d.Identifier, AppIdentifier: d.AppIdentifier, ProductTerms: d.ProductTerms, ConsentVersion: version, CycleDurationDays: d.CycleDurationDays, GroupIdentifier: d.GroupIdentifier, DisplayName: d.DisplayName, Status: c.SubscriptionUnpaid, PaymentMethod: "solian.wallet", PaymentDetails: c.PaymentDetails{Currency: d.Currency, PayerWalletID: o.PayerWalletID}, BasePrice: d.BasePrice, FinalPrice: o.Amount, Coupon: o.Coupon, BegunAt: now, EndedAt: now.Add(time.Duration(d.CycleDurationDays) * 24 * time.Hour), CreatedAt: now, UpdatedAt: now}
 	if e = insertSubscription(ctx, tx, s, d.CycleDurationDays, false); e != nil {
 		return e
 	}
@@ -230,7 +230,7 @@ func subscriptionEconomics(ctx context.Context, tx *sql.Tx, s c.Subscription, d 
 	if e != nil {
 		return c.ErrConflict
 	}
-	if s.BasePrice.Cmp(d.BasePrice) != 0 || s.FinalPrice.Cmp(price) != 0 || s.PaymentDetails.Currency != d.Currency || s.GroupIdentifier != d.GroupIdentifier {
+	if s.BasePrice.Cmp(d.BasePrice) != 0 || s.GrossPrice().Cmp(price) != 0 || s.PaymentDetails.Currency != d.Currency || s.GroupIdentifier != d.GroupIdentifier {
 		return c.ErrConflict
 	}
 	if d.ProductID != "" {

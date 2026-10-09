@@ -27,6 +27,8 @@ var Schema string
 type Config struct {
 	Now              func() time.Time
 	PostAssociations postpg.AssociationStore
+	// AutomodReview explicitly enables the owned dismiss/recheck extension.
+	AutomodReview bool
 }
 type Repository struct {
 	db       *sql.DB
@@ -180,6 +182,21 @@ func (r *Repository) realm(ctx context.Context, tx *sql.Tx, ref string) (social.
 	return v, mapped(e)
 }
 func (r *Repository) post(ctx context.Context, tx *sql.Tx, id string) (c.Post, error) {
+	p, e := r.postState(ctx, tx, id)
+	if e != nil {
+		return p, e
+	}
+	p.Automod, e = postpg.LoadAutomodInTransaction(ctx, tx, id)
+	if e != nil {
+		return p, e
+	}
+	return p, postpg.MarkAutomodFreshness(ctx, tx, &p.Post)
+}
+
+// Manual moderation does not require automatic-rule evidence. In particular,
+// realm moderation must not project global rule details or review reasons,
+// and malformed historical evidence must not prevent authorized removal.
+func (r *Repository) postState(ctx context.Context, tx *sql.Tx, id string) (c.Post, error) {
 	var p c.Post
 	v, e := postpg.ReadForModerationInTransaction(ctx, tx, id)
 	if e != nil {

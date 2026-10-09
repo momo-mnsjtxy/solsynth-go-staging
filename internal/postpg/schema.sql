@@ -33,3 +33,13 @@ ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS shadowban_reason text;
 ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS shadowbanned_at timestamptz;
 
 ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS awarded_score numeric(32,3) NOT NULL DEFAULT 0;
+
+-- Durable local-rule evidence; ranked-feed evaluation always uses current rules.
+ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS automod_revision bigint NOT NULL DEFAULT 0 CHECK(automod_revision>=0);
+ALTER TABLE owned_text_posts ADD COLUMN IF NOT EXISTS automod_decision jsonb CHECK(automod_decision IS NULL OR(jsonb_typeof(automod_decision)='object' AND octet_length(automod_decision::text)<=2097152));
+CREATE TABLE IF NOT EXISTS owned_post_automod_events(
+ post_id uuid NOT NULL REFERENCES owned_text_posts(id),revision bigint NOT NULL,
+ actor_id uuid NOT NULL REFERENCES owned_authority_accounts(id),transition text NOT NULL,
+ decision jsonb NOT NULL CHECK(jsonb_typeof(decision)='object' AND octet_length(decision::text)<=2097152),
+ occurred_at timestamptz NOT NULL,PRIMARY KEY(post_id,revision)
+);

@@ -359,8 +359,13 @@ func TestPGChatAuthorityAndUnsupportedBoundaries(t *testing.T) {
 	f := newChatFixture(t)
 	room := createChat(t, f, true)
 	base := "/api/chat/" + room.ID
-	for _, body := range []string{`{"content":"hi","encryption_meta":{}}`, `{"content":"hi","fund_id":null}`, `{"content":"hi","thread_id":"c2000000-0000-4000-8000-000000000001"}`} {
+	for _, body := range []string{`{"content":"hi","encryption_meta":{}}`, `{"content":"hi","fund_id":null}`} {
 		chatCall(t, f.handler, "POST", base+"/messages", f.token, body, 501)
+	}
+	// Threads are implemented; a missing root remains a not-found denial.
+	chatCall(t, f.handler, "POST", base+"/messages", f.token, `{"content":"hi","thread_id":"c2000000-0000-4000-8000-000000000001"}`, 404)
+	if n := commerceCount(t, f.db, `SELECT count(*) FROM chat_messages WHERE chat_room_id=$1`, room.ID); n != 0 {
+		t.Fatal("invalid thread request created a message", n)
 	}
 	chatCall(t, f.handler, "POST", base+"/messages?identity="+f.other, f.token, `{"content":"hi"}`, 501)
 	// DM creation is implemented, but this compatibility fixture deliberately

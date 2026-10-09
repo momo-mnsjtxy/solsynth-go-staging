@@ -273,6 +273,14 @@ func (r *Repository) processSchedule(ctx context.Context, s dueSchedule) (bool, 
 	if s.due.After(now) {
 		return false, nil
 	}
+	// Local rules are evaluated only when installed. Ranked Hide is evidence,
+	// not a publication denial. Existing gates and authority are rechecked below
+	// after this generation-row wait; the entire decision/publish is atomic.
+	if reason == "" && r.automod {
+		if e = r.AutomodInTransaction(ctx, tx, s.actor, &p, "scheduled_publish"); e != nil {
+			return false, e
+		}
+	}
 	if reason == "" {
 		reason, e = r.checkScheduledPost(ctx, tx, s, &p)
 		if e != nil {

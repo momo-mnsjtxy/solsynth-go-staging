@@ -285,7 +285,11 @@ func TestPGRoomMediaRealmRevocationAndDirectAudience(t *testing.T) {
 	socialRepo := socialpg.New(f.db)
 	realm := socialRealm(t, socialRepo, f.actor, true, true)
 	realmPermissionJoin(t, socialRepo, f.other, realm.ID)
+	query(t, f.db, `UPDATE owned_realms SET boost_level=2 WHERE id=$1`, realm.ID)
 	realmPermissionRole(t, socialRepo, f.actor, realm.ID, f.other, 50)
+	if n := commerceCount(t, f.db, `SELECT count(*) FROM owned_realms r JOIN owned_realm_members m ON m.realm_id=r.id WHERE r.id=$1 AND r.boost_level=2 AND m.account_id=$2 AND m.role=50 AND m.joined_at IS NOT NULL AND m.leave_at IS NULL`, realm.ID, f.other); n != 1 {
+		t.Fatal("moderator fixture not established", n)
+	}
 	name := "realm images"
 	room, e := f.chat.Create(f.ctx, f.actor, rooms.RoomPatch{Name: &name, RealmID: &realm.ID})
 	if e != nil {

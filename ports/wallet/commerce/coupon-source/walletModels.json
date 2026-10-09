@@ -1,0 +1,13 @@
+{
+  "content": "{\"sha\":\"bcf069fcae0eebfc5cba8122c1132d79d921255a\",\"url\":\"https://api.github.com/repos/Solsynth/DysonNetwork/git/trees/bcf069fcae0eebfc5cba8122c1132d79d921255a\",\"tree\":[{\"path\":\"SubscriptionCatalog.cs\",\"mode\":\"100644\",\"type\":\"blob\",\"sha\":\"285f37632be9c0c8c321de38fda8ebe2c9bb82e4\",\"size\":6344,\"url\":\"https://api.github.com/repos/Solsynth/DysonNetwork/git/blobs/285f37632be9c0c8c321de38fda8ebe2c9bb82e4\"},{\"path\":\"WalletProductOptions.cs\",\"mode\":\"100644\",\"type\":\"blob\",\"sha\":\"c9ddef8ea10178625e12a4b69e2cc309beb89452\",\"size\":544,\"url\":\"https://api.github.com/repos/Solsynth/DysonNetwork/git/blobs/c9ddef8ea10178625e12a4b69e2cc309beb89452\"}],\"truncated\":false}",
+  "title": "bcf069fcae0eebfc5cba8122c1132d79d921255a",
+  "modified_date": null,
+  "url": "https://api.github.com/repos/Solsynth/DysonNetwork/git/trees/bcf069fcae0eebfc5cba8122c1132d79d921255a?recursive=1",
+  "display_url": "https://api.github.com/repos/Solsynth/DysonNetwork/git/trees/bcf069fcae0eebfc5cba8122c1132d79d921255a?recursive=1",
+  "display_title": "bcf069fcae0eebfc5cba8122c1132d79d921255a",
+  "structuredContent": {
+    "title": "bcf069fcae0eebfc5cba8122c1132d79d921255a",
+    "content": "{\"sha\":\"bcf069fcae0eebfc5cba8122c1132d79d921255a\",\"url\":\"https://api.github.com/repos/Solsynth/DysonNetwork/git/trees/bcf069fcae0eebfc5cba8122c1132d79d921255a\",\"tree\":[{\"path\":\"SubscriptionCatalog.cs\",\"mode\":\"100644\",\"type\":\"blob\",\"sha\":\"285f37632be9c0c8c321de38fda8ebe2c9bb82e4\",\"size\":6344,\"url\":\"https://api.github.com/repos/Solsynth/DysonNetwork/git/blobs/285f37632be9c0c8c321de38fda8ebe2c9bb82e4\"},{\"path\":\"WalletProductOptions.cs\",\"mode\":\"100644\",\"type\":\"blob\",\"sha\":\"c9ddef8ea10178625e12a4b69e2cc309beb89452\",\"size\":544,\"url\":\"https://api.github.com/repos/Solsynth/DysonNetwork/git/blobs/c9ddef8ea10178625e12a4b69e2cc309beb89452\"}],\"truncated\":false}",
+    "display_url": "https://api.github.com/repos/Solsynth/DysonNetwork/git/trees/bcf069fcae0eebfc5cba8122c1132d79d921255a?recursive=1"
+  }
+}

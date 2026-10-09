@@ -93,6 +93,8 @@ import (
 // Config is injected by the embedding application. Enum values are mandatory
 // explicit database-policy decisions; zero is never silently treated as public.
 type Config struct {
+	// PostAutomodReview enables the owned version-checked review extension.
+	PostAutomodReview             bool
 	AppleWallet                   *passkit.Config
 	AppleWalletProgramGroup       string
 	EnableMLSDelivery             bool // Explicit owned opaque delivery capability; requires MLSSchema.
@@ -122,6 +124,7 @@ type Config struct {
 	MaxMediaBytes                 int64
 	NotificationApp               string
 	CommerceProviders             map[string]commerce.Provider
+	CommerceCouponPolicy          commerce.CouponPolicy
 	Signin                        *signin.Config
 	Tickets                       *ticketpg.Config
 	Calls                         *CallConfig
@@ -247,7 +250,10 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	appService := &apps.Service{Repository: appRepo, Authority: proofIdentity{identity}}
 	merchantRepo := merchantpg.New(db, guard)
 	merchantHTTP := merchants.NewHandler(merchantRepo, postIdentity{identity})
-	commerceRepo := commercepg.New(db, guard, commercepg.AppAdapters(appRepo)).WithPaymentAuthorization(paymentPIN)
+	if !c.CommerceCouponPolicy.Empty() && !c.CommerceCouponPolicy.Valid() {
+		return nil, errors.New("invalid explicit coupon policy")
+	}
+	commerceRepo := commercepg.New(db, guard, commercepg.AppAdapters(appRepo)).WithPaymentAuthorization(paymentPIN).WithCouponPolicy(c.CommerceCouponPolicy)
 	appRepo.WithProductCatalog(commerceRepo)
 	if c.Authority.Now != nil {
 		commerceRepo.WithClock(c.Authority.Now)
@@ -350,7 +356,8 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	postMedia := postmediapg.New(db, interactionRepo).WithVisibility(socialRepo)
 	timelineRepo := timelinepg.NewWithAuthority(db, guard).WithVisibility(socialRepo).WithAssociations(postMedia)
 	timelineHTTP := timeline.NewHandler(timelineRepo, postIdentity{identity})
-	postRepository.WithAssociations(timelineRepo).WithVisibility(socialRepo)
+	postRepository.WithAssociations(timelineRepo).WithVisibility(socialRepo).WithAutomod(c.PostAutomodReview)
+	timelineRepo.WithAutomod(c.PostAutomodReview)
 	var scheduledPosts *postpg.Repository
 	if guard != nil {
 		scheduledPosts = postRepository.WithScheduling()
@@ -505,7 +512,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	var moderationRepo *moderationpg.Repository
 	var moderationHTTP http.Handler = content.NewHandler(nil, nil)
 	if guard != nil {
-		moderationRepo, err = moderationpg.New(db, guard, moderationpg.Config{Now: c.Authority.Now, PostAssociations: timelineRepo})
+		moderationRepo, err = moderationpg.New(db, guard, moderationpg.Config{Now: c.Authority.Now, PostAssociations: timelineRepo, AutomodReview: c.PostAutomodReview})
 		if err != nil {
 			return nil, err
 		}

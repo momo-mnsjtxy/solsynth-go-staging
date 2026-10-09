@@ -346,7 +346,7 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.merchants != nil && (service == "api" || service == "wallet") && (under(canonical, "/api/merchants") || under(canonical, "/api/admin/subscriptions/catalog")) {
 		target = h.merchants
 	}
-	if h.commerce != nil && (under(canonical, "/api/orders") || under(canonical, "/api/subscriptions")) && (service == "wallet" || service == "api") {
+	if h.commerce != nil && (under(canonical, "/api/orders") || under(canonical, "/api/subscriptions") || under(canonical, "/api/coupons")) && (service == "wallet" || service == "api") {
 		target = h.commerce
 	}
 	if h.apps != nil && appRoute(canonical) && (service == "develop" || service == "api") {

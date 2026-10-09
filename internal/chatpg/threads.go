@@ -47,7 +47,7 @@ func (r *Repository) validateThread(ctx context.Context, tx *sql.Tx, rid string,
 }
 func (r *Repository) Thread(ctx context.Context, actor, rid, root string, take, offset int) (out rooms.ThreadPage, e error) {
 	out.Replies = []rooms.ThreadReply{}
-	if valid(rid, root) != nil || page(take, offset) != nil || offset > 100000 {
+	if valid(rid, root) != nil || actor != "" && !rooms.ValidID(actor) || page(take, offset) != nil || offset > 100000 {
 		return out, rooms.ErrInvalid
 	}
 	var tx *sql.Tx

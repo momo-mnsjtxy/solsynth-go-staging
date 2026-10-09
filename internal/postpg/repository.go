@@ -24,13 +24,15 @@ import (
 var Schema string
 
 type Repository struct {
-	db           *sql.DB
-	publishers   *accountpg.Repository
-	now          func() time.Time
-	authority    *authoritypg.TransactionGuard
-	associations AssociationStore
-	visibility   VisibilityProvider
-	scheduling   bool
+	db            *sql.DB
+	publishers    *accountpg.Repository
+	now           func() time.Time
+	authority     *authoritypg.TransactionGuard
+	associations  AssociationStore
+	visibility    VisibilityProvider
+	automod       bool
+	automodReview bool
+	scheduling    bool
 }
 
 func New(db *sql.DB) *Repository {
@@ -221,6 +223,9 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 		if e = r.applyAssociations(ctx, tx, actor, &p, v, true); e != nil {
 			return e
 		}
+		if e = r.evaluateAutomod(ctx, tx, actor, &p, "create"); e != nil {
+			return e
+		}
 		if e = audit(ctx, tx, actor, p.ID, "create", now); e != nil {
 			return e
 		}
@@ -348,6 +353,9 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 				return e
 			}
 			if reason == "" {
+				if e = r.evaluateAutomod(ctx, tx, actor, &p, action); e != nil {
+					return e
+				}
 				reason, e = r.checkPublication(ctx, tx, actor, &check)
 				if e != nil {
 					return e
@@ -355,6 +363,11 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 			}
 			if reason != "" {
 				return posts.ErrForbidden
+			}
+		}
+		if !(publishing && wasDraft && p.DraftedAt == nil && p.PublishedAt != nil) {
+			if e = r.evaluateAutomod(ctx, tx, actor, &p, action); e != nil {
+				return e
 			}
 		}
 		if e = audit(ctx, tx, actor, id, action, now); e != nil {
@@ -411,6 +424,9 @@ func (r *Repository) detail(ctx context.Context, actor, filter string, args ...a
 	all := append([]any{actor}, args...)
 	p, e := scan(tx.QueryRowContext(ctx, `SELECT `+columns+base+` AND `+DetailPredicate(r.visibility)+` AND `+filter, all...))
 	if e != nil {
+		return posts.Post{}, e
+	}
+	if e = r.loadAutomod(ctx, tx, actor, &p); e != nil {
 		return posts.Post{}, e
 	}
 	if r.associations != nil {
@@ -519,6 +535,11 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	rows.Close()
 	if e != nil {
 		return nil, 0, e
+	}
+	for i := range out {
+		if e = r.loadAutomod(ctx, tx, actor, &out[i]); e != nil {
+			return nil, 0, e
+		}
 	}
 	if r.associations != nil {
 		for i := range out {

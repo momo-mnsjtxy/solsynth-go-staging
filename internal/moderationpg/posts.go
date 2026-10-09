@@ -148,7 +148,7 @@ func (r *Repository) mutatePosts(ctx context.Context, actor, ref string, cmd c.C
 	now := r.config.Now().UTC()
 	out := []c.Post{}
 	for _, id := range ids {
-		p, e := r.post(ctx, tx, id)
+		p, e := r.postState(ctx, tx, id)
 		if e != nil {
 			return nil, e
 		}
@@ -230,6 +230,9 @@ func (r *Repository) ModerateRealmPost(ctx context.Context, actor, id string, re
 func (r *Repository) Mutate(ctx context.Context, actor string, kind c.Kind, ref string, cmd c.Command) (any, error) {
 	switch kind {
 	case c.PostKind:
+		if cmd.Action == "automod_review" {
+			return r.reviewAutomod(ctx, actor, ref, cmd.Automod)
+		}
 		return r.mutatePosts(ctx, actor, ref, cmd, true)
 	case c.PublisherKind:
 		return r.mutatePublisher(ctx, actor, ref, cmd)

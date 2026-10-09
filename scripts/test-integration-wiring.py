@@ -5,6 +5,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/federationpg/delivery_schema.sql",
+ "internal/timelinepg/subscription_state_schema.sql",
  "internal/chatpg/organization_schema.sql",
  "internal/postembedpg/schema.sql",
  "internal/federationpg/public_admission_schema.sql",
@@ -146,6 +148,14 @@ def check(runner, read_schema=None):
         raise ValueError("quote authorizations require canonical posts and anchored federation first")
     if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/federationpg/quote_schema.sql' not in runner:
         raise ValueError("quote authorization migration must be atomic")
+    if schemas.index("internal/federationpg/delivery_schema.sql") <= schemas.index("internal/federationpg/quote_schema.sql"):
+        raise ValueError("delivery observation requires federation quotes and identity first")
+    if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/federationpg/delivery_schema.sql' not in runner:
+        raise ValueError("delivery intent migration must be atomic")
+    if schemas.index("internal/federationpg/public_admission_schema.sql") <= schemas.index("internal/federationpg/discovery_schema.sql"):
+        raise ValueError("public admission requires durable discovery authority fencing")
+    if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/federationpg/public_admission_schema.sql' not in runner:
+        raise ValueError("public admission migration must be atomic")
     if schemas.index("internal/federationpg/discovery_schema.sql") <= max(schemas.index("internal/federationpg/identity_schema.sql"), schemas.index("internal/accountpg/name_schema.sql")):
         raise ValueError("discovery requires anchored federation and permanent publisher names")
     if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/federationpg/discovery_schema.sql' not in runner:
@@ -266,6 +276,8 @@ def main():
         source.replace("--single-transaction -f internal/socialpg/permissions_schema.sql", "-f internal/socialpg/permissions_schema.sql"),
         source.replace("--single-transaction -f internal/federationpg/quote_schema.sql", "-f internal/federationpg/quote_schema.sql"),
         source.replace("--single-transaction -f internal/federationpg/discovery_schema.sql", "-f internal/federationpg/discovery_schema.sql"),
+        source.replace("--single-transaction -f internal/federationpg/delivery_schema.sql", "-f internal/federationpg/delivery_schema.sql"),
+        source.replace("--single-transaction -f internal/federationpg/public_admission_schema.sql", "-f internal/federationpg/public_admission_schema.sql"),
         source.replace("--single-transaction -f internal/commercepg/order_index_scope.sql", "-f internal/commercepg/order_index_scope.sql"),
         source.replace("--single-transaction -f internal/mediapg/usage_schema.sql", "-f internal/mediapg/usage_schema.sql"),
         source.replace("test -timeout 30m -race", "test -race"),

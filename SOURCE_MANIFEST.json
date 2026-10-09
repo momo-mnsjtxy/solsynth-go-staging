@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Correct admission wait fixtures with explicit synthetic history probes",
+  "checkpoint": "Integrate reviewed publisher subscription and lock-free federation delivery flows",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "caaaab0d44ec1fdec54719b5cd2fcf5021a30c1c"
+    "remote_parent": "8d00c0cee85ebd10328ed5d51fa0e876141bf411"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -613,8 +613,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 122833,
-      "sha256": "70484382d51da013f5bbd1d7bc3e50dfedf702793cf127d7c723e630cc6576e4"
+      "bytes": 126717,
+      "sha256": "e38f8cdc574432b46839fa4c9a30c4c26b63a0a5d5ec9eb2d084d5d8746f1d08"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -728,13 +728,18 @@
     },
     {
       "path": "docs/federation-continuation.md",
-      "bytes": 10352,
-      "sha256": "445858ce07d66d3704f49470369cb9cfca8775b7d25d785a795999f549bf4728"
+      "bytes": 10504,
+      "sha256": "ebfa789ccea92cd5a3723db8564d910b881ea18c8630f99bf4842356e0c4889e"
+    },
+    {
+      "path": "docs/federation-delivery-leases.md",
+      "bytes": 10089,
+      "sha256": "5244e9ae946814a16814e87720d974e2243683d321d78b0503a72e7242f6a5c9"
     },
     {
       "path": "docs/federation-discovery-continuation.md",
-      "bytes": 12708,
-      "sha256": "49a6e75c659ccc9d77008affc450d78b6fbf8937510f918b5a85a7785af6ba61"
+      "bytes": 12830,
+      "sha256": "4059455ed7759d75a061e9de293f4591b054167c60fd78ce86bfbca4276aa808"
     },
     {
       "path": "docs/federation-discovery-review.md",
@@ -748,8 +753,8 @@
     },
     {
       "path": "docs/federation-quotes-continuation.md",
-      "bytes": 10499,
-      "sha256": "163c5fa724c2348a05399cea81511e775bc2829f4e4352d47d4cf019e00def9c"
+      "bytes": 10605,
+      "sha256": "a44fd95e574b3e7ce9a3d1559e83c577aa621ffeb6db638bb3f82ae0f48ddac0"
     },
     {
       "path": "docs/federation-rename-continuation.md",
@@ -1852,6 +1857,16 @@
       "sha256": "1d07497e0c018fe365384d0fa569559d7cdee233fcb4cd42f75e56da26ba1961"
     },
     {
+      "path": "docs/publisher-subscription-state-evidence.json",
+      "bytes": 6796,
+      "sha256": "7f7634723f2fd25839da39c8f89640dca29e06cb82291d90f1855d2ae1d0f091"
+    },
+    {
+      "path": "docs/publisher-subscription-state.md",
+      "bytes": 6844,
+      "sha256": "b95b8054ba1907989cfab5a2959ab0ba6a1066120e12018e939a5b34d3b0f77f"
+    },
+    {
       "path": "docs/reader-continuation.md",
       "bytes": 9517,
       "sha256": "075df54769049e4e98d5ad0c2987cd48f73496978e53503d3b3a8ce2b1c45a44"
@@ -1963,8 +1978,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 207058,
-      "sha256": "ec4391c4e0a883d1ef27e5c3990f213451c03f90e3e6b9d1729aea1ef9b276a6"
+      "bytes": 207978,
+      "sha256": "700a6f604fc5cb2fe3f6914daf918bb4dba6c56cc683e5220a7443e90ab02fa8"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -2127,6 +2142,11 @@
       "sha256": "94ece34302fe4b74d5b6663fa6c657a2f75effd4740a11ac6d5c25b35fccf1c8"
     },
     {
+      "path": "internal/accountpg/publisher_owner_eligibility.go",
+      "bytes": 1107,
+      "sha256": "810f54c44d7c2186a488431d4d9962ff30dfc9dd245b1a65f9230de7d5829b9a"
+    },
+    {
       "path": "internal/accountpg/publisher_transaction_reads.go",
       "bytes": 1430,
       "sha256": "d60e61bd86327d3a2ddfb5fc26063ac531aa3d61be4a96aece1bca891480dea4"
@@ -2233,8 +2253,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 33721,
-      "sha256": "3c6d4d1d533e188e05d585442f8da7e29d4d4f151ad3e41d7e8bdaf81b4e592a"
+      "bytes": 34247,
+      "sha256": "2a7aa60a874f07c536ba9afcc41db7ba821610ad94d85eca8f43881a2e1a8321"
     },
     {
       "path": "internal/application/blog_routing_test.go",
@@ -2357,14 +2377,19 @@
       "sha256": "3455947572bd7290c2497c26efe9db7c00d5ce2224e889e3bb03e2a86cbcf021"
     },
     {
+      "path": "internal/application/publisher_subscriptions.go",
+      "bytes": 1015,
+      "sha256": "b35b19be013117707e7eace8242335c4d9c2e2efd4e7934187a31bff6053d0da"
+    },
+    {
       "path": "internal/application/publishers.go",
       "bytes": 1385,
       "sha256": "d2a931babae367b0133f859ccd2bc20eab2ddebc51a631894775f6fed71042a3"
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 9624,
-      "sha256": "820aa12bcaedade5315ae8ca1effcc5fb8e9eea769bc4bcd18edb1fc133b593d"
+      "bytes": 9909,
+      "sha256": "7c40af9d59087dcbcd75176dfdd6b7ce9d60a691b48510f94ead0ddee8da1b34"
     },
     {
       "path": "internal/application/realm_boosts.go",
@@ -3223,13 +3248,23 @@
     },
     {
       "path": "internal/federationpg/delivery.go",
-      "bytes": 15476,
-      "sha256": "8f8f9500d47bd93a4b357d8372e8c15e3eee53f2a313d5dff88c0cf09c0ab4cd"
+      "bytes": 19969,
+      "sha256": "02b40c0d3e1cf86614de540618ce0bf43e7a823025579bfa102b2827eef26559"
+    },
+    {
+      "path": "internal/federationpg/delivery_authority.go",
+      "bytes": 6939,
+      "sha256": "66e4d3b1fb7b52475f8d53d7b33356dbd08b1b1de54daea544a61056fe1e37fe"
+    },
+    {
+      "path": "internal/federationpg/delivery_schema.sql",
+      "bytes": 10203,
+      "sha256": "678dd650dc7e1ab679b8c7f6627970fcae75d8e473742eb22811fe52ce1ec817"
     },
     {
       "path": "internal/federationpg/discovery.go",
-      "bytes": 22011,
-      "sha256": "04f1443f8eaa7356514e72c6d7a2e7fa66aefca33b69e1606b803cb34f3faf54"
+      "bytes": 22278,
+      "sha256": "a1416d8e79901e4010623916f84ac4a24160d3e2d7be1f41cb690392c2e03a3c"
     },
     {
       "path": "internal/federationpg/discovery_schema.sql",
@@ -3253,8 +3288,8 @@
     },
     {
       "path": "internal/federationpg/inbox.go",
-      "bytes": 9063,
-      "sha256": "21b1b0b7856557e5704e369762d1593f0d3a951d6890ba06d4424bca5aca16cb"
+      "bytes": 9089,
+      "sha256": "378b5a07bdf34fe808da22e5f89c8c2d71c3d1a7ee40cbf6c9e5181e3f97e1e8"
     },
     {
       "path": "internal/federationpg/public_admission.go",
@@ -3268,13 +3303,13 @@
     },
     {
       "path": "internal/federationpg/public_keys.go",
-      "bytes": 9662,
-      "sha256": "d709e5ba6691a4ef492549497f65ba54063fd248ce6ddf3e332f65877cc49767"
+      "bytes": 10044,
+      "sha256": "a54d555d2130f15d5d779f68d432e1aacf714c56cd76f4efd10a277c3576f498"
     },
     {
       "path": "internal/federationpg/public_keys_test.go",
-      "bytes": 6876,
-      "sha256": "426c8ffdef716a2c5eabe8e558a6a27fa015c8c91bef8e57feb158b18e07ff2f"
+      "bytes": 9088,
+      "sha256": "5c6abc952b25497a840b96db9e24d5e1ea50cdc29e06e9d51f0ebe38d16ba6c3"
     },
     {
       "path": "internal/federationpg/quote_schema.sql",
@@ -3283,8 +3318,8 @@
     },
     {
       "path": "internal/federationpg/quotes.go",
-      "bytes": 16513,
-      "sha256": "02fd735d93a468805fa0c0390af90682b8f65ffd4c0400b11abc27f3292b1332"
+      "bytes": 17151,
+      "sha256": "75cdd3e1c494da81d996622f9483c6841a585e76570e1ca43f960cafa51aea69"
     },
     {
       "path": "internal/federationpg/relationships.go",
@@ -3293,8 +3328,8 @@
     },
     {
       "path": "internal/federationpg/repository.go",
-      "bytes": 17886,
-      "sha256": "f016fff46d495edfc93d8ee8c3c5eda596558fe092689c736bc419e3186d3ff7"
+      "bytes": 19133,
+      "sha256": "942d89ad0931b653a371e814033367af4ec3db822d4f421d6c800c04fe8adcf8"
     },
     {
       "path": "internal/federationpg/repository_test.go",
@@ -3440,6 +3475,11 @@
       "path": "internal/livestreampg/schema.sql",
       "bytes": 4334,
       "sha256": "153ab1f234b1cd4caab59cbb94a325fd39396e41f4453975c6f0cb24d9270dbc"
+    },
+    {
+      "path": "internal/livestreampg/subscriptions.go",
+      "bytes": 3113,
+      "sha256": "247559aacabb3e8dbc90e2ffa037a925d7d0152142999e4ee88738ab1028c207"
     },
     {
       "path": "internal/locationpg/meets.go",
@@ -3788,8 +3828,8 @@
     },
     {
       "path": "internal/notificationpg/outbox.go",
-      "bytes": 8585,
-      "sha256": "08cd39cb704a844c9e631c461398071e447dae9c865f299547ecf50419070ef9"
+      "bytes": 9075,
+      "sha256": "c39041b4b27ca997602e666da19fd378216c8bcd042ab8303710aeaf86671033"
     },
     {
       "path": "internal/notificationpg/preferences.go",
@@ -4638,8 +4678,8 @@
     },
     {
       "path": "internal/timelinepg/follows.go",
-      "bytes": 10202,
-      "sha256": "73ca57922a9ebd2c7b22ff71ddba4533358bb3cbc19729c2e966b814f01450eb"
+      "bytes": 10428,
+      "sha256": "545c2bfaa17d1075628fc09a5569bc0eb4b799383d0d111c8277e4dfa70806f2"
     },
     {
       "path": "internal/timelinepg/prelocks.go",
@@ -4653,8 +4693,8 @@
     },
     {
       "path": "internal/timelinepg/repository.go",
-      "bytes": 6987,
-      "sha256": "35144c48b5880a07458f33c990cb1823198a95572ee40a878908cd19cc156fea"
+      "bytes": 7245,
+      "sha256": "da00a79194e3a938ac15bf05d7ccb1b6508ac1d84867e166090406218670d6ad"
     },
     {
       "path": "internal/timelinepg/repository_test.go",
@@ -4665,6 +4705,16 @@
       "path": "internal/timelinepg/schema.sql",
       "bytes": 3407,
       "sha256": "567d6bed9cdeae64b66ef53c8200514cd22bd5ffe6396677da646bde97172ab3"
+    },
+    {
+      "path": "internal/timelinepg/subscription_state.go",
+      "bytes": 14516,
+      "sha256": "27db778a3d1ac2ddc7b593747ef8ecffff96c9712cecccd8e385259186914c77"
+    },
+    {
+      "path": "internal/timelinepg/subscription_state_schema.sql",
+      "bytes": 334,
+      "sha256": "12641b0c716f93c0780924e4024427e162e7e31c4652101dda694338d3b38b89"
     },
     {
       "path": "internal/timelinepg/threads.go",
@@ -9998,8 +10048,8 @@
     },
     {
       "path": "ports/sphere/timeline/http.go",
-      "bytes": 18648,
-      "sha256": "ff3d7081dd10140dd16eda81d1820920b169e5f872186a23ee74b28dadf8df8e"
+      "bytes": 18709,
+      "sha256": "91422bf9ac2ca3485d519e634cc919e790630fdb90dfc0a17cac9263a3fe7bd1"
     },
     {
       "path": "ports/sphere/timeline/http_test.go",
@@ -10067,9 +10117,39 @@
       "sha256": "b6e026065a4f86ff0e646ac8693c95eaebc794f149ff5ca8f80b5a12a7d69e50"
     },
     {
+      "path": "ports/sphere/timeline/subscription-source/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/sphere/timeline/subscription-source/PublisherSubscriptionService.cs",
+      "bytes": 30961,
+      "sha256": "949074ab7111f04cf4044de6a65d7457b0f9f7915b33842de68a480455312c23"
+    },
+    {
+      "path": "ports/sphere/timeline/subscription-source/manifest.json",
+      "bytes": 687,
+      "sha256": "5c52404b1c4461e74cb708b5de76d8a875807bd7f6fac8fdf80186430b584cde"
+    },
+    {
+      "path": "ports/sphere/timeline/subscription_http.go",
+      "bytes": 5254,
+      "sha256": "32eafdd8e2fa9c31e2396a81f88b9a990e84b2e9335f90d0235919f2e0782e17"
+    },
+    {
+      "path": "ports/sphere/timeline/subscription_http_test.go",
+      "bytes": 4103,
+      "sha256": "206c505da77acaae9248def540ad9b3e09f99f54aefd6cd02773210eb9b7e44e"
+    },
+    {
+      "path": "ports/sphere/timeline/subscription_state.go",
+      "bytes": 1611,
+      "sha256": "5b5a3c598509009e61cd3b41ad3538888a0edc9ddd7419a35841032cba89b810"
+    },
+    {
       "path": "ports/sphere/timeline/types.go",
-      "bytes": 7781,
-      "sha256": "b6fcfc5e3759e1fca3e803a00087756722f20577b556e49b195929a90d1b9aa8"
+      "bytes": 7891,
+      "sha256": "4dbd3674f66e8cd1dfda95aeed07d1639d19a41814ec48295ae2af4b1607ac59"
     },
     {
       "path": "ports/sphere/translation/http.go",
@@ -10718,8 +10798,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 52270,
-      "sha256": "53c3b1d1aaa868d5c399b34ad0e9b20713c4282bee2e12dc9566d360085fea11"
+      "bytes": 53945,
+      "sha256": "f5c367d2c72b6e4bacffb4529b2c79164b7d98015fbf824165c788104e0fed91"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -10728,8 +10808,8 @@
     },
     {
       "path": "scripts/check-source-evidence.py",
-      "bytes": 7364,
-      "sha256": "d319c2096441a61cafc2135183a0b3563a5808c0a6998a4a2650d653203a8c4f"
+      "bytes": 7409,
+      "sha256": "6942a286bd828e70df04349817f2b00574932fa375e669f83b240c0a5900043e"
     },
     {
       "path": "scripts/check-sql-argument-count.py",
@@ -10743,13 +10823,13 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 106114,
-      "sha256": "c341f1e410ac1679a9ba4b3f4141640bb5ee1ac8393a316aab1cfe40a3a8ba1f"
+      "bytes": 110695,
+      "sha256": "b0e8b0da4bca137510c9df401343654d3ec732a490503860f75101686a236645"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 13036,
-      "sha256": "6727dc6b9a08b1a8fa3afed1232c1baf899a9e52749deab8cb2a8fb6ac3ad83f"
+      "bytes": 13274,
+      "sha256": "649bb821dfa3064f9cbc131748f248c5d3144784b7f029909a7f00d66383b20e"
     },
     {
       "path": "scripts/integration_groups.py",
@@ -10788,13 +10868,13 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 21423,
-      "sha256": "d9371d65f34fc4c8673c3190aba9f5cbdf780ff54f91b7d4459c2eb295a37855"
+      "bytes": 22695,
+      "sha256": "5faefb3d00bee893ba524b846f8b2506b74dd1f0cbcbd31a064f4c8e4a1795fa"
     },
     {
       "path": "scripts/test-source-evidence.py",
-      "bytes": 3867,
-      "sha256": "aad4235078d49f0614e31cb3943c38e85e94084bba63d5c1b1c7c20b3457bb2e"
+      "bytes": 3956,
+      "sha256": "3694980b1765d1dd7a4b4df271afa846a6947c078ae556e530c68f3f8ddc7d43"
     },
     {
       "path": "scripts/verify-candidate-http.py",
@@ -11152,6 +11232,11 @@
       "sha256": "7cbd2737afea877114a09de6743baf513ca3c7f40cfa2a77e0c9d2b55a68bcca"
     },
     {
+      "path": "tests/integration/backend_federation_delivery_test.go",
+      "bytes": 3000,
+      "sha256": "22775f7236590893624b3f68b0b70da4f964b8d7776f17ed6f79f45c41bb3858"
+    },
+    {
       "path": "tests/integration/backend_federation_discovery_test.go",
       "bytes": 3678,
       "sha256": "85738f8a93374287a0ba367e3d86024ef055447a87c2c259959c8f693edb99c7"
@@ -11462,6 +11547,16 @@
       "sha256": "752efa65fdf334c4266037250acebeecf746359bc4d5b1ba07a0e642821e45fa"
     },
     {
+      "path": "tests/integration/federation_delivery_leases_test.go",
+      "bytes": 22532,
+      "sha256": "f4a03592623c354de060772275c2b1b66a362e9180c8192cd4b0f4692645bbe2"
+    },
+    {
+      "path": "tests/integration/federation_delivery_restart_test.go",
+      "bytes": 7678,
+      "sha256": "b04440cfba6146c047e43455f013244639957c6f767c726cf474748734d17bde"
+    },
+    {
       "path": "tests/integration/federation_discovery_review_test.go",
       "bytes": 12464,
       "sha256": "15f21f988ec7e30b3c6cefc6d21cdd43ef489a49b05b021ac336a69ab8711158"
@@ -11475,6 +11570,11 @@
       "path": "tests/integration/federation_history_fixture_test.go",
       "bytes": 2427,
       "sha256": "ddf6d3da09b85de48c636f3b481c6d9fb4acb3901e8471e14cc09949665e0647"
+    },
+    {
+      "path": "tests/integration/federation_pool_reads_test.go",
+      "bytes": 11103,
+      "sha256": "db98ad4ed4f98921b228db28f0ad05be3756aaa44e0bec276ae3480fc00160d4"
     },
     {
       "path": "tests/integration/federation_public_admission_test.go",
@@ -11498,8 +11598,8 @@
     },
     {
       "path": "tests/integration/federation_test.go",
-      "bytes": 26496,
-      "sha256": "0f7aef1638cd4a95a757f449df95251b4fb702914d0c4ecaf5191d91db46bafd"
+      "bytes": 26971,
+      "sha256": "39ff388b7823cce63fc1cb8afcc577a9b9ae09cba706d751a224ab3209750033"
     },
     {
       "path": "tests/integration/fortunes_test.go",
@@ -11720,6 +11820,11 @@
       "path": "tests/integration/publisher_sponsorship_test.go",
       "bytes": 16407,
       "sha256": "71e8c535c1d17878266aa0b32e484f0fe0b3c9ac6b54909110f0ca234ba588f5"
+    },
+    {
+      "path": "tests/integration/publisher_subscription_state_test.go",
+      "bytes": 31093,
+      "sha256": "9db38c8793a5c8c1f6c9936ee0eca7d74a413c301effcf1ac68324196c341516"
     },
     {
       "path": "tests/integration/reader_test.go",

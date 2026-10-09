@@ -271,6 +271,7 @@ func NewHandler(repo Repository, auth posts.Auth) http.Handler {
 		}
 		return actor, true
 	}
+	registerSubscriptionState(m, repo, identity)
 	m.HandleFunc("GET /api/timeline", func(w http.ResponseWriter, r *http.Request) {
 		actor, ok := identity(w, r, false, "")
 		if !ok {
@@ -746,7 +747,7 @@ func Handles(r *http.Request) bool {
 		}
 		if len(parts) >= 4 {
 			switch parts[3] {
-			case "subscription", "subscribe", "unsubscribe":
+			case "subscription", "subscribe", "unsubscribe", "subscribers":
 				return true
 			}
 		}

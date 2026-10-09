@@ -11,7 +11,7 @@ from pathlib import Path
 
 def check(root):
     count = 0
-    for directory in ("ports/passport/realmboosts/source", "ports/messager/room-media-evidence", "ports/messager/source", "ports/messager/contract-evidence", "ports/develop/source",
+    for directory in ("ports/sphere/timeline/subscription-source", "ports/passport/realmboosts/source", "ports/messager/room-media-evidence", "ports/messager/source", "ports/messager/contract-evidence", "ports/develop/source",
                       "ports/develop/product-source", "ports/develop/package-source",
                       "ports/sphere/nodeinfo/source", "ports/wallet/productcatalog/source",
                       "inventory/product-client-evidence", "ports/passport/artwork/source",

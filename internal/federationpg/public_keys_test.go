@@ -36,13 +36,17 @@ type admissionLedgerConn struct {
 	probe        bool
 	ledger       bool
 	probeFailure error
+	allowTx      bool
 }
 
 func (*admissionLedgerConn) Prepare(string) (driver.Stmt, error) {
 	return nil, errors.New("unexpected prepare")
 }
 func (*admissionLedgerConn) Close() error { return nil }
-func (*admissionLedgerConn) Begin() (driver.Tx, error) {
+func (c *admissionLedgerConn) Begin() (driver.Tx, error) {
+	if c.allowTx {
+		return admissionLedgerTx{}, nil
+	}
 	return nil, errors.New("unexpected transaction")
 }
 func (c *admissionLedgerConn) QueryContext(_ context.Context, query string, args []driver.NamedValue) (driver.Rows, error) {
@@ -168,5 +172,56 @@ func TestDisabledAdmissionSchemaAbsenceIsNotCachedOrConfusedWithFailure(t *testi
 	conn.probeFailure = errors.New("synthetic schema visibility failure")
 	if _, e := r.Keys().RemoteKey(context.Background(), key.KeyID); !errors.Is(e, conn.probeFailure) || conn.queries != 1 {
 		t.Fatal("schema query error treated as absence", e, conn.queries)
+	}
+}
+
+// This test establishes connection ownership only. PostgreSQL snapshots, locks,
+// revocation and concurrent workers are covered by the actual-PG pool cases.
+type admissionLedgerTx struct{}
+
+func (admissionLedgerTx) Commit() error   { return nil }
+func (admissionLedgerTx) Rollback() error { return nil }
+
+func TestTransactionalRemoteLookupDoesNotReenterPool(t *testing.T) {
+	for _, scenario := range []string{"absent", "unreserved", "reserved", "unavailable"} {
+		t.Run(scenario, func(t *testing.T) {
+			key := f.RemoteKey{Actor: "https://remote.example.test/actor", Inbox: "https://remote.example.test/inbox", KeyID: "https://remote.example.test/actor#key", PublicKey: &rsa.PublicKey{N: new(big.Int).Add(new(big.Int).Lsh(big.NewInt(1), 2047), big.NewInt(31337)), E: 65537}}
+			conn := &admissionLedgerConn{t: t, key: key, probe: true, ledger: scenario != "absent", reserved: scenario == "reserved", allowTx: true}
+			if scenario == "unavailable" {
+				conn.failure = errors.New("synthetic reservation failure")
+			}
+			db := sql.OpenDB(admissionLedgerConnector{conn})
+			defer db.Close()
+			db.SetMaxOpenConns(1)
+			r, e := New(db, f.Config{Origin: "https://local.example.test", AllowedOrigins: []string{"https://remote.example.test"}, MaxAttempts: 3, DeliveryTimeout: time.Second}, admissionPinnedKeys{key}, nil)
+			if e != nil {
+				t.Fatal(e)
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			tx, e := db.BeginTx(ctx, nil)
+			if e != nil {
+				t.Fatal(e)
+			}
+			defer tx.Rollback()
+			got, e := r.remoteWithQuery(ctx, tx, key.Actor)
+			if scenario == "absent" || scenario == "unreserved" {
+				if e != nil || got.Actor != key.Actor {
+					t.Fatal(got, e)
+				}
+			} else if !errors.Is(e, f.ErrForbidden) || got.Actor != "" {
+				t.Fatal("reservation failure did not deny", got, e)
+			}
+			want := 3
+			if scenario == "absent" {
+				want = 1
+			}
+			if conn.queries != want || db.Stats().WaitCount != 0 || ctx.Err() != nil {
+				t.Fatal("lookup requested another connection", conn.queries, db.Stats(), ctx.Err())
+			}
+			if e = tx.Commit(); e != nil {
+				t.Fatal(e)
+			}
+		})
 	}
 }

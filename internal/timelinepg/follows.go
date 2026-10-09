@@ -15,11 +15,11 @@ import (
 	"time"
 )
 
-const subColumns = `f.id::text,f.account_id::text,f.publisher_id::text,f.state,f.created_at,f.updated_at,f.ended_at,f.reason,f.notify`
+const subColumns = `f.id::text,f.account_id::text,f.publisher_id::text,f.state,f.created_at,f.updated_at,f.ended_at,f.reason,f.notify,f.last_read_at`
 
 func scanSub(s interface{ Scan(...any) error }) (timeline.Subscription, error) {
 	var v timeline.Subscription
-	e := s.Scan(&v.ID, &v.AccountID, &v.PublisherID, &v.State, &v.CreatedAt, &v.UpdatedAt, &v.EndedAt, &v.Reason, &v.Notify)
+	e := s.Scan(&v.ID, &v.AccountID, &v.PublisherID, &v.State, &v.CreatedAt, &v.UpdatedAt, &v.EndedAt, &v.Reason, &v.Notify, &v.LastReadAt)
 	v.IsActive = v.State == "accepted" && v.EndedAt == nil
 	v.IsPendingRequest = v.State == "pending" && v.EndedAt == nil
 	return v, missing(e)
@@ -57,21 +57,16 @@ func (r *Repository) subStatus(ctx context.Context, tx *sql.Tx, actor, pub strin
 	}
 	return out, nil
 }
-func (r *Repository) SubscriptionStatus(ctx context.Context, actor, selector string) (timeline.SubscriptionStatus, error) {
-	tx, e := r.read(ctx, actor, true)
-	if e != nil {
-		return timeline.SubscriptionStatus{}, e
-	}
-	defer tx.Rollback()
-	pub, approval, e := r.publisher(ctx, tx, actor, selector, false)
-	if e != nil {
-		return timeline.SubscriptionStatus{}, e
-	}
-	v, e := r.subStatus(ctx, tx, actor, pub, approval)
-	if e == nil {
-		e = tx.Commit()
-	}
-	return v, e
+func (r *Repository) SubscriptionStatus(ctx context.Context, actor, selector string) (out timeline.SubscriptionStatus, e error) {
+	e = r.subscriptionTransaction(ctx, actor, "", func(tx *sql.Tx, _ time.Time) error {
+		pub, approval, x := r.publisher(ctx, tx, actor, selector, true)
+		if x != nil {
+			return x
+		}
+		out, x = r.subStatus(ctx, tx, actor, pub, approval)
+		return x
+	})
+	return
 }
 func (r *Repository) Subscribe(ctx context.Context, actor, selector string) (timeline.SubscriptionStatus, error) {
 	var out timeline.SubscriptionStatus
@@ -99,7 +94,7 @@ func (r *Repository) Subscribe(ctx context.Context, actor, selector string) (tim
 		if approval {
 			state = "pending"
 		}
-		_, e = tx.ExecContext(ctx, `INSERT INTO owned_publisher_follows(id,account_id,publisher_id,state,created_at,updated_at)VALUES($1,$2,$3,$4,$5,$5) ON CONFLICT(account_id,publisher_id)DO UPDATE SET state=EXCLUDED.state,reason=NULL,ended_at=NULL,updated_at=EXCLUDED.updated_at`, uid, actor, pub, state, now)
+		_, e = tx.ExecContext(ctx, `INSERT INTO owned_publisher_follows(id,account_id,publisher_id,state,created_at,updated_at)VALUES($1,$2,$3,$4,$5,$5) ON CONFLICT(account_id,publisher_id)DO UPDATE SET state=EXCLUDED.state,reason=NULL,ended_at=NULL,ended_by_account_id=NULL,notify=true,updated_at=EXCLUDED.updated_at`, uid, actor, pub, state, now)
 		if e != nil {
 			return e
 		}
@@ -142,12 +137,18 @@ func (r *Repository) Subscriptions(ctx context.Context, actor string, offset, ta
 	if offset < 0 || take < 1 || take > 100 {
 		return nil, 0, timeline.ErrInvalid
 	}
-	tx, e := r.read(ctx, actor, true)
-	if e != nil {
-		return nil, 0, e
-	}
-	defer tx.Rollback()
-	where := ` FROM owned_publisher_follows f JOIN owned_publishers u ON u.id=f.publisher_id LEFT JOIN owned_authority_accounts a ON a.id=u.account_id WHERE f.account_id=$1 AND f.ended_at IS NULL AND f.state='accepted' AND u.deleted_at IS NULL AND (u.account_id IS NULL OR NOT a.disabled) AND ` + postpg.PublisherPredicate(r.visibility)
+	var out []timeline.SubscriptionItem
+	var total int64
+	e := r.subscriptionTransaction(ctx, actor, "", func(tx *sql.Tx, _ time.Time) error {
+		var x error
+		out, total, x = r.subscriptions(ctx, tx, actor, offset, take)
+		return x
+	})
+	return out, total, e
+}
+func (r *Repository) subscriptions(ctx context.Context, tx *sql.Tx, actor string, offset, take int) ([]timeline.SubscriptionItem, int64, error) {
+	var e error
+	where := ` FROM owned_publisher_follows f JOIN owned_publishers u ON u.id=f.publisher_id WHERE f.account_id=$1 AND f.ended_at IS NULL AND f.state='accepted' AND u.deleted_at IS NULL AND ` + accountpg.ActivePublisherOwnerPredicate("u") + ` AND ` + postpg.PublisherPredicate(r.visibility)
 	if r.visibility != nil {
 		where += ` AND NOT (` + r.visibility.PostBlockedSQL() + `)`
 	}
@@ -164,7 +165,7 @@ func (r *Repository) Subscriptions(ctx context.Context, actor string, offset, ta
 		var v timeline.SubscriptionItem
 		v.Publisher = &accounts.Publisher{}
 		p := v.Publisher
-		e = rows.Scan(&v.ID, &v.AccountID, &v.PublisherID, &v.State, &v.CreatedAt, &v.UpdatedAt, &v.EndedAt, &v.Reason, &v.Notify, &p.ID, &p.Name, &p.Nick, &p.Bio, &p.Type, &p.AccountID, &p.RealmID, &p.CreatedAt, &p.UpdatedAt)
+		e = rows.Scan(&v.ID, &v.AccountID, &v.PublisherID, &v.State, &v.CreatedAt, &v.UpdatedAt, &v.EndedAt, &v.Reason, &v.Notify, &v.Subscription.LastReadAt, &p.ID, &p.Name, &p.Nick, &p.Bio, &p.Type, &p.AccountID, &p.RealmID, &p.CreatedAt, &p.UpdatedAt)
 		if e != nil {
 			rows.Close()
 			return nil, 0, e
@@ -178,14 +179,16 @@ func (r *Repository) Subscriptions(ctx context.Context, actor string, offset, ta
 		return nil, 0, e
 	}
 	for i := range out {
-		e = tx.QueryRowContext(ctx, `SELECT max(p.published_at)`+r.base()+` AND p.publisher_id=$2 AND NOT EXISTS(SELECT 1 FROM owned_post_relations l WHERE l.post_id=p.id AND(l.replied_post_id IS NOT NULL OR l.chained_post_id IS NOT NULL))`, actor, out[i].PublisherID).Scan(&out[i].LatestContentAt)
-		if e != nil {
-			return nil, 0, e
+		latest, live, x := r.subscriptionContent(ctx, tx, actor, out[i].PublisherID)
+		if x != nil {
+			return nil, 0, x
 		}
-		out[i].HasNewContent = out[i].LatestContentAt != nil
+		out[i].LatestContentAt = latest
+		out[i].LastReadAt = out[i].Subscription.LastReadAt
+		out[i].HasNewContent = latest != nil && (out[i].LastReadAt == nil || latest.After(*out[i].LastReadAt))
+		out[i].IsLive = live
 	}
-	e = tx.Commit()
-	return out, total, e
+	return out, total, nil
 }
 func (r *Repository) FollowRequests(ctx context.Context, actor, selector string) ([]timeline.Subscription, error) {
 	tx, e := r.read(ctx, actor, true)

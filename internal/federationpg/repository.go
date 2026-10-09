@@ -20,7 +20,7 @@ import (
 
 //go:embed schema.sql
 var baseSchema string
-var Schema = baseSchema + "\n" + IdentitySchema + "\n" + QuoteSchema
+var Schema = baseSchema + "\n" + IdentitySchema + "\n" + QuoteSchema + "\n" + DeliverySchema
 
 type TransactionGuard interface {
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
@@ -55,6 +55,7 @@ type queryer interface {
 }
 type publisher struct {
 	id, name, nick, bio, owner      string
+	requester                       string
 	identityHandle, actorURI, keyID string
 	created                         time.Time
 	enabled, manual                 bool
@@ -320,6 +321,7 @@ func (r *Repository) beginLocal(ctx context.Context, actor, ref string) (*sql.Tx
 	if e != nil || role < 100 {
 		return fail(f.ErrForbidden)
 	}
+	p.requester = actor
 	return tx, p, nil
 }
 func (r *Repository) audit(ctx context.Context, tx *sql.Tx, actor, publisher, action string) error {
@@ -353,6 +355,15 @@ func (r *Repository) Settings(ctx context.Context, actor, ref string, s f.Settin
 	}
 	if _, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_publishers(publisher_id,enabled,manual,updated_at,identity_handle,actor_uri,key_id) VALUES($1::uuid,$2::boolean,$3::boolean,$4::timestamptz,$5::text,$6::text,$7::text) ON CONFLICT(publisher_id) DO UPDATE SET enabled=EXCLUDED.enabled,manual=EXCLUDED.manual,updated_at=EXCLUDED.updated_at,actor_uri=EXCLUDED.actor_uri,key_id=EXCLUDED.key_id`, p.id, s.Enabled, s.Manual, r.config.Clock(), p.identityHandle, actorValue, keyValue); e != nil {
 		return e
+	}
+	if s.Enabled {
+		intent, err := r.newDeliveryIntent(ctx, tx, p)
+		if err != nil {
+			return err
+		}
+		if _, err = tx.ExecContext(ctx, `UPDATE owned_federation_publishers SET delivery_intent=$2::jsonb WHERE publisher_id=$1`, p.id, marshal(intent)); err != nil {
+			return err
+		}
 	}
 	if !s.Enabled {
 		if _, e = tx.ExecContext(ctx, `UPDATE owned_federation_quote_authorizations SET revoked_at=COALESCE(revoked_at,$2) WHERE publisher_id=$1`, p.id, r.config.Clock()); e != nil {
@@ -436,17 +447,42 @@ func (r *Repository) enqueue(ctx context.Context, tx *sql.Tx, p publisher, k f.R
 		}
 		audit = seq
 	}
-	_, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_deliveries(publisher_id,actor_uri,inbox_uri,activity_id,activity_type,payload,post_id,post_updated_at,post_audit_id,next_attempt,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10) ON CONFLICT(activity_id,actor_uri) DO NOTHING`, p.id, k.Actor, k.Inbox, a.ID, a.Type, body, post, revision, audit, r.config.Clock())
+	intent, e := r.enqueueIntent(ctx, tx, p)
+	if e != nil {
+		return e
+	}
+	if allowed, err := r.deliveryAllowed(ctx, tx, p, intent); err != nil {
+		return err
+	} else if !allowed {
+		return f.ErrForbidden
+	}
+	signer, e := r.keys.LocalKey(ctx, p.id)
+	if e != nil {
+		return e
+	}
+	fingerprint, e := localFingerprint(signer)
+	if e != nil {
+		return e
+	}
+	binding, e := deliveryBinding(k)
+	if e != nil {
+		return e
+	}
+	_, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_deliveries(publisher_id,actor_uri,inbox_uri,activity_id,activity_type,payload,post_id,post_updated_at,post_audit_id,next_attempt,created_at,origin_intent,remote_binding,local_fingerprint,max_attempts,expires_at,peer_epoch) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10,$11::jsonb,$12,$13,$14,$15,COALESCE((SELECT revision FROM owned_federation_delivery_peer_epochs WHERE publisher_id=$1 AND actor_uri=$2),0)) ON CONFLICT(activity_id,actor_uri) DO NOTHING`, p.id, k.Actor, k.Inbox, a.ID, a.Type, body, post, revision, audit, r.config.Clock(), marshal(intent), binding, fingerprint, r.config.MaxAttempts, intent.Expires)
 	return e
 }
 func (r *Repository) remote(ctx context.Context, uri string) (f.RemoteKey, error) {
+	return r.remoteWithQuery(ctx, r.db, uri)
+}
+
+func (r *Repository) remoteWithQuery(ctx context.Context, q queryer, uri string) (f.RemoteKey, error) {
 	if r.keys == nil {
 		return f.RemoteKey{}, f.ErrUnavailable
 	}
 	if !r.config.Allows(uri) {
 		return f.RemoteKey{}, f.ErrForbidden
 	}
-	k, e := r.Keys().RemoteActor(ctx, uri)
+	k, e := (publicKeys{r}).lookupWithQuery(ctx, q, uri, false)
 	k = k.Snapshot()
 	if e != nil || k.Actor != uri || !r.config.ValidRemote(k) {
 		return f.RemoteKey{}, f.ErrForbidden

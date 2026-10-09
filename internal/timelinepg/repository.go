@@ -19,16 +19,23 @@ import (
 )
 
 //go:embed schema.sql
-var Schema string
+var baseSchema string
+
+//go:embed subscription_state_schema.sql
+var SubscriptionStateSchema string
+
+var Schema = baseSchema + "\n" + SubscriptionStateSchema
 
 type Repository struct {
-	db            *sql.DB
-	guard         *authoritypg.TransactionGuard
-	visibility    postpg.VisibilityProvider
-	associations  postpg.AssociationStore
-	now           func() time.Time
-	automod       bool
-	automodReview bool
+	db                        *sql.DB
+	guard                     *authoritypg.TransactionGuard
+	visibility                postpg.VisibilityProvider
+	associations              postpg.AssociationStore
+	now                       func() time.Time
+	automod                   bool
+	subscriptionNotifications SubscriptionNotifications
+	subscriptionStreams       SubscriptionStreams
+	automodReview             bool
 }
 
 // WithAutomod enables source-observed ranked-feed effects; Latest bypasses them.
@@ -158,7 +165,7 @@ func (r *Repository) publisher(ctx context.Context, tx *sql.Tx, actor, selector 
 	if authority.ValidID(selector) {
 		match = `u.id=$2::uuid`
 	}
-	q := `SELECT u.id::text,COALESCE((SELECT requires_approval FROM owned_publisher_follow_policy f WHERE f.publisher_id=u.id),false) FROM owned_publishers u WHERE u.deleted_at IS NULL AND ` + match + ` AND (u.account_id IS NULL OR EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=u.account_id AND NOT a.disabled)) AND $1::text IS NOT NULL AND ` + postpg.PublisherPredicate(r.visibility)
+	q := `SELECT u.id::text,COALESCE((SELECT requires_approval FROM owned_publisher_follow_policy f WHERE f.publisher_id=u.id),false) FROM owned_publishers u WHERE u.deleted_at IS NULL AND ` + match + ` AND ` + accountpg.ActivePublisherOwnerPredicate("u") + ` AND $1::text IS NOT NULL AND ` + postpg.PublisherPredicate(r.visibility)
 	if r.visibility != nil {
 		q += ` AND NOT (` + r.visibility.PostBlockedSQL() + `)`
 	}

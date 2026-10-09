@@ -5,6 +5,32 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGFederationDeliverySingleConnection",
+        "TestPGFederationDeliverySaturatedPool",
+        "TestPGFederationTransactionalLookupSingleConnection",
+        "TestPGBackendFederationDeliveryLeaseComposition",
+        "TestPGFederationDeliveryAuthorityAfterLockWait",
+        "TestPGFederationDeliveryCommittedLeaseAndRevocation",
+        "TestPGFederationDeliveryConcurrentClaims",
+        "TestPGFederationDeliveryCurrentAuthorityAndTrustABA",
+        "TestPGFederationDeliveryDeadlineAndUncertainResult",
+        "TestPGFederationDeliveryFinalPolicyAfterLeaseWait",
+        "TestPGFederationDeliveryLeaseReclaimAndStaleResults",
+        "TestPGFederationDeliveryLocalWithdrawalWithoutSigner",
+        "TestPGFederationDeliveryOriginalBudgetAndImmutableIntent",
+        "TestPGFederationDeliveryPublicReservationRevocation",
+        "TestPGFederationDeliverySavedRestartPersistence",
+        "TestPGPublisherSubscriptionAdministrationAndInbox",
+        "TestPGPublisherSubscriptionReadReceiptsAndVisibleContent",
+        "TestPGPublisherSubscriptionLiveProjectionAndBlocks",
+        "TestPGPublisherSubscriptionStrictRoutesAndAuthority",
+        "TestPGPublisherSubscriptionAuditRollbackAndConcurrentAdd",
+        "TestPGPublisherSubscriptionWaitRechecksManagerAndSession",
+        "TestPGPublisherSubscriptionRealmVisibilityAndMembership",
+        "TestPGPublisherSubscriptionSavedRestartPersistence",
+        "TestPGPublisherSubscriptionPendingAndTargetPrivacy",
+        "TestPGPublisherSubscriptionExpiryRollsBackAfterPublisherWait",
+
         "TestPGChatOrganizationSummaryReadAllVisibility",
         "TestPGChatOrganizationSearchLiteralFiltersAndPrivacy",
         "TestPGChatOrganizationPinsAuthorizationExpiryAndEvents",
@@ -845,6 +871,9 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGFederationDeliverySavedRestartPersistence",
+        "TestPGPublisherSubscriptionSavedRestartPersistence",
+
         "TestPGChatOrganizationRestartPersistence",
 
         "TestPGPostCompositionSavedRestartPersistence",

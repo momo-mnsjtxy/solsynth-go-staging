@@ -69,6 +69,7 @@ type Subscription struct {
 	EndedAt          *time.Time          `json:"ended_at"`
 	Reason           *string             `json:"reason"`
 	Notify           bool                `json:"notify"`
+	LastReadAt       *time.Time          `json:"last_read_at"`
 }
 type SubscriptionStatus struct {
 	Subscription     *Subscription `json:"subscription"`
@@ -82,6 +83,7 @@ type SubscriptionStatus struct {
 }
 type SubscriptionItem struct {
 	Subscription    `json:"subscription"`
+	LastReadAt      *time.Time `json:"last_read_at"`
 	LatestContentAt *time.Time `json:"latest_content_at"`
 	HasNewContent   bool       `json:"has_new_content"`
 	IsLive          bool       `json:"is_live"`

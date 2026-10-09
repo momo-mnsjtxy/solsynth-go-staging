@@ -66,6 +66,9 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err != nil || !ready {
 		return errors.New("post realm schema unavailable")
 	}
+	if _, err := b.db.ExecContext(ctx, `SELECT last_read_at,ended_by_account_id FROM owned_publisher_follows LIMIT 0;SELECT id,publisher_id,started_at,operation_state FROM owned_livestreams LIMIT 0`); err != nil {
+		return errors.New("publisher subscription state schema unavailable")
+	}
 	if err := b.publisherCommerce.ready(ctx); err != nil {
 		return err
 	}

@@ -136,7 +136,7 @@ its stale result is discarded. Monotonic history now cancels original work after
 transitions, including those occurring wholly between observations. Original
 session-ancestry/policy deadlines and retry limits are immutable; refresh cannot
 extend them. See `federation-discovery-review.md` for the bounded correction.
-The existing delivery worker's separate locking policy is unchanged.
+This discovery change did not alter POST delivery; the subsequent [delivery lease continuation](federation-delivery-leases.md) now closes its SQL observation transaction before POST as well.
 
 Apply `internal/federationpg/discovery_schema.sql` atomically after canonical
 accounts/sessions/publishers, publisher-name reservations and federation identity.

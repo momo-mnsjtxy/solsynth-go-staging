@@ -50,7 +50,7 @@ func (r *Repository) Receive(ctx context.Context, name string, v f.Verified) err
 		return f.ErrForbidden
 	}
 	{
-		current, x := r.remote(ctx, k.Actor)
+		current, x := r.remoteWithQuery(ctx, tx, k.Actor)
 		if x != nil || !v.Fresh(r.config.Clock()) || !sameQuoteKey(current, k) {
 			return f.ErrSignature
 		}
@@ -175,7 +175,7 @@ func (r *Repository) Receive(ctx context.Context, name string, v f.Verified) err
 	default:
 		return f.ErrUnsupported
 	}
-	current, e := r.remote(ctx, k.Actor)
+	current, e := r.remoteWithQuery(ctx, tx, k.Actor)
 	if e != nil || !v.Fresh(r.config.Clock()) || !sameQuoteKey(current, k) {
 		return f.ErrSignature
 	}

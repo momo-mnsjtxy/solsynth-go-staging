@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Narrow public-admission job/audit wait fixture correction; runtime unchanged. Synthetic no-FK history helper explicitly forbids canonical writes under later locks; canonical ABA tests retained. ActualPG pending.",
+  "local_source_checkpoint": "Reviewed federation leased dispatch, transaction-local remote lookups, and publisher subscriber state integrated with table-lock, punished-owner and synthetic wait-fixture corrections. Combined offline build/vet/unit/race/source/SQL checks passed; actualPG pending.",
   "last_fully_passed_ci": {
     "commit": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e",
     "run": 37876162176,
@@ -10,17 +10,17 @@
     "before": 756,
     "after_restart": 91,
     "skipped": 0,
-    "evidence": "Exactalljobs/head/attempt/steps and independentnamedrawlogcases; CIaggregateverifiedbothartifactdigestsandactualrestarts; localZIP403/error1010 unavailable."
+    "evidence": "All four exact jobs/head/attempt/required steps, independent raw-log named cases exactlyonce; CIaggregate verified both artifactdigests and two actual restartedclusters/processsmokes. LocalZIP recomputation unavailable403/error1010, no retry.",
+    "acceptance_limit": "Immutable CI-green, not all original functionality or production readiness."
   },
   "latest_candidate": {
-    "commit": "e05ec1500d9c1ae051b2efc06abc0e2496cac328",
-    "run": 37876657622,
-    "required_before": 777,
-    "required_after_restart": 93,
-    "status": "Running reviewed public-admission/composer plus three fixture corrections."
+    "commit": "8d00c0cee85ebd10328ed5d51fa0e876141bf411",
+    "required_before": 786,
+    "required_after_restart": 94,
+    "status": "Published narrow admission wait fixture correction; actualCI pending."
   },
-  "local_required_before": 786,
-  "local_required_after_restart": 94,
+  "local_required_before": 811,
+  "local_required_after_restart": 96,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2128,7 +2128,7 @@
     "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
-    "as_of": "2026-10-09T02:55:00Z",
+    "as_of": "2026-10-09T03:15:00Z",
     "authoritative_for": "Current source-backed remaining flow bundles, implementation candidates and operational gaps; no percentage or endpoint-total inference.",
     "families": [
       {
@@ -2686,7 +2686,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last full CI-green651c630718/87 exact cases,zero skips,real DB/process restarts. Reviewed742/90 and756/91 candidates pending CI; public-admission integration pending offline/PG. Federation outbound POST currently holds SQLlocks; separate lease/fence redesign is active.",
+    "verification_note": "Last verified756/91 at2e6c2d1.777/786 pendingCI.808 reviewed publisher/federationdispatch integration pendingchecks; poolstarvation follow-up active.",
     "unimplemented_flow_bundles": [
       {
         "id": "chat_reads_search",
@@ -3265,7 +3265,7 @@
           "sphere.publishers",
           "sphere.timeline"
         ],
-        "remaining": "Subscriber administration, notify/read state/live list and publisher-specific block/mute/relationship APIs remain missing.",
+        "remaining": "Subscriber manager listing/add/remove, own notify/read/read-all and public subscribed live streams integrated pendingPG; publisher-specific block/mute and remote subscriber/fanout semantics remain unsupported.",
         "source": [
           {
             "path": "DysonNetwork.Sphere/Publisher/PublisherSubscriptionController.cs",
@@ -3746,7 +3746,7 @@
       },
       {
         "id": "sphere.federation_discovery",
-        "status": "integrated_pending_actual_PG",
+        "status": "implemented_CI_green_2e6c2d1",
         "scope": "Anchored server actor, server collections/key routes, canonical host-meta/WebFinger and publisher key aliases; durable explicit pinned remote observation jobs with current-authority/history fences.",
         "artifact": "/workspace/shared/federation-discovery-review-delivery",
         "artifact_sha256": {
@@ -3762,11 +3762,11 @@
           "TestPGFederationDiscoveryLifecycleAndIsolation"
         ],
         "full_case_set": "/workspace/shared/federation-discovery-review-delivery/manifest.json",
-        "candidate": "0a79937fb769650afb0c446de0bcb7ca0b815afd"
+        "candidate": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e"
       },
       {
         "id": "passport.calendar_media",
-        "status": "integrated_pending_actual_PG",
+        "status": "implemented_CI_green_2e6c2d1",
         "scope": "Calendar/notable-day icon/background associations and audience-aware file reads; current projection revalidation and explicitly owned string-kind activity overlay.",
         "artifact": "/workspace/shared/calendar-media-review-delivery",
         "artifact_sha256": {
@@ -3783,11 +3783,11 @@
           "TestPGCalendarActivityStringProjectionPrivacyAndTimeZone"
         ],
         "full_case_set": "/workspace/shared/calendar-media-review-delivery/pg-cases.json",
-        "candidate": "0a79937fb769650afb0c446de0bcb7ca0b815afd"
+        "candidate": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e"
       },
       {
         "id": "passport.realm_members",
-        "status": "integrated_pending_actual_PG",
+        "status": "implemented_CI_green_2e6c2d1",
         "scope": "Label CRUD/assignment/filter/projection and opt-in daily tenure with scoped XP/history/configured levels.",
         "artifact": "/workspace/shared/realm-member-delivery",
         "artifact_sha256": {
@@ -3803,7 +3803,8 @@
           "TestPGRealmLabelsConcurrentQuotaAndReplay",
           "TestPGRealmLabelsMembershipIncarnationAndCurrentRole"
         ],
-        "full_case_set": "/workspace/shared/realm-member-delivery/integration.json"
+        "full_case_set": "/workspace/shared/realm-member-delivery/integration.json",
+        "candidate": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e"
       },
       {
         "id": "post_typed_composition",
@@ -3882,6 +3883,18 @@
         "current_boundary": "No pin or personal-group persistence/handler in current canonical owner. Do not confuse personal folders with implemented group chat rooms.",
         "next_slice": "One bounded transactional bundle: fresh room/target visibility, account-owned folders, pin expiry and saved-state restart.",
         "status": "implemented_pending_actual_PG"
+      },
+      {
+        "id": "publisher.subscription_state",
+        "status": "integrated_pending_actual_PG",
+        "scope": "Eight source-backed subscriber manager/ownnotify/read/readall/live routes, atomic local outbox",
+        "limits": "Publisher-specific blockmute/federated subscribers/external fanout remain unsupported."
+      },
+      {
+        "id": "federation.dispatch_leases",
+        "status": "integrated_pending_actual_PG",
+        "scope": "Committed original-intent/current-trust observation, bounded fenced acknowledgement, noSQLlocks acrossSend",
+        "limits": "Noexactlyonce/no send recall. Transactional small-pool lookup fix integrated; actualPG single/saturatedpool regressions pending."
       }
     ],
     "owned_contract_differences": [
@@ -4140,9 +4153,9 @@
     "Passing configured adapters and owned policies does not establish upstream internal behavior, live provider activation, or production migration readiness."
   ],
   "prior_candidate_result": {
-    "commit": "e05ec1500d9c1ae051b2efc06abc0e2496cac328",
-    "run": 37876657622,
-    "before_passed": 775,
+    "commit": "caaaab0d44ec1fdec54719b5cd2fcf5021a30c1c",
+    "run": 37877320406,
+    "before_passed": 784,
     "before_failed": 2,
     "after_restart": 0,
     "skipped": 0,
@@ -4150,16 +4163,16 @@
       "TestPGFederationPublicAdmissionCurrentPolicyAfterAuditWait",
       "TestPGFederationPublicAdmissionCurrentPolicyAfterJobWait"
     ],
-    "note": "All9newcomposerPGpassed, no restart."
+    "note": "Only inherited admission fixture inversions; all9chatcases passed actualPG, no restart."
   },
   "latest_job_log_verified_ci_pass": {
-    "commit": "651c6302809de83a2682047c5820468befd15b1e",
-    "run": 37873421328,
+    "commit": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e",
+    "run": 37876162176,
     "attempt": 1,
-    "before": 718,
-    "after_restart": 87,
+    "before": 756,
+    "after_restart": 91,
     "skipped": 0,
-    "evidence": "All four exact jobs/head/attempt/required steps passed. Independent exact named-case verification from authorized raw job logs; CI aggregate verified both attempt-bound artifact digests and two actual restarted clusters/process smokes. Local artifact ZIP recomputation unavailable403/error1010; no bypass or retry.",
-    "acceptance_limit": "CI-green for this immutable implementation, not all original platform functions or production rollout."
+    "evidence": "All four exact jobs/head/attempt/required steps, independent raw-log named cases exactlyonce; CIaggregate verified both artifactdigests and two actual restartedclusters/processsmokes. LocalZIP recomputation unavailable403/error1010, no retry.",
+    "acceptance_limit": "Immutable CI-green, not all original functionality or production readiness."
   }
 }

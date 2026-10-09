@@ -71,6 +71,8 @@ type federationFixture struct {
 	guard                                   *authoritypg.TransactionGuard
 	verifier                                *authority.Verifier
 	issuer                                  *authority.Service
+	authConfig                              authority.Config
+	preserve                                bool
 }
 
 func federationDB(t *testing.T) *sql.DB {
@@ -82,6 +84,9 @@ func federationDB(t *testing.T) *sql.DB {
 	return db
 }
 func newFederationFixture(t *testing.T, manual bool) *federationFixture {
+	return newFederationFixtureWithAuthority(t, manual, nil)
+}
+func newFederationFixtureWithAuthority(t *testing.T, manual bool, configure func(*authority.Config)) *federationFixture {
 	t.Helper()
 	db := federationDB(t)
 	x := &federationFixture{db: db, actor: authorityUUID(t), clock: &atomic.Int64{}}
@@ -96,6 +101,10 @@ func newFederationFixture(t *testing.T, manual bool) *federationFixture {
 		t.Fatal(e)
 	}
 	ac := authorityConfig(t, authorityKeys(t), x.clock)
+	if configure != nil {
+		configure(&ac)
+	}
+	x.authConfig = ac
 	var e error
 	x.issuer, e = authority.New(store, ac)
 	if e != nil {
@@ -140,6 +149,9 @@ func newFederationFixture(t *testing.T, manual bool) *federationFixture {
 		t.Fatal(e)
 	}
 	t.Cleanup(func() {
+		if x.preserve {
+			return
+		}
 		query(t, db, `UPDATE owned_federation_publishers SET enabled=false WHERE publisher_id=$1`, x.publisher)
 		query(t, db, `UPDATE owned_federation_deliveries SET status='cancelled',lease_token=NULL,lease_until=NULL WHERE publisher_id=$1 AND status IN('pending','inflight')`, x.publisher)
 	})
@@ -460,7 +472,8 @@ func TestPGFederationDurableDeliveryAndPrivacy(t *testing.T) {
 		t.Fatal("early retry", n, e)
 	}
 	x.clock.Add(61)
-	reopened, e := federationpg.New(database(t), x.config, x.keys, nil)
+	reopenedDB := database(t)
+	reopened, e := federationpg.New(reopenedDB, x.config, x.keys, authoritypg.NewTransactionGuard(authoritypg.New(reopenedDB), x.verifier))
 	if e != nil {
 		t.Fatal(e)
 	}

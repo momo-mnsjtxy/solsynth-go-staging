@@ -112,11 +112,13 @@ network guarantee.
 
 Before a send, the worker rechecks enabled publisher/owner, block state,
 relationship, post visibility/revision and the current pinned destination.
-Canonical account, publisher and post locks remain held through the bounded
-transport call. This serializes successful local privacy/block/disable changes
-against stale sends. An expired network context leaves the lease recoverable;
-it never records an uncertain send as successful. Stale Follow/Accept/Reject
-messages are cancelled against current relationship state.
+Canonical authority/domain/delivery observations now commit before the bounded
+HTTP call, then current state and the exact owner/attempt/expiry are rechecked
+for completion. Revocation can commit during a send; it cannot recall transmitted
+bytes. Original verified local intent, session/policy/membership history and key
+bindings are retained and freshly checked. See
+[federation-delivery-leases.md](federation-delivery-leases.md) for the precise
+observation boundary, new explicit migration and restart/CI requirements.
 
 The optional `NewHTTPTransport` sends only to configured HTTPS origins. It has
 no ambient proxy, no redirect following, bounded response headers/body reads and

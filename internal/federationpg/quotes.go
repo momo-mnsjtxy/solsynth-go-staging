@@ -117,7 +117,7 @@ func quotePolicyFailure(tx *sql.Tx, e error) error {
 	return e
 }
 func (r *Repository) quoteKeyCurrent(ctx context.Context, tx *sql.Tx, g quoteGrant) error {
-	k, e := r.remote(ctx, g.actor)
+	k, e := r.remoteWithQuery(ctx, tx, g.actor)
 	if e != nil {
 		return f.ErrNotFound
 	}
@@ -372,8 +372,24 @@ func (r *Repository) RevokeQuoteAuthorization(ctx context.Context, actor, id str
 		if e != nil {
 			return e
 		}
-		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_deliveries(publisher_id,actor_uri,inbox_uri,activity_id,activity_type,payload,quote_id,next_attempt,created_at)VALUES($1,$2,$3,$4,'Delete',$5,$6,$7,$7)`, p.id, g.actor, inbox, deletion.ID, []byte(marshal(deletion)), id, r.config.Clock()); e != nil {
-			return e
+		// Unavailable or replaced trust suppresses notification, while the local
+		// revocation still commits. Old identity bytes are never rebound.
+		key, keyErr := r.remoteWithQuery(ctx, tx, g.actor)
+		// A missing local signer must not turn a local withdrawal into a
+		// rollback. Providers in this lane are immutable, local key loaders.
+		signerAvailable := false
+		if r.keys != nil {
+			signer, signerErr := r.keys.LocalKey(ctx, p.id)
+			_, fingerprintErr := localFingerprint(signer)
+			signerAvailable = signerErr == nil && fingerprintErr == nil
+		}
+		if signerAvailable && keyErr == nil && key.Inbox == inbox && key.KeyID == g.key && bytes.Equal(quoteKey(key), g.fingerprint) {
+			if e = r.enqueue(ctx, tx, p, key, deletion, "", nil); e != nil {
+				return e
+			}
+			if _, e = tx.ExecContext(ctx, `UPDATE owned_federation_deliveries SET quote_id=$3 WHERE activity_id=$1 AND actor_uri=$2`, deletion.ID, g.actor, id); e != nil {
+				return e
+			}
 		}
 	}
 	if e = r.audit(ctx, tx, actor, p.id, "quote.revoke"); e != nil {

@@ -38,6 +38,24 @@ func validate(c *notifications.Command) error {
 // Enqueue durably records a command with a caller-supplied idempotency key.
 // It is a trusted application API, with no public HTTP equivalent.
 func (r *Repository) Enqueue(ctx context.Context, c notifications.Command) (string, error) {
+	tx, e := r.begin(ctx)
+	if e != nil {
+		return "", e
+	}
+	defer tx.Rollback()
+	id, e := r.EnqueueInTransaction(ctx, r.db, tx, c)
+	if e != nil {
+		return "", e
+	}
+	return id, tx.Commit()
+}
+
+// EnqueueInTransaction is trusted in-process infrastructure. The canonical pool
+// must match; caller owns rollback/commit. No public route accepts these commands.
+func (r *Repository) EnqueueInTransaction(ctx context.Context, db *sql.DB, tx *sql.Tx, c notifications.Command) (string, error) {
+	if r == nil || db == nil || r.db != db || tx == nil {
+		return "", notifications.ErrUnavailable
+	}
 	if e := validate(&c); e != nil {
 		return "", e
 	}
@@ -49,11 +67,6 @@ func (r *Repository) Enqueue(ctx context.Context, c notifications.Command) (stri
 		return "", notifications.ErrInvalid
 	}
 	hash := sha256.Sum256(b)
-	tx, e := r.begin(ctx)
-	if e != nil {
-		return "", e
-	}
-	defer tx.Rollback()
 	active, e := lockAccount(ctx, tx, c.AccountID)
 	if e != nil {
 		return "", e
@@ -68,7 +81,7 @@ func (r *Repository) Enqueue(ctx context.Context, c notifications.Command) (stri
 		if !bytes.Equal(old, hash[:]) {
 			return "", notifications.ErrConflict
 		}
-		return id, tx.Commit()
+		return id, nil
 	}
 	if !errors.Is(e, sql.ErrNoRows) {
 		return "", e
@@ -81,7 +94,7 @@ func (r *Repository) Enqueue(ctx context.Context, c notifications.Command) (stri
 	if e != nil {
 		return "", e
 	}
-	return id, tx.Commit()
+	return id, nil
 }
 
 // ProcessPending atomically turns durable commands into inbox items and replay

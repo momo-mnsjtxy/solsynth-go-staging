@@ -117,11 +117,14 @@ type discoveryWork struct {
 }
 
 func (r *Repository) discoveryTarget(ctx context.Context, resource string) (f.DiscoveryTarget, f.RemoteKey, string, error) {
+	return r.discoveryTargetWithQuery(ctx, r.db, resource)
+}
+func (r *Repository) discoveryTargetWithQuery(ctx context.Context, q queryer, resource string) (f.DiscoveryTarget, f.RemoteKey, string, error) {
 	target, ok := r.discoveryTargets[resource]
 	if !ok {
 		return target, f.RemoteKey{}, "", f.ErrForbidden
 	}
-	key, e := r.remote(ctx, target.Actor)
+	key, e := r.remoteWithQuery(ctx, q, target.Actor)
 	if e != nil {
 		return target, key, "", e
 	}
@@ -154,7 +157,7 @@ func (r *Repository) RequestDiscovery(ctx context.Context, actor, ref, resource 
 	if !p.enabled || p.owner != initial.owner || !r.identityMatches(p) || !bytes.Equal(initialStamp, currentStamp) {
 		return out, f.ErrForbidden
 	}
-	if _, _, current, err := r.discoveryTarget(ctx, resource); err != nil || current != binding {
+	if _, _, current, err := r.discoveryTargetWithQuery(ctx, tx, resource); err != nil || current != binding {
 		return out, f.ErrForbidden
 	}
 	var version int64
@@ -215,7 +218,7 @@ func (r *Repository) RequestDiscovery(ctx context.Context, actor, ref, resource 
 		}
 		return out, f.ErrForbidden
 	}
-	if _, _, current, err := r.discoveryTarget(ctx, resource); err != nil || current != binding {
+	if _, _, current, err := r.discoveryTargetWithQuery(ctx, tx, resource); err != nil || current != binding {
 		return out, f.ErrForbidden
 	}
 	return out, tx.Commit()
@@ -261,7 +264,7 @@ func (r *Repository) Discovery(ctx context.Context, actor, ref, resource string)
 	if !p.enabled || p.owner != initial.owner || !r.identityMatches(p) || !bytes.Equal(initialStamp, currentStamp) {
 		return out, f.ErrForbidden
 	}
-	if _, _, current, err := r.discoveryTarget(ctx, resource); err != nil || current != binding {
+	if _, _, current, err := r.discoveryTargetWithQuery(ctx, tx, resource); err != nil || current != binding {
 		return out, f.ErrForbidden
 	}
 	target := r.discoveryTargets[resource]
@@ -477,7 +480,7 @@ func (r *Repository) completeDiscovery(ctx context.Context, w discoveryWork, sta
 	if lease != w.token || status != "cancelled" && !until.After(r.config.Clock()) {
 		return nil
 	}
-	_, _, current, e := r.discoveryTarget(ctx, w.Resource)
+	_, _, current, e := r.discoveryTargetWithQuery(ctx, tx, w.Resource)
 	if e != nil || current != w.binding {
 		status = "cancelled"
 		result = nil

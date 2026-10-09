@@ -83,6 +83,7 @@ import (
 	"solsynth.local/go-migration/ports/sphere/autocomplete"
 	"solsynth.local/go-migration/ports/sphere/blogshttp"
 	"solsynth.local/go-migration/ports/sphere/interactions"
+	live "solsynth.local/go-migration/ports/sphere/livestreams"
 	"solsynth.local/go-migration/ports/sphere/locations"
 	"solsynth.local/go-migration/ports/sphere/posts"
 	"solsynth.local/go-migration/ports/sphere/reader"
@@ -549,6 +550,7 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 		settingsHTTP = (&accountsettings.Service{Repository: settingsRepo, Authority: v}).Handler()
 	}
 	notificationRepo := notificationpg.New(db, guard, c.NotificationApp).WithRoomAccess(cr)
+	timelineRepo.WithSubscriptionNotifications(publisherSubscriptionNotifications{notificationRepo, db, c.NotificationApp})
 	if settingsRepo != nil {
 		notificationRepo.WithPreferencePolicy(settingsRepo)
 	}
@@ -583,6 +585,15 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	streamHTTP, err := external.configureStreams(db, c, v, guard, accountRepo, socialRepo, mediaRepo, commerceRepo)
 	if err != nil {
 		return nil, err
+	}
+	if external.streams != nil {
+		timelineRepo.WithSubscriptionStreams(external.streams.SubscriptionReader())
+	} else {
+		var subscriptionMedia live.MediaProvider
+		if mediaRepo != nil {
+			subscriptionMedia = mediaRepo
+		}
+		timelineRepo.WithSubscriptionStreams(livestreampg.NewSubscriptionReader(accountRepo, socialRepo, subscriptionMedia))
 	}
 	admin, err := adminModulesFor(db, guard, v, c.Authority.Now)
 	if err != nil {

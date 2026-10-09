@@ -156,6 +156,13 @@ func (p publicKeys) RemoteKey(ctx context.Context, id string) (f.RemoteKey, erro
 	return p.lookup(ctx, id, true)
 }
 func (p publicKeys) lookup(ctx context.Context, id string, byKey bool) (f.RemoteKey, error) {
+	return p.lookupWithQuery(ctx, p.r.db, id, byKey)
+}
+
+// lookupWithQuery keeps every durable reservation and policy read on the
+// caller's connection. Transactional callers must not acquire a second pool
+// connection while holding their canonical locks. No lookup result is cached.
+func (p publicKeys) lookupWithQuery(ctx context.Context, q queryer, id string, byKey bool) (f.RemoteKey, error) {
 	// A durable reservation takes precedence, including a revoked tombstone. A
 	// configured key cannot silently replace an admitted incarnation after restart.
 	ledger := len(p.r.publicPolicies) > 0
@@ -163,12 +170,12 @@ func (p publicKeys) lookup(ctx context.Context, id string, byKey bool) (f.Remote
 		// Legacy installations may not have applied the optional migration. An
 		// actual query error is not equivalent to the schema being absent. Never
 		// cache absence: a later migration must immediately enforce reservations.
-		if e := p.r.db.QueryRowContext(ctx, `SELECT to_regclass('owned_federation_public_keys') IS NOT NULL`).Scan(&ledger); e != nil {
+		if e := q.QueryRowContext(ctx, `SELECT to_regclass('owned_federation_public_keys') IS NOT NULL`).Scan(&ledger); e != nil {
 			return f.RemoteKey{}, e
 		}
 	}
 	if ledger {
-		k, e := p.r.publicKey(ctx, p.r.db, id, byKey, false)
+		k, e := p.r.publicKey(ctx, q, id, byKey, false)
 		if !errors.Is(e, sql.ErrNoRows) {
 			return k, e
 		}
@@ -198,7 +205,7 @@ func (p publicKeys) lookup(ctx context.Context, id string, byKey bool) (f.Remote
 		return f.RemoteKey{}, e
 	}
 	var reserved bool
-	if e = p.r.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_federation_public_keys WHERE actor_uri=$1 OR key_id=$2 OR fingerprint=$3)`, k.Actor, k.KeyID, fingerprint).Scan(&reserved); e != nil {
+	if e = q.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_federation_public_keys WHERE actor_uri=$1 OR key_id=$2 OR fingerprint=$3)`, k.Actor, k.KeyID, fingerprint).Scan(&reserved); e != nil {
 		return f.RemoteKey{}, e
 	}
 	if reserved {

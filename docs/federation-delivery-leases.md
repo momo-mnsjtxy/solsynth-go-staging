@@ -148,3 +148,5 @@ The lawful source contracts remain those recorded in
 and quote evidence. This lease/authority design is owned hardening, not a claim
 that the upstream code had these semantics. No excluded protocol definitions,
 Socommon, Suki, generated bindings or unlicensed implementation were used.
+
+Quote consent captures a separate monotonic block/security revision. Follow lifecycle changes still fence Follow/post jobs, but do not revoke independent valid quote acceptance. Quote revocation, private/deleted target, current actor/key/session/owner checks and block/unblock history remain mandatory. Legacy quote jobs without a captured security revision fail closed; no historical authorization is inferred during migration.

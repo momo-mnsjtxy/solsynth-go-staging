@@ -102,12 +102,15 @@ func TestPGDeveloperStatisticsCanonicalCountsAndVisibility(t *testing.T) {
 	}{
 		{`UPDATE owned_authority_accounts SET disabled=true WHERE id=$1`, `UPDATE owned_authority_accounts SET disabled=false WHERE id=$1`, f.actor},
 		{`UPDATE owned_publishers SET deleted_at=now() WHERE id=$1`, `UPDATE owned_publishers SET deleted_at=NULL WHERE id=$1`, a.PublisherID},
-		{`UPDATE owned_publishers SET shadowbanned_at=now() WHERE id=$1`, `UPDATE owned_publishers SET shadowbanned_at=NULL WHERE id=$1`, a.PublisherID},
 	} {
 		query(t, f.db, tc.disable, tc.id)
 		backendCall(t, f.handler, "GET", path, "", "", 404)
 		query(t, f.db, tc.restore, tc.id)
 	}
+	fixturePublisherShadowban(t, f.db, a.PublisherID, "spam", time.Now().UTC())
+	backendCall(t, f.handler, "GET", path, "", "", 404)
+	fixturePublisherShadowban(t, f.db, a.PublisherID, "", time.Time{})
+	assertCount(1)
 	if e := authoritypg.New(f.db).ReplacePolicy(context.Background(), f.actor, []authority.Rule{{Pattern: "*"}}, []authority.Punishment{{Kind: "disable_account"}}); e != nil {
 		t.Fatal(e)
 	}

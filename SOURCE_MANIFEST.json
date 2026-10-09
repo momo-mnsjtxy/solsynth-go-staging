@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Add reviewed developer statistics and private custom-order flow",
+  "checkpoint": "Preserve independent quote consent with durable security history",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "d9c14c06258e55c5ad340212587b44745bdfb555"
+    "remote_parent": "5a4a2736f9bcbdf121e555ea4498ab73d2f9a5a6"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -613,8 +613,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 128110,
-      "sha256": "b4f86879afc4540a14a9bcd41562765d67ba09ef614e12e2db0b08c4f962cb55"
+      "bytes": 128702,
+      "sha256": "091d85e67b9b75ecf95b3cb396e16022283f4b48d13a89aaa527eebe635f66a5"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -743,8 +743,8 @@
     },
     {
       "path": "docs/federation-delivery-leases.md",
-      "bytes": 10089,
-      "sha256": "5244e9ae946814a16814e87720d974e2243683d321d78b0503a72e7242f6a5c9"
+      "bytes": 10519,
+      "sha256": "3d378f35078504dc2138bf5e3c5bf2514758d01d1803194f6668b895007bbccc"
     },
     {
       "path": "docs/federation-discovery-continuation.md",
@@ -1988,8 +1988,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 208526,
-      "sha256": "5f4558e7cf3ef2e3398f20e77c96ab6cefc21a76e65048f0da78847c4bbe3882"
+      "bytes": 208355,
+      "sha256": "cf1ea9c167551317f0c4005e5f084c366e6c819a39cec071af1207e9966349fc"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -3273,8 +3273,8 @@
     },
     {
       "path": "internal/federationpg/delivery.go",
-      "bytes": 19969,
-      "sha256": "02b40c0d3e1cf86614de540618ce0bf43e7a823025579bfa102b2827eef26559"
+      "bytes": 20728,
+      "sha256": "d8a65a7e766b3104d580e40c233277779c53601e7f4ecbf99cf03c82d8927b44"
     },
     {
       "path": "internal/federationpg/delivery_authority.go",
@@ -3283,8 +3283,8 @@
     },
     {
       "path": "internal/federationpg/delivery_schema.sql",
-      "bytes": 10203,
-      "sha256": "678dd650dc7e1ab679b8c7f6627970fcae75d8e473742eb22811fe52ce1ec817"
+      "bytes": 11009,
+      "sha256": "0228e48195cc6427df2e347bf6d80e2144b139b71bd15781e98111a75d7630b7"
     },
     {
       "path": "internal/federationpg/discovery.go",
@@ -3353,8 +3353,8 @@
     },
     {
       "path": "internal/federationpg/repository.go",
-      "bytes": 19133,
-      "sha256": "942d89ad0931b653a371e814033367af4ec3db822d4f421d6c800c04fe8adcf8"
+      "bytes": 19274,
+      "sha256": "a1314a599fb9dc135a5b4c9ce01aadfa84111816589d24785eee13bdd48c47fb"
     },
     {
       "path": "internal/federationpg/repository_test.go",
@@ -10859,7 +10859,7 @@
     {
       "path": "scripts/integration-groups.json",
       "bytes": 111637,
-      "sha256": "943c838512cdf22aa5b5cf5698238eaad91e58525837a4a864cb3a64f5300f48"
+      "sha256": "78e4085a3efb0f726975a8039cddc7e02a7aa003c9f98811bc7b90f81fca88e9"
     },
     {
       "path": "scripts/integration-postgres.sh",
@@ -11268,8 +11268,8 @@
     },
     {
       "path": "tests/integration/backend_federation_delivery_test.go",
-      "bytes": 3000,
-      "sha256": "22775f7236590893624b3f68b0b70da4f964b8d7776f17ed6f79f45c41bb3858"
+      "bytes": 3187,
+      "sha256": "b84db5a4c6e8c7b7a017dd884f5394a48a4c65d2437662df2556d336426c4e57"
     },
     {
       "path": "tests/integration/backend_federation_discovery_test.go",
@@ -11503,8 +11503,8 @@
     },
     {
       "path": "tests/integration/content_moderation_test.go",
-      "bytes": 28548,
-      "sha256": "eccd7fd7ab1b58f1167b56dc690e32bc46ead5f56933146c8d83d83b6c9d04ec"
+      "bytes": 28767,
+      "sha256": "a4ef001f742123ebabf59cb1ac974a9bfcb5c35ee86ce69a904b98155eccf933"
     },
     {
       "path": "tests/integration/content_translation_test.go",
@@ -11553,8 +11553,8 @@
     },
     {
       "path": "tests/integration/developer_management_test.go",
-      "bytes": 23056,
-      "sha256": "03b87e666598e6e2cb809eebbf6ccad94cb03d40b6957c363035714df910f6de"
+      "bytes": 23122,
+      "sha256": "6f7f902d1812c41fbccb99d14abc1c1a6f48deb2c3abf3fcf344ceff10c28d4c"
     },
     {
       "path": "tests/integration/direct_recovery_privacy_test.go",
@@ -11588,8 +11588,8 @@
     },
     {
       "path": "tests/integration/federation_delivery_leases_test.go",
-      "bytes": 22532,
-      "sha256": "f4a03592623c354de060772275c2b1b66a362e9180c8192cd4b0f4692645bbe2"
+      "bytes": 23844,
+      "sha256": "cde0ea766fa424a6bd9447697b1b10d238c259d89ef524bbc66307c1299d6801"
     },
     {
       "path": "tests/integration/federation_delivery_restart_test.go",
@@ -11628,8 +11628,8 @@
     },
     {
       "path": "tests/integration/federation_quotes_test.go",
-      "bytes": 22194,
-      "sha256": "a5a69c4c6748744a9d07e089d9030468b80491274b65c575071296d4b9911848"
+      "bytes": 32868,
+      "sha256": "27d69e0f1b65904948582d691d50b07585aa76bb70fe29ecc07c2380ce881f30"
     },
     {
       "path": "tests/integration/federation_rename_test.go",
@@ -11808,8 +11808,8 @@
     },
     {
       "path": "tests/integration/post_realms_test.go",
-      "bytes": 26589,
-      "sha256": "86b8a159b42fa66695050ae7736df4bebcfbbbcfcb9f90d7fdd6001153992683"
+      "bytes": 26800,
+      "sha256": "c08408526e8a9059917f3a8e93808bd2d3e4c9648708cf8da6b78b9e3c2bd72b"
     },
     {
       "path": "tests/integration/post_scheduling_review_test.go",

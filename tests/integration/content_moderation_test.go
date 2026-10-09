@@ -375,6 +375,10 @@ func TestPGContentModerationFederationWithdrawalRetry(t *testing.T) {
 		query(t, x.db, schema)
 	}
 	query(t, x.db, `UPDATE owned_authority_accounts SET is_superuser=true WHERE id=$1`, x.actor)
+	// Explicit fresh enablement after the setup security change; old intent stays invalid.
+	if e := x.r.Settings(x.ctx, x.actor, x.publisher, federation.Settings{Enabled: true, Manual: false}); e != nil {
+		t.Fatal(e)
+	}
 	r, e := moderationpg.New(x.db, x.guard, moderationpg.Config{Now: x.config.Clock})
 	if e != nil {
 		t.Fatal(e)

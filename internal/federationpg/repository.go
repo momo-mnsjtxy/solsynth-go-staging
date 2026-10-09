@@ -468,7 +468,7 @@ func (r *Repository) enqueue(ctx context.Context, tx *sql.Tx, p publisher, k f.R
 	if e != nil {
 		return e
 	}
-	_, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_deliveries(publisher_id,actor_uri,inbox_uri,activity_id,activity_type,payload,post_id,post_updated_at,post_audit_id,next_attempt,created_at,origin_intent,remote_binding,local_fingerprint,max_attempts,expires_at,peer_epoch) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10,$11::jsonb,$12,$13,$14,$15,COALESCE((SELECT revision FROM owned_federation_delivery_peer_epochs WHERE publisher_id=$1 AND actor_uri=$2),0)) ON CONFLICT(activity_id,actor_uri) DO NOTHING`, p.id, k.Actor, k.Inbox, a.ID, a.Type, body, post, revision, audit, r.config.Clock(), marshal(intent), binding, fingerprint, r.config.MaxAttempts, intent.Expires)
+	_, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_deliveries(publisher_id,actor_uri,inbox_uri,activity_id,activity_type,payload,post_id,post_updated_at,post_audit_id,next_attempt,created_at,origin_intent,remote_binding,local_fingerprint,max_attempts,expires_at,peer_epoch,peer_security_epoch) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10,$11::jsonb,$12,$13,$14,$15,COALESCE((SELECT revision FROM owned_federation_delivery_peer_epochs WHERE publisher_id=$1 AND actor_uri=$2),0),COALESCE((SELECT security_revision FROM owned_federation_delivery_peer_epochs WHERE publisher_id=$1 AND actor_uri=$2),0)) ON CONFLICT(activity_id,actor_uri) DO NOTHING`, p.id, k.Actor, k.Inbox, a.ID, a.Type, body, post, revision, audit, r.config.Clock(), marshal(intent), binding, fingerprint, r.config.MaxAttempts, intent.Expires)
 	return e
 }
 func (r *Repository) remote(ctx context.Context, uri string) (f.RemoteKey, error) {

@@ -9,6 +9,8 @@ ALTER TABLE owned_federation_deliveries ADD COLUMN IF NOT EXISTS local_fingerpri
 ALTER TABLE owned_federation_deliveries ADD COLUMN IF NOT EXISTS max_attempts integer;
 ALTER TABLE owned_federation_deliveries ADD COLUMN IF NOT EXISTS expires_at timestamptz;
 ALTER TABLE owned_federation_deliveries ADD COLUMN IF NOT EXISTS peer_epoch bigint;
+-- Legacy quote jobs lack an observed security generation and fail closed.
+ALTER TABLE owned_federation_deliveries ADD COLUMN IF NOT EXISTS peer_security_epoch bigint CHECK(peer_security_epoch IS NULL OR peer_security_epoch>=0);
 ALTER TABLE owned_federation_deliveries ADD COLUMN IF NOT EXISTS dispatch_started_at timestamptz;
 -- Nullable legacy rows remain readable, but cannot acquire a dispatch lease.
 DO $$BEGIN
@@ -77,14 +79,18 @@ CREATE TABLE IF NOT EXISTS owned_federation_delivery_peer_epochs(
  publisher_id uuid NOT NULL REFERENCES owned_publishers(id),actor_uri text NOT NULL,
  revision bigint NOT NULL DEFAULT 1 CHECK(revision>0),PRIMARY KEY(publisher_id,actor_uri)
 );
-CREATE OR REPLACE FUNCTION owned_federation_delivery_peer_bump()RETURNS trigger LANGUAGE plpgsql AS $$BEGIN
+ALTER TABLE owned_federation_delivery_peer_epochs ADD COLUMN IF NOT EXISTS security_revision bigint NOT NULL DEFAULT 0 CHECK(security_revision>=0);
+CREATE OR REPLACE FUNCTION owned_federation_delivery_peer_bump()RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE security_delta bigint;
+BEGIN
+ security_delta=CASE WHEN TG_TABLE_NAME='owned_federation_blocks' THEN 1 ELSE 0 END;
  IF TG_OP<>'INSERT' THEN
-  INSERT INTO owned_federation_delivery_peer_epochs(publisher_id,actor_uri)VALUES(OLD.publisher_id,OLD.actor_uri)
-  ON CONFLICT(publisher_id,actor_uri)DO UPDATE SET revision=owned_federation_delivery_peer_epochs.revision+1;
+  INSERT INTO owned_federation_delivery_peer_epochs(publisher_id,actor_uri,security_revision)VALUES(OLD.publisher_id,OLD.actor_uri,security_delta)
+  ON CONFLICT(publisher_id,actor_uri)DO UPDATE SET revision=owned_federation_delivery_peer_epochs.revision+1,security_revision=owned_federation_delivery_peer_epochs.security_revision+security_delta;
  END IF;
  IF TG_OP<>'DELETE' THEN
-  INSERT INTO owned_federation_delivery_peer_epochs(publisher_id,actor_uri)VALUES(NEW.publisher_id,NEW.actor_uri)
-  ON CONFLICT(publisher_id,actor_uri)DO UPDATE SET revision=owned_federation_delivery_peer_epochs.revision+1;
+  INSERT INTO owned_federation_delivery_peer_epochs(publisher_id,actor_uri,security_revision)VALUES(NEW.publisher_id,NEW.actor_uri,security_delta)
+  ON CONFLICT(publisher_id,actor_uri)DO UPDATE SET revision=owned_federation_delivery_peer_epochs.revision+1,security_revision=owned_federation_delivery_peer_epochs.security_revision+security_delta;
  END IF;
  IF TG_OP='DELETE' THEN RETURN OLD;END IF;RETURN NEW;
 END$$;
@@ -93,7 +99,7 @@ CREATE TRIGGER owned_delivery_relationships AFTER INSERT OR UPDATE OR DELETE ON 
 DROP TRIGGER IF EXISTS owned_delivery_blocks ON owned_federation_blocks;
 CREATE TRIGGER owned_delivery_blocks AFTER INSERT OR UPDATE OR DELETE ON owned_federation_blocks FOR EACH ROW EXECUTE FUNCTION owned_federation_delivery_peer_bump();
 CREATE OR REPLACE FUNCTION owned_federation_delivery_immutable()RETURNS trigger LANGUAGE plpgsql AS $$BEGIN
- IF NEW.id IS DISTINCT FROM OLD.id OR NEW.publisher_id IS DISTINCT FROM OLD.publisher_id OR NEW.actor_uri IS DISTINCT FROM OLD.actor_uri OR NEW.inbox_uri IS DISTINCT FROM OLD.inbox_uri OR NEW.activity_id IS DISTINCT FROM OLD.activity_id OR NEW.activity_type IS DISTINCT FROM OLD.activity_type OR NEW.payload IS DISTINCT FROM OLD.payload OR NEW.post_id IS DISTINCT FROM OLD.post_id OR NEW.post_updated_at IS DISTINCT FROM OLD.post_updated_at OR NEW.post_audit_id IS DISTINCT FROM OLD.post_audit_id OR NEW.origin_intent IS DISTINCT FROM OLD.origin_intent OR NEW.remote_binding IS DISTINCT FROM OLD.remote_binding OR NEW.local_fingerprint IS DISTINCT FROM OLD.local_fingerprint OR NEW.max_attempts IS DISTINCT FROM OLD.max_attempts OR NEW.expires_at IS DISTINCT FROM OLD.expires_at OR NEW.peer_epoch IS DISTINCT FROM OLD.peer_epoch OR NEW.created_at IS DISTINCT FROM OLD.created_at OR (OLD.attempts>0 AND NEW.quote_id IS DISTINCT FROM OLD.quote_id) THEN
+ IF NEW.id IS DISTINCT FROM OLD.id OR NEW.publisher_id IS DISTINCT FROM OLD.publisher_id OR NEW.actor_uri IS DISTINCT FROM OLD.actor_uri OR NEW.inbox_uri IS DISTINCT FROM OLD.inbox_uri OR NEW.activity_id IS DISTINCT FROM OLD.activity_id OR NEW.activity_type IS DISTINCT FROM OLD.activity_type OR NEW.payload IS DISTINCT FROM OLD.payload OR NEW.post_id IS DISTINCT FROM OLD.post_id OR NEW.post_updated_at IS DISTINCT FROM OLD.post_updated_at OR NEW.post_audit_id IS DISTINCT FROM OLD.post_audit_id OR NEW.origin_intent IS DISTINCT FROM OLD.origin_intent OR NEW.remote_binding IS DISTINCT FROM OLD.remote_binding OR NEW.local_fingerprint IS DISTINCT FROM OLD.local_fingerprint OR NEW.max_attempts IS DISTINCT FROM OLD.max_attempts OR NEW.expires_at IS DISTINCT FROM OLD.expires_at OR NEW.peer_security_epoch IS DISTINCT FROM OLD.peer_security_epoch OR NEW.peer_epoch IS DISTINCT FROM OLD.peer_epoch OR NEW.created_at IS DISTINCT FROM OLD.created_at OR (OLD.attempts>0 AND NEW.quote_id IS DISTINCT FROM OLD.quote_id) THEN
   RAISE EXCEPTION 'Delivery intent is immutable' USING ERRCODE='23514';
  END IF;
  IF NEW.attempts<OLD.attempts OR (OLD.status IN('sent','dead','cancelled') AND NEW IS DISTINCT FROM OLD) THEN

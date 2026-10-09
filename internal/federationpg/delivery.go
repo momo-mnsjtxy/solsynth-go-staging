@@ -164,6 +164,8 @@ func (r *Repository) reconcilePost(ctx context.Context, id string) (bool, error)
 }
 
 type delivery struct {
+	quote                                    sql.NullString
+	peerSecurityEpoch                        sql.NullInt64
 	audit                                    sql.NullInt64
 	id                                       int64
 	publisher, remote, inbox, activity, kind string
@@ -192,7 +194,7 @@ func (r *Repository) claim(ctx context.Context) (delivery, error) {
 		return d, e
 	}
 	var raw []byte
-	e = r.db.QueryRowContext(ctx, `WITH candidate AS(SELECT d.id FROM owned_federation_deliveries d WHERE d.origin_intent IS NOT NULL AND d.expires_at>clock_timestamp() AND d.attempts<LEAST(d.max_attempts,$1) AND ((d.status='pending' AND d.next_attempt<=$2) OR (d.status='inflight' AND d.lease_until<=clock_timestamp())) AND NOT EXISTS(SELECT 1 FROM owned_federation_deliveries prior WHERE prior.publisher_id=d.publisher_id AND prior.actor_uri=d.actor_uri AND prior.id<d.id AND prior.status IN('pending','inflight')) ORDER BY d.next_attempt,d.id FOR UPDATE OF d SKIP LOCKED LIMIT 1) UPDATE owned_federation_deliveries d SET status='inflight',attempts=attempts+1,lease_token=$3,lease_until=LEAST(clock_timestamp()+($4::bigint*interval '1 microsecond'),expires_at),dispatch_started_at=NULL FROM candidate c WHERE d.id=c.id RETURNING d.id,d.publisher_id::text,d.actor_uri,d.inbox_uri,d.activity_id,d.activity_type,d.payload,d.post_id::text,d.post_updated_at,d.post_audit_id,d.attempts,d.origin_intent,d.remote_binding,d.local_fingerprint,d.max_attempts,d.lease_until,d.expires_at,d.peer_epoch`, r.config.MaxAttempts, r.config.Clock(), token, (2*r.config.DeliveryTimeout).Microseconds()).Scan(&d.id, &d.publisher, &d.remote, &d.inbox, &d.activity, &d.kind, &d.body, &d.post, &d.updated, &d.audit, &d.attempts, &raw, &d.binding, &d.fingerprint, &d.maxAttempts, &d.lease, &d.expires, &d.peerEpoch)
+	e = r.db.QueryRowContext(ctx, `WITH candidate AS(SELECT d.id FROM owned_federation_deliveries d WHERE d.origin_intent IS NOT NULL AND d.expires_at>clock_timestamp() AND d.attempts<LEAST(d.max_attempts,$1) AND ((d.status='pending' AND d.next_attempt<=$2) OR (d.status='inflight' AND d.lease_until<=clock_timestamp())) AND NOT EXISTS(SELECT 1 FROM owned_federation_deliveries prior WHERE prior.publisher_id=d.publisher_id AND prior.actor_uri=d.actor_uri AND prior.id<d.id AND prior.status IN('pending','inflight')) ORDER BY d.next_attempt,d.id FOR UPDATE OF d SKIP LOCKED LIMIT 1) UPDATE owned_federation_deliveries d SET status='inflight',attempts=attempts+1,lease_token=$3,lease_until=LEAST(clock_timestamp()+($4::bigint*interval '1 microsecond'),expires_at),dispatch_started_at=NULL FROM candidate c WHERE d.id=c.id RETURNING d.id,d.publisher_id::text,d.actor_uri,d.inbox_uri,d.activity_id,d.activity_type,d.payload,d.post_id::text,d.post_updated_at,d.post_audit_id,d.attempts,d.origin_intent,d.remote_binding,d.local_fingerprint,d.max_attempts,d.lease_until,d.expires_at,d.peer_epoch,d.peer_security_epoch,d.quote_id::text`, r.config.MaxAttempts, r.config.Clock(), token, (2*r.config.DeliveryTimeout).Microseconds()).Scan(&d.id, &d.publisher, &d.remote, &d.inbox, &d.activity, &d.kind, &d.body, &d.post, &d.updated, &d.audit, &d.attempts, &raw, &d.binding, &d.fingerprint, &d.maxAttempts, &d.lease, &d.expires, &d.peerEpoch, &d.peerSecurityEpoch, &d.quote)
 	d.token = token
 	if e == nil && json.Unmarshal(raw, &d.intent) != nil {
 		return d, f.ErrUnavailable
@@ -296,10 +298,21 @@ func (r *Repository) observeDelivery(ctx context.Context, d delivery, result str
 		return finish("cancelled")
 	}
 	var epoch int64
-	if e = tx.QueryRowContext(ctx, `SELECT COALESCE((SELECT revision FROM owned_federation_delivery_peer_epochs WHERE publisher_id=$1 AND actor_uri=$2),0)`, d.publisher, d.remote).Scan(&epoch); e != nil {
+	epochQuery := `SELECT COALESCE((SELECT revision FROM owned_federation_delivery_peer_epochs WHERE publisher_id=$1 AND actor_uri=$2),0)`
+	wantEpoch := d.peerEpoch
+	if d.quote.Valid {
+		// Independent quote consent is not a Follow grant. Security changes
+		// (including block/unblock ABA) still permanently cancel old consent.
+		if !d.peerSecurityEpoch.Valid {
+			return finish("cancelled")
+		}
+		epochQuery = `SELECT COALESCE((SELECT security_revision FROM owned_federation_delivery_peer_epochs WHERE publisher_id=$1 AND actor_uri=$2),0)`
+		wantEpoch = d.peerSecurityEpoch.Int64
+	}
+	if e = tx.QueryRowContext(ctx, epochQuery, d.publisher, d.remote).Scan(&epoch); e != nil {
 		return e
 	}
-	if epoch != d.peerEpoch {
+	if epoch != wantEpoch {
 		return finish("cancelled")
 	}
 	b, e := r.blocked(ctx, tx, p.id, d.remote)
@@ -480,7 +493,7 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if e != nil || !ok {
 		return f.ErrUnavailable
 	}
-	if _, e = r.db.ExecContext(ctx, `SELECT quote_id,origin_intent,remote_binding,local_fingerprint,max_attempts,expires_at,peer_epoch,dispatch_started_at FROM owned_federation_deliveries LIMIT 0;SELECT identity_handle,actor_uri,key_id,delivery_intent FROM owned_federation_publishers LIMIT 0;SELECT folded_name,publisher_id FROM owned_publisher_name_reservations LIMIT 0`); e != nil {
+	if _, e = r.db.ExecContext(ctx, `SELECT quote_id,origin_intent,remote_binding,local_fingerprint,max_attempts,expires_at,peer_epoch,peer_security_epoch,dispatch_started_at FROM owned_federation_deliveries LIMIT 0;SELECT revision,security_revision FROM owned_federation_delivery_peer_epochs LIMIT 0;SELECT identity_handle,actor_uri,key_id,delivery_intent FROM owned_federation_publishers LIMIT 0;SELECT folded_name,publisher_id FROM owned_publisher_name_reservations LIMIT 0`); e != nil {
 		return f.ErrUnavailable
 	}
 	if e = r.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='owned_federation_deliveries'::regclass AND conname='owned_federation_delivery_bounds' AND convalidated)`).Scan(&ok); e != nil || !ok {

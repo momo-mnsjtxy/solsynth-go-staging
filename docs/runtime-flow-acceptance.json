@@ -2,16 +2,16 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed developer public stats/private custom orders and bounded identifier migration integrated; combined offline build/vet/unit/race/source/SQL checks passed; actualPG pending. Existing811 dispatch/publisher checkpoint frozen separately.",
+  "local_source_checkpoint": "Narrow independently reviewed quote security-generation correction plus valid current-intent/ancestor/config/shadowban fixtures. Existing selectors816/97 unchanged; actualPG pending.",
   "last_fully_passed_ci": {
-    "commit": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e",
-    "run": 37876162176,
+    "commit": "8d00c0cee85ebd10328ed5d51fa0e876141bf411",
+    "run": 37878791797,
     "attempt": 1,
-    "before": 756,
-    "after_restart": 91,
+    "before": 786,
+    "after_restart": 94,
     "skipped": 0,
-    "evidence": "All four exact jobs/head/attempt/required steps, independent raw-log named cases exactlyonce; CIaggregate verified both artifactdigests and two actual restartedclusters/processsmokes. LocalZIP recomputation unavailable403/error1010, no retry.",
-    "acceptance_limit": "Immutable CI-green, not all original functionality or production readiness."
+    "evidence": "Allfour exactjobs/head/attempt/steps; independently extracted namedcases exactlyonce from authorizedrawlogs. CIaggregate verified both artifactdigests and actual separateDB/process restarts. LocalZIP recomputation unavailable403/error1010; no retry.",
+    "acceptance_limit": "Immutable implementation CI-green; remaining original flows, configured external providers and production rollout are separate."
   },
   "latest_candidate": {
     "commit": "d9c14c06258e55c5ad340212587b44745bdfb555",
@@ -4159,17 +4159,13 @@
     "Passing configured adapters and owned policies does not establish upstream internal behavior, live provider activation, or production migration readiness."
   ],
   "prior_candidate_result": {
-    "commit": "caaaab0d44ec1fdec54719b5cd2fcf5021a30c1c",
-    "run": 37877320406,
-    "before_passed": 784,
-    "before_failed": 2,
+    "commit": "5a4a2736f9bcbdf121e555ea4498ab73d2f9a5a6",
+    "run": 37879839331,
+    "before_passed": 810,
+    "before_failed": 6,
     "after_restart": 0,
     "skipped": 0,
-    "failures": [
-      "TestPGFederationPublicAdmissionCurrentPolicyAfterAuditWait",
-      "TestPGFederationPublicAdmissionCurrentPolicyAfterJobWait"
-    ],
-    "note": "Only inherited admission fixture inversions; all9chatcases passed actualPG, no restart."
+    "note": "One quote independence runtime regression,fivefixtureissues; no fullpass."
   },
   "latest_job_log_verified_ci_pass": {
     "commit": "2e6c2d1d4dc653807704978ea94d1f362f9a5a7e",

@@ -1,5 +1,5 @@
 {
-  "base_commit": "7997372f5cd9e0404005f7be890204d81b1e9b57",
+  "base_commit": "d1946b98df96608baf34a4ca3f67d96e01167e05",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -1480,7 +1480,7 @@
     {
       "test": "TestPGBackendFederationDeliveryLeaseComposition",
       "source": "tests/integration/backend_federation_delivery_test.go",
-      "function_sha256": "c9595d73754463a85dbea18eede1aaefdd64dc2eefbcd721299a1c8662d84a5f",
+      "function_sha256": "3c8f221a08fc5482b724e7ddd5cb6a6d5ce9eacc81028cd4dd08247c8abcbc8e",
       "group": "group-a"
     },
     {
@@ -1857,7 +1857,7 @@
     },
     {
       "source": "tests/integration/backend_federation_delivery_test.go",
-      "sha256": "22775f7236590893624b3f68b0b70da4f964b8d7776f17ed6f79f45c41bb3858"
+      "sha256": "b84db5a4c6e8c7b7a017dd884f5394a48a4c65d2437662df2556d336426c4e57"
     },
     {
       "source": "tests/integration/backend_federation_discovery_test.go",
@@ -2045,7 +2045,7 @@
     },
     {
       "source": "tests/integration/content_moderation_test.go",
-      "sha256": "eccd7fd7ab1b58f1167b56dc690e32bc46ead5f56933146c8d83d83b6c9d04ec"
+      "sha256": "a4ef001f742123ebabf59cb1ac974a9bfcb5c35ee86ce69a904b98155eccf933"
     },
     {
       "source": "tests/integration/content_translation_test.go",
@@ -2085,7 +2085,7 @@
     },
     {
       "source": "tests/integration/developer_management_test.go",
-      "sha256": "03b87e666598e6e2cb809eebbf6ccad94cb03d40b6957c363035714df910f6de"
+      "sha256": "6f7f902d1812c41fbccb99d14abc1c1a6f48deb2c3abf3fcf344ceff10c28d4c"
     },
     {
       "source": "tests/integration/direct_recovery_privacy_test.go",
@@ -2113,7 +2113,7 @@
     },
     {
       "source": "tests/integration/federation_delivery_leases_test.go",
-      "sha256": "f4a03592623c354de060772275c2b1b66a362e9180c8192cd4b0f4692645bbe2"
+      "sha256": "cde0ea766fa424a6bd9447697b1b10d238c259d89ef524bbc66307c1299d6801"
     },
     {
       "source": "tests/integration/federation_delivery_restart_test.go",
@@ -2145,7 +2145,7 @@
     },
     {
       "source": "tests/integration/federation_quotes_test.go",
-      "sha256": "a5a69c4c6748744a9d07e089d9030468b80491274b65c575071296d4b9911848"
+      "sha256": "27d69e0f1b65904948582d691d50b07585aa76bb70fe29ecc07c2380ce881f30"
     },
     {
       "source": "tests/integration/federation_rename_test.go",
@@ -2289,7 +2289,7 @@
     },
     {
       "source": "tests/integration/post_realms_test.go",
-      "sha256": "86b8a159b42fa66695050ae7736df4bebcfbbbcfcb9f90d7fdd6001153992683"
+      "sha256": "c08408526e8a9059917f3a8e93808bd2d3e4c9648708cf8da6b78b9e3c2bd72b"
     },
     {
       "source": "tests/integration/post_scheduling_review_test.go",
@@ -2580,5 +2580,10 @@
     "after": 1,
     "correction_sha256": "de0722dddd05c662929d860aac5cc69ed9124dbdaddefbc22e36ab363027cb4c",
     "scope": "Explicit atomic varchar1024 custom identifier migration/readiness; source publicstats/editorcustomorder wire, exactmills/capturedbeneficiary/idempotency/rollback/conservation/currentauthority tests; original appcredential256limit retained."
+  },
+  "quote_independent_security_review": {
+    "runtime": "Quote jobs capture independent durable block/security generation; unrelated FollowUndo no longercancels validconsent. Otherpeer lifecycle jobs retainoriginalgeneration. LegacyNULL failclosed, currentquote/account/session/key/owner checks retained.",
+    "reviewed_correction_sha256": "2f0635a8287fc31a39544b99df3c4f19eabd680c6e49dc6a576a97dde5099249",
+    "fixtures": "Explicitfresh enablement afterpolicysetup; valid originalancestor deadline; mandatoryMessagerPolicy; canonicalpairedshadowban helper. No selector/countchanges."
   }
 }

@@ -498,6 +498,10 @@ func TestPGPostRealmFederationWithdrawal(t *testing.T) {
 	if e := authoritypg.New(x.db).ReplacePolicy(x.ctx, x.actor, []authority.Rule{{Pattern: "*"}}, nil); e != nil {
 		t.Fatal(e)
 	}
+	// Explicit fresh enablement after policy setup, before tested inbound traffic.
+	if e := x.r.Settings(x.ctx, x.actor, x.publisher, federation.Settings{Enabled: true, Manual: false}); e != nil {
+		t.Fatal(e)
+	}
 	query(t, x.db, `INSERT INTO owned_realm_quota(account_id,total,starts_at) VALUES($1,1,$2)`, x.actor, x.config.Clock())
 	v := socialpg.NewWithAuthority(x.db, x.guard)
 	slug := "synthetic-federation-realm-" + x.actor

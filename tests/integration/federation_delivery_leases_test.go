@@ -295,6 +295,8 @@ func TestPGFederationDeliveryOriginalBudgetAndImmutableIntent(t *testing.T) {
 	id := queueDeliveryFollow(t, x)
 	for _, stmt := range []string{
 		`UPDATE owned_federation_deliveries SET max_attempts=12 WHERE id=$1`,
+		`UPDATE owned_federation_deliveries SET peer_security_epoch=peer_security_epoch+1 WHERE id=$1`,
+		`UPDATE owned_federation_deliveries SET peer_security_epoch=NULL WHERE id=$1`,
 		`UPDATE owned_federation_deliveries SET expires_at=expires_at+interval '1 hour' WHERE id=$1`,
 		`UPDATE owned_federation_deliveries SET origin_intent=origin_intent-'session' WHERE id=$1`,
 		`UPDATE owned_federation_deliveries SET payload='{}'::bytea WHERE id=$1`,
@@ -505,14 +507,22 @@ func TestPGFederationDeliveryDeadlineAndUncertainResult(t *testing.T) {
 		if e != nil {
 			t.Fatal(e)
 		}
-		query(t, x.db, `UPDATE owned_authority_sessions SET expires_at=clock_timestamp()+interval '1500 milliseconds' WHERE id=$1`, principal.Session.ID)
+		// Bound the original intent with a valid ancestor. Shortening the bearer
+		// session below its signed expiry would invalidate the request itself.
+		parent := authorityUUID(t)
+		query(t, x.db, `INSERT INTO owned_authority_sessions(id,account_id,parent_id,label,type,client_id,created_at,last_granted_at,category,trusted,epoch,authorization_epoch,account_version,expires_at,scopes)SELECT $2::uuid,account_id,NULL,'synthetic original ancestor',0,'',created_at,last_granted_at,'device',false,1,1,account_version,clock_timestamp()+interval '3 seconds',scopes FROM owned_authority_sessions WHERE id=$1::uuid`, principal.Session.ID, parent)
+		query(t, x.db, `UPDATE owned_authority_sessions SET parent_id=$2::uuid WHERE id=$1::uuid`, principal.Session.ID, parent)
 		id := queueDeliveryFollow(t, x)
 		var expires time.Time
 		if e = x.db.QueryRow(`SELECT expires_at FROM owned_federation_deliveries WHERE id=$1`, id).Scan(&expires); e != nil {
 			t.Fatal(e)
 		}
-		// Extend the session only; the immutable job's original boundary stays fixed.
-		query(t, x.db, `UPDATE owned_authority_sessions SET expires_at=clock_timestamp()+interval '1 hour' WHERE id=$1`, principal.Session.ID)
+		var ancestorExpires time.Time
+		if e = x.db.QueryRow(`SELECT expires_at FROM owned_authority_sessions WHERE id=$1`, parent).Scan(&ancestorExpires); e != nil || !expires.Equal(ancestorExpires) {
+			t.Fatal("original ancestor did not bound delivery", expires, ancestorExpires, e)
+		}
+		// Extend the ancestor only; the immutable job's original boundary stays fixed.
+		query(t, x.db, `UPDATE owned_authority_sessions SET expires_at=clock_timestamp()+interval '1 hour' WHERE id=$1`, parent)
 		expired, cancel := context.WithDeadline(context.Background(), expires.Add(20*time.Millisecond))
 		defer cancel()
 		<-expired.Done()
@@ -523,6 +533,10 @@ func TestPGFederationDeliveryDeadlineAndUncertainResult(t *testing.T) {
 		state, attempts, _ := deliveryRow(t, x.db, id)
 		if len(capture.requests) != 0 || state != "cancelled" || attempts != 0 {
 			t.Fatal("session extension renewed original intent", state, attempts)
+		}
+		var retained time.Time
+		if e = x.db.QueryRow(`SELECT expires_at FROM owned_federation_deliveries WHERE id=$1`, id).Scan(&retained); e != nil || !retained.Equal(expires) {
+			t.Fatal("original delivery deadline changed", retained, expires, e)
 		}
 	})
 	t.Run("expired-unacknowledged-owner", func(t *testing.T) {

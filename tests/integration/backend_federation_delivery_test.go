@@ -14,6 +14,7 @@ import (
 
 	"solsynth.local/go-migration/internal/application"
 	"solsynth.local/go-migration/internal/federationpg"
+	"solsynth.local/go-migration/internal/messagerpg"
 	f "solsynth.local/go-migration/ports/federation"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
 )
@@ -43,7 +44,8 @@ func TestPGBackendFederationDeliveryLeaseComposition(t *testing.T) {
 	})
 	policy := f.Config{Origin: "https://local.example.test", AllowedOrigins: []string{"https://remote.example.test"}, MaxAttempts: 3, DeliveryTimeout: 5 * time.Second}
 	visibility := int32(0)
-	app, e := application.NewPostgres(x.db, nil, application.Config{Authority: x.config, PublicVisibility: &visibility, Federation: &application.FederationConfig{Policy: policy, Keys: keys, Transport: transport}})
+	chat := messagerpg.IndependentPolicy{NoneEncryptionMode: 77, NotifyAll: 10, NotifyMentions: 20, NotifyNone: 30}
+	app, e := application.NewPostgres(x.db, nil, application.Config{Authority: x.config, PublicVisibility: &visibility, MessagerPolicy: &chat, Federation: &application.FederationConfig{Policy: policy, Keys: keys, Transport: transport}})
 	if e != nil {
 		t.Fatal(e)
 	}

@@ -50,7 +50,7 @@ func (r *Repository) RealmRoleInTransaction(ctx context.Context, tx *sql.Tx, act
 	if !authority.ValidID(actor) || !authority.ValidID(id) {
 		return 0, social.ErrInvalid
 	}
-	v, e := realm(ctx, tx, id, false)
+	v, e := r.realm(ctx, tx, id, false)
 	if e != nil {
 		return 0, e
 	}
@@ -72,7 +72,7 @@ func (r *Repository) RealmInTransaction(ctx context.Context, tx *sql.Tx, id stri
 	if tx == nil {
 		return social.Realm{}, social.ErrUnavailable
 	}
-	return realm(ctx, tx, id, false)
+	return r.realm(ctx, tx, id, false)
 }
 func (r *Repository) CanChatInTransaction(ctx context.Context, tx *sql.Tx, actor, id string) (bool, error) {
 	_, e := r.requirePermission(ctx, tx, actor, id, social.CanChat)
@@ -157,7 +157,7 @@ func (r *Repository) RealmRoleForWriteInTransaction(ctx context.Context, tx *sql
 	if isolation != "read committed" {
 		return 0, social.ErrUnavailable
 	}
-	v, e := realm(ctx, tx, id, true)
+	v, e := r.realm(ctx, tx, id, true)
 	if e != nil {
 		return 0, e
 	}

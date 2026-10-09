@@ -3,8 +3,9 @@ package posts
 
 import "time"
 
-// These owned review fields are available only to current publisher editors or
-// through guarded canonical administration. They never imply classifier approval.
+// Full automatic-rule evidence is reserved for canonical global administrators
+// with the current named post and rule-management permissions. Publisher editors
+// receive only EditorAutomodSummary. Neither projection implies classifier approval.
 type AutomodMatch struct {
 	RuleID       string `json:"rule_id"`
 	RuleName     string `json:"rule_name"`
@@ -34,4 +35,32 @@ type AutomodReviewRecord struct {
 	ActorID      string    `json:"actor_id"`
 	Reason       string    `json:"reason"`
 	At           time.Time `json:"at"`
+}
+
+// EditorAutomodSummary copies only a post owner's necessary outcome. Global
+// rule identities, matching excerpts, policy hashes and reviewer data remain
+// in canonical administrative evidence, never in ordinary post projections.
+func EditorAutomodSummary(d *AutomodDecision) *AutomodDecision {
+	if d == nil {
+		return nil
+	}
+	return &AutomodDecision{Stale: d.Stale, Revision: d.Revision, Outcome: d.Outcome, Hidden: d.Hidden, Penalty: d.Penalty, Flagged: d.Flagged, EvaluatedAt: d.EvaluatedAt, Classifier: d.Classifier, Matches: []AutomodMatch{}}
+}
+func RedactAutomodForEditor(p *Post) {
+	seen := map[*Post]bool{}
+	var visit func(*Post)
+	visit = func(v *Post) {
+		if v == nil || seen[v] {
+			return
+		}
+		seen[v] = true
+		v.Automod = EditorAutomodSummary(v.Automod)
+		visit(v.RepliedPost)
+		visit(v.ForwardedPost)
+		visit(v.ChainedPost)
+		for i := range v.ChainedPosts {
+			visit(&v.ChainedPosts[i])
+		}
+	}
+	visit(p)
 }

@@ -20,7 +20,7 @@ func (r *Repository) RenameRealmForCard(ctx context.Context, db *sql.DB, tx *sql
 	if _, e := r.guard.Authorize(ctx, db, tx, actor, "realms.update"); e != nil {
 		return "", e
 	}
-	v, e := realm(ctx, tx, id, true)
+	v, e := r.realm(ctx, tx, id, true)
 	if e != nil {
 		return "", e
 	}

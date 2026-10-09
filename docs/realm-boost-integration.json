@@ -1,0 +1,30 @@
+{
+  "base_commit": "820323e86861b3762391fe72417f1e5c1c87ee83",
+  "group": "pending deterministic reassignment against coordinator integration HEAD",
+  "before": [
+    "TestPGRealmBoostCheckoutConservationAndReplay",
+    "TestPGRealmBoostRollbackAndBoundPayment",
+    "TestPGRealmBoostCurrentMembershipPrivacyAndRevocation",
+    "TestPGRealmBoostConcurrentSettlementAndLockConflict",
+    "TestPGRealmBoostExpiryAndPromotionEligibility",
+    "TestPGRealmBoostCanonicalPerkSelection",
+    "TestPGRealmBoostRestartPersistence",
+    "TestPGRealmBoostAuthorityRevocationAfterWait",
+    "TestPGRealmBoostAuthenticatedHTTP",
+    "TestPGBackendRealmBoostRoutes"
+  ],
+  "after": [
+    "TestPGRealmBoostRestartPersistence"
+  ],
+  "schema": "internal/realmboostpg/schema.sql",
+  "install_after": [
+    "internal/socialpg/schema.sql",
+    "internal/commercepg/schema.sql"
+  ],
+  "restart_marker": "realm-boost-record.json",
+  "new_source_manifest": "ports/passport/realmboosts/source/manifest.json",
+  "source_integrity_registration": "Add manifest directory to check-source-evidence; add mutation fixture for new retained service/license.",
+  "host_delta": "realm-boost-host-registry.patch",
+  "dependency_registry": "Review and activate exact new cases, restart marker and source/host fixture hashes using scripts/refresh-integration-groups.py after integrating all active work. The supplied draft remains unactivated.",
+  "actual_pg": "not run locally; coordinator CI required"
+}

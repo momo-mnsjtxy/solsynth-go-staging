@@ -10,6 +10,7 @@ import (
 	"solsynth.local/go-migration/ports/develop"
 	"strings"
 	"testing"
+	"time"
 )
 
 type missingRepository struct{ Repository }
@@ -73,5 +74,37 @@ func TestBoundedDocumentedCommandsAndMiniManifest(t *testing.T) {
 	p.Manifest.Entry = "../escape.js"
 	if ValidateMini(p, true) == nil {
 		t.Fatal("unsafe entry")
+	}
+}
+
+func TestExecutionRoutesRequireCanonicalAuthentication(t *testing.T) {
+	s := Service{Repository: missingRepository{}, Authority: deniedAuthority{}}
+	for _, p := range []string{"/api/chat/00000000-0000-4000-8000-000000000001/bots/commands", "/api/private/bots/00000000-0000-4000-8000-000000000001/execution/00000000-0000-4000-8000-000000000002?dev=test&proj=00000000-0000-4000-8000-000000000003&app=00000000-0000-4000-8000-000000000004"} {
+		w := httptest.NewRecorder()
+		s.Handler().ServeHTTP(w, httptest.NewRequest("GET", p, nil))
+		if w.Code != 401 {
+			t.Fatal(p, w.Code)
+		}
+	}
+	if RoomCommandsRoute("/api/chat/room/bots/commands/execute") {
+		t.Fatal("invented dispatch route")
+	}
+}
+func TestExecutionConfigurationBounds(t *testing.T) {
+	good := ExecutionConfig{NoneEncryptionMode: 77, SendTimeout: time.Second, EventLifetime: time.Minute, MaxAttempts: 3, MaxPendingPerRoom: 100}
+	if e := good.Validate(); e != nil {
+		t.Fatal(e)
+	}
+	for _, change := range []func(*ExecutionConfig){func(c *ExecutionConfig) { c.SendTimeout = 0 }, func(c *ExecutionConfig) { c.EventLifetime = 25 * time.Hour }, func(c *ExecutionConfig) { c.MaxAttempts = 0 }, func(c *ExecutionConfig) { c.MaxPendingPerRoom = 10001 }} {
+		bad := good
+		change(&bad)
+		if bad.Validate() == nil {
+			t.Fatal("unbounded execution configuration")
+		}
+	}
+	for _, s := range []string{"https://synthetic.invalid", "foo/bar", "UPPER", "", " space"} {
+		if ValidAdapterName(s) {
+			t.Fatal("user destination accepted", s)
+		}
 	}
 }

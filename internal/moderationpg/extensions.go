@@ -23,5 +23,12 @@ func (r *Repository) InspectionInTransaction(ctx context.Context, tx *sql.Tx, ac
 	if e := r.authorize(ctx, tx, actor, kind.Permission("read"), true); e != nil {
 		return nil, e
 	}
-	return r.get(ctx, tx, kind, ref)
+	v, e := r.get(ctx, tx, actor, kind, ref)
+	if e != nil {
+		return nil, e
+	}
+	if e = r.authorizeInspection(ctx, tx, actor, kind, v); e != nil {
+		return nil, e
+	}
+	return v, nil
 }

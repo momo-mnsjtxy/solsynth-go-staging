@@ -65,7 +65,7 @@ func (r *Repository) PermissionsReady(ctx context.Context) error {
 }
 func (r *Repository) EffectivePermissions(ctx context.Context, actor, ref string) (out social.RealmPermissions, err error) {
 	err = r.read(ctx, actor, func(tx *sql.Tx) error {
-		v, e := realm(ctx, tx, ref, false)
+		v, e := r.realm(ctx, tx, ref, false)
 		if e != nil {
 			return e
 		}
@@ -89,7 +89,7 @@ func rolePermission(ctx context.Context, tx *sql.Tx, rid string, level social.Ro
 func (r *Repository) RolePermissions(ctx context.Context, actor, ref string) (out []social.RolePermission, err error) {
 	out = []social.RolePermission{}
 	err = r.read(ctx, actor, func(tx *sql.Tx) error {
-		v, e := realm(ctx, tx, ref, false)
+		v, e := r.realm(ctx, tx, ref, false)
 		if e != nil {
 			return e
 		}
@@ -132,7 +132,7 @@ func (r *Repository) SetRolePermission(ctx context.Context, actor, ref string, p
 		return out, social.ErrInvalid
 	}
 	err = r.write(ctx, actor, nil, []string{"realms.permissions.manage"}, func(tx *sql.Tx, now time.Time) error {
-		v, e := realm(ctx, tx, ref, true)
+		v, e := r.realm(ctx, tx, ref, true)
 		if e != nil {
 			return e
 		}
@@ -162,7 +162,7 @@ func (r *Repository) DeleteRolePermission(ctx context.Context, actor, ref string
 		return social.ErrForbidden
 	}
 	return r.write(ctx, actor, nil, []string{"realms.permissions.manage"}, func(tx *sql.Tx, now time.Time) error {
-		v, e := realm(ctx, tx, ref, true)
+		v, e := r.realm(ctx, tx, ref, true)
 		if e != nil {
 			return e
 		}
@@ -199,7 +199,7 @@ func (r *Repository) UserPermissions(ctx context.Context, actor, ref, target str
 		return nil, social.ErrInvalid
 	}
 	err = r.read(ctx, actor, func(tx *sql.Tx) error {
-		v, e := realm(ctx, tx, ref, false)
+		v, e := r.realm(ctx, tx, ref, false)
 		if e != nil {
 			return e
 		}
@@ -229,7 +229,7 @@ func (r *Repository) SetUserPermission(ctx context.Context, actor, ref string, p
 		return nil, social.ErrForbidden
 	}
 	err = r.write(ctx, actor, []string{p.AccountID}, []string{"realms.permissions.manage"}, func(tx *sql.Tx, now time.Time) error {
-		v, e := realm(ctx, tx, ref, true)
+		v, e := r.realm(ctx, tx, ref, true)
 		if e != nil {
 			return e
 		}

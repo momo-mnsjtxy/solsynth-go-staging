@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Bounded two-fixture correction over674; pending editor automod privacy is separate and prevents acceptance.",
+  "local_source_checkpoint": "Reviewed realm boost checkout/XP/live entitlement, ordinary-group bot durable dispatch and editor-safe automod evidence projections. Explicit standalone opt-ins; full combined build/vet/unit/race/source/SQL checks passed, actual699/86 pending.",
   "last_fully_passed_ci": {
     "commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
     "run": 37829272433,
@@ -12,14 +12,14 @@
     "skipped": 0
   },
   "latest_candidate": {
-    "commit": "f3113b8355ec346a4f215238ab41a3164e725386",
-    "run": 37866294259,
+    "commit": "85674a81584fc05876446b80761f6c27917ed037",
+    "run": 37868140163,
     "required_before": 674,
     "required_after_restart": 84,
-    "status": "Failed aggregate:672/674before passed;groupA339before+38restart passed;groupB333/335before and no restart;zero skips. Two fixture corrections here. Ordinary-editor automod evidence privacy correction is separately pending; this candidate is not acceptance."
+    "status": "Running narrow fixture correction. Prior674 groupA339before+38restart passed, groupB333/335before failed. Editor automod privacy correction is in local699; no acceptance yet."
   },
-  "local_required_before": 674,
-  "local_required_after_restart": 84,
+  "local_required_before": 699,
+  "local_required_after_restart": 86,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -1764,6 +1764,114 @@
         "TestPGChatThreadsRootReplyIsolationAndPagination"
       ],
       "remaining_reference": "current_remaining.families:messager.threads_and_forwarding"
+    },
+    {
+      "source_family": "wallet.address_fulfillment",
+      "local_status": "implemented_pending_actual_ci",
+      "supported_flows": [
+        "Canonical private address contacts and explicit address-only edit",
+        "Atomic buyer-owned address capture before payment; immutable paid destination",
+        "Current scoped app/merchant fulfillment reads; no destination in public checkout/outbox"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBackendShippingAddressCheckout",
+        "TestPGShippingAddressCRUDAndScopeIsolation",
+        "TestPGShippingAddressMutationCheckoutRaces",
+        "TestPGShippingAppAndMerchantScopeIsolation",
+        "TestPGShippingCanonicalSnapshotAndFulfillment",
+        "TestPGShippingCurrentAuthorityAfterWaits",
+        "TestPGShippingOwnershipAndRequiredAddressValidation",
+        "TestPGShippingRestartPersistence",
+        "TestPGShippingReviewCurrentScopeAndOwnerRevocation",
+        "TestPGShippingRollbackAndImmutableDestination"
+      ],
+      "remaining_reference": "current_remaining.families:wallet.address_fulfillment"
+    },
+    {
+      "source_family": "sphere.scheduled_posts",
+      "local_status": "implemented_pending_actual_ci",
+      "supported_flows": [
+        "Durable scheduled publication with no early visibility or side effects",
+        "Current session/revocation, publisher/realm, media and related-post gates after waits",
+        "Cancellation/edit/explicit publish preserve atomic event and schedule state"
+      ],
+      "guarded_pg_cases": [
+        "TestPGPostScheduleAuthorityRefreshLogoutAndPolicyRevocation",
+        "TestPGPostScheduleBackendProjectionAndDeferredFederation",
+        "TestPGPostScheduleCancellationReplacementAndDelete",
+        "TestPGPostScheduleExplicitPublicationUsesCurrentGates",
+        "TestPGPostScheduleFinalScheduleWaitRechecksSession",
+        "TestPGPostScheduleLifecycleAndNoEarlyVisibility",
+        "TestPGPostSchedulePublicationGatesAfterMediaWait",
+        "TestPGPostScheduleRealmModerationAndRelatedVisibility",
+        "TestPGPostScheduleRollbackConcurrencyAndBoundary",
+        "TestPGPostScheduleSavedRestartPersistence",
+        "TestPGPostScheduleWaitObservesCancellationAndUnavailableMedia"
+      ],
+      "remaining_reference": "current_remaining.families:sphere.scheduled_posts"
+    },
+    {
+      "source_family": "passport.realm_boosts",
+      "local_status": "implemented_pending_actual_ci",
+      "supported_flows": [
+        "Exact source-grounded share purchase through canonical orders/PIN/hold/settlement, once-only XP",
+        "Configured label caps/perk identifiers, source multiplier values, inclusive30-day entitlement",
+        "Live boost-dependent promotion gates including pending elevated invitations; existing roles retained",
+        "Standalone explicit enable/config flags, original-proof restart reconstruction"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBackendRealmBoostRoutes",
+        "TestPGRealmBoostAuthenticatedHTTP",
+        "TestPGRealmBoostAuthorityRevocationAfterWait",
+        "TestPGRealmBoostCanonicalPerkSelection",
+        "TestPGRealmBoostCheckoutConservationAndReplay",
+        "TestPGRealmBoostConcurrentSettlementAndLockConflict",
+        "TestPGRealmBoostCurrentMembershipPrivacyAndRevocation",
+        "TestPGRealmBoostExpiryAndPromotionEligibility",
+        "TestPGRealmBoostRestartPersistence",
+        "TestPGRealmBoostRollbackAndBoundPayment"
+      ],
+      "remaining_reference": "current_remaining.families:passport.realm_boosts"
+    },
+    {
+      "source_family": "develop.bot_dispatch",
+      "local_status": "implemented_pending_actual_ci",
+      "supported_flows": [
+        "Existing ordinary text submission atomically queues enrolled group bot deliveries",
+        "Current developer/owner/sender/session and membership-incarnation checks, no untrusted identity substitution",
+        "Committed bounded leases/attempt fencing; network outside transactions; metadata/forward/encryption suppressed",
+        "Standalone strict allowlisted HTTPS/key-file configuration with public-IP pinned transport; synthetic tests only"
+      ],
+      "guarded_pg_cases": [
+        "TestPGBotExecutionCanonicalSendAndReplay",
+        "TestPGBotExecutionConcurrentWorkersAndRevocationWait",
+        "TestPGBotExecutionEnrollmentRoleAndSessionScope",
+        "TestPGBotExecutionEnrollmentScopesAndHTTP",
+        "TestPGBotExecutionFailureExpiryAndLateCommit",
+        "TestPGBotExecutionFreshRevocationAndMembership",
+        "TestPGBotExecutionLeaseReclaimAndStaleAcknowledgement",
+        "TestPGBotExecutionMetadataAndCanonicalRollback",
+        "TestPGBotExecutionRechecksAfterContention",
+        "TestPGBotExecutionRestartPersistence",
+        "TestPGBotExecutionRetryOrderingAndAtomicRollback",
+        "TestPGBotExecutionTimeoutAndRevocationDuringDelivery"
+      ],
+      "remaining_reference": "current_remaining.families:develop.bot_dispatch"
+    },
+    {
+      "source_family": "owned.automod_evidence_privacy",
+      "local_status": "implemented_pending_actual_ci",
+      "supported_flows": [
+        "Ordinary editor gets only whitelisted outcome/penalty/freshness, recursively applied",
+        "Full evidence requires canonical global authority plus current explicit automod.rules.manage and post permission",
+        "Combined final checks cover list/read/inspection/review, expiry/revocation and commit errors; canonical full evidence retained"
+      ],
+      "guarded_pg_cases": [
+        "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
+        "TestPGPostAutomodEvidenceGrantExpiryAtResponse",
+        "TestPGPostAutomodEvidenceRevocationAfterAccountWait"
+      ],
+      "remaining_reference": "current_remaining.families:owned.automod_evidence_privacy"
     }
   ],
   "additional_cross_service_flows": [
@@ -1867,12 +1975,20 @@
       "federation.quote_authorization",
       "passport.relationship_expiry",
       "messager.room_media",
-      "passport.affiliation_and_owned_activation"
+      "passport.affiliation_and_owned_activation",
+      "wallet.address_fulfillment",
+      "sphere.scheduled_posts",
+      "wallet.owned_coupons",
+      "sphere.ranked_automod",
+      "messager.threads_and_forwarding",
+      "passport.realm_boosts",
+      "develop.bot_dispatch",
+      "owned.automod_evidence_privacy"
     ],
     "delivered_not_integrated": []
   },
   "current_remaining": {
-    "as_of": "2026-10-09T00:16:00Z",
+    "as_of": "2026-10-09T01:10:00Z",
     "authoritative_for": "Known remaining flows, not a count of source operations. Partial/unresearched contracts remain research tasks; unavailable is never inferred from lack of prior research.",
     "families": [
       {
@@ -1885,7 +2001,8 @@
       {
         "family": "develop.bots",
         "remaining": [
-          "Command execution, bot credential enrollment, external webhooks and legacy migration"
+          "Ordinary-group bot dispatch implemented pending CI; bot identity credentials/replies and legacy migration remain partial",
+          "DM/realm/MLS execution and automatic enrollment renewal unsupported"
         ]
       },
       {
@@ -1943,7 +2060,7 @@
       {
         "family": "passport.social_realms",
         "remaining": [
-          "Realm boosts remain to reconstruct; no realm-mute contract was found in retained realm sources",
+          "Realm boost flow implemented pending CI; total realm XP/levels remain partial. No realm-mute contract found in retained sources.",
           "Original excluded numeric role/model encoding and legacy data mapping; owned0/50/100 mapping and security differences are documented"
         ]
       },
@@ -2274,6 +2391,40 @@
           "Attachment forwarding requires separate canonical rights and remains rejected",
           "Encrypted content is not downgraded; broader legacy system-message types remain partial"
         ]
+      },
+      {
+        "family": "wallet.address_fulfillment",
+        "remaining": [
+          "Carrier/provider workspace execution remains unsupported"
+        ]
+      },
+      {
+        "family": "sphere.scheduled_posts",
+        "remaining": [
+          "Owned durable admission preserves routine refresh; no claim of legacy internal scheduler equivalence"
+        ]
+      },
+      {
+        "family": "passport.realm_boosts",
+        "remaining": [
+          "Total realm XP/levels and other event sources remain unsupported; response explicitly identifies boost receipt history",
+          "Label caps and subscription-to-perk mapping require owned explicit configuration",
+          "No live transactions or production treasury provisioning"
+        ]
+      },
+      {
+        "family": "develop.bot_dispatch",
+        "remaining": [
+          "DM/realm/MLS execution, bot replies/key issuance and automatic enrollment renewal remain unsupported",
+          "Provider deduplication is required to prevent ambiguous duplicate acceptance; no exactly-once execution claim",
+          "Live adapter activation remains operationally unperformed"
+        ]
+      },
+      {
+        "family": "owned.automod_evidence_privacy",
+        "remaining": [
+          "ActualPG regression validation pending"
+        ]
       }
     ],
     "cross_platform": [
@@ -2285,9 +2436,9 @@
       "Source-declaration818 acceptance map remains an operation inventory, not runtime endpoint count or proof of whole-platform completion"
     ],
     "active_implementation": [
-      "Shipping/scheduling625 and thread/owner642 candidates in actualPG validation",
-      "Reviewed coupon and automod integrated674/84, actualPG pending",
-      "Realm boosts, ordinary-message bot execution and verified-domain blog flows in implementation"
+      "Reviewed boost/bot/editor privacy699/86 in local aggregate validation",
+      "Blog/domain publication independent review fixing incarnation and original-intent lifetime",
+      "Federation server actor and bounded discovery implementation"
     ],
     "not_remaining_missing_features": [
       "PIN enrollment/rotation/removal",

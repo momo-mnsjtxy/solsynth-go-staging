@@ -21,7 +21,7 @@ func (r *Repository) RequirePostRealmMember(ctx context.Context, tx *sql.Tx, act
 	if tx == nil || !authority.ValidID(actor) || !authority.ValidID(id) {
 		return posts.ErrForbidden
 	}
-	v, e := realm(ctx, tx, id, false)
+	v, e := r.realm(ctx, tx, id, false)
 	if errors.Is(e, social.ErrNotFound) {
 		return posts.ErrNotFound
 	}

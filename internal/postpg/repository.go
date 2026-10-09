@@ -234,6 +234,7 @@ func (r *Repository) Create(ctx context.Context, actor, selector string, v posts
 	if e != nil {
 		return posts.Post{}, e
 	}
+	posts.RedactAutomodForEditor(&p)
 	return p, nil
 }
 func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v posts.Patch, deleting bool, publishing ...bool) (posts.Post, error) {
@@ -292,6 +293,7 @@ func (r *Repository) locked(ctx context.Context, tx *sql.Tx, actor, id string, v
 	if p.LockedAt != nil {
 		return posts.Post{}, posts.ErrLocked
 	}
+	posts.RedactAutomodForEditor(&p)
 	return p, nil
 }
 func save(ctx context.Context, tx *sql.Tx, p posts.Post) error {
@@ -378,6 +380,7 @@ func (r *Repository) mutate(ctx context.Context, actor, id, action string, v pos
 	if e != nil {
 		return posts.Post{}, e
 	}
+	posts.RedactAutomodForEditor(&p)
 	return p, nil
 }
 func (r *Repository) Update(ctx context.Context, actor, id string, v posts.Patch) (posts.Post, error) {
@@ -440,6 +443,7 @@ func (r *Repository) detail(ctx context.Context, actor, filter string, args ...a
 	if e = tx.Commit(); e != nil {
 		return posts.Post{}, e
 	}
+	posts.RedactAutomodForEditor(&p)
 	return p, nil
 }
 func (r *Repository) Get(ctx context.Context, actor, id string) (posts.Post, error) {
@@ -555,6 +559,9 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	}
 	if e = tx.Commit(); e != nil {
 		return nil, 0, e
+	}
+	for i := range out {
+		posts.RedactAutomodForEditor(&out[i])
 	}
 	return out, total, nil
 }

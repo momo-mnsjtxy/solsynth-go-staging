@@ -52,10 +52,23 @@ is no rules cache, asynchronous freshness gap or SQL reinterpretation of RE2.
 The existing chronological page/cursor algorithm is retained; Hide may leave a
 short or empty ranked page while its cursor still advances over scanned rows.
 
-Post editor and guarded admin reads expose historical evidence with a computed
-`stale` marker. Public and ordinary noneditor post reads omit evidence. The marker
-is informational; review and ranked reads independently recompute current state.
-No automatic bulk backfill rewrites old evidence merely because a rule changed.
+Current publisher editors receive a whitelist summary of the historical outcome,
+penalty, flags, revision and computed `stale` marker. Recursive ordinary post
+projections exclude global rule identities, matching excerpts, rule fingerprints,
+content hashes, reviewer identity and private review reasons. Public/noneditor
+post reads and timeline/search/event projections omit automatic-rule evidence.
+Canonical stored decisions and private decision events retain full evidence;
+projection never rewrites them. The marker is informational; review and ranked
+reads independently recompute current state. No automatic bulk backfill rewrites
+old evidence merely because a rule changed.
+
+Full administrative evidence additionally requires current canonical Superuser
+identity, `posts.read` and the exact `automod.rules.manage` permission. Explicit
+denial wins, and a broad `admin.*` grant is no substitute. Administrative reads
+without rule-management permission retain their safe manual post projection.
+Evidence-bearing list/detail/extension replies recheck both permissions together
+at the final response boundary, including grant expiry during a list. Failures
+return no partially accumulated evidence.
 
 ## Atomicity and bounds
 
@@ -87,8 +100,11 @@ explicitly; they are never converted to successful classification.
 `--enable-automod-review` (application `PostAutomodReview`) explicitly enables
 `POST /api/admin/posts/{id}/automod-review` and its Sphere alias. Default is off.
 The request contains `expected_revision`, `action` (`dismiss` or `recheck`) and a
-nonblank bounded `reason`. The existing current Superuser plus `posts.moderate`
-gate is reused; no permission name or anonymous administrative bypass is added.
+nonblank bounded `reason`. Current canonical Superuser identity and both exact
+`posts.moderate` and `automod.rules.manage` permissions are required together.
+The original proof and current grants are rechecked after account/domain/rule
+waits and immediately before changed or replayed reviews return. No permission
+name or anonymous administrative bypass is added.
 
 Dismissal suppresses local ranked Hide/Derank effects for exactly the reviewed
 content hash, active-rule fingerprint and generation. A changed body or rule

@@ -19,6 +19,9 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if b == nil || b.db == nil || b.authorityDB == nil {
 		return errors.New("backend unavailable")
 	}
+	if e := b.realmBoosts.ready(ctx); e != nil {
+		return e
+	}
 	if b.scheduledPosts != nil {
 		if e := b.scheduledPosts.SchedulingReady(ctx); e != nil {
 			return e
@@ -127,6 +130,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 		}
 	}
 	if b.bots != nil {
+		if b.bots.ExecutionEnabled() {
+			if e := b.bots.ExecutionReady(ctx); e != nil {
+				return e
+			}
+		}
 		if err := b.bots.Ready(ctx); err != nil {
 			return err
 		}

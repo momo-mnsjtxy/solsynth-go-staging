@@ -32,6 +32,7 @@ type TransactionGuard interface {
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
 }
 type Repository struct {
+	boosts       BoostProvider
 	db           *sql.DB
 	guard        TransactionGuard
 	requireGuard bool

@@ -27,9 +27,10 @@ type TransactionGuard interface {
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
 }
 type Repository struct {
-	db    *sql.DB
-	guard TransactionGuard
-	media bots.MediaProvider
+	db        *sql.DB
+	guard     TransactionGuard
+	media     bots.MediaProvider
+	execution *executionRuntime
 }
 
 func New(db *sql.DB) *Repository { return &Repository{db: db} }

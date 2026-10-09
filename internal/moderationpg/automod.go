@@ -33,6 +33,9 @@ func (r *Repository) reviewAutomod(ctx context.Context, actor, id string, reques
 	if e = lockPosts(ctx, tx, []postScope{scope}); e != nil {
 		return nil, e
 	}
+	if e = r.authorizeAutomodReview(ctx, tx, actor); e != nil {
+		return nil, e
+	}
 	p, e := r.post(ctx, tx, id)
 	if e != nil {
 		return nil, e
@@ -46,7 +49,7 @@ func (r *Repository) reviewAutomod(ctx context.Context, actor, id string, reques
 	if e != nil {
 		return nil, e
 	}
-	if e = r.authorize(ctx, tx, actor, "posts.moderate", true); e != nil {
+	if e = r.authorizeAutomodReview(ctx, tx, actor); e != nil {
 		return nil, e
 	}
 	d, e := postpg.ComputeAutomod(ctx, s, p.Post, prior, true)
@@ -55,10 +58,13 @@ func (r *Repository) reviewAutomod(ctx context.Context, actor, id string, reques
 	}
 	// Only an exact repeat of a still-current dismissal is idempotent.
 	if request.Action == "dismiss" && prior != nil && prior.Review != nil && postpg.SameAutomodInput(prior, d) && prior.Review.BaseRevision == request.ExpectedRevision && prior.Review.ActorID == actor && prior.Review.Reason == request.Reason {
-		if e = r.authorize(ctx, tx, actor, "posts.moderate", true); e != nil {
+		if e = r.authorizeAutomodReview(ctx, tx, actor); e != nil {
 			return nil, e
 		}
-		return p, tx.Commit()
+		if e = tx.Commit(); e != nil {
+			return nil, e
+		}
+		return p, nil
 	}
 	if revision != request.ExpectedRevision {
 		return nil, c.ErrConflict
@@ -79,8 +85,15 @@ func (r *Repository) reviewAutomod(ctx context.Context, actor, id string, reques
 	if e = r.audit(ctx, tx, actor, c.PostKind, id, "automod_review", map[string]any{"action": request.Action, "before_revision": revision, "revision": d.Revision, "reason": request.Reason}); e != nil {
 		return nil, e
 	}
-	if e = r.authorize(ctx, tx, actor, "posts.moderate", true); e != nil {
+	if e = r.authorizeAutomodReview(ctx, tx, actor); e != nil {
 		return nil, e
 	}
-	return p, tx.Commit()
+	if e = tx.Commit(); e != nil {
+		return nil, e
+	}
+	return p, nil
+}
+
+func (r *Repository) authorizeAutomodReview(ctx context.Context, tx *sql.Tx, actor string) error {
+	return r.authorize(ctx, tx, actor, "posts.moderate", true, "automod.rules.manage")
 }

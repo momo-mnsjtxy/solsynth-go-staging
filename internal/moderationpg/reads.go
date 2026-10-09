@@ -139,16 +139,19 @@ func (r *Repository) List(ctx context.Context, actor string, kind c.Kind, q c.Qu
 	}
 	out := []any{}
 	for _, id := range ids {
-		v, e := r.get(ctx, tx, kind, id)
+		v, e := r.get(ctx, tx, actor, kind, id)
 		if e != nil {
 			return nil, 0, e
 		}
 		out = append(out, v)
 	}
-	if e = r.authorize(ctx, tx, actor, permission, true); e != nil {
+	if e = r.authorizeInspection(ctx, tx, actor, kind, out...); e != nil {
 		return nil, 0, e
 	}
-	return out, total, tx.Commit()
+	if e = tx.Commit(); e != nil {
+		return nil, 0, e
+	}
+	return out, total, nil
 }
 func (r *Repository) Members(ctx context.Context, actor, ref string, q c.Query) ([]social.Member, int64, error) {
 	out := []social.Member{}

@@ -87,8 +87,8 @@ func sorted(ids []string) []string {
 	sort.Strings(out)
 	return out
 }
-func (r *Repository) authorize(ctx context.Context, tx *sql.Tx, actor, permission string, global bool) error {
-	p, e := r.guard.Authorize(ctx, r.db, tx, actor, permission)
+func (r *Repository) authorize(ctx context.Context, tx *sql.Tx, actor, permission string, global bool, additional ...string) error {
+	p, e := r.guard.Authorize(ctx, r.db, tx, actor, append([]string{permission}, additional...)...)
 	if e != nil {
 		return e
 	}
@@ -179,6 +179,9 @@ func (r *Repository) realm(ctx context.Context, tx *sql.Tx, ref string) (social.
 	if e == nil {
 		v.Verification, e = accounts.DecodeVerification(verification)
 	}
+	if e == nil {
+		e = r.social.RefreshBoostInTransaction(ctx, tx, &v)
+	}
 	return v, mapped(e)
 }
 func (r *Repository) post(ctx context.Context, tx *sql.Tx, id string) (c.Post, error) {
@@ -206,10 +209,23 @@ func (r *Repository) postState(ctx context.Context, tx *sql.Tx, id string) (c.Po
 	e = tx.QueryRowContext(ctx, `SELECT COALESCE(shadowban_reason,'none'),shadowbanned_at FROM owned_text_posts WHERE id=$1`, id).Scan(&p.ShadowbanReason, &p.ShadowbannedAt)
 	return p, mapped(e)
 }
-func (r *Repository) get(ctx context.Context, tx *sql.Tx, kind c.Kind, ref string) (any, error) {
+func (r *Repository) get(ctx context.Context, tx *sql.Tx, actor string, kind c.Kind, ref string) (any, error) {
 	switch kind {
 	case c.PostKind:
-		return r.post(ctx, tx, ref)
+		if e := r.authorize(ctx, tx, actor, "automod.rules.manage", true); e != nil {
+			if errors.Is(e, authority.ErrForbidden) || errors.Is(e, c.ErrForbidden) {
+				return r.postState(ctx, tx, ref)
+			}
+			return nil, e
+		}
+		p, e := r.post(ctx, tx, ref)
+		if e != nil {
+			return nil, e
+		}
+		if e = r.authorize(ctx, tx, actor, "automod.rules.manage", true); e != nil {
+			return nil, e
+		}
+		return p, nil
 	case c.PublisherKind:
 		p, e := r.publisher(ctx, tx, ref)
 		if e != nil {
@@ -236,15 +252,31 @@ func (r *Repository) Get(ctx context.Context, actor string, kind c.Kind, ref str
 		return nil, e
 	}
 	defer tx.Rollback()
-	v, e := r.get(ctx, tx, kind, ref)
+	v, e := r.get(ctx, tx, actor, kind, ref)
 	if e != nil {
 		return nil, e
 	}
-	if e = r.authorize(ctx, tx, actor, permission, true); e != nil {
+	if e = r.authorizeInspection(ctx, tx, actor, kind, v); e != nil {
 		return nil, e
 	}
-	return v, tx.Commit()
+	if e = tx.Commit(); e != nil {
+		return nil, e
+	}
+	return v, nil
 }
+
+// All permissions protecting a returned projection must be checked at the same
+// final authority snapshot. An evidence grant can expire while a later list item
+// loads, even when account locking prevents concurrent policy replacement.
+func (r *Repository) authorizeInspection(ctx context.Context, tx *sql.Tx, actor string, kind c.Kind, values ...any) error {
+	for _, value := range values {
+		if p, ok := value.(c.Post); ok && p.Automod != nil {
+			return r.authorize(ctx, tx, actor, kind.Permission("read"), true, "automod.rules.manage")
+		}
+	}
+	return r.authorize(ctx, tx, actor, kind.Permission("read"), true)
+}
+
 func activeTarget(ctx context.Context, tx *sql.Tx, id string) error {
 	var enabled bool
 	e := tx.QueryRowContext(ctx, `SELECT NOT disabled FROM owned_authority_accounts WHERE id=$1`, id).Scan(&enabled)

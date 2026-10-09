@@ -44,6 +44,7 @@ type Adapters struct {
 	Product func(context.Context, *sql.Tx, string, string) (Product, error)
 }
 type Repository struct {
+	realmBoosts  RealmBoostFulfillment
 	couponPolicy c.CouponPolicy
 	postAwards   PostAwardFulfillment
 	sponsorship  SponsorFulfillment

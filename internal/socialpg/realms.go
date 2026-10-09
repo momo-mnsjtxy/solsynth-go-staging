@@ -22,12 +22,16 @@ func scanRealm(s scanner) (v social.Realm, e error) {
 	}
 	return v, mapped(e)
 }
-func realm(ctx context.Context, q querier, ref string, lock bool) (social.Realm, error) {
+func (r *Repository) realm(ctx context.Context, q *sql.Tx, ref string, lock bool) (social.Realm, error) {
 	suffix := ""
 	if lock {
 		suffix = " FOR UPDATE OF r"
 	}
-	return scanRealm(q.QueryRowContext(ctx, `SELECT `+realmColumns+` FROM owned_realms r JOIN owned_authority_accounts a ON a.id=r.account_id WHERE r.deleted_at IS NULL AND NOT a.disabled AND (r.id::text=$1 OR lower(r.slug)=lower($1))`+suffix, ref))
+	v, e := scanRealm(q.QueryRowContext(ctx, `SELECT `+realmColumns+` FROM owned_realms r JOIN owned_authority_accounts a ON a.id=r.account_id WHERE r.deleted_at IS NULL AND NOT a.disabled AND (r.id::text=$1 OR lower(r.slug)=lower($1))`+suffix, ref))
+	if e == nil {
+		e = r.RefreshBoostInTransaction(ctx, q, &v)
+	}
+	return v, e
 }
 func scanMember(s scanner) (v social.Member, e error) {
 	e = s.Scan(&v.ID, &v.RealmID, &v.AccountID, &v.Role, &v.JoinedAt, &v.LeaveAt, &v.CreatedAt, &v.UpdatedAt)
@@ -121,7 +125,7 @@ func (r *Repository) CreateRealm(ctx context.Context, actor string, p social.Rea
 func (r *Repository) GetRealm(ctx context.Context, actor, ref string) (out social.Realm, err error) {
 	err = r.read(ctx, actor, func(tx *sql.Tx) error {
 		var e error
-		out, e = realm(ctx, tx, ref, false)
+		out, e = r.realm(ctx, tx, ref, false)
 		if e != nil {
 			return e
 		}
@@ -150,7 +154,17 @@ func (r *Repository) ListRealms(ctx context.Context, actor string, offset, take 
 			}
 			out = append(out, v)
 		}
-		return rows.Err()
+		e = rows.Err()
+		rows.Close()
+		if e != nil {
+			return e
+		}
+		for i := range out {
+			if e = r.RefreshBoostInTransaction(ctx, tx, &out[i]); e != nil {
+				return e
+			}
+		}
+		return nil
 	})
 	return
 }
@@ -160,7 +174,7 @@ func (r *Repository) UpdateRealm(ctx context.Context, actor, ref string, p socia
 	}
 	err = r.write(ctx, actor, nil, []string{"realms.update"}, func(tx *sql.Tx, now time.Time) error {
 		var e error
-		out, e = realm(ctx, tx, ref, true)
+		out, e = r.realm(ctx, tx, ref, true)
 		if e != nil {
 			return e
 		}
@@ -192,7 +206,7 @@ func (r *Repository) UpdateRealm(ctx context.Context, actor, ref string, p socia
 }
 func (r *Repository) DeleteRealm(ctx context.Context, actor, ref string) error {
 	return r.write(ctx, actor, nil, []string{"realms.delete"}, func(tx *sql.Tx, now time.Time) error {
-		v, e := realm(ctx, tx, ref, true)
+		v, e := r.realm(ctx, tx, ref, true)
 		if e != nil {
 			return e
 		}
@@ -227,7 +241,7 @@ func (r *Repository) Members(ctx context.Context, actor, ref string, offset, tak
 		return out, 0, e
 	}
 	err = r.read(ctx, actor, func(tx *sql.Tx) error {
-		v, e := realm(ctx, tx, ref, false)
+		v, e := r.realm(ctx, tx, ref, false)
 		if e != nil {
 			return e
 		}
@@ -270,7 +284,7 @@ func (r *Repository) Me(ctx context.Context, actor, ref string) (out social.Memb
 		return out, social.ErrForbidden
 	}
 	err = r.read(ctx, actor, func(tx *sql.Tx) error {
-		v, e := realm(ctx, tx, ref, false)
+		v, e := r.realm(ctx, tx, ref, false)
 		if e != nil {
 			return e
 		}
@@ -316,7 +330,7 @@ func (r *Repository) Invites(ctx context.Context, actor string, offset, take int
 			return e
 		}
 		for i := range out {
-			v, e := realm(ctx, tx, out[i].RealmID, false)
+			v, e := r.realm(ctx, tx, out[i].RealmID, false)
 			if e != nil {
 				return e
 			}
@@ -345,7 +359,7 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c soci
 		permission = "realms.invites.manage"
 	}
 	err = r.write(ctx, actor, []string{c.AccountID}, []string{permission}, func(tx *sql.Tx, now time.Time) error {
-		v, e := realm(ctx, tx, ref, true)
+		v, e := r.realm(ctx, tx, ref, true)
 		if e != nil {
 			return e
 		}
@@ -395,6 +409,11 @@ func (r *Repository) ChangeMember(ctx context.Context, actor, ref string, c soci
 		case social.Accept:
 			if !found || m.JoinedAt != nil {
 				return social.ErrNotFound
+			}
+			// Acceptance activates the invited role. A pending elevated invite
+			// cannot preserve an entitlement that expired before the join.
+			if m.Role > social.Normal && v.BoostLevel < 2 {
+				return social.ErrForbidden
 			}
 			var inviter string
 			if e = tx.QueryRowContext(ctx, `SELECT invited_by::text FROM owned_realm_members WHERE id=$1`, m.ID).Scan(&inviter); e != nil {

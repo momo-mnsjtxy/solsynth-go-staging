@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "implementation": "owned-bot-message-v1",
+  "base": "b5221d15306dfcd8f363831be3e86d2c35cccce4",
+  "prerequisite": "publisher-owner-authority.patch",
+  "license": "AGPL-3.0-only derived authored backend; authored Solian consumers under retained root license",
+  "scope": "Authored controllers, services, event-delivery/config listener, documented event fields, invite flows and authored client send paths only. No Shared/protocol/generated implementation read or copied.",
+  "files": [
+    {
+      "local_file": "inventory/operation-sources/DysonNetwork.Develop/Identity/BotAccountController.cs",
+      "source_manifest": "ports/develop/bots/source-evidence.json",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Develop/Identity/BotAccountController.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Identity/BotAccountController.cs",
+      "blob": "a6095069043325ca9e2226f5c8d878dab54b3e71",
+      "sha256": "fb0e1938f1d238d19f668c03ee8ee16336b9c275e641003ceb73dc0086bea9a7"
+    },
+    {
+      "local_file": "ports/develop/product-source/DysonNetwork.Develop__Identity__BotAccountService.cs",
+      "source_manifest": "ports/develop/bots/source-evidence.json",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Develop/Identity/BotAccountService.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Identity/BotAccountService.cs",
+      "blob": "8a91ad2989d173bcb9daaaf43a8fc344c80c81a9",
+      "sha256": "90251ebebba8f7ecdb1f77b5f425c18617fd4de3c476080ba267ffd24d66ba19"
+    },
+    {
+      "local_file": "inventory/operation-sources/DysonNetwork.Develop/Identity/BotAccountPublicController.cs",
+      "source_manifest": "ports/develop/bots/source-evidence.json",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Develop/Identity/BotAccountPublicController.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Develop/Identity/BotAccountPublicController.cs",
+      "blob": "51ec572f1e42bb5cf988c21624bcf6c3c67fed6a",
+      "sha256": "1176c4758f09c92abbbf7233df835d5089f4667e2388dd2a4441afa1027dec06"
+    },
+    {
+      "local_file": "inventory/product-client-evidence/DysonNetwork__docs__BOT_CHAT_API.md",
+      "source_manifest": "ports/develop/bots/source-evidence.json",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "docs/BOT_CHAT_API.md",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/BOT_CHAT_API.md",
+      "blob": "4f490fc6a86d8f8992f51ea2eb5d3bca016b3354",
+      "sha256": "e86ee2ac0d277ba3ce5d496c6efabcb38805b3c71893dfe7eea8f92ef68c28de"
+    },
+    {
+      "local_file": "ports/develop/product-source/DYSON-LICENSE.txt",
+      "source_manifest": "ports/develop/bots/source-evidence.json",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "LICENSE.txt",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/LICENSE.txt",
+      "blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "local_file": "ports/develop/product-source/SOLIAN-LICENSE.txt",
+      "source_manifest": "ports/develop/bots/source-evidence.json",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "LICENSE.txt",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/LICENSE.txt",
+      "blob": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "local_file": "inventory/operation-sources/DysonNetwork.Messager/Chat/ChatController.cs",
+      "source_manifest": "inventory/operation-sources/manifest.json",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Messager/Chat/ChatController.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatController.cs",
+      "blob": "29e748e8c585ed766c9e20dddfc2eae65509f9a2",
+      "sha256": "22d8a19becdab64fefa234d0213591f49ab3d08458c186b4900609bb02d38c98"
+    },
+    {
+      "local_file": "inventory/operation-sources/DysonNetwork.Messager/Chat/ChatRoomController.cs",
+      "source_manifest": "inventory/operation-sources/manifest.json",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Messager/Chat/ChatRoomController.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatRoomController.cs",
+      "blob": "373efa01d468a76ba5085bf5c2b59bede71bd7ec",
+      "sha256": "fbf9898e12c73cb47568035a168203243cab6dbcdd7545cf02861967d6d1d41e"
+    },
+    {
+      "local_file": "ports/messager/source/ChatService.cs",
+      "source_manifest": "ports/messager/source/manifest.json",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Messager/Chat/ChatService.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Chat/ChatService.cs",
+      "blob": "e23ae267ecc68bd6481108a51cefe073d6cf0cc5",
+      "sha256": "75a18068893f878c7a5d24529d88415e632f0947894ceea971620ebf1558fb9a"
+    },
+    {
+      "local_file": "ports/messager/source/DysonNetwork.Messager__Startup__ServiceCollectionExtensions.cs",
+      "source_manifest": "ports/messager/source/manifest.json",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Messager/Startup/ServiceCollectionExtensions.cs",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Messager/Startup/ServiceCollectionExtensions.cs",
+      "blob": "0458fed23dec249f8bfc6e8e3baf4d486c5979b9",
+      "sha256": "bc3dfb7bbc32b0f9cf2f7de8cc549b2191a5d9bd5aa3da3b5b9b62db2a41c23a"
+    },
+    {
+      "local_file": "inventory/product-client-evidence/Solian__lib__chat__widgets__chat_input.dart",
+      "source_manifest": "inventory/product-client-evidence/manifest.json",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "lib/chat/widgets/chat_input.dart",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/widgets/chat_input.dart",
+      "blob": "4b8f51683d3ed982bf1e900df97eac970d19493f",
+      "sha256": "305203f5125903e59a5785b3f8c1bf750d09295a3506cee4c97f1fe78d432ac6"
+    },
+    {
+      "local_file": "inventory/product-client-evidence/DysonNetwork__docs__BOT_CHAT_MIGRATION.md",
+      "source_manifest": "inventory/product-client-evidence/manifest.json",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "docs/BOT_CHAT_MIGRATION.md",
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/docs/BOT_CHAT_MIGRATION.md",
+      "blob": "cb5dbf101e123b47bd996a507369ea5da8f6a130",
+      "sha256": "adada27384b91ccc2c33a800c0e09c55b3d99d88a5a712d30084d287efb40c4e"
+    },
+    {
+      "local_file": "ports/messager/contract-evidence/lib__chat__send__message_sender.dart",
+      "source_manifest": "ports/messager/contract-evidence/manifest.json",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "lib/chat/send/message_sender.dart",
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/chat/send/message_sender.dart",
+      "blob": "0618441204e9fab475a749cde535642b1a07a449",
+      "sha256": "0dc79d3e7275c830645b596b40cabb6ab3c051c4c5139a8180ff2a70bc09b539"
+    }
+  ]
+}

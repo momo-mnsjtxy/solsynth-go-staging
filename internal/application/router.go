@@ -15,6 +15,7 @@ import (
 	"solsynth.local/go-migration/ports/passport/namecards"
 	"solsynth.local/go-migration/ports/passport/presence"
 	"solsynth.local/go-migration/ports/passport/progression"
+	"solsynth.local/go-migration/ports/passport/realmboosts"
 	"solsynth.local/go-migration/ports/passport/rewind"
 	"solsynth.local/go-migration/ports/sphere/autocomplete"
 	"solsynth.local/go-migration/ports/sphere/livestreams"
@@ -25,6 +26,7 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	realmBoosts                                                                                                                                                                                                                                          http.Handler
 	affiliations                                                                                                                                                                                                                                         http.Handler
 	artwork                                                                                                                                                                                                                                              http.Handler
 	passkit                                                                                                                                                                                                                                              passkitModules
@@ -55,6 +57,14 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// between services. Neither a service-name prefix nor traversal is authority.
 	if p == "" || p[0] != '/' || path.Clean(p) != p || strings.Contains(p, "\\") || strings.Contains(p, "//") || r.URL.RawPath != "" && r.URL.EscapedPath() != p {
 		problem(w, 400, "INVALID_ROUTE_PATH")
+		return
+	}
+	if realmboosts.Handles(p) {
+		if h.realmBoosts == nil {
+			problem(w, 503, "REALM_BOOST_UNAVAILABLE")
+			return
+		}
+		h.realmBoosts.ServeHTTP(w, r)
 		return
 	}
 	if h.passkit.route(w, r) {
@@ -337,7 +347,7 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.calendar != nil && (service == "api" || service == "passport") && calendarRoute(canonical) {
 		target = h.calendar
 	}
-	if h.bots != nil && (service == "api" || service == "develop") && bots.RouteMatches(canonical) {
+	if h.bots != nil && (service == "api" || service == "develop" && !bots.RoomCommandsRoute(canonical) || service == "messager" && bots.RoomCommandsRoute(canonical)) && bots.RouteMatches(canonical) {
 		target = h.bots
 	}
 	if h.tickets != nil && (service == "api" || service == "passport") && ticketRoute(canonical) {

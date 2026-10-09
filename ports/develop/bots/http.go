@@ -27,6 +27,9 @@ type Service struct {
 
 func (s *Service) Handler() http.Handler { return http.HandlerFunc(s.serveHTTP) }
 func RouteMatches(p string) bool {
+	if RoomCommandsRoute(p) {
+		return true
+	}
 	for _, base := range []string{"/api/bots", "/api/private/bots", "/api/miniapps", "/api/private/miniapps"} {
 		if p == base || strings.HasPrefix(p, base+"/") {
 			return true
@@ -208,7 +211,7 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx := r.Context()
 	actor := ""
-	if private || authPresent {
+	if private || authPresent || RoomCommandsRoute(r.URL.Path) {
 		if s.Authority == nil {
 			fail(authority.ErrUnavailable)
 			return
@@ -228,6 +231,29 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/"), "/")
+	if RoomCommandsRoute(r.URL.Path) {
+		if r.Method != "GET" {
+			w.Header().Set("Allow", "GET")
+			w.WriteHeader(405)
+			return
+		}
+		repo, ok := s.Repository.(ExecutionRepository)
+		if !ok {
+			fail(ErrUnsupported)
+			return
+		}
+		if !authority.ValidID(parts[2]) {
+			fail(ErrInvalid)
+			return
+		}
+		v, e := repo.RoomCommands(ctx, actor, parts[2])
+		if e != nil {
+			fail(e)
+			return
+		}
+		send(w, 200, v)
+		return
+	}
 	if !private {
 		if r.Method != "GET" {
 			w.Header().Set("Allow", "GET")
@@ -380,6 +406,10 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		} else {
 			send(w, 200, v[0])
 		}
+		return
+	}
+	if len(parts) >= 5 && parts[4] == "execution" {
+		s.executionHTTP(w, r, ctx, scope, id, parts)
 		return
 	}
 	if len(parts) >= 5 && parts[4] == "keys" {

@@ -5,6 +5,33 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGPostAutomodEvidenceGrantExpiryAtResponse",
+        "TestPGPostAutomodEvidenceRevocationAfterAccountWait",
+        "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
+        "TestPGBotExecutionCanonicalSendAndReplay",
+        "TestPGBotExecutionEnrollmentScopesAndHTTP",
+        "TestPGBotExecutionFreshRevocationAndMembership",
+        "TestPGBotExecutionRetryOrderingAndAtomicRollback",
+        "TestPGBotExecutionConcurrentWorkersAndRevocationWait",
+        "TestPGBotExecutionRestartPersistence",
+        "TestPGBotExecutionFailureExpiryAndLateCommit",
+        "TestPGBotExecutionMetadataAndCanonicalRollback",
+        "TestPGBotExecutionLeaseReclaimAndStaleAcknowledgement",
+        "TestPGBotExecutionTimeoutAndRevocationDuringDelivery",
+        "TestPGBotExecutionEnrollmentRoleAndSessionScope",
+        "TestPGBotExecutionRechecksAfterContention",
+
+        "TestPGRealmBoostCheckoutConservationAndReplay",
+        "TestPGRealmBoostRollbackAndBoundPayment",
+        "TestPGRealmBoostCurrentMembershipPrivacyAndRevocation",
+        "TestPGRealmBoostConcurrentSettlementAndLockConflict",
+        "TestPGRealmBoostExpiryAndPromotionEligibility",
+        "TestPGRealmBoostCanonicalPerkSelection",
+        "TestPGRealmBoostRestartPersistence",
+        "TestPGRealmBoostAuthorityRevocationAfterWait",
+        "TestPGRealmBoostAuthenticatedHTTP",
+        "TestPGBackendRealmBoostRoutes",
+
         "TestPGBackendPostAutomodCompositionAndExplicitReview",
         "TestPGPostAutomodWriteDecisionsPrivacyAndPublish",
         "TestPGPostAutomodRankedHideDerankFlagAndLatestContract",
@@ -724,6 +751,10 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGBotExecutionRestartPersistence",
+
+        "TestPGRealmBoostRestartPersistence",
+
         "TestPGPostAutomodSavedDecisionRestartPersistence",
         "TestPGCouponSavedRestartPersistence",
 

@@ -234,6 +234,11 @@ func (r *Repository) Send(ctx context.Context, actor, rid string, p rooms.TextRe
 	if _, e = r.writable(ctx, tx, actor, rid); e != nil {
 		return messager.MessageProjection{}, e
 	}
+	if r.textObserver != nil {
+		if e = r.textObserver.QueueMessage(ctx, tx, actor, rid, v.ID); e != nil {
+			return messager.MessageProjection{}, e
+		}
+	}
 	return v, r.commit(ctx, tx, actor, "chat.messages.create")
 }
 func (r *Repository) Edit(ctx context.Context, actor, rid, mid string, p rooms.TextRequest) (messager.MessageProjection, error) {

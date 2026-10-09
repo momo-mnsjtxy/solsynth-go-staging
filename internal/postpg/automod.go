@@ -159,7 +159,11 @@ func (r *Repository) AutomodInTransaction(ctx context.Context, tx *sql.Tx, actor
 	if r == nil || !r.automod {
 		return posts.ErrUnavailable
 	}
-	return evaluateAutomodInTransaction(ctx, tx, actor, p, transition, r.automodReview)
+	if e := evaluateAutomodInTransaction(ctx, tx, actor, p, transition, r.automodReview); e != nil {
+		return e
+	}
+	posts.RedactAutomodForEditor(p)
+	return nil
 }
 func evaluateAutomodInTransaction(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post, transition string, review bool) error {
 	prior, e := LoadAutomodInTransaction(ctx, tx, p.ID)
@@ -236,5 +240,9 @@ func (r *Repository) loadAutomod(ctx context.Context, tx *sql.Tx, actor string, 
 	if e != nil {
 		return e
 	}
-	return MarkAutomodFreshness(ctx, tx, p)
+	if e := MarkAutomodFreshness(ctx, tx, p); e != nil {
+		return e
+	}
+	posts.RedactAutomodForEditor(p)
+	return nil
 }

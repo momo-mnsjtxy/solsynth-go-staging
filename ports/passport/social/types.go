@@ -85,6 +85,7 @@ type RelationshipChange struct {
 	Alias     *string
 }
 type Realm struct {
+	BoostPoints  int64                      `json:"boost_points"`
 	Verification *accounts.VerificationMark `json:"verification,omitempty"`
 	ID           string                     `json:"id"`
 	Slug         string                     `json:"slug"`

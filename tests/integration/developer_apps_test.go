@@ -40,6 +40,7 @@ func (a developerTestAuthority) Require(ctx context.Context, p ...string) (autho
 }
 
 type developerFixture struct {
+	config                               authority.Config
 	db                                   *sql.DB
 	repo                                 *apppg.Repository
 	handler                              http.Handler
@@ -56,6 +57,7 @@ func newDeveloperFixture(t *testing.T) developerFixture {
 	now := &atomic.Int64{}
 	now.Store(time.Now().Unix())
 	config := authorityConfig(t, authorityKeys(t), now)
+	f.config = config
 	for _, actor := range []string{f.actor, f.other} {
 		if e := authoritypg.SeedSynthetic(context.Background(), db, actor, "synthetic_dev_"+strings.ReplaceAll(actor, "-", ""), time.Now()); e != nil {
 			t.Fatal(e)

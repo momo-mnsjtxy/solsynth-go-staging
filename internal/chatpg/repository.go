@@ -28,6 +28,7 @@ type Repository struct {
 	social       rooms.SocialProvider
 	associations MessageAssociations
 	roomMedia    RoomMedia
+	textObserver TextMessageObserver
 }
 
 func (r *Repository) WithSocial(p rooms.SocialProvider) *Repository { r.social = p; return r }

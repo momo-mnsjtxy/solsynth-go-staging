@@ -55,7 +55,7 @@ func TestPGPostAutomodRealmAndNestedEvidenceIsolation(t *testing.T) {
 	body := "synthetic-private-rule-" + authorityUUID(t)
 	rule := automodRule(t, f, a.Hide, body)
 	p, e := f.posts.Create(f.ctx, f.actor, f.individual.ID, posts.Patch{Content: &body, RealmID: &f.public.ID})
-	if e != nil || p.Automod == nil || len(p.Automod.Matches) != 1 {
+	if e != nil || p.Automod == nil || !p.Automod.Hidden || len(p.Automod.Matches) != 0 {
 		t.Fatal(p, e)
 	}
 	reason := "Synthetic confidential global review " + authorityUUID(t)
@@ -144,7 +144,7 @@ func TestPGPostAutomodReviewReplayRevalidatesProof(t *testing.T) {
 	now := cfg.Now()
 	var checks atomic.Int32
 	cfg.Now = func() time.Time {
-		if checks.Add(1) >= 4 {
+		if checks.Add(1) >= 5 {
 			return now.Add(24 * time.Hour)
 		}
 		return now

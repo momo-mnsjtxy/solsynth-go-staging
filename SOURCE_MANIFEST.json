@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Correct historical coupon ancestry and deleted contact fixtures",
+  "checkpoint": "Close rejected bot request bodies and verify standalone policy",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "f3113b8355ec346a4f215238ab41a3164e725386"
+    "remote_parent": "85674a81584fc05876446b80761f6c27917ed037"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -74,6 +74,16 @@
       "path": "cmd/backend/account_extras_config_test.go",
       "bytes": 1264,
       "sha256": "cc005393e91619fdaa7a2b675d659355808beb710cfa6dfa74cc72d98f3c03be"
+    },
+    {
+      "path": "cmd/backend/bot_execution_config.go",
+      "bytes": 5013,
+      "sha256": "07c8c9c0d19d052b5c11e78b813957bac0948d0a3f59c623c81309c959d3e693"
+    },
+    {
+      "path": "cmd/backend/bot_execution_config_test.go",
+      "bytes": 7117,
+      "sha256": "a2bb511b585ff86c563f8d5e1e9007d13a86172eac2ea9af70e114d11476f144"
     },
     {
       "path": "cmd/backend/config.go",
@@ -167,8 +177,8 @@
     },
     {
       "path": "cmd/backend/main.go",
-      "bytes": 15995,
-      "sha256": "5241f9caf0bc9932f0d2ccab4a5b23196cac10d6adfd1b23668353eae5519f47"
+      "bytes": 16241,
+      "sha256": "21fe8da9f443ac6a2c7d56427cfba5c53714a851aeea746d81474c097f62a4b8"
     },
     {
       "path": "cmd/backend/passkit_config.go",
@@ -209,6 +219,16 @@
       "path": "cmd/backend/reader_config_test.go",
       "bytes": 1033,
       "sha256": "9b398b2effd1cb5c87f3cab2c26e9857fab54aa8314cb4ee3c89067b4585af05"
+    },
+    {
+      "path": "cmd/backend/realm_boost_config.go",
+      "bytes": 3979,
+      "sha256": "231d6f9cdd2a89a33b5f10bb0afa8cecb408fcfff0638bd5519c999a7c590fa4"
+    },
+    {
+      "path": "cmd/backend/realm_boost_config_test.go",
+      "bytes": 6815,
+      "sha256": "872f7db3d4f8ef15308a31088cf4d181ec49a506c023084d9fe98ce124fba963"
     },
     {
       "path": "cmd/backend/ticket_config.go",
@@ -446,6 +466,11 @@
       "sha256": "eb8b42e83d739cd2c9222f9cf29007d8e9a5d77da4dca9eef5c47eb8ff9c1bd7"
     },
     {
+      "path": "docs/bot-execution-continuation.md",
+      "bytes": 14610,
+      "sha256": "e40adbd40bef49c85cadd714d5ce9c8ddf8951f8283622f71fb282d267fce811"
+    },
+    {
       "path": "docs/bots-miniapps-continuation.md",
       "bytes": 12647,
       "sha256": "d6b6105f51e71fcd6267c594d7f4ae3892aac3f8e23f8df6e68ef35d7dfff879"
@@ -507,8 +532,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 103148,
-      "sha256": "cc820ea6938d22495d7e91b2dbcdf0e04b595cf78adbede94c55a71bd6c1afd7"
+      "bytes": 105749,
+      "sha256": "2665d418d58bdd94c3a8a249249f876fa8567a3874f341c34cf8c5851aad7bd4"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -1477,8 +1502,8 @@
     },
     {
       "path": "docs/post-automod-continuation.md",
-      "bytes": 8534,
-      "sha256": "191f5839d144c6a9b3e8bf3a024aa72d56f392f410f2534b8d7e72e74cb8d238"
+      "bytes": 9616,
+      "sha256": "024bbd18afccd3cb425179d290aa1f932a961bfcf7aa2006bae91848f6987c03"
     },
     {
       "path": "docs/post-automod-integration.json",
@@ -1721,6 +1746,16 @@
       "sha256": "46ce5c2648b3bdd0998641db063fe8706eedb99d136787bb7a043cffe08337ba"
     },
     {
+      "path": "docs/realm-boost-continuation.md",
+      "bytes": 10568,
+      "sha256": "69920d32e078826cdecbab205d78b7fd10c43289b1e71f713ae83ba0ec87c77b"
+    },
+    {
+      "path": "docs/realm-boost-integration.json",
+      "bytes": 1470,
+      "sha256": "b784deeee87c8b70c1bbf067b4da418956e2ae1bdaf678d432ec9e762d68eb8e"
+    },
+    {
       "path": "docs/realm-permissions-continuation.md",
       "bytes": 12371,
       "sha256": "440d070b473e2d52d9f43769b49dad4c0a77d1047ea160e9e65c7220a7da2b3e"
@@ -1797,8 +1832,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 108551,
-      "sha256": "cbfaac8d4d3141ec84da6732a93998d8f3ef37663a1495eecbf8499939646294"
+      "bytes": 116109,
+      "sha256": "7aca4c5b1a9a9ee9357140ee4c258365959458a7790e249b50a1a3cf504977bb"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -2062,8 +2097,18 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 30460,
-      "sha256": "4be66cd63c7048aeb7722d2a11e51a895ed7c609840072e8b71c9d6989e50e00"
+      "bytes": 31423,
+      "sha256": "0a018e99e3358e83ad0cc63054a6a777c5e997e22778b1ed45b643837b1293e4"
+    },
+    {
+      "path": "internal/application/bot_execution.go",
+      "bytes": 712,
+      "sha256": "d861f4de8662767962b197af206679d5c04ca935f0806eb02235767268565599"
+    },
+    {
+      "path": "internal/application/bot_execution_test.go",
+      "bytes": 1073,
+      "sha256": "c6ba2c0d19454e9ef6eb0406ce8429a02fc20257ba32b1b563e81aad203e2883"
     },
     {
       "path": "internal/application/commerce.go",
@@ -2177,13 +2222,18 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 9093,
-      "sha256": "67f49c8d7d4e4aab7b509b0ebc78d02dec7c08aed94eaca7d7e9eb4877e37cac"
+      "bytes": 9258,
+      "sha256": "f76f7b01186f86d6a47a672377148d933b6ae4796f6ec812f3de7d01b4af64a1"
+    },
+    {
+      "path": "internal/application/realm_boosts.go",
+      "bytes": 1588,
+      "sha256": "d6c1c08beaed31f94b410b7ef3aab2daea25eb4cf452a91b7ec91efdfc94976f"
     },
     {
       "path": "internal/application/router.go",
-      "bytes": 19633,
-      "sha256": "803e6617e80f2d6e18180bbd324c21805996191d4794ff1404acf9b4a73ade22"
+      "bytes": 20211,
+      "sha256": "44072fadfeeb3c11c66c8d68ff7e107285966702004d401057646d1de9fe6848"
     },
     {
       "path": "internal/application/router_test.go",
@@ -2441,6 +2491,26 @@
       "sha256": "fe722ef809077a8ac7a9a5bc5c7b19285ebd1fa988baaf7fe0a5a7bfd3dc9618"
     },
     {
+      "path": "internal/botdispatch/public_transport.go",
+      "bytes": 3086,
+      "sha256": "78449b14e00444933d130e8e45dbd88dadf1a9b5b3741577b821d1c64aece94b"
+    },
+    {
+      "path": "internal/botdispatch/public_transport_test.go",
+      "bytes": 5886,
+      "sha256": "5ea9be441742721ab179686540bd8a0b2e65f11422c46d60d3b3cf76656908cb"
+    },
+    {
+      "path": "internal/botdispatch/webhook.go",
+      "bytes": 3708,
+      "sha256": "7039f8b40869e8598311dfd821db11c5e5067c4067f283194cc978f4d0b46f39"
+    },
+    {
+      "path": "internal/botdispatch/webhook_test.go",
+      "bytes": 5031,
+      "sha256": "a4f1b4d1ed289488be23e8685933fb41edc105cab4be5245e188fb7cfb3357d3"
+    },
+    {
       "path": "internal/botpg/bots.go",
       "bytes": 10505,
       "sha256": "2904ed283d440e4f516a495833becfab67aabd67acc5fa16245aa3a5fa486315"
@@ -2449,6 +2519,26 @@
       "path": "internal/botpg/chat.go",
       "bytes": 5685,
       "sha256": "c073cddb18c0515ab7106a385d2f6335f0020bea71265a0aea7c8a29fb39c795"
+    },
+    {
+      "path": "internal/botpg/execution.go",
+      "bytes": 19335,
+      "sha256": "b0a84ae0c18c919407b054a1db6074a76791be0b7e40c966369025c0fd55b467"
+    },
+    {
+      "path": "internal/botpg/execution_delivery.go",
+      "bytes": 17631,
+      "sha256": "cc274843cff07ca303a3e197ac4bf311e52cb2020d51bcd87c42d16a9d08b64c"
+    },
+    {
+      "path": "internal/botpg/execution_schema.sql",
+      "bytes": 2153,
+      "sha256": "f1cf6eae21b57d5b0c101a7bb7259a9eedd8503770a9b0c31f7b7ed324ec19ee"
+    },
+    {
+      "path": "internal/botpg/execution_test.go",
+      "bytes": 1425,
+      "sha256": "7a246dcd2f9f63223fe9765142d1a3e06d4afdc007fa47aa302846f3e1cbb62d"
     },
     {
       "path": "internal/botpg/miniapps.go",
@@ -2467,8 +2557,8 @@
     },
     {
       "path": "internal/botpg/repository.go",
-      "bytes": 10310,
-      "sha256": "0af99f7a99094302792337651e05484b9b06a4148bf7f0094fd1949d5e2f60ad"
+      "bytes": 10351,
+      "sha256": "a62290a6b1ed391a33dbdaabbfcb3bcf677e1861318c9c1860bc0df20fe95834"
     },
     {
       "path": "internal/botpg/schema.sql",
@@ -2536,6 +2626,11 @@
       "sha256": "2f6fdc79412ed379e80f5d57929684c5e002571220aed80dcf4092c57b73e0cb"
     },
     {
+      "path": "internal/chatpg/bot_observer.go",
+      "bytes": 634,
+      "sha256": "8a69a238f3d63fc3baf1a0a4892b109c8039b52e02576ebc7310bc554814ef53"
+    },
+    {
       "path": "internal/chatpg/forward_hydration.go",
       "bytes": 3612,
       "sha256": "131d7907ed80c3ad69fe1e5f2a8e4fb3c455fae720effea912cd21df72482256"
@@ -2552,8 +2647,8 @@
     },
     {
       "path": "internal/chatpg/messages.go",
-      "bytes": 15763,
-      "sha256": "1fd2a76a0ff41bcaa3108701af149a8d4d2970704d2d775a7f5fe9e23f0d4182"
+      "bytes": 15916,
+      "sha256": "7dc44803af116acfc2da60377dc87e5bfb18622839b4af79c7e891e9147c38bd"
     },
     {
       "path": "internal/chatpg/mls.go",
@@ -2627,8 +2722,8 @@
     },
     {
       "path": "internal/chatpg/repository.go",
-      "bytes": 13712,
-      "sha256": "4db5238a31ee37e5534b703a47d68eb4b8414e258c13c52bdb1850a395db4d2f"
+      "bytes": 13746,
+      "sha256": "dbb7925bbd52df6650697f747a8b9631082f25a5eed1994137eb44b21e20825b"
     },
     {
       "path": "internal/chatpg/repository_test.go",
@@ -2712,8 +2807,8 @@
     },
     {
       "path": "internal/commercepg/lifecycle.go",
-      "bytes": 27334,
-      "sha256": "1e090d6a1d900bb247a49cc05b22c3be2ffef0820e4cf9c96dbdf2af8105172e"
+      "bytes": 28165,
+      "sha256": "5071465fb9112316d88287c1f67d7201074ca30e8137f9e0eea7c050501794bc"
     },
     {
       "path": "internal/commercepg/livestream_awards.go",
@@ -2771,6 +2866,11 @@
       "sha256": "9b34fdaccb8852a9b8619313d9b3687f447cda069ee60c78e5327941efa030c9"
     },
     {
+      "path": "internal/commercepg/realm_boosts.go",
+      "bytes": 5097,
+      "sha256": "b437e05bb4b0c504654d2779194c24cb1440766312059197565c2054fd6f9f6e"
+    },
+    {
       "path": "internal/commercepg/recurring_products.go",
       "bytes": 11838,
       "sha256": "5650175637c04e46d0c1320b4da6af4987dbea9f85d89b2710ee3c0eabb1f159"
@@ -2782,8 +2882,8 @@
     },
     {
       "path": "internal/commercepg/repository.go",
-      "bytes": 18079,
-      "sha256": "21d2cdee5b1811f6f3143f2d6f1dc60fcf4b366e04b4fa0b415321744bed2cb3"
+      "bytes": 18115,
+      "sha256": "fd7b234b3a4c6d705af8a82bca3f17f204ecb10a77d244b87aa7bb05c92ef2d8"
     },
     {
       "path": "internal/commercepg/schema.sql",
@@ -3297,13 +3397,18 @@
     },
     {
       "path": "internal/moderationpg/automod.go",
-      "bytes": 2962,
-      "sha256": "0dc16a950d60316a6510d9e6cff495e050676a53384a9a2f22ef45ce404e1726"
+      "bytes": 3284,
+      "sha256": "5f66737ecfde45df8e673a5cd06ecbe1717251dcc05310cbc77cf7fa2327fe11"
+    },
+    {
+      "path": "internal/moderationpg/boosts.go",
+      "bytes": 312,
+      "sha256": "8b0c2b21f333080074526873ee1c2ae621875d6555b247702bc3dd353a3aa557"
     },
     {
       "path": "internal/moderationpg/extensions.go",
-      "bytes": 1198,
-      "sha256": "842b4dbeff36f95a55695b2727570a28d25c86896558640727d91037cab22e35"
+      "bytes": 1341,
+      "sha256": "ee2303ca2935419aaad6be70795e3063cb4bd5f27ad11a52ae8f29795fac8408"
     },
     {
       "path": "internal/moderationpg/notifications.go",
@@ -3322,8 +3427,8 @@
     },
     {
       "path": "internal/moderationpg/reads.go",
-      "bytes": 6202,
-      "sha256": "c1a8a186f6c6e3691b93b574d0ad22c7214b656dbb25b0623491e0cbbf5cc9e2"
+      "bytes": 6261,
+      "sha256": "98291d98b4d86f0da1c445ad46c2c19552019f1c608edadf252102bcdda28ff2"
     },
     {
       "path": "internal/moderationpg/realms.go",
@@ -3332,8 +3437,8 @@
     },
     {
       "path": "internal/moderationpg/repository.go",
-      "bytes": 10176,
-      "sha256": "0dd016df81db352b9e4ca83a336f334e3f4f91b3435add46548c6df6466d0af2"
+      "bytes": 11365,
+      "sha256": "2249f5f0a83bd3c7532caab8ba70f280ded8cb78c76e0c30b7c0eab9eca397b0"
     },
     {
       "path": "internal/moderationpg/schema.sql",
@@ -3517,8 +3622,8 @@
     },
     {
       "path": "internal/postpg/automod.go",
-      "bytes": 8946,
-      "sha256": "4087b6f1271a4c2ad0bd2c607045162666de9a8d6b3d405198f0f117655d0a2c"
+      "bytes": 9090,
+      "sha256": "d878fc14bb17dc34b2f1453e0d922896d165ef910aec4e99bb2654e22f3f9984"
     },
     {
       "path": "internal/postpg/automod_review_test.go",
@@ -3552,8 +3657,8 @@
     },
     {
       "path": "internal/postpg/repository.go",
-      "bytes": 18512,
-      "sha256": "c58f1ba05f166f56e24b71e4fd790ef07f285e2dc8aa429c2c50e96da3438434"
+      "bytes": 18713,
+      "sha256": "b25692c54428d5c5ff1384fb678a49e0aa74eddea8afd9f446091f1cfc3524ab"
     },
     {
       "path": "internal/postpg/repository_test.go",
@@ -3706,6 +3811,31 @@
       "sha256": "67445b924e6175ea64300f69a81d0889b1bf320a0de1987a8c3b8213e610c383"
     },
     {
+      "path": "internal/realmboostpg/config_test.go",
+      "bytes": 1117,
+      "sha256": "2359a623bebb3db93e1ae239546f6b6aa348695e4cea6d7c4e307d11c5d41ef7"
+    },
+    {
+      "path": "internal/realmboostpg/fulfillment.go",
+      "bytes": 5614,
+      "sha256": "0f1e9406f379c9f59ab53e24ee72b032413cd0d9bfe6814ec16674a97c19b634"
+    },
+    {
+      "path": "internal/realmboostpg/read.go",
+      "bytes": 4942,
+      "sha256": "284c56eaf3fdd6b96c65df6c2b5f47eb4bc97459a43de5e366844957c0dc9d38"
+    },
+    {
+      "path": "internal/realmboostpg/repository.go",
+      "bytes": 9290,
+      "sha256": "328d70db95e5de4345ac620b52505cd8ed2503b323e3186da6ad063e2c3350e7"
+    },
+    {
+      "path": "internal/realmboostpg/schema.sql",
+      "bytes": 2249,
+      "sha256": "52afeb75cb77570027a38ad178f93623db120318411e23a318173f7a02bb766a"
+    },
+    {
       "path": "internal/realtime/GORILLA-LICENSE.txt",
       "bytes": 1312,
       "sha256": "2be1b548b0387ca8948e1bb9434e709126904d15f622cc2d0d8e7f186e4d122d"
@@ -3851,6 +3981,11 @@
       "sha256": "601d3c4a25d6b64a8ed7aafa04a5a5291a6536e5b42c5ec01e7f59e73eefb22a"
     },
     {
+      "path": "internal/socialpg/boosts.go",
+      "bytes": 808,
+      "sha256": "e862947ed421aebb5cb573f13c3e0332b0b472d947d2965c3b22ad91ce5222cc"
+    },
+    {
       "path": "internal/socialpg/expiry.go",
       "bytes": 5148,
       "sha256": "ceaa2e845483522feeae9b2c37809c59c28090c74dc61033437540d841b8e1ec"
@@ -3862,13 +3997,13 @@
     },
     {
       "path": "internal/socialpg/namecards.go",
-      "bytes": 1414,
-      "sha256": "79cc937d819695d44ad0c8668060d9776706e944580fc152c1ade15929849359"
+      "bytes": 1416,
+      "sha256": "6cdf1130d43cef483b969a17311f3e3ae582e4bffdff71a79c2f35fed662b5a7"
     },
     {
       "path": "internal/socialpg/permissions.go",
-      "bytes": 12404,
-      "sha256": "8d72d2cc8bf3df5cd141393a8cd61e74b09b69243c0869c03ebe1442fe991285"
+      "bytes": 12416,
+      "sha256": "899942bd090149c0be19e1d20a2937f2d80989360fe01bbfa26377f0ee6cc1f0"
     },
     {
       "path": "internal/socialpg/permissions_schema.sql",
@@ -3882,13 +4017,13 @@
     },
     {
       "path": "internal/socialpg/post_realm_provider.go",
-      "bytes": 2384,
-      "sha256": "43eed7ac8127bc8ec1374119f7651be40e148d3d148f0a2153e0a759972828e1"
+      "bytes": 2386,
+      "sha256": "371d515aaa85ee6fa863a60183805598165810370b05bcd6b1001ed2f047691d"
     },
     {
       "path": "internal/socialpg/providers.go",
-      "bytes": 7123,
-      "sha256": "c2b3d1226f78140a3234794260296aa3f6fbcc3a92151cf37c8872e879681639"
+      "bytes": 7129,
+      "sha256": "92db19d8ae737cae8ebdeb08eea0ab4ace1f2ae9557c74b795af1a30cd29769c"
     },
     {
       "path": "internal/socialpg/publisher_provider.go",
@@ -3897,8 +4032,8 @@
     },
     {
       "path": "internal/socialpg/realms.go",
-      "bytes": 18290,
-      "sha256": "372f5ed35a2eaf2ab322cb09935ee9b265083956e08dc2b46c7f51aae47895c6"
+      "bytes": 18793,
+      "sha256": "c37609875b153b6b254cdfbcfd5f0268ccb9b70bf5018237dc5f92f73f679469"
     },
     {
       "path": "internal/socialpg/relationships.go",
@@ -3907,8 +4042,8 @@
     },
     {
       "path": "internal/socialpg/repository.go",
-      "bytes": 4523,
-      "sha256": "c2a474750a78817b91dd43b769b67fa2545ec2a7548d62ce94bf1f75a9814cae"
+      "bytes": 4551,
+      "sha256": "dc8b22371276a0956216d59aa063c7ba9400aa3d10b4feaccfe19bc0dff6f182"
     },
     {
       "path": "internal/socialpg/repository_test.go",
@@ -6271,14 +6406,34 @@
       "sha256": "ed4e70dcb0aa3eadcbe38dbc4cc804dfbc92b07258825c552d1dc29b32cf9c77"
     },
     {
+      "path": "ports/develop/bots/execution-source-evidence.json",
+      "bytes": 8642,
+      "sha256": "9a1a5370ff5b64e6d8a81d8281703e1b679bb46935d6af246057c532494999b1"
+    },
+    {
+      "path": "ports/develop/bots/execution.go",
+      "bytes": 3197,
+      "sha256": "bd6abf1836943abc90ff563894bec3e463d78c834ead3be15ce84a08a4826447"
+    },
+    {
+      "path": "ports/develop/bots/execution_http.go",
+      "bytes": 1354,
+      "sha256": "673a347bb7ee7fa8ccb36fe5c796a7b49d63fa37000c808ee5d664162a8e4e94"
+    },
+    {
+      "path": "ports/develop/bots/execution_source_test.go",
+      "bytes": 1444,
+      "sha256": "5de1e8cd49fb2a1fda929fcd7cc09de1c69b4ba11d407ce1858ee6dc815864b6"
+    },
+    {
       "path": "ports/develop/bots/http.go",
-      "bytes": 12944,
-      "sha256": "36b1720dc42b73c894dafef097270079e96349ca50e0af7b3db8a2362a33bccd"
+      "bytes": 13549,
+      "sha256": "7366df474e54b1a9961579fc37ba60c2726b36961764740cdde8973f41fab89d"
     },
     {
       "path": "ports/develop/bots/http_test.go",
-      "bytes": 3171,
-      "sha256": "f6cd0a80a64196fb01df47b872ec4a070b2688cf53a1e14e44054075c5ed9085"
+      "bytes": 4671,
+      "sha256": "c2d51d80b77f5fd69202ab790b24d3a8a02e1c42fedf5ee41557d8b694af460b"
     },
     {
       "path": "ports/develop/bots/source-evidence.json",
@@ -8081,6 +8236,41 @@
       "sha256": "6805e3583e07cabf0bbab884b6513912477f5cde6d619156b54a9b4b9b91e605"
     },
     {
+      "path": "ports/passport/realmboosts/http.go",
+      "bytes": 3555,
+      "sha256": "e940323784f3eea13cd8c87e8dc398f7dc53fd73772c554424231456b1bbc168"
+    },
+    {
+      "path": "ports/passport/realmboosts/policy_test.go",
+      "bytes": 5167,
+      "sha256": "a1e53ce47d9bebaee16f03479989d6f8d5e56036a47247222509378c4cb9741c"
+    },
+    {
+      "path": "ports/passport/realmboosts/provenance_test.go",
+      "bytes": 1389,
+      "sha256": "01b9e4b5b88d59019211d83ffd59e0530cd1e4ce31ddc8738cbb14bb9d6653fa"
+    },
+    {
+      "path": "ports/passport/realmboosts/source/LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/passport/realmboosts/source/RealmExperienceService.cs",
+      "bytes": 4032,
+      "sha256": "53fa47d2821d1e132755e109823e50f2c2c7f26a2bd367f9a31eb38790cbc907"
+    },
+    {
+      "path": "ports/passport/realmboosts/source/manifest.json",
+      "bytes": 1193,
+      "sha256": "0e20bea71d88ce2dfe7e9dd22382c1d2d35563bd753134df58ada258fc7b1e3d"
+    },
+    {
+      "path": "ports/passport/realmboosts/types.go",
+      "bytes": 4214,
+      "sha256": "e008a833ad54d0130b9005eb8d466bc5c0ff7c36d2aee6e9699c57e0a35880fb"
+    },
+    {
       "path": "ports/passport/rewind/http.go",
       "bytes": 3184,
       "sha256": "e1be54b2ea330dcd52d0fdfa16e67ac7e15d59eb1bd97dfba038234b942d6548"
@@ -8227,8 +8417,8 @@
     },
     {
       "path": "ports/passport/social/types.go",
-      "bytes": 6529,
-      "sha256": "db8e56c1e7ffe5b3e5d8567acde293e763a8e28b334bcc1bb955b6aacb8080ff"
+      "bytes": 6592,
+      "sha256": "0b6718577f40c0c635c197cabf33da3de1e712c7ad615e28b1e29f0afdddce2b"
     },
     {
       "path": "ports/passport/social/validation.go",
@@ -8847,8 +9037,13 @@
     },
     {
       "path": "ports/sphere/posts/automod.go",
-      "bytes": 1545,
-      "sha256": "174de1acb426766b64c7f2bbf5100ad03889ecbcd82969c558ab24f7f0217c99"
+      "bytes": 2553,
+      "sha256": "fb3b19e9c02bf57709c4bed4b9705efe1630d7f553d2c89df1e24fc705ebfa8a"
+    },
+    {
+      "path": "ports/sphere/posts/automod_projection_test.go",
+      "bytes": 2985,
+      "sha256": "4b2d2a36712d3eb816618e64f5737a67e991204e61b4b5f932e6348d8a294574"
     },
     {
       "path": "ports/sphere/posts/evidence-inventory.json",
@@ -9962,8 +10157,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 44939,
-      "sha256": "a330657ba358a3236bad97566cb84ff206c6b02e129e2746456df356d04072ad"
+      "bytes": 46449,
+      "sha256": "7c1e8a2ade43d18701b5569fa0964cd05e4ad076d73c480613851adab27ed33d"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -9972,8 +10167,8 @@
     },
     {
       "path": "scripts/check-source-evidence.py",
-      "bytes": 6821,
-      "sha256": "8b3df6d763c23ade3f18a803ab450fca935294d0746c6e3080dcf400acb1cea2"
+      "bytes": 6858,
+      "sha256": "d0c1dff00d2aeb9b512d7f8859a45245712c6d3c412687dd5c510624a0e3958b"
     },
     {
       "path": "scripts/check-sql-argument-count.py",
@@ -9987,13 +10182,13 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 86074,
-      "sha256": "8b1a4db64c56368ca070c76b74266214da5817b693371e8bd0550dc0e8e346d4"
+      "bytes": 90235,
+      "sha256": "a526744944b8400e39d0943994ef44221b13d4a995266f9269c91216d5add778"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 12111,
-      "sha256": "26d3a9f7055c2e042f4e7d97cd1cdae44d5761fcbc80d9b8ae8b13be806c07a8"
+      "bytes": 12284,
+      "sha256": "4477e13cc4c1a58d7d44e18edabd3c047662175ae0081e1e8b53b27f9d79c9bc"
     },
     {
       "path": "scripts/integration_groups.py",
@@ -10032,13 +10227,13 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 19892,
-      "sha256": "fbda859300220ec475f64cf0ed25131a1b370ded5f24dad6686fb96c4fa1000a"
+      "bytes": 19969,
+      "sha256": "7346f12fc10aa3d0537fd140fd7c8c57c1e226b13a8887b4d05b9f1730c57943"
     },
     {
       "path": "scripts/test-source-evidence.py",
-      "bytes": 3547,
-      "sha256": "2d00f3d396e4f7066f6a1e59319674906316c3eba7b171061306b798b02f2323"
+      "bytes": 3683,
+      "sha256": "4207bb4625385ff3e9b83e4a3986b4d7792ba059c75980121ba18d8485136fd6"
     },
     {
       "path": "scripts/verify-candidate-http.py",
@@ -10501,6 +10696,11 @@
       "sha256": "2ff297223b03d00c6c4dbc280cec462701e92b7e0b56ccf18b635649fcdba7cd"
     },
     {
+      "path": "tests/integration/bot_execution_test.go",
+      "bytes": 33778,
+      "sha256": "60e45afaf8d3d3d02b0051bdf33227969ee9eae76d31fc61a7213ffb86adebfd"
+    },
+    {
       "path": "tests/integration/bots_test.go",
       "bytes": 22166,
       "sha256": "81c46545335e1e5f658ad85c6880627869a1f3322019e720273a8403270fa13f"
@@ -10622,8 +10822,8 @@
     },
     {
       "path": "tests/integration/developer_apps_test.go",
-      "bytes": 16757,
-      "sha256": "faf6135627d45af87c9b2dae5548dbc8a9c019de8bd6e4df1b0e71633c64d46d"
+      "bytes": 16831,
+      "sha256": "f27495c2cbbab90fdfc3d911788f233bc81a5d0e2853f350344643b3457b14ff"
     },
     {
       "path": "tests/integration/direct_recovery_privacy_test.go",
@@ -10786,9 +10986,14 @@
       "sha256": "491e2caeefa84b36827908569775493960295f003ca9cb6c9aedcb3d90aef13f"
     },
     {
+      "path": "tests/integration/post_automod_editor_projection_test.go",
+      "bytes": 13306,
+      "sha256": "7d09f1417a066a1bab6f11d8a556a606fc1585d4a1d3263e5968fc8cd60736d6"
+    },
+    {
       "path": "tests/integration/post_automod_review_test.go",
-      "bytes": 7057,
-      "sha256": "5fa36eec93bf26fbc1846159991ed7074cac9cbe1bdb29bb4a5bd48fb4f6bb13"
+      "bytes": 7078,
+      "sha256": "3723968b6f7003219c8b2c3d490ee00b793aaf5afe8a2af4a8852286a9c36343"
     },
     {
       "path": "tests/integration/post_automod_scheduling_test.go",
@@ -10874,6 +11079,16 @@
       "path": "tests/integration/reader_test.go",
       "bytes": 12393,
       "sha256": "c39637851ad4b0732be2fb2f24bbe294fdd9571ef7055bddabd1ddf813040a42"
+    },
+    {
+      "path": "tests/integration/realm_boosts_host_test.go",
+      "bytes": 3511,
+      "sha256": "58be0f20bb403963c4fb1554cb875b7a975d2115c3b7a95927b6e6bb1d161813"
+    },
+    {
+      "path": "tests/integration/realm_boosts_test.go",
+      "bytes": 25508,
+      "sha256": "f9fee212ae95e6abd7cbcf309f6f83ede883e16f159441d838b61c471b312e97"
     },
     {
       "path": "tests/integration/realm_permissions_membership_review_test.go",

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/passport/namecards"
+	realmboost "solsynth.local/go-migration/ports/passport/realmboosts"
 	live "solsynth.local/go-migration/ports/sphere/livestreams"
 	postaward "solsynth.local/go-migration/ports/sphere/postawards"
 	sponsor "solsynth.local/go-migration/ports/sphere/sponsorship"
@@ -132,6 +133,15 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.pay"); e != nil {
 		return o, e
 	}
+	isRealmBoost := o.AppIdentifier == "internal" && o.ProductIdentifier != nil && *o.ProductIdentifier == realmboost.Product
+	if isRealmBoost {
+		if r.realmBoosts == nil || sub.Valid || gift.Valid {
+			return o, c.ErrUnavailable
+		}
+		if e = r.realmBoosts.PrepareRealmBoost(ctx, r.db, tx, actor, o, payer, now); e != nil {
+			return o, realmBoostError(e)
+		}
+	}
 	isLiveAward := o.AppIdentifier == "internal" && o.ProductIdentifier != nil && *o.ProductIdentifier == live.AwardProduct
 	if isLiveAward {
 		if r.liveAwards == nil || sub.Valid || gift.Valid {
@@ -240,6 +250,15 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 		}
 		o.Status = c.Finished
 	}
+	if isRealmBoost {
+		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
+			return o, e
+		}
+		if e = r.realmBoosts.FulfillRealmBoost(ctx, r.db, tx, actor, o, now); e != nil {
+			return o, realmBoostError(e)
+		}
+		o.Status = c.Finished
+	}
 	if isLiveAward {
 		if _, e = walletpg.CommerceSettle(ctx, tx, o.ID, false, now); e != nil {
 			return o, e
@@ -306,6 +325,11 @@ func (r *Repository) PayOrder(ctx context.Context, actor, idv string, requested 
 	}
 	if e = r.validateCouponQuote(ctx, tx, actor, o, true); e != nil {
 		return c.Order{}, e
+	}
+	if isRealmBoost {
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.pay", "realms.boosts.manage"); e != nil {
+			return o, e
+		}
 	}
 	// Wallet/fulfillment locks may have waited after the initial deadline check.
 	// Rejecting here rolls back the hold, settlement, entitlement and outboxes

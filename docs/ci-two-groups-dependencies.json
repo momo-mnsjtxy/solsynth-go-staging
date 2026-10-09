@@ -1,5 +1,5 @@
 {
-  "base_commit": "106c35a0e860add9d58d40737ff27cc4743e5cc1",
+  "base_commit": "fe01ce86ae24db35b45f78b2785a43b53898f034",
   "restart_cases": [
     {
       "test": "TestPGAccountSettingsRestartPersistence",
@@ -1730,7 +1730,7 @@
     },
     {
       "source": "tests/integration/bot_execution_test.go",
-      "sha256": "60e45afaf8d3d3d02b0051bdf33227969ee9eae76d31fc61a7213ffb86adebfd"
+      "sha256": "a0751fd6ca2dded3cf8ab9b72eca54456260f754d0fead0cbba5192a4039dd74"
     },
     {
       "source": "tests/integration/bots_test.go",
@@ -2210,5 +2210,6 @@
   "anonymous_reaction_symbol_review": "New boundary assertion uses canonical thumb_up reaction symbol; exact changed fixture hash reviewed.",
   "thread_implemented_boundary_review": "Previously unsupported thread input now returns404 for unknown canonical root, with zero-message assertion. Encryption/fund/alternate-identity unsupported boundaries retained. Current exact unchanged declaration set.",
   "boost_bot_privacy_review": "Reviewed25 added cases and all modified fixture hashes. Boost10/bot12/editorprivacy3, two new exact restart markers. Explicit canonical schema ordering and composed HTTP/PIN/lease/privacy paths retained. Original developer fixture merely retains its existing config for saved public verification state, no identity behavior change.",
-  "blog_composed_review": "Nineteen new cases:18 independently reviewed blog/admin declarations plus composed server-metadata-before-automod/privacy/rankedLatest/scheduled test. Existing source fixtures unchanged except new files. New blog schema atomic after canonical policy/account/social/post dependencies, original saved restart paired exactly."
+  "blog_composed_review": "Nineteen new cases:18 independently reviewed blog/admin declarations plus composed server-metadata-before-automod/privacy/rankedLatest/scheduled test. Existing source fixtures unchanged except new files. New blog schema atomic after canonical policy/account/social/post dependencies, original saved restart paired exactly.",
+  "bot_issuer_fixture_review": "Scoped bot sessions reuse retained original issuer signing/trust configuration. Same identities, exact scopes and signature verification preserved; only fixture issuer consistency changed."
 }

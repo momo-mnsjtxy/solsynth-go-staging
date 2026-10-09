@@ -45,6 +45,15 @@ func (g *TransactionGuard) Authorize(ctx context.Context, db *sql.DB, tx *sql.Tx
 	return g.check(ctx, db, tx, actor, true, permissions, true)
 }
 
+// AuthorizeWithGrant requires a current grant for one sensitive permission,
+// preserving the same original-proof, pool, isolation and account-lock checks.
+func (g *TransactionGuard) AuthorizeWithGrant(ctx context.Context, db *sql.DB, tx *sql.Tx, actor, requiredGrant string, permissions ...string) (authority.Principal, error) {
+	if requiredGrant == "" {
+		return authority.Principal{}, authority.ErrForbidden
+	}
+	return g.check(ctx, db, tx, actor, true, permissions, true, requiredGrant)
+}
+
 // Preflight checks only canonical authority state in the caller's transaction,
 // before domain observations or a sorted multi-account lock set. It acquires no
 // account lock and cannot authorize a mutation on its own: the caller MUST run
@@ -54,7 +63,7 @@ func (g *TransactionGuard) Preflight(ctx context.Context, db *sql.DB, tx *sql.Tx
 	return g.check(ctx, db, tx, actor, len(permissions) > 0, permissions, false)
 }
 
-func (g *TransactionGuard) check(ctx context.Context, db *sql.DB, tx *sql.Tx, actor string, authorize bool, permissions []string, lock bool) (authority.Principal, error) {
+func (g *TransactionGuard) check(ctx context.Context, db *sql.DB, tx *sql.Tx, actor string, authorize bool, permissions []string, lock bool, requiredGrant ...string) (authority.Principal, error) {
 	if g == nil || g.db == nil || g.db != db || g.verifier == nil || tx == nil {
 		return authority.Principal{}, authority.ErrUnavailable
 	}
@@ -84,6 +93,9 @@ func (g *TransactionGuard) check(ctx context.Context, db *sql.DB, tx *sql.Tx, ac
 	// credential writes through the snapshot, not locks in the enclosing SQL tx.
 	snapshot := &transaction{tx: tx, ctx: ctx, account: a, readOnly: true}
 	if authorize {
+		if len(requiredGrant) == 1 {
+			return g.verifier.AuthorizeTransactionWithGrant(ctx, envelope.proof, snapshot, requiredGrant[0], permissions...)
+		}
 		return g.verifier.AuthorizeTransaction(ctx, envelope.proof, snapshot, permissions...)
 	}
 	return g.verifier.AuthenticateTransaction(ctx, envelope.proof, snapshot)

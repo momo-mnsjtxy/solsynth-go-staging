@@ -2,7 +2,7 @@
   "basis": "Source inventory remains818 static HTTP attributes, not endpoints. This compact flow map is not an endpoint count or full parity claim. Group status is local implementation, separate from exact-commit runtime verification.",
   "original_static_http_attributes": 818,
   "runtime_endpoint_total": null,
-  "local_source_checkpoint": "Reviewed verified-domain blog lifecycle and original-intent recovery, source-correct post-admin aliases/search/order, composed server metadata before automod and safe projections. Full local718/87 build/vet/unit/race/source/SQL verification passed; actualPG pending.",
+  "local_source_checkpoint": "Bounded canonical matching-grant mode fixes automod evidence Superuser fallback at one fresh proof/account/session/time, preserving ordinary authorization. Bot fixture retains original issuer keys. Parent independently reviewed patch; full718/87 offline verification passed, actualPG pending.",
   "last_fully_passed_ci": {
     "commit": "85674a81584fc05876446b80761f6c27917ed037",
     "run": 37868140163,
@@ -14,11 +14,11 @@
     "acceptance_limit": "Known ordinary-editor automod evidence issue corrected in699;674 is CI-green, not production or whole-platform acceptance."
   },
   "latest_candidate": {
-    "commit": "7ebd4a768441145995b5c6e2e080c88cb2b639c3",
-    "run": 37869428465,
-    "required_before": 699,
-    "required_after_restart": 86,
-    "status": "Running reviewed boost/bot/editor privacy candidate; no actualPG pass inferred."
+    "commit": "8a9040ec49394d3af7f7d839ddc06e14566eb485",
+    "run": 37870281968,
+    "required_before": 718,
+    "required_after_restart": 87,
+    "status": "Running; inherits three failures diagnosed in699 until this correction.699 finished696/699before,zero skips,no restart. Two automod tests exposed Superuser fallback despite requested explicit grant; bot scoped test used unrelated issuer key."
   },
   "local_required_before": 718,
   "local_required_after_restart": 87,
@@ -44,18 +44,12 @@
         "TestPGRecurringProductRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 4,
-        "pending_guarded_cases": [
-          "TestPGRecurringProductCheckoutAtomicAndIsolation",
-          "TestPGRecurringProductRenewalEconomicsAndRevocation",
-          "TestPGRecurringProductConsentWaitAndSnapshot",
-          "TestPGRecurringProductOppositeWalletPayments",
-          "TestPGRecurringProductHostPINCatalogAndCancel",
-          "TestPGRecurringProductRestartPersistence"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 10,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:develop.apps_products"
     },
@@ -72,11 +66,12 @@
         "TestPGDeveloperAppsRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 4,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": null
     },
@@ -93,11 +88,12 @@
         "TestPGDeveloperAppsRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 4,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": null
     },
@@ -119,11 +115,12 @@
         "TestPGBackendBotMiniappComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 9,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:develop.bots"
     },
@@ -148,11 +145,12 @@
         "TestPGBoardDiscoveryRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 11,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": null
     },
@@ -174,11 +172,12 @@
         "TestPGBackendBotMiniappComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 9,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:develop.miniapps"
     },
@@ -211,17 +210,12 @@
         "TestPGChatMediaReactionsRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 13,
-        "pending_guarded_cases": [
-          "TestPGChatMediaLifecycleCurrentVisibilityAndIsolation",
-          "TestPGChatReactionsContractsConcurrencyAndRollback",
-          "TestPGChatMediaAuthorityAndFileWaitRevalidation",
-          "TestPGBackendChatMediaAndReactionsComposition",
-          "TestPGChatMediaReactionsRestartPersistence"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 18,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:messager.messages"
     },
@@ -250,11 +244,12 @@
         "TestPGBackendChatRelationsComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 15,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:messager.rooms"
     },
@@ -276,11 +271,12 @@
         "TestPGBackendCallsFederationRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 8,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:messager.calls"
     },
@@ -294,11 +290,12 @@
         "TestPGProgressionCanonicalProjectorRollbackAndEarnedBadges"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 1,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.badges"
     },
@@ -319,11 +316,12 @@
         "TestPGBackendFortuneComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 7,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.fortunes"
     },
@@ -377,23 +375,12 @@
         "TestPGArtworkRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 24,
-        "pending_guarded_cases": [
-          "TestPGProfileMediaComposedUploadReferenceAndRemoval",
-          "TestPGProfileMediaOwnershipAtomicityAndCurrentPrivacy",
-          "TestPGProfileMediaAuthorityAndFileLockWait",
-          "TestPGProfileMediaReadWaitObservesCurrentVisibility",
-          "TestPGProfileMediaMembershipCannotRedistribute",
-          "TestPGProfileMediaRestartPersistence",
-          "TestPGArtworkComposedUploadDedupOwnershipAndRemoval",
-          "TestPGArtworkExpiryTouchCleanupAndQuota",
-          "TestPGArtworkConcurrentDuplicatesAndRollback",
-          "TestPGArtworkWaitRechecksOwnerExpiryAndAuthority",
-          "TestPGArtworkRestartPersistence"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 35,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.accounts_presence"
     },
@@ -414,11 +401,12 @@
         "TestPGProgressionChatSocialProjection"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 7,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.progression"
     },
@@ -457,21 +445,12 @@
         "TestPGRealmPermissionMLSOpaqueControlAndSendRevocation"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 15,
-        "pending_guarded_cases": [
-          "TestPGRealmPermissionLifecycleAndGenerationIsolation",
-          "TestPGRealmPermissionEscalationOwnerAndMembershipIncarnation",
-          "TestPGRealmPermissionRevocationWaitAndRollback",
-          "TestPGRealmPermissionCanonicalChatPostAndReplyEnforcement",
-          "TestPGRealmPermissionBackendDTOAndNullClear",
-          "TestPGRealmPermissionRestartPersistence",
-          "TestPGRealmPermissionMediaAdmissionAndScopedModeration",
-          "TestPGRealmPermissionDeletedMembershipCannotReviveOverride",
-          "TestPGRealmPermissionMLSOpaqueControlAndSendRevocation"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 24,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.social_realms"
     },
@@ -493,11 +472,12 @@
         "TestPGLocationsRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 8,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.location_nfc"
     },
@@ -527,17 +507,12 @@
         "TestPGTicketMediaRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 8,
-        "pending_guarded_cases": [
-          "TestPGTicketMediaComposedLifecycleAndPrivateAudience",
-          "TestPGTicketMediaOwnershipIdempotencyAndAtomicRollback",
-          "TestPGTicketMediaFileWaitRevalidatesStateAndAuthority",
-          "TestPGTicketMediaReadWaitObservesAssignmentWithdrawal",
-          "TestPGTicketMediaRestartPersistence"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 13,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.tickets_exams"
     },
@@ -558,11 +533,12 @@
         "TestPGBackendCalendarComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 7,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.notable_days"
     },
@@ -579,11 +555,12 @@
         "TestPGNodeInfoRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 4,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.federation_discovery"
     },
@@ -606,11 +583,12 @@
         "TestPGBackendCallsFederationRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 9,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.federation"
     },
@@ -643,11 +621,12 @@
         "TestPGTaxonomyTransactionalAudit"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 20,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.taxonomy"
     },
@@ -678,11 +657,12 @@
         "TestPGRealmPublisherUnsupportedPublicIntegrations"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 17,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.publishers"
     },
@@ -692,11 +672,12 @@
       "supported_flows": [],
       "guarded_pg_cases": [],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 0,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.live_ads"
     },
@@ -732,11 +713,12 @@
         "TestPGBackendAutocompleteComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 20,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.content_utilities"
     },
@@ -761,11 +743,12 @@
         "TestPGSurveysStickersRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 11,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.stickers_surveys"
     },
@@ -788,11 +771,12 @@
         "TestPGTimelineRelationRollbackDepthAndCancellation"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 8,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.timeline"
     },
@@ -840,11 +824,12 @@
         "TestPGBackendPostRealmComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 32,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.posts"
     },
@@ -867,21 +852,12 @@
         "TestPGProductStockRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 0,
-        "pending_guarded_cases": [
-          "TestPGProductStockConcurrentReservationConsumeAndRelease",
-          "TestPGProductStockUTCWindowsExpiryAndRollback",
-          "TestPGProductStockManualRestockThroughHost",
-          "TestPGProductStockRecurringReservationRenewalAndCancel",
-          "TestPGProductStockConcurrentSubscriptionBuyers",
-          "TestPGProductStockRestockAndWindowWaits",
-          "TestPGProductStockCancellationPaymentRace",
-          "TestPGProductStockRejectsMismatchedCycleEconomics",
-          "TestPGProductStockRestartPersistence"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 9,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:wallet.product_catalog"
     },
@@ -904,11 +880,12 @@
         "TestPGWalletVerifiedAuthorityComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 10,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:wallet.ledger"
     },
@@ -929,13 +906,12 @@
         "TestPGRecurringProductCheckoutExpiryDuringWalletWait"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 6,
-        "pending_guarded_cases": [
-          "TestPGRecurringProductCheckoutExpiryDuringWalletWait"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 7,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:wallet.orders_payments"
     },
@@ -969,25 +945,12 @@
         "TestPGSubscriptionActivationRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 6,
-        "pending_guarded_cases": [
-          "TestPGRecurringProductCheckoutAtomicAndIsolation",
-          "TestPGRecurringProductRenewalEconomicsAndRevocation",
-          "TestPGRecurringProductConsentWaitAndSnapshot",
-          "TestPGRecurringProductOppositeWalletPayments",
-          "TestPGRecurringProductHostPINCatalogAndCancel",
-          "TestPGRecurringProductRestartPersistence",
-          "TestPGSubscriptionActivationConservesPaidTimeAndMoney",
-          "TestPGSubscriptionActivationRollbackAndConcurrentReplay",
-          "TestPGSubscriptionActivationCurrentAuthorityAndIsolation",
-          "TestPGSubscriptionActivationRejectsUnpaidCancelledAndExpired",
-          "TestPGSubscriptionActivationRevokedAppConsent",
-          "TestPGBackendSubscriptionActivationRoutes",
-          "TestPGSubscriptionActivationRestartPersistence"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 19,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:wallet.subscriptions_gifts"
     },
@@ -1010,11 +973,12 @@
         "TestPGBackendMerchantCatalogComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 9,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:wallet.merchants"
     },
@@ -1029,11 +993,12 @@
         "TestPGBackendMerchantCatalogComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 2,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:wallet.reporting"
     },
@@ -1060,11 +1025,12 @@
         "TestPGOAuthConfidentialPurposeScopeWithdrawal"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 13,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:owned.oauth_oidc"
     },
@@ -1079,11 +1045,12 @@
         "TestPGBackendIPCheckComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 1,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.ip_check"
     },
@@ -1103,11 +1070,12 @@
         "TestPGBackendPaidNameCardComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 6,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.name_cards"
     },
@@ -1126,11 +1094,12 @@
         "TestPGBackendRewindComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 5,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.rewind"
     },
@@ -1157,11 +1126,12 @@
         "TestPGBackendContentModerationComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 11,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:admin.content_moderation"
     },
@@ -1187,11 +1157,12 @@
         "TestPGBackendLivestreamComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 10,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.livestreams"
     },
@@ -1217,11 +1188,12 @@
         "TestPGBackendAdminExtensionsComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 11,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:admin.verification_statistics_automod"
     },
@@ -1246,11 +1218,12 @@
         "TestPGBackendLivestreamChatComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 10,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.livestream_chat"
     },
@@ -1272,11 +1245,12 @@
         "TestPGBackendFederatedRenameComposition"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 7,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:federation.publisher_aliases"
     },
@@ -1294,11 +1268,12 @@
         "TestPGLiveStreamAwardsPayoutRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 3,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.livestream_awards"
     },
@@ -1315,11 +1290,12 @@
         "TestPGCollectionAdminAuditRollbackAndDeleteRace"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 3,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.domain_trust_and_sphere.collection_admin"
     },
@@ -1337,11 +1313,12 @@
         "TestPGPaymentPINMoneyRollbackAndPolicyLockOrdering"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 3,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:passport.payment_pin"
     },
@@ -1357,11 +1334,12 @@
         "TestPGBackendRefreshContinuesBroadcastChatThenLogoutRevokes"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 1,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:owned.authority_refresh_continuity"
     },
@@ -1380,11 +1358,12 @@
         "TestPGWalletTransferRequestRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 4,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:wallet.transfer_requests"
     },
@@ -1405,15 +1384,12 @@
         "TestPGFactorSetupSessionOriginFreshFallback"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 1,
-        "pending_guarded_cases": [
-          "TestPGFactorSetupAccountSecurityRestoration",
-          "TestPGFactorSetupAccountSecurityRollbackAndProfileWrites",
-          "TestPGFactorSetupSessionOriginFreshFallback"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 4,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:owned.factor_setup"
     },
@@ -1432,11 +1408,12 @@
         "TestPGPublisherRatingRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
         "green_guarded_case_count": 3,
         "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.publisher_sponsorship_and_ratings"
     },
@@ -1453,14 +1430,12 @@
         "TestPGLiveStreamOutputsRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 0,
-        "pending_guarded_cases": [
-          "TestPGBackendLivestreamOutputPlaybackComposition",
-          "TestPGLiveStreamOutputsRestartPersistence"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 2,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.livestream_egress_hls"
     },
@@ -1476,14 +1451,12 @@
         "TestPGCommerceMaintenanceQuarantineRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 0,
-        "pending_guarded_cases": [
-          "TestPGCommerceMaintenanceQuarantineAllowsOtherRenewals",
-          "TestPGCommerceMaintenanceQuarantineRestartPersistence"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 2,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:wallet.maintenance_quarantine"
     },
@@ -1500,14 +1473,12 @@
         "TestPGPostAwardRestartPersistence"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 0,
-        "pending_guarded_cases": [
-          "TestPGBackendPostAwardCheckoutAndRelease",
-          "TestPGPostAwardRestartPersistence"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 2,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:sphere.post_awards"
     },
@@ -1536,25 +1507,12 @@
         "TestPGWalletManagedIndexLegacyMigrationAtomicity"
       ],
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 0,
-        "pending_guarded_cases": [
-          "TestPGWalletFundsRedPacketExactClaimsAndPublicHTTP",
-          "TestPGWalletFundsRaisingInvitesPayoutAndImmutableBeneficiary",
-          "TestPGWalletFundsCancellationRefundsRemainingHoldsOnce",
-          "TestPGWalletFundsConcurrentFinalContributionAndClaims",
-          "TestPGWalletFundsExpiryRefundsAndClosureRaces",
-          "TestPGWalletFundsExpiryWinsQueuedFinalContribution",
-          "TestPGWalletFundsRollbackAndIdempotentCreation",
-          "TestPGWalletFundsPINPolicyProofAndRateLimits",
-          "TestPGWalletFundsAuthorityAndNotificationProjection",
-          "TestPGWalletFundsRestartPersistence",
-          "TestPGWalletFundsFixedRandomAndInputBounds",
-          "TestPGWalletManagedTransactionPurposeScopes",
-          "TestPGWalletManagedIndexLegacyMigrationAtomicity"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 13,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       },
       "remaining_reference": "current_remaining.families:wallet.funds"
     },
@@ -1577,19 +1535,12 @@
       ],
       "remaining_reference": "current_remaining.families:messager.opaque_mls",
       "verification": {
-        "green_commit": "e104bdc31c1202d2e154bf84a677a35c9490afda",
-        "green_guarded_case_count": 0,
-        "pending_guarded_cases": [
-          "TestPGMLSOpaqueLifecycleIsolationAndRestart",
-          "TestPGMLSKeyClaimsAreOneUseAndRevocationDurable",
-          "TestPGMLSResetRequiresExplicitGenerationAndRejectsReplay",
-          "TestPGMLSCanonicalCiphertextAndAuthoredHTTP",
-          "TestPGMLSAtomicFanoutRollbackAndJoiningExpiry",
-          "TestPGMLSBackendAuthorityAndGatewayComposition",
-          "TestPGMLSRestartPersistence"
-        ],
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 7,
+        "pending_guarded_cases": [],
         "unmapped_case_names": [],
-        "scope": "See guarded_pg_cases; listed pending cases have no current full pass. Historical green covers only that commit."
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
       }
     },
     {
@@ -1607,7 +1558,15 @@
         "TestPGPasskitRestartPersistence",
         "TestPGPasskitInternalProgramEligibility"
       ],
-      "remaining_reference": "current_remaining.families:passport.apple_wallet_passes"
+      "remaining_reference": "current_remaining.families:passport.apple_wallet_passes",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 7,
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     },
     {
       "source_family": "federation.quote_authorization",
@@ -1623,7 +1582,15 @@
         "TestPGFederationQuoteReviewWaitsAndAcceptanceIsolation",
         "TestPGFederationQuoteRestartPersistence"
       ],
-      "remaining_reference": "current_remaining.families:federation.quote_authorization"
+      "remaining_reference": "current_remaining.families:federation.quote_authorization",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 6,
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     },
     {
       "source_family": "passport.relationship_expiry",
@@ -1641,7 +1608,15 @@
         "TestPGRelationshipExpiryRestartPersistence",
         "TestPGRelationshipExpiryWaitObservesRenewalAndRequestDeadline"
       ],
-      "remaining_reference": "current_remaining.families:passport.relationship_expiry"
+      "remaining_reference": "current_remaining.families:passport.relationship_expiry",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 7,
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     },
     {
       "source_family": "messager.room_media",
@@ -1660,7 +1635,15 @@
         "TestPGRoomMediaSavedRestartPersistence",
         "TestPGRoomMediaWaitRevalidatesFileMembershipAndAuthority"
       ],
-      "remaining_reference": "current_remaining.families:messager.room_media"
+      "remaining_reference": "current_remaining.families:messager.room_media",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 8,
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     },
     {
       "source_family": "passport.affiliation_and_owned_activation",
@@ -1685,7 +1668,15 @@
         "TestPGAffiliationTrackingIsolationAndRevocation",
         "TestPGBackendAffiliationRoutesAndActivation"
       ],
-      "remaining_reference": "current_remaining.families:passport.affiliation_and_owned_activation"
+      "remaining_reference": "current_remaining.families:passport.affiliation_and_owned_activation",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 12,
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     },
     {
       "source_family": "wallet.owned_coupons",
@@ -1715,7 +1706,15 @@
         "TestPGCouponSavedRestartPersistence",
         "TestPGCouponSubscriptionGiftFirstPurchase"
       ],
-      "remaining_reference": "current_remaining.families:wallet.owned_coupons"
+      "remaining_reference": "current_remaining.families:wallet.owned_coupons",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 18,
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     },
     {
       "source_family": "sphere.ranked_automod",
@@ -1741,7 +1740,16 @@
         "TestPGPostAutomodScheduledPublicationCurrentRulesAndReplay",
         "TestPGPostAutomodWriteDecisionsPrivacyAndPublish"
       ],
-      "remaining_reference": "current_remaining.families:sphere.ranked_automod"
+      "remaining_reference": "current_remaining.families:sphere.ranked_automod",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 14,
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403.",
+        "known_pending_correction": "674 baseline exposes global evidence to ordinary editors; corrected699 pending actualPG."
+      }
     },
     {
       "source_family": "messager.threads_and_forwarding",
@@ -1765,7 +1773,15 @@
         "TestPGChatThreadsForwardRestartPersistence",
         "TestPGChatThreadsRootReplyIsolationAndPagination"
       ],
-      "remaining_reference": "current_remaining.families:messager.threads_and_forwarding"
+      "remaining_reference": "current_remaining.families:messager.threads_and_forwarding",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 12,
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     },
     {
       "source_family": "wallet.address_fulfillment",
@@ -1787,7 +1803,15 @@
         "TestPGShippingReviewCurrentScopeAndOwnerRevocation",
         "TestPGShippingRollbackAndImmutableDestination"
       ],
-      "remaining_reference": "current_remaining.families:wallet.address_fulfillment"
+      "remaining_reference": "current_remaining.families:wallet.address_fulfillment",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 10,
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     },
     {
       "source_family": "sphere.scheduled_posts",
@@ -1810,7 +1834,15 @@
         "TestPGPostScheduleSavedRestartPersistence",
         "TestPGPostScheduleWaitObservesCancellationAndUnavailableMedia"
       ],
-      "remaining_reference": "current_remaining.families:sphere.scheduled_posts"
+      "remaining_reference": "current_remaining.families:sphere.scheduled_posts",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 11,
+        "pending_guarded_cases": [],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     },
     {
       "source_family": "passport.realm_boosts",
@@ -1833,7 +1865,26 @@
         "TestPGRealmBoostRestartPersistence",
         "TestPGRealmBoostRollbackAndBoundPayment"
       ],
-      "remaining_reference": "current_remaining.families:passport.realm_boosts"
+      "remaining_reference": "current_remaining.families:passport.realm_boosts",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 0,
+        "pending_guarded_cases": [
+          "TestPGBackendRealmBoostRoutes",
+          "TestPGRealmBoostAuthenticatedHTTP",
+          "TestPGRealmBoostAuthorityRevocationAfterWait",
+          "TestPGRealmBoostCanonicalPerkSelection",
+          "TestPGRealmBoostCheckoutConservationAndReplay",
+          "TestPGRealmBoostConcurrentSettlementAndLockConflict",
+          "TestPGRealmBoostCurrentMembershipPrivacyAndRevocation",
+          "TestPGRealmBoostExpiryAndPromotionEligibility",
+          "TestPGRealmBoostRestartPersistence",
+          "TestPGRealmBoostRollbackAndBoundPayment"
+        ],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     },
     {
       "source_family": "develop.bot_dispatch",
@@ -1858,7 +1909,28 @@
         "TestPGBotExecutionRetryOrderingAndAtomicRollback",
         "TestPGBotExecutionTimeoutAndRevocationDuringDelivery"
       ],
-      "remaining_reference": "current_remaining.families:develop.bot_dispatch"
+      "remaining_reference": "current_remaining.families:develop.bot_dispatch",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 0,
+        "pending_guarded_cases": [
+          "TestPGBotExecutionCanonicalSendAndReplay",
+          "TestPGBotExecutionConcurrentWorkersAndRevocationWait",
+          "TestPGBotExecutionEnrollmentRoleAndSessionScope",
+          "TestPGBotExecutionEnrollmentScopesAndHTTP",
+          "TestPGBotExecutionFailureExpiryAndLateCommit",
+          "TestPGBotExecutionFreshRevocationAndMembership",
+          "TestPGBotExecutionLeaseReclaimAndStaleAcknowledgement",
+          "TestPGBotExecutionMetadataAndCanonicalRollback",
+          "TestPGBotExecutionRechecksAfterContention",
+          "TestPGBotExecutionRestartPersistence",
+          "TestPGBotExecutionRetryOrderingAndAtomicRollback",
+          "TestPGBotExecutionTimeoutAndRevocationDuringDelivery"
+        ],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     },
     {
       "source_family": "owned.automod_evidence_privacy",
@@ -1873,7 +1945,19 @@
         "TestPGPostAutomodEvidenceGrantExpiryAtResponse",
         "TestPGPostAutomodEvidenceRevocationAfterAccountWait"
       ],
-      "remaining_reference": "current_remaining.families:owned.automod_evidence_privacy"
+      "remaining_reference": "current_remaining.families:owned.automod_evidence_privacy",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 0,
+        "pending_guarded_cases": [
+          "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
+          "TestPGPostAutomodEvidenceGrantExpiryAtResponse",
+          "TestPGPostAutomodEvidenceRevocationAfterAccountWait"
+        ],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     },
     {
       "source_family": "sphere.blog_domains",
@@ -1906,7 +1990,35 @@
         "TestPGBlogVerificationFencesPublisherIdentityABA",
         "TestPGPostAdminDescriptionSearchAndPublishedOrdering"
       ],
-      "remaining_reference": "current_remaining.families:sphere.blog_domains"
+      "remaining_reference": "current_remaining.families:sphere.blog_domains",
+      "verification": {
+        "green_commit": "85674a81584fc05876446b80761f6c27917ed037",
+        "green_run": 37868140163,
+        "green_guarded_case_count": 0,
+        "pending_guarded_cases": [
+          "TestPGBlogAutomodUsesPreparedMetadataAndSafeProjection",
+          "TestPGBlogBackendAliasesAndStrictPermissionRequest",
+          "TestPGBlogCreationEditingMediaAndVisibility",
+          "TestPGBlogDomainLifecyclePermissionsAndProof",
+          "TestPGBlogInterruptedVerificationRecoveryAndRevokedIntent",
+          "TestPGBlogMetadataRollbackAndDraftPublication",
+          "TestPGBlogPendingRecoveryFencesRevokedThenRestoredIntent",
+          "TestPGBlogPendingRecoveryRechecksAfterProviderPolicyABA",
+          "TestPGBlogPendingRecoveryRetainsOriginalSessionDeadline",
+          "TestPGBlogPreviewFailureAndRevocationNeverCommit",
+          "TestPGBlogPreviewFencesDomainAndPolicyABA",
+          "TestPGBlogProviderWaitsRecheckAuthorityAndManagerRole",
+          "TestPGBlogRealmPublisherMaintainsMembershipPrivacy",
+          "TestPGBlogSavedRestartPersistence",
+          "TestPGBlogScheduledPublicationFencesTransientPolicyRevocation",
+          "TestPGBlogScheduledPublicationRechecksPermissionAndDomainIncarnation",
+          "TestPGBlogVerificationFencesDeletionAndLateResults",
+          "TestPGBlogVerificationFencesPublisherIdentityABA",
+          "TestPGPostAdminDescriptionSearchAndPublishedOrdering"
+        ],
+        "unmapped_case_names": [],
+        "scope": "Only listed registered supported-subset tests; no whole original-family parity claim. Exact job-log sets and CI aggregate receipts verified; local artifact retrieval blocked403."
+      }
     }
   ],
   "additional_cross_service_flows": [
@@ -1968,6 +2080,7 @@
       "sphere.stickers_surveys",
       "sphere.timeline",
       "sphere.posts",
+      "wallet.product_catalog",
       "wallet.ledger",
       "wallet.orders_payments",
       "wallet.subscriptions_gifts",
@@ -1988,40 +2101,32 @@
       "owned.authority_refresh_continuity",
       "wallet.transfer_requests",
       "owned.factor_setup",
-      "sphere.publisher_sponsorship_and_ratings"
-    ],
-    "pending_actual_ci": [
-      "develop.apps_products",
-      "messager.messages",
-      "passport.accounts_presence",
-      "passport.tickets_exams",
-      "sphere.live_ads",
-      "wallet.product_catalog",
-      "wallet.orders_payments",
-      "wallet.subscriptions_gifts",
-      "owned.factor_setup",
+      "sphere.publisher_sponsorship_and_ratings",
       "sphere.livestream_egress_hls",
       "wallet.maintenance_quarantine",
       "sphere.post_awards",
       "wallet.funds",
       "messager.opaque_mls",
-      "passport.social_realms",
       "passport.apple_wallet_passes",
       "federation.quote_authorization",
       "passport.relationship_expiry",
       "messager.room_media",
       "passport.affiliation_and_owned_activation",
-      "wallet.address_fulfillment",
-      "sphere.scheduled_posts",
       "wallet.owned_coupons",
       "sphere.ranked_automod",
       "messager.threads_and_forwarding",
-      "passport.realm_boosts",
+      "wallet.address_fulfillment",
+      "sphere.scheduled_posts"
+    ],
+    "pending_actual_ci": [
       "develop.bot_dispatch",
       "owned.automod_evidence_privacy",
-      "sphere.blog_domains"
+      "passport.realm_boosts",
+      "sphere.blog_domains",
+      "sphere.ranked_automod"
     ],
-    "delivered_not_integrated": []
+    "delivered_not_integrated": [],
+    "green_meaning": "A family name indicates its listed supported-subset tests passed, never all original functionality or production acceptance."
   },
   "current_remaining": {
     "as_of": "2026-10-09T01:20:00Z",
@@ -2491,7 +2596,7 @@
       "Livestream chat and awards",
       "Publisher sponsorship/subscriptions/ratings"
     ],
-    "verification_note": "Last CI-green674/84 at85674a8 with raw job-log case verification and CI aggregate receipts; local artifact download blocked403. Known editor privacy corrected only in699 pending its actualPG.718 blog composition locally verified."
+    "verification_note": "Last CI-green674/84 with known editor privacy issue.699696/699 failed;718 inherited failures pending. Current narrow matching-grant fix is locally verified and awaiting actualPG."
   },
   "global_remaining": [
     "Use current_remaining as the sole current remaining-work list; historical labels are in runtime-flow-acceptance-history.json.",

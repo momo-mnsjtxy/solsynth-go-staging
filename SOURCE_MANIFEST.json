@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Record exact 674 CI evidence and pending reviewed blog candidate",
+  "checkpoint": "Require current matching grant for global automod evidence",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "7ebd4a768441145995b5c6e2e080c88cb2b639c3"
+    "remote_parent": "8a9040ec49394d3af7f7d839ddc06e14566eb485"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -542,8 +542,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 107678,
-      "sha256": "5fdf1993492873b407bc3af2de69bd6dcbdc486a70e7019830649b617d6c98dd"
+      "bytes": 107901,
+      "sha256": "c1325893b44571cb4354979394da787f8b998c8c50f8f2348d94182c3e104865"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -1512,8 +1512,8 @@
     },
     {
       "path": "docs/post-automod-continuation.md",
-      "bytes": 9616,
-      "sha256": "024bbd18afccd3cb425179d290aa1f932a961bfcf7aa2006bae91848f6987c03"
+      "bytes": 10372,
+      "sha256": "2b21ecd4417c074a9ebe0c0c340c05e0042a1dace6ddecb3691934b28585c305"
     },
     {
       "path": "docs/post-automod-integration.json",
@@ -1852,8 +1852,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 119564,
-      "sha256": "d0fc6bf5fabe7fa7a7c6c34e6a13aba2e18a1405990c6906129b651aa1f13ae2"
+      "bytes": 128483,
+      "sha256": "9adb90985e1ce2779c14445c2fc08fee4560aa8f3bcdd4ec303b81781f18164d"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -2477,8 +2477,8 @@
     },
     {
       "path": "internal/authoritypg/transaction.go",
-      "bytes": 4041,
-      "sha256": "862ede05b8f150669969c6a18d27c383c7ac1a00e492540d74550568938993bb"
+      "bytes": 4711,
+      "sha256": "464f9604ec008d400bfd042463597af4305b79b6fd11d11ad9d215f28371f504"
     },
     {
       "path": "internal/autocompletepg/repository.go",
@@ -3477,8 +3477,8 @@
     },
     {
       "path": "internal/moderationpg/repository.go",
-      "bytes": 11365,
-      "sha256": "2249f5f0a83bd3c7532caab8ba70f280ded8cb78c76e0c30b7c0eab9eca397b0"
+      "bytes": 11675,
+      "sha256": "53cab3569cde9c42820ad638eac44b05f3e59529a5d54193fec126abffa16575"
     },
     {
       "path": "internal/moderationpg/schema.sql",
@@ -6392,13 +6392,13 @@
     },
     {
       "path": "ports/authority/transaction.go",
-      "bytes": 2017,
-      "sha256": "653bb686922795027f807a27ef1494786753b40ca81ed8a3844eda8a0ef25508"
+      "bytes": 2951,
+      "sha256": "27a8a620b20265e40996e0253dab412d7a5301522190ffa1405ab57c7d814327"
     },
     {
       "path": "ports/authority/transaction_test.go",
-      "bytes": 3625,
-      "sha256": "a603e604c2e720b1ebf3d8d57d56567d81b4fb199e4514856034a3f383154788"
+      "bytes": 6118,
+      "sha256": "37169740a67db441b96346d2b190a2d0a8836d85fb2bb567d2b9e770365b727b"
     },
     {
       "path": "ports/authority/types.go",
@@ -10323,7 +10323,7 @@
     {
       "path": "scripts/integration-groups.json",
       "bytes": 93751,
-      "sha256": "5f1a7596ff70f07516e02a1034cace624b1f21651a699f91df3a7b3df21e0e85"
+      "sha256": "673b91f223483c3384bcdb0582d55e0ece22677a25d3ecfc7ff4209f09f061dc"
     },
     {
       "path": "scripts/integration-postgres.sh",
@@ -10852,8 +10852,8 @@
     },
     {
       "path": "tests/integration/bot_execution_test.go",
-      "bytes": 33778,
-      "sha256": "60e45afaf8d3d3d02b0051bdf33227969ee9eae76d31fc61a7213ffb86adebfd"
+      "bytes": 33827,
+      "sha256": "a0751fd6ca2dded3cf8ab9b72eca54456260f754d0fead0cbba5192a4039dd74"
     },
     {
       "path": "tests/integration/bots_test.go",

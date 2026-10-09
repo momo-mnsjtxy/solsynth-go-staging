@@ -88,7 +88,18 @@ func sorted(ids []string) []string {
 	return out
 }
 func (r *Repository) authorize(ctx context.Context, tx *sql.Tx, actor, permission string, global bool, additional ...string) error {
-	p, e := r.guard.Authorize(ctx, r.db, tx, actor, append([]string{permission}, additional...)...)
+	keys := append([]string{permission}, additional...)
+	var p authority.Principal
+	var e error
+	explicitEvidence := false
+	for _, key := range keys {
+		explicitEvidence = explicitEvidence || key == "automod.rules.manage"
+	}
+	if explicitEvidence {
+		p, e = r.guard.AuthorizeWithGrant(ctx, r.db, tx, actor, "automod.rules.manage", keys...)
+	} else {
+		p, e = r.guard.Authorize(ctx, r.db, tx, actor, keys...)
+	}
 	if e != nil {
 		return e
 	}

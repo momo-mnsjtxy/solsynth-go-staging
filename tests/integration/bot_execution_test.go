@@ -721,7 +721,9 @@ func TestPGBotExecutionEnrollmentRoleAndSessionScope(t *testing.T) {
 	}
 	now := &atomic.Int64{}
 	now.Store(original.Session.CreatedAt.Unix())
-	issuer, e := authority.New(authoritypg.New(f.db), authorityConfig(t, authorityKeys(t), now))
+	cfg := f.config
+	cfg.Now = func() time.Time { return time.Unix(now.Load(), 0).UTC() }
+	issuer, e := authority.New(authoritypg.New(f.db), cfg)
 	if e != nil {
 		t.Fatal(e)
 	}

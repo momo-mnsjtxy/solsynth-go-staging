@@ -154,3 +154,8 @@ post, rule or decision in the after phase. Unit and compile checks do not certif
 PostgreSQL catalog, locks, rollback or restart execution. Actual PostgreSQL 16
 execution remains with the coordinator's private CI. No CI layout/group files
 were changed in this artifact.
+
+
+### Explicit evidence grant at the canonical boundary
+
+Global evidence reads and review require a current matching grant for `automod.rules.manage` in addition to the existing canonical global identity, session scopes and post permission. The Superuser fallback cannot satisfy this sensitive grant. Existing wildcard grant patterns such as `automod.*` or `*` still match under the normal owned grant policy; this is a matching-grant requirement, not literal-key-only provisioning. Denies, punishments, time windows and original proof/session validity retain precedence. Ordinary superuser authorization elsewhere is unchanged. Combined checks use one fresh canonical clock/account/session observation; the returned canonical Superuser flag is preserved.

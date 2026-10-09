@@ -102,3 +102,62 @@ func TestTransactionVerificationPreservesProofAndPermissionBoundary(t *testing.T
 		t.Fatal("cancellation", err)
 	}
 }
+
+func TestExplicitGrantTransactionDoesNotUseSuperuserFallback(t *testing.T) {
+	s, store, now := setup(t)
+	store.state[accountA].account.Superuser = true
+	pair := issue(t, s, accountA, "*")
+	v, e := NewVerifier(store, s.cfg)
+	if e != nil {
+		t.Fatal(e)
+	}
+	p, e := v.Authenticate(context.Background(), pair.Token)
+	if e != nil {
+		t.Fatal(e)
+	}
+	state := cloneState(store.state[accountA])
+	state.rules = nil
+	tx := &memTx{state: state}
+	ctx := context.Background()
+	if _, e = v.AuthorizeTransaction(ctx, p, tx, "posts.read"); e != nil {
+		t.Fatal("ordinary superuser semantics changed", e)
+	}
+	if _, e = v.AuthorizeTransactionWithGrant(ctx, p, tx, "automod.rules.manage", "posts.read"); !errors.Is(e, ErrForbidden) {
+		t.Fatal("grantless superuser exposed evidence", e)
+	}
+	expires := time.Unix(now.Load(), 0).UTC().Add(time.Second)
+	state.rules = []Rule{{Pattern: "automod.rules.manage", ExpiresAt: &expires}}
+	fresh, e := v.AuthorizeTransactionWithGrant(ctx, p, tx, "automod.rules.manage", "posts.read")
+	if e != nil || !fresh.Account.Superuser || fresh.proof != nil {
+		t.Fatal("explicit grant or canonical projection", e)
+	}
+	now.Store(expires.Unix())
+	if _, e = v.AuthorizeTransactionWithGrant(ctx, p, tx, "automod.rules.manage", "posts.read"); !errors.Is(e, ErrForbidden) {
+		t.Fatal("expired explicit grant used superuser fallback", e)
+	}
+	state.rules = []Rule{{Pattern: "*"}, {Pattern: "automod.rules.manage", Deny: true}}
+	if _, e = v.AuthorizeTransactionWithGrant(ctx, p, tx, "automod.rules.manage"); !errors.Is(e, ErrForbidden) {
+		t.Fatal("deny precedence", e)
+	}
+	state.rules = []Rule{{Pattern: "*"}}
+	state.punishments = []Punishment{{Kind: "permission_modification", Pattern: "automod.rules.manage"}}
+	if _, e = v.AuthorizeTransactionWithGrant(ctx, p, tx, "automod.rules.manage"); !errors.Is(e, ErrForbidden) {
+		t.Fatal("punishment bypass", e)
+	}
+	state.punishments = nil
+	forged := p
+	forged.Account.Superuser = false
+	if _, e = v.AuthorizeTransactionWithGrant(ctx, forged, tx, "automod.rules.manage"); !errors.Is(e, ErrInvalid) {
+		t.Fatal("altered proof accepted", e)
+	}
+	limited := issue(t, s, accountA, "posts.read")
+	proof, e := v.Authenticate(ctx, limited.Token)
+	if e != nil {
+		t.Fatal(e)
+	}
+	limitedState := cloneState(store.state[accountA])
+	limitedState.rules = []Rule{{Pattern: "*"}}
+	if _, e = v.AuthorizeTransactionWithGrant(ctx, proof, &memTx{state: limitedState}, "automod.rules.manage"); !errors.Is(e, ErrForbidden) {
+		t.Fatal("session scope bypass", e)
+	}
+}

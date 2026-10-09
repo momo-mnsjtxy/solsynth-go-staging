@@ -11,16 +11,28 @@ import (
 // the canonical account lock before calling and retain it through domain commit.
 // This method performs no separate database read and never accepts bearer bytes.
 func (v *Verifier) AuthenticateTransaction(ctx context.Context, p Principal, tx Transaction) (Principal, error) {
-	return v.checkTransaction(ctx, p, tx, false, nil)
+	return v.checkTransaction(ctx, p, tx, false, nil, "")
 }
 
 // AuthorizeTransaction additionally checks current scopes, grants and
 // punishments. An empty permission list denies, just like AuthorizePrincipal.
 func (v *Verifier) AuthorizeTransaction(ctx context.Context, p Principal, tx Transaction, permissions ...string) (Principal, error) {
-	return v.checkTransaction(ctx, p, tx, true, permissions)
+	return v.checkTransaction(ctx, p, tx, true, permissions, "")
 }
 
-func (v *Verifier) checkTransaction(ctx context.Context, p Principal, tx Transaction, authorize bool, permissions []string) (Principal, error) {
+// AuthorizeTransactionWithGrant preserves ordinary permission semantics while
+// requiring a current matching grant for one sensitive permission. Superuser
+// fallback cannot satisfy that grant. Proof, scopes, denies and both policies
+// use the same fresh canonical account/session snapshot and clock observation.
+func (v *Verifier) AuthorizeTransactionWithGrant(ctx context.Context, p Principal, tx Transaction, requiredGrant string, permissions ...string) (Principal, error) {
+	if requiredGrant == "" {
+		return Principal{}, ErrForbidden
+	}
+	keys := append(append([]string(nil), permissions...), requiredGrant)
+	return v.checkTransaction(ctx, p, tx, true, keys, requiredGrant)
+}
+
+func (v *Verifier) checkTransaction(ctx context.Context, p Principal, tx Transaction, authorize bool, permissions []string, requiredGrant string) (Principal, error) {
 	if v == nil || v.service == nil || tx == nil {
 		return Principal{}, ErrUnavailable
 	}
@@ -38,6 +50,13 @@ func (v *Verifier) checkTransaction(ctx context.Context, p Principal, tx Transac
 	}
 	if authorize {
 		if err = policy(permissions)(tx, fresh, now); err != nil {
+			return Principal{}, known(err)
+		}
+	}
+	if requiredGrant != "" {
+		account := fresh.Account
+		account.Superuser = false
+		if err = evaluatePolicy(tx, account, fresh.Session, now, []string{requiredGrant}); err != nil {
 			return Principal{}, known(err)
 		}
 	}

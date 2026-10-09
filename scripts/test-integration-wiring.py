@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SCHEMAS = {
+ "internal/accounthistorypg/schema.sql",
  "internal/activitypg/schema.sql", "internal/friendeventpg/schema.sql", "internal/notificationpg/friend_schema.sql",
  "internal/federationpg/delivery_schema.sql",
  "internal/timelinepg/subscription_state_schema.sql",
@@ -127,6 +128,10 @@ def check(runner, read_schema=None):
     after = runner.index("PG_TEST_PHASE=after ")
     if before >= after or any(match.start() > before for match in installs):
         raise ValueError("all disposable schemas must precede the before phase")
+    if schemas.index("internal/accounthistorypg/schema.sql") <= max(schemas.index(x) for x in ("internal/accountpg/schema.sql", "internal/socialpg/schema.sql", "internal/progressionpg/schema.sql", "internal/signinpg/payment_pin_schema.sql")):
+        raise ValueError("account history requires its canonical audit sources first")
+    if '"$PG_BIN/psql" "$PG_TEST_DSN" -v ON_ERROR_STOP=1 --single-transaction -f internal/accounthistorypg/schema.sql' not in runner:
+        raise ValueError("account history migration must be atomic")
     if not schemas.index("internal/authoritypg/schema.sql") < schemas.index("internal/accountpg/schema.sql"):
         raise ValueError("accounts require the authority schema first")
     if schemas.index("internal/authoritypg/continuity_schema.sql") <= schemas.index("internal/authoritypg/schema.sql"):
@@ -279,6 +284,7 @@ def main():
     authority = PSQL + "internal/authoritypg/schema.sql"
     accounts = PSQL + "internal/accountpg/schema.sql"
     mutations = [
+        source.replace("--single-transaction -f internal/accounthistorypg/schema.sql", "-f internal/accounthistorypg/schema.sql"),
         source.replace("--single-transaction -f internal/commercepg/custom_order_identifier.sql", "-f internal/commercepg/custom_order_identifier.sql"),
         source.replace("--single-transaction -f internal/socialpg/expiry_schema.sql", "-f internal/socialpg/expiry_schema.sql"),
         source.replace("--single-transaction -f internal/socialpg/permissions_schema.sql", "-f internal/socialpg/permissions_schema.sql"),

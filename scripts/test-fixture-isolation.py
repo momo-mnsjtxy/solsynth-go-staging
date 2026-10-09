@@ -219,7 +219,7 @@ class WiringTests(unittest.TestCase):
         self.assertEqual(review['schema_sha256'], schema_hash)
         self.assertEqual(review['ordered_schema_files'], paths)
         self.assertEqual(review['before_clone_baseline_rows'], [])
-        self.assertEqual(review['runtime_case_counts'], {'before': 910, 'after': 107})
+        self.assertEqual(review['runtime_case_counts'], {'before': 921, 'after': 108})
         self.assertEqual({x['table'] for x in review['source_baselines']}, set(fixture.BASELINES))
         self.assertEqual(sum(x['rows'] for x in review['source_baselines']), 61)
         self.assertTrue(all(x['copied_to_template'] is False for x in review['source_baselines']))

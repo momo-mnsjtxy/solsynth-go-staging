@@ -1,8 +1,8 @@
 {
-  "checkpoint": "Correct verifier clock and isolate original composer restart state",
+  "checkpoint": "Restore authored account history and preserve historical visibility semantics",
   "scope": "Reviewed bounded runtime and test changes. Complete combined offline build/vet/unit/race/source/SQL checks passed; actual PostgreSQL and restart validation remain pending for this immutable candidate.",
   "inputs": {
-    "remote_parent": "8cb9d7448b9b77d412549746ac81625b666e1510"
+    "remote_parent": "29eaa74046f6df6fd548eba71035a9a2448cb7d6"
   },
   "verification": "docs/runtime-flow-acceptance.json",
   "preserved_source_whitespace": [
@@ -482,6 +482,16 @@
       "sha256": "75dcb7386d6048f2d51c3328aae0b620e5f13b65c5fdd60024079a9021027475"
     },
     {
+      "path": "docs/account-history-continuation.md",
+      "bytes": 1380,
+      "sha256": "b49a69569fc38bfae3c99979eb09f545874cce3403b007b295cbab03bbf13764"
+    },
+    {
+      "path": "docs/account-history-group-review.json",
+      "bytes": 3765,
+      "sha256": "27d809ce43a0476611d671f8141ac2727e8d33afd765d4e627b989353a803a78"
+    },
+    {
       "path": "docs/account-publishers-continuation.md",
       "bytes": 13396,
       "sha256": "23124ec37422712ec477fce2bdc627d000bb8162ba88e550c4fdf9bc8d9bbe4d"
@@ -653,8 +663,8 @@
     },
     {
       "path": "docs/ci-two-groups-dependencies.json",
-      "bytes": 154320,
-      "sha256": "9b76382d58d7430abb326def9ded418460ff5ac8f16fd4346d064956ad51ba4f"
+      "bytes": 156234,
+      "sha256": "ad4edc998b01ac8ba915cb67385fc67c8cd997d4928a3abd0c52be1a0f49e15a"
     },
     {
       "path": "docs/ci-two-groups-proposal.md",
@@ -2063,8 +2073,8 @@
     },
     {
       "path": "docs/runtime-flow-acceptance.json",
-      "bytes": 215083,
-      "sha256": "eed568ff1771fa74d3bbb207869f5cfdb0f9a47a95b12b039a78fa12959dbfb1"
+      "bytes": 216998,
+      "sha256": "dfa4b55cde6d5004c1e9554d3727baaefd43a7605f5f21f1c1790e307b193425"
     },
     {
       "path": "docs/shipping-addresses-and-fulfillment.md",
@@ -2190,6 +2200,16 @@
       "path": "go.sum",
       "bytes": 2629,
       "sha256": "3e246a23e536daf51dcba83346b440b8223349385c05d690e4e093df453f0657"
+    },
+    {
+      "path": "internal/accounthistorypg/repository.go",
+      "bytes": 11966,
+      "sha256": "58ca24bb9d7fe3bad0848aec57a3ec8de23e1320dc67998bb40ddf8f61023a1f"
+    },
+    {
+      "path": "internal/accounthistorypg/schema.sql",
+      "bytes": 4214,
+      "sha256": "0736e46eff728087f5b789457541db090cfc595f06290ab4baf00459f77aeb56"
     },
     {
       "path": "internal/accountpg/moderation.go",
@@ -2352,6 +2372,16 @@
       "sha256": "83d0f65aae1c2aaec1e59efdc090f94fa06aa1c6b08e21b5857a992e77173568"
     },
     {
+      "path": "internal/activitypg/timeline.go",
+      "bytes": 5223,
+      "sha256": "7877a34d509aaedfbbf4bc4e890e4370dd19a21f221972e3f7d06302b1641fff"
+    },
+    {
+      "path": "internal/activitypg/timeline_test.go",
+      "bytes": 5662,
+      "sha256": "e0198ae3c77691d7ffabd24da718670061e842e892e31b06f9eddf964d2c3d8c"
+    },
+    {
       "path": "internal/adminpg/accounts.go",
       "bytes": 10230,
       "sha256": "5aaabd5942fb1ff8a3b2444ba11c9c6794048611bcfdf0ed7c9316ad28b2226a"
@@ -2413,8 +2443,8 @@
     },
     {
       "path": "internal/application/backend.go",
-      "bytes": 36389,
-      "sha256": "58f89bed9020efe4c02e75cea6b6fac68be50eb364b089acc049dbc508dd6690"
+      "bytes": 36811,
+      "sha256": "fd1225cc4f7b39748da42dc067916ab264d410ea4493786550c5c2c693e970cf"
     },
     {
       "path": "internal/application/blog_routing_test.go",
@@ -2548,8 +2578,8 @@
     },
     {
       "path": "internal/application/readiness.go",
-      "bytes": 10741,
-      "sha256": "bb551e35bb2eb805633bff7698e985893c158a9356dcf1727bd8b8ed308edd5c"
+      "bytes": 10840,
+      "sha256": "d96cad54fef0b0c87384fd4ebbf80481e3ed14622e9863f998696e7f31e307d0"
     },
     {
       "path": "internal/application/realm_boosts.go",
@@ -2563,8 +2593,8 @@
     },
     {
       "path": "internal/application/router.go",
-      "bytes": 22482,
-      "sha256": "7736873912452cecb5925c5f2c8e41ff7e1b2419b3ece33aef1d7f40f6474bd0"
+      "bytes": 22962,
+      "sha256": "ad3cf7f1a8960b13b767415fd0f3c8423b6d31d5ed51c585fe3a31cb762664e0"
     },
     {
       "path": "internal/application/router_test.go",
@@ -8922,6 +8952,96 @@
       "sha256": "3f9e2495ab82f994df448d22bcde048ac9ebfd60bc2f9c1aab791c14ed37b28c"
     },
     {
+      "path": "ports/passport/history/PROVENANCE.md",
+      "bytes": 10283,
+      "sha256": "df814fb755305c6df66d843f6e2cad242f2ffbb90a9a9fdf2e846bc53314e315"
+    },
+    {
+      "path": "ports/passport/history/history_test.go",
+      "bytes": 5940,
+      "sha256": "31c23d350536f1a4717f916250f754eb371a95e271b3066b8d0f4060393e90fe"
+    },
+    {
+      "path": "ports/passport/history/http.go",
+      "bytes": 5017,
+      "sha256": "6edcafeb9ce07ebe2d743b47d07b37bd5b73122c29b6e0d4bd63588f2b79e936"
+    },
+    {
+      "path": "ports/passport/history/source/AccountController.cs",
+      "bytes": 16234,
+      "sha256": "658ade643635667bb81918381025070fc74b68d79df440d3f1e3effece230f76"
+    },
+    {
+      "path": "ports/passport/history/source/AccountCurrentController.cs",
+      "bytes": 10747,
+      "sha256": "9dac86470690c7258315de060d6803d640173b12bbcf0917fdffbf384072a563"
+    },
+    {
+      "path": "ports/passport/history/source/AccountEventService.timeline.excerpt.cs",
+      "bytes": 1795,
+      "sha256": "196804301e8b0064deb3d3e955b1469d0d345f372e9247a601d0f25dc6c26a55"
+    },
+    {
+      "path": "ports/passport/history/source/AccountPublicController.cs",
+      "bytes": 2269,
+      "sha256": "1d017b4285058eb99ecdd6f1d65fcb5f601676e9ff2fd4b032af07d87f10149d"
+    },
+    {
+      "path": "ports/passport/history/source/ActionLogService.cs",
+      "bytes": 1728,
+      "sha256": "6015be645c694bdb59380edb552abc1b077318f4238dffcc1c098c5c7b09daca"
+    },
+    {
+      "path": "ports/passport/history/source/DYSON-LICENSE.txt",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "ports/passport/history/source/SOLIAN-LICENSE.txt",
+      "bytes": 34522,
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b"
+    },
+    {
+      "path": "ports/passport/history/source/SocialCreditService.cs",
+      "bytes": 1875,
+      "sha256": "84c5b7b128cd868a43003b6b0795cbe5d34526b7aa1d2889603202b0919b8e47"
+    },
+    {
+      "path": "ports/passport/history/source/SocialCreditValidationJob.cs",
+      "bytes": 3165,
+      "sha256": "49ca8a4c3eef34331415df2badcd3744f54ef523eea898e1ee0b68476408746a"
+    },
+    {
+      "path": "ports/passport/history/source/Solian__action_logs.dart",
+      "bytes": 13134,
+      "sha256": "4aeb32d263e6d7f651aa6762465772f555c8bcdb2c7c0db085dc5aa5d5bb331e"
+    },
+    {
+      "path": "ports/passport/history/source/Solian__credits.dart",
+      "bytes": 11018,
+      "sha256": "4d643e165fe7ab93c2db7135f3bf07b41cc723155f22e924f57a0d1d1fb1a590"
+    },
+    {
+      "path": "ports/passport/history/source/Solian__profile_timeline.dart",
+      "bytes": 33422,
+      "sha256": "7c56aa9c1867d5b8a636c9a89a6043106d904320cd41b2fc89ee6de2e6a317ee"
+    },
+    {
+      "path": "ports/passport/history/source/Solian__settings_connections.dart",
+      "bytes": 16114,
+      "sha256": "459a8793c6866fadedd6e924142ec82e140d20bf021b6531509f5c7de921147b"
+    },
+    {
+      "path": "ports/passport/history/source/manifest.json",
+      "bytes": 6290,
+      "sha256": "de6c1aa5ecb16271fcda7ed7d5db8b0c91ca27d7482be9c1721b42820f4088e6"
+    },
+    {
+      "path": "ports/passport/history/types.go",
+      "bytes": 4358,
+      "sha256": "0308b31fb741295b0d1750f58df1d01690dc7d5326478f88b837c3a600d5ea24"
+    },
+    {
       "path": "ports/passport/ipcheck/dataset.go",
       "bytes": 3109,
       "sha256": "7d3fce3c914e7fc3b6b50755b7009d442d4d622691fedaa8d502d6512677c406"
@@ -11403,8 +11523,8 @@
     },
     {
       "path": "scripts/check-integration-results.py",
-      "bytes": 60821,
-      "sha256": "ea270bbf50cec92529418fbefd9106ce659ac678987ae213e7bc6aa9bf134bcb"
+      "bytes": 61574,
+      "sha256": "b00bca6b08c4a571fc1d8d437f63c0426064d6da195c9d778cf2ecac1541c471"
     },
     {
       "path": "scripts/check-postgres-syntax.py",
@@ -11413,8 +11533,8 @@
     },
     {
       "path": "scripts/check-source-evidence.py",
-      "bytes": 8471,
-      "sha256": "5d4550e3732e3807d83542a83de1d2ab50b700a5f3e992612a63a81ea2499609"
+      "bytes": 8504,
+      "sha256": "13fe70d56c9828129a5cf1d1a0aa0afb49d9afcde2c6f6105750fd142fb9f748"
     },
     {
       "path": "scripts/check-sql-argument-count.py",
@@ -11433,13 +11553,13 @@
     },
     {
       "path": "scripts/integration-groups.json",
-      "bytes": 129112,
-      "sha256": "d62d5d5736c3bb7598abbf1474fe371f7e8543b75c22fafca859349e79ef1cdb"
+      "bytes": 131149,
+      "sha256": "eb610f080b269848e01e491e41ac1a173df7e822e332a44514831cf6949b04c3"
     },
     {
       "path": "scripts/integration-postgres.sh",
-      "bytes": 14418,
-      "sha256": "c6cdcedb82210581e96729abc567c224820adce26657838c09aacce9a89a2784"
+      "bytes": 14528,
+      "sha256": "49df7dee6d500f6e63a94421c84d81714a4227d20c52ccc9361876d27137cd65"
     },
     {
       "path": "scripts/integration_groups.py",
@@ -11469,7 +11589,7 @@
     {
       "path": "scripts/test-fixture-isolation.py",
       "bytes": 14408,
-      "sha256": "0610da1bd4a3f69e49fb2b044e03319c4335392e19153c97bf88d2019c21de2b"
+      "sha256": "5bb695c56a478c0fcd8c86eab58ad3811847135528881de83ee3ad3a4cf1b36f"
     },
     {
       "path": "scripts/test-integration-groups.py",
@@ -11483,13 +11603,13 @@
     },
     {
       "path": "scripts/test-integration-wiring.py",
-      "bytes": 23834,
-      "sha256": "2876127b050fe5821393a2f36e564940f540b56e8cf9b8bca89889171660d89d"
+      "bytes": 24539,
+      "sha256": "1c36d7fd4b412657fcef3ca81bf8dd0f4d30d1fecde5bc63aeaff4a2a80ff828"
     },
     {
       "path": "scripts/test-source-evidence.py",
-      "bytes": 4395,
-      "sha256": "d05dcb9547945dd3ff4ae6d953ba82e7a5147cd9963ddfd271545a77d7d28814"
+      "bytes": 4618,
+      "sha256": "8b872f31eb9bec7971da3cddc88725860058112596a517d3f5c73b2ae9425501"
     },
     {
       "path": "scripts/verify-candidate-http.py",
@@ -11775,6 +11895,11 @@
       "path": "tests/integration/account_admin_review_test.go",
       "bytes": 5337,
       "sha256": "dcaca8e46986a5c5e3e3981c2be3d39dd2c81abc71382775def50411cf36f1a5"
+    },
+    {
+      "path": "tests/integration/account_history_test.go",
+      "bytes": 29013,
+      "sha256": "b80efd850fc80d6bf090a251cbca6373cfb5667f29fd10089f693089fa7fba65"
     },
     {
       "path": "tests/integration/account_settings_test.go",

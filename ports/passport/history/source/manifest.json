@@ -1,0 +1,133 @@
+{
+  "license": "AGPL-3.0-only",
+  "scope": "Authored source and callers only; no excluded Shared implementations, generated protocols, provider credentials or unlicensed SDK source.",
+  "files": [
+    {
+      "file": "SocialCreditService.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/Credit/SocialCreditService.cs",
+      "blob": "4034cd87f59d0ecba146af6b844ad481832fe866",
+      "sha256": "84c5b7b128cd868a43003b6b0795cbe5d34526b7aa1d2889603202b0919b8e47",
+      "bytes": 1875,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Credit/SocialCreditService.cs"
+    },
+    {
+      "file": "SocialCreditValidationJob.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/Credit/SocialCreditValidationJob.cs",
+      "blob": "333214d5535a14b0720230144226e86728976765",
+      "sha256": "49ca8a4c3eef34331415df2badcd3744f54ef523eea898e1ee0b68476408746a",
+      "bytes": 3165,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Credit/SocialCreditValidationJob.cs"
+    },
+    {
+      "file": "ActionLogService.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/Account/ActionLogService.cs",
+      "blob": "7d7349491314e2ca889f84bb64a5c3e0f3075e22",
+      "sha256": "6015be645c694bdb59380edb552abc1b077318f4238dffcc1c098c5c7b09daca",
+      "bytes": 1728,
+      "source_url": "https://github.com/Solsynth/DysonNetwork/blob/4ee2d0cebb9da8284a92483fee6dce795bf6947c/DysonNetwork.Passport/Account/ActionLogService.cs"
+    },
+    {
+      "file": "Solian__profile_timeline.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "lib/accounts/screens/profile_timeline.dart",
+      "blob": "22833bd2ee3706b7428af1e5728dd11272655a2a",
+      "sha256": "7c56aa9c1867d5b8a636c9a89a6043106d904320cd41b2fc89ee6de2e6a317ee",
+      "bytes": 33422,
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/profile_timeline.dart"
+    },
+    {
+      "file": "Solian__action_logs.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "lib/accounts/screens/action_logs.dart",
+      "blob": "0f55eef649eb2e1ec9e76c0596ed9f188e626e92",
+      "sha256": "4aeb32d263e6d7f651aa6762465772f555c8bcdb2c7c0db085dc5aa5d5bb331e",
+      "bytes": 13134,
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/action_logs.dart"
+    },
+    {
+      "file": "Solian__settings_connections.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "lib/accounts/screens/me/settings_connections.dart",
+      "blob": "6fdb8290799698b4e09097755cc6b167cbff4b67",
+      "sha256": "459a8793c6866fadedd6e924142ec82e140d20bf021b6531509f5c7de921147b",
+      "bytes": 16114,
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/me/settings_connections.dart"
+    },
+    {
+      "file": "Solian__credits.dart",
+      "repository": "Solsynth/Solian",
+      "revision": "ffd0838e5f04cb40bea311a39118ebeedad210c1",
+      "path": "lib/accounts/screens/credits.dart",
+      "blob": "bb991422ecb220e4519f54ab5e1bdc354510cc07",
+      "sha256": "4d643e165fe7ab93c2db7135f3bf07b41cc723155f22e924f57a0d1d1fb1a590",
+      "bytes": 11018,
+      "source_url": "https://github.com/Solsynth/Solian/blob/ffd0838e5f04cb40bea311a39118ebeedad210c1/lib/accounts/screens/credits.dart"
+    },
+    {
+      "file": "AccountController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/Account/AccountController.cs",
+      "blob": "693d62314815feb900644b972b93b16f366ea16f",
+      "sha256": "658ade643635667bb81918381025070fc74b68d79df440d3f1e3effece230f76",
+      "bytes": 16234
+    },
+    {
+      "file": "AccountCurrentController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/Account/AccountCurrentController.cs",
+      "blob": "543ccc2f9b06ea81da6561622b6eafccd2c826de",
+      "sha256": "9dac86470690c7258315de060d6803d640173b12bbcf0917fdffbf384072a563",
+      "bytes": 10747
+    },
+    {
+      "file": "AccountPublicController.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/Account/AccountPublicController.cs",
+      "blob": "6c3f3712356f5543ba0be6846637d2b62c649c5a",
+      "sha256": "1d017b4285058eb99ecdd6f1d65fcb5f601676e9ff2fd4b032af07d87f10149d",
+      "bytes": 2269
+    },
+    {
+      "file": "AccountEventService.timeline.excerpt.cs",
+      "repository": "Solsynth/DysonNetwork",
+      "revision": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+      "path": "DysonNetwork.Passport/Account/AccountEventService.cs",
+      "original_blob": "1f9891d9bfc97ffbc7306213e0d7f5a10d63b4ce",
+      "retained_line_ranges": [
+        [
+          1827,
+          1882
+        ]
+      ],
+      "blob": "7fa6efc7f6c9a2c9bb7550e9d8ebd7318d906fe7",
+      "sha256": "196804301e8b0064deb3d3e955b1469d0d345f372e9247a601d0f25dc6c26a55",
+      "bytes": 1795
+    },
+    {
+      "file": "DYSON-LICENSE.txt",
+      "blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "source": "ports/passport/friends/source/DYSON-LICENSE.txt"
+    },
+    {
+      "file": "SOLIAN-LICENSE.txt",
+      "blob": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+      "bytes": 34522,
+      "source": "ports/passport/friends/source/SOLIAN-LICENSE.txt"
+    }
+  ]
+}

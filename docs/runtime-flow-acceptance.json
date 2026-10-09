@@ -20,8 +20,8 @@
     "required_after_restart": 105,
     "status": "Corrected composed candidate executing actual PostgreSQL; no full-pass claim."
   },
-  "local_required_before": 910,
-  "local_required_after_restart": 107,
+  "local_required_before": 921,
+  "local_required_after_restart": 108,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2956,7 +2956,7 @@
           "passport.accounts_presence",
           "passport.progression"
         ],
-        "remaining": "Account activity timeline/action-log/connection reads and social-credit ledger/projection remain missing.",
+        "remaining": "Provider linking/verification/import, full legacy action history migration/request-context capture, credit reward/import writers and external Steam/night-owl execution remain absent.",
         "source": [
           {
             "path": "DysonNetwork.Passport/Account/AccountController.cs",
@@ -2998,18 +2998,43 @@
           }
         ],
         "runtime_owner_or_rejection": [
-          "ports/passport/accounts/http.go",
-          "internal/application/router.go",
-          "internal/accountpg/rewind.go",
-          "internal/progressionpg"
+          "ports/passport/history",
+          "internal/accounthistorypg",
+          "internal/activitypg/timeline.go",
+          "internal/application/router.go"
         ],
-        "current_boundary": "Owned rewind optional telemetry does not expose /accounts/me/actions. No canonical social-credit ledger/projection or external connection/Steam source is wired. Night-owl/Steam actions are provider-backed gaps, unlike straightforward private history reads.",
-        "next_slice": "Split read-only history/credit contract work from Steam/night-owl provider execution. Establish a canonical credit provenance/decay policy from authored source before adding reward writers.",
+        "current_boundary": "Six original GET routes and gateway aliases are wired. Timeline uses canonical historical status/activity writes, preserves public history across source logout/expiry, and locks page artwork associations globally; actions use five real audit sources. Credits and connections use explicit durable owned records, with no legacy migration or provider/credit writer claimed. Unknown request IP/session facts remain null. Local PostgreSQL tests compile but skip; exact-commit private CI/restart pending.",
+        "next_slice": "Validate the composed immutable candidate in private PostgreSQL/restart CI, then separately establish authorized provider-link/import and credit-writer provenance.",
         "additional_source": [
-          "DysonNetwork.Passport/Credit/SocialCreditServiceGrpc.cs:AddRecord/GetSocialCredit",
+          "DysonNetwork.Passport/Account/AccountEventService.cs:GetTimeline",
+          "DysonNetwork.Passport/Credit/SocialCreditService.cs:GetSocialCredit",
           "DysonNetwork.Passport/Credit/SocialCreditValidationJob.cs:Execute",
-          "DysonNetwork.Passport/Account/Presences/PresenceUpdateJob.cs",
-          "DysonNetwork.Passport/Account/NightOwlReminderJob.cs"
+          "DysonNetwork.Passport/Account/ActionLogService.cs:CreateActionLogFromRequest",
+          "Solian/lib/accounts/screens/profile_timeline.dart",
+          "Solian/lib/accounts/screens/action_logs.dart",
+          "Solian/lib/accounts/screens/credits.dart",
+          "Solian/lib/accounts/screens/me/settings_connections.dart"
+        ],
+        "local_status": "implemented_owned_read_subset",
+        "supported_flows": [
+          "Canonical historical status/activity timeline preserves source logout/lease expiry while enforcing current audience, artwork rights and original reader proof",
+          "Self-only stable canonical audit projection with exact source provenance",
+          "Owned immutable credit ledger history and source-backed 100-plus-linear-decay scalar",
+          "Self-only established provider-link metadata read with permission and fixed safe fields"
+        ],
+        "provenance": "ports/passport/history/PROVENANCE.md",
+        "guarded_pg_cases": [
+          "TestPGAccountHistoryActionsCanonicalAuditSnapshot",
+          "TestPGAccountHistoryBlockDisabledAndCurrentSession",
+          "TestPGAccountHistoryConnectionMetadataIsolationAndPermission",
+          "TestPGAccountHistoryCreditDecayImmutableProvenance",
+          "TestPGAccountHistoryOriginalProofAfterAccountWait",
+          "TestPGAccountHistoryPublicWaitObservesPrivacyAndRename",
+          "TestPGAccountTimelineArtworkWaitRechecksProofAndRetention",
+          "TestPGAccountTimelineStablePaginationPrivacyAndTimeBounds",
+          "TestPGBackendAccountHistoryAuthoredRoutes",
+          "TestPGBackendAccountHistoryForgedChannels",
+          "TestPGBackendAccountHistorySavedRestartPersistence"
         ]
       },
       {

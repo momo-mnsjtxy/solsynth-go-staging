@@ -5,6 +5,18 @@ import sys
 
 EXPECTED = {
     "before": {
+        "TestPGAccountHistoryActionsCanonicalAuditSnapshot",
+        "TestPGAccountHistoryBlockDisabledAndCurrentSession",
+        "TestPGAccountHistoryConnectionMetadataIsolationAndPermission",
+        "TestPGAccountHistoryCreditDecayImmutableProvenance",
+        "TestPGAccountHistoryOriginalProofAfterAccountWait",
+        "TestPGAccountHistoryPublicWaitObservesPrivacyAndRename",
+        "TestPGAccountTimelineArtworkWaitRechecksProofAndRetention",
+        "TestPGAccountTimelineStablePaginationPrivacyAndTimeBounds",
+        "TestPGBackendAccountHistoryAuthoredRoutes",
+        "TestPGBackendAccountHistoryForgedChannels",
+        "TestPGBackendAccountHistorySavedRestartPersistence",
+
         "TestPGBackendChatDetailsAuthoredRoutesAndFailClosedPolicy",
         "TestPGBackendChatDetailsCanonicalProfileConfiguration",
         "TestPGChatDetailsCanonicalProfilePerkLevelAndExpiry",
@@ -980,6 +992,7 @@ EXPECTED = {
         "TestPGCommerceMaintenanceQuarantineRestartPersistence",
     },
     "after": {
+        "TestPGBackendAccountHistorySavedRestartPersistence",
         "TestPGChatDetailsSavedRestartPersistence",
 
         "TestPGPublishingControlsSavedRestartPersistence",

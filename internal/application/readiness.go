@@ -19,6 +19,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if b == nil || b.db == nil || b.authorityDB == nil {
 		return errors.New("backend unavailable")
 	}
+	if b.accountHistory != nil {
+		if e := b.accountHistory.Ready(ctx); e != nil {
+			return e
+		}
+	}
 	if b.activities != nil {
 		if e := b.activities.Ready(ctx); e != nil {
 			return e

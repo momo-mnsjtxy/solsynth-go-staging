@@ -7,17 +7,22 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"net"
 	"net/http"
+	"net/netip"
 	"net/url"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/authority/signin"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Service struct {
 	Repository Repository
 	Authority  Authority
 	Bind       func(context.Context, authority.Principal) context.Context
+	Captcha    signin.Captcha // Explicit configured policy: every check-in requires verification.
 }
 
 func (s *Service) Handler() http.Handler { return http.HandlerFunc(s.serveHTTP) }
@@ -174,20 +179,61 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			send(w, 200, v)
 		case "POST":
-			if r.URL.Query().Get("backdated") != "" {
-				failure(w, ErrUnsupported)
-				return
-			}
+
 			var captcha *string
 			if e := decode(w, r, &captcha, true); e != nil {
 				failure(w, e)
 				return
 			}
-			if captcha != nil && strings.TrimSpace(*captcha) != "" {
-				failure(w, ErrUnsupported)
+			token := ""
+			if captcha != nil {
+				token = strings.TrimSpace(*captcha)
+			}
+			if s.Captcha != nil {
+				if token == "" || len(token) > 4096 || strings.ContainsAny(token, "\x00\r\n") {
+					failure(w, ErrInvalid)
+					return
+				}
+				host, _, x := net.SplitHostPort(r.RemoteAddr)
+				if x != nil {
+					host = r.RemoteAddr
+				}
+				peer := ""
+				if ip, x := netip.ParseAddr(host); x == nil && ip.Zone() == "" {
+					peer = ip.Unmap().String()
+				}
+				bounded, cancel := context.WithTimeout(ctx, 10*time.Second)
+				x = s.Captcha.Verify(bounded, token, peer)
+				cancel()
+				if x != nil {
+					if errors.Is(x, authority.ErrInvalid) || errors.Is(x, signin.ErrInput) || errors.Is(x, signin.ErrInvalid) {
+						failure(w, authority.ErrForbidden)
+					} else {
+						failure(w, authority.ErrUnavailable)
+					}
+					return
+				}
+			} else if token != "" {
+				failure(w, ErrUnavailable)
 				return
 			}
-			v, e := s.Repository.CheckIn(ctx, actor)
+			var v CheckIn
+			var e error
+			if raw := r.URL.Query().Get("backdated"); raw != "" {
+				at, x := time.Parse(time.RFC3339Nano, raw)
+				if x != nil {
+					failure(w, ErrInvalid)
+					return
+				}
+				ext, ok := s.Repository.(ExtendedRepository)
+				if !ok {
+					failure(w, ErrUnavailable)
+					return
+				}
+				v, e = ext.BackdatedCheckIn(ctx, actor, at)
+			} else {
+				v, e = s.Repository.CheckIn(ctx, actor)
+			}
 			if e != nil {
 				failure(w, e)
 				return
@@ -246,6 +292,29 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		send(w, 200, out)
+		return
+	}
+	if path == "/api/admin/progression/sync" && r.Method == "POST" {
+		b, e := io.ReadAll(http.MaxBytesReader(w, r.Body, 1024))
+		if e != nil || len(bytes.TrimSpace(b)) != 0 {
+			failure(w, ErrInvalid)
+			return
+		}
+		if r.URL.RawQuery != "" {
+			failure(w, ErrInvalid)
+			return
+		}
+		ext, ok := s.Repository.(ExtendedRepository)
+		if !ok {
+			failure(w, ErrUnavailable)
+			return
+		}
+		count, e := ext.SyncSeeds(ctx, actor)
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		send(w, 200, map[string]int{"synchronized": count})
 		return
 	}
 	if path == "/api/admin/progression/levels" && r.Method == "PUT" {

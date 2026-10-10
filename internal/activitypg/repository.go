@@ -28,8 +28,9 @@ type Guard interface {
 	StoredAuthenticationEligible(context.Context, *sql.DB, *sql.Tx, string, string, int64, int64) (bool, error)
 }
 type Repository struct {
-	db    *sql.DB
-	guard Guard
+	providers map[string]ProviderObserver
+	db        *sql.DB
+	guard     Guard
 }
 
 func New(db *sql.DB, g Guard) *Repository { return &Repository{db: db, guard: g} }
@@ -40,7 +41,7 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if r == nil || r.db == nil || r.guard == nil {
 		return activities.ErrUnavailable
 	}
-	_, e := r.db.ExecContext(ctx, `SELECT id,document,session_id,revision FROM owned_presence_activities LIMIT 0;SELECT id,total_seconds,session_count FROM owned_activity_catalog LIMIT 0;SELECT activity_id,revision FROM owned_activity_events LIMIT 0;SELECT id,kind,presence_version FROM owned_friend_events LIMIT 0;SELECT event_id,recipient_id FROM owned_friend_audiences LIMIT 0;SELECT account_id,revision FROM owned_friend_presence_versions LIMIT 0`)
+	_, e := r.db.ExecContext(ctx, `SELECT connection_id,activity_id,claim_id FROM owned_provider_presence_consents LIMIT 0;SELECT provider,next_at FROM owned_provider_presence_rate LIMIT 0;SELECT id,document,session_id,revision FROM owned_presence_activities LIMIT 0;SELECT id,total_seconds,session_count FROM owned_activity_catalog LIMIT 0;SELECT activity_id,revision FROM owned_activity_events LIMIT 0;SELECT id,kind,presence_version FROM owned_friend_events LIMIT 0;SELECT event_id,recipient_id FROM owned_friend_audiences LIMIT 0;SELECT account_id,revision FROM owned_friend_presence_versions LIMIT 0`)
 	return e
 }
 func uuid() (string, error) {

@@ -1,0 +1,557 @@
+{
+  "version": 1,
+  "reviewed_source": {
+    "repository": "solsynth-manual-integration",
+    "head": "e71b407927f3957d8787226b36d249f6d213d134",
+    "scope_file": "docs/all-drafts-completion-scope.json",
+    "scope_file_sha256": "855bc2d96e4a76c27570af261ba759a00638521de913c634ece3a76dc5fe80e5",
+    "scope_item_count": 20,
+    "source_delta_from_prior_review": {
+      "base": "73b37c2438f5de793844986066c43c2ef790599e",
+      "paths": [
+        "tests/integration/rewind_adapters_test.go"
+      ],
+      "meaning": "One synthetic Rewind fixture account name was changed to the authorized synthetic_ prefix; no runtime, host wiring, configuration or feature behavior changed."
+    }
+  },
+  "scope_rule": {
+    "included": "All items in docs/all-drafts-completion-scope.json, including internal wallet, funds, settlement, reporting, subscriptions, payment PIN and SourcePoints business behavior.",
+    "excluded": [
+      "external payment channel/provider integration",
+      "migration and deployment work",
+      "legacy/version compatibility"
+    ],
+    "method": "Read-only closure check against the prior scope audit result, current runtime repositories, production HTTP/JSON and worker composition, in-repository client bridge, explicit host configuration and existing executable evidence sources. This was not a new repository-wide security scan and tests were not rerun."
+  },
+  "verdict": {
+    "status": "reviewed_source_closure",
+    "remaining_in_scope_software_gaps": [],
+    "statement": "No remaining implementation-code gap was found in the mapped in-scope business functions at the reviewed source head. Every scope item has a concrete repository/service path and a production HTTP or worker composition path; opt-in features have an explicit host configuration path. This is a reviewed source-closure finding, not a platform, deployment or CI-complete claim."
+  },
+  "items": [
+    {
+      "id": "draft-transient-developer-media",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/chatpg/placeholders.go",
+        "internal/chatpg/voice.go",
+        "internal/developmediapg/repository.go",
+        "internal/botpg/quota.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: chat repository, canonical media/developer-media stores, voice storage and bot/app media composition",
+        "internal/application/backend.go: ProcessDue expires durable placeholders",
+        "internal/application/router.go: messager/developer/media routes"
+      ],
+      "configuration": [
+        "cmd/backend/main.go: --chat-voice-retention, --media-root, --media-max-bytes and --miniapp-upload-timeout; zero voice retention intentionally disables voice uploads"
+      ],
+      "executable_evidence": [
+        "tests/integration/chat_transient_test.go",
+        "tests/integration/chat_voice_configuration_test.go",
+        "tests/integration/developer_media_quota_test.go"
+      ]
+    },
+    {
+      "id": "draft-chat-sync",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/chatpg/subscription_sync.go",
+        "internal/chatpg/subscription_connections.go",
+        "internal/chatpg/subscription_reads.go",
+        "ports/messager/rooms/subscription_sync_http.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: canonical chat repository and room handler",
+        "internal/realtime/http.go: per-connection subscription commands",
+        "internal/application/router.go: messager and realtime routes"
+      ],
+      "configuration": [
+        "cmd/backend/main.go: explicit messager encryption/notification mode names are supplied to application.Config"
+      ],
+      "executable_evidence": [
+        "tests/integration/chat_subscription_sync_test.go"
+      ]
+    },
+    {
+      "id": "draft-chat-live",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/chatpg/live_events.go",
+        "internal/notificationpg/chat_events.go",
+        "internal/notificationpg/chat_maintenance.go",
+        "internal/realtime/http.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: notification repository uses canonical chat events and the realtime handler shares stream tickets",
+        "internal/application/notifications.go: RunNotifications and finite ProcessNotificationStep execute the durable worker"
+      ],
+      "configuration": [
+        "cmd/backend/main.go: --notification-app plus explicit chat modes; external sender/device delivery is optional and separately configured"
+      ],
+      "executable_evidence": [
+        "tests/integration/chat_live_events_test.go"
+      ]
+    },
+    {
+      "id": "draft-post-pins",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/postpg/pins.go",
+        "internal/postpg/visibility.go",
+        "ports/sphere/posts/pins.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: post repository receives canonical visibility/associations and its handler is mounted as posts",
+        "internal/application/router.go: posts route family"
+      ],
+      "configuration": [
+        "Always composed against the canonical database and transaction authority; no external provider or feature flag is required."
+      ],
+      "executable_evidence": [
+        "tests/integration/post_pins_test.go"
+      ]
+    },
+    {
+      "id": "draft-miniapp-upload",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/botpg/package_upload.go",
+        "internal/botpg/packages.go",
+        "internal/botpg/miniapp_media.go",
+        "ports/develop/bots/package_upload_http.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: bot repository receives canonical media/developer-media stores and bot HTTP is mounted",
+        "internal/application/router.go: developer bot/miniapp route family"
+      ],
+      "configuration": [
+        "cmd/backend/main.go: --media-root, --media-max-bytes and bounded --miniapp-upload-timeout; upload remains unavailable without canonical media storage."
+      ],
+      "executable_evidence": [
+        "tests/integration/miniapp_upload_test.go",
+        "tests/integration/miniapp_upload_authority_review_test.go"
+      ]
+    },
+    {
+      "id": "bot-credentials-execution",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/botpg/keys.go",
+        "internal/botpg/replies.go",
+        "internal/botpg/execution.go",
+        "internal/botpg/execution_delivery.go",
+        "internal/botpg/execution_renewal.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: bot identity/reply sender, execution adapters, message observer and bot HTTP composition",
+        "internal/application/backend.go: ProcessDue executes delivery and enrollment renewal",
+        "cmd/backend/bot_renewal_worker.go: dedicated bounded renewal cadence"
+      ],
+      "configuration": [
+        "cmd/backend/bot_execution_config.go: explicit adapter/runtime configuration; cmd/backend/main.go: --bot-renewal-interval and MLS enablement."
+      ],
+      "executable_evidence": [
+        "tests/integration/bot_execution_test.go",
+        "tests/integration/bots_test.go",
+        "tests/integration/develop_bot_commands_test.go"
+      ]
+    },
+    {
+      "id": "typed-chat-compositions",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/application/chat_composition.go",
+        "internal/walletpg/funds.go",
+        "internal/surveypg/repository.go",
+        "ports/messager/rooms/rich_test.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: chat repository receives NewChatMessageComposer(wallet, surveysRepo)",
+        "internal/application/backend.go: canonical room handler exposes composed sends"
+      ],
+      "configuration": [
+        "Always composed when the canonical backend starts; fund and survey components use same-pool stores and current transaction authority."
+      ],
+      "executable_evidence": [
+        "tests/integration/chat_composition_test.go"
+      ]
+    },
+    {
+      "id": "account-admin-history",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/accounthistorypg/repository.go",
+        "internal/accounthistorypg/credits.go",
+        "internal/adminpg/account_extensions.go",
+        "internal/adminpg/provider_operations.go",
+        "internal/signinpg/contacts.go",
+        "internal/signinpg/payment_pin.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: account history/admin/sign-in/contact repositories and handlers use the canonical authority pool",
+        "internal/application/readiness.go: history/admin/security relations are checked before serving",
+        "internal/application/router.go: account history/admin/sign-in routes"
+      ],
+      "configuration": [
+        "cmd/backend/account_connections_config.go configures optional real provider links; cmd/backend/main.go explicitly configures sign-in keys/secrets and PIN pepper/enrollment."
+      ],
+      "executable_evidence": [
+        "tests/integration/account_history_test.go",
+        "tests/integration/identity_completion_test.go",
+        "tests/integration/identity_terminal_guards_test.go"
+      ]
+    },
+    {
+      "id": "realm-progression",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/realmmemberpg/reads.go",
+        "internal/realmmemberpg/workers.go",
+        "internal/progressionpg/source_points.go",
+        "internal/progressionpg/events.go",
+        "internal/progressionpg/projector.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: realm-member and progression repositories/HTTP are composed with canonical social, commerce and authority stores",
+        "internal/application/backend.go: ProcessDue executes realm tenure/perk, progression, source-point and completion workers"
+      ],
+      "configuration": [
+        "cmd/backend/realm_member_config.go and cmd/backend/progression_extensions_config.go: explicit member policy, check-in and funded SourcePoints treasury/currency limits."
+      ],
+      "executable_evidence": [
+        "tests/integration/realm_members_test.go",
+        "tests/integration/identity_completion_test.go",
+        "tests/integration/presence_progression_test.go"
+      ]
+    },
+    {
+      "id": "nearby-nfc-location-media",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/locationpg/nearby.go",
+        "internal/locationpg/encrypted_nfc.go",
+        "internal/locationpg/nfc.go",
+        "internal/locationpg/sun.go",
+        "internal/locationpg/pcsc.go",
+        "internal/locationpg/media.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: canonical location repository receives encrypted NFC, geocoder, media and chat-media protection; location HTTP is mounted",
+        "internal/application/backend.go: ProcessDue expires location state"
+      ],
+      "configuration": [
+        "cmd/backend/media_locations_config.go: explicit geocoder, NFC encryption key env, PC/SC helper/limiter/bindings and media provider settings."
+      ],
+      "executable_evidence": [
+        "tests/integration/locations_completion_test.go",
+        "tests/integration/locations_media_review_test.go",
+        "tests/integration/locations_media_final_review_test.go"
+      ]
+    },
+    {
+      "id": "media-management",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/mediapg/resumable.go",
+        "internal/mediapg/management.go",
+        "internal/mediapg/remote.go",
+        "internal/mediapg/dedup.go",
+        "internal/mediapg/thumbnail.go",
+        "internal/mediapg/compositions.go",
+        "internal/mediapg/expiry.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: media repository receives pools, remote fetcher, renderer, all current-audience readers and file protections; media/artwork HTTP is mounted",
+        "cmd/backend/main.go: periodic CleanupMedia runs independently of lifecycle projection"
+      ],
+      "configuration": [
+        "cmd/backend/main.go: private --media-root and --media-max-bytes; cmd/backend/media_locations_config.go: explicit pools, remote allowlist/fetcher and renderer helper/limiter."
+      ],
+      "executable_evidence": [
+        "tests/integration/media_management_test.go",
+        "tests/integration/media_resumable_test.go",
+        "tests/integration/media_usage_test.go"
+      ]
+    },
+    {
+      "id": "publisher-post-collection",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/accountpg/publisher_completion.go",
+        "internal/postpg/completion.go",
+        "internal/postpg/pins.go",
+        "internal/interactionpg/collections.go",
+        "internal/interactionpg/collection_subscription.go",
+        "internal/timelinepg/feeds.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: publisher, post, interaction, timeline, collection notification and media associations share canonical policy stores",
+        "internal/application/router.go: account/publisher, posts, interactions and timeline route families"
+      ],
+      "configuration": [
+        "Core CRUD/search/stats/pin/navigation/reaction/collection behavior is always composed; paid rewards/boosts require their explicit internal treasury policies, not an external payment channel."
+      ],
+      "executable_evidence": [
+        "tests/integration/post_pins_test.go",
+        "tests/integration/developer_management_test.go",
+        "tests/integration/realm_publishing_test.go",
+        "tests/integration/post_awards_test.go"
+      ]
+    },
+    {
+      "id": "federation-oauth",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/federationpg/broader.go",
+        "internal/federationpg/delivery.go",
+        "internal/federationpg/realm_inbox.go",
+        "internal/federationpg/relationships.go",
+        "internal/federationhttp/broader.go",
+        "internal/oauthpg/devices.go",
+        "internal/oauthpg/registration.go",
+        "internal/oauthpg/introspection.go"
+      ],
+      "host_wiring": [
+        "internal/application/external_modules.go: configured federation public/private handlers, delivery and maintenance",
+        "internal/application/backend.go: federation profile media/publishing hooks and OAuth repository/handler are mounted",
+        "cmd/backend/main.go: ProcessExternalDue scheduler and OAuth lifecycle ProcessDue"
+      ],
+      "configuration": [
+        "cmd/backend/external_config.go and cmd/backend/federation_custody.go: explicit origin, SSRF-safe discovery/transport, pinned keys or local durable custody; cmd/backend/main.go: --enable-oauth with explicit HTTPS consent UI and issuer keys."
+      ],
+      "executable_evidence": [
+        "tests/integration/federation_broader_test.go",
+        "tests/integration/federation_test.go",
+        "tests/integration/oauth_extensions_test.go",
+        "tests/integration/oauth_review_test.go"
+      ]
+    },
+    {
+      "id": "internal-wallet-commerce",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/walletpg/commerce.go",
+        "internal/walletpg/funded_transfer.go",
+        "internal/walletpg/trusted_primary.go",
+        "internal/commercepg/maintenance.go",
+        "internal/commercepg/settlement.go",
+        "internal/commercepg/payouts.go",
+        "internal/commercepg/gifts.go",
+        "internal/merchantpg/settlements.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: canonical wallet, PIN authorization, commerce and merchant repositories/HTTP are composed",
+        "internal/application/backend.go: ProcessDue executes wallet funds/transactions and commerce lifecycle; merchant maintenance is linked"
+      ],
+      "configuration": [
+        "cmd/backend/main.go: PIN policy, settlement cadence, optional catalog plus trusted wallet-product treasury; cmd/backend/wallet_exchange_config.go: explicit funded internal exchange policy. External payment providers are not required for these internal-wallet flows."
+      ],
+      "executable_evidence": [
+        "tests/integration/wallet_completion_test.go",
+        "tests/integration/wallet_reporting_test.go",
+        "tests/integration/commerce_test.go",
+        "tests/integration/merchants_test.go"
+      ]
+    },
+    {
+      "id": "affiliation-livestream-operations",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/affiliationpg/repository.go",
+        "internal/livestreampg/outputs.go",
+        "internal/livestreampg/archive_import.go",
+        "internal/livestreampg/awards.go",
+        "internal/livestreampg/award_refunds.go",
+        "internal/application/operations_retention.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go and internal/application/livestreams.go: affiliation, livestream outputs/archive/awards/chat handlers and repositories are composed",
+        "internal/application/external_modules.go: stream/award maintenance runs in the external cadence",
+        "internal/application/backend.go: retention/purge/redrive work is included in ProcessDue"
+      ],
+      "configuration": [
+        "cmd/backend/affiliation_purchase_config.go, livestream_outputs_config.go, livestream_awards_config.go and operations_retention_config.go require explicit internal treasury, provider/artifact, helper and retention policies."
+      ],
+      "executable_evidence": [
+        "tests/integration/affiliation_test.go",
+        "tests/integration/livestream_outputs_test.go",
+        "tests/integration/livestream_awards_test.go",
+        "tests/integration/livestream_chat_test.go"
+      ]
+    },
+    {
+      "id": "oauth-resources",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/oauthpg/devices.go",
+        "internal/oauthpg/registration.go",
+        "internal/oauthpg/introspection.go",
+        "internal/oauthpg/tokens.go",
+        "ports/authority/oauth/extensions.go",
+        "ports/authority/oauth/extension_http.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: same-pool OAuth repository and resource-aware handler are mounted",
+        "internal/application/backend.go: OAuth expiry/replay maintenance runs in ProcessDue"
+      ],
+      "configuration": [
+        "cmd/backend/main.go: --enable-oauth, explicit HTTPS --oauth-consent-url, issuer private key and independent refresh/replay secrets; disabled mode returns an explicit unavailable response."
+      ],
+      "executable_evidence": [
+        "tests/integration/oauth_extensions_test.go",
+        "tests/integration/oauth_extensions_restart_test.go",
+        "tests/integration/oauth_review_test.go"
+      ]
+    },
+    {
+      "id": "device-push-registration",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/notificationpg/devices.go",
+        "internal/notificationpg/device_delivery.go",
+        "internal/pushprovider/fcm.go",
+        "ports/notifications/devices.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: device module becomes the notification sender only when configured and is mounted as notification-device HTTP",
+        "internal/application/backend.go: ProcessDue executes possession/delivery reconciliation; RunNotifications dispatches the canonical outbox"
+      ],
+      "configuration": [
+        "cmd/backend/push_devices_config.go: explicit encrypted-token key and real push provider configuration; no fabricated sender is installed when unconfigured."
+      ],
+      "executable_evidence": [
+        "tests/integration/identity_completion_test.go",
+        "tests/integration/identity_delivery_review_test.go",
+        "web/notification-device-client.js"
+      ]
+    },
+    {
+      "id": "canonical-business-progression",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/postpg/progression_sources.go",
+        "internal/postpg/scheduling.go",
+        "internal/commercepg/progression_sources.go",
+        "internal/progressionpg/events.go",
+        "internal/progressionpg/projector.go"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: canonical post/commerce/progression repositories are composed and scheduled-post/progression workers run in ProcessDue",
+        "internal/application/readiness.go: source tables, immutable constraints, daily featured indexes and funded-month receipts are required"
+      ],
+      "configuration": [
+        "Canonical post sources/daily UTC snapshots are always available with installed schema; funded stellar and SourcePoints paths require explicit same-pool treasury/currency policies."
+      ],
+      "executable_evidence": [
+        "tests/integration/progression_sources_test.go",
+        "tests/integration/identity_delivery_review_test.go"
+      ]
+    },
+    {
+      "id": "publisher-content-notifications",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/publishernotificationpg/repository.go",
+        "internal/publishernotificationpg/worker.go",
+        "internal/publishernotificationpg/schema.sql"
+      ],
+      "host_wiring": [
+        "internal/application/backend.go: post publication observer and livestream first-activation observer record durable intents",
+        "internal/application/backend.go: publisher ProcessDue is registered in notificationWorker.LocalProjections",
+        "internal/application/readiness.go: publisher notification repository Ready is mandatory",
+        "internal/application/notifications.go: production finite worker entry point is exposed"
+      ],
+      "configuration": [
+        "Uses canonical --notification-app and ordinary notification outbox; local projection works without an external push credential, while provider dispatch remains separately configurable."
+      ],
+      "executable_evidence": [
+        "tests/integration/publisher_content_notifications_test.go"
+      ],
+      "closure_of_prior_gap": "Approved implementation commits 6e184925254413a4ee1aba8f6519332a8da93b76 and root integration 954028c are present; the producer is attached to actual post/livestream transactions and the worker is in the production notification loop."
+    },
+    {
+      "id": "rewind-configured-adapters",
+      "result": "reviewed_source_closed",
+      "implementation_paths": [
+        "internal/rewindpg/action_logs.go",
+        "internal/rewindpg/tokenizer.go",
+        "internal/rewindpg/repository.go"
+      ],
+      "host_wiring": [
+        "internal/application/account_extras.go: rewindpg.New receives canonical account/chat/post visibility repositories and its HTTP handler is mounted",
+        "internal/application/account_extras.go: rewind Ready is part of backend readiness",
+        "internal/application/router.go: rewind route family"
+      ],
+      "configuration": [
+        "cmd/backend/account_extras_config.go: --enable-rewind-action-activity plus absolute dictionary/stop-word paths, optional SHA-256 pins, reporting year and bounded input/text/token/dictionary limits."
+      ],
+      "executable_evidence": [
+        "tests/integration/rewind_adapters_test.go",
+        "tests/integration/rewind_test.go"
+      ],
+      "closure_of_prior_gap": "Approved implementation 4ab97f80762eae9ef56eea4e98fabd54a67effd6 and root integration aa627467ec5a166de2f80e07bac9bfce8b65b8eb are present; canonical SQL action history and the real local dictionary DAG tokenizer are selected by production CLI and validated by Ready."
+    }
+  ],
+  "acceptance_boundaries": [
+    {
+      "boundary": "exact-head PostgreSQL execution",
+      "status": "pending_external_validation",
+      "meaning": "The existing integration cases and registry are source evidence only in this review. No local PostgreSQL was run, and this report does not assert that current-head private before/after restart groups passed."
+    },
+    {
+      "boundary": "schema installation and deployment",
+      "status": "excluded_by_scope",
+      "meaning": "Schemas and readiness contracts exist, but applying migrations, provisioning databases/files, service rollout and backfill are operator work and were explicitly excluded as migration/deployment work."
+    },
+    {
+      "boundary": "external credentials and remote systems",
+      "status": "configuration_or_environment_required",
+      "meaning": "FCM delivery, federation peers, OAuth consent UI/upstream account providers, call/livestream transports, geocoder/translation/reader endpoints, remote media origins and similar integrations require real operator configuration, allowlists, credentials and reachable services. Their absence in this workspace is not missing implementation code; unconfigured paths fail closed or expose explicit unavailable behavior."
+    },
+    {
+      "boundary": "hardware and local executables",
+      "status": "environment_required",
+      "meaning": "Physical NFC/PCSC tags/readers and configured ffmpeg/helper/limiter executables were not exercised. The adapters, validation and explicit configuration paths are present; actual device/tool acceptance remains external."
+    },
+    {
+      "boundary": "operator-owned data and custody",
+      "status": "provisioning_required",
+      "meaning": "Federation custody keys, media roots/pools, Rewind dictionary files and hashes, treasury wallets/funding, PIN/issuer/push secrets and policy snapshots must be provisioned explicitly. The code does not invent production credentials, keys, dictionaries, hardware or funds."
+    },
+    {
+      "boundary": "external client repository and end-to-end acceptance",
+      "status": "unverified_external_artifact",
+      "meaning": "This is not a scope exclusion. The current repository retains the required client-facing HTTP/JSON contracts, producer payloads and notification stable-key bridge. Separate client repositories were not provided, so packaging/release and live end-to-end execution of those external clients cannot be verified here; no in-repository feature was treated as optional on that basis."
+    },
+    {
+      "boundary": "external payment channels and compatibility",
+      "status": "excluded_by_scope",
+      "meaning": "No claim is made for Apple Store, Paddle, Afdian or another external payment-provider channel, data migration/backfill, or legacy/version compatibility. Internal wallet, funds, settlement, subscription, reporting, payment-PIN and SourcePoints behavior remains included and is mapped above."
+    }
+  ],
+  "non_claims": [
+    "platform complete",
+    "deployment complete",
+    "current-head CI green",
+    "current-head PostgreSQL validated",
+    "production external-provider credentials verified",
+    "physical hardware verified",
+    "external client repositories released or end-to-end verified"
+  ],
+  "client_contract_closure": {
+    "result": "reviewed_source_closed",
+    "new_scope_exclusion": false,
+    "statement": "No in-repository client-facing API, JSON contract, producer payload or required push stable-key bridge was skipped as client adaptation. Each mapped client-accessible business family is exposed through its ports handler and internal/application/router.go host composition. External client repositories were not supplied, so their release and end-to-end execution remain an acceptance limit rather than a scope exclusion.",
+    "evidence": [
+      "internal/application/router.go: canonical and gateway route dispatch for mapped service handlers",
+      "ports/**: typed request/response JSON DTOs and HTTP handlers cited by each item host_wiring entry",
+      "ports/notifications/devices.go: authenticated device start/confirm/list/revoke HTTP and JSON contract",
+      "internal/notificationpg/device_delivery.go: provider payload kind=notifications.wakeup with notification_id, identical delivery_key and app_id",
+      "web/notification-device-client.js: actual registration challenge bridge plus durable owner/app/stable-key IndexedDB deduplication and authenticated inbox refresh",
+      "ports/notifications/model.go and internal/notificationpg/outbox.go: canonical notification/inbox/event JSON envelopes and bounded metadata",
+      "internal/publishernotificationpg/worker.go and tests/integration/publisher_content_notifications_test.go: stable source key plus post/livestream topic, action_uri, notification_type and source identifiers",
+      "ports/notifications/source/Solian__lib__notifications__notification.dart: retained current-client notification/action_uri wrapper evidence"
+    ]
+  }
+}

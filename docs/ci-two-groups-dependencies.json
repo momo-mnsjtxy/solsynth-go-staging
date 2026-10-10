@@ -1,11 +1,11 @@
 {
-  "base_commit": "275ed0a5e84882e5aea2fcf46d1c8fa163e0ee71",
+  "base_commit": "e71b407927f3957d8787226b36d249f6d213d134",
   "restart_cases": [
     {
       "test": "TestPGAccountAdminSavedRestartPersistence",
       "source": "tests/integration/account_admin_badges_test.go",
       "function_sha256": "12d3b5d442b390b3f6776aea453e080a100998d5627b7c5e3a665d7f9b056ff4",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "account-admin-badges-restart.json"
       ],
@@ -43,7 +43,7 @@
       "test": "TestPGActivitySavedRestartPersistence",
       "source": "tests/integration/activities_test.go",
       "function_sha256": "7fa25506d4578ab400355e0c60562518d0ebf6b1730cae8c9532ae9881a7a12f",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "activities-state.json"
       ],
@@ -122,7 +122,7 @@
       "test": "TestPGBackendAccountHistorySavedRestartPersistence",
       "source": "tests/integration/account_history_test.go",
       "function_sha256": "75fa58fddbbd4b2b85181bc99647e9b298837df7ff1ba54f71169cfe6d2f2cfa",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "account-history-state.json"
       ],
@@ -169,7 +169,7 @@
       "test": "TestPGBackendWalletExchangeOriginalProofRestartPersistence",
       "source": "tests/integration/wallet_exchange_test.go",
       "function_sha256": "e39428839a2093972460bac2bf3d044b3a73421583a6b2af2e2cb887dcd3c07f",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "wallet-exchange-original-proof.json"
       ],
@@ -183,7 +183,7 @@
       "test": "TestPGBackendWalletReportingRestartPersistence",
       "source": "tests/integration/wallet_reporting_test.go",
       "function_sha256": "5d3e8920d6e73142f7a91bace0b544faa6aedefe29e6c7b3adc205e268f5eef7",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "wallet-reporting-original-proof.json"
       ],
@@ -197,7 +197,7 @@
       "test": "TestPGBlogSavedRestartPersistence",
       "source": "tests/integration/blog_posts_test.go",
       "function_sha256": "116c7696ed7752195a8283deee265674d9444b1faa8dde0d6670dc6774657b22",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "blog-posts.json"
       ],
@@ -245,7 +245,7 @@
       "test": "TestPGBotExecutionRestartPersistence",
       "source": "tests/integration/bot_execution_test.go",
       "function_sha256": "b1501d3f773ade6d0c9f887dd2d534e860ed6d2c8822d20eec85348ddd514415",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "bot-execution-restart.json"
       ],
@@ -274,7 +274,7 @@
       "test": "TestPGCalendarActivityRestartPersistence",
       "source": "tests/integration/calendar_activity_test.go",
       "function_sha256": "d29978610635f26837f8668a1a62b08b78397d02515bfb060fc31473725c359b",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "calendar-activity.json"
       ],
@@ -288,7 +288,7 @@
       "test": "TestPGCalendarMediaRestartPersistence",
       "source": "tests/integration/calendar_media_test.go",
       "function_sha256": "77902325b8e87cd8a591b03ab5febbfdb75ec05782863c25249f3104a6be0b10",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "calendar-media.json"
       ],
@@ -317,7 +317,7 @@
       "test": "TestPGChatDetailsSavedRestartPersistence",
       "source": "tests/integration/chat_details_test.go",
       "function_sha256": "d2d4381fe3c467b6345b9f5a750bc6a4f00f03a0e06240b9e2756ab3cf4cab9d",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "chat-details.json"
       ],
@@ -346,7 +346,7 @@
       "test": "TestPGChatOrganizationRestartPersistence",
       "source": "tests/integration/chat_organization_test.go",
       "function_sha256": "a5778d1926b766ff8002fda373a3f05f5a2dda50c3c2935803e2f03478cf4898",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "chat-organization.json"
       ],
@@ -386,7 +386,7 @@
       "test": "TestPGChatSubscriptionSyncRestartPersistence",
       "source": "tests/integration/chat_subscription_sync_test.go",
       "function_sha256": "d2d2c539944876d39724d9effefeabe239b81f1c24025c2918f780ee727b6d9d",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "chat-subscription-sync.json"
       ],
@@ -398,7 +398,7 @@
       "test": "TestPGChatThreadsForwardRestartPersistence",
       "source": "tests/integration/chat_threads_forward_test.go",
       "function_sha256": "b8ce438678999b111ff7ccd778eec1ecc81d313d889bd2702371dd568e82d934",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "chat-thread-forward.json"
       ],
@@ -412,7 +412,7 @@
       "test": "TestPGChatTransientSavedRestartPersistence",
       "source": "tests/integration/chat_transient_test.go",
       "function_sha256": "cff08d1939258e18e9eb8a4240d5cd8d36c9d89c205b02e1aa5ba2b74ce1400c",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "chat-transient-state.json"
       ],
@@ -655,7 +655,7 @@
       "test": "TestPGFederationPublicAdmissionSavedRestartPersistence",
       "source": "tests/integration/federation_public_admission_test.go",
       "function_sha256": "901c2c53c95e3527b1613288035715148c200d90f72fdd8c14c2e87c6fe0a312",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "federation-public-admission-restart.json"
       ],
@@ -667,7 +667,7 @@
       "test": "TestPGFederationQuoteRestartPersistence",
       "source": "tests/integration/federation_quotes_test.go",
       "function_sha256": "df32f9cd0863f0453f632c78e6cfec1e3b9d50eefc19ece87cb08e310dca90c1",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "federation-quote-restart.json"
       ],
@@ -708,7 +708,7 @@
       "test": "TestPGFriendEventsSavedRestartPersistence",
       "source": "tests/integration/friend_events_test.go",
       "function_sha256": "95f5638efa3b02b03e68f49e501e7befed55fef6b537320f1d9f492546021989",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "friend-events-state.json"
       ],
@@ -722,7 +722,7 @@
       "test": "TestPGFriendsOverviewSavedRestartPersistence",
       "source": "tests/integration/friends_overview_test.go",
       "function_sha256": "6f6b98e274b525706be93bfa002bc8ac63818c46dece79821ff8711abf341641",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "friends-overview-state.json"
       ],
@@ -731,6 +731,25 @@
       ],
       "named_database_markers": {},
       "storage_contract": "Independently reviewed original before-phase synthetic account IDs, one-hour bearer credentials issued before target state, public verifier keys and elapsed wall clock, exact visible overview and source event count. After a real restart the unchanged case reads the same canonical state using the original saved credential, compares the complete projection and unchanged source event count, and rejects cross-actor proof substitution. No target seeding, issuance, refresh, lifetime extension, private signing key or authority rewrite occurs in the after phase. Marker remains private to its assigned cluster; actual execution is coordinator CI only."
+    },
+    {
+      "test": "TestPGIdentityDeliverySavedRestartPersistence",
+      "source": "tests/integration/identity_saved_restart_test.go",
+      "function_sha256": "df8a6f17a3f5faa5f490b884788c05ac3ec3de38edf033060a7da43be9165905",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "identity-delivery-saved.json",
+        "fixture-template.json"
+      ],
+      "persistent_directories_or_files": [
+        "identity-delivery-saved.json",
+        "fixture-template.json"
+      ],
+      "named_database_markers": {
+        "fixture-template.json": "Runner-owned sealed schema-only template with candidate/schema/root, OID/comment and original cluster identity; zero copied application rows.",
+        "identity-delivery-saved.json": "Unique solsynth_fixture_identity_<24 hex> clone name/OID/comment/template/cluster identity retained in the same disposable cluster across the actual PostgreSQL and Go-process restart."
+      },
+      "storage_contract": "Before creates a unique database from the sealed runner template and seeds only that database. It saves public-only original verifier material with a one-hour pre-target bounded clock, explicit independent SourcePoints treasury account/wallet/currency/per-grant/day configuration, original pending 25-point synthetic grant and canonical confirmed-device first-push 3-point grant. Captures exact account/session/policy, grant, wallet/pocket, ledger, progression outbox, encrypted device, per-delivery fixed manifest, accepted/uncertain receipt and outer delivery rows. The partial FCM delivery has one accepted and one uncertain receipt and an outer terminal suppressed_at + DELIVERY_UNCERTAIN with delivered_at NULL; a separate all-accepted manifest has no outer acknowledgment yet. After opens only the same existing named database and verifies OID/comment/template/cluster plus every original row before consuming anything. No schema install, seed, new fixture, key generation, session issue, bearer refresh or repair occurs. Two fresh actual ProcessSourcePoints repositories consume the original pending grants exactly once; markers, exact currency/amount/payer/payee/status=2 deterministic grant-key ledger, payout packets and total budget=28 match, treasury100->72 and recipient0->28 conserve funds, and a third fresh worker returns0. Real DeviceStore with synthetic capture provider and the same canonical notification policy completes only the saved accepted outer acknowledgment without any provider call, while the saved uncertain delivery remains terminal non-delivered; a second outer worker finds no due item and provider wakeup count stays0. Original authority, encrypted devices, fixed manifests and accepted/uncertain receipts remain unchanged. Marker is runner-local mode0600 and never an uploaded artifact; no fixture transfer across groups."
     },
     {
       "test": "TestPGLiveStreamAwardsPayoutRestartPersistence",
@@ -805,7 +824,7 @@
     {
       "test": "TestPGMLSRestartPersistence",
       "source": "tests/integration/chat_mls_restart_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "b0f33fc222d7ca02237274d8cb489adec31258e507a3f07239fc66d21fe5d5d2",
       "marker_files": [
         "owned-mls-restart.json"
@@ -889,7 +908,7 @@
       "test": "TestPGMiniappUploadMediaSavedRestartPersistence",
       "source": "tests/integration/miniapp_upload_test.go",
       "function_sha256": "ab7aff3d372e8e74e91dc9b3e88dcfc51f641fbb352fb193ece9f7e796e30412",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "synthetic-miniapp-upload-restart.json"
       ],
@@ -1007,7 +1026,7 @@
       "test": "TestPGPostAutomodSavedDecisionRestartPersistence",
       "source": "tests/integration/post_automod_test.go",
       "function_sha256": "652191a4d7d6ac10ee6967404d2c3fa890c81abb0c630a7018ac3533ccb7073c",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "post-automod-saved.json"
       ],
@@ -1033,7 +1052,7 @@
       "test": "TestPGPostCompositionSavedRestartPersistence",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "733f6718923b9b86c606ed3656073b380f7be97f627813058eb498ffc5a345f5",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "post-composition-state.json",
         "fixture-template.json"
@@ -1077,7 +1096,7 @@
       "test": "TestPGPostPinSavedRestartPersistence",
       "source": "tests/integration/post_pins_test.go",
       "function_sha256": "772885afeac0da3e4e0cc7db2ec4e165295e7f22d14b6eafdfb237da812a109f",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "post-pins.json"
       ],
@@ -1105,7 +1124,7 @@
       "test": "TestPGPostScheduleSavedRestartPersistence",
       "source": "tests/integration/post_scheduling_test.go",
       "function_sha256": "50ef444f14e89e3bd1f02cd1070f0d9e4a5260c1d79a5a1269ae206c21af1cd5",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "post-scheduling.json"
       ],
@@ -1141,7 +1160,7 @@
     {
       "test": "TestPGProductStockRestartPersistence",
       "source": "tests/integration/product_stock_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "aeaa4b463e9fc5a15c20bff7ca8f01887e6aa63944c020020e968b3ab8c6709d",
       "marker_files": [
         "product-stock-restart.json"
@@ -1183,6 +1202,25 @@
         "progression-sources.json": "Before-only unique progression database clone name/OID/comment and original template/cluster identity, original actor/source ID, byte-exact source row and public authority configuration."
       },
       "storage_contract": "Before clones the reviewed zero-row schema template and initializes canonical progression definitions only in its isolated database. Creates one original topical source under the original authority and verifies no event has consumed it. Saves original source JSON and public verifier snapshot with the exact existing database identity. After requires the same named database/OID/cluster/candidate/schema and unchanged original source, verifies the event is still absent, reconstructs a real maintenance transaction guard using only saved public verification configuration, and projects that pending original source to exactly one event. A second worker invocation must not duplicate it. No after account or target seed, schema install, definition restore, credential issuance/refresh, source repair or replacement database. Isolation prevents unrelated global ProcessDue tests from consuming the original pending source before the actual restart."
+    },
+    {
+      "test": "TestPGPublisherContentSavedRestartPersistence",
+      "source": "tests/integration/publisher_content_notifications_test.go",
+      "function_sha256": "6b74d0ed132a43bdd715c8baa409e2356b718e4090f61edfd52f641782b3aec8",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "publisher-content-notifications.json",
+        "fixture-template.json"
+      ],
+      "persistent_directories_or_files": [
+        "publisher-content-notifications.json",
+        "fixture-template.json"
+      ],
+      "named_database_markers": {
+        "fixture-template.json": "Runner-owned sealed schema-only template marker binding the exact reviewed candidate/schema fingerprint, template OID and original disposable PostgreSQL cluster identity; the template contains zero copied application rows.",
+        "publisher-content-notifications.json": "Before-only marker binding the unique isolated pubnotify database name, OID and database comment to the original template/cluster identity, plus the original actors and one-hour tokens, publisher, post, exact pending notification intent, exact public state snapshot and public authority snapshot."
+      },
+      "storage_contract": "Before clones the reviewed zero-row schema template into a unique isolated pubnotify database, creates the original actors and one-hour credentials, publisher, notifying subscription and public post, leaves the original content-notification intent pending, verifies that no matching notification outbox row exists, and saves the exact intent/public state, public authority and database identity. After requires the same database/OID/comment/template/cluster/candidate/schema and verifies the exact pending intent, exact public state and zero matching outbox rows before constructing two production backends; it then drains the original pending intent with both workers and asserts exactly one matching notification outbox row and exactly one completed original intent. After performs no fixture creation, seed, credential issuance or refresh, schema installation, target/subscription/post reconstruction, intent repair, marker replacement, or replacement-database creation. The after phase deliberately completes the original pending intent to prove two-worker exactly-once continuation; it does not claim transport delivery or a read-only restart."
     },
     {
       "test": "TestPGPublisherRatingRestartPersistence",
@@ -1265,7 +1303,7 @@
       "test": "TestPGRealmMemberRestartPersistence",
       "source": "tests/integration/realm_members_test.go",
       "function_sha256": "753a485c68706942ad07608e78da21ad20d3fceffd754bbe31276361aabb3096",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "realm-member-record.json"
       ],
@@ -1285,13 +1323,13 @@
       "named_database_markers": {},
       "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
       "function_sha256": "f02f05c54a984575b46a5a1f890e77972db877fd4d31ad2cc3b27bd80b6a1cb0",
-      "group_before_and_after": "group-a"
+      "group_before_and_after": "group-b"
     },
     {
       "test": "TestPGRealmProfileAndLogRestartPersistence",
       "source": "tests/integration/realm_profile_restart_test.go",
       "function_sha256": "fc22dcf1c9979965926a95229d2b885de7d208c716993331248d97bebd225056",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "realm-profile-log-record.json"
       ],
@@ -1343,7 +1381,7 @@
       "test": "TestPGRelationshipExpiryRestartPersistence",
       "source": "tests/integration/relationship_expiry_test.go",
       "function_sha256": "d17580c666777f697966adbdb4e273b2b02eab960b608c285078e4e63fdbe5d2",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "relationship-expiry-restart.json"
       ],
@@ -1362,6 +1400,27 @@
       "persistent_directories_or_files": [],
       "named_database_markers": {},
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
+    },
+    {
+      "test": "TestPGRewindConfiguredAdaptersSavedRestartPersistence",
+      "source": "tests/integration/rewind_adapters_test.go",
+      "function_sha256": "c62115b7956e7cf92313a439058a9f9f4ce1d7b09d8eae9564f4130cb719de69",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "rewind-configured-adapters.json",
+        "rewind-configured-dictionary.txt",
+        "fixture-template.json"
+      ],
+      "persistent_directories_or_files": [
+        "rewind-configured-adapters.json",
+        "rewind-configured-dictionary.txt",
+        "fixture-template.json"
+      ],
+      "named_database_markers": {
+        "fixture-template.json": "Runner-owned sealed schema-only template marker binding the exact reviewed candidate/schema fingerprint, template OID and original disposable PostgreSQL cluster identity; the template contains zero copied application rows.",
+        "rewind-configured-adapters.json": "Before-only marker binding the unique isolated rewind database name, OID and database comment to the original template/cluster identity, plus the original actor, one-hour token, point, share code, year, dictionary SHA-256, public authority snapshot, exact point row and exact canonical action-history rows."
+      },
+      "storage_contract": "Before exclusively creates the mode-0600 configured dictionary, clones the reviewed zero-row schema template into a unique isolated rewind database, creates the original proof and target data, persists an immutable rewind point/share through the configured canonical SQL action adapter and dictionary tokenizer, and saves exact point/action snapshots and database identity. After requires the same dictionary bytes by saved SHA-256 and the same database/OID/comment/template/cluster/candidate/schema, restores the saved public authority, authenticates the original token, compares the persisted point and action rows before reads, verifies the same owner point, stored top words and public redaction, and finally verifies the point row remains unchanged. After performs no fixture creation, seed, credential issuance or refresh, schema installation, target creation, snapshot rebuild or repair, marker replacement, or replacement-database creation; this case validates persisted configured-adapter output rather than recomputing the snapshot."
     },
     {
       "test": "TestPGRewindRestartPersistence",
@@ -1445,13 +1504,13 @@
       "named_database_markers": {},
       "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
       "function_sha256": "a2b8078781f6a1b1b625e58830dcc7e305e4f7cf0fc3d2ba3f6f059697546800",
-      "group_before_and_after": "group-b"
+      "group_before_and_after": "group-a"
     },
     {
       "test": "TestPGSurveySubscriptionsRestartPersistence",
       "source": "tests/integration/survey_subscriptions_test.go",
       "function_sha256": "376285990fb68a26b6ee9cc450943e0aeb2002e17f9c0f09be08cdf88bea69db",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "survey-subscriptions.json"
       ],
@@ -1487,7 +1546,7 @@
     {
       "test": "TestPGTicketMediaRestartPersistence",
       "source": "tests/integration/ticket_media_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "7d5684e6e013547e98910362251ad96854d6659756ab1e9df7fe5125b06b633b",
       "marker_files": [
         "ticket-media.json"
@@ -1658,25 +1717,25 @@
       "test": "TestPGBackendAccountAdminSensitiveReadRoutes",
       "source": "tests/integration/account_admin_badges_test.go",
       "function_sha256": "ed503ce64e05347b770a37d792efd3cb8deef54d02b9d4abb7f3be39de26ede1",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendAccountHistoryAuthoredRoutes",
       "source": "tests/integration/account_history_test.go",
-      "function_sha256": "2ec448c8a5a9b9e0b542563cce84a4bbf12bb5931ec0a5870dc7e8854a386374",
-      "group": "group-b"
+      "function_sha256": "1c953fb984fa2fcfb8502ab764882730956ee7ddae595c371ab2d7d4025b8c2c",
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendAccountHistoryForgedChannels",
       "source": "tests/integration/account_history_test.go",
       "function_sha256": "e52f7de658552f69f1b27761921784798751240a8a411cc3081cf09c2e9bfa14",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendAccountHistorySavedRestartPersistence",
       "source": "tests/integration/account_history_test.go",
       "function_sha256": "75fa58fddbbd4b2b85181bc99647e9b298837df7ff1ba54f71169cfe6d2f2cfa",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendAccountSettingsComposition",
@@ -1688,7 +1747,7 @@
       "test": "TestPGBackendActivityAuthoredRoutesLifecycle",
       "source": "tests/integration/activities_test.go",
       "function_sha256": "1c9e26447a68cd3f9c3452b7b0062e41de5d87f7c13f5d61c21f68ca17a6a217",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendAdminExtensionsComposition",
@@ -1700,7 +1759,7 @@
       "test": "TestPGBackendAffiliationRoutesAndActivation",
       "source": "tests/integration/affiliation_test.go",
       "function_sha256": "e4f795f1fe152a462ced2e9c85d63c58c858e51169ecc3ba3cf3125e35816df9",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendAutocompleteComposition",
@@ -1742,19 +1801,19 @@
       "test": "TestPGBackendChatCanonicalCompositionRechecksAfterSourceLockWait",
       "source": "tests/integration/chat_composition_test.go",
       "function_sha256": "eaf9f729a716ec54264cba4dad45cb4860cf0c2c7a8930421814e2a67fbb4b44",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendChatDetailsAuthoredRoutesAndFailClosedPolicy",
       "source": "tests/integration/backend_chat_details_test.go",
       "function_sha256": "46b4e0eba5ecd95c83f289af6ac8545dd0eb3c3a9c876506f140ca50f4c0de16",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendChatDetailsCanonicalProfileConfiguration",
       "source": "tests/integration/backend_chat_details_test.go",
       "function_sha256": "0cd2a4842221ca70757e44cda97031f4e8ba22cec1079cd899376c707e0e85b0",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendChatMediaAndReactionsComposition",
@@ -1766,7 +1825,7 @@
       "test": "TestPGBackendChatOrganizationRoutes",
       "source": "tests/integration/chat_organization_test.go",
       "function_sha256": "08add1c06534779c72e51a381d8697ced7b779d9920ed4aa12be484b489b2f90",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendChatRelationsComposition",
@@ -1778,25 +1837,25 @@
       "test": "TestPGBackendChatSubscriptionSyncRoutes",
       "source": "tests/integration/chat_subscription_sync_test.go",
       "function_sha256": "b25917870928dbd9b049e6d7ac7b8a07d489137765a50092917f730d6a623a01",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendChatThreadsForwardAndRedirectComposition",
       "source": "tests/integration/chat_threads_forward_test.go",
       "function_sha256": "c5cb6c1a7e75916545410c2a39b5cc7421182bae75f1a743dc08d0eeef7617d8",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendChatTransientMultipartAndWebSocketComposition",
       "source": "tests/integration/chat_transient_test.go",
       "function_sha256": "52abd4b0e7c70f0dae8f98638db73b738ad8249f5753430ff094658287bff8e7",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendChatTypedFundSurveyComposition",
       "source": "tests/integration/chat_composition_test.go",
       "function_sha256": "5cd817cd07b6a4e1a8d37c1bec1358540b2d10bb6cb78992020fc26339dbf9ca",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendContentComposition",
@@ -1814,7 +1873,7 @@
       "test": "TestPGBackendDisabledVoiceRequiresNoVoiceSchemaOrWorker",
       "source": "tests/integration/chat_voice_configuration_test.go",
       "function_sha256": "5509c88b02641456517cb0f3aac55b1fb33b1e11e328e00d0801e82e59729032",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendDomainCollectionsComposition",
@@ -1838,19 +1897,19 @@
       "test": "TestPGBackendFederationDeliveryLeaseComposition",
       "source": "tests/integration/backend_federation_delivery_test.go",
       "function_sha256": "3c8f221a08fc5482b724e7ddd5cb6a6d5ce9eacc81028cd4dd08247c8abcbc8e",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendFederationDiscoveryComposition",
       "source": "tests/integration/backend_federation_discovery_test.go",
       "function_sha256": "160b1cc66222e9659215373655777a2063a8a7dc2c0ee27231c5344de2e7d999",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendFederationPublicAdmissionComposition",
       "source": "tests/integration/backend_federation_public_admission_test.go",
       "function_sha256": "71b72fcb14e378b0298ebd57b7077fc4f00477635787398585dc58072e42d6df",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendFortuneComposition",
@@ -1910,7 +1969,7 @@
       "test": "TestPGBackendMiniappAuthoredMultipartAndCanonicalMedia",
       "source": "tests/integration/miniapp_upload_test.go",
       "function_sha256": "0dfdfd52cdcd559a2edd4283ac9bcb3551f6a33c5bcc537d0a6a2e3206558315",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendOAuthComposition",
@@ -1934,7 +1993,7 @@
       "test": "TestPGBackendPostAutomodCompositionAndExplicitReview",
       "source": "tests/integration/backend_post_automod_test.go",
       "function_sha256": "13cd0631136f633228cc0a480fada19a47771ef185d29bf9dac6ff1aa9c87102",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendPostAwardCheckoutAndRelease",
@@ -1946,7 +2005,7 @@
       "test": "TestPGBackendPostCompositionAuthoredRoutes",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "c90757f29ddbabdf2b165e2f94b60b16c25ec4166a267e8512fb978bf5883303",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendPostRealmComposition",
@@ -1976,13 +2035,13 @@
       "test": "TestPGBackendRealmBoostRoutes",
       "source": "tests/integration/realm_boosts_host_test.go",
       "function_sha256": "fff42f3ad13313aa0a56c2a0c2609e17e6527e9b8bb796a0b2ea4f0c21fda665",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendRealmMemberRoutesAndFeatureGates",
       "source": "tests/integration/realm_members_test.go",
       "function_sha256": "168b30d5f3241f0bd31116c999717bdd4ab0076475e819404ef1783e58aed849",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendRefreshContinuesBroadcastChatThenLogoutRevokes",
@@ -2006,7 +2065,7 @@
       "test": "TestPGBackendShippingAddressCheckout",
       "source": "tests/integration/shipping_test.go",
       "function_sha256": "4610b8e7c43a54626cc9b505db3405092d92b055b6b8d9f0fe442c6bae05604f",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendSigninHTTPProcessRestart",
@@ -2017,7 +2076,7 @@
     {
       "test": "TestPGBackendSubscriptionActivationRoutes",
       "source": "tests/integration/subscription_activation_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "81bf4ee7163be5f5b661325b717615390f5d4530c4f081b7255415708bcc70c3"
     },
     {
@@ -2036,72 +2095,78 @@
       "test": "TestPGBackendVoiceReadProtectionDriveEndpoints",
       "source": "tests/integration/voice_media_protection_test.go",
       "function_sha256": "a26fe3501552e1eabbd9b8a41588d583225e18f1f09214dc6a9313d4ce985d28",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendWalletExchangeDisabledAndTreasuryLiquidity",
       "source": "tests/integration/wallet_exchange_test.go",
       "function_sha256": "ef4cc4d6500cf9588e75436511a0eee92c652485581564fb29f73920188bb84a",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendWalletExchangeOriginalProofRestartPersistence",
       "source": "tests/integration/wallet_exchange_test.go",
       "function_sha256": "e39428839a2093972460bac2bf3d044b3a73421583a6b2af2e2cb887dcd3c07f",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendWalletExchangePINReplayAndConservation",
       "source": "tests/integration/wallet_exchange_test.go",
       "function_sha256": "7e016f73be7b7e7cf9a2e6e0fd58addd05f4556ae45eb0fa49a663866df222ff",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendWalletReportingFundsDoNotDoubleCount",
       "source": "tests/integration/wallet_reporting_test.go",
       "function_sha256": "167ad7e61dd0da609529117272b64fcf000adaf2ffb06a85667f3a93ce2d8dee",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendWalletReportingLifecyclePrivacyAndDates",
       "source": "tests/integration/wallet_reporting_test.go",
       "function_sha256": "f717362400148668a17a787db4be889703c136f99b7574f7054abb0813432e6a",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendWalletReportingRestartPersistence",
       "source": "tests/integration/wallet_reporting_test.go",
       "function_sha256": "5d3e8920d6e73142f7a91bace0b544faa6aedefe29e6c7b3adc205e268f5eef7",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendWebSocketSubscriptionCommandsPersistPerConnection",
       "source": "tests/integration/chat_subscription_sync_test.go",
       "function_sha256": "e47d44cc441bef03d3907440b4c84b015d390f6493a9517066a1c3a2646d5923",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBlogBackendAliasesAndStrictPermissionRequest",
       "source": "tests/integration/blog_posts_test.go",
       "function_sha256": "fc49251d0d736974cb800a83f3dcbdc60dd9c6ae502e57f90d927fd9895cf62f",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGCalendarMediaComposedAudienceAndProjection",
       "source": "tests/integration/calendar_media_test.go",
       "function_sha256": "9f732b6b00916cce994f24ec7c6a30954a33b95b0018d2d9fdf7053dfd404709",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGCalendarMediaComposedReadProofWait",
       "source": "tests/integration/calendar_media_test.go",
       "function_sha256": "7e8eaf92ebf83a5ad790512103f808d241a1fbc6f193ee86e6b1fc5614772b62",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGChatCanonicalCompositionRechecksAfterAttachmentWait",
       "source": "tests/integration/chat_composition_test.go",
       "function_sha256": "8265108c722cf7b90d6993b4c286755c52ca7a5f428ed82ef68e4d59e2433f12",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCheckInCaptchaOriginalAuthorityAfterProvider",
+      "source": "tests/integration/identity_completion_test.go",
+      "function_sha256": "ff4493d07fa78e6eb363be917110771b34b22d76454e9d6ee26cecf047e45e10",
       "group": "group-b"
     },
     {
@@ -2299,8 +2364,14 @@
     {
       "test": "TestPGMLSBackendAuthorityAndGatewayComposition",
       "source": "tests/integration/chat_mls_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "de6593c1672b799b0a894b32de15eb889382507cb4262b1114d5f5a561457a9b"
+    },
+    {
+      "test": "TestPGMediaLivePhotoCompositionOwnershipAudienceAndCleanup",
+      "source": "tests/integration/media_management_test.go",
+      "function_sha256": "b0f7cf2ef57d2b8e26de9460c7131b0bc86b72c26b14fb89aed018a9042801ac",
+      "group": "group-a"
     },
     {
       "test": "TestPGOAuthRegistrationOwnershipAndResourceHostScopes",
@@ -2324,79 +2395,85 @@
       "test": "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
       "source": "tests/integration/post_automod_editor_projection_test.go",
       "function_sha256": "097c1d4e3a1be5fd20424ebc378f42976b110ddc288c5be48082d5f69aa951cd",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostAutomodRealmAndNestedEvidenceIsolation",
       "source": "tests/integration/post_automod_review_test.go",
       "function_sha256": "ba8660369eeb754de2171e531c990098dfa69054cb4de392472b4cff7d87bacb",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostCompositionCanonicalLivePrivacy",
       "source": "tests/integration/post_composition_review_test.go",
       "function_sha256": "a1e9c781b53da11d8ca16c86da3ff4e3e4d3755d4f132ca84b3c3fb3b1a57651",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostCompositionCanonicalReferencesAndReplay",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "10b80f2e317029ec9f946c3127da94002d16eaad4a5310e6dac396e1c25a5caf",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostCompositionFinalWaitsRecheckReferences",
       "source": "tests/integration/post_composition_review_test.go",
       "function_sha256": "920fb141498858f1b812493f89eff9027838d9aa19cef64617945f90017a3132",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostCompositionLivePrivacyExpiryAndPublication",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "404742daffc5683b34f05e113fdb61247f94ce3a2cfde89eafc8ba07f02b9456",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostCompositionOwnershipAndAtomicRollback",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "f6f59f56e22aa0b83ef2bc3a4f3a5bd84f9f2d27799ce7c23562f771bce68b87",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostCompositionProofScopeAndMediaWait",
       "source": "tests/integration/post_composition_review_test.go",
       "function_sha256": "ea617b2c622d90e43bd7c43a4a0935138c06543a003c0ab70c9af449e15e3976",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostCompositionSavedRestartPersistence",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "733f6718923b9b86c606ed3656073b380f7be97f627813058eb498ffc5a345f5",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostCompositionTargetWaitRechecksLifecycle",
       "source": "tests/integration/post_composition_test.go",
       "function_sha256": "51d093db4560bfd29f29e08ec17ba2bf2b728f57c7f4986438bbe22c23cdf11d",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostScheduleBackendProjectionAndDeferredFederation",
       "source": "tests/integration/post_scheduling_test.go",
       "function_sha256": "f7147dd9bf1d0c32009cd630e84c01cfa007661ea20611f7ec85a472de27be6f",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGRealmPermissionBackendDTOAndNullClear",
       "source": "tests/integration/realm_permissions_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "649fb752ec68dee61b4f71f49c0c9e691074b75fb5adf2f66a1b35fc961a5f89"
     },
     {
       "test": "TestPGRealtimeTicketRedeemsAcrossBackendInstances",
       "source": "tests/integration/backend_test.go",
       "function_sha256": "92208926518341533a8738b07a9a8db0e19dc6a89f9cb6ea7ba83b56513e51d7",
-      "group": "group-a"
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGRewindActualCanonicalActivityDictionaryHostAndPrivacy",
+      "source": "tests/integration/rewind_adapters_test.go",
+      "function_sha256": "940381e9653d13bfec217359e047db355d1458f6cb7120bd49d2f14627b01798",
+      "group": "group-b"
     },
     {
       "test": "TestPGRoomMediaConcurrentSlotsAndBackendComposition",
@@ -2407,7 +2484,7 @@
     {
       "test": "TestPGTicketMediaComposedLifecycleAndPrivateAudience",
       "source": "tests/integration/ticket_media_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "6c5f78f818fabf0e7ae9b7f0dca5858faf7f3c5f6d4b76406e0ecc12fe2294ec"
     }
   ],
@@ -2422,7 +2499,7 @@
     },
     {
       "source": "tests/integration/account_history_test.go",
-      "sha256": "a6ce9cf5d4da36e6fcad5933f6925c6ffd71d00c3dcacbb9bf6eabd3703fd8ff"
+      "sha256": "397e93ca48cc5873e8e67df16c3f153fc9c25405ea9c55378eaf6a923a589e55"
     },
     {
       "source": "tests/integration/account_settings_test.go",
@@ -2797,6 +2874,10 @@
       "sha256": "752efa65fdf334c4266037250acebeecf746359bc4d5b1ba07a0e642821e45fa"
     },
     {
+      "source": "tests/integration/federation_broader_test.go",
+      "sha256": "0ee01e76ea20abd332cb37b73bd33961551fe6229e48bf7395890aecd3fe01a4"
+    },
+    {
       "source": "tests/integration/federation_cleanup_receipts_test.go",
       "sha256": "a24a27abf12a9eedc44a832218a7b8f02e96e64561e217f5d1165ccafce72285"
     },
@@ -2842,7 +2923,7 @@
     },
     {
       "source": "tests/integration/federation_test.go",
-      "sha256": "fbae949d583afb73348f522c87380ef90d30c2ecde0d9c448ab29564322799f5"
+      "sha256": "0e427948818eba68a9294655e70db77928a94e0c37c36c6f752ec35e61ecc56d"
     },
     {
       "source": "tests/integration/fortunes_test.go",
@@ -2865,8 +2946,24 @@
       "sha256": "57ca93eb975963de5d2fec0b2d67483f9eb833ebe1728ced8045860bbcccbfa2"
     },
     {
+      "source": "tests/integration/identity_completion_test.go",
+      "sha256": "e888aede8b03d1c05e6191570235dcf92b53c7b8a543a204e009f8215fb7fd9b"
+    },
+    {
+      "source": "tests/integration/identity_delivery_review_test.go",
+      "sha256": "c338bfb6bc60daf519e5f3137c782806febe7919db5c3029119bfb42bebd1ba2"
+    },
+    {
       "source": "tests/integration/identity_guard_review_test.go",
       "sha256": "998270edce0471d5b48ac41a1d95ca82d669241cbcd3b3ccc36fc2a6abfb8987"
+    },
+    {
+      "source": "tests/integration/identity_saved_restart_test.go",
+      "sha256": "7d0802ed5a9ff5731d4d05afbae246b21586c226e62846dd323dff76ab50557c"
+    },
+    {
+      "source": "tests/integration/identity_terminal_guards_test.go",
+      "sha256": "8fd80c222731ee43acddcc7dc36ab9136143d9068518c98d4cb392cdb80fd972"
     },
     {
       "source": "tests/integration/livestream_awards_test.go",
@@ -2882,11 +2979,27 @@
     },
     {
       "source": "tests/integration/livestreams_test.go",
-      "sha256": "074c194bcb99e618b8631fc14303602de53c3f3eb0c28e27ae63321bc2609d37"
+      "sha256": "1060de326cefc4cfc623caea9da4af0ca8611b7f2c490252db9885a4118e2644"
+    },
+    {
+      "source": "tests/integration/locations_completion_test.go",
+      "sha256": "0481e114471ad83f5dfdac623d55043b3b8501359ef7bd07acba593232d8a20d"
+    },
+    {
+      "source": "tests/integration/locations_media_final_review_test.go",
+      "sha256": "b9a3ea3f61e6ca7eed60dab57a38bebd05a4a3ab01ae7cfad033c9c7e2fa9a28"
+    },
+    {
+      "source": "tests/integration/locations_media_review_test.go",
+      "sha256": "f2881612ce608067fec645a8b0455158479043e5aeaa1d35d01917aa9e53aa67"
     },
     {
       "source": "tests/integration/locations_test.go",
       "sha256": "9dfe61bfc0c804e6223e1c57b12f7c5fe350a89faebe66e63a0380c9474988eb"
+    },
+    {
+      "source": "tests/integration/media_management_test.go",
+      "sha256": "eb3b54cb507b36eba5bb9d1eacc1679a6100a55c55781d148feacddac8430284"
     },
     {
       "source": "tests/integration/media_resumable_test.go",
@@ -3030,7 +3143,7 @@
     },
     {
       "source": "tests/integration/presence_progression_test.go",
-      "sha256": "eff0b535b2b3086f8d1967009cd3a6baaccf689bc57831c2f1af283db23b262a"
+      "sha256": "08cf55a2bc70ebeac45145564596dbf20a47a5bf9ec843172589bff108e9a949"
     },
     {
       "source": "tests/integration/product_stock_test.go",
@@ -3043,6 +3156,10 @@
     {
       "source": "tests/integration/progression_sources_test.go",
       "sha256": "1290854bae7555614af4b66e6e6edf25d8430d1b167f6ce488207fe9f7177361"
+    },
+    {
+      "source": "tests/integration/publisher_content_notifications_test.go",
+      "sha256": "89afc1529286f3db5dc5e04643d3fe02eaa6b914ca264d016822f9196710c89c"
     },
     {
       "source": "tests/integration/publisher_ratings_test.go",
@@ -3131,6 +3248,10 @@
     {
       "source": "tests/integration/restart_fixture_test.go",
       "sha256": "487ca66fd4db89c23ac90bc4110845a09e5e2986796a9b8b4a5c989ca6f4c5cc"
+    },
+    {
+      "source": "tests/integration/rewind_adapters_test.go",
+      "sha256": "ef4255612ae556c304513df0ca0c9672dbf968104adbe2b29c7c71f3410f6fdb"
     },
     {
       "source": "tests/integration/rewind_test.go",
@@ -3374,9 +3495,9 @@
   "composer_database_isolation_review": {
     "reviewed_base_commit": "5ac8adc3a810a565c4f004073e4d20b37ce27660",
     "test": "TestPGPostCompositionSavedRestartPersistence",
-    "group_before_and_after": "group-b",
+    "group_before_and_after": "group-a",
     "reason": "Global ProcessFundsDue tests use a synthetic seven-day future clock and can expire this unrelated one-day restart fund in the shared database.",
-    "schema_sha256": "d9a885ef58e9fc719bf086200db324bb4d9c9141d8cd6154586b6e3f7bf2c71f",
+    "schema_sha256": "2dafd3bd8eb5a4d1c849914185e12e7509edd46605e05ff3f7abf253308b55b4",
     "ordered_schema_files": [
       "internal/authoritypg/schema.sql",
       "internal/authoritypg/assurance_schema.sql",
@@ -3394,6 +3515,8 @@
       "internal/ticketpg/schema.sql",
       "internal/affiliationpg/schema.sql",
       "internal/notificationpg/schema.sql",
+      "internal/notificationpg/devices_schema.sql",
+      "internal/notificationpg/wellbeing_schema.sql",
       "internal/notificationpg/friend_schema.sql",
       "internal/apppg/schema.sql",
       "internal/oauthpg/schema.sql",
@@ -3417,14 +3540,15 @@
       "internal/commercepg/maintenance_schema.sql",
       "internal/translationpg/schema.sql",
       "internal/postpg/schema.sql",
+      "internal/socialpg/schema.sql",
       "internal/federationpg/schema.sql",
       "internal/federationpg/identity_schema.sql",
       "internal/federationpg/discovery_schema.sql",
       "internal/federationpg/public_admission_schema.sql",
       "internal/federationpg/quote_schema.sql",
       "internal/federationpg/delivery_schema.sql",
+      "internal/federationpg/broader_schema.sql",
       "internal/application/schema.sql",
-      "internal/socialpg/schema.sql",
       "internal/realmboostpg/schema.sql",
       "internal/socialpg/permissions_schema.sql",
       "internal/realmmemberpg/schema.sql",
@@ -3459,6 +3583,8 @@
       "internal/presencepg/schema.sql",
       "internal/progressionpg/schema.sql",
       "internal/accounthistorypg/schema.sql",
+      "internal/accounthistorypg/request_context_schema.sql",
+      "internal/connectionpg/schema.sql",
       "internal/notabledaypg/schema.sql",
       "internal/calendarmediapg/schema.sql",
       "internal/fortunepg/schema.sql",
@@ -3470,6 +3596,7 @@
       "internal/postpg/scheduling_schema.sql",
       "internal/blogpg/schema.sql",
       "internal/livestreampg/schema.sql",
+      "internal/publishernotificationpg/schema.sql",
       "internal/adminpg/schema.sql",
       "internal/livestreampg/chat_schema.sql",
       "internal/livestreampg/outputs_schema.sql",
@@ -3523,7 +3650,7 @@
       },
       {
         "source": "scripts/integration-postgres.sh",
-        "sha256": "ddacce905d7f5ef0651a62f614fc1301968d980c15bc38be6e58e093e5adf994"
+        "sha256": "4bd41b7a90c0ff5bbd35f6ac7a5c81c6bf4b18836c4fce93677f2b09d5cb0664"
       },
       {
         "source": ".github/workflows/postgres-validation.yml",
@@ -3571,19 +3698,19 @@
       }
     ],
     "runtime_case_counts": {
-      "before": 1073,
-      "after": 117
+      "before": 1147,
+      "after": 120
     },
     "actual_cluster_validation": "Pending exact-candidate authorized private CI; offline checks are not database evidence."
   },
   "voice_configuration_review": {
     "basis": "Independent 5.6 Sol review of retention-gated readiness/cleanup and actual missing-table PG regression; original assertions and restart fixtures unchanged.",
     "case": "TestPGBackendDisabledVoiceRequiresNoVoiceSchemaOrWorker",
-    "group": "group-a"
+    "group": "group-b"
   },
   "integrated_source_review": {
     "status": "Unactivated draft; independent catalogue review and exact-candidate private PostgreSQL CI are still required.",
-    "base_commit": "275ed0a5e84882e5aea2fcf46d1c8fa163e0ee71",
+    "base_commit": "e71b407927f3957d8787226b36d249f6d213d134",
     "scope": "Preserves every previously registered case and restart phase; adds all current source and compiled declarations. No database execution or successful CI is inferred from this catalogue.",
     "source_approvals": [
       {
@@ -3625,6 +3752,31 @@
         "lane": "immutable progression facts and daily snapshots",
         "author_commit": "4c23becbe382a13c49c33d7a14f8cc3baa9a7a83",
         "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "federation broader operations and actual key custody",
+        "author_commit": "1ce0f23779e01159e08e36e8ac46f938266715fa",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "Rewind configured canonical activity and dictionary adapters",
+        "author_commit": "4ab97f80762eae9ef56eea4e98fabd54a67effd6",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "publisher post and livestream content notifications",
+        "author_commit": "6e184925254413a4ee1aba8f6519332a8da93b76",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "identity realm progression and actual device delivery",
+        "author_commit": "8368f020eb1fb494fb78f764f8b624f7cb5fc33b",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "location NFC and media management",
+        "author_commit": "b3f02699e8f6ebb386e3d3e581fa84407fb68638",
+        "reviewer": "independent gpt-5.6-sol"
       }
     ],
     "original_suite": {
@@ -3632,8 +3784,8 @@
       "after": 112
     },
     "current_suite": {
-      "before": 1073,
-      "after": 117
+      "before": 1147,
+      "after": 120
     }
   }
 }

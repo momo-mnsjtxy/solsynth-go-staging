@@ -77,6 +77,22 @@ func sourceEvent(ctx context.Context, tx *sql.Tx, actor, kind, source string, no
 		e = tx.QueryRowContext(ctx, `SELECT p.id::text,p.created_at FROM owned_publishers p WHERE p.id=$1 AND p.deleted_at IS NULL AND EXISTS(SELECT 1 FROM owned_accounts_audit a WHERE a.actor_id=$2 AND a.target_id=p.id AND a.action='publishers.create')`, source, actor).Scan(&subject, &v.at)
 	case "relationship.friend_established":
 		e = tx.QueryRowContext(ctx, `SELECT r.related_id::text,r.created_at FROM owned_social_effective_relationships r WHERE r.id=$1 AND r.account_id=$2 AND r.status>=100 AND EXISTS(SELECT 1 FROM owned_social_effective_relationships reverse WHERE reverse.account_id=r.related_id AND reverse.related_id=r.account_id AND reverse.status>=100)`, source, actor).Scan(&subject, &v.at)
+	case "relationship.friend_accept":
+		var requested time.Time
+		e = tx.QueryRowContext(ctx, `SELECT a.request_id::text,a.requested_at,a.accepted_at FROM owned_social_friend_accepts a WHERE a.request_id=$1::uuid AND a.account_id=$2::uuid AND EXISTS(SELECT 1 FROM owned_social_effective_relationships r JOIN owned_social_effective_relationships rev ON rev.account_id=r.related_id AND rev.related_id=r.account_id WHERE r.account_id=a.account_id AND r.related_id=a.requester_id AND r.status>=100 AND rev.status>=100)`, source, actor).Scan(&subject, &requested, &v.at)
+		if e == nil {
+			v.meta["request_elapsed"] = v.at.Sub(requested).String()
+		}
+	case "account.push_enable":
+		e = tx.QueryRowContext(ctx, `SELECT id::text,verified_at FROM notification_v1.devices WHERE id=$1::uuid AND account_id=$2::uuid AND revoked_at IS NULL AND verified_at<=clock_timestamp()AND expires_at>clock_timestamp()`, source, actor).Scan(&subject, &v.at)
+	case "account.connection_link":
+		e = tx.QueryRowContext(ctx, `SELECT id::text,verified_at FROM owned_account_connections WHERE id=$1::uuid AND account_id=$2::uuid AND revoked_at IS NULL AND verified_at<=clock_timestamp()`, source, actor).Scan(&subject, &v.at)
+	case "auth.factor_enable":
+		e = tx.QueryRowContext(ctx, `SELECT id::text,enabled_at FROM owned_authority_factors WHERE id=$1::uuid AND account_id=$2::uuid AND type=3 AND enabled_at<=clock_timestamp()`, source, actor).Scan(&subject, &v.at)
+	case "account.avatar":
+		e = tx.QueryRowContext(ctx, `SELECT l.file_id::text,l.attached_at FROM owned_account_profile_media l JOIN owned_media_files f ON f.id=l.file_id AND f.account_id=l.account_id WHERE l.file_id=$1::uuid AND l.account_id=$2::uuid AND l.slot='picture' AND f.state='ready' AND f.mime_type LIKE 'image/%'`, source, actor).Scan(&subject, &v.at)
+	case "account.profile_complete":
+		e = tx.QueryRowContext(ctx, `SELECT p.id::text,p.updated_at FROM owned_accounts_profiles p JOIN owned_authority_accounts a ON a.id=p.account_id WHERE p.id=$1::uuid AND p.account_id=$2::uuid AND btrim(a.nick)<>'' AND btrim(p.bio)<>'' AND btrim(p.pronouns)<>'' AND btrim(p.location)<>'' AND p.birthday<clock_timestamp()AND EXISTS(SELECT 1 FROM owned_account_profile_media l JOIN owned_media_files f ON f.id=l.file_id AND f.account_id=l.account_id WHERE l.account_id=p.account_id AND l.slot='picture'AND f.state='ready'AND f.mime_type LIKE 'image/%')`, source, actor).Scan(&subject, &v.at)
 	case "account.active":
 		e = tx.QueryRowContext(ctx, `SELECT account_id::text,occurred_at FROM owned_presence_activity_days WHERE id=$1 AND account_id=$2`, source, actor).Scan(&subject, &v.at)
 	default:
@@ -177,10 +193,21 @@ func matches(d progression.Definition, v canonicalEvent, loc *time.Location) boo
 	if d.IsSeedManaged && d.Identifier == "hidden-night-owl" && v.at.In(loc).Hour() >= 4 {
 		return false
 	}
+	if d.IsSeedManaged && d.Identifier == "hidden-speed-friend" {
+		elapsed, e := time.ParseDuration(v.meta["request_elapsed"])
+		if e != nil || elapsed < 0 || elapsed > time.Minute {
+			return false
+		}
+	}
 	return true
 }
 func advance(p *progress, d progression.Definition, at time.Time, loc *time.Location, quest bool) {
 	mode := d.Trigger.Mode
+	// This licensed seed's title is a within-day count, although its archived
+	// generic trigger says streak. Keep custom definitions' modes unchanged.
+	if d.IsSeedManaged && d.Identifier == "hidden-social-butterfly-day" {
+		mode = "daily_count"
+	}
 	if quest {
 		mode = "count"
 	}

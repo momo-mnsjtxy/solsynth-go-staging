@@ -4,6 +4,7 @@ package notificationpg
 import (
 	"context"
 	"database/sql"
+	"strings"
 )
 
 // CollectionPublicationPolicy supplies a fixed, current-source predicate for
@@ -13,16 +14,42 @@ import (
 // Callers cast actor to text before uuid so nested NULLIF(actor, ”) stays text.
 type CollectionPublicationPolicy interface{ CollectionPublicationVisibleSQL() string }
 
+// PublisherContentPolicy owns the reserved publisher-content source key from
+// post/stream projection through inbox reads and provider dispatch.
+type PublisherContentPolicy interface {
+	PublisherContentVisibleSQL() string
+	PublisherContentDeliveryAllowed(context.Context, *sql.Tx, string, string, string) (bool, error)
+}
+
 func (r *Repository) WithCollectionPublications(p CollectionPublicationPolicy) *Repository {
 	r.collections = p
 	return r
 }
+func (r *Repository) WithPublisherContent(p PublisherContentPolicy) *Repository {
+	r.publisherContent = p
+	return r
+}
+func isPublisherContentKey(key string) bool { return strings.HasPrefix(key, "publisher-content:") }
 func (r *Repository) inboxVisibilitySQL() string {
-	ordinary := `left(inbox.source_key,16)<>'collection-post:'`
-	if r.collections == nil {
-		return ordinary
+	ordinary := `left(inbox.source_key,16)<>'collection-post:' AND left(inbox.source_key,18)<>'publisher-content:'`
+	parts := []string{`(` + ordinary + `)`}
+	if r.collections != nil {
+		parts = append(parts, `(`+r.collections.CollectionPublicationVisibleSQL()+`)`)
 	}
-	return `(` + ordinary + ` OR (` + r.collections.CollectionPublicationVisibleSQL() + `))`
+	if r.publisherContent != nil {
+		parts = append(parts, `(`+r.publisherContent.PublisherContentVisibleSQL()+`)`)
+	}
+	return `(` + strings.Join(parts, ` OR `) + `)`
+}
+
+func (r *Repository) publisherContentAllowed(ctx context.Context, tx *sql.Tx, key, account, app, id string) (bool, error) {
+	if !isPublisherContentKey(key) {
+		return true, nil
+	}
+	if r.publisherContent == nil {
+		return false, nil
+	}
+	return r.publisherContent.PublisherContentDeliveryAllowed(ctx, tx, account, app, id)
 }
 
 func (r *Repository) visibleInboxIDs(ctx context.Context, tx *sql.Tx, actor, app string, ids []string) (map[string]bool, error) {

@@ -11,8 +11,13 @@ REQUIRED_SCHEMAS = {
  "internal/developmediapg/schema.sql",
  "internal/interactionpg/collection_publication_schema.sql",
  "internal/accounthistorypg/schema.sql",
+ "internal/accounthistorypg/request_context_schema.sql",
+ "internal/connectionpg/schema.sql",
+ "internal/notificationpg/devices_schema.sql",
+ "internal/notificationpg/wellbeing_schema.sql",
  "internal/activitypg/schema.sql", "internal/friendeventpg/schema.sql", "internal/notificationpg/friend_schema.sql",
  "internal/federationpg/delivery_schema.sql",
+ "internal/federationpg/broader_schema.sql",
  "internal/timelinepg/subscription_state_schema.sql",
  "internal/chatpg/organization_schema.sql",
  "internal/postembedpg/schema.sql",
@@ -48,6 +53,7 @@ REQUIRED_SCHEMAS = {
  "internal/federationpg/discovery_schema.sql",
  "internal/adminpg/schema.sql",
  "internal/livestreampg/schema.sql",
+ "internal/publishernotificationpg/schema.sql",
  "internal/moderationpg/schema.sql",
  "internal/namecardpg/schema.sql",
  "internal/rewindpg/schema.sql",
@@ -134,6 +140,11 @@ def check(runner, read_schema=None):
         "internal/authoritypg/stream_ticket_schema.sql": ("internal/authoritypg/schema.sql",),
         "internal/affiliationpg/paid_schema.sql": ("internal/affiliationpg/schema.sql", "internal/walletpg/schema.sql"),
         "internal/botpg/schema.sql": ("internal/apppg/schema.sql", "internal/mediapg/schema.sql"),
+        "internal/federationpg/broader_schema.sql": ("internal/federationpg/delivery_schema.sql", "internal/socialpg/schema.sql", "internal/postpg/schema.sql"),
+        "internal/accounthistorypg/request_context_schema.sql": ("internal/accounthistorypg/schema.sql", "internal/authoritypg/schema.sql"),
+        "internal/connectionpg/schema.sql": ("internal/accountpg/schema.sql", "internal/accounthistorypg/schema.sql"),
+        "internal/notificationpg/devices_schema.sql": ("internal/notificationpg/schema.sql", "internal/authoritypg/schema.sql"),
+        "internal/notificationpg/wellbeing_schema.sql": ("internal/notificationpg/schema.sql",),
     }.items():
         if schemas.index(schema) <= max(schemas.index(dependency) for dependency in dependencies):
             raise ValueError("canonical dependencies must precede schema: " + schema)

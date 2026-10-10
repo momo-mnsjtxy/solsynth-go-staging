@@ -70,6 +70,17 @@ func (r *Repository) Receive(ctx context.Context, name string, v f.Verified) err
 	if e = r.ensurePeer(ctx, tx, k); e != nil {
 		return e
 	}
+	if _, e = tx.ExecContext(ctx, `LOCK TABLE owned_federation_moderation_rules IN SHARE MODE`); e != nil {
+		return e
+	}
+	decision, e := r.moderationWith(ctx, tx, k.Actor, string(a.Object))
+	if e != nil {
+		return e
+	}
+	silenced := decision.Action == "silence" && (a.Type == "Create" || a.Type == "Update" || a.Type == "Delete")
+	if !decision.Allowed && !silenced {
+		return f.ErrForbidden
+	}
 	switch a.Type {
 	case "QuoteRequest":
 		if e = r.receiveQuoteRequest(ctx, tx, p, k, a); e != nil {
@@ -169,8 +180,15 @@ func (r *Repository) Receive(ctx context.Context, name string, v f.Verified) err
 		if !follows || (!f.Addressed(a, r.actorID(p)) && !f.IsPublic(a)) {
 			return f.ErrForbidden
 		}
+		if silenced && a.Type != "Delete" {
+			break
+		}
 		if e = r.receiveObject(ctx, tx, p, k, a); e != nil {
 			return quotePolicyFailure(tx, e)
+		}
+	case "Move":
+		if e = r.receiveMove(ctx, tx, p, k, a, v.Digest()); e != nil {
+			return e
 		}
 	default:
 		return f.ErrUnsupported
@@ -220,21 +238,40 @@ func (r *Repository) receiveObject(ctx context.Context, tx *sql.Tx, p publisher,
 		_, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_objects(publisher_id,object_id,actor_uri,object,deleted,updated_at) VALUES($1,$2,$3,$4,true,$5) ON CONFLICT(publisher_id,object_id) DO UPDATE SET object=EXCLUDED.object,deleted=true,updated_at=EXCLUDED.updated_at`, p.id, id, k.Actor, string(marshal(map[string]string{"id": id, "type": "Tombstone"})), r.config.Clock())
 		return e
 	}
-	if !f.IsPublic(a) || deleted || a.Type == "Update" && !exists || a.Type == "Create" && exists {
+	addressed := f.Addressed(a, r.actorID(p)) || f.Has(a.To, r.actorID(p)+"/followers") || f.Has(a.CC, r.actorID(p)+"/followers")
+	if !f.IsPublic(a) && !addressed || deleted || a.Type == "Update" && !exists || a.Type == "Create" && exists {
 		return f.ErrForbidden
 	}
 	var n f.Note
 	if json.Unmarshal(a.Object, &n) != nil || n.Type != "Note" || n.AttributedTo != k.Actor || len(n.Content) > 262144 || (!f.Has(n.To, f.Public) && !f.Has(n.CC, f.Public)) {
+		if json.Unmarshal(a.Object, &n) != nil || n.Type != "Note" || n.AttributedTo != k.Actor || len(n.Content) > 262144 || !addressed {
+			return f.ErrForbidden
+		}
+	}
+	if e = r.validateAttachments(k.Actor, n.Attachments); e != nil {
+		return e
+	}
+	if decision, de := r.moderationWith(ctx, tx, k.Actor, n.Content); de != nil {
+		return de
+	} else if !decision.Allowed || decision.Action == "media_reject" && len(n.Attachments) > 0 {
 		return f.ErrForbidden
 	}
 	if e = r.validateQuoteUse(ctx, tx, p, k, &n); e != nil {
 		return e
 	}
-	// Cache only the defined public Note projection. Extension fields, hidden
-	// recipients, remote markup, attachments, and credentials are not retained.
+	// Cache only the defined Note projection. Remote markup and hidden recipients
+	// are normalized; bounded same-origin attachment references remain metadata.
 	n.Context = f.Context
 	n.Content = html.EscapeString(n.Content)
+	n.Summary = html.EscapeString(n.Summary)
 	n.MediaType = "text/html"
+	if f.Has(n.To, f.Public) || f.Has(n.CC, f.Public) {
+		n.To = []string{f.Public}
+		n.CC = []string{r.actorID(p) + "/followers"}
+	} else {
+		n.To = []string{r.actorID(p)}
+		n.CC = nil
+	}
 	_, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_objects(publisher_id,object_id,actor_uri,object,updated_at) VALUES($1,$2,$3,$4,$5) ON CONFLICT(publisher_id,object_id) DO UPDATE SET object=EXCLUDED.object,updated_at=EXCLUDED.updated_at`, p.id, id, k.Actor, string(marshal(n)), r.config.Clock())
 	return e
 }

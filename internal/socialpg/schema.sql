@@ -11,6 +11,13 @@ CREATE TABLE IF NOT EXISTS owned_social_requests (
  created_at timestamptz NOT NULL,CHECK(account_id<>related_id),UNIQUE(account_id,related_id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS owned_social_requests_pair ON owned_social_requests(least(account_id,related_id),greatest(account_id,related_id));
+-- A successful canonical accept retains server-observed timing before deleting
+-- the pending intent. Consumers cannot obtain timing or provenance from clients.
+CREATE TABLE IF NOT EXISTS owned_social_friend_accepts (
+ request_id uuid PRIMARY KEY,account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),requester_id uuid NOT NULL REFERENCES owned_authority_accounts(id),
+ requested_at timestamptz NOT NULL,accepted_at timestamptz NOT NULL,CHECK(account_id<>requester_id),CHECK(accepted_at>=requested_at)
+);
+CREATE INDEX IF NOT EXISTS owned_social_friend_accepts_actor ON owned_social_friend_accepts(account_id,accepted_at,request_id);
 CREATE TABLE IF NOT EXISTS owned_realms (
  id uuid PRIMARY KEY,slug text NOT NULL CHECK(length(slug) BETWEEN 1 AND 256),name text NOT NULL CHECK(length(name) BETWEEN 1 AND 1024),description text NOT NULL DEFAULT '' CHECK(length(description)<=4096),
  account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),is_public boolean NOT NULL DEFAULT false,is_community boolean NOT NULL DEFAULT false,

@@ -99,7 +99,7 @@ func TestAuthoredRoutesAndStrictBodies(t *testing.T) {
 	}
 }
 func TestAccountAdminDoesNotCaptureOtherOwners(t *testing.T) {
-	for _, p := range []string{"/api/admin/accounts", "/api/admin/accounts/alice", "/api/admin/accounts/alice/verification", "/api/admin/accounts/alice/board", "/api/admin/accounts/alice/spells", "/api/admin/accounts/alice/notifications/night-owl", "/api/admin/accounts/metrics/activity/more", "/api/admin/accounts/alice/factors/"} {
+	for _, p := range []string{"/api/admin/accounts/alice/verification", "/api/admin/accounts/alice/board", "/api/admin/accounts/alice/spells", "/api/admin/accounts/metrics/activity/more", "/api/admin/accounts/alice/factors/"} {
 		if Handles(p) {
 			t.Fatal("captured unrelated flow", p)
 		}

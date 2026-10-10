@@ -140,9 +140,23 @@ func (r *Repository) processOne(ctx context.Context) (bool, error) {
 	if c.AccountID != account || c.AppID != app {
 		return false, notifications.ErrInvalid
 	}
-	active, e := lockAccount(ctx, tx, account)
+	reservedPublisher := isPublisherContentKey(c.Key)
+	active := false
+	if reservedPublisher {
+		active, e = r.publisherContentAllowed(ctx, tx, c.Key, account, app, id)
+	} else {
+		active, e = lockAccount(ctx, tx, account)
+	}
 	if e != nil {
 		return false, e
+	}
+	if active {
+		if reservedPublisher {
+			active, e = r.publisherContentAllowed(ctx, tx, c.Key, account, app, id)
+			if e != nil {
+				return false, e
+			}
+		}
 	}
 	if active {
 		level, e := r.preference(ctx, tx, account, app, c.Topic)
@@ -191,9 +205,9 @@ func (r *Repository) DispatchOne(ctx context.Context, s notifications.Sender) (b
 		return false, e
 	}
 	defer tx.Rollback()
-	var id string
+	var id, sourceKey string
 	var attempts int
-	e = tx.QueryRowContext(ctx, `SELECT d.notification_id::text,d.attempts FROM notification_v1.deliveries d JOIN notification_v1.inbox n ON n.id=d.notification_id WHERE n.app_id=$1 AND d.delivered_at IS NULL AND d.suppressed_at IS NULL AND d.next_attempt_at<=clock_timestamp() AND (d.lease_until IS NULL OR d.lease_until<clock_timestamp()) ORDER BY d.next_attempt_at,d.notification_id LIMIT 1 FOR UPDATE OF d SKIP LOCKED`, r.app).Scan(&id, &attempts)
+	e = tx.QueryRowContext(ctx, `SELECT d.notification_id::text,d.attempts,n.source_key FROM notification_v1.deliveries d JOIN notification_v1.inbox n ON n.id=d.notification_id WHERE n.app_id=$1 AND d.delivered_at IS NULL AND d.suppressed_at IS NULL AND d.next_attempt_at<=clock_timestamp() AND (d.lease_until IS NULL OR d.lease_until<clock_timestamp()) ORDER BY d.next_attempt_at,d.notification_id LIMIT 1 FOR UPDATE OF d SKIP LOCKED`, r.app).Scan(&id, &attempts, &sourceKey)
 	if errors.Is(e, sql.ErrNoRows) {
 		return false, nil
 	}
@@ -204,7 +218,13 @@ func (r *Repository) DispatchOne(ctx context.Context, s notifications.Sender) (b
 	if e != nil {
 		return false, e
 	}
-	active, e := lockAccount(ctx, tx, n.AccountID)
+	reservedPublisher := isPublisherContentKey(sourceKey)
+	active := false
+	if reservedPublisher {
+		active, e = r.publisherContentAllowed(ctx, tx, sourceKey, n.AccountID, n.AppID, id)
+	} else {
+		active, e = lockAccount(ctx, tx, n.AccountID)
+	}
 	if e != nil {
 		return false, e
 	}
@@ -221,6 +241,19 @@ func (r *Repository) DispatchOne(ctx context.Context, s notifications.Sender) (b
 			return false, e
 		}
 		return true, tx.Commit()
+	}
+	if reservedPublisher {
+		active, e = r.publisherContentAllowed(ctx, tx, sourceKey, n.AccountID, n.AppID, id)
+		if e != nil {
+			return false, e
+		}
+		if !active {
+			_, e = tx.ExecContext(ctx, `UPDATE notification_v1.deliveries SET suppressed_at=clock_timestamp(),lease_id=NULL,lease_until=NULL WHERE notification_id=$1`, id)
+			if e != nil {
+				return false, e
+			}
+			return true, tx.Commit()
+		}
 	}
 	lease, e := uuid()
 	if e != nil {
@@ -247,9 +280,21 @@ func (r *Repository) DispatchOne(ctx context.Context, s notifications.Sender) (b
 		_, e = r.db.ExecContext(ctx, `UPDATE notification_v1.deliveries SET delivered_at=clock_timestamp(),lease_id=NULL,lease_until=NULL,last_error=NULL WHERE notification_id=$1 AND lease_id=$2`, id, lease)
 		return true, e
 	}
+	// FCM cannot safely replay an uncertain acceptance. End this outer queue
+	// item without claiming delivery; otherwise its durable device receipt
+	// would be leased and rejected forever. In-progress fences remain retryable.
+	if errors.Is(sendErr, notifications.ErrDeliveryUncertain) {
+		_, e = r.db.ExecContext(ctx, `UPDATE notification_v1.deliveries SET suppressed_at=clock_timestamp(),lease_id=NULL,lease_until=NULL,last_error='DELIVERY_UNCERTAIN'WHERE notification_id=$1 AND lease_id=$2`, id, lease)
+		if e != nil {
+			return true, e
+		}
+		return true, sendErr
+	}
 	code := "DELIVERY_FAILED"
 	if errors.Is(sendErr, notifications.ErrDeliveryUnconfigured) {
 		code = "DELIVERY_UNCONFIGURED"
+	} else if errors.Is(sendErr, notifications.ErrDeliveryInProgress) {
+		code = "DELIVERY_IN_PROGRESS"
 	}
 	_, e = r.db.ExecContext(ctx, `UPDATE notification_v1.deliveries SET lease_id=NULL,lease_until=NULL,last_error=$3,next_attempt_at=clock_timestamp()+$4::double precision*interval '1 second' WHERE notification_id=$1 AND lease_id=$2`, id, lease, code, RetryDelay(attempts+1).Seconds())
 	if e != nil {

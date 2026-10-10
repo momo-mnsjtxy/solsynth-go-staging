@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/sphere/taxonomy"
 	"strconv"
 	"strings"
@@ -69,7 +70,7 @@ func ValidateMeet(v CreateMeet) error {
 	if v.Visibility != nil && (*v.Visibility < 0 || *v.Visibility > 2) || !Text(v.Notes, 8192) || v.ExpiresInSeconds != nil && (*v.ExpiresInSeconds < 60 || *v.ExpiresInSeconds > 86400) {
 		return ErrInvalid
 	}
-	if v.ImageID != nil && *v.ImageID != "" {
+	if v.ImageID != nil && !authority.ValidID(*v.ImageID) {
 		return ErrUnsupported
 	}
 	return ValidateLocation(v.LocationName, v.LocationAddress, v.LocationWKT, v.Metadata)

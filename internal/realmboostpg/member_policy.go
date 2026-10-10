@@ -64,3 +64,15 @@ func (r *Repository) QuotaPerkInTransaction(ctx context.Context, tx *sql.Tx, act
 	}
 	return provider.RealmQuotaPerkLevel(ctx, r.db, tx, actor, r.cfg.Policy.PerkLevels, at)
 }
+
+// MaintenancePerkInTransaction cannot impersonate an owner's session. It is
+// limited to the trusted canonical-source award and daily-tenure workers.
+func (r *Repository) MaintenancePerkInTransaction(ctx context.Context, tx *sql.Tx, realm, account string, at time.Time) (int, error) {
+	provider, ok := r.commerce.(interface {
+		RealmMaintenancePerkLevel(context.Context, *sql.DB, *sql.Tx, string, string, map[string]int, time.Time) (int, error)
+	})
+	if !ok {
+		return 0, b.ErrUnavailable
+	}
+	return provider.RealmMaintenancePerkLevel(ctx, r.db, tx, realm, account, r.cfg.Policy.PerkLevels, at)
+}

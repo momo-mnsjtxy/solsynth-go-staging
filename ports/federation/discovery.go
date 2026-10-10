@@ -164,6 +164,7 @@ type DiscoveredActor struct {
 	KeyID          string    `json:"key_id"`
 	KeyFingerprint string    `json:"key_fingerprint"`
 	Observation    string    `json:"observation"`
+	AlsoKnownAs    []string  `json:"also_known_as,omitempty"`
 	ObservedAt     time.Time `json:"observed_at"`
 }
 type DiscoveryJob struct {
@@ -247,18 +248,19 @@ func Discover(ctx context.Context, c Config, t DiscoveryTarget, k RemoteKey, fet
 		return out, retry, e
 	}
 	var actor struct {
-		ID        string    `json:"id"`
-		Type      string    `json:"type"`
-		Username  string    `json:"preferredUsername"`
-		Name      string    `json:"name"`
-		Summary   string    `json:"summary"`
-		Inbox     string    `json:"inbox"`
-		PublicKey PublicKey `json:"publicKey"`
+		ID          string    `json:"id"`
+		Type        string    `json:"type"`
+		Username    string    `json:"preferredUsername"`
+		Name        string    `json:"name"`
+		Summary     string    `json:"summary"`
+		Inbox       string    `json:"inbox"`
+		PublicKey   PublicKey `json:"publicKey"`
+		AlsoKnownAs []string  `json:"alsoKnownAs"`
 	}
 	if json.Unmarshal(b, &actor) != nil {
 		return out, false, ErrInvalid
 	}
-	if !discoveryFieldCase(b, []string{"id", "type", "preferredUsername", "name", "summary", "inbox", "publicKey", "owner", "publicKeyPem"}) {
+	if !discoveryFieldCase(b, []string{"id", "type", "preferredUsername", "name", "summary", "inbox", "publicKey", "owner", "publicKeyPem", "alsoKnownAs"}) {
 		return out, false, ErrInvalid
 	}
 	name, _, _ := strings.Cut(strings.TrimPrefix(t.Resource, "acct:"), "@")
@@ -268,6 +270,19 @@ func Discover(ctx context.Context, c Config, t DiscoveryTarget, k RemoteKey, fet
 	if !Has([]string{"Person", "Application", "Service", "Organization", "Group"}, actor.Type) || !boundedText(actor.Name, 256) || !boundedText(actor.Summary, 4096) {
 		return out, false, ErrInvalid
 	}
+	if len(actor.AlsoKnownAs) > 16 {
+		return out, false, ErrInvalid
+	}
+	aliases := make([]string, 0, len(actor.AlsoKnownAs))
+	seenAliases := map[string]bool{}
+	for _, alias := range actor.AlsoKnownAs {
+		if len(alias) == 0 || len(alias) > 2048 || !c.Allows(alias) || seenAliases[alias] {
+			return out, false, ErrInvalid
+		}
+		seenAliases[alias] = true
+		aliases = append(aliases, alias)
+	}
+	sort.Strings(aliases)
 	key, e := ParsePublicPEM(actor.PublicKey.PEM)
 	if e != nil {
 		return out, false, e
@@ -277,7 +292,7 @@ func Discover(ctx context.Context, c Config, t DiscoveryTarget, k RemoteKey, fet
 	if got != fingerprint {
 		return out, false, ErrForbidden
 	}
-	return DiscoveredActor{Resource: t.Resource, ID: actor.ID, Type: actor.Type, Username: actor.Username, Name: html.EscapeString(actor.Name), Summary: html.EscapeString(actor.Summary), Inbox: k.Inbox, KeyID: k.KeyID, KeyFingerprint: fingerprint, Observation: "unsigned_document_matches_configured_pin", ObservedAt: c.Clock()}, false, nil
+	return DiscoveredActor{Resource: t.Resource, ID: actor.ID, Type: actor.Type, Username: actor.Username, Name: html.EscapeString(actor.Name), Summary: html.EscapeString(actor.Summary), Inbox: k.Inbox, KeyID: k.KeyID, KeyFingerprint: fingerprint, Observation: "unsigned_document_matches_configured_pin", AlsoKnownAs: aliases, ObservedAt: c.Clock()}, false, nil
 }
 
 // Go's JSON structs accept case-insensitive field aliases. Remote identity

@@ -61,7 +61,10 @@ type Content struct {
 	Tags           []Tag           `json:"tags"`
 }
 type Request struct {
-	VisibilitySpecified bool `json:"-"`
+	TrustedProvider     string `json:"-"`
+	TrustedConnectionID string `json:"-"`
+	ProviderIdentifier  string `json:"-"`
+	VisibilitySpecified bool   `json:"-"`
 	Content
 	ManualID     *string `json:"manual_id"`
 	LeaseMinutes int     `json:"lease_minutes"`

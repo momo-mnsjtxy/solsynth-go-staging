@@ -19,6 +19,8 @@ var (
 	ErrConflict             = errors.New("notification idempotency conflict")
 	ErrCursor               = errors.New("realtime cursor requires reset")
 	ErrDeliveryUnconfigured = errors.New("external notification delivery is not configured")
+	ErrDeliveryUncertain    = errors.New("external notification acceptance is uncertain")
+	ErrDeliveryInProgress   = errors.New("external notification dispatch is in progress")
 )
 
 // HeadCursor asks the durable store to establish a fresh connection at the

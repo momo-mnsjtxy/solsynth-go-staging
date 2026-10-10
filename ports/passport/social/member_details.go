@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 package social
 
-import "time"
+import (
+	"context"
+	"solsynth.local/go-migration/ports/authority"
+	"strings"
+	"time"
+	"unicode/utf8"
+)
 
 // RealmLabel follows the retained authored controller, including the text icon.
 // Icon is display text, never a media identifier or a URL to fetch.
@@ -27,4 +33,27 @@ type MemberProgression struct {
 	LevelPolicy        *string  `json:"level_policy"`
 	LevelFloor         *int64   `json:"level_floor"`
 	NextLevelAt        *int64   `json:"next_level_at"`
+}
+
+type MemberFilter struct {
+	Offset, Take                  int
+	AccountName, LabelID, OrderBy string
+	WithStatus                    bool
+}
+type MemberQueryRepository interface {
+	MembersFiltered(context.Context, string, string, MemberFilter) ([]Member, int64, error)
+}
+
+func ValidateMemberFilter(f MemberFilter) error {
+	if e := ValidatePage(f.Offset, f.Take); e != nil {
+		return e
+	}
+	if len(f.AccountName) > 256 || strings.ContainsRune(f.AccountName, 0) || !utf8.ValidString(f.AccountName) || f.LabelID != "" && !authority.ValidID(f.LabelID) {
+		return ErrInvalid
+	}
+	switch f.OrderBy {
+	case "", "experience_desc", "joined_at_asc", "name_asc", "role_desc":
+		return nil
+	}
+	return ErrInvalid
 }

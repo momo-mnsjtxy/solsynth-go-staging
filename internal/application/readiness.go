@@ -19,8 +19,29 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if b == nil || b.db == nil || b.authorityDB == nil {
 		return errors.New("backend unavailable")
 	}
+	if b.publisherNotifications != nil {
+		if e := b.publisherNotifications.Ready(ctx); e != nil {
+			return e
+		}
+	}
+	if e := b.notificationDevices.ready(ctx); e != nil {
+		return e
+	}
+	if b.notificationWorker != nil && b.notificationWorker.Repository != nil {
+		if e := b.notificationWorker.Repository.NightOwlReady(ctx); e != nil {
+			return e
+		}
+	}
+	if e := b.accountConnections.ready(ctx); e != nil {
+		return e
+	}
 	if b.accountHistory != nil {
 		if e := b.accountHistory.Ready(ctx); e != nil {
+			return e
+		}
+	}
+	if b.progression != nil {
+		if e := b.progression.Ready(ctx); e != nil {
 			return e
 		}
 	}
@@ -146,6 +167,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 	}
 	if err := b.domainCollections.ready(ctx); err != nil {
 		return err
+	}
+	if b.locations != nil {
+		if err := b.locations.Ready(ctx); err != nil {
+			return errors.New("location extension schema unavailable")
+		}
 	}
 	if err := b.accountExtras.ready(ctx); err != nil {
 		return err

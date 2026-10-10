@@ -8,19 +8,17 @@ import (
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/ports/passport/rewind"
 	"sort"
-	"strings"
 	"time"
-	"unicode/utf8"
 )
 
-func (r *Repository) snapshot(ctx context.Context, tx *sql.Tx, actor string, start, end, now time.Time) (s rewind.Snapshot, e error) {
+func (r *Repository) snapshot(ctx context.Context, tx *sql.Tx, actor string, start, end, now time.Time) (s rewind.Snapshot, texts []string, e error) {
 	s.Unavailable = []string{}
 	s.MostCalledAccounts = []rewind.Reference{}
 	s.MostCalledChatMembers = []string{}
 	if e = r.passportMetrics(ctx, tx, actor, start, end, &s); e != nil {
 		return
 	}
-	if e = r.sphereMetrics(ctx, tx, actor, start, end, &s); e != nil {
+	if texts, e = r.sphereMetrics(ctx, tx, actor, start, end, &s); e != nil {
 		return
 	}
 	if e = r.messagerMetrics(ctx, tx, actor, start, end, now, &s); e != nil {
@@ -142,83 +140,65 @@ func ref(row *sql.Row) (*rewind.Reference, error) {
 	}
 	return v, e
 }
-func (r *Repository) sphereMetrics(ctx context.Context, tx *sql.Tx, actor string, start, end time.Time, s *rewind.Snapshot) error {
+func (r *Repository) sphereMetrics(ctx context.Context, tx *sql.Tx, actor string, start, end time.Time, s *rewind.Snapshot) (texts []string, err error) {
 	base := r.postSource()
 	owned := base + r.creatorScope()
 	args := []any{actor, start, end}
 	if e := tx.QueryRowContext(ctx, `SELECT count(*)`+owned+` AND p.created_at>=$2::timestamptz AND p.created_at<$3::timestamptz`, args...).Scan(&s.TotalPosts); e != nil {
-		return e
+		return nil, e
 	}
 	if e := tx.QueryRowContext(ctx, `SELECT COALESCE(sum((SELECT count(*) FROM owned_post_reactions reaction WHERE reaction.post_id=p.id AND reaction.attitude=0 AND reaction.created_at>=$2::timestamptz AND reaction.created_at<$3::timestamptz)),0)`+owned, args...).Scan(&s.TotalUpvotes); e != nil {
-		return e
+		return nil, e
 	}
 	e := tx.QueryRowContext(ctx, `SELECT p.id::text`+owned+` AND p.created_at>=$2::timestamptz AND p.created_at<$3::timestamptz ORDER BY(SELECT COALESCE(sum(CASE WHEN reaction.attitude=0 THEN 1 WHEN reaction.attitude=2 THEN -1 ELSE 0 END),0)FROM owned_post_reactions reaction WHERE reaction.post_id=p.id)DESC,p.id LIMIT 1`, args...).Scan(&s.MostPopularPost)
 	if e != nil && !errors.Is(e, sql.ErrNoRows) {
-		return e
+		return nil, e
 	}
 	day := &rewind.ProductiveDay{}
 	e = tx.QueryRowContext(ctx, `SELECT to_char(p.created_at AT TIME ZONE 'UTC','YYYY-MM-DD'),count(*)`+owned+` AND p.created_at>=$2::timestamptz AND p.created_at<$3::timestamptz GROUP BY 1 ORDER BY count(*)DESC,1 LIMIT 1`, args...).Scan(&day.Date, &day.PostCount)
 	if e == nil {
 		s.MostProductiveDay = day
 	} else if !errors.Is(e, sql.ErrNoRows) {
-		return e
+		return nil, e
 	}
 	s.MostLovedPublisher, e = ref(tx.QueryRowContext(ctx, `SELECT u.id::text,count(*) FROM owned_post_reactions reaction JOIN owned_text_posts p ON p.id=reaction.post_id JOIN owned_publishers u ON u.id=p.publisher_id WHERE reaction.account_id=$1::text::uuid AND reaction.attitude=0 AND reaction.created_at>=$2::timestamptz AND reaction.created_at<$3::timestamptz AND p.deleted_at IS NULL AND u.deleted_at IS NULL AND `+postpg.DetailPredicate(r.visibility)+` GROUP BY u.id ORDER BY count(*)DESC,u.id LIMIT 1`, args...))
 	if e != nil {
-		return e
+		return nil, e
 	}
 	s.MostLovedAudience, e = ref(tx.QueryRowContext(ctx, `SELECT reaction.account_id::text,count(*) FROM owned_post_reactions reaction JOIN owned_text_posts p ON p.id=reaction.post_id JOIN owned_publishers u ON u.id=p.publisher_id WHERE reaction.attitude=0 AND reaction.created_at>=$2::timestamptz AND reaction.created_at<$3::timestamptz AND p.deleted_at IS NULL AND u.deleted_at IS NULL AND `+postpg.DetailPredicate(r.visibility)+r.creatorScope()+` GROUP BY reaction.account_id ORDER BY count(*)DESC,reaction.account_id LIMIT 1`, args...))
 	if e != nil {
-		return e
+		return nil, e
 	}
 	if r.options.Tokenizer == nil {
 		s.Unavailable = append(s.Unavailable, "sphere.top_words")
-		return nil
+		return nil, nil
 	}
-	rows, e := tx.QueryContext(ctx, `SELECT p.content`+owned+` AND p.created_at>=$2::timestamptz AND p.created_at<$3::timestamptz AND p.content<>'' ORDER BY length(p.content)DESC,p.id LIMIT 1000`, args...)
+	rows, e := tx.QueryContext(ctx, `SELECT CASE WHEN octet_length(p.content)<=1048576 THEN p.content ELSE NULL END`+owned+` AND p.created_at>=$2::timestamptz AND p.created_at<$3::timestamptz AND p.content<>'' ORDER BY length(p.content)DESC,p.id LIMIT 1001`, args...)
 	if e != nil {
-		return e
+		return nil, e
 	}
-	texts := []string{}
+	texts = []string{}
 	size := 0
 	for rows.Next() {
-		var v string
-		if e = rows.Scan(&v); e != nil {
+		var value sql.NullString
+		if e = rows.Scan(&value); e != nil {
 			rows.Close()
-			return e
+			return nil, e
 		}
-		size += len(v)
-		if size > 1048576 {
+		size += len(value.String)
+		if !value.Valid || size > 1048576 || len(texts) == 1000 {
 			rows.Close()
 			s.Unavailable = append(s.Unavailable, "sphere.top_words_input_limit")
-			return nil
+			return nil, nil
 		}
-		texts = append(texts, v)
+		texts = append(texts, value.String)
 	}
 	e = rows.Err()
 	rows.Close()
 	if e != nil {
-		return e
+		return nil, e
 	}
-	words, e := r.options.Tokenizer.TopWords(ctx, texts, 100)
-	if e != nil {
-		return e
-	}
-	if len(words) > 100 {
-		return rewind.ErrUnavailable
-	}
-	seen := map[string]bool{}
-	for _, v := range words {
-		if v.Word == "" || len(v.Word) > 256 || !utf8.ValidString(v.Word) || strings.ContainsRune(v.Word, 0) || v.Count < 1 || seen[v.Word] {
-			return rewind.ErrUnavailable
-		}
-		seen[v.Word] = true
-	}
-	s.TopWords = words
-	if s.TopWords == nil {
-		s.TopWords = []rewind.Word{}
-	}
-	return nil
+	return texts, nil
 }
 func (r *Repository) roomSource() string {
 	return ` AND room.deleted_at IS NULL AND EXISTS(SELECT 1 FROM chat_members active WHERE active.chat_room_id=room.id AND active.account_id=$1::text::uuid AND active.joined_at IS NOT NULL AND active.leave_at IS NULL AND active.deleted_at IS NULL AND NOT active.owned_banned) AND ` + r.rooms.ReadSQL("room.id", "$1")

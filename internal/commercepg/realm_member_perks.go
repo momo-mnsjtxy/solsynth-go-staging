@@ -144,3 +144,39 @@ func (r *Repository) RealmQuotaPerkLevel(ctx context.Context, db *sql.DB, tx *sq
 	}
 	return r.realmAccountPerk(ctx, tx, actor, levels, at)
 }
+
+// RealmMaintenancePerkLevel is a trusted worker observation, never HTTP request
+// authorization. The caller already holds canonical account and realm locks and
+// must bind awards to committed source records and repeat this after its waits.
+func (r *Repository) RealmMaintenancePerkLevel(ctx context.Context, db *sql.DB, tx *sql.Tx, realm, account string, levels map[string]int, at time.Time) (int, error) {
+	if r == nil || r.db != db || tx == nil || levels == nil || !authority.ValidID(realm) || !authority.ValidID(account) {
+		return 0, c.ErrUnavailable
+	}
+	var eligible bool
+	e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_realm_members m JOIN owned_realms r ON r.id=m.realm_id JOIN owned_authority_accounts a ON a.id=m.account_id JOIN owned_authority_accounts o ON o.id=r.account_id WHERE m.realm_id=$1::uuid AND m.account_id=$2::uuid AND m.joined_at IS NOT NULL AND m.leave_at IS NULL AND r.deleted_at IS NULL AND NOT a.disabled AND NOT o.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id IN(a.id,o.id)AND p.kind='disable_account' AND(p.starts_at IS NULL OR p.starts_at<=clock_timestamp())AND(p.expires_at IS NULL OR p.expires_at>clock_timestamp())))`, realm, account).Scan(&eligible)
+	if e != nil {
+		return 0, e
+	}
+	if !eligible {
+		return 0, c.ErrForbidden
+	}
+	return r.realmAccountPerk(ctx, tx, account, levels, at)
+}
+
+// CheckInPerkInTransaction is an authenticated self boundary. It shares the
+// paid canonical entitlement projection rather than accepting status columns
+// or caller-authored subscription metadata as proof of product eligibility.
+func (r *Repository) CheckInPerkInTransaction(ctx context.Context, tx *sql.Tx, actor string, products []string, at time.Time) (bool, error) {
+	if r == nil || tx == nil || !authority.ValidID(actor) {
+		return false, c.ErrUnavailable
+	}
+	if _, e := r.guard.Authenticate(ctx, r.db, tx, actor); e != nil {
+		return false, e
+	}
+	levels := map[string]int{}
+	for _, p := range products {
+		levels[p] = 1
+	}
+	n, e := r.realmAccountPerk(ctx, tx, actor, levels, at)
+	return n > 0, e
+}

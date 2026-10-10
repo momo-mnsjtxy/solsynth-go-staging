@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	f "solsynth.local/go-migration/ports/federation"
@@ -18,6 +19,15 @@ import (
 // Selection and fanout commit together. Polling is explicit, bounded, and never
 // started by New. No remote transport is called here.
 func (r *Repository) ReconcilePosts(ctx context.Context, limit int) (int, error) {
+	n, err := r.reconcilePersonalPosts(ctx, limit)
+	if err != nil || n == limit {
+		return n, err
+	}
+	realm, err := r.reconcileRealmPosts(ctx, limit-n)
+	return n + realm, err
+}
+
+func (r *Repository) reconcilePersonalPosts(ctx context.Context, limit int) (int, error) {
 	if limit < 1 || limit > 100 {
 		return 0, f.ErrInvalid
 	}
@@ -157,6 +167,208 @@ func (r *Repository) reconcilePost(ctx context.Context, id string) (bool, error)
 	_, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_post_state(post_id,source_updated_at,public,revision,source_audit_id) VALUES($1,$2,$3,$4,$5) ON CONFLICT(post_id) DO UPDATE SET source_updated_at=EXCLUDED.source_updated_at,public=EXCLUDED.public,revision=EXCLUDED.revision,source_audit_id=EXCLUDED.source_audit_id`, id, updated, visible, revision, sourceAudit)
 	if e != nil {
 		return false, e
+	}
+	return true, tx.Commit()
+}
+
+// reconcileRealmPosts projects canonical realm posts into durable Group
+// activities and delivery rows. A realm-owned post is a Group Create/Update;
+// a member post is a Group Announce containing the author's canonical Note.
+func (r *Repository) reconcileRealmPosts(ctx context.Context, limit int) (int, error) {
+	if limit < 1 {
+		return 0, nil
+	}
+	rows, err := r.db.QueryContext(ctx, `SELECT p.id::text FROM owned_text_posts p JOIN owned_federation_realms fr ON fr.realm_id=p.realm_id JOIN owned_realms realm ON realm.id=p.realm_id JOIN owned_authority_accounts owner ON owner.id=realm.account_id LEFT JOIN owned_federation_realm_post_state s ON s.post_id=p.id WHERE s.post_id IS NULL OR s.source_updated_at<>p.updated_at OR s.public<>(fr.enabled AND realm.is_public AND realm.is_community AND realm.deleted_at IS NULL AND NOT owner.disabled AND p.visibility=0 AND p.drafted_at IS NULL AND p.deleted_at IS NULL AND p.shadowbanned_at IS NULL AND COALESCE(p.published_at<=$1,false) AND(EXISTS(SELECT 1 FROM owned_publishers rp WHERE rp.id=p.publisher_id AND rp.realm_id=p.realm_id AND rp.type=1 AND rp.deleted_at IS NULL)OR EXISTS(SELECT 1 FROM owned_federation_publishers fp JOIN owned_publishers pp ON pp.id=fp.publisher_id JOIN owned_authority_accounts pa ON pa.id=pp.account_id WHERE fp.publisher_id=p.publisher_id AND fp.enabled AND fp.actor_uri IS NOT NULL AND pp.type=0 AND pp.deleted_at IS NULL AND pp.shadowbanned_at IS NULL AND NOT pa.disabled))) ORDER BY p.updated_at,p.id LIMIT $2`, r.config.Clock(), limit)
+	if err != nil {
+		return 0, err
+	}
+	ids := []string{}
+	for rows.Next() {
+		var id string
+		if err = rows.Scan(&id); err != nil {
+			rows.Close()
+			return 0, err
+		}
+		ids = append(ids, id)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return 0, err
+	}
+	changed := 0
+	for _, id := range ids {
+		ok, e := r.reconcileRealmPost(ctx, id)
+		if e != nil {
+			return changed, e
+		}
+		if ok {
+			changed++
+		}
+	}
+	return changed, nil
+}
+
+func (r *Repository) reconcileRealmPost(ctx context.Context, id string) (bool, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback()
+	var realmID, publisherID string
+	var updated, published time.Time
+	var visible bool
+	err = tx.QueryRowContext(ctx, `SELECT realm_id::text FROM owned_text_posts WHERE id=$1`, id).Scan(&realmID)
+	if err != nil || realmID == "" {
+		return false, mapped(err)
+	}
+	x, realmActive, lockedSource, err := r.lockRealmAuthority(ctx, tx, realmID, id)
+	if err != nil {
+		return false, err
+	}
+	err = tx.QueryRowContext(ctx, `SELECT realm_id::text,publisher_id::text,updated_at,COALESCE(published_at,updated_at),visibility=0 AND drafted_at IS NULL AND deleted_at IS NULL AND shadowbanned_at IS NULL AND COALESCE(published_at<=$2,false) FROM owned_text_posts WHERE id=$1 AND realm_id=$3 FOR UPDATE`, id, r.config.Clock(), realmID).Scan(&realmID, &publisherID, &updated, &published, &visible)
+	if err != nil {
+		return false, mapped(err)
+	}
+	if lockedSource != publisherID {
+		return false, f.ErrUnavailable
+	}
+	visible = visible && realmActive
+	if visible && publisherID != x.publisher {
+		if _, publisherErr := r.publisher(ctx, tx, publisherID, true); publisherErr != nil {
+			visible = false
+		}
+	}
+	var priorUpdated time.Time
+	var wasPublic bool
+	var revision int64
+	stateErr := tx.QueryRowContext(ctx, `SELECT source_updated_at,public,revision FROM owned_federation_realm_post_state WHERE post_id=$1 FOR UPDATE`, id).Scan(&priorUpdated, &wasPublic, &revision)
+	if stateErr != nil && !errors.Is(stateErr, sql.ErrNoRows) {
+		return false, stateErr
+	}
+	if stateErr == nil && priorUpdated.Equal(updated) && wasPublic == visible {
+		return false, nil
+	}
+	revision++
+	if _, err = tx.ExecContext(ctx, `UPDATE owned_federation_realm_deliveries SET status='cancelled',finished_at=$2,lease_token=NULL,lease_until=NULL WHERE post_id=$1 AND (status='pending' OR(status='inflight' AND dispatch_started_at IS NULL))`, id, r.config.Clock()); err != nil {
+		return false, err
+	}
+	var lastActivity, lastKind any
+	if visible || wasPublic {
+		type peerProjection struct {
+			actor, lastKind, lastActivity string
+			key                           f.RemoteKey
+		}
+		followers, queryErr := tx.QueryContext(ctx, `SELECT rel.actor_uri,COALESCE(last.activity_type,''),COALESCE(last.activity_id,'') FROM owned_federation_realm_relationships rel LEFT JOIN LATERAL(SELECT d.activity_type,d.activity_id FROM owned_federation_realm_deliveries d WHERE d.realm_id=rel.realm_id AND d.actor_uri=rel.actor_uri AND d.post_id=$2 AND (d.status='sent' OR d.dispatch_started_at IS NOT NULL) AND d.activity_type IN('Announce','Undo') ORDER BY d.id DESC LIMIT 1)last ON true WHERE rel.realm_id=$1 AND rel.status='accepted' ORDER BY rel.actor_uri LIMIT 1001`, x.id, id)
+		if queryErr != nil {
+			return false, queryErr
+		}
+		peers := []peerProjection{}
+		for followers.Next() {
+			var peer peerProjection
+			if err = followers.Scan(&peer.actor, &peer.lastKind, &peer.lastActivity); err != nil {
+				followers.Close()
+				return false, err
+			}
+			peer.key, err = r.remoteWithQuery(ctx, tx, peer.actor)
+			if err != nil {
+				followers.Close()
+				return false, err
+			}
+			peers = append(peers, peer)
+		}
+		err = followers.Err()
+		followers.Close()
+		if err != nil || len(peers) > 1000 {
+			if err != nil {
+				return false, err
+			}
+			return false, f.ErrUnavailable
+		}
+
+		memberPost := publisherID != x.publisher
+		undoTargets := map[string]bool{}
+		if memberPost {
+			for _, peer := range peers {
+				if peer.lastKind == "Announce" && peer.lastActivity != "" {
+					undoTargets[peer.lastActivity] = true
+				}
+			}
+		}
+		targets := make([]string, 0, len(undoTargets))
+		for target := range undoTargets {
+			targets = append(targets, target)
+		}
+		sort.Strings(targets)
+		undos := make(map[string]f.Activity, len(targets))
+		for i, target := range targets {
+			undo := f.Activity{Context: f.Context, ID: fmt.Sprintf("%s/activities/post-%s-%d-undo-%d", x.actor, id, revision, i+1), Type: "Undo", Actor: x.actor, Object: marshal(target), To: []string{f.Public}, CC: []string{x.actor + "/followers"}, Published: published}
+			undos[target] = undo
+		}
+
+		var activity *f.Activity
+		kind := "Delete"
+		object := marshal(r.objectID(id))
+		if visible {
+			note, _, _, noteErr := r.note(ctx, tx, id)
+			if noteErr != nil {
+				return false, noteErr
+			}
+			if !memberPost {
+				kind = "Create"
+				if wasPublic {
+					kind = "Update"
+				}
+			} else {
+				kind = "Announce"
+			}
+			object = marshal(note)
+		}
+		// A member withdrawal is represented only by per-peer Undo activities for
+		// the exact Announce each peer last received. A pending projected Announce
+		// is not remote state and must never become the Undo target.
+		if visible || !memberPost {
+			activityID := x.actor + "/activities/post-" + id
+			if revision > 1 {
+				activityID = fmt.Sprintf("%s/activities/post-%s-%d", x.actor, id, revision)
+			}
+			a := f.Activity{Context: f.Context, ID: activityID, Type: kind, Actor: x.actor, Object: object, To: []string{f.Public}, CC: []string{x.actor + "/followers"}, Published: published}
+			activity = &a
+			lastActivity, lastKind = a.ID, a.Type
+		} else if len(targets) > 0 {
+			a := undos[targets[len(targets)-1]]
+			lastActivity, lastKind = a.ID, a.Type
+		}
+		if _, err = tx.ExecContext(ctx, `UPDATE owned_federation_realm_outbox SET withdrawn_at=$2 WHERE post_id=$1 AND withdrawn_at IS NULL`, id, r.config.Clock()); err != nil {
+			return false, err
+		}
+		for _, target := range targets {
+			undo := undos[target]
+			if _, err = tx.ExecContext(ctx, `INSERT INTO owned_federation_realm_outbox(realm_id,activity_id,activity,created_at,post_id)VALUES($1,$2,$3,$4,$5)`, x.id, undo.ID, marshal(undo), r.config.Clock(), id); err != nil {
+				return false, err
+			}
+		}
+		if activity != nil {
+			if _, err = tx.ExecContext(ctx, `INSERT INTO owned_federation_realm_outbox(realm_id,activity_id,activity,created_at,post_id)VALUES($1,$2,$3,$4,$5)`, x.id, activity.ID, marshal(*activity), r.config.Clock(), id); err != nil {
+				return false, err
+			}
+		}
+		for _, peer := range peers {
+			if undo, ok := undos[peer.lastActivity]; ok && peer.lastKind == "Announce" {
+				if err = r.realmEnqueuePost(ctx, tx, x, peer.key, undo, id, &updated); err != nil {
+					return false, err
+				}
+			}
+			if activity != nil {
+				if err = r.realmEnqueuePost(ctx, tx, x, peer.key, *activity, id, &updated); err != nil {
+					return false, err
+				}
+			}
+		}
+	}
+	_, err = tx.ExecContext(ctx, `INSERT INTO owned_federation_realm_post_state(post_id,realm_id,source_updated_at,public,revision,last_activity_id,last_activity_type)VALUES($1,$2,$3,$4,$5,$6,$7)ON CONFLICT(post_id)DO UPDATE SET source_updated_at=EXCLUDED.source_updated_at,public=EXCLUDED.public,revision=EXCLUDED.revision,last_activity_id=EXCLUDED.last_activity_id,last_activity_type=EXCLUDED.last_activity_type`, id, realmID, updated, visible, revision, lastActivity, lastKind)
+	if err != nil {
+		return false, err
 	}
 	return true, tx.Commit()
 }
@@ -522,17 +734,29 @@ func (r *Repository) deliver(ctx context.Context, transport f.Transport, d deliv
 }
 func (r *Repository) Ready(ctx context.Context) error {
 	var ok bool
-	e := r.db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name) IS NOT NULL) FROM (VALUES ('owned_federation_publishers'),('owned_federation_peers'),('owned_federation_relationships'),('owned_federation_blocks'),('owned_federation_inbox'),('owned_federation_objects'),('owned_federation_post_state'),('owned_federation_deliveries'),('owned_federation_audit'),('owned_federation_quote_authorizations'),('owned_federation_dispatch_receipts'),('owned_federation_cleanup_policies'),('owned_federation_cleanup_epochs')) x(name)`).Scan(&ok)
+	e := r.db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name) IS NOT NULL) FROM (VALUES ('owned_federation_publishers'),('owned_federation_peers'),('owned_federation_relationships'),('owned_federation_blocks'),('owned_federation_inbox'),('owned_federation_objects'),('owned_federation_post_state'),('owned_federation_deliveries'),('owned_federation_audit'),('owned_federation_quote_authorizations'),('owned_federation_dispatch_receipts'),('owned_federation_cleanup_policies'),('owned_federation_cleanup_epochs'),('owned_federation_realms'),('owned_federation_realm_relationships'),('owned_federation_realm_inbox'),('owned_federation_realm_outbox'),('owned_federation_realm_deliveries'),('owned_federation_realm_post_state'),('owned_federation_featured_posts'),('owned_federation_moderation_rules'),('owned_federation_admin_audit'),('owned_federation_key_commands'),('owned_federation_actor_assertions'),('owned_federation_moves'),('owned_federation_move_applications')) x(name)`).Scan(&ok)
 	if e != nil || !ok {
 		return f.ErrUnavailable
 	}
-	if _, e = r.db.ExecContext(ctx, `SELECT cleanup_receipt_id,quote_id,origin_intent,remote_binding,local_fingerprint,max_attempts,expires_at,peer_epoch,peer_security_epoch,dispatch_started_at FROM owned_federation_deliveries LIMIT 0;SELECT revision,security_revision FROM owned_federation_delivery_peer_epochs LIMIT 0;SELECT identity_handle,actor_uri,key_id,delivery_intent FROM owned_federation_publishers LIMIT 0;SELECT folded_name,publisher_id FROM owned_publisher_name_reservations LIMIT 0`); e != nil {
+	if _, e = r.db.ExecContext(ctx, `SELECT cleanup_receipt_id,quote_id,origin_intent,remote_binding,local_fingerprint,max_attempts,expires_at,peer_epoch,peer_security_epoch,dispatch_started_at FROM owned_federation_deliveries LIMIT 0;SELECT revision,security_revision FROM owned_federation_delivery_peer_epochs LIMIT 0;SELECT identity_handle,actor_uri,key_id,delivery_intent FROM owned_federation_publishers LIMIT 0;SELECT folded_name,publisher_id FROM owned_publisher_name_reservations LIMIT 0;SELECT remote_binding,local_fingerprint,max_attempts,expires_at,lease_token,lease_until,dispatch_started_at,post_id,post_updated_at FROM owned_federation_realm_deliveries LIMIT 0;SELECT post_id,withdrawn_at FROM owned_federation_realm_outbox LIMIT 0;SELECT last_activity_id,last_activity_type FROM owned_federation_realm_post_state LIMIT 0;SELECT old_digest,old_incarnation,old_fingerprint,new_incarnation,new_fingerprint,discovery_id FROM owned_federation_moves LIMIT 0`); e != nil {
 		return f.ErrUnavailable
 	}
 	if e = r.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='owned_federation_deliveries'::regclass AND conname='owned_federation_delivery_bounds' AND convalidated)`).Scan(&ok); e != nil || !ok {
 		return f.ErrUnavailable
 	}
+	if e = r.db.QueryRowContext(ctx, `SELECT count(*)=5 FROM pg_constraint WHERE conrelid='owned_federation_realm_deliveries'::regclass AND convalidated AND conname IN('owned_federation_realm_delivery_type','owned_federation_realm_delivery_payload','owned_federation_realm_delivery_bounds','owned_federation_realm_delivery_lease','owned_federation_realm_delivery_terminal')`).Scan(&ok); e != nil || !ok {
+		return f.ErrUnavailable
+	}
+	if e = r.db.QueryRowContext(ctx, `SELECT count(*)=5 FROM pg_constraint WHERE convalidated AND conname IN('owned_federation_realms_realm_fk','owned_federation_moves_old_peer_fk','owned_federation_moves_new_peer_fk','owned_federation_move_applications_move_fk','owned_federation_move_applications_publisher_fk')`).Scan(&ok); e != nil || !ok {
+		return f.ErrUnavailable
+	}
 	if e = r.db.QueryRowContext(ctx, `SELECT count(*)=19 FROM pg_trigger WHERE NOT tgisinternal AND tgenabled='O' AND tgname IN('owned_delivery_authority_grants','owned_delivery_authority_punishments','owned_delivery_authority_group_members','owned_delivery_publisher_members','owned_delivery_group_grants','owned_delivery_account','owned_delivery_publisher','owned_delivery_federation','owned_delivery_session','owned_delivery_session_delete','owned_delivery_relationships','owned_delivery_blocks','owned_delivery_immutable','owned_cleanup_policy_immutable','owned_cleanup_publisher','owned_cleanup_members','owned_cleanup_enabled','owned_dispatch_receipt_guard','owned_cleanup_delivery_guard')`).Scan(&ok); e != nil || !ok {
+		return f.ErrUnavailable
+	}
+	if e = r.db.QueryRowContext(ctx, `SELECT count(*)=3 FROM pg_trigger WHERE NOT tgisinternal AND tgenabled='O' AND tgname IN('owned_federation_realm_identity_immutable','owned_federation_realm_delivery_immutable','owned_federation_key_command_immutable')`).Scan(&ok); e != nil || !ok {
+		return f.ErrUnavailable
+	}
+	if e = r.db.QueryRowContext(ctx, `SELECT count(*)=2 FROM pg_constraint WHERE conrelid='owned_federation_key_commands'::regclass AND convalidated AND conname IN('owned_federation_key_command_lease','owned_federation_key_command_terminal')`).Scan(&ok); e != nil || !ok {
 		return f.ErrUnavailable
 	}
 	return nil

@@ -20,10 +20,13 @@ import (
 	"solsynth.local/go-migration/internal/livestreampg"
 	"solsynth.local/go-migration/internal/mediapg"
 	"solsynth.local/go-migration/internal/mediastore"
+	"solsynth.local/go-migration/internal/notificationpg"
+	"solsynth.local/go-migration/internal/publishernotificationpg"
 	"solsynth.local/go-migration/internal/socialpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/media"
 	"solsynth.local/go-migration/ports/messager/calls"
+	"solsynth.local/go-migration/ports/notifications"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	live "solsynth.local/go-migration/ports/sphere/livestreams"
 )
@@ -186,6 +189,43 @@ func streamNative(t *testing.T, f streamFixture, id string) live.StartResponse {
 		t.Fatal(e)
 	}
 	return v
+}
+
+func TestPGLiveStreamStartProducesPublisherNotificationOnce(t *testing.T) {
+	f := newStreamFixture(t)
+	appID := "dev.solsynth.solian"
+	sink := notificationpg.New(f.db, f.guard, appID)
+	projector := publishernotificationpg.New(f.db, f.social, sink, appID)
+	f.repo.WithActivationObserver(projector)
+	follow := authorityUUID(t)
+	query(t, f.db, `INSERT INTO owned_publisher_follows(id,account_id,publisher_id,state,notify,created_at,updated_at,incarnation,incarnation_started_at)VALUES($1,$2,$3,'accepted',true,clock_timestamp(),clock_timestamp(),1,clock_timestamp())`, follow, f.third, f.pub.ID)
+	s := streamCreate(t, f, "publisher-notification-start")
+	yes := true
+	if _, e := f.repo.Start(f.ownerCtx, f.owner, s.ID, live.StartRequest{NoIngress: &yes}); e != nil {
+		t.Fatal(e)
+	}
+	if _, e := f.repo.Start(f.ownerCtx, f.owner, s.ID, live.StartRequest{NoIngress: &yes}); e != nil {
+		t.Fatal(e)
+	}
+	for range 4 {
+		if _, e := projector.ProcessDue(context.Background(), 100); e != nil {
+			t.Fatal(e)
+		}
+	}
+	if n := subscriptionCount(t, f.db, `SELECT count(*) FROM owned_publisher_content_notification_intents WHERE kind='livestream.started' AND source_id=$1`, s.ID); n != 1 {
+		t.Fatal("duplicate start intent", n)
+	}
+	if n := subscriptionCount(t, f.db, `SELECT count(*) FROM notification_v1.outbox WHERE account_id=$1 AND command->'Meta'->>'source_id'=$2`, f.third, s.ID); n != 1 {
+		t.Fatal("livestream notification", n)
+	}
+	var raw []byte
+	if e := f.db.QueryRow(`SELECT command FROM notification_v1.outbox WHERE account_id=$1 AND command->'Meta'->>'livestream_id'=$2`, f.third, s.ID).Scan(&raw); e != nil {
+		t.Fatal(e)
+	}
+	var command notifications.Command
+	if e := json.Unmarshal(raw, &command); e != nil || command.Topic != "livestream.started" || command.Content != "Synthetic live stream" || !strings.Contains(string(command.Meta), `"action_uri":"/livestreams/`+s.ID+`"`) {
+		t.Fatal(command, e)
+	}
 }
 func streamDue(t *testing.T, f streamFixture, id string) {
 	t.Helper()

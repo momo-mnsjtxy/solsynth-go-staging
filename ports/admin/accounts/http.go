@@ -13,8 +13,14 @@ import (
 // owners; unsupported account-list/detail/provider routes are not swallowed.
 func Handles(path string) bool {
 	p := strings.Split(strings.TrimPrefix(path, "/"), "/")
-	if len(p) < 5 || p[0] != "api" || p[1] != "admin" || p[2] != "accounts" || p[3] == "" {
+	if len(p) < 3 || p[0] != "api" || p[1] != "admin" || p[2] != "accounts" {
 		return false
+	}
+	if extensionPath(p) {
+		return true
+	}
+	if providerPath(p) {
+		return true
 	}
 	if len(p) == 5 {
 		return p[3] == "metrics" && p[4] == "activity" || p[4] == "contacts" || p[4] == "factors" || p[4] == "badges"
@@ -36,11 +42,19 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 			c.RespondError(w, e)
 			return
 		}
+		p := strings.Split(strings.TrimPrefix(r.URL.Path, "/"), "/")
+		if providerPath(p) {
+			serveProviderOperation(w, r, repo, actor, p)
+			return
+		}
+		if extensionPath(p) || len(p) == 5 && p[4] == "contacts" && r.Method == "POST" {
+			serveExtension(w, r, repo, actor, p)
+			return
+		}
 		if r.URL.RawQuery != "" {
 			c.RespondError(w, c.ErrInvalid)
 			return
 		}
-		p := strings.Split(strings.TrimPrefix(r.URL.Path, "/"), "/")
 		if len(p[3]) > 256 || strings.TrimSpace(p[3]) != p[3] {
 			c.RespondError(w, c.ErrInvalid)
 			return

@@ -11,13 +11,16 @@ import (
 	"encoding/json"
 	"errors"
 	"regexp"
+	"slices"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/postpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/messager/rooms"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/rewind"
+	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 //go:embed schema.sql
@@ -41,10 +44,12 @@ type Tokenizer interface {
 	TopWords(context.Context, []string, int) ([]rewind.Word, error)
 }
 type Options struct {
-	Now           func() time.Time
-	ReportingYear int
-	ActionLogs    ActionLogs
-	Tokenizer     Tokenizer
+	Now                     func() time.Time
+	ReportingYear           int
+	ActionLogs              ActionLogs
+	Tokenizer               Tokenizer
+	CanonicalActionActivity bool
+	Dictionary              *DictionaryConfig
 }
 type Repository struct {
 	db         *sql.DB
@@ -67,6 +72,26 @@ func New(db *sql.DB, g *authoritypg.TransactionGuard, a AccountReferences, rooms
 			return nil, e
 		}
 	}
+	if o.CanonicalActionActivity {
+		if o.ActionLogs != nil {
+			return nil, rewind.ErrInvalid
+		}
+		var err error
+		o.ActionLogs, err = NewCanonicalActionLogs(db)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if o.Dictionary != nil {
+		if o.Tokenizer != nil {
+			return nil, rewind.ErrInvalid
+		}
+		var err error
+		o.Tokenizer, err = NewDictionaryTokenizer(*o.Dictionary)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return &Repository{db, g, a, rooms, v, o}, nil
 }
 func (r *Repository) BindAuthority(ctx context.Context, p authority.Principal) context.Context {
@@ -75,7 +100,17 @@ func (r *Repository) BindAuthority(ctx context.Context, p authority.Principal) c
 func (r *Repository) now() time.Time { return r.options.Now().UTC().Truncate(time.Microsecond) }
 func (r *Repository) Ready(ctx context.Context) error {
 	_, e := r.db.ExecContext(ctx, `SELECT id,snapshot,sharable_code FROM owned_account_rewind_points LIMIT 0;SELECT day FROM owned_progression_checkins LIMIT 0;SELECT status FROM owned_social_effective_relationships LIMIT 0;SELECT content FROM owned_text_posts LIMIT 0;SELECT attitude FROM owned_post_reactions LIMIT 0;SELECT sender_id FROM chat_messages LIMIT 0;SELECT ended_at FROM call_v1.calls LIMIT 0`)
-	return e
+	if e != nil {
+		return e
+	}
+	for _, provider := range []any{r.options.ActionLogs, r.options.Tokenizer} {
+		if ready, ok := provider.(interface{ Ready(context.Context) error }); ok {
+			if e = ready.Ready(ctx); e != nil {
+				return e
+			}
+		}
+	}
+	return nil
 }
 func id() (string, error) {
 	var b [16]byte
@@ -139,53 +174,123 @@ func audit(ctx context.Context, tx *sql.Tx, p rewind.Point, action string, now t
 	_, e := tx.ExecContext(ctx, `INSERT INTO owned_account_rewind_audit(account_id,point_id,action,occurred_at)VALUES($1::uuid,$2::uuid,$3::text,$4::timestamptz)`, p.AccountID, p.ID, action, now)
 	return e
 }
-func (r *Repository) Current(ctx context.Context, actor string) (out rewind.Point, e error) {
-	tx, e := r.ownerTx(ctx, actor, false)
-	if e != nil {
-		return out, e
+
+// wordPreparation contains only authorized text captured by this request, never
+// a reusable cross-account cache. Tokenization runs after its transaction ends.
+type wordPreparation struct {
+	texts   []string
+	words   []rewind.Word
+	limited bool
+}
+
+func validateWords(words []rewind.Word) error {
+	if len(words) > 100 {
+		return rewind.ErrUnavailable
 	}
-	defer tx.Rollback()
-	now := r.now()
+	seen := map[string]bool{}
+	for _, v := range words {
+		if v.Word == "" || len(v.Word) > 256 || !utf8.ValidString(v.Word) || strings.ContainsRune(v.Word, 0) || v.Count < 1 || seen[v.Word] {
+			return rewind.ErrUnavailable
+		}
+		seen[v.Word] = true
+	}
+	return nil
+}
+func (r *Repository) Current(ctx context.Context, actor string) (out rewind.Point, e error) {
 	year := r.options.ReportingYear
 	if year == 0 {
-		year = now.Year()
+		year = r.now().Year()
 	}
 	start, end, e := rewind.Window(year)
 	if e != nil {
 		return out, e
 	}
+	var prepared *wordPreparation
+	// Two outside-lock computations plus one final capture bound concurrent edits.
+	// A changing corpus returns unavailable; no partial/stale snapshot is stored.
+	for attempt := 0; attempt < 3; attempt++ {
+		var texts []string
+		var compute bool
+		out, texts, compute, e = r.currentAttempt(ctx, actor, year, start, end, prepared)
+		if e != nil || !compute {
+			return out, e
+		}
+		if attempt == 2 {
+			return rewind.Point{}, rewind.ErrUnavailable
+		}
+		words, err := r.options.Tokenizer.TopWords(ctx, texts, 100)
+		limited := errors.Is(err, ErrTokenLimit)
+		if err != nil && !limited {
+			return rewind.Point{}, err
+		}
+		if !limited {
+			if err = validateWords(words); err != nil {
+				return rewind.Point{}, err
+			}
+		}
+		prepared = &wordPreparation{texts: texts, words: words, limited: limited}
+	}
+	return rewind.Point{}, rewind.ErrUnavailable
+}
+func (r *Repository) currentAttempt(ctx context.Context, actor string, year int, start, end time.Time, prepared *wordPreparation) (out rewind.Point, texts []string, compute bool, e error) {
+	tx, e := r.ownerTx(ctx, actor, false)
+	if e != nil {
+		return out, nil, false, e
+	}
+	defer tx.Rollback()
+	now := r.now()
 	p, s, e := scan(tx.QueryRowContext(ctx, `SELECT `+columns+` FROM owned_account_rewind_points WHERE account_id=$1::uuid AND year=$2::integer FOR SHARE`, actor, year))
 	if errors.Is(e, rewind.ErrNotFound) {
-		s, e = r.snapshot(ctx, tx, actor, start, end, now)
+		s, texts, e = r.snapshot(ctx, tx, actor, start, end, now)
 		if e != nil {
-			return out, e
+			return out, nil, false, e
 		}
-		raw, e := json.Marshal(s)
-		if e != nil || len(raw) > 131072 {
-			return out, rewind.ErrUnavailable
+		if r.options.Tokenizer != nil && texts != nil {
+			if prepared == nil || !slices.Equal(texts, prepared.texts) {
+				if _, e = r.guard.Authenticate(ctx, r.db, tx, actor); e != nil {
+					return out, nil, false, e
+				}
+				// Release canonical account/SQL locks before any provider computation.
+				return out, texts, true, tx.Commit()
+			}
+			if prepared.limited {
+				s.Unavailable = append(s.Unavailable, "sphere.top_words_token_limit")
+			} else {
+				s.TopWords = prepared.words
+				if s.TopWords == nil {
+					s.TopWords = []rewind.Word{}
+				}
+			}
 		}
-		pid, e := id()
-		if e != nil {
-			return out, e
+		raw, err := json.Marshal(s)
+		if err != nil || len(raw) > 131072 {
+			return out, nil, false, rewind.ErrUnavailable
+		}
+		pid, err := id()
+		if err != nil {
+			return out, nil, false, err
 		}
 		if _, e = r.guard.Authenticate(ctx, r.db, tx, actor); e != nil {
-			return out, e
+			return out, nil, false, e
 		}
 		p, s, e = scan(tx.QueryRowContext(ctx, `INSERT INTO owned_account_rewind_points(id,account_id,year,schema_version,snapshot,created_at,updated_at)VALUES($1::uuid,$2::uuid,$3::integer,1,$4::jsonb,$5::timestamptz,$5::timestamptz)RETURNING `+columns, pid, actor, year, string(raw), now))
 		if e != nil {
-			return out, e
+			return out, nil, false, e
 		}
 		if e = audit(ctx, tx, p, "rewind.create", now); e != nil {
-			return out, e
+			return out, nil, false, e
 		}
 	} else if e != nil {
-		return out, e
+		return out, nil, false, e
 	}
 	out, e = r.project(ctx, tx, p, s, actor)
 	if e != nil {
-		return out, e
+		return out, nil, false, e
 	}
-	return out, tx.Commit()
+	if _, e = r.guard.Authenticate(ctx, r.db, tx, actor); e != nil {
+		return rewind.Point{}, nil, false, e
+	}
+	return out, nil, false, tx.Commit()
 }
 func (r *Repository) Share(ctx context.Context, actor string, year int, public bool) (out rewind.Point, e error) {
 	if _, _, e = rewind.Window(year); e != nil {
@@ -227,6 +332,9 @@ func (r *Repository) Share(ctx context.Context, actor string, year int, public b
 	out, e = r.project(ctx, tx, p, s, actor)
 	if e != nil {
 		return out, e
+	}
+	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "rewind.create"); e != nil {
+		return rewind.Point{}, e
 	}
 	return out, tx.Commit()
 }
@@ -271,6 +379,12 @@ func (r *Repository) Public(ctx context.Context, code string) (out rewind.Point,
 	out, e = r.project(ctx, tx, p, s, "")
 	if e != nil {
 		return out, e
+	}
+	if e = tx.QueryRowContext(ctx, `SELECT disabled OR EXISTS(SELECT 1 FROM owned_authority_punishments WHERE account_id=$1::uuid AND kind='disable_account' AND(starts_at IS NULL OR starts_at<=clock_timestamp())AND(expires_at IS NULL OR expires_at>clock_timestamp())) FROM owned_authority_accounts WHERE id=$1::uuid`, actor).Scan(&disabled); e != nil {
+		return rewind.Point{}, e
+	}
+	if disabled {
+		return rewind.Point{}, rewind.ErrNotFound
 	}
 	return out, tx.Commit()
 }

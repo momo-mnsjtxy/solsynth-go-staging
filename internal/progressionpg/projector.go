@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/progression"
 	"time"
 )
@@ -34,8 +35,14 @@ func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
  UNION ALL SELECT 'chatroom.join',m.account_id,m.id,m.joined_at FROM chat_members m JOIN chat_rooms room ON room.id=m.chat_room_id WHERE m.joined_at IS NOT NULL AND m.leave_at IS NULL AND m.deleted_at IS NULL AND NOT m.owned_banned AND room.deleted_at IS NULL AND room.owned_owner_id IS NOT NULL
  UNION ALL SELECT 'realm.join',m.account_id,m.id,m.joined_at FROM owned_realm_members m JOIN owned_realms r ON r.id=m.realm_id WHERE m.joined_at IS NOT NULL AND m.leave_at IS NULL AND r.deleted_at IS NULL
  UNION ALL SELECT 'publisher.create',a.actor_id,p.id,p.created_at FROM owned_publishers p JOIN owned_accounts_audit a ON a.target_id=p.id AND a.action='publishers.create' WHERE p.deleted_at IS NULL
- UNION ALL SELECT 'account.active',p.account_id,p.id,p.occurred_at FROM owned_presence_activity_days p
+ UNION ALL SELECT 'account.push_enable',d.account_id,d.id,d.verified_at FROM notification_v1.devices d WHERE d.revoked_at IS NULL AND d.verified_at IS NOT NULL AND d.expires_at>clock_timestamp()
+ UNION ALL SELECT 'account.connection_link',c.account_id,c.id,c.verified_at FROM owned_account_connections c WHERE c.revoked_at IS NULL AND c.verified_at IS NOT NULL
+ UNION ALL SELECT 'auth.factor_enable',f.account_id,f.id,f.enabled_at FROM owned_authority_factors f WHERE f.type=3 AND f.enabled_at IS NOT NULL
+ UNION ALL SELECT 'account.avatar',l.account_id,l.file_id,l.attached_at FROM owned_account_profile_media l JOIN owned_media_files f ON f.id=l.file_id AND f.account_id=l.account_id WHERE l.slot='picture' AND f.state='ready'AND f.mime_type LIKE 'image/%'
+ UNION ALL SELECT 'account.profile_complete',p.account_id,p.id,p.updated_at FROM owned_accounts_profiles p JOIN owned_authority_accounts a ON a.id=p.account_id WHERE btrim(a.nick)<>''AND btrim(p.bio)<>''AND btrim(p.pronouns)<>''AND btrim(p.location)<>''AND p.birthday<clock_timestamp()AND EXISTS(SELECT 1 FROM owned_account_profile_media l JOIN owned_media_files f ON f.id=l.file_id AND f.account_id=l.account_id WHERE l.account_id=p.account_id AND l.slot='picture'AND f.state='ready'AND f.mime_type LIKE 'image/%')
+ UNION ALL SELECT 'account.active' ,p.account_id,p.id,p.occurred_at FROM owned_presence_activity_days p
  UNION ALL SELECT 'relationship.friend_established',r.account_id,r.id,r.created_at FROM owned_social_effective_relationships r WHERE r.status>=100 AND EXISTS(SELECT 1 FROM owned_social_effective_relationships reverse WHERE reverse.account_id=r.related_id AND reverse.related_id=r.account_id AND reverse.status>=100)
+ UNION ALL SELECT 'relationship.friend_accept',a.account_id,a.request_id,a.accepted_at FROM owned_social_friend_accepts a
  ) c WHERE occurred_at<=clock_timestamp() AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=c.account_id) AND NOT EXISTS(SELECT 1 FROM owned_progression_projection_receipts p WHERE p.kind=c.kind AND p.account_id=c.account_id AND p.source_id=c.source_id) ORDER BY occurred_at,kind,source_id LIMIT $1`, limit)
 	if e != nil {
 		return 0, e
@@ -90,6 +97,12 @@ func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
 				} else if e != nil {
 					return e
 				}
+			}
+			if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE id=$1::uuid AND NOT disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=a.id AND p.kind='disable_account'AND(p.starts_at IS NULL OR p.starts_at<=clock_timestamp())AND(p.expires_at IS NULL OR p.expires_at>clock_timestamp())))`, item.actor).Scan(&disabled); e != nil {
+				return e
+			}
+			if !disabled && outcome == "applied" {
+				return authority.ErrForbidden
 			}
 			_, e = tx.ExecContext(ctx, `UPDATE owned_progression_projection_receipts SET outcome=$4 WHERE kind=$1 AND account_id=$2 AND source_id=$3`, item.kind, item.actor, item.source, outcome)
 			return e

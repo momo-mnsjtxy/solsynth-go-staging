@@ -135,6 +135,10 @@ func CheckJSON(b []byte) error {
 	d := json.NewDecoder(bytes.NewReader(b))
 	d.UseNumber()
 	var walk func(int) error
+	canonical := map[string]string{}
+	for _, key := range []string{"@context", "id", "type", "actor", "object", "target", "instrument", "result", "to", "cc", "bto", "bcc", "published", "updated", "attributedTo", "content", "mediaType", "attachment", "sensitive", "summary", "url", "name", "publicKey", "owner", "publicKeyPem", "inbox", "outbox", "followers", "following", "featured", "preferredUsername", "manuallyApprovesFollowers", "discoverable"} {
+		canonical[strings.ToLower(key)] = key
+	}
 	walk = func(depth int) error {
 		if depth > 12 {
 			return ErrInvalid
@@ -156,7 +160,8 @@ func CheckJSON(b []byte) error {
 					return ErrInvalid
 				}
 				key, ok := k.(string)
-				if !ok || seen[key] || key == "bto" || key == "bcc" {
+				folded := strings.ToLower(key)
+				if !ok || seen[key] || key == "bto" || key == "bcc" || canonical[folded] != "" && canonical[folded] != key {
 					return ErrInvalid
 				}
 				seen[key] = true

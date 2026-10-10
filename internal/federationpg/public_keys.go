@@ -247,8 +247,33 @@ func (r *Repository) publicKeyFence(ctx context.Context, tx *sql.Tx, k f.RemoteK
 	if k.Incarnation == "" {
 		return nil
 	}
+	ledger, lockErr := lockDeliveryReservations(ctx, tx)
+	if lockErr != nil {
+		return lockErr
+	}
+	if !ledger {
+		static, staticErr := r.pinnedKeys.RemoteActor(ctx, k.Actor)
+		if staticErr != nil || !sameQuoteKey(static.Snapshot(), k) {
+			return f.ErrForbidden
+		}
+		return nil
+	}
 	current, e := r.publicKey(ctx, tx, k.Actor, false, true)
-	if e != nil || !sameQuoteKey(current, k) {
+	if e == nil {
+		if !sameQuoteKey(current, k) {
+			return f.ErrForbidden
+		}
+		return nil
+	}
+	if !errors.Is(e, sql.ErrNoRows) {
+		return f.ErrForbidden
+	}
+	// Explicit static pins also carry a deployment-controlled incarnation. They
+	// are valid only while the configured provider still returns the exact same
+	// actor/key/incarnation; lookupWithQuery has already excluded collisions with
+	// any durable admission or revocation reservation.
+	static, staticErr := r.pinnedKeys.RemoteActor(ctx, k.Actor)
+	if staticErr != nil || !sameQuoteKey(static.Snapshot(), k) {
 		return f.ErrForbidden
 	}
 	return nil

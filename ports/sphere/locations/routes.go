@@ -105,6 +105,22 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 		}
 		domain := parts[1]
 		parts = parts[2:]
+		if domain == "admin" && len(parts) > 0 && parts[0] == "nfc" {
+			encryptedNFCHTTP(w, r, repo, auth, actor, parts[1:], true)
+			return
+		}
+		if domain == "nfc" && (len(parts) == 1 && parts[0] == "sun" || len(parts) == 2 && parts[0] == "tags" && parts[1] == "claim" || len(parts) == 3 && parts[0] == "tags" && parts[2] == "lock") {
+			encryptedNFCHTTP(w, r, repo, auth, actor, parts, false)
+			return
+		}
+		if domain == "nearby" {
+			nearbyHTTP(w, r, repo, auth, actor, parts)
+			return
+		}
+		if domain == "locations" {
+			geocodingHTTP(w, r, repo, auth, actor, parts)
+			return
+		}
 		if domain != "meets" && domain != "pins" && domain != "nfc" {
 			http.NotFound(w, r)
 			return
@@ -432,6 +448,9 @@ func streamHeaders(w http.ResponseWriter) {
 	w.WriteHeader(200)
 }
 func streamMeet(w http.ResponseWriter, r *http.Request, repo Repository, auth Auth, actor string, current Meet, origin *Point) {
+	if durableLocationStream(w, r, repo, auth, actor, current.ID, false, origin) {
+		return
+	}
 	streamHeaders(w)
 	if event(w, "snapshot", map[string]any{"type": "snapshot", "sent_at": time.Now().UTC(), "meet": current}) != nil {
 		return
@@ -475,6 +494,9 @@ func streamMeet(w http.ResponseWriter, r *http.Request, repo Repository, auth Au
 	}
 }
 func streamPin(w http.ResponseWriter, r *http.Request, repo Repository, auth Auth, actor string, current Pin) {
+	if durableLocationStream(w, r, repo, auth, actor, current.ID, true, nil) {
+		return
+	}
 	streamHeaders(w)
 	if event(w, "snapshot", map[string]any{"type": "snapshot", "sent_at": time.Now().UTC(), "pin": current}) != nil {
 		return

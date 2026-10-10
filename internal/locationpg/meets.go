@@ -23,7 +23,7 @@ func (r *Repository) loadMeet(ctx context.Context, tx *sql.Tx, id string, write 
 	if write {
 		lock = " FOR UPDATE OF m"
 	}
-	e := tx.QueryRowContext(ctx, `SELECT m.id::text,m.host_id::text,m.status,m.visibility,m.notes,m.location_name,m.location_address,m.longitude,m.latitude,m.metadata,m.expires_at,m.completed_at,m.created_at,m.updated_at FROM owned_meets m JOIN owned_authority_accounts a ON a.id=m.host_id WHERE m.id=$1 AND m.deleted_at IS NULL AND NOT a.disabled`+lock, id).Scan(&m.ID, &m.HostID, &m.Status, &m.Visibility, &m.Notes, &m.LocationName, &m.LocationAddress, &lon, &lat, &metadata, &m.ExpiresAt, &m.CompletedAt, &m.CreatedAt, &m.UpdatedAt)
+	e := tx.QueryRowContext(ctx, `SELECT m.id::text,m.host_id::text,m.status,m.visibility,m.notes,m.location_name,m.location_address,m.longitude,m.latitude,m.metadata,m.expires_at,m.completed_at,m.created_at,m.updated_at,m.image_id::text FROM owned_meets m JOIN owned_authority_accounts a ON a.id=m.host_id WHERE m.id=$1 AND m.deleted_at IS NULL AND NOT a.disabled`+lock, id).Scan(&m.ID, &m.HostID, &m.Status, &m.Visibility, &m.Notes, &m.LocationName, &m.LocationAddress, &lon, &lat, &metadata, &m.ExpiresAt, &m.CompletedAt, &m.CreatedAt, &m.UpdatedAt, &m.ImageID)
 	if e != nil {
 		return m, mapped(e)
 	}
@@ -113,6 +113,12 @@ func (r *Repository) projectMeet(ctx context.Context, tx *sql.Tx, m locations.Me
 		return m, e
 	}
 	m.Pins = pins
+	if e = r.loadMeetImage(ctx, tx, actor, &m); e != nil {
+		return m, e
+	}
+	if e = r.recheck(ctx, tx, actor, ""); e != nil {
+		return m, e
+	}
 	return m, nil
 }
 func (r *Repository) CreateMeet(ctx context.Context, actor string, v locations.CreateMeet) (locations.Meet, error) {
@@ -124,6 +130,12 @@ func (r *Repository) CreateMeet(ctx context.Context, actor string, v locations.C
 		return locations.Meet{}, e
 	}
 	defer tx.Rollback()
+	if e = r.validateMeetImage(ctx, tx, actor, v.ImageID); e != nil {
+		return locations.Meet{}, e
+	}
+	if e = r.recheck(ctx, tx, actor, "meet.create"); e != nil {
+		return locations.Meet{}, e
+	}
 	now := r.now().UTC()
 	vis := locations.Private
 	if v.Visibility != nil {
@@ -142,7 +154,7 @@ func (r *Repository) CreateMeet(ctx context.Context, actor string, v locations.C
 		return locations.Meet{}, e
 	}
 	var id string
-	e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_meets WHERE host_id=$1 AND status=0 AND deleted_at IS NULL AND expires_at>$2 AND created_at>=$2::timestamptz-interval '5 minutes' AND visibility=$3 AND notes IS NOT DISTINCT FROM $4 AND location_name IS NOT DISTINCT FROM $5 AND location_address IS NOT DISTINCT FROM $6 AND longitude IS NOT DISTINCT FROM $7 AND latitude IS NOT DISTINCT FROM $8 AND metadata=$9::jsonb ORDER BY created_at DESC,id LIMIT 1 FOR UPDATE`, actor, now, vis, v.Notes, v.LocationName, v.LocationAddress, lon, lat, raw).Scan(&id)
+	e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_meets WHERE host_id=$1 AND status=0 AND deleted_at IS NULL AND expires_at>$2 AND created_at>=$2::timestamptz-interval '5 minutes' AND visibility=$3 AND notes IS NOT DISTINCT FROM $4 AND location_name IS NOT DISTINCT FROM $5 AND location_address IS NOT DISTINCT FROM $6 AND longitude IS NOT DISTINCT FROM $7 AND latitude IS NOT DISTINCT FROM $8 AND metadata=$9::jsonb AND image_id IS NOT DISTINCT FROM $10::uuid ORDER BY created_at DESC,id LIMIT 1 FOR UPDATE`, actor, now, vis, v.Notes, v.LocationName, v.LocationAddress, lon, lat, raw, v.ImageID).Scan(&id)
 	if e == nil {
 		m, e := r.loadMeet(ctx, tx, id, false)
 		if e != nil {
@@ -150,6 +162,9 @@ func (r *Repository) CreateMeet(ctx context.Context, actor string, v locations.C
 		}
 		m, e = r.projectMeet(ctx, tx, m, actor)
 		if e != nil {
+			return m, e
+		}
+		if e = r.recheck(ctx, tx, actor, "meet.create"); e != nil {
 			return m, e
 		}
 		return m, tx.Commit()
@@ -161,7 +176,7 @@ func (r *Repository) CreateMeet(ctx context.Context, actor string, v locations.C
 	if e != nil {
 		return locations.Meet{}, e
 	}
-	_, e = tx.ExecContext(ctx, `INSERT INTO owned_meets(id,host_id,status,visibility,notes,location_name,location_address,longitude,latitude,metadata,expires_at,created_at,updated_at) VALUES($1,$2,0,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11)`, id, actor, vis, v.Notes, v.LocationName, v.LocationAddress, lon, lat, raw, now.Add(time.Duration(ttl)*time.Second), now)
+	_, e = tx.ExecContext(ctx, `INSERT INTO owned_meets(id,host_id,status,visibility,notes,location_name,location_address,longitude,latitude,metadata,expires_at,created_at,updated_at,image_id) VALUES($1,$2,0,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11,$12)`, id, actor, vis, v.Notes, v.LocationName, v.LocationAddress, lon, lat, raw, now.Add(time.Duration(ttl)*time.Second), now, v.ImageID)
 	if e != nil {
 		return locations.Meet{}, e
 	}
@@ -170,6 +185,12 @@ func (r *Repository) CreateMeet(ctx context.Context, actor string, v locations.C
 	}
 	m, e := r.loadMeet(ctx, tx, id, false)
 	if e != nil {
+		return m, e
+	}
+	if e = r.loadMeetImage(ctx, tx, actor, &m); e != nil {
+		return m, e
+	}
+	if e = r.recheck(ctx, tx, actor, "meet.create"); e != nil {
 		return m, e
 	}
 	return m, tx.Commit()

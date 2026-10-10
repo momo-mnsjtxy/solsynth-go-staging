@@ -121,7 +121,7 @@ func TestPublicAdmissionRetiredKeyMaterialCannotReappearUnderNewIdentity(t *test
 	if e = os.WriteFile(keyPath, []byte(pem), 0600); e != nil {
 		t.Fatal(e)
 	}
-	input["remote_keys"] = []map[string]string{{"actor": candidate.Actor, "inbox": "https://public.example.test/inbox", "key_id": candidate.KeyID, "public_key_file": keyPath}}
+	input["remote_keys"] = []map[string]string{{"actor": candidate.Actor, "inbox": "https://public.example.test/inbox", "key_id": candidate.KeyID, "incarnation": "ca110000-0000-4000-8000-000000000099", "public_key_file": keyPath}}
 	write()
 	if _, e = loadFederationConfig(path, false); e == nil {
 		t.Fatal("retired material simultaneously configured as trusted")

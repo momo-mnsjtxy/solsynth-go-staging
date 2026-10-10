@@ -92,8 +92,12 @@ func run(args []string, out io.Writer) error {
 	accountExtrasSettings := accountExtraFlags(fs)
 	affiliationPurchaseSettings := affiliationPurchaseFlags(fs)
 	operationsRetentionSettings := operationsRetentionFlags(fs)
+	accountConnectionSettings := accountConnectionFlags(fs)
+	pushDeviceSettings := pushDeviceFlags(fs)
+	progressionSettings := progressionExtensionFlags(fs)
 	passkitSettings := passkitFlags(fs)
 	couponSettings := couponFlags(fs)
+	mediaLocationSettings := mediaLocationFlags(fs)
 	factorIssuer := fs.String("factor-issuer-label", "SoSYS", "human-readable TOTP issuer label")
 	enableOAuth := fs.Bool("enable-oauth", false, "enable owned OAuth authorization-code and OIDC userinfo flows")
 	consentURL := fs.String("oauth-consent-url", "", "deployed HTTPS consent UI calling the owned authorization API")
@@ -261,6 +265,11 @@ func run(args []string, out io.Writer) error {
 		return errors.New("wallet product treasury requires an explicit wallet UUID and catalog configuration")
 	}
 	appConfig := application.Config{ChatVoiceRetention: *voiceRetention, MiniAppUploadTimeout: *miniAppUploadTimeout, PostAutomodReview: *enableAutomodReview, EnableMLSDelivery: *enableMLS, Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, WalletProductTreasuryWalletID: *walletProductTreasury, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
+	closeMediaLocations, err := mediaLocationSettings.apply(&appConfig)
+	if err != nil {
+		return err
+	}
+	defer closeMediaLocations()
 	if err := applyChatOrganization(&appConfig, *chatOrganizationSettings); err != nil {
 		return err
 	}
@@ -271,6 +280,15 @@ func run(args []string, out io.Writer) error {
 		appConfig.PINEnrollmentPepperID = *pepperID
 	}
 	if err = passkitSettings.apply(&appConfig); err != nil {
+		return err
+	}
+	if err = progressionSettings.apply(&appConfig); err != nil {
+		return err
+	}
+	if err = pushDeviceSettings.apply(&appConfig); err != nil {
+		return err
+	}
+	if err = accountConnectionSettings.apply(&appConfig); err != nil {
 		return err
 	}
 	if err = accountExtrasSettings.apply(&appConfig); err != nil {

@@ -162,7 +162,7 @@ func (r *Repository) OpenVoiceInTransaction(ctx context.Context, tx *sql.Tx, act
 	if e != nil {
 		return result, nil, e
 	}
-	body, e := r.openFile(ctx, f)
+	body, e := r.openFile(ctx, f, tx)
 	if e != nil {
 		return result, nil, e
 	}

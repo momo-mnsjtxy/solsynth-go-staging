@@ -26,6 +26,7 @@ import (
 	"solsynth.local/go-migration/internal/federationhttp"
 	"solsynth.local/go-migration/internal/federationpg"
 	"solsynth.local/go-migration/internal/postpg"
+	"solsynth.local/go-migration/internal/socialpg"
 	"solsynth.local/go-migration/ports/authority"
 	f "solsynth.local/go-migration/ports/federation"
 	"solsynth.local/go-migration/ports/passport/accounts"
@@ -78,7 +79,7 @@ type federationFixture struct {
 func federationDB(t *testing.T) *sql.DB {
 	t.Helper()
 	db := database(t)
-	for _, s := range []string{authoritypg.Schema, accountpg.Schema, postpg.Schema, federationpg.Schema} {
+	for _, s := range []string{authoritypg.Schema, accountpg.Schema, socialpg.Schema, postpg.Schema, federationpg.Schema} {
 		query(t, db, s)
 	}
 	return db
@@ -97,7 +98,7 @@ func newFederationFixtureWithAuthority(t *testing.T, manual bool, configure func
 		t.Fatal(e)
 	}
 	store := authoritypg.New(db)
-	if e := store.ReplacePolicy(ctx, x.actor, []authority.Rule{{Pattern: "posts.*"}, {Pattern: "publishers.*"}}, nil); e != nil {
+	if e := store.ReplacePolicy(ctx, x.actor, []authority.Rule{{Pattern: "posts.*"}, {Pattern: "publishers.*"}, {Pattern: f.ReadPermission}, {Pattern: f.KeyAdminPermission}}, nil); e != nil {
 		t.Fatal(e)
 	}
 	ac := authorityConfig(t, authorityKeys(t), x.clock)

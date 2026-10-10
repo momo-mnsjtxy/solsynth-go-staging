@@ -10,8 +10,10 @@ import (
 	"solsynth.local/go-migration/ports/authority/oauth"
 	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/develop/bots"
+	"solsynth.local/go-migration/ports/notifications"
 	"solsynth.local/go-migration/ports/passport/accountsettings"
 	"solsynth.local/go-migration/ports/passport/activities"
+	"solsynth.local/go-migration/ports/passport/connections"
 	"solsynth.local/go-migration/ports/passport/friends"
 	"solsynth.local/go-migration/ports/passport/history"
 	"solsynth.local/go-migration/ports/passport/ipcheck"
@@ -31,6 +33,9 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	notificationDevices                                                                                                                                                                                                                                  http.Handler
+	presenceSensors                                                                                                                                                                                                                                      http.Handler
+	accountConnections                                                                                                                                                                                                                                   http.Handler
 	accountHistory                                                                                                                                                                                                                                       http.Handler
 	friends                                                                                                                                                                                                                                              http.Handler
 	activities                                                                                                                                                                                                                                           http.Handler
@@ -68,6 +73,30 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// between services. Neither a service-name prefix nor traversal is authority.
 	if p == "" || p[0] != '/' || path.Clean(p) != p || strings.Contains(p, "\\") || strings.Contains(p, "//") || r.URL.RawPath != "" && r.URL.EscapedPath() != p {
 		problem(w, 400, "INVALID_ROUTE_PATH")
+		return
+	}
+	if notifications.DeviceHandles(p) {
+		if h.notificationDevices == nil {
+			problem(w, 503, "NOTIFICATION_UNAVAILABLE")
+			return
+		}
+		h.notificationDevices.ServeHTTP(w, r)
+		return
+	}
+	if activities.SensorHandles(p) {
+		if h.presenceSensors == nil {
+			problem(w, 503, "ACTIVITIES_UNAVAILABLE")
+			return
+		}
+		h.presenceSensors.ServeHTTP(w, r)
+		return
+	}
+	if connections.Handles(p) {
+		if h.accountConnections == nil {
+			problem(w, 503, "CONNECTION_PROVIDER_UNAVAILABLE")
+			return
+		}
+		h.accountConnections.ServeHTTP(w, r)
 		return
 	}
 	if realmmembers.HandlesRequest(r) && (!realmmembers.ExperienceRoute(p) || h.realmMemberHistory) {
@@ -160,6 +189,15 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if presence.RouteMatches(canonical) {
 			handler = h.presence
 		}
+		if connections.Handles(canonical) {
+			handler = h.accountConnections
+		}
+		if activities.SensorHandles(canonical) {
+			handler = h.presenceSensors
+		}
+		if notifications.DeviceHandles(canonical) {
+			handler = h.notificationDevices
+		}
 		if progression.RouteMatches(canonical) {
 			handler = h.progression
 		}
@@ -199,7 +237,7 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				canonical = "/api/" + strings.TrimPrefix(p, prefix)
 			}
 		}
-		if under(canonical, "/api/meets") || under(canonical, "/api/pins") || under(canonical, "/api/nfc") {
+		if under(canonical, "/api/meets") || under(canonical, "/api/pins") || under(canonical, "/api/nfc") || under(canonical, "/api/nearby") || under(canonical, "/api/admin/nfc") || under(canonical, "/api/locations") {
 			copy := r.Clone(r.Context())
 			u := *r.URL
 			u.Path = canonical
@@ -327,7 +365,7 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.notifications != nil && (under(canonical, "/api/notifications") || under(canonical, "/metoer/notifications")) && (service == "api" || service == "metoer") {
 		target = h.notifications
 	}
-	if h.media != nil && (under(canonical, "/api/media") || under(canonical, "/api/files")) && (service == "drive" || service == "api") {
+	if h.media != nil && (under(canonical, "/api/media") || under(canonical, "/api/files") || under(canonical, "/api/pools") || under(canonical, "/api/bundles") || under(canonical, "/api/billing")) && (service == "drive" || service == "api") {
 		target = h.media
 	}
 	if h.interactions != nil && interactionRoute(canonical) && (service == "sphere" || service == "api") {

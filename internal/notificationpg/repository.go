@@ -24,17 +24,19 @@ var baseSchema string
 //go:embed friend_schema.sql
 var FriendSchema string
 
-var Schema = baseSchema + "\n" + FriendSchema
+var Schema = baseSchema + "\n" + FriendSchema + "\n" + DevicesSchema + "\n" + WellbeingSchema
 
 type Repository struct {
-	collections CollectionPublicationPolicy
-	chatEvents  notifications.ChatEventProjector
-	friends     notifications.AudienceEventProjector
-	preferences PreferencePolicy
-	roomAccess  rooms.AccessPolicy
-	db          *sql.DB
-	guard       *authoritypg.TransactionGuard
-	app         string
+	nightOwls        bool
+	collections      CollectionPublicationPolicy
+	publisherContent PublisherContentPolicy
+	chatEvents       notifications.ChatEventProjector
+	friends          notifications.AudienceEventProjector
+	preferences      PreferencePolicy
+	roomAccess       rooms.AccessPolicy
+	db               *sql.DB
+	guard            *authoritypg.TransactionGuard
+	app              string
 }
 
 func (r *Repository) WithRoomAccess(p rooms.AccessPolicy) *Repository { r.roomAccess = p; return r }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"solsynth.local/go-migration/internal/auditcapture"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/authority/signin"
 	wallet "solsynth.local/go-migration/ports/wallet/accounts"
@@ -48,8 +49,11 @@ func (t *transaction) MutatePaymentPIN(action string, f signin.Factor, pin strin
 	if e := t.repo.pin.MutateFactor(t.ctx, t.repo.db, t.tx, actor, f.ID, action, pin, now); e != nil {
 		return pinError(e)
 	}
-	_, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_factor_audit(account_id,factor_id,action,occurred_at)VALUES($1::uuid,$2::uuid,$3::text,$4::timestamptz)`, actor, f.ID, "pin."+action, now.UTC().Truncate(time.Microsecond))
-	return e
+	var record int64
+	if e := t.tx.QueryRowContext(t.ctx, `INSERT INTO owned_authority_factor_audit(account_id,factor_id,action,occurred_at)VALUES($1::uuid,$2::uuid,$3::text,$4::timestamptz)RETURNING id`, actor, f.ID, "pin."+action, now.UTC().Truncate(time.Microsecond)).Scan(&record); e != nil {
+		return e
+	}
+	return auditcapture.Record(t.ctx, t.tx, actor, "owned_authority_factor_audit", record)
 }
 func (t *transaction) PaymentPINConfig(action string) (string, error) {
 	if t.repo.pin == nil {

@@ -94,7 +94,7 @@ func (r *Repository) Subscribe(ctx context.Context, actor, selector string) (tim
 		if approval {
 			state = "pending"
 		}
-		_, e = tx.ExecContext(ctx, `INSERT INTO owned_publisher_follows(id,account_id,publisher_id,state,created_at,updated_at)VALUES($1,$2,$3,$4,$5,$5) ON CONFLICT(account_id,publisher_id)DO UPDATE SET state=EXCLUDED.state,reason=NULL,ended_at=NULL,ended_by_account_id=NULL,notify=true,updated_at=EXCLUDED.updated_at`, uid, actor, pub, state, now)
+		_, e = tx.ExecContext(ctx, `INSERT INTO owned_publisher_follows(id,account_id,publisher_id,state,created_at,updated_at,incarnation,incarnation_started_at)VALUES($1,$2,$3,$4,$5,$5,1,$5) ON CONFLICT(account_id,publisher_id)DO UPDATE SET state=EXCLUDED.state,reason=NULL,ended_at=NULL,ended_by_account_id=NULL,notify=true,updated_at=EXCLUDED.updated_at,incarnation=owned_publisher_follows.incarnation+1,incarnation_started_at=EXCLUDED.incarnation_started_at`, uid, actor, pub, state, now)
 		if e != nil {
 			return e
 		}
@@ -272,7 +272,7 @@ func (r *Repository) DecideFollow(ctx context.Context, actor, selector, request 
 		out.IsPendingRequest = false
 		out.Reason = reason
 		out.UpdatedAt = now
-		if _, e = tx.ExecContext(ctx, `UPDATE owned_publisher_follows SET state=$2,reason=$3,updated_at=$4 WHERE id=$1`, out.ID, out.State, reason, now); e != nil {
+		if _, e = tx.ExecContext(ctx, `UPDATE owned_publisher_follows SET state=$2,reason=$3,updated_at=$4,incarnation=CASE WHEN $2='accepted' THEN incarnation+1 ELSE incarnation END,incarnation_started_at=CASE WHEN $2='accepted' THEN $4 ELSE incarnation_started_at END WHERE id=$1`, out.ID, out.State, reason, now); e != nil {
 			return e
 		}
 		return audit(ctx, tx, actor, "publisher.follow."+out.State, pub, now)

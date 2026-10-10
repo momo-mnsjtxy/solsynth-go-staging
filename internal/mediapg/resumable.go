@@ -43,8 +43,11 @@ func normalizeTask(request media.CreateUploadRequest, max int64) (media.CreateUp
 	if err := media.ValidateUsage(request.Usage); err != nil {
 		return request, "", err
 	}
-	if request.PoolID != "" || request.BundleID != "" || request.ParentID != "" || request.EncryptionScheme != "" || request.EncryptionHeader != "" || request.EncryptionSignature != "" || request.ExpiredAt != nil || request.ApplicationType != "" {
+	if request.ApplicationType != "" {
 		return request, "", media.ErrUnsupported
+	}
+	if e := media.ValidateOptions(taskOptions(request), time.Now()); e != nil {
+		return request, "", e
 	}
 	request.Hash = strings.ToLower(request.Hash)
 	if len(request.Hash) != 32 {
@@ -99,6 +102,15 @@ func (r *Repository) CreateResumable(ctx context.Context, actor string, request 
 	if err != nil {
 		return media.UploadTask{}, err
 	}
+	if request.PoolID != "" {
+		selected := r.poolStores[request.PoolID]
+		if selected == nil {
+			return media.UploadTask{}, media.ErrUnavailable
+		}
+		if _, ok := selected.(media.ChunkObjectStore); !ok {
+			return media.UploadTask{}, media.ErrUnsupported
+		}
+	}
 	key, err = taskKey(key)
 	if err != nil {
 		return media.UploadTask{}, err
@@ -135,7 +147,7 @@ func (r *Repository) CreateResumable(ctx context.Context, actor string, request 
 	if active >= 100 {
 		return media.UploadTask{}, media.ErrPending
 	}
-	u := media.Upload{Name: request.FileName, MIMEType: request.ContentType, Usage: request.Usage, Size: request.FileSize, SHA256: fingerprint, IdempotencyKey: key}
+	u := media.Upload{Name: request.FileName, MIMEType: request.ContentType, Usage: request.Usage, Size: request.FileSize, SHA256: fingerprint, IdempotencyKey: key, Options: taskOptions(request)}
 	f, replayed, err := r.reserveTx(ctx, tx, actor, u)
 	if err != nil {
 		return media.UploadTask{}, err
@@ -184,10 +196,6 @@ func (r *Repository) lockTask(ctx context.Context, tx *sql.Tx, actor, id string)
 }
 
 func (r *Repository) UploadChunk(ctx context.Context, actor, id string, index int, reader io.Reader) (bool, error) {
-	store, ok := r.store.(media.ChunkObjectStore)
-	if !ok {
-		return false, media.ErrUnsupported
-	}
 	if reader == nil || index < 0 || index >= media.MaxUploadChunks {
 		return false, media.ErrInvalid
 	}
@@ -199,6 +207,14 @@ func (r *Repository) UploadChunk(ctx context.Context, actor, id string, index in
 	rec, err := r.lockTask(ctx, tx, actor, id)
 	if err != nil {
 		return false, err
+	}
+	selected, _, selectErr := r.objectStore(ctx, id, tx)
+	if selectErr != nil {
+		return false, selectErr
+	}
+	store, ok := selected.(media.ChunkObjectStore)
+	if !ok {
+		return false, media.ErrUnsupported
 	}
 	if rec.file.State != "pending" && rec.file.State != "ready" || rec.file.State == "pending" && rec.expired || rec.task.Status == "Failed" {
 		return false, media.ErrGone
@@ -246,7 +262,7 @@ func (r *Repository) UploadChunk(ctx context.Context, actor, id string, index in
 		return false, err
 	}
 	var live bool
-	if err = tx.QueryRowContext(ctx, `SELECT expires_at>clock_timestamp() FROM owned_media_files WHERE id=$1`, id).Scan(&live); err != nil {
+	if err = tx.QueryRowContext(ctx, `SELECT expires_at>clock_timestamp() AND NOT EXISTS(SELECT 1 FROM owned_media_details d LEFT JOIN owned_media_bundles b ON b.id=d.bundle_id WHERE d.file_id=owned_media_files.id AND (d.expired_at<=clock_timestamp() OR b.expired_at<=clock_timestamp() OR b.deleted_at IS NOT NULL)) FROM owned_media_files WHERE id=$1`, id).Scan(&live); err != nil {
 		return false, err
 	}
 	if !live {
@@ -275,6 +291,9 @@ func (r *Repository) CompleteResumable(ctx context.Context, actor, id string) er
 		return err
 	}
 	if rec.file.State == "ready" && rec.task.Status == "Completed" {
+		if _, err = r.guard.Authorize(ctx, r.db, tx, actor, media.CreatePermission); err != nil {
+			return err
+		}
 		return tx.Commit()
 	}
 	if rec.file.State != "pending" || rec.expired || rec.task.Status == "Failed" {
@@ -324,7 +343,7 @@ func (r *Repository) scheduleCompletion(ctx context.Context, actor, id string) {
 		worker, cancel := context.WithTimeout(context.WithoutCancel(ctx), min(r.cfg.PendingTTL, 10*time.Minute))
 		defer cancel()
 		err := r.processResumable(worker, actor, id)
-		if errors.Is(err, media.ErrDigest) || errors.Is(err, media.ErrTooLarge) || errors.Is(err, authority.ErrForbidden) || errors.Is(err, authority.ErrInvalid) {
+		if errors.Is(err, media.ErrDigest) || errors.Is(err, media.ErrTooLarge) || errors.Is(err, media.ErrNotFound) || errors.Is(err, media.ErrForbidden) || errors.Is(err, media.ErrGone) || errors.Is(err, authority.ErrForbidden) || errors.Is(err, authority.ErrInvalid) {
 			cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 			defer cancel()
 			_ = r.failResumable(cleanup, id, err)
@@ -343,6 +362,9 @@ func (r *Repository) processResumable(ctx context.Context, actor, id string) err
 		return err
 	}
 	if rec.file.State == "ready" && rec.task.Status == "Completed" {
+		if _, err = r.guard.Authorize(ctx, r.db, tx, actor, media.CreatePermission); err != nil {
+			return err
+		}
 		return tx.Commit()
 	}
 	if rec.file.State != "pending" || rec.expired || rec.task.Status != "Processing" {
@@ -369,15 +391,30 @@ func (r *Repository) processResumable(ctx context.Context, actor, id string) err
 	if len(chunks) != rec.task.ChunksCount {
 		return media.ErrPending
 	}
-	sha, err := r.store.(media.ChunkObjectStore).AssembleChunks(ctx, id, chunks, rec.file.Size, rec.expectedMD5)
+	selected, _, selectErr := r.objectStore(ctx, id, tx)
+	if selectErr != nil {
+		return selectErr
+	}
+	chunkStore, ok := selected.(media.ChunkObjectStore)
+	if !ok {
+		return media.ErrUnsupported
+	}
+	sha, err := chunkStore.AssembleChunks(ctx, id, chunks, rec.file.Size, rec.expectedMD5)
 	if err != nil {
+		return err
+	}
+	rec.file.SHA256 = sha
+	if err = r.deduplicate(ctx, tx, rec.file, selected); err != nil {
+		return err
+	}
+	if err = r.validatePersistedUpload(ctx, tx, actor, rec.file); err != nil {
 		return err
 	}
 	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, media.CreatePermission); err != nil {
 		return err
 	}
 	var live bool
-	if err = tx.QueryRowContext(ctx, `SELECT expires_at>clock_timestamp() FROM owned_media_files WHERE id=$1`, id).Scan(&live); err != nil {
+	if err = tx.QueryRowContext(ctx, `SELECT expires_at>clock_timestamp() AND NOT EXISTS(SELECT 1 FROM owned_media_details d LEFT JOIN owned_media_bundles b ON b.id=d.bundle_id WHERE d.file_id=owned_media_files.id AND (d.expired_at<=clock_timestamp() OR b.expired_at<=clock_timestamp() OR b.deleted_at IS NOT NULL)) FROM owned_media_files WHERE id=$1`, id).Scan(&live); err != nil {
 		return err
 	}
 	if !live {
@@ -390,6 +427,12 @@ func (r *Repository) processResumable(ctx context.Context, actor, id string) err
 		return err
 	}
 	if _, err = tx.ExecContext(ctx, `UPDATE owned_media_upload_tasks SET status='Completed',failure_code='' WHERE id=$1`, id); err != nil {
+		return err
+	}
+	if err = r.validatePersistedUpload(ctx, tx, actor, rec.file); err != nil {
+		return err
+	}
+	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, media.CreatePermission); err != nil {
 		return err
 	}
 	return tx.Commit()
@@ -427,6 +470,8 @@ func (r *Repository) failResumable(ctx context.Context, id string, cause error) 
 	code := "MEDIA_CONTENT_MISMATCH"
 	if errors.Is(cause, authority.ErrForbidden) || errors.Is(cause, authority.ErrInvalid) {
 		code = "MEDIA_FORBIDDEN"
+	} else if errors.Is(cause, media.ErrNotFound) || errors.Is(cause, media.ErrForbidden) || errors.Is(cause, media.ErrGone) {
+		code = "MEDIA_POLICY_CHANGED"
 	}
 	if _, err = tx.ExecContext(ctx, `UPDATE owned_media_upload_tasks SET status='Failed',failure_code=$2 WHERE id=$1`, id, code); err != nil {
 		return err
@@ -551,6 +596,9 @@ func (r *Repository) ListResumable(ctx context.Context, actor string, q media.Up
 		}
 		tasks = append(tasks, task)
 	}
+	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, media.ReadPermission); err != nil {
+		return nil, err
+	}
 	return tasks, tx.Commit()
 }
 
@@ -568,9 +616,15 @@ func (r *Repository) CancelResumable(ctx context.Context, actor, id string) erro
 		return media.ErrConflict
 	}
 	if rec.file.State == "deleted" {
+		if _, err = r.guard.Authorize(ctx, r.db, tx, actor, media.CreatePermission); err != nil {
+			return err
+		}
 		return tx.Commit()
 	}
 	if _, err = tx.ExecContext(ctx, `UPDATE owned_media_files SET state='deleting',updated_at=clock_timestamp() WHERE id=$1`, id); err != nil {
+		return err
+	}
+	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, media.CreatePermission); err != nil {
 		return err
 	}
 	if err = tx.Commit(); err != nil {
@@ -591,4 +645,8 @@ func (r *resumableContextReader) Read(p []byte) (int, error) {
 		return 0, err
 	}
 	return r.reader.Read(p)
+}
+
+func taskOptions(v media.CreateUploadRequest) media.Options {
+	return media.Options{PoolID: v.PoolID, BundleID: v.BundleID, ParentID: v.ParentID, EncryptionScheme: v.EncryptionScheme, EncryptionHeader: v.EncryptionHeader, EncryptionSignature: v.EncryptionSignature, ExpiredAt: v.ExpiredAt}
 }

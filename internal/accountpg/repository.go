@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/jackc/pgx/v5/pgconn"
+	"solsynth.local/go-migration/internal/auditcapture"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/passport/accounts"
@@ -195,8 +196,11 @@ func (r *Repository) write(ctx context.Context, actor, permission string, fn fun
 	return tx.Commit()
 }
 func audit(ctx context.Context, tx *sql.Tx, actor, action, target string, now time.Time) error {
-	_, e := tx.ExecContext(ctx, `INSERT INTO owned_accounts_audit(actor_id,action,target_id,occurred_at) VALUES($1,$2,$3,$4)`, actor, action, target, now)
-	return e
+	var id int64
+	if e := tx.QueryRowContext(ctx, `INSERT INTO owned_accounts_audit(actor_id,action,target_id,occurred_at) VALUES($1,$2,$3,$4)RETURNING id`, actor, action, target, now).Scan(&id); e != nil {
+		return e
+	}
+	return auditcapture.Record(ctx, tx, actor, "owned_accounts_audit", id)
 }
 func (r *Repository) UpdateProfile(ctx context.Context, actor string, p accounts.ProfilePatch) (accounts.Account, error) {
 	var a accounts.Account

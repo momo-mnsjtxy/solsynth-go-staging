@@ -76,33 +76,37 @@
     {
       "id": "account-admin-history",
       "scope": "账户聚合管理及auth侧contact/factor/session、provider links与credit writers",
-      "status": "fixing_review",
+      "status": "reviewed_pending_combined_ci",
       "evidence": [
-        "9ffdda6e0cbfc6490997fcff237a5b5e052ca547"
+        "8368f020eb1fb494fb78f764f8b624f7cb5fc33b",
+        "9346641dce703177c6dcd5480de5ddfaf89b60c6"
       ]
     },
     {
       "id": "realm-progression",
       "scope": "成员filter/order/status/search、XP触发/tenure、source-point/birthday/backdate/trusted/admin业务",
-      "status": "fixing_review",
+      "status": "reviewed_pending_combined_ci",
       "evidence": [
-        "9ffdda6e0cbfc6490997fcff237a5b5e052ca547"
+        "8368f020eb1fb494fb78f764f8b624f7cb5fc33b",
+        "9346641dce703177c6dcd5480de5ddfaf89b60c6"
       ]
     },
     {
       "id": "nearby-nfc-location-media",
       "scope": "附近presence tokens与resolve、加密NFC管理/claim/lock/SUN、location图片",
-      "status": "implementing",
+      "status": "reviewed_pending_combined_ci",
       "evidence": [
-        "872f6f64c1addc67e49b3956c768354c810d9f07"
+        "b3f02699e8f6ebb386e3d3e581fa84407fb68638",
+        "7889b10f4f9c4826ad3ac61bdd11d2da2152bcca"
       ]
     },
     {
       "id": "media-management",
       "scope": "resumable stats/task/bulk cleanup、remote upload/dedup/thumb/pools/folders/E2EE/expiry",
-      "status": "implementing",
+      "status": "reviewed_pending_combined_ci",
       "evidence": [
-        "872f6f64c1addc67e49b3956c768354c810d9f07"
+        "b3f02699e8f6ebb386e3d3e581fa84407fb68638",
+        "7889b10f4f9c4826ad3ac61bdd11d2da2152bcca"
       ]
     },
     {
@@ -117,9 +121,11 @@
     {
       "id": "federation-oauth",
       "scope": "actor/search/posts/follow/availability、realm ActivityPub/admin/moderation/private-media",
-      "status": "fixing_review",
+      "status": "reviewed_pending_combined_ci",
       "evidence": [
-        "1ce0f23779e01159e08e36e8ac46f938266715fa"
+        "1ce0f23779e01159e08e36e8ac46f938266715fa",
+        "97639dc",
+        "0525d3d"
       ]
     },
     {
@@ -152,9 +158,10 @@
     {
       "id": "device-push-registration",
       "scope": "provider实际possession挑战、加密device token、单次确认与push_enable canonical progression、复核及撤销",
-      "status": "fixing_review",
+      "status": "reviewed_pending_combined_ci",
       "evidence": [
-        "9ffdda6e0cbfc6490997fcff237a5b5e052ca547"
+        "8368f020eb1fb494fb78f764f8b624f7cb5fc33b",
+        "9346641dce703177c6dcd5480de5ddfaf89b60c6"
       ]
     },
     {
@@ -170,24 +177,42 @@
     {
       "id": "publisher-content-notifications",
       "scope": "post发布/直播首次开始的publisher订阅者通知 producer 与持久projection",
-      "status": "implementing",
-      "evidence": []
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "6e184925254413a4ee1aba8f6519332a8da93b76",
+        "954028c"
+      ]
     },
     {
       "id": "rewind-configured-adapters",
       "scope": "当前Go canonical活动记录与可配置中文词典真实分词、host接线",
-      "status": "implementing",
-      "evidence": []
+      "status": "reviewed_pending_combined_ci",
+      "evidence": [
+        "4ab97f80762eae9ef56eea4e98fabd54a67effd6",
+        "aa627467ec5a166de2f80e07bac9bfce8b65b8eb"
+      ]
     }
   ],
   "current_validation": {
-    "ordinary_go_tests": "affected packages passed after each integration; integration PG tests compile; actual PostgreSQL not run locally",
+    "ordinary_go_tests": "PASS: complete offline verify.sh at local commit 7926bd66b8cfd594fc96c4c63399e1c4de42d38d, including build, vet, all ordinary tests, race, exact compiled registry, source/SQL/readiness guards and fixture isolation. PostgreSQL tests explicitly skipped locally; no database/restart success inferred.",
     "first_combined_ci_run": 37947319307,
     "first_combined_ci_head": "0b59486bf1b6a74905e7587fbcdc9fea9987acfe",
     "first_combined_ci_result": "checks passed; both PostgreSQL groups and contracts failed; three specific causes fixed and independently reviewed locally, pending combined rerun",
-    "registered_before": 1073,
-    "registered_after_restart": 117,
-    "catalogue_review": "Independent gpt-5.6-sol review passed for exact source/compiled declarations, schema order and marker inventories; activated catalogue has passed independent offline guards; complete ordinary checks and private exact-head PostgreSQL CI remain separate.",
-    "local_source_checkpoint": "275ed0a5e84882e5aea2fcf46d1c8fa163e0ee71"
+    "registered_before": 1147,
+    "registered_after_restart": 120,
+    "catalogue_review": "Independent gpt-5.6-sol APPROVE for deterministic final catalogue v2 at the exact source checkpoint: all 1147 compiled/source/required cases, 120 same-group restart cases, 112 explicit schema installs, marker inventories, fixture isolation and unchanged original assertions. Activated exact approved file bytes; private current-candidate PostgreSQL CI remains pending.",
+    "local_source_checkpoint": "e71b407927f3957d8787226b36d249f6d213d134",
+    "catalogue_approved_sha256": {
+      "scripts/integration-groups.json": "fe7dc7d4eec8a24841414efbccd122eb52f2bee18995b2da10c3bb46c4498f24",
+      "docs/ci-two-groups-dependencies.json": "3bd879cfb1a16dc4d43637e4dc87536e8970d86b6c79f2bc2b00dec5f1c1b813"
+    },
+    "source_closure": "docs/all-drafts-source-closure.json",
+    "ci_execution_blocker": "User reports monthly GitHub Actions time exhausted on 2026-10-10; final private CI checks, both PostgreSQL groups and contracts remain required and unexecuted. No paid quota increase or local CI-guard bypass authorized.",
+    "previous_published_candidate": "7fab6ea350143d6a6b3103f2e414ac8e083d6c79",
+    "previous_published_candidate_ci_run": 37962128104,
+    "previous_published_candidate_ci_result": "Both attempts failed at job startup with empty step inventories; no PostgreSQL tests executed and failure cause is not confirmed. This older candidate does not contain the later reviewed federation, Rewind, publisher-content or location/media integration.",
+    "ordinary_verification_source_commit": "7926bd66b8cfd594fc96c4c63399e1c4de42d38d",
+    "ordinary_verification_log_sha256": "f5273bc6528fb21979cf21bc756ca36beb559b5ab2ace8129d46e2ac25b2ff63",
+    "candidate_publication_policy": "Save the reviewed candidate and draft PR while monthly Actions time is exhausted. Push-triggered Actions are deferred for this save; all four required private CI jobs remain pending and manual workflow_dispatch is retained. No green CI, merge or deployment claim."
   }
 }

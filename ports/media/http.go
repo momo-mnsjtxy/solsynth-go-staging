@@ -4,6 +4,7 @@ package media
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"mime"
 	"net/http"
 	"path"
@@ -96,6 +97,12 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	// Canonical host removes Authorization after binding opaque proof. Request
 	// writers still require proof; an anonymous request can only read public files.
+	if s.managementHTTP(w, r) {
+		return
+	}
+	if s.billingHTTP(w, r) {
+		return
+	}
 	if p == "/api/files/upload/direct" && r.Method == http.MethodPost {
 		s.direct(w, r)
 		return
@@ -212,11 +219,17 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for k, vs := range r.URL.Query() {
-		if len(vs) != 1 || k != "original" && k != "download" || vs[0] != "true" && vs[0] != "false" {
+		if len(vs) != 1 || k != "original" && k != "download" && k != "thumbnail" || vs[0] != "true" && vs[0] != "false" {
 			failure(w, ErrUnsupported)
 			return
 		}
 	}
+	passcode, passError := requestBundlePasscode(r)
+	if passError != nil {
+		failure(w, passError)
+		return
+	}
+	r = r.WithContext(WithBundlePasscode(r.Context(), passcode))
 	if suffix == "info" {
 		f, e := s.Repository.Info(r.Context(), actor, id)
 		if e != nil {
@@ -230,7 +243,19 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	f, body, e := s.Repository.Open(r.Context(), actor, id)
+	var f File
+	var body io.ReadSeekCloser
+	var e error
+	if r.URL.Query().Get("thumbnail") == "true" {
+		repo, ok := s.Repository.(ThumbnailRepository)
+		if !ok {
+			failure(w, ErrUnsupported)
+			return
+		}
+		f, body, e = repo.Thumbnail(r.Context(), actor, id)
+	} else {
+		f, body, e = s.Repository.Open(r.Context(), actor, id)
+	}
 	if e != nil {
 		failure(w, e)
 		return

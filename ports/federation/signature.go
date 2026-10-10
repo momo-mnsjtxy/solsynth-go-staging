@@ -33,6 +33,7 @@ type Verified struct {
 func (v Verified) Activity() Activity {
 	a := v.activity
 	a.Object = append(json.RawMessage{}, a.Object...)
+	a.Target = append(json.RawMessage{}, a.Target...)
 	a.Instrument = append(json.RawMessage{}, a.Instrument...)
 	a.To = append([]string{}, a.To...)
 	a.CC = append([]string{}, a.CC...)

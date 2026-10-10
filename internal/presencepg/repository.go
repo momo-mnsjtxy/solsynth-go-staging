@@ -358,3 +358,15 @@ func (r *Repository) ClearStatus(ctx context.Context, actor, app string) error {
 		return friendeventpg.CaptureStatus(ctx, tx, p)
 	})
 }
+
+// AdministrativeStatusInTransaction is the canonical self projection for an
+// explicitly authorized global administrator holding the target account lock.
+// The caller must revalidate its original accounts.view proof before commit.
+func AdministrativeStatusInTransaction(ctx context.Context, tx *sql.Tx, id string, now time.Time) (presence.Status, error) {
+	return projectStatus(ctx, tx, id, id, now)
+}
+
+// StatusInTransaction retains canonical blocking, invisibility and audience rules.
+func StatusInTransaction(ctx context.Context, tx *sql.Tx, viewer, ref string, now time.Time) (presence.Status, error) {
+	return projectStatus(ctx, tx, viewer, ref, now)
+}

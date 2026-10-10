@@ -149,5 +149,8 @@ func (r *Repository) Change(ctx context.Context, actor, ref string, c f.Change) 
 	if e = r.audit(ctx, tx, actor, p.id, c.Action); e != nil {
 		return e
 	}
+	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, f.Permission); e != nil {
+		return e
+	}
 	return tx.Commit()
 }

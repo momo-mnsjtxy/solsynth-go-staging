@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"crypto"
+	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/hex"
@@ -22,6 +23,7 @@ import (
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/federation"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -61,7 +63,7 @@ func externalFlags(fs *flag.FlagSet) externalFlagSet {
 		discover:          fs.Bool("federation-discover", false, "enable bounded WebFinger/actor observations for explicitly configured pinned targets"),
 		cloudRevocation:   fs.Bool("livekit-cloud-revocation", false, "assert this deployment supports Cloud revoke_token_ts; self-hosted removal is insufficient"),
 		endpoint:          fs.String("livekit-endpoint", "", "explicit WSS LiveKit endpoint"), keyEnv: fs.String("livekit-api-key-env", "", "explicit environment variable holding the LiveKit API key"), secretEnv: fs.String("livekit-api-secret-env", "", "explicit environment variable holding the raw LiveKit API secret"),
-		federationFile: fs.String("federation-config", "", "absolute path to a JSON origin/peer/key-reference configuration; keys are never generated"),
+		federationFile: fs.String("federation-config", "", "absolute path to a JSON origin/peer/key-reference configuration; mutation requires explicit local custody"),
 		tokenTTL:       fs.Duration("call-token-ttl", 2*time.Minute, "short-lived participant token duration, 15s through 5m"), callTTL: fs.Duration("call-max-lifetime", 4*time.Hour, "maximum call lifetime, at most 24h"), maintenance: fs.Duration("external-maintenance-interval", 5*time.Second, "configured call/federation maintenance cadence, 1s through 30s"),
 	}
 }
@@ -150,7 +152,11 @@ type federationFile struct {
 	AllowedOrigins         []string                     `json:"allowed_origins"`
 	MaxAttempts            int                          `json:"max_attempts"`
 	DeliveryTimeoutSeconds int                          `json:"delivery_timeout_seconds"`
-	LocalKeys              []struct {
+	LocalKeyCustody        *struct {
+		KeyDirectory       string `json:"key_directory"`
+		OperationDirectory string `json:"operation_directory"`
+	} `json:"local_key_custody"`
+	LocalKeys []struct {
 		PublisherID    string `json:"publisher_id"`
 		PrivateKeyFile string `json:"private_key_file"`
 	} `json:"local_keys"`
@@ -158,6 +164,7 @@ type federationFile struct {
 		Actor         string `json:"actor"`
 		Inbox         string `json:"inbox"`
 		KeyID         string `json:"key_id"`
+		Incarnation   string `json:"incarnation"`
 		PublicKeyFile string `json:"public_key_file"`
 	} `json:"remote_keys"`
 }
@@ -165,19 +172,52 @@ type configuredFederationKeys struct {
 	retiredActors, retiredKeys map[string]bool
 	retiredFingerprints        map[string]bool
 	local                      map[string]crypto.Signer
+	localFiles                 map[string]string
+	custody                    *fileFederationCustody
 	remote                     map[string]federation.RemoteKey
 	actors                     map[string]federation.RemoteKey
 }
+type configuredFederationCustodyKeys struct{ configuredFederationKeys }
 
 func (k configuredFederationKeys) LocalKey(ctx context.Context, id string) (crypto.Signer, error) {
 	if e := ctx.Err(); e != nil {
 		return nil, e
+	}
+	if path := k.localFiles[id]; path != "" {
+		if securePrivateKeyFile(path) != nil {
+			return nil, federation.ErrUnavailable
+		}
+		s, e := issuerKey(path)
+		if e != nil {
+			return nil, federation.ErrUnavailable
+		}
+		return s, nil
 	}
 	s, ok := k.local[id]
 	if !ok {
 		return nil, federation.ErrUnavailable
 	}
 	return s, nil
+}
+func (k configuredFederationCustodyKeys) LocalKey(ctx context.Context, id string) (crypto.Signer, error) {
+	if k.custody == nil {
+		return nil, federation.ErrUnavailable
+	}
+	path := k.localFiles[id]
+	if path == "" {
+		return nil, federation.ErrNotFound
+	}
+	return k.custody.LocalKey(ctx, id, path, k.localFiles)
+}
+func (k configuredFederationCustodyKeys) ExecuteLocalKeyCommand(ctx context.Context, operation, id, action, expected string) (string, error) {
+	if k.custody == nil {
+		return "", federation.ErrUnavailable
+	}
+	path := k.localFiles[id]
+	if path == "" {
+		return "", federation.ErrNotFound
+	}
+	return k.custody.Execute(ctx, operation, id, path, action, expected, k.localFiles)
 }
 func (k configuredFederationKeys) RemoteKey(ctx context.Context, id string) (federation.RemoteKey, error) {
 	if e := ctx.Err(); e != nil {
@@ -229,20 +269,77 @@ func loadFederationConfigWithAdmission(name string, send, discover, admit bool) 
 	if policy.Validate() != nil || len(input.AllowedOrigins) > 128 || len(input.LocalKeys) < 1 && input.ServerActor == nil && len(input.PublicAdmission) == 0 || len(input.LocalKeys) > 1000 || len(input.RemoteKeys) > 1000 || len(input.DiscoveryTargets) > 128 || len(input.RetiredRemoteActors) > 1000 || len(input.RetiredRemoteKeyIDs) > 1000 || len(input.RetiredRemoteFingerprints) > 1000 {
 		return nil, invalid
 	}
-	keys := configuredFederationKeys{local: map[string]crypto.Signer{}, remote: map[string]federation.RemoteKey{}, actors: map[string]federation.RemoteKey{}}
-	for _, local := range input.LocalKeys {
-		if !authority.ValidID(local.PublisherID) || !filepath.IsAbs(local.PrivateKeyFile) || keys.local[local.PublisherID] != nil {
-			return nil, invalid
-		}
-		info, e := os.Stat(local.PrivateKeyFile)
-		if e != nil || !info.Mode().IsRegular() || info.Mode().Perm()&0077 != 0 {
-			return nil, invalid
-		}
-		signer, e := issuerKey(local.PrivateKeyFile)
+	keys := configuredFederationKeys{local: map[string]crypto.Signer{}, localFiles: map[string]string{}, remote: map[string]federation.RemoteKey{}, actors: map[string]federation.RemoteKey{}}
+	if input.LocalKeyCustody != nil {
+		keys.custody, e = newFileFederationCustody(input.LocalKeyCustody.KeyDirectory, input.LocalKeyCustody.OperationDirectory)
 		if e != nil {
 			return nil, invalid
 		}
-		keys.local[local.PublisherID] = signer
+	}
+	localPaths := map[string]bool{}
+	localInodes := map[[2]uint64]bool{}
+	localFingerprints := map[string]bool{}
+	for _, local := range input.LocalKeys {
+		if !authority.ValidID(local.PublisherID) || !filepath.IsAbs(local.PrivateKeyFile) || keys.local[local.PublisherID] != nil || keys.localFiles[local.PublisherID] != "" {
+			return nil, invalid
+		}
+		clean := filepath.Clean(local.PrivateKeyFile)
+		if localPaths[clean] {
+			return nil, invalid
+		}
+		localPaths[clean] = true
+		info, statErr := os.Lstat(clean)
+		missing := errors.Is(statErr, os.ErrNotExist)
+		if statErr != nil && !(missing && keys.custody != nil) || statErr == nil && (!info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 || info.Mode().Perm()&0077 != 0) {
+			return nil, invalid
+		}
+		if statErr == nil {
+			stat, ok := info.Sys().(*syscall.Stat_t)
+			if !ok {
+				return nil, invalid
+			}
+			inode := [2]uint64{uint64(stat.Dev), uint64(stat.Ino)}
+			if localInodes[inode] {
+				return nil, invalid
+			}
+			localInodes[inode] = true
+		}
+		if keys.custody != nil {
+			if filepath.Dir(clean) != keys.custody.keyDirectory {
+				return nil, invalid
+			}
+			if !missing {
+				var signer crypto.Signer
+				if signer, e = issuerKey(clean); e != nil {
+					return nil, invalid
+				}
+				public, ok := signer.Public().(*rsa.PublicKey)
+				if !ok {
+					return nil, invalid
+				}
+				fingerprint, fingerprintErr := federation.KeyFingerprint(public)
+				if fingerprintErr != nil || localFingerprints[fingerprint] {
+					return nil, invalid
+				}
+				localFingerprints[fingerprint] = true
+			}
+			keys.localFiles[local.PublisherID] = clean
+		} else {
+			signer, e := issuerKey(clean)
+			if e != nil {
+				return nil, invalid
+			}
+			public, ok := signer.Public().(*rsa.PublicKey)
+			if !ok {
+				return nil, invalid
+			}
+			fingerprint, fingerprintErr := federation.KeyFingerprint(public)
+			if fingerprintErr != nil || localFingerprints[fingerprint] {
+				return nil, invalid
+			}
+			localFingerprints[fingerprint] = true
+			keys.local[local.PublisherID] = signer
+		}
 	}
 	for _, remote := range input.RemoteKeys {
 		if !filepath.IsAbs(remote.PublicKeyFile) {
@@ -252,8 +349,8 @@ func loadFederationConfigWithAdmission(name string, send, discover, admit bool) 
 		if e != nil {
 			return nil, invalid
 		}
-		bound := federation.RemoteKey{Actor: remote.Actor, Inbox: remote.Inbox, KeyID: remote.KeyID, PublicKey: key}
-		if !policy.ValidRemote(bound) || keys.remote[bound.KeyID].KeyID != "" || keys.actors[bound.Actor].Actor != "" {
+		bound := federation.RemoteKey{Actor: remote.Actor, Inbox: remote.Inbox, KeyID: remote.KeyID, Incarnation: remote.Incarnation, PublicKey: key}
+		if !authority.ValidID(bound.Incarnation) || !policy.ValidRemote(bound) || keys.remote[bound.KeyID].KeyID != "" || keys.actors[bound.Actor].Actor != "" {
 			return nil, invalid
 		}
 		keys.remote[bound.KeyID] = bound
@@ -288,7 +385,11 @@ func loadFederationConfigWithAdmission(name string, send, discover, admit bool) 
 		}
 		keys.retiredFingerprints[fingerprint] = true
 	}
-	cfg := &application.FederationConfig{Policy: policy, Keys: keys}
+	var keyProvider federation.KeyProvider = keys
+	if keys.custody != nil {
+		keyProvider = configuredFederationCustodyKeys{keys}
+	}
+	cfg := &application.FederationConfig{Policy: policy, Keys: keyProvider}
 	if len(input.PublicAdmission) > 128 {
 		return nil, invalid
 	}
@@ -360,7 +461,7 @@ func canonicalFederationFields(raw []byte) bool {
 	if json.Unmarshal(raw, &root) != nil {
 		return false
 	}
-	names := []string{"public_admission", "incarnation", "retired_remote_actors", "retired_remote_key_ids", "retired_remote_key_fingerprints", "server_actor", "username", "name", "summary", "public_key_file", "discovery_targets", "resource", "actor", "origin", "allowed_origins", "max_attempts", "delivery_timeout_seconds", "local_keys", "publisher_id", "private_key_file", "remote_keys", "inbox", "key_id"}
+	names := []string{"public_admission", "incarnation", "retired_remote_actors", "retired_remote_key_ids", "retired_remote_key_fingerprints", "server_actor", "username", "name", "summary", "public_key_file", "discovery_targets", "resource", "actor", "origin", "allowed_origins", "max_attempts", "delivery_timeout_seconds", "local_key_custody", "key_directory", "operation_directory", "local_keys", "publisher_id", "private_key_file", "remote_keys", "inbox", "key_id"}
 	var walk func(any) bool
 	walk = func(v any) bool {
 		switch x := v.(type) {

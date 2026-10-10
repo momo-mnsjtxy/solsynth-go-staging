@@ -34,6 +34,9 @@ type Repository struct {
 	cfg                Config
 	completion         *completionQueue
 	readVisibility     ReadVisibility
+	poolStores         map[string]media.ObjectStore
+	remoteFetcher      media.RemoteFetcher
+	renderer           media.RasterRenderer
 	fileReadProtection FileReadProtection
 }
 
@@ -57,7 +60,17 @@ func (r *Repository) Ready(ctx context.Context) error {
 			return err
 		}
 	}
-	_, err := r.db.ExecContext(ctx, `SELECT id,charge,expires_at,usage FROM owned_media_files LIMIT 0; SELECT account_id,limit_bytes,used_bytes,reserved_bytes FROM owned_media_quotas LIMIT 0`)
+	_, err := r.db.ExecContext(ctx, `SELECT id,charge,expires_at,usage FROM owned_media_files LIMIT 0; SELECT account_id,limit_bytes,base_limit_bytes,used_bytes,reserved_bytes FROM owned_media_quotas LIMIT 0`)
+	if err == nil {
+		_, err = r.db.ExecContext(ctx, `SELECT file_id,options,options_sha256,parent_id,pool_id,bundle_id,object_key,expired_at FROM owned_media_details LIMIT 0;SELECT id,account_id,parent_id,deleted_at FROM owned_media_folders LIMIT 0;SELECT id,account_id,allow_encryption,max_file_bytes FROM owned_media_pools LIMIT 0;SELECT id,account_id,is_public,passcode_hash,expired_at FROM owned_media_bundles LIMIT 0;SELECT id,source_key,quota_bytes,expired_at FROM owned_media_quota_records LIMIT 0;SELECT account_id,bundle_id,window_start,attempts FROM owned_media_bundle_attempts LIMIT 0;SELECT id,image_id,video_id,deleted_at FROM owned_media_compositions LIMIT 0`)
+	}
+	if err == nil {
+		for _, store := range r.poolStores {
+			if e := store.Ready(ctx); e != nil {
+				return e
+			}
+		}
+	}
 	if err == nil {
 		if _, ok := r.store.(media.ChunkObjectStore); ok {
 			return r.ResumableReady(ctx)
@@ -156,13 +169,19 @@ func (r *Repository) reserve(ctx context.Context, actor string, u media.Upload) 
 // reserveTx shares the quota/file reservation with multipart and resumable uploads.
 // The caller has already acquired the canonical account lock and owns the commit.
 func (r *Repository) reserveTx(ctx context.Context, tx *sql.Tx, actor string, u media.Upload) (media.File, bool, error) {
+	if e := r.validateOptions(ctx, tx, actor, u.Options, u.MIMEType, u.Size); e != nil {
+		return media.File{}, false, e
+	}
 	f, err := scan(tx.QueryRowContext(ctx, `SELECT `+fields+` FROM owned_media_files WHERE account_id=$1 AND idempotency_key=$2`, actor, u.IdempotencyKey))
 	if err == nil {
+		if e := r.sameOptions(ctx, tx, f.ID, u.Options); e != nil {
+			return f, false, e
+		}
 		if !same(f, u) {
 			return f, false, media.ErrConflict
 		}
 		if f.State == "ready" {
-			body, e := r.openFile(ctx, f)
+			body, e := r.openFile(ctx, f, tx)
 			if e != nil {
 				return f, false, e
 			}
@@ -178,7 +197,7 @@ func (r *Repository) reserveTx(ctx context.Context, tx *sql.Tx, actor string, u 
 		return f, false, err
 	}
 	var q media.Quota
-	err = tx.QueryRowContext(ctx, `SELECT limit_bytes,used_bytes,reserved_bytes FROM owned_media_quotas WHERE account_id=$1 FOR UPDATE`, actor).Scan(&q.LimitBytes, &q.UsedBytes, &q.ReservedBytes)
+	err = tx.QueryRowContext(ctx, `SELECT `+effectiveQuota+`,used_bytes,reserved_bytes FROM owned_media_quotas q WHERE q.account_id=$1 FOR UPDATE OF q`, actor).Scan(&q.LimitBytes, &q.UsedBytes, &q.ReservedBytes)
 	if errors.Is(err, sql.ErrNoRows) {
 		return f, false, media.ErrQuotaMissing
 	}
@@ -196,7 +215,10 @@ func (r *Repository) reserveTx(ctx context.Context, tx *sql.Tx, actor string, u 
 	if err != nil {
 		return f, false, err
 	}
-	if _, err = tx.ExecContext(ctx, `UPDATE owned_media_quotas SET reserved_bytes=reserved_bytes+$2 WHERE account_id=$1`, actor, u.Size); err != nil {
+	if _, err = tx.ExecContext(ctx, `UPDATE owned_media_quotas SET reserved_bytes=reserved_bytes+$2,limit_bytes=GREATEST($3::bigint,used_bytes+reserved_bytes+$2) WHERE account_id=$1`, actor, u.Size, q.LimitBytes); err != nil {
+		return f, false, err
+	}
+	if err = r.insertOptions(ctx, tx, f.ID, u.Options); err != nil {
 		return f, false, err
 	}
 	return f, false, nil
@@ -260,10 +282,18 @@ func (r *Repository) finish(ctx context.Context, actor string, f media.File, rea
 	}
 	// The row lock excludes cleanup until the bounded stream and commit finish.
 	reserved := f.Size
+	store, objectKey, err := r.objectStore(ctx, f.ID, tx)
+	if err != nil {
+		return f, err
+	}
 	if measured {
-		f.Size, f.SHA256, err = r.store.(media.MeasuredObjectStore).PutMeasured(ctx, f.ID, reader, reserved)
+		measuredStore, ok := store.(media.MeasuredObjectStore)
+		if !ok {
+			return f, media.ErrUnsupported
+		}
+		f.Size, f.SHA256, err = measuredStore.PutMeasured(ctx, objectKey, reader, reserved)
 	} else {
-		err = r.store.Put(ctx, f.ID, reader, f.Size, f.SHA256)
+		err = store.Put(ctx, objectKey, reader, f.Size, f.SHA256)
 	}
 	if err != nil {
 		return f, err
@@ -278,6 +308,27 @@ func (r *Repository) finish(ctx context.Context, actor string, f media.File, rea
 				return f, err
 			}
 		}
+		if source, ok := reader.(media.UploadOptionsSource); ok {
+			options, e := source.UploadOptions()
+			if e != nil {
+				return f, e
+			}
+			if e = r.sameOptions(ctx, tx, f.ID, options); e != nil {
+				if errors.Is(e, media.ErrConflict) {
+					return f, media.ErrUnsupported
+				}
+				return f, e
+			}
+			if e = r.validateOptions(ctx, tx, actor, options, f.MIMEType, f.Size); e != nil {
+				return f, e
+			}
+		}
+	}
+	if err = r.deduplicate(ctx, tx, f, store); err != nil {
+		return f, err
+	}
+	if err = r.validatePersistedUpload(ctx, tx, actor, f); err != nil {
+		return f, err
 	}
 	// Wall-clock credential expiry can change while streaming even though the
 	// canonical account lock excludes revocation and policy changes.
@@ -291,14 +342,23 @@ func (r *Repository) finish(ctx context.Context, actor string, f media.File, rea
 	if err != nil {
 		return f, err
 	}
+	if err = r.validatePersistedUpload(ctx, tx, actor, updated); err != nil {
+		return f, err
+	}
+	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, permissions...); err != nil {
+		return f, err
+	}
 	return updated, tx.Commit()
 }
 func (r *Repository) read(ctx context.Context, actor, id string, open bool, artworkHash ...string) (media.File, io.ReadSeekCloser, error) {
 	if !authority.ValidID(id) {
 		return media.File{}, nil, media.ErrNotFound
 	}
+	ctx, err := r.prepareBundleAccess(ctx, actor, "", id, media.BundlePasscode(ctx))
+	if err != nil {
+		return media.File{}, nil, err
+	}
 	var tx *sql.Tx
-	var err error
 	if actor != "" {
 		tx, err = r.begin(ctx, actor, media.ReadPermission)
 	} else {
@@ -327,8 +387,19 @@ func (r *Repository) read(ctx context.Context, actor, id string, open bool, artw
 	// The file lock keeps readiness and ownership stable. Parent grants and owner
 	// status use fresh statements both before and after object-store waits.
 	checkAudience := func() error {
-		if err := r.protectFileRead(ctx, tx, actor, f.ID); err != nil {
-			return err
+		if e := r.protectFileRead(ctx, tx, actor, f.ID); e != nil {
+			return e
+		}
+		bundleAllowed, bundleError := r.bundleAudience(ctx, tx, actor, f.ID)
+		if bundleError != nil {
+			return bundleError
+		}
+		var expired bool
+		if e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_media_details d LEFT JOIN owned_media_bundles b ON b.id=d.bundle_id WHERE d.file_id=$1 AND (d.expired_at<=clock_timestamp() OR b.deleted_at IS NOT NULL OR b.expired_at<=clock_timestamp()))`, f.ID).Scan(&expired); e != nil {
+			return e
+		}
+		if expired {
+			return media.ErrNotFound
 		}
 		if err := artworkOwnerActive(ctx, tx, f.AccountID); err != nil {
 			return err
@@ -347,7 +418,7 @@ func (r *Repository) read(ctx context.Context, actor, id string, open bool, artw
 				return media.ErrNotFound
 			}
 		}
-		if !f.Public && f.AccountID != actor && !artworkAllowed {
+		if !f.Public && f.AccountID != actor && !artworkAllowed && !bundleAllowed {
 			allowed := false
 			var err error
 			if r.readVisibility != nil {
@@ -374,7 +445,7 @@ func (r *Repository) read(ctx context.Context, actor, id string, open bool, artw
 	}
 	var body io.ReadSeekCloser
 	if open {
-		body, err = r.openFile(ctx, f)
+		body, err = r.openFile(ctx, f, tx)
 		if err != nil {
 			return media.File{}, nil, err
 		}
@@ -408,8 +479,12 @@ func (r *Repository) read(ctx context.Context, actor, id string, open bool, artw
 	}
 	return f, body, nil
 }
-func (r *Repository) openFile(ctx context.Context, f media.File) (io.ReadSeekCloser, error) {
-	body, err := r.store.Open(ctx, f.ID)
+func (r *Repository) openFile(ctx context.Context, f media.File, transactions ...*sql.Tx) (io.ReadSeekCloser, error) {
+	store, key, err := r.objectStore(ctx, f.ID, transactions...)
+	if err != nil {
+		return nil, err
+	}
+	body, err := store.Open(ctx, key)
 	if err != nil {
 		return nil, media.ErrUnavailable
 	}
@@ -437,7 +512,7 @@ func (r *Repository) Quota(ctx context.Context, actor string) (q media.Quota, er
 		return q, err
 	}
 	defer tx.Rollback()
-	err = tx.QueryRowContext(ctx, `SELECT limit_bytes,used_bytes,reserved_bytes FROM owned_media_quotas WHERE account_id=$1`, actor).Scan(&q.LimitBytes, &q.UsedBytes, &q.ReservedBytes)
+	err = tx.QueryRowContext(ctx, `SELECT `+effectiveQuota+`,used_bytes,reserved_bytes FROM owned_media_quotas q WHERE q.account_id=$1`, actor).Scan(&q.LimitBytes, &q.UsedBytes, &q.ReservedBytes)
 	if errors.Is(err, sql.ErrNoRows) {
 		return q, media.ErrQuotaMissing
 	}
@@ -481,7 +556,7 @@ func (r *Repository) Cleanup(ctx context.Context, limit int) (int, error) {
 	if limit < 1 || limit > 1000 {
 		return 0, media.ErrInvalid
 	}
-	rows, err := r.db.QueryContext(ctx, `SELECT id::text FROM owned_media_files WHERE state='deleting' OR (state='pending' AND expires_at<=now()) ORDER BY expires_at,id LIMIT $1`, limit)
+	rows, err := r.db.QueryContext(ctx, `SELECT id::text FROM owned_media_files WHERE state='deleting' OR (state='pending' AND expires_at<=now()) OR (state='ready' AND EXISTS(SELECT 1 FROM owned_media_details d LEFT JOIN owned_media_bundles b ON b.id=d.bundle_id WHERE d.file_id=owned_media_files.id AND (d.expired_at<=clock_timestamp() OR b.expired_at<=clock_timestamp() OR b.deleted_at IS NOT NULL))) ORDER BY expires_at,id LIMIT $1`, limit)
 	if err != nil {
 		return 0, err
 	}
@@ -535,15 +610,28 @@ func (r *Repository) cleanupOne(ctx context.Context, id string, expiredOnly bool
 	var state, charge string
 	var size int64
 	var expired bool
-	if err = tx.QueryRowContext(ctx, `SELECT state,charge,size,expires_at<=now() FROM owned_media_files WHERE id=$1 FOR UPDATE`, id).Scan(&state, &charge, &size, &expired); err != nil {
+	if err = tx.QueryRowContext(ctx, `SELECT state,charge,size,CASE WHEN state='ready' THEN EXISTS(SELECT 1 FROM owned_media_details d LEFT JOIN owned_media_bundles b ON b.id=d.bundle_id WHERE d.file_id=owned_media_files.id AND (d.expired_at<=clock_timestamp() OR b.expired_at<=clock_timestamp() OR b.deleted_at IS NOT NULL)) ELSE expires_at<=now() END FROM owned_media_files WHERE id=$1 FOR UPDATE`, id).Scan(&state, &charge, &size, &expired); err != nil {
 		return false, err
 	}
-	if state == "deleted" || state == "ready" || state == "pending" && (!expiredOnly || !expired) {
+	if state == "deleted" || state == "ready" && (!expiredOnly || !expired) || state == "pending" && (!expiredOnly || !expired) {
 		return false, tx.Commit()
 	}
 	// Delete bytes first. A crash/uncertain commit leaves a charge and retryable
 	// row, never released quota with live bytes or an exposed missing ready file.
-	if err = r.store.Remove(ctx, id); err != nil {
+	store, key, err := r.objectStore(ctx, id, tx)
+	if err != nil {
+		return false, err
+	}
+	var references int
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM owned_media_details d JOIN owned_media_files f ON f.id=d.file_id WHERE d.object_key=$1 AND d.file_id<>$2 AND f.state<>'deleted' AND d.pool_id IS NOT DISTINCT FROM (SELECT pool_id FROM owned_media_details WHERE file_id=$2)`, key, id).Scan(&references); err != nil {
+		return false, err
+	}
+	if references == 0 {
+		err = store.Remove(ctx, key)
+	} else if key != id {
+		err = store.Remove(ctx, id)
+	}
+	if err != nil {
 		return false, err
 	}
 	column := "reserved_bytes"

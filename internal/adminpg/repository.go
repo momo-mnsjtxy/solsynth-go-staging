@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5/pgconn"
+	"solsynth.local/go-migration/internal/auditcapture"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/moderationpg"
 	c "solsynth.local/go-migration/ports/admin/content"
@@ -21,10 +22,12 @@ import (
 var Schema string
 
 type Repository struct {
-	db     *sql.DB
-	global *moderationpg.Repository
-	now    func() time.Time
-	guard  *authoritypg.TransactionGuard
+	presenceScanner PresenceScanner
+	nightOwlSender  NightOwlSender
+	db              *sql.DB
+	global          *moderationpg.Repository
+	now             func() time.Time
+	guard           *authoritypg.TransactionGuard
 }
 
 func New(db *sql.DB, g *authoritypg.TransactionGuard, now func() time.Time) (*Repository, error) {
@@ -65,7 +68,10 @@ func (r *Repository) audit(ctx context.Context, tx *sql.Tx, actor, kind, target,
 		return c.ErrInvalid
 	}
 	_, e = tx.ExecContext(ctx, `INSERT INTO owned_admin_extension_audit(actor_id,kind,target_id,action,detail,occurred_at)VALUES($1,$2,$3,$4,$5::jsonb,$6)`, actor, kind, target, action, b, r.now().UTC())
-	return e
+	if e != nil {
+		return e
+	}
+	return auditcapture.Account(ctx, tx, actor, "admin."+kind+"."+action, target)
 }
 func (r *Repository) Ready(ctx context.Context) error {
 	var ready bool

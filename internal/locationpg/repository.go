@@ -3,6 +3,7 @@ package locationpg
 
 import (
 	"context"
+	"crypto/cipher"
 	"crypto/rand"
 	"database/sql"
 	_ "embed"
@@ -12,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"math"
 	"solsynth.local/go-migration/internal/authoritypg"
+	"solsynth.local/go-migration/internal/mediapg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/sphere/locations"
@@ -22,9 +24,14 @@ import (
 var Schema string
 
 type Repository struct {
-	db    *sql.DB
-	guard *authoritypg.TransactionGuard
-	now   func() time.Time
+	db              *sql.DB
+	guard           *authoritypg.TransactionGuard
+	now             func() time.Time
+	nfcKeys         cipher.AEAD
+	nfcLocker       locations.NFCLocker
+	mediaEnabled    bool
+	geocoder        locations.Geocoder
+	mediaProtection mediapg.FileReadProtection
 }
 
 func New(db *sql.DB) *Repository { return &Repository{db: db, now: time.Now} }
@@ -34,6 +41,16 @@ func NewWithAuthority(db *sql.DB, g *authoritypg.TransactionGuard) *Repository {
 		g = authoritypg.NewTransactionGuard(nil, nil)
 	}
 	r.guard = g
+	return r
+}
+
+// NewWithAuthorityAndClock permits deterministic domain timestamps in tests.
+// Security TTL, nearby slots/rates and original proof freshness remain DB timed.
+func NewWithAuthorityAndClock(db *sql.DB, g *authoritypg.TransactionGuard, now func() time.Time) *Repository {
+	r := NewWithAuthority(db, g)
+	if now != nil {
+		r.now = now
+	}
 	return r
 }
 func (r *Repository) BindAuthority(ctx context.Context, p authority.Principal) context.Context {
@@ -107,7 +124,7 @@ func audit(ctx context.Context, tx *sql.Tx, actor, id, action string, now time.T
 }
 func account(ctx context.Context, tx *sql.Tx, id string) (accounts.Account, error) {
 	var a accounts.Account
-	e := tx.QueryRowContext(ctx, `SELECT id::text,name,nick,language,region,created_at FROM owned_authority_accounts WHERE id=$1 AND NOT disabled`, id).Scan(&a.ID, &a.Name, &a.Nick, &a.Language, &a.Region, &a.CreatedAt)
+	e := tx.QueryRowContext(ctx, `SELECT a.id::text,a.name,a.nick,a.language,a.region,a.created_at FROM owned_authority_accounts a WHERE a.id=$1 AND NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments punishment WHERE punishment.account_id=a.id AND punishment.kind='disable_account' AND(punishment.starts_at IS NULL OR punishment.starts_at<=clock_timestamp()) AND(punishment.expires_at IS NULL OR punishment.expires_at>clock_timestamp()))`, id).Scan(&a.ID, &a.Name, &a.Nick, &a.Language, &a.Region, &a.CreatedAt)
 	return a, mapped(e)
 }
 func socialState(ctx context.Context, tx *sql.Tx, a, b string) (blocked, friend bool, err error) {

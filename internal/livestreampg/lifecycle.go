@@ -250,6 +250,12 @@ func (r *Repository) Start(ctx context.Context, actor, id string, req live.Start
 		if e = audit(ctx, tx, id, actor, "livestreams.start"); e != nil {
 			return out, e
 		}
+		if r.activations != nil {
+			stage = "record subscriber notification intent"
+			if e = r.activations.RecordLivestreamActivation(ctx, r.db, tx, id, v.PublisherID, run.Generation, at); e != nil {
+				return out, e
+			}
+		}
 	}
 	stage = "commit activation"
 	if e = r.commit(ctx, tx, actor, "livestreams.start"); e != nil {

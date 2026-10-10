@@ -350,7 +350,19 @@ func (r *Repository) MarkRead(ctx context.Context, actor, rid, messageID string)
 	if e != nil {
 		return m, e
 	}
+	previousRead := m.LastReadAt
 	m, e = scanMember(tx.QueryRowContext(ctx, `UPDATE chat_members SET last_read_at=greatest(last_read_at,$2::timestamptz),owned_updated_at=clock_timestamp() WHERE id=$1 RETURNING `+memberColumns, m.ID, at.Time))
+	if e != nil {
+		return m, e
+	}
+	if previousRead != nil && m.LastReadAt != nil && !m.LastReadAt.After(*previousRead) {
+		return m, r.commit(ctx, tx, actor, "")
+	}
+	eventID, e := id()
+	if e != nil {
+		return m, e
+	}
+	_, e = tx.ExecContext(ctx, `INSERT INTO owned_chat_read_receipts(member_id,room_id,account_id,last_read_at,updated_at)VALUES($1,$2,$3,$4,clock_timestamp())ON CONFLICT(member_id)DO UPDATE SET last_read_at=greatest(owned_chat_read_receipts.last_read_at,EXCLUDED.last_read_at),updated_at=EXCLUDED.updated_at;INSERT INTO owned_chat_read_events(id,member_id,room_id,account_id,last_read_at,excluded_device_id,created_at)VALUES($5,$1,$2,$3,$4,$6,clock_timestamp())`, m.ID, rid, actor, m.LastReadAt, eventID, rooms.MLSWriteFrom(ctx).Device)
 	if e != nil {
 		return m, e
 	}

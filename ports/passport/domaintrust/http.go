@@ -152,6 +152,17 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 			out, total, e = repo.Metrics(r.Context(), actor, q)
 		case len(p) == 2 && p[0] == "metrics" && r.Method == "GET":
 			out, e = repo.Metric(r.Context(), actor, p[1])
+		case len(p) == 2 && p[0] == "metrics" && p[1] == "purge" && r.Method == "POST":
+			if len(r.URL.Query()) != 0 {
+				e = ErrInvalid
+				break
+			}
+			var body MetricMaintenance
+			if admin.DecodeStrict(w, r, &body) != nil {
+				e = ErrInvalid
+				break
+			}
+			out, e = repo.PurgeMetrics(r.Context(), actor, body)
 		case len(p) == 1 && authority.ValidID(p[0]) && r.Method == "GET":
 			out, e = repo.Get(r.Context(), actor, p[0])
 		case len(p) == 1 && authority.ValidID(p[0]) && r.Method == "PATCH":

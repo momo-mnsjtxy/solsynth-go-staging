@@ -82,6 +82,7 @@ func run(args []string, out io.Writer) error {
 	realmBoostSettings := realmBoostFlags(fs)
 	realmMemberSettings := realmMemberFlags(fs)
 	botExecutionSettings := botExecutionFlags(fs)
+	botRenewalInterval := fs.Duration("bot-renewal-interval", 15*time.Second, "dedicated automatic bot enrollment renewal cadence, 1s through 30s")
 	ticketSettings := ticketFlags(fs)
 	fortuneSettings := fortuneFlags(fs)
 	readerSettings := readerFlags(fs)
@@ -89,8 +90,14 @@ func run(args []string, out io.Writer) error {
 	translationSettings := translationFlags(fs)
 	ipCheckSettings := ipCheckFlags(fs)
 	accountExtrasSettings := accountExtraFlags(fs)
+	affiliationPurchaseSettings := affiliationPurchaseFlags(fs)
+	operationsRetentionSettings := operationsRetentionFlags(fs)
+	accountConnectionSettings := accountConnectionFlags(fs)
+	pushDeviceSettings := pushDeviceFlags(fs)
+	progressionSettings := progressionExtensionFlags(fs)
 	passkitSettings := passkitFlags(fs)
 	couponSettings := couponFlags(fs)
+	mediaLocationSettings := mediaLocationFlags(fs)
 	factorIssuer := fs.String("factor-issuer-label", "SoSYS", "human-readable TOTP issuer label")
 	enableOAuth := fs.Bool("enable-oauth", false, "enable owned OAuth authorization-code and OIDC userinfo flows")
 	consentURL := fs.String("oauth-consent-url", "", "deployed HTTPS consent UI calling the owned authorization API")
@@ -102,8 +109,11 @@ func run(args []string, out io.Writer) error {
 	memberGrants := fs.String("initial-member-permissions", "", "explicit comma-separated concrete initial registration permissions")
 	notificationApp := fs.String("notification-app", "dev.solsynth.solian", "explicit first-party inbox and stream namespace")
 	mediaRoot := fs.String("media-root", "", "explicit preprovisioned private filesystem media directory")
+	voiceRetention := fs.Duration("chat-voice-retention", 0, "explicit owned voice retention (1h to 8760h); zero disables voice uploads")
+	miniAppUploadTimeout := fs.Duration("miniapp-upload-timeout", 2*time.Minute, "miniapp package upload deadline (5s to 15m)")
 	mediaMax := fs.Int64("media-max-bytes", 20<<20, "maximum streamed media object bytes")
 	catalogFile := fs.String("catalog-config", "", "optional explicit catalog JSON snapshot")
+	walletProductTreasury := fs.String("wallet-product-treasury-wallet", "", "explicit trusted treasury wallet for paid wallet-product application")
 	badgeIcons := fs.String("badge-icons", "", "optional directory of licensed badge icons")
 	pepperEnv := fs.String("pin-pepper-env", "", "optional explicit environment variable with base64 PIN pepper")
 	pepperID := fs.String("pin-pepper-id", "", "key ID for that externally provisioned PIN policy")
@@ -114,6 +124,9 @@ func run(args []string, out io.Writer) error {
 	}
 	if fs.NArg() != 0 || !loopback(*listen) || *issuer == "" || *audience == "" || *kid == "" || *settlement < time.Second || *settlement > 24*time.Hour {
 		return errors.New("explicit authority settings, loopback listen and valid settlement interval required")
+	}
+	if *botRenewalInterval < time.Second || *botRenewalInterval > 30*time.Second || (!*botExecutionSettings.enabled && *botRenewalInterval != 15*time.Second) {
+		return errBotExecutionConfig
 	}
 	// A service file can override host settings before pgx finishes parsing. Never
 	// discover or read it, even if an ambient developer shell happened to set one.
@@ -248,7 +261,15 @@ func run(args []string, out io.Writer) error {
 		}
 		catalogProviders = []exchangecatalog.Provider{provider}
 	}
-	appConfig := application.Config{PostAutomodReview: *enableAutomodReview, EnableMLSDelivery: *enableMLS, Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
+	if *walletProductTreasury != "" && (!walletaccounts.ValidID(*walletProductTreasury) || *catalogFile == "") {
+		return errors.New("wallet product treasury requires an explicit wallet UUID and catalog configuration")
+	}
+	appConfig := application.Config{ChatVoiceRetention: *voiceRetention, MiniAppUploadTimeout: *miniAppUploadTimeout, PostAutomodReview: *enableAutomodReview, EnableMLSDelivery: *enableMLS, Authority: config, PublicVisibility: &publicVisibility, MessagerPolicy: &policy, PINPeppers: peppers, CatalogProviders: catalogProviders, WalletProductTreasuryWalletID: *walletProductTreasury, BadgeIconsPath: *badgeIcons, MediaStore: objectStore, MaxMediaBytes: *mediaMax, NotificationApp: *notificationApp, Signin: signinConfig, Tickets: ticketConfig}
+	closeMediaLocations, err := mediaLocationSettings.apply(&appConfig)
+	if err != nil {
+		return err
+	}
+	defer closeMediaLocations()
 	if err := applyChatOrganization(&appConfig, *chatOrganizationSettings); err != nil {
 		return err
 	}
@@ -259,6 +280,15 @@ func run(args []string, out io.Writer) error {
 		appConfig.PINEnrollmentPepperID = *pepperID
 	}
 	if err = passkitSettings.apply(&appConfig); err != nil {
+		return err
+	}
+	if err = progressionSettings.apply(&appConfig); err != nil {
+		return err
+	}
+	if err = pushDeviceSettings.apply(&appConfig); err != nil {
+		return err
+	}
+	if err = accountConnectionSettings.apply(&appConfig); err != nil {
 		return err
 	}
 	if err = accountExtrasSettings.apply(&appConfig); err != nil {
@@ -287,6 +317,12 @@ func run(args []string, out io.Writer) error {
 		return err
 	}
 	if err = walletExchangeSettings.apply(&appConfig); err != nil {
+		return err
+	}
+	if err = affiliationPurchaseSettings.apply(&appConfig); err != nil {
+		return err
+	}
+	if err = operationsRetentionSettings.apply(&appConfig); err != nil {
 		return err
 	}
 	if err = realmBoostSettings.apply(&appConfig); err != nil {
@@ -399,6 +435,11 @@ func run(args []string, out io.Writer) error {
 	fortuneSettings.start(ctx, backend, out)
 	publisherSettings.start(ctx, backend, out)
 	postAwardSettings.start(ctx, backend, out)
+	if appConfig.BotExecution != nil {
+		if err := startBotRenewalWorker(ctx, backend, *botRenewalInterval, out); err != nil {
+			return err
+		}
+	}
 	server := &http.Server{Handler: backend, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 20 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 32768}
 	go func() {
 		ticker := time.NewTicker(*settlement)

@@ -110,11 +110,11 @@ func (r *Repository) ActivateBadge(ctx context.Context, actor, id string) error 
 	})
 }
 
-const checkinColumns = `id::text,account_id::text,level,reward_experience,created_at,created_at`
+const checkinColumns = `id::text,account_id::text,level,reward_experience,created_at,created_at,backdated_from`
 
 func scanCheckin(row scanner) (v progression.CheckIn, e error) {
 	v.Tips = []any{}
-	e = row.Scan(&v.ID, &v.AccountID, &v.Level, &v.RewardExperience, &v.CreatedAt, &v.UpdatedAt)
+	e = row.Scan(&v.ID, &v.AccountID, &v.Level, &v.RewardExperience, &v.CreatedAt, &v.UpdatedAt, &v.BackdatedFrom)
 	return
 }
 func (r *Repository) Today(ctx context.Context, actor string) (v progression.CheckIn, e error) {
@@ -131,12 +131,30 @@ func (r *Repository) Today(ctx context.Context, actor string) (v progression.Che
 	})
 	return
 }
-func (r *Repository) CheckIn(ctx context.Context, actor string) (v progression.CheckIn, e error) {
+func (r *Repository) CheckIn(ctx context.Context, actor string) (progression.CheckIn, error) {
+	return r.checkInAt(ctx, actor, nil)
+}
+func (r *Repository) checkInAt(ctx context.Context, actor string, target *time.Time) (v progression.CheckIn, e error) {
 	if actor == "" {
 		return v, authority.ErrInvalid
 	}
 	e = r.within(ctx, actor, nil, func(tx *sql.Tx, now time.Time) error {
 		day := now.Format("2006-01-02")
+		created := now
+		var backdated any
+		if target != nil {
+			if e := r.eligibleBackdate(ctx, tx, actor, *target, now); e != nil {
+				return e
+			}
+			day = target.UTC().Format("2006-01-02")
+			created = time.Date(target.UTC().Year(), target.UTC().Month(), target.UTC().Day(), 0, 0, 0, 0, time.UTC)
+			backdated = now
+		}
+		if target == nil {
+			if e := r.birthdayReward(ctx, tx, actor, now); e != nil {
+				return e
+			}
+		}
 		var e error
 		v, e = scanCheckin(tx.QueryRowContext(ctx, `SELECT `+checkinColumns+` FROM owned_progression_checkins WHERE account_id=$1 AND day=$2`, actor, day))
 		if e == nil {
@@ -144,9 +162,11 @@ func (r *Repository) CheckIn(ctx context.Context, actor string) (v progression.C
 				if e = r.reports.EnqueueCheckIn(ctx, tx, v, now); e != nil {
 					return e
 				}
-				return r.reports.HydrateCheckIn(ctx, tx, &v)
+				if e = r.reports.HydrateCheckIn(ctx, tx, &v); e != nil {
+					return e
+				}
 			}
-			return nil
+			return r.finalBackdate(ctx, tx, actor, target)
 		}
 		if !errors.Is(e, sql.ErrNoRows) {
 			return e
@@ -170,7 +190,7 @@ func (r *Repository) CheckIn(ctx context.Context, actor string) (v progression.C
 		case x < 90:
 			level = 3
 		}
-		v, e = scanCheckin(tx.QueryRowContext(ctx, `INSERT INTO owned_progression_checkins(id,account_id,day,level,reward_experience,created_at)VALUES($1,$2,$3,$4,100,$5)RETURNING `+checkinColumns, id, actor, day, level, now))
+		v, e = scanCheckin(tx.QueryRowContext(ctx, `INSERT INTO owned_progression_checkins(id,account_id,day,level,reward_experience,created_at,backdated_from)VALUES($1,$2,$3,$4,100,$5,$6)RETURNING `+checkinColumns, id, actor, day, level, created, backdated))
 		if e != nil {
 			return e
 		}
@@ -185,9 +205,23 @@ func (r *Repository) CheckIn(ctx context.Context, actor string) (v progression.C
 				return e
 			}
 		}
-		return audit(ctx, tx, actor, "check-in", id, now)
+		if e = audit(ctx, tx, actor, "check-in", id, now); e != nil {
+			return e
+		}
+		return r.finalBackdate(ctx, tx, actor, target)
 	})
 	return
+}
+
+func (r *Repository) finalBackdate(ctx context.Context, tx *sql.Tx, actor string, target *time.Time) error {
+	if target == nil {
+		return nil
+	}
+	var final time.Time
+	if e := tx.QueryRowContext(ctx, `SELECT clock_timestamp()`).Scan(&final); e != nil {
+		return e
+	}
+	return r.eligibleBackdate(ctx, tx, actor, *target, final.UTC())
 }
 func (r *Repository) CheckInHistory(ctx context.Context, actor string, offset, take int) (out []progression.CheckIn, total int64, e error) {
 	out = []progression.CheckIn{}

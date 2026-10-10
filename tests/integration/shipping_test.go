@@ -243,6 +243,9 @@ func TestPGShippingCanonicalSnapshotAndFulfillment(t *testing.T) {
 	if _, e = f.r.UpdateOrder(f.ctx, o.ID, c.UpdateStatus{Credentials: f.credentials, Status: c.Finished}); e != nil {
 		t.Fatal(e)
 	}
+	if released, settleErr := merchant.Settle(f.ctx, f.actor, f.publisher); settleErr != nil || len(released) != 1 {
+		t.Fatal("explicit shipping settlement", released, settleErr)
+	}
 	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "95.753", "0.000", "95.753")
 	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "4.247", "0.000", "4.247")
 	walletAssertBalance(t, walletpg.New(f.db), rebound.ID, "synthetic-commerce", "0.000", "0.000", "0.000")

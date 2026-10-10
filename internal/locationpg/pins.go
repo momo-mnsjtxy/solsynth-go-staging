@@ -438,5 +438,9 @@ func (r *Repository) Expire(ctx context.Context, limit int) (int64, error) {
 	if e != nil {
 		return 0, e
 	}
+	res, e = tx.ExecContext(ctx, `DELETE FROM owned_nearby_tokens WHERE token_hash IN(SELECT token_hash FROM owned_nearby_tokens WHERE valid_to<=$1 ORDER BY valid_to,token_hash LIMIT $2 FOR UPDATE SKIP LOCKED)`, now, limit)
+	if e != nil {
+		return 0, e
+	}
 	return n + m, tx.Commit()
 }

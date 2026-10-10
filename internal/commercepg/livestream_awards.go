@@ -155,3 +155,82 @@ func (r *Repository) ReleaseLiveAwardShare(ctx context.Context, db *sql.DB, tx *
 	}
 	return event(ctx, tx, "order.finished", o.ID, o, now)
 }
+
+// ReleaseLiveAwardRefundReserve is the first durable refund phase. It returns
+// the still-frozen 90% distribution to the captured treasury. The receipt is
+// advanced by the caller only in the same transaction.
+func (r *Repository) ReleaseLiveAwardRefundReserve(ctx context.Context, db *sql.DB, tx *sql.Tx, purchase string, now time.Time) error {
+	if r == nil || r.db != db || db == nil || tx == nil || !authority.ValidID(purchase) {
+		return c.ErrUnavailable
+	}
+	var distribution string
+	var valid bool
+	e := tx.QueryRowContext(ctx, `SELECT r.distribution_order_id::text,EXISTS(SELECT 1 FROM commerce_v1.orders d JOIN wallet_v1.transactions reserve ON reserve.id=r.reserve_transaction_id WHERE d.id=r.distribution_order_id AND d.app_id IS NULL AND d.product_identifier='livestreams.award.distribution' AND d.status IN(1,2) AND d.transaction_id=reserve.id AND d.actor_id=p.treasury_account_id AND d.payer_wallet_id=p.treasury_wallet_id AND d.payee_wallet_id=p.beneficiary_wallet_id AND d.amount=p.share_amount AND d.currency=p.currency AND reserve.managed_by=d.id AND reserve.actor_id=p.treasury_account_id AND reserve.purpose='commerce' AND reserve.status IN(1,3) AND reserve.deleted_at IS NULL AND reserve.amount=p.share_amount AND reserve.currency=p.currency AND reserve.payer_wallet_id=p.treasury_wallet_id AND reserve.payee_wallet_id=p.beneficiary_wallet_id) FROM owned_livestream_award_receipts r JOIN owned_livestream_award_purchases p ON p.id=r.purchase_id WHERE r.purchase_id=$1::uuid AND r.payout_state='refund_pending'`, purchase).Scan(&distribution, &valid)
+	if e != nil {
+		return e
+	}
+	if !valid {
+		return c.ErrConflict
+	}
+	o, e := order(ctx, tx, distribution, true)
+	if e != nil {
+		return e
+	}
+	if o.Status == c.Cancelled {
+		return nil
+	}
+	if o.Status != c.Paid {
+		return c.ErrConflict
+	}
+	if _, e = walletpg.CommerceSettle(ctx, tx, distribution, true, now); e != nil {
+		return e
+	}
+	o.Status, o.UpdatedAt = c.Cancelled, now.UTC().Truncate(time.Microsecond)
+	if e = saveOrder(ctx, tx, o); e != nil {
+		return e
+	}
+	return event(ctx, tx, "order.cancelled", o.ID, o, now)
+}
+
+// ReverseLiveAwardPayment is the second refund phase. The reserve must already
+// be returned, so the fixed treasury has the full captured amount before the
+// canonical FundedReversal executes. Its idempotency key is purchase-bound.
+func (r *Repository) ReverseLiveAwardPayment(ctx context.Context, db *sql.DB, tx *sql.Tx, purchase string, now time.Time) (string, error) {
+	if r == nil || r.db != db || db == nil || tx == nil || !authority.ValidID(purchase) {
+		return "", c.ErrUnavailable
+	}
+	var original, treasuryActor, treasury, payer, currency string
+	var amount wallet.Amount
+	var valid bool
+	e := tx.QueryRowContext(ctx, `SELECT o.id::text,p.treasury_account_id::text,p.treasury_wallet_id::text,paid.payer_wallet_id::text,p.currency,p.amount::text,EXISTS(SELECT 1 FROM commerce_v1.orders d JOIN wallet_v1.transactions reserve ON reserve.id=r.reserve_transaction_id JOIN wallet_v1.wallets tw ON tw.id=p.treasury_wallet_id WHERE d.id=r.distribution_order_id AND d.status=2 AND reserve.managed_by=d.id AND reserve.status=3 AND reserve.deleted_at IS NULL AND tw.account_id=p.treasury_account_id AND tw.realm_id IS NULL AND tw.deleted_at IS NULL) FROM owned_livestream_award_receipts r JOIN owned_livestream_award_purchases p ON p.id=r.purchase_id JOIN commerce_v1.orders o ON o.id=p.order_id AND o.id=r.order_id JOIN wallet_v1.transactions paid ON paid.id=r.transaction_id AND paid.id=o.transaction_id WHERE r.purchase_id=$1::uuid AND r.payout_state='refund_ready' AND o.app_id IS NULL AND o.product_identifier='livestreams.award' AND o.status=3 AND paid.managed_by=o.id AND paid.actor_id=p.account_id AND paid.purpose='commerce' AND paid.status=2 AND paid.confirmed_at IS NOT NULL AND paid.deleted_at IS NULL AND paid.amount=p.amount AND paid.currency=p.currency AND paid.payee_wallet_id=p.treasury_wallet_id`, purchase).Scan(&original, &treasuryActor, &treasury, &payer, &currency, &amount, &valid)
+	if e != nil {
+		return "", e
+	}
+	if !valid {
+		return "", c.ErrConflict
+	}
+	o, e := order(ctx, tx, original, true)
+	if e != nil {
+		return "", e
+	}
+	remark := "Refund livestream award " + purchase
+	reversal, e := walletpg.FundedReversal(ctx, tx, treasuryActor, treasury, payer, currency, amount, &remark, "livestream-award-refund:"+purchase, now)
+	if e != nil {
+		return "", e
+	}
+	var stillBound bool
+	if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM wallet_v1.wallets WHERE id=$1::uuid AND account_id=$2::uuid AND realm_id IS NULL AND deleted_at IS NULL)`, treasury, treasuryActor).Scan(&stillBound); e != nil {
+		return "", e
+	}
+	if !stillBound {
+		return "", c.ErrConflict
+	}
+	o.Status, o.UpdatedAt = c.Cancelled, now.UTC().Truncate(time.Microsecond)
+	if e = saveOrder(ctx, tx, o); e != nil {
+		return "", e
+	}
+	if e = event(ctx, tx, "order.refunded", o.ID, o, now); e != nil {
+		return "", e
+	}
+	return reversal.ID, nil
+}

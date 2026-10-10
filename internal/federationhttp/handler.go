@@ -27,7 +27,7 @@ func IsPublicRoute(p string) bool {
 	return IsQuoteRoute(p) || p == "/.well-known/webfinger" || p == "/.well-known/host-meta" || strings.HasPrefix(p, "/activitypub/")
 }
 func IsPrivateRoute(p string) bool {
-	return IsQuoteRoute(p) || p == "/api/activitypub" || strings.HasPrefix(p, "/api/activitypub/")
+	return IsQuoteRoute(p) || p == "/api/activitypub" || strings.HasPrefix(p, "/api/activitypub/") || strings.HasPrefix(p, "/api/fediverse/") || strings.HasPrefix(p, "/api/admin/fediverse/")
 }
 func write(w http.ResponseWriter, status int, value any, media string) {
 	w.Header().Set("Cache-Control", "no-store")
@@ -143,6 +143,14 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.serverActor(w, r)
 		return
 	}
+	if strings.HasPrefix(p, "/activitypub/realms/") {
+		h.realm(w, r)
+		return
+	}
+	if strings.HasPrefix(p, "/api/fediverse/") || strings.HasPrefix(p, "/api/admin/fediverse/") {
+		h.fediverse(w, r)
+		return
+	}
 	if IsPrivateRoute(p) {
 		h.private(w, r)
 		return
@@ -246,6 +254,13 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	case "followers", "following":
 		c, e = h.Repository.Collection(r.Context(), name, parts[3], offset, take)
+	case "featured":
+		repo, ok := h.Repository.(f.FeaturedRepository)
+		if !ok {
+			e = f.ErrUnavailable
+		} else {
+			c, e = repo.Featured(r.Context(), name, offset, take)
+		}
 	default:
 		http.NotFound(w, r)
 		return
@@ -308,12 +323,40 @@ func (h Handler) private(w http.ResponseWriter, r *http.Request) {
 		fail(w, e)
 		return
 	}
-	p, e = h.Authority.AuthorizePrincipal(r.Context(), p, f.Permission)
+	permission := f.Permission
+	if strings.HasPrefix(r.URL.Path, "/api/activitypub/realms/") {
+		permission = f.RealmPermission
+	}
+	p, e = h.Authority.AuthorizePrincipal(r.Context(), p, permission)
 	if e != nil {
 		fail(w, e)
 		return
 	}
 	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/"), "/")
+	if len(parts) == 5 && parts[0] == "api" && parts[1] == "activitypub" && parts[2] == "realms" && authority.ValidID(parts[3]) && parts[4] == "settings" {
+		if r.Method != "PATCH" {
+			method(w, "PATCH")
+			return
+		}
+		var input struct {
+			Enabled *bool `json:"enabled"`
+		}
+		if r.URL.RawQuery != "" || decode(w, r, &input) != nil || input.Enabled == nil {
+			fail(w, f.ErrInvalid)
+			return
+		}
+		repo, ok := h.Repository.(f.RealmAdminRepository)
+		if !ok {
+			fail(w, f.ErrUnavailable)
+			return
+		}
+		if e = repo.SetRealmFederation(r.Context(), p.Account.ID, parts[3], *input.Enabled); e != nil {
+			fail(w, e)
+			return
+		}
+		write(w, 204, nil, "application/json")
+		return
+	}
 	if len(parts) != 5 || parts[0] != "api" || parts[1] != "activitypub" || parts[2] != "publishers" || !authority.ValidID(parts[3]) {
 		http.NotFound(w, r)
 		return
@@ -344,6 +387,32 @@ func (h Handler) private(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if e = h.Repository.Settings(r.Context(), p.Account.ID, ref, f.Settings{Enabled: *input.Enabled, Manual: *input.Manual}); e != nil {
+			fail(w, e)
+			return
+		}
+		write(w, 204, nil, "application/json")
+	case "featured":
+		if r.Method != "PUT" {
+			method(w, "PUT")
+			return
+		}
+		if r.URL.RawQuery != "" {
+			fail(w, f.ErrInvalid)
+			return
+		}
+		var input struct {
+			PostIDs []string `json:"post_ids"`
+		}
+		if decode(w, r, &input) != nil {
+			fail(w, f.ErrInvalid)
+			return
+		}
+		repo, ok := h.Repository.(f.FeaturedRepository)
+		if !ok {
+			fail(w, f.ErrUnavailable)
+			return
+		}
+		if e = repo.SetFeatured(r.Context(), p.Account.ID, ref, input.PostIDs); e != nil {
 			fail(w, e)
 			return
 		}

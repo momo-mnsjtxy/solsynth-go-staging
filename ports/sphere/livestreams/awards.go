@@ -80,6 +80,16 @@ type AwardRequest struct {
 type AwardOrderResponse struct {
 	OrderID string `json:"order_id"`
 }
+type AwardRefundRequest struct {
+	Reason string `json:"reason"`
+}
+type AwardRefund struct {
+	PurchaseID  string     `json:"purchase_id"`
+	State       string     `json:"state"`
+	Reason      string     `json:"reason"`
+	RequestedAt time.Time  `json:"requested_at"`
+	RefundedAt  *time.Time `json:"refunded_at"`
+}
 type Award struct {
 	ID           string        `json:"id"`
 	Amount       wallet.Amount `json:"amount"`
@@ -103,4 +113,7 @@ type AwardRepository interface {
 	CreateAwardOrder(context.Context, string, string, string, AwardRequest) (AwardOrderResponse, error)
 	ListAwards(context.Context, string, string, int, int, bool) ([]Award, int, error)
 	AwardLeaderboard(context.Context, string, string, int) ([]AwardLeader, error)
+}
+type AwardReconciliationRepository interface {
+	RequestAwardRefund(context.Context, string, string, string, AwardRefundRequest) (AwardRefund, error)
 }

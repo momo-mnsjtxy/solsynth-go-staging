@@ -22,6 +22,7 @@ import (
 )
 
 type streamPacket struct {
+	Operation  string
 	Room       string
 	Recipients []string
 	Payload    []byte
@@ -31,10 +32,11 @@ type streamChatProvider struct {
 	dataMu      sync.Mutex
 	packets     []streamPacket
 	fail        bool
+	failAfter   bool
 	afterAccept func()
 }
 
-func (p *streamChatProvider) SendStreamData(_ context.Context, room string, recipients []string, payload []byte) error {
+func (p *streamChatProvider) SendStreamData(_ context.Context, operation string, room string, recipients []string, payload []byte) error {
 	p.dataMu.Lock()
 	defer p.dataMu.Unlock()
 	if p.fail {
@@ -43,9 +45,13 @@ func (p *streamChatProvider) SendStreamData(_ context.Context, room string, reci
 	if len(recipients) == 0 {
 		return live.ErrInvalid
 	}
-	p.packets = append(p.packets, streamPacket{room, append([]string(nil), recipients...), append([]byte(nil), payload...)})
+	p.packets = append(p.packets, streamPacket{operation, room, append([]string(nil), recipients...), append([]byte(nil), payload...)})
 	if p.afterAccept != nil {
 		p.afterAccept()
+	}
+	if p.failAfter {
+		p.failAfter = false
+		return live.ErrProvider
 	}
 	return nil
 }
@@ -468,8 +474,21 @@ func TestPGLiveStreamChatProviderAcceptanceRollbackAndFIFO(t *testing.T) {
 	}
 	query(t, f.db, `ALTER TABLE owned_livestream_chat_outbox DROP CONSTRAINT `+constraint)
 	chatForceDue(t, f, s.ID)
-	chatProcess(t, f)
-	chatProcess(t, f)
+	// A different repository instance reclaims the uncertain delivery. The
+	// provider operation ID remains the durable event ID across instances.
+	secondRepo, e := livestreampg.New(f.db, f.guard, f.accounts, f.media, f.social, f.data, streamConfig())
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = secondRepo.WithChat(chatStreamConfig()); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = secondRepo.ProcessChatDue(f.ctx, 100); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = secondRepo.ProcessChatDue(f.ctx, 100); e != nil {
+		t.Fatal(e)
+	}
 	packets := f.data.snapshot()
 	if len(packets) != 3 {
 		t.Fatal(len(packets))
@@ -482,8 +501,29 @@ func TestPGLiveStreamChatProviderAcceptanceRollbackAndFIFO(t *testing.T) {
 		}
 		ids = append(ids, m.ID)
 	}
-	if ids[0] != first.ID || ids[1] != first.ID || ids[2] != second.ID || chatEventState(t, f, second.ID) != "accepted" {
+	if ids[0] != first.ID || ids[1] != first.ID || ids[2] != second.ID || packets[0].Operation != first.ID || packets[1].Operation != first.ID || packets[2].Operation != second.ID || chatEventState(t, f, second.ID) != "accepted" {
 		t.Fatal("stable retries or FIFO lost", ids)
+	}
+}
+
+func TestPGLiveStreamChatCancelsWhenAudienceChangesAfterUncertainSend(t *testing.T) {
+	f := newStreamChatFixture(t)
+	s := streamChatStart(t, f, "chat-audience-after-send")
+	if _, e := f.repo.Token(f.viewerCtx, f.third, s.ID, false, false); e != nil {
+		t.Fatal(e)
+	}
+	m := streamChatSend(t, f, f.ownerCtx, f.owner, s.ID, "audience-drift")
+	var callbackErr error
+	f.data.afterAccept = func() {
+		_, callbackErr = f.db.Exec(`UPDATE owned_livestream_admissions SET state='removed' WHERE stream_id=$1::uuid AND actor_id=$2::uuid`, s.ID, f.third)
+	}
+	chatProcess(t, f)
+	if callbackErr != nil {
+		t.Fatal(callbackErr)
+	}
+	packets := f.data.snapshot()
+	if len(packets) != 1 || packets[0].Operation != m.ID || chatEventState(t, f, m.ID) != "cancelled" {
+		t.Fatal("current audience was not fenced after provider acceptance", packets, chatEventState(t, f, m.ID))
 	}
 }
 

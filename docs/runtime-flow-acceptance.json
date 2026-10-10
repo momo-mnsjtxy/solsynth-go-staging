@@ -14,14 +14,14 @@
     "acceptance_limit": "Immutable implementation CI-green; remaining original flows, configured external providers and production rollout are separate."
   },
   "latest_candidate": {
-    "commit": "f88cd772710039a7db9feb5df1fb1697a5b2bc7f",
-    "run": 37896134479,
-    "required_before": 921,
-    "required_after_restart": 108,
-    "status": "Published narrow fixture corrections; exact runtime validation pending"
+    "commit": "3570f0adf66231d1c211ec03a7bfa196d2f10178",
+    "run": 37897182131,
+    "required_before": 940,
+    "required_after_restart": 110,
+    "status": "Collection subscription/navigation and publication delivery published; exact runtime validation pending"
   },
-  "local_required_before": 940,
-  "local_required_after_restart": 110,
+  "local_required_before": 962,
+  "local_required_after_restart": 112,
   "families": [
     {
       "source_family": "develop.apps_products",
@@ -2717,7 +2717,7 @@
           "messager.messages",
           "messager.rooms"
         ],
-        "remaining": "Summary/read-all/literal canonical paid-search integrated pending actualPG; room/account subscriptions, chat status/global sync, and read-receipt websocket fanout remain unsupported.",
+        "remaining": "Summary/read-all/literal canonical paid-search, room/account subscription reads, chat status, global/joined-room sync, durable session-bound WebSocket subscribe/unsubscribe, live message/read-receipt fanout, typed chat composition and stream maintenance are implemented pending actualPG/restart verification. External push-provider delivery and legacy frame compatibility are outside this lane.",
         "source": [
           {
             "path": "DysonNetwork.Messager/Chat/ChatController.cs",
@@ -2744,15 +2744,15 @@
           "internal/messagerpg/repository.go",
           "ports/messager/sync_service.go"
         ],
-        "current_boundary": "Current room reads, per-room sync and total unread are implemented. Other requests fall through CHAT_UNSUPPORTED or do not resolve to a valid room; pure helpers do not constitute these runtime flows.",
-        "next_slice": "Start with summary, read-all and literal canonical search using existing membership/visibility rules; separately specify transport subscription/device semantics."
+        "current_boundary": "Summary, read-all, literal canonical search, room/account subscriptions, status and global/joined-room synchronization are implemented with current proof and membership revalidation. Transport subscriptions are durable, connection-scoped and consumed by the production realtime command loop.",
+        "next_slice": "Run the guarded PostgreSQL, cross-instance process and saved-state restart cases at the exact integrated commit."
       },
       {
         "id": "chat_voice_placeholders",
         "families": [
           "messager.messages"
         ],
-        "remaining": "Voice upload/download, persisted placeholder lifecycle/expiry and non-text typed message compositions remain unimplemented.",
+        "remaining": "Original multipart voice, persisted placeholder replacement/update/finalize/expiry, initiating WebSocket responses, durable multi-recipient message/read fanout and typed fund/survey/meet/notable-day/calendar/location composition are implemented pending PostgreSQL/restart. External push-provider delivery and excluded legacy frame compatibility remain outside this lane.",
         "source": [
           {
             "path": "DysonNetwork.Messager/Chat/ChatController.cs",
@@ -2771,12 +2771,25 @@
           "ports/messager/rooms/http.go:serveHTTP",
           "ports/messager/placeholder.go"
         ],
-        "current_boundary": "Voice/placeholder HTTP routes have no concrete owner; ValidateText rejects non-text type and fund/survey IDs. Placeholder pure transformation/expiry helpers exist, but no canonical persisted job/HTTP flow. Existing attachment/rich metadata/reactions/thread/forwarding paths must be preserved.",
+        "current_boundary": "Canonical configured voice retention/storage/quota, current room/source proof and plaintext-only checks are wired. Unknown original storage defaults are not inferred. Existing owned invalidations remain.",
         "next_slice": "Implement placeholder persistence first; then canonical owned voice bytes/expiry and permitted typed media references. Do not transplant external media URLs or downgrade encrypted content.",
         "additional_source": [
           "DysonNetwork.Messager/Chat/PlaceholderExpirationJob.cs:Execute",
           "DysonNetwork.Messager/Chat/Voice/ChatVoiceCleanupJob.cs:Execute"
-        ]
+        ],
+        "guarded_pg_cases": [
+          "TestPGChatPlaceholderLifecycleReplacementAndFinalization",
+          "TestPGChatPlaceholderExpiryRaceAndAtomicRollback",
+          "TestPGChatTransientOriginalProofMembershipAndEncryptedBoundaries",
+          "TestPGChatVoiceStorageQuotaPrivacyAndExpiry",
+          "TestPGChatVoiceStagingRollbackAndCleanupRecovery",
+          "TestPGBackendChatTransientMultipartAndWebSocketComposition",
+          "TestPGChatTransientSavedRestartPersistence",
+          "TestPGChatVoiceReadWaitRechecksOriginalProofAudienceAndExpiry",
+          "TestPGChatVoiceDurableDeletionFailureAndUnboundExpiry",
+          "TestPGChatVoiceSendRevalidatesAfterStorageAndMembershipABA"
+        ],
+        "evidence": "docs/chat-transient-provenance.json"
       },
       {
         "id": "developer_management_edges",
@@ -2785,7 +2798,7 @@
           "develop.bots",
           "develop.developers"
         ],
-        "remaining": "Developer stats and private-app custom orders integrated pendingPG. Developer quota, broader project/app statistics/media/remaining management contracts require source-backed completion; no inferred quota aggregation.",
+        "remaining": "Configured account-to-publisher total/used quota and canonical app/product/bot image associations are implemented pending PostgreSQL/restart. Original quota formula and unrestricted organization/realm mapping remain unverified; missing explicit policy fails closed.",
         "source": [
           {
             "path": "DysonNetwork.Develop/Identity/DevelopQuotaController.cs",
@@ -2840,8 +2853,23 @@
           "internal/apppg",
           "internal/commercepg"
         ],
-        "current_boundary": "GET /api/develop/quota has no host route. Private-app /orders has no handler; existing app-secret POST /api/orders is a product-catalog order and does not implement the source arbitrary amount/identifier/expiry request. Non-null app/product/bot picture/background IDs fail with provider-unsupported. GET /api/developers/{name}/stats is also missing (only developer list/detail/enroll are handled).",
-        "next_slice": "Expose quota from canonical policy; implement media associations with uploader rights; then add a narrowly authorized custom-order adapter with explicit canonical beneficiary/settlement policy."
+        "current_boundary": "Current media audiences, uploader ownership, quota and final-wait authority checks are wired and independently reviewed. Existing developer stats/custom orders remain present.",
+        "next_slice": "Expose quota from canonical policy; implement media associations with uploader rights; then add a narrowly authorized custom-order adapter with explicit canonical beneficiary/settlement policy.",
+        "guarded_pg_cases": [
+          "TestPGDeveloperMediaComposedAppProductBotLifecycle",
+          "TestPGDeveloperMediaOwnershipReadinessAndAtomicRollback",
+          "TestPGDeveloperMediaCurrentAudienceAndNestedProjection",
+          "TestPGDeveloperMediaReadWaitRechecksPrivacy",
+          "TestPGDeveloperMediaWriteWaitPreservesOriginalProof",
+          "TestPGDeveloperQuotaConfiguredPolicyAndIsolation",
+          "TestPGDeveloperQuotaWaitUsesCurrentPolicyAndProof",
+          "TestPGDeveloperMediaQuotaSavedRestartPersistence",
+          "TestPGDeveloperMediaManagerOwnerAfterFileAndAuditWait",
+          "TestPGDeveloperBotMediaCreateRollbackAndQuotaExpiry",
+          "TestPGDeveloperMediaAuditWaitUsesCurrentUploader",
+          "TestPGDeveloperBotUpdateWaitUsesCurrentPunishment"
+        ],
+        "evidence": "docs/developer-media-quota-source.json"
       },
       {
         "id": "bot_credentials_replies",
@@ -4044,7 +4072,7 @@
       },
       {
         "id": "maintenance_retention",
-        "remaining": "Explicit purge/retention/redrive/inspection operations for domain metrics, transfer requests, durable chat delivery and commerce quarantine are not all exposed. Original database recycling/backfills and scheduler cron equivalence are not proved by owned ProcessDue.",
+        "remaining": "Durable chat delivery has explicit bounded purge, redrive and inspection operations. Equivalent operations for domain metrics, transfer requests and commerce quarantine are not all exposed. Original database recycling/backfills and scheduler cron equivalence are not proved by owned ProcessDue.",
         "evidence": [
           "internal/application/backend.go:ProcessDue",
           "docs/operation-coverage-plan-parts/scheduled_job_registrations-0001.json",

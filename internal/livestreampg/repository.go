@@ -41,6 +41,18 @@ type Repository struct {
 	awardCommerce AwardCommerce
 	outputs       *OutputConfig
 	outputStore   live.ArtifactStore
+	activations   ActivationObserver
+}
+
+// ActivationObserver joins only the first attempted-to-active transaction and
+// may persist local intent. It must not contact the livestream provider.
+type ActivationObserver interface {
+	RecordLivestreamActivation(context.Context, *sql.DB, *sql.Tx, string, string, int64, time.Time) error
+}
+
+func (r *Repository) WithActivationObserver(v ActivationObserver) *Repository {
+	r.activations = v
+	return r
 }
 
 var _ live.Repository = (*Repository)(nil)

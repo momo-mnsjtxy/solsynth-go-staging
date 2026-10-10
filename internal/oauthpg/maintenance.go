@@ -40,6 +40,17 @@ func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
 		}
 		count += n
 	}
+	if remain := limit - int(count); remain > 0 {
+		result, e = tx.ExecContext(ctx, `WITH due AS(SELECT hash FROM owned_oauth_devices WHERE expires_at<clock_timestamp()-interval '24 hours' ORDER BY expires_at,hash LIMIT $1 FOR UPDATE SKIP LOCKED)DELETE FROM owned_oauth_devices d USING due WHERE d.hash=due.hash`, remain)
+		if e != nil {
+			return 0, e
+		}
+		n, e := result.RowsAffected()
+		if e != nil {
+			return 0, e
+		}
+		count += n
+	}
 	if e = tx.Commit(); e != nil {
 		return 0, e
 	}

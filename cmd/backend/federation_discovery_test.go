@@ -26,7 +26,7 @@ func TestFederationServerCLIAndDiscoveryAreOfflineOptIn(t *testing.T) {
 	if e = os.WriteFile(keyFile, pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: der}), 0600); e != nil {
 		t.Fatal(e)
 	}
-	input := map[string]any{"origin": "https://local.example.test", "allowed_origins": []string{"https://remote.example.test"}, "max_attempts": 3, "delivery_timeout_seconds": 1, "server_actor": map[string]string{"username": "synthetic-server", "name": "Synthetic server", "summary": "Synthetic fixture", "public_key_file": keyFile}, "remote_keys": []map[string]string{{"actor": "https://remote.example.test/actor", "inbox": "https://remote.example.test/inbox", "key_id": "https://remote.example.test/actor#main-key", "public_key_file": keyFile}}, "discovery_targets": []map[string]string{{"resource": "acct:alice@remote.example.test", "actor": "https://remote.example.test/actor"}}}
+	input := map[string]any{"origin": "https://local.example.test", "allowed_origins": []string{"https://remote.example.test"}, "max_attempts": 3, "delivery_timeout_seconds": 1, "server_actor": map[string]string{"username": "synthetic-server", "name": "Synthetic server", "summary": "Synthetic fixture", "public_key_file": keyFile}, "remote_keys": []map[string]string{{"actor": "https://remote.example.test/actor", "inbox": "https://remote.example.test/inbox", "key_id": "https://remote.example.test/actor#main-key", "incarnation": "ca110000-0000-4000-8000-000000000099", "public_key_file": keyFile}}, "discovery_targets": []map[string]string{{"resource": "acct:alice@remote.example.test", "actor": "https://remote.example.test/actor"}}}
 	path := filepath.Join(dir, "federation.json")
 	write := func() {
 		t.Helper()

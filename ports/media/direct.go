@@ -13,9 +13,10 @@ import (
 const directLimit int64 = 20 << 20
 const directOverhead int64 = 64 << 10
 
-// Direct upload is the documented single-file multipart route. Advanced pool,
-// bundle, E2EE, hierarchy and processing options fail explicitly. It does not
-// silently accept fields whose meaning cannot be honored by this local provider.
+// Direct upload is the documented single-file multipart route. Routing options
+// precede the file part and must be supported by the configured repository.
+// Compositions use the explicit ready-image/video route instead of guessing a
+// packaged-file format from application_type alone.
 func (s *Service) direct(w http.ResponseWriter, r *http.Request) {
 	p, e := s.principal(r, CreatePermission)
 	if e != nil {
@@ -77,10 +78,20 @@ func (s *Service) direct(w http.ResponseWriter, r *http.Request) {
 			failure(w, e)
 			return
 		}
-		tail := &multipartFileReader{part: part, reader: reader, fields: metadata, contentType: typ}
+		_, advanced := s.Repository.(ManagementRepository)
+		tail := &multipartFileReader{part: part, reader: reader, fields: metadata, contentType: typ, advanced: advanced}
 		// Content-Length includes framing, so the reservation is conservative. Only
 		// measured file bytes are charged after processing and successful commit.
-		f, e := repo.UploadDirect(r.Context(), p.Account.ID, Upload{Name: part.FileName(), MIMEType: typ, Size: min(r.ContentLength, max), Usage: metadata["usage"]}, tail)
+		options, e := OptionsFromFields(metadata)
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		if _, advanced := s.Repository.(ManagementRepository); !advanced && (options.PoolID != "" || options.BundleID != "" || options.ParentID != "" || options.EncryptionScheme != "" || options.ExpiredAt != nil) {
+			failure(w, ErrUnsupported)
+			return
+		}
+		f, e := repo.UploadDirect(r.Context(), p.Account.ID, Upload{Name: part.FileName(), MIMEType: typ, Size: min(r.ContentLength, max), Usage: metadata["usage"], Options: options}, tail)
 		if e != nil {
 			failure(w, e)
 			return
@@ -119,14 +130,28 @@ func checkFields(fields map[string]string, typ string) error {
 				return e
 			}
 		case "pool_id", "bundle_id", "encryption_scheme", "encryption_header", "encryption_signature", "expired_at", "parent_id", "application_type":
-			if v != "" {
+			if k == "application_type" && v != "" {
 				return ErrUnsupported
 			}
 		default:
 			return ErrUnsupported
 		}
 	}
+	options, e := OptionsFromFields(fields)
+	if e != nil {
+		return e
+	}
+	if options.EncryptionScheme != "" && typ != "application/octet-stream" {
+		return ErrInvalid
+	}
 	return nil
+}
+
+func (m *multipartFileReader) UploadOptions() (Options, error) {
+	if !m.done {
+		return Options{}, ErrInvalid
+	}
+	return OptionsFromFields(m.fields)
 }
 
 type multipartFileReader struct {
@@ -135,6 +160,7 @@ type multipartFileReader struct {
 	fields      map[string]string
 	contentType string
 	done        bool
+	advanced    bool
 }
 
 func (m *multipartFileReader) Read(p []byte) (int, error) {
@@ -149,6 +175,13 @@ func (m *multipartFileReader) Read(p []byte) (int, error) {
 		next, err := m.reader.NextRawPart()
 		if errors.Is(err, io.EOF) {
 			m.done = true
+			if !m.advanced {
+				for _, key := range []string{"pool_id", "bundle_id", "parent_id", "encryption_scheme", "expired_at"} {
+					if m.fields[key] != "" {
+						return n, ErrUnsupported
+					}
+				}
+			}
 			return n, checkEOF(m.fields, m.contentType)
 		}
 		if err != nil {

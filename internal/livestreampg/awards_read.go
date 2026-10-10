@@ -21,7 +21,7 @@ func (r *Repository) awardTotals(ctx context.Context, tx *sql.Tx, v *live.Stream
 	if r.awards == nil {
 		return nil
 	}
-	return tx.QueryRowContext(ctx, `SELECT COALESCE(sum(p.amount),0)::text,COALESCE(sum(p.amount)FILTER(WHERE r.payout_state='released'),0)::text FROM owned_livestream_award_purchases p JOIN owned_livestream_award_receipts r ON r.purchase_id=p.id WHERE p.stream_id=$1::uuid AND p.fulfilled_at IS NOT NULL`, v.ID).Scan(&v.TotalAwardScore, &v.DistributedAwardAmount)
+	return tx.QueryRowContext(ctx, `SELECT COALESCE(sum(p.amount)FILTER(WHERE r.payout_state IN('held','released')),0)::text,COALESCE(sum(p.amount)FILTER(WHERE r.payout_state='released'),0)::text FROM owned_livestream_award_purchases p JOIN owned_livestream_award_receipts r ON r.purchase_id=p.id WHERE p.stream_id=$1::uuid AND p.fulfilled_at IS NOT NULL`, v.ID).Scan(&v.TotalAwardScore, &v.DistributedAwardAmount)
 }
 func (r *Repository) ListAwards(ctx context.Context, actor, sid string, limit, offset int, active bool) (out []live.Award, total int, e error) {
 	if e = r.awardsConfigured(); e != nil {
@@ -42,7 +42,7 @@ func (r *Repository) ListAwards(ctx context.Context, actor, sid string, limit, o
 	if _, e = r.visible(ctx, tx, actor, &v); e != nil {
 		return nil, 0, e
 	}
-	predicate := `stream_id=$1::uuid AND fulfilled_at IS NOT NULL`
+	predicate := `stream_id=$1::uuid AND fulfilled_at IS NOT NULL AND EXISTS(SELECT 1 FROM owned_livestream_award_receipts receipt WHERE receipt.purchase_id=owned_livestream_award_purchases.id AND receipt.payout_state IN('held','released'))`
 	order := `fulfilled_at DESC,id`
 	if active {
 		predicate += ` AND fulfilled_at+trunc(amount*2)*interval '1 second'>clock_timestamp()`
@@ -92,7 +92,7 @@ func (r *Repository) AwardLeaderboard(ctx context.Context, actor, sid string, li
 	if _, e = r.visible(ctx, tx, actor, &v); e != nil {
 		return nil, e
 	}
-	rows, e := tx.QueryContext(ctx, `SELECT account_id::text,sum(amount)::text,count(*) FROM owned_livestream_award_purchases WHERE stream_id=$1::uuid AND fulfilled_at IS NOT NULL GROUP BY account_id ORDER BY sum(amount) DESC,account_id LIMIT $2::integer`, sid, limit)
+	rows, e := tx.QueryContext(ctx, `SELECT account_id::text,sum(amount)::text,count(*) FROM owned_livestream_award_purchases p WHERE stream_id=$1::uuid AND fulfilled_at IS NOT NULL AND EXISTS(SELECT 1 FROM owned_livestream_award_receipts receipt WHERE receipt.purchase_id=p.id AND receipt.payout_state IN('held','released')) GROUP BY account_id ORDER BY sum(amount) DESC,account_id LIMIT $2::integer`, sid, limit)
 	if e != nil {
 		return nil, e
 	}

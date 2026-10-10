@@ -64,9 +64,13 @@ type accessFixture struct {
 	permission, realm error
 	realmCalls        int
 	lastRole          RealmRole
+	lastPermission    string
 }
 
-func (a *accessFixture) Permission(context.Context, Principal, string) error { return a.permission }
+func (a *accessFixture) Permission(_ context.Context, _ Principal, permission string) error {
+	a.lastPermission = permission
+	return a.permission
+}
 func (a *accessFixture) Realm(_ context.Context, _ Principal, _ string, role RealmRole) error {
 	a.realmCalls++
 	a.lastRole = role

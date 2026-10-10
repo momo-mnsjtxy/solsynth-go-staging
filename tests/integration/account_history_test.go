@@ -64,7 +64,7 @@ func TestPGBackendAccountHistoryAuthoredRoutes(t *testing.T) {
 			t.Fatal(w.Body.String())
 		}
 		logs := backendDecode[[]history.ActionLog](t, backendCall(t, f.app, "GET", prefix+"/accounts/me/actions?action=accounts.profile.update", f.token, "", 200))
-		if len(logs) != 1 || logs[0].AccountID != f.actor || logs[0].Meta["source"] != "owned_accounts_audit" || logs[0].IPAddress != nil || logs[0].SessionID != nil {
+		if len(logs) != 1 || logs[0].AccountID != f.actor || logs[0].Meta["source"] != "owned_accounts_audit" || logs[0].IPAddress == nil || *logs[0].IPAddress != "192.0.2.1" || logs[0].SessionID == nil {
 			t.Fatal(logs)
 		}
 		backendCall(t, f.app, "GET", prefix+"/accounts/me/actions", "", "", 401)

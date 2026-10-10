@@ -19,13 +19,6 @@ var MaintenanceSchema string
 
 var errMaintenanceAdvanced = errors.New("maintenance candidate advanced")
 
-func skipMaintenance(tx *sql.Tx) (bool, error) {
-	if e := tx.Commit(); e != nil {
-		return false, e
-	}
-	return false, errMaintenanceAdvanced
-}
-
 type subscriptionProjection struct {
 	ID, AccountID, Identifier string
 	Status                    c.SubscriptionStatus
@@ -100,30 +93,77 @@ func (r *Repository) SubscriptionMaintenanceFailures(ctx context.Context, after 
 	return out, rows.Err()
 }
 
+// OperatorSubscriptionMaintenanceFailures binds inspection to current
+// production authority for the lifetime of its repeatable database read.
+func (r *Repository) OperatorSubscriptionMaintenanceFailures(ctx context.Context, actor, after string, limit int) ([]MaintenanceQuarantine, error) {
+	if limit < 1 || limit > 1000 || after != "" && !wallet.ValidID(after) {
+		return nil, c.ErrInvalid
+	}
+	tx, e := r.begin(ctx, actor, "subscriptions.order.manage")
+	if e != nil {
+		return nil, e
+	}
+	defer tx.Rollback()
+	rows, e := tx.QueryContext(ctx, `SELECT subscription_id::text,reason,document_sha256,first_seen_at,last_seen_at,resolved_at,observations FROM commerce_v1.subscription_maintenance_quarantine WHERE resolved_at IS NULL AND ($1::text='' OR subscription_id>NULLIF($1::text,'')::uuid) ORDER BY subscription_id LIMIT $2::integer`, after, limit)
+	if e != nil {
+		return nil, e
+	}
+	out := []MaintenanceQuarantine{}
+	for rows.Next() {
+		var v MaintenanceQuarantine
+		if e = rows.Scan(&v.SubscriptionID, &v.Reason, &v.DocumentSHA256, &v.FirstSeenAt, &v.LastSeenAt, &v.ResolvedAt, &v.Observations); e != nil {
+			rows.Close()
+			return nil, e
+		}
+		out = append(out, v)
+	}
+	if e = rows.Err(); e != nil {
+		rows.Close()
+		return nil, e
+	}
+	rows.Close()
+	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "subscriptions.order.manage"); e != nil {
+		return nil, e
+	}
+	return out, tx.Commit()
+}
+
 // RetrySubscriptionMaintenance clears only a coherent, manually repaired
 // subscription. It neither repairs fields nor charges/activates anything. The
 // next bounded ProcessDue rechecks the complete standing-renewal policy.
 func (r *Repository) RetrySubscriptionMaintenance(ctx context.Context, id string) error {
+	return r.retrySubscriptionMaintenance(ctx, "", id)
+}
+
+func (r *Repository) OperatorRetrySubscriptionMaintenance(ctx context.Context, actor, id string) error {
+	return r.retrySubscriptionMaintenance(ctx, actor, id)
+}
+
+func (r *Repository) retrySubscriptionMaintenance(ctx context.Context, actor, id string) error {
 	if !wallet.ValidID(id) {
 		return c.ErrInvalid
 	}
-	tx, e := r.begin(ctx, "", "")
+	permission := ""
+	if actor != "" {
+		permission = "subscriptions.order.manage"
+	}
+	tx, e := r.begin(ctx, actor, permission)
 	if e != nil {
 		return e
 	}
 	defer tx.Rollback()
-	var actor string
-	if e = tx.QueryRowContext(ctx, `SELECT account_id::text FROM commerce_v1.subscriptions WHERE id=$1::uuid`, id).Scan(&actor); e != nil {
+	var accountID string
+	if e = tx.QueryRowContext(ctx, `SELECT account_id::text FROM commerce_v1.subscriptions WHERE id=$1::uuid`, id).Scan(&accountID); e != nil {
 		return notFound(e)
 	}
-	if _, e = tx.ExecContext(ctx, `SELECT id FROM owned_authority_accounts WHERE id=$1::uuid FOR UPDATE`, actor); e != nil {
+	if _, e = tx.ExecContext(ctx, `SELECT id FROM owned_authority_accounts WHERE id=$1::uuid FOR UPDATE`, accountID); e != nil {
 		return e
 	}
 	v, e := lockedSubscriptionProjection(ctx, tx, id)
 	if e != nil {
 		return e
 	}
-	if v.AccountID != actor {
+	if v.AccountID != accountID {
 		return c.ErrRetry
 	}
 	if _, reason := v.validate(); reason != "" {
@@ -131,6 +171,11 @@ func (r *Repository) RetrySubscriptionMaintenance(ctx context.Context, id string
 	}
 	if _, e = tx.ExecContext(ctx, `UPDATE commerce_v1.subscription_maintenance_quarantine SET resolved_at=GREATEST(last_seen_at,$2::timestamptz) WHERE subscription_id=$1::uuid AND resolved_at IS NULL`, id, r.now().UTC()); e != nil {
 		return e
+	}
+	if actor != "" {
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, permission); e != nil {
+			return e
+		}
 	}
 	return tx.Commit()
 }

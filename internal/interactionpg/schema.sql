@@ -17,6 +17,7 @@ CREATE INDEX owned_post_bookmarks_list ON owned_post_bookmarks(account_id,create
 CREATE TABLE owned_post_collections (
  id uuid PRIMARY KEY,publisher_id uuid NOT NULL REFERENCES owned_publishers(id),
  slug varchar(128) NOT NULL CHECK(length(btrim(slug))>0),name varchar(256),description varchar(4096),
+	background_file_id uuid REFERENCES owned_media_files(id),icon_file_id uuid REFERENCES owned_media_files(id),
  created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL,deleted_at timestamptz
 );
 -- Deleted slugs remain reserved, so bookmarks cannot resolve to a new collection.

@@ -135,6 +135,9 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 		failure(w, ErrUnavailable)
 		return
 	}
+	if s.serveQuota(w, r) {
+		return
+	}
 	if IsAppCredentialRoute(r) {
 		s.appCredential(w, r)
 		return

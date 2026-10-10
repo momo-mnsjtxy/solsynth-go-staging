@@ -121,6 +121,14 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 		c.Word = strings.TrimSpace(v.Spell)
 	case r.URL.Path == "/api/affiliations/purchase" && r.Method == "POST":
 		c.Operation = "purchase"
+		if len(r.Header.Values("Idempotency-Key")) != 1 {
+			e = ErrInvalid
+			break
+		}
+		v := InvitePurchase{}
+		_, e = decode(w, r, &v)
+		v.Key = r.Header.Get("Idempotency-Key")
+		c.Purchase = &v
 	case len(p) == 2 && authority.ValidID(p[1]) && (r.Method == "GET" || r.Method == "DELETE"):
 		c.ID = p[1]
 		if r.Method == "GET" {

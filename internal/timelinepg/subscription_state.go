@@ -347,7 +347,7 @@ func (r *Repository) AddSubscriber(ctx context.Context, actor, selector, target 
 		if x != nil {
 			return x
 		}
-		if _, x = tx.ExecContext(ctx, `INSERT INTO owned_publisher_follows(id,account_id,publisher_id,state,notify,created_at,updated_at)VALUES($1,$2,$3,'accepted',false,$4,$4)`, uid, target, pub, now); x != nil {
+		if _, x = tx.ExecContext(ctx, `INSERT INTO owned_publisher_follows(id,account_id,publisher_id,state,notify,created_at,updated_at,incarnation,incarnation_started_at)VALUES($1,$2,$3,'accepted',false,$4,$4,1,$4)`, uid, target, pub, now); x != nil {
 			return x
 		}
 		out.Subscription, x = r.activeSubscription(ctx, tx, target, pub)

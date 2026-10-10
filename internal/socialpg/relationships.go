@@ -161,7 +161,8 @@ func (r *Repository) ChangeRelationship(ctx context.Context, actor, target strin
 			out, e = requestFriend(ctx, tx, actor, target, now)
 		case social.AcceptFriend:
 			var id string
-			if e = tx.QueryRowContext(ctx, `SELECT id::text FROM owned_social_effective_requests WHERE account_id=$1 AND related_id=$2`, target, actor).Scan(&id); e != nil {
+			var requested time.Time
+			if e = tx.QueryRowContext(ctx, `SELECT id::text,created_at FROM owned_social_effective_requests WHERE account_id=$1 AND related_id=$2`, target, actor).Scan(&id, &requested); e != nil {
 				return mapped(e)
 			}
 			if yes, x := blocked(ctx, tx, actor, target); x != nil {
@@ -173,6 +174,9 @@ func (r *Repository) ChangeRelationship(ctx context.Context, actor, target strin
 				return e
 			}
 			out, e = putRelation(ctx, tx, actor, target, social.Friend, now)
+			if e == nil {
+				_, e = tx.ExecContext(ctx, `INSERT INTO owned_social_friend_accepts(request_id,account_id,requester_id,requested_at,accepted_at)VALUES($1::uuid,$2::uuid,$3::uuid,$4::timestamptz,$5::timestamptz)`, id, actor, target, requested, now)
+			}
 			if e == nil {
 				e = deleteRequests(ctx, tx, actor, target)
 			}

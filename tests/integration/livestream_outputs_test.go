@@ -4,6 +4,7 @@ package integration_test
 import (
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -102,6 +103,97 @@ type outputFixture struct {
 	out   *streamOutputProvider
 	store *mediastore.Filesystem
 	root  string
+}
+
+type archiveImporterFixture struct {
+	mu        sync.Mutex
+	db        *sql.DB
+	contract  string
+	mediaID   string
+	jobs      map[string]string
+	calls     int
+	failAfter bool
+	entered   chan struct{}
+	release   chan struct{}
+}
+
+func (a *archiveImporterFixture) ArchiveImportContract() string {
+	if a.contract != "" {
+		return a.contract
+	}
+	return live.ArchiveImportContract
+}
+func (*archiveImporterFixture) ArchiveImportReady(context.Context) error { return nil }
+func (a *archiveImporterFixture) ImportHLSArchive(ctx context.Context, source live.ArchiveImportSource) (live.ArchiveImportReceipt, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if len(source.PlaylistSHA256) != 64 {
+		return live.ArchiveImportReceipt{}, live.ErrInvalid
+	}
+	a.calls++
+	sourceHash := strings.Repeat("a", 64)
+	if prior := a.jobs[source.JobID]; prior != "" {
+		var state string
+		e := a.db.QueryRowContext(ctx, `SELECT state FROM owned_media_files WHERE id=$1::uuid`, prior).Scan(&state)
+		if e == nil && state == "pending" {
+			return live.ArchiveImportReceipt{MediaID: prior, SourceSHA256: sourceHash}, nil
+		}
+		if e != nil || state != "deleted" {
+			return live.ArchiveImportReceipt{}, live.ErrConflict
+		}
+		tx, x := a.db.BeginTx(ctx, nil)
+		if x != nil {
+			return live.ArchiveImportReceipt{}, x
+		}
+		defer tx.Rollback()
+		if _, x = tx.ExecContext(ctx, `DELETE FROM owned_livestream_archive_media WHERE job_id=$1::uuid AND media_id=$2::uuid`, source.JobID, prior); x == nil {
+			_, x = tx.ExecContext(ctx, `DELETE FROM owned_media_files WHERE id=$1::uuid AND state='deleted' AND charge='none'`, prior)
+		}
+		if x == nil {
+			x = tx.Commit()
+		}
+		if x != nil {
+			return live.ArchiveImportReceipt{}, x
+		}
+		delete(a.jobs, source.JobID)
+	}
+	a.jobs[source.JobID] = a.mediaID
+	if a.db == nil {
+		return live.ArchiveImportReceipt{}, live.ErrUnavailable
+	}
+	tx, e := a.db.BeginTx(ctx, nil)
+	if e != nil {
+		return live.ArchiveImportReceipt{}, e
+	}
+	defer tx.Rollback()
+	if _, e = tx.Exec(`UPDATE owned_media_quotas SET reserved_bytes=reserved_bytes+1 WHERE account_id=$1::uuid`, source.ActorID); e == nil {
+		_, e = tx.Exec(`INSERT INTO owned_media_files(id,account_id,idempotency_key,name,mime_type,size,sha256,is_public,state,charge,expires_at,created_at,updated_at,usage)VALUES($1::uuid,$2::uuid,'livestream-archive:'||$3::text,'synthetic-archive.mp4','video/mp4',1,$4::text,false,'pending','reserved',clock_timestamp()+interval '1 day',clock_timestamp(),clock_timestamp(),'')`, a.mediaID, source.ActorID, source.JobID, sourceHash)
+	}
+	if e == nil {
+		_, e = tx.Exec(`INSERT INTO owned_livestream_archive_media(job_id,media_id,actor_id,source_sha256,created_at)VALUES($1::uuid,$2::uuid,$3::uuid,$4::text,clock_timestamp())`, source.JobID, a.mediaID, source.ActorID, sourceHash)
+	}
+	if e == nil {
+		e = tx.Commit()
+	}
+	if e != nil {
+		return live.ArchiveImportReceipt{}, e
+	}
+	if a.entered != nil {
+		select {
+		case a.entered <- struct{}{}:
+		default:
+		}
+		select {
+		case <-a.release:
+		case <-ctx.Done():
+			return live.ArchiveImportReceipt{}, ctx.Err()
+		}
+	}
+	if a.failAfter {
+		a.failAfter = false
+		return live.ArchiveImportReceipt{}, live.ErrProvider
+	}
+	return live.ArchiveImportReceipt{MediaID: a.mediaID, SourceSHA256: sourceHash}, nil
 }
 
 func outputConfig() livestreampg.OutputConfig {
@@ -626,5 +718,224 @@ func TestPGLiveStreamOutputsRestartPersistence(t *testing.T) {
 	// Existing recorded admissions use the split durable generation after restart.
 	if e = authoritypg.New(f.db).ContinuityReady(f.ctx); e != nil {
 		t.Fatal(e)
+	}
+}
+
+func TestPGLiveStreamStoppedArchiveImportUncertainReplay(t *testing.T) {
+	f := newOutputFixture(t)
+	invalid := outputConfig()
+	invalid.ArchiveImporter = &archiveImporterFixture{contract: "unreviewed-import-adapter"}
+	if e := f.repo.WithOutputs(invalid, f.store); !errors.Is(e, live.ErrInvalid) {
+		t.Fatal("unreviewed archive adapter accepted", e)
+	}
+	importer := &archiveImporterFixture{db: f.db, mediaID: authorityUUID(t), jobs: map[string]string{}, failAfter: true}
+	cfg := outputConfig()
+	cfg.ArchiveImporter = importer
+	if e := f.repo.WithOutputs(cfg, f.store); e != nil {
+		t.Fatal(e)
+	}
+	s := outputStream(t, f, "archive-import")
+	v := hlsStart(t, f, s.ID, "archive-source")
+	outputFiles(t, f, v.OutputID)
+	if e := f.repo.StopOutput(f.ownerCtx, f.owner, s.ID, "hls"); e != nil {
+		t.Fatal(e)
+	}
+	job, e := f.repo.RequestArchiveImport(f.ownerCtx, f.owner, s.ID, v.OutputID, "archive-job")
+	if e != nil || job.State != "pending" {
+		t.Fatal(job, e)
+	}
+	if _, e = f.repo.RequestArchiveImport(f.ownerCtx, f.owner, s.ID, v.OutputID, "archive-job"); e != nil {
+		t.Fatal("exact request did not replay", e)
+	}
+	if _, e = f.repo.ProcessArchiveImportsDue(f.ctx, 10); e == nil {
+		t.Fatal("uncertain adapter result was accepted")
+	}
+	operations, total, e := f.repo.InspectOperations(f.ownerCtx, f.owner, "archive", 10, 0)
+	if e != nil || total != 1 || len(operations) != 1 || operations[0].ID != job.ID || operations[0].Attempts != 1 {
+		t.Fatal(operations, total, e)
+	}
+	redriven, e := f.repo.RedriveOperation(f.ownerCtx, f.owner, "archive", job.ID)
+	if e != nil || redriven.ID != job.ID || redriven.Attempts != 0 || redriven.State != "pending" {
+		t.Fatal(redriven, e)
+	}
+	// Simulate a process dying after its claim commits. A separately constructed
+	// repository must reclaim only the expired fenced lease and replay the stable
+	// job identity into the importer.
+	query(t, f.db, `UPDATE owned_livestream_archive_imports SET state='processing',lease_token=$2::uuid,lease_expires_at=clock_timestamp()-interval '1 second' WHERE id=$1::uuid`, job.ID, authorityUUID(t))
+	secondRepo, e := livestreampg.New(f.db, f.guard, f.accounts, f.media, f.social, f.out, streamConfig())
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = secondRepo.WithOutputs(cfg, f.store); e != nil {
+		t.Fatal(e)
+	}
+	if n, e := secondRepo.ProcessArchiveImportsDue(f.ctx, 10); e != nil || n != 1 {
+		t.Fatal(n, e)
+	}
+	complete, e := f.repo.GetArchiveImport(f.ownerCtx, f.owner, s.ID, v.OutputID, job.ID)
+	if e != nil || complete.State != "complete" || complete.MediaID == nil || *complete.MediaID != importer.mediaID || importer.calls != 2 || len(importer.jobs) != 1 {
+		t.Fatal(complete, importer.calls, importer.jobs, e)
+	}
+	// Status remains inspectable after a restart where the external conversion
+	// adapter is intentionally unavailable.
+	if e = f.repo.WithOutputs(outputConfig(), f.store); e != nil {
+		t.Fatal(e)
+	}
+	if complete, e = f.repo.GetArchiveImport(f.ownerCtx, f.owner, s.ID, v.OutputID, job.ID); e != nil || complete.State != "complete" {
+		t.Fatal(complete, e)
+	}
+	playback, e := f.repo.OpenHLS(f.viewerCtx, f.third, s.ID, v.OutputID, "playlist.m3u8")
+	if e != nil || !strings.Contains(string(playback.Body), "segment_0.ts") {
+		t.Fatal("stopped archive unavailable", e)
+	}
+}
+
+func TestPGLiveStreamArchiveStagingDoesNotPublishAfterProofRevocation(t *testing.T) {
+	f := newOutputFixture(t)
+	importer := &archiveImporterFixture{db: f.db, mediaID: authorityUUID(t), jobs: map[string]string{}, entered: make(chan struct{}, 1), release: make(chan struct{})}
+	cfg := outputConfig()
+	cfg.ArchiveImporter = importer
+	if e := f.repo.WithOutputs(cfg, f.store); e != nil {
+		t.Fatal(e)
+	}
+	s := outputStream(t, f, "archive-revoked-after-io")
+	v := hlsStart(t, f, s.ID, "archive-revoked-source")
+	outputFiles(t, f, v.OutputID)
+	if e := f.repo.StopOutput(f.ownerCtx, f.owner, s.ID, "hls"); e != nil {
+		t.Fatal(e)
+	}
+	job, e := f.repo.RequestArchiveImport(f.ownerCtx, f.owner, s.ID, v.OutputID, "archive-revoked-job")
+	if e != nil {
+		t.Fatal(e)
+	}
+	done := make(chan error, 1)
+	go func() {
+		_, x := f.repo.ProcessArchiveImportsDue(f.ctx, 1)
+		done <- x
+	}()
+	select {
+	case <-importer.entered:
+	case <-f.ctx.Done():
+		t.Fatal("archive adapter did not reach staged external completion")
+	}
+	query(t, f.db, `UPDATE owned_authority_sessions SET authorization_epoch=authorization_epoch+1 WHERE id=(SELECT session_id FROM owned_livestream_archive_imports WHERE id=$1::uuid)`, job.ID)
+	query(t, f.db, `UPDATE owned_publishers SET account_id=$2::uuid,updated_at=clock_timestamp() WHERE id=$1::uuid`, f.pub.ID, f.other)
+	close(importer.release)
+	if e = <-done; e == nil {
+		t.Fatal("revoked archive proof was finalized")
+	}
+	var mediaState, charge, jobState string
+	var used, reserved int64
+	if e = f.db.QueryRow(`SELECT f.state,f.charge,q.used_bytes,q.reserved_bytes,j.state FROM owned_media_files f JOIN owned_media_quotas q ON q.account_id=f.account_id JOIN owned_livestream_archive_imports j ON j.media_id IS NULL WHERE f.id=$1::uuid AND j.id=$2::uuid`, importer.mediaID, job.ID).Scan(&mediaState, &charge, &used, &reserved, &jobState); e != nil {
+		t.Fatal(e)
+	}
+	if mediaState != "pending" || charge != "reserved" || used != 0 || reserved != 1 || jobState == "complete" {
+		t.Fatal("revoked archive became readable or permanently charged", mediaState, charge, used, reserved, jobState)
+	}
+	query(t, f.db, `UPDATE owned_livestream_archive_imports SET next_attempt_at=clock_timestamp()-interval '1 microsecond' WHERE id=$1::uuid`, job.ID)
+	secondRepo, e := livestreampg.New(f.db, f.guard, f.accounts, f.media, f.social, f.out, streamConfig())
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = secondRepo.WithOutputs(cfg, f.store); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = secondRepo.ProcessArchiveImportsDue(f.ctx, 1); e == nil {
+		t.Fatal("permanently revoked archive claim did not report authority loss")
+	}
+	var attempts int
+	if e = f.db.QueryRow(`SELECT state,attempts FROM owned_livestream_archive_imports WHERE id=$1::uuid`, job.ID).Scan(&jobState, &attempts); e != nil || jobState != "failed" || attempts < 2 {
+		t.Fatal("revoked archive remained in the due hot loop", jobState, attempts, e)
+	}
+	if n, e := secondRepo.ProcessArchiveImportsDue(f.ctx, 1); e != nil || n != 0 {
+		t.Fatal("terminal archive was selected again", n, e)
+	}
+}
+
+func TestPGLiveStreamArchiveEditorRechecksPunishedOwnerAfterIO(t *testing.T) {
+	f := newOutputFixture(t)
+	importer := &archiveImporterFixture{db: f.db, mediaID: authorityUUID(t), jobs: map[string]string{}, entered: make(chan struct{}, 1), release: make(chan struct{})}
+	cfg := outputConfig()
+	cfg.ArchiveImporter = importer
+	if e := f.repo.WithOutputs(cfg, f.store); e != nil {
+		t.Fatal(e)
+	}
+	s := outputStream(t, f, "archive-editor-owner-punishment")
+	v := hlsStart(t, f, s.ID, "archive-editor-source")
+	outputFiles(t, f, v.OutputID)
+	if e := f.repo.StopOutput(f.ownerCtx, f.owner, s.ID, "hls"); e != nil {
+		t.Fatal(e)
+	}
+	job, e := f.repo.RequestArchiveImport(f.editorCtx, f.other, s.ID, v.OutputID, "archive-editor-job")
+	if e != nil {
+		t.Fatal(e)
+	}
+	done := make(chan error, 1)
+	go func() {
+		_, x := f.repo.ProcessArchiveImportsDue(f.ctx, 1)
+		done <- x
+	}()
+	select {
+	case <-importer.entered:
+	case <-f.ctx.Done():
+		t.Fatal("archive adapter did not reach staged external completion")
+	}
+	var starts time.Time
+	if e = f.db.QueryRowContext(f.ctx, `INSERT INTO owned_authority_punishments(account_id,kind,starts_at)VALUES($1::uuid,'disable_account',clock_timestamp()+interval '1 second')RETURNING starts_at`, f.owner).Scan(&starts); e != nil {
+		t.Fatal(e)
+	}
+	for {
+		var active bool
+		if e = f.db.QueryRowContext(f.ctx, `SELECT clock_timestamp()>=$1::timestamptz`, starts).Scan(&active); e != nil {
+			t.Fatal(e)
+		}
+		if active {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	close(importer.release)
+	if e = <-done; e == nil {
+		t.Fatal("editor archive ignored current publisher-owner punishment")
+	}
+	var mediaState, charge, jobState string
+	var used, reserved int64
+	if e = f.db.QueryRow(`SELECT f.state,f.charge,q.used_bytes,q.reserved_bytes,j.state FROM owned_media_files f JOIN owned_media_quotas q ON q.account_id=f.account_id JOIN owned_livestream_archive_imports j ON j.id=$2::uuid AND j.media_id IS NULL WHERE f.id=$1::uuid`, importer.mediaID, job.ID).Scan(&mediaState, &charge, &used, &reserved, &jobState); e != nil {
+		t.Fatal(e)
+	}
+	if mediaState != "pending" || charge != "reserved" || used != 0 || reserved != 1 || jobState == "complete" {
+		t.Fatal("punished owner archive became readable or permanently charged", mediaState, charge, used, reserved, jobState)
+	}
+	query(t, f.db, `UPDATE owned_livestream_archive_imports SET next_attempt_at=clock_timestamp()-interval '1 microsecond' WHERE id=$1::uuid`, job.ID)
+	secondRepo, e := livestreampg.New(f.db, f.guard, f.accounts, f.media, f.social, f.out, streamConfig())
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = secondRepo.WithOutputs(cfg, f.store); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = secondRepo.ProcessArchiveImportsDue(f.ctx, 1); e == nil {
+		t.Fatal("punished owner archive claim did not become terminal")
+	}
+	var attempts int
+	if e = f.db.QueryRow(`SELECT state,attempts FROM owned_livestream_archive_imports WHERE id=$1::uuid`, job.ID).Scan(&jobState, &attempts); e != nil || jobState != "failed" || attempts < 2 {
+		t.Fatal("punished owner archive remained in the due hot loop", jobState, attempts, e)
+	}
+	query(t, f.db, `UPDATE owned_media_files SET expires_at=clock_timestamp()-interval '1 second' WHERE id=$1::uuid AND state='pending'`, importer.mediaID)
+	if n, x := f.media.Cleanup(f.ctx, 100); x != nil || n != 1 {
+		t.Fatal("staged archive cleanup did not release quota", n, x)
+	}
+	if e = f.db.QueryRow(`SELECT state,charge FROM owned_media_files WHERE id=$1::uuid`, importer.mediaID).Scan(&mediaState, &charge); e != nil || mediaState != "deleted" || charge != "none" {
+		t.Fatal(mediaState, charge, e)
+	}
+	query(t, f.db, `DELETE FROM owned_authority_punishments WHERE account_id=$1::uuid AND kind='disable_account'`, f.owner)
+	if _, e = f.repo.RedriveOperation(f.ownerCtx, f.owner, "archive", job.ID); e != nil {
+		t.Fatal(e)
+	}
+	if n, x := secondRepo.ProcessArchiveImportsDue(f.ctx, 1); x != nil || n != 1 {
+		t.Fatal("redrive did not rebuild cleaned archive staging", n, x)
+	}
+	if e = f.db.QueryRow(`SELECT f.state,f.charge,q.used_bytes,q.reserved_bytes,j.state FROM owned_media_files f JOIN owned_media_quotas q ON q.account_id=f.account_id JOIN owned_livestream_archive_imports j ON j.media_id=f.id WHERE f.id=$1::uuid AND j.id=$2::uuid`, importer.mediaID, job.ID).Scan(&mediaState, &charge, &used, &reserved, &jobState); e != nil || mediaState != "ready" || charge != "used" || used != 1 || reserved != 0 || jobState != "complete" {
+		t.Fatal("cleaned archive redrive did not restore one conserved ready media", mediaState, charge, used, reserved, jobState, e)
 	}
 }

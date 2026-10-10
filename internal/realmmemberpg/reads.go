@@ -102,7 +102,7 @@ func (r *Repository) MembersWithLabel(ctx context.Context, actor, ref, id string
 	return out, total, tx.Commit()
 }
 func project(experience int64, thresholds []int64) social.MemberProgression {
-	out := social.MemberProgression{RecordedExperience: experience, ExperienceComplete: false, Sources: []string{"realm.boost.purchase", "realm.tenure.daily"}}
+	out := social.MemberProgression{RecordedExperience: experience, ExperienceComplete: false, Sources: []string{"realm.boost.purchase", "realm.tenure.daily", "realm.chat.message", "realm.post.created"}}
 	if len(thresholds) == 0 {
 		return out
 	}
@@ -124,7 +124,7 @@ func project(experience int64, thresholds []int64) social.MemberProgression {
 }
 func (r *Repository) progression(ctx context.Context, tx *sql.Tx, realm, account string) (social.MemberProgression, error) {
 	var total int64
-	e := tx.QueryRowContext(ctx, `SELECT COALESCE(sum(delta),0)::bigint FROM(SELECT delta FROM owned_realm_boost_experience WHERE realm_id=$1::uuid AND account_id=$2::uuid UNION ALL SELECT delta FROM owned_realm_tenure_experience WHERE realm_id=$1::uuid AND account_id=$2::uuid)x`, realm, account).Scan(&total)
+	e := tx.QueryRowContext(ctx, `SELECT COALESCE(sum(delta),0)::bigint FROM(SELECT delta FROM owned_realm_boost_experience WHERE realm_id=$1::uuid AND account_id=$2::uuid UNION ALL SELECT delta FROM owned_realm_tenure_experience WHERE realm_id=$1::uuid AND account_id=$2::uuid UNION ALL SELECT delta FROM owned_realm_source_experience WHERE realm_id=$1::uuid AND account_id=$2::uuid)x`, realm, account).Scan(&total)
 	return project(total, r.cfg.LevelThresholds), e
 }
 func (r *Repository) Progression(ctx context.Context, actor, ref, account string) (out social.MemberProgression, e error) {
@@ -158,7 +158,7 @@ func (r *Repository) History(ctx context.Context, actor, ref, account string, ta
 	if _, e = member(ctx, tx, v.ID, account); e != nil {
 		return
 	}
-	rows, e := tx.QueryContext(ctx, `SELECT id::text,realm_id::text,account_id::text,reason_type,reason,delta,created_at FROM(SELECT id,realm_id,account_id,'realm.boost.purchase'::text AS reason_type,order_id::text AS reason,delta,created_at FROM owned_realm_boost_experience WHERE realm_id=$1::uuid AND account_id=$2::uuid UNION ALL SELECT id,realm_id,account_id,'realm.tenure.daily'::text,to_char(day,'YYYY-MM-DD'),delta,created_at FROM owned_realm_tenure_experience WHERE realm_id=$1::uuid AND account_id=$2::uuid)x ORDER BY created_at DESC,reason_type,id LIMIT $3`, v.ID, account, take)
+	rows, e := tx.QueryContext(ctx, `SELECT id::text,realm_id::text,account_id::text,reason_type,reason,delta,created_at FROM(SELECT id,realm_id,account_id,'realm.boost.purchase'::text AS reason_type,order_id::text AS reason,delta,created_at FROM owned_realm_boost_experience WHERE realm_id=$1::uuid AND account_id=$2::uuid UNION ALL SELECT id,realm_id,account_id,'realm.tenure.daily'::text,to_char(day,'YYYY-MM-DD'),delta,created_at FROM owned_realm_tenure_experience WHERE realm_id=$1::uuid AND account_id=$2::uuid UNION ALL SELECT id,realm_id,account_id,source_kind,source_id::text,delta,created_at FROM owned_realm_source_experience WHERE realm_id=$1::uuid AND account_id=$2::uuid)x ORDER BY created_at DESC,reason_type,id LIMIT $3`, v.ID, account, take)
 	if e != nil {
 		return
 	}

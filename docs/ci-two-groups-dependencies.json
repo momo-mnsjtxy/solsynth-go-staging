@@ -1,11 +1,11 @@
 {
-  "base_commit": "c84a3c8aa721d5c4867fb9ddcf602882421d8088",
+  "base_commit": "e71b407927f3957d8787226b36d249f6d213d134",
   "restart_cases": [
     {
       "test": "TestPGAccountAdminSavedRestartPersistence",
       "source": "tests/integration/account_admin_badges_test.go",
       "function_sha256": "12d3b5d442b390b3f6776aea453e080a100998d5627b7c5e3a665d7f9b056ff4",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "account-admin-badges-restart.json"
       ],
@@ -18,7 +18,7 @@
     {
       "test": "TestPGAccountSettingsRestartPersistence",
       "source": "tests/integration/account_settings_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "5591e8188e777c8a968f82f65186cb4e622c7f9387e6bd6d1597d474fa042383",
       "marker_files": [
         "account-settings-record.json"
@@ -32,7 +32,7 @@
     {
       "test": "TestPGAccountsRestartPersistence",
       "source": "tests/integration/accounts_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "d73415ba1fbdcf32f104e347d3a7a5a942c3498573f3959af75c523ae4d3b930",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -43,7 +43,7 @@
       "test": "TestPGActivitySavedRestartPersistence",
       "source": "tests/integration/activities_test.go",
       "function_sha256": "7fa25506d4578ab400355e0c60562518d0ebf6b1730cae8c9532ae9881a7a12f",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "activities-state.json"
       ],
@@ -54,7 +54,7 @@
     {
       "test": "TestPGAdminExtensionsRestartPersistence",
       "source": "tests/integration/admin_extensions_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "083545f633dfe6bd290e0fc811d2006919f84240899b1eb2e9eb5481a7c1d1f4",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -91,12 +91,12 @@
       "named_database_markers": {},
       "storage_contract": "The original before phase saves actual prestate with saveRestartFixture; the same named after phase reloads it with loadRestartFixture in the same SOLSYNTH_DISPOSABLE_PG and PostgreSQL cluster. No after-phase fixture reseeding or cross-group transfer.",
       "function_sha256": "b73456b05611e095c193c3cc3f1c71b92dead61e7f64d663102867bd0911354a",
-      "group_before_and_after": "group-b"
+      "group_before_and_after": "group-a"
     },
     {
       "test": "TestPGAuthorityRestartPersistence",
       "source": "tests/integration/authority_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "4644d2fb3ecf7cbe693abd12129845a4370ce9734e50fa26ca7694c5b4566850",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -109,7 +109,7 @@
     {
       "test": "TestPGAutocompleteRestartPersistence",
       "source": "tests/integration/content_autocomplete_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "630f5c5ec3a0c3a2b7711a9b06492e542051908c35a50d3d1efcee7becee4c6d",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -135,7 +135,7 @@
     {
       "test": "TestPGBackendCallsFederationRestartPersistence",
       "source": "tests/integration/backend_external_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "1c02b635b724987b893beb5652eff5254527b345db065c77b9db854550da5a9d",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -151,7 +151,7 @@
     {
       "test": "TestPGBackendRestartPersistence",
       "source": "tests/integration/backend_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "730debacfb02ced55dbf58c92e0317ebc6506b81598bf075ef7495632c4fcf64",
       "marker_files": [
         "synthetic-hash.bin",
@@ -169,7 +169,7 @@
       "test": "TestPGBackendWalletExchangeOriginalProofRestartPersistence",
       "source": "tests/integration/wallet_exchange_test.go",
       "function_sha256": "e39428839a2093972460bac2bf3d044b3a73421583a6b2af2e2cb887dcd3c07f",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "wallet-exchange-original-proof.json"
       ],
@@ -183,7 +183,7 @@
       "test": "TestPGBackendWalletReportingRestartPersistence",
       "source": "tests/integration/wallet_reporting_test.go",
       "function_sha256": "5d3e8920d6e73142f7a91bace0b544faa6aedefe29e6c7b3adc205e268f5eef7",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "wallet-reporting-original-proof.json"
       ],
@@ -210,7 +210,7 @@
     {
       "test": "TestPGBoardDiscoveryRestartPersistence",
       "source": "tests/integration/board_discovery_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "0d2c460b0194f8c179bf68351a436dcc4f969a0e3218d1c5baa11c2ee75d9338",
       "marker_files": [
         "board-discovery.json"
@@ -244,8 +244,8 @@
     {
       "test": "TestPGBotExecutionRestartPersistence",
       "source": "tests/integration/bot_execution_test.go",
-      "function_sha256": "15857e4c08806b8b48c2c3cffc227c4f16e0b6bc430bd8490f87995b3888f883",
-      "group_before_and_after": "group-b",
+      "function_sha256": "b1501d3f773ade6d0c9f887dd2d534e860ed6d2c8822d20eec85348ddd514415",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "bot-execution-restart.json"
       ],
@@ -258,7 +258,7 @@
     {
       "test": "TestPGBotsRestartPersistence",
       "source": "tests/integration/bots_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "727dedd7a301aa2bdd980187619ba0c156192e7dd3ac88e51c889d5efeb83188",
       "marker_files": [
         "synthetic-bots-restart.json"
@@ -383,6 +383,18 @@
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
     },
     {
+      "test": "TestPGChatSubscriptionSyncRestartPersistence",
+      "source": "tests/integration/chat_subscription_sync_test.go",
+      "function_sha256": "d2d2c539944876d39724d9effefeabe239b81f1c24025c2918f780ee727b6d9d",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "chat-subscription-sync.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Before target creation, captures original one-hour root credential and elapsed-clock public verification snapshot. Saves the same canonical room/message, connection, subscription rows and global sync response. Before-only synthetic connection/subscription leases are explicitly one hour to cover the fifty-minute CI job bound; after must not extend the saved lease before the original-state comparisons. After restores the original proof and same repository/database, compares subscriptions and global page, reads the original device binding, then exercises a normal RenewConnection on the same ID under the saved proof. No reseeding, issuance, refresh, new connection/subscription or marker replacement. Proof-free access and expired original token remain denied. Same assigned disposable cluster."
+    },
+    {
       "test": "TestPGChatThreadsForwardRestartPersistence",
       "source": "tests/integration/chat_threads_forward_test.go",
       "function_sha256": "b8ce438678999b111ff7ccd778eec1ecc81d313d889bd2702371dd568e82d934",
@@ -397,10 +409,25 @@
       "storage_contract": "Before creates source/destination/thread/reference/snapshot, deletes original and exclusively saves canonical projections. After loads saved IDs and projections only in the same real restarted database, no reseeding."
     },
     {
+      "test": "TestPGChatTransientSavedRestartPersistence",
+      "source": "tests/integration/chat_transient_test.go",
+      "function_sha256": "cff08d1939258e18e9eb8a4240d5cd8d36c9d89c205b02e1aa5ba2b74ce1400c",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "chat-transient-state.json"
+      ],
+      "persistent_directories_or_files": [
+        "chat-transient-state.json",
+        "chat-transient-objects"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Exclusive before-phase owner/other original one-hour bearer credentials plus public verifier and elapsed clock, private room membership, original voice/media/quota and placeholder/finalization receipt state, and canonical filesystem objects. After opens same database/storage, verifies original proofs, reads private bytes and saved placeholders/finalized content, and replays exact prior finalize/send requests without new IDs, quota changes, reseeding, credential issuance, refresh, or private signer."
+    },
+    {
       "test": "TestPGCollectionNavigationSinglePoolAndRestartPersistence",
       "source": "tests/integration/collection_subscription_navigation_test.go",
       "function_sha256": "5609170d81ba5296b154408d03f378ed627ec6279232b08b03c28e9d914e281b",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "collection-subscription-navigation.json"
       ],
@@ -418,12 +445,12 @@
       "persistent_directories_or_files": [],
       "named_database_markers": {},
       "storage_contract": "Before snapshots original actor/recipient tokens and verifier, account identities/authority state, publication post ID, namespace and collection route with committed pending identity-only outbox. After restores that verifier and original credentials against the same database using one pool connection, projects pending work twice, verifies exactly one source-linked replay event, unsubscribes with the original proof and verifies the old replay becomes invisible without reissuing credentials, reseeding identities/grants, or creating replacement posts/subscriptions.",
-      "group_before_and_after": "group-a"
+      "group_before_and_after": "group-b"
     },
     {
       "test": "TestPGCommerceMaintenanceQuarantineRestartPersistence",
       "source": "tests/integration/commerce_maintenance_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "ab30952c62daf008257295097cb7f02c1c17800a11804b068d90adaa3f132f12",
       "marker_files": [
         "commerce-maintenance-quarantine.json"
@@ -438,7 +465,7 @@
       "test": "TestPGCommerceRestartPersistence",
       "source": "tests/integration/commerce_test.go",
       "group_before_and_after": "group-a",
-      "function_sha256": "eb2136cb7c0be9c8688f73b632db90b9e901ee1eb41c5f2e41dafff35c19bb1c",
+      "function_sha256": "e42dc5dce2fbf0285b92caee4b245bb5fc312254b278e7c156500e2150e2cd2c",
       "marker_files": [],
       "persistent_directories_or_files": [],
       "named_database_markers": {},
@@ -460,7 +487,7 @@
       "test": "TestPGCouponSavedRestartPersistence",
       "source": "tests/integration/coupon_restart_test.go",
       "function_sha256": "3f1a8a1965279bc55ea7da5e0111e88ba3a66a7f42ba203f1c35aabcaecf3f60",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "coupon-checkout-restart.json"
       ],
@@ -518,7 +545,7 @@
       "test": "TestPGDeveloperCustomOrderSavedRestartPersistence",
       "source": "tests/integration/developer_management_test.go",
       "function_sha256": "0ff16f32d5bd14b535ff2bd474c01738248b1e6ffaf4d062f9a9fd7f19b2b364",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "developer-custom-order.json"
       ],
@@ -527,10 +554,25 @@
       "storage_contract": "Original custom-order/scope/audit/outbox IDs, pre-target one-hour proof/publickeys and elapsed clock retained in exclusive private marker. After verifies original proof, idempotent repository and HTTP replay, unchanged order and counts; no seeding/migration/key generation/credential issuance or lifetime extension. Marker excluded from artifacts."
     },
     {
+      "test": "TestPGDeveloperMediaQuotaSavedRestartPersistence",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "e568b1c2d73a0cb2dd67a3fdf5f6f7c4a2f6dfd3083f08784e96fceaf2612749",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "developer-media-quota.json"
+      ],
+      "persistent_directories_or_files": [
+        "developer-media-original-objects"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Reviewed: before saves original Scope/App/Product/Bot/File/Token/Root/Authority/Audit, original one-hour token and matching session configured before targets. After reads existing marker, rebuilds verifier from public keys with elapsed wall clock, binds same proof, reads same database IDs, compares full JSON, same bytes, quota 20/1 and app audit count. After never calls newDeveloperMediaFixture, issuer, fixture schema setup, policy seed, grant mutation or TTL extension.",
+      "mode": "exclusive 0600 marker; object directory 0700"
+    },
+    {
       "test": "TestPGDirectRecoveryPrivacyRestartPersistence",
       "source": "tests/integration/direct_recovery_privacy_test.go",
       "function_sha256": "3f26ff14f07d34ebad9de3d0e92b1d1862fc2c0a98332669062b5d6d3e5ce249",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "direct-recovery-privacy.json"
       ],
@@ -543,8 +585,8 @@
     {
       "test": "TestPGDomainTrustRestartPersistence",
       "source": "tests/integration/domain_trust_test.go",
-      "group_before_and_after": "group-b",
-      "function_sha256": "15452a8610fce37e5a901a776d04c975fb5525efe43bd90545036a0c4c11d74b",
+      "group_before_and_after": "group-a",
+      "function_sha256": "2b6f7e94fa8eed660ad5f410ca578aceaa19a0aa7a4d4172793055af2a1b7d3a",
       "marker_files": [],
       "persistent_directories_or_files": [],
       "named_database_markers": {
@@ -569,7 +611,7 @@
     {
       "test": "TestPGFederatedRenameRestartPersistence",
       "source": "tests/integration/federation_rename_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "8b45d2917f4f12513ae9cf645d3c28b6c99792ed1e188f72358490fbcfcff03f",
       "marker_files": [
         "federation-rename-record.json"
@@ -584,7 +626,7 @@
       "test": "TestPGFederationDeliverySavedRestartPersistence",
       "source": "tests/integration/federation_delivery_restart_test.go",
       "function_sha256": "b9fface4e760da74443d2cb503e7bcb67750590b409584bbbb5a980febd4241b",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "federation-delivery-restart.json"
       ],
@@ -599,7 +641,7 @@
       "test": "TestPGFederationDiscoverySavedRestartPersistence",
       "source": "tests/integration/federation_discovery_test.go",
       "function_sha256": "c92610b9a1ff86db29f13af766943983959042c04abcab8cf78efb7846d2c50b",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "federation-discovery-restart.json"
       ],
@@ -638,7 +680,7 @@
     {
       "test": "TestPGFederationRestartPersistence",
       "source": "tests/integration/federation_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "23a143e7320955ab44619dba9b72f0a59eb668bb833654eaeb5f2281174eb196",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -651,7 +693,7 @@
     {
       "test": "TestPGFortuneRestartPersistence",
       "source": "tests/integration/fortunes_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "6a420f9a32ecaa9a2a18b03e761e740c984b875412a6581a585a7eddf3aa2973",
       "marker_files": [
         "fortune-record.json"
@@ -666,7 +708,7 @@
       "test": "TestPGFriendEventsSavedRestartPersistence",
       "source": "tests/integration/friend_events_test.go",
       "function_sha256": "95f5638efa3b02b03e68f49e501e7befed55fef6b537320f1d9f492546021989",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "friend-events-state.json"
       ],
@@ -680,7 +722,7 @@
       "test": "TestPGFriendsOverviewSavedRestartPersistence",
       "source": "tests/integration/friends_overview_test.go",
       "function_sha256": "6f6b98e274b525706be93bfa002bc8ac63818c46dece79821ff8711abf341641",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "friends-overview-state.json"
       ],
@@ -689,6 +731,25 @@
       ],
       "named_database_markers": {},
       "storage_contract": "Independently reviewed original before-phase synthetic account IDs, one-hour bearer credentials issued before target state, public verifier keys and elapsed wall clock, exact visible overview and source event count. After a real restart the unchanged case reads the same canonical state using the original saved credential, compares the complete projection and unchanged source event count, and rejects cross-actor proof substitution. No target seeding, issuance, refresh, lifetime extension, private signing key or authority rewrite occurs in the after phase. Marker remains private to its assigned cluster; actual execution is coordinator CI only."
+    },
+    {
+      "test": "TestPGIdentityDeliverySavedRestartPersistence",
+      "source": "tests/integration/identity_saved_restart_test.go",
+      "function_sha256": "df8a6f17a3f5faa5f490b884788c05ac3ec3de38edf033060a7da43be9165905",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "identity-delivery-saved.json",
+        "fixture-template.json"
+      ],
+      "persistent_directories_or_files": [
+        "identity-delivery-saved.json",
+        "fixture-template.json"
+      ],
+      "named_database_markers": {
+        "fixture-template.json": "Runner-owned sealed schema-only template with candidate/schema/root, OID/comment and original cluster identity; zero copied application rows.",
+        "identity-delivery-saved.json": "Unique solsynth_fixture_identity_<24 hex> clone name/OID/comment/template/cluster identity retained in the same disposable cluster across the actual PostgreSQL and Go-process restart."
+      },
+      "storage_contract": "Before creates a unique database from the sealed runner template and seeds only that database. It saves public-only original verifier material with a one-hour pre-target bounded clock, explicit independent SourcePoints treasury account/wallet/currency/per-grant/day configuration, original pending 25-point synthetic grant and canonical confirmed-device first-push 3-point grant. Captures exact account/session/policy, grant, wallet/pocket, ledger, progression outbox, encrypted device, per-delivery fixed manifest, accepted/uncertain receipt and outer delivery rows. The partial FCM delivery has one accepted and one uncertain receipt and an outer terminal suppressed_at + DELIVERY_UNCERTAIN with delivered_at NULL; a separate all-accepted manifest has no outer acknowledgment yet. After opens only the same existing named database and verifies OID/comment/template/cluster plus every original row before consuming anything. No schema install, seed, new fixture, key generation, session issue, bearer refresh or repair occurs. Two fresh actual ProcessSourcePoints repositories consume the original pending grants exactly once; markers, exact currency/amount/payer/payee/status=2 deterministic grant-key ledger, payout packets and total budget=28 match, treasury100->72 and recipient0->28 conserve funds, and a third fresh worker returns0. Real DeviceStore with synthetic capture provider and the same canonical notification policy completes only the saved accepted outer acknowledgment without any provider call, while the saved uncertain delivery remains terminal non-delivered; a second outer worker finds no due item and provider wakeup count stays0. Original authority, encrypted devices, fixed manifests and accepted/uncertain receipts remain unchanged. Marker is runner-local mode0600 and never an uploaded artifact; no fixture transfer across groups."
     },
     {
       "test": "TestPGLiveStreamAwardsPayoutRestartPersistence",
@@ -707,7 +768,7 @@
     {
       "test": "TestPGLiveStreamChatOutboxRestartPersistence",
       "source": "tests/integration/livestream_chat_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "91c5caee508bfef444b96eec81c815d69967cf30fdea8f522859409e8488b6ea",
       "marker_files": [
         "synthetic-livestream-chat-restart.json"
@@ -736,7 +797,7 @@
       "test": "TestPGLiveStreamOutputsRestartPersistence",
       "source": "tests/integration/livestream_outputs_test.go",
       "group_before_and_after": "group-a",
-      "function_sha256": "a13d59174d2f5a3ee850d7777bd3a139a538ca0c12734f4001a82a3baeb01313",
+      "function_sha256": "8836fc72fe370b0266206065a2f2d240f135de958ddcb4e298bdb68c301f1611",
       "marker_files": [
         "synthetic-livestream-output-restart.json"
       ],
@@ -763,7 +824,7 @@
     {
       "test": "TestPGMLSRestartPersistence",
       "source": "tests/integration/chat_mls_restart_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "b0f33fc222d7ca02237274d8cb489adec31258e507a3f07239fc66d21fe5d5d2",
       "marker_files": [
         "owned-mls-restart.json"
@@ -777,7 +838,7 @@
     {
       "test": "TestPGMediaRestartPersistence",
       "source": "tests/integration/media_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "03e9d3403e8203c3e3b2abcfd83ec3b120bfeca852fe156714ab90e6c186c41b",
       "marker_files": [
         "media-file.json"
@@ -792,7 +853,7 @@
     {
       "test": "TestPGMediaResumableRestartPersistence",
       "source": "tests/integration/media_resumable_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "405881c8e3b194713bdbd2778201efe8c0f847933861104d5c6dc61662c360d9",
       "marker_files": [
         "media-resumable.json"
@@ -844,9 +905,23 @@
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
     },
     {
+      "test": "TestPGMiniappUploadMediaSavedRestartPersistence",
+      "source": "tests/integration/miniapp_upload_test.go",
+      "function_sha256": "ab7aff3d372e8e74e91dc9b3e88dcfc51f641fbb352fb193ece9f7e796e30412",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "synthetic-miniapp-upload-restart.json"
+      ],
+      "persistent_directories_or_files": [
+        "synthetic-miniapp-upload-store"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Original one-hour root credential is issued before target miniapp/upload creation. Exclusive marker captures actor/session/app scope, miniapp/slug, current and replaced canonical file IDs, byte hashes, size, icon ID and public verifier elapsed clock. Filesystem directory remains in the same disposable cluster. After opens the same store/database, reads exact original package bytes and private icon, denies public access to replaced package and verifies owner access with the original proof. Only after these original-state checks, performs normal private-stage update and a new upload using the saved proof, then revokes that original session and asserts further upload rejection. No after credential issuance, target reconstruction, marker rewrite or repair; later writes explicitly test operation continuity."
+    },
+    {
       "test": "TestPGNameCardRestartPersistence",
       "source": "tests/integration/namecards_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "e2667feaf175666c33d5d22e433ee850667ded24f5f9982b190cb4651c30499b",
       "marker_files": [
         "name-card-record.json"
@@ -886,9 +961,25 @@
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
     },
     {
+      "test": "TestPGOAuthDeviceAndIntrospectionSavedRestartPersistence",
+      "source": "tests/integration/oauth_extensions_restart_test.go",
+      "function_sha256": "b0c7b822319e773b1fe18c874b5a4c300e774cacc9a4ab64ed3b4c18625617f5",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "oauth-device-extensions.json"
+      ],
+      "persistent_directories_or_files": [
+        "oauth-device-extension-keys/synthetic-signing.pem",
+        "oauth-device-extension-keys/synthetic-hash.bin",
+        "oauth-device-extension-keys/synthetic-seal.bin"
+      ],
+      "named_database_markers": {},
+      "storage_contract": "Before issues an original one-hour parent and one device grant, saves original confidential client secret, access token, used/pending/denied device codes, parent session, actor/app and advancing elapsed-clock origin. Three synthetic service keys are retained only in a private 0700 directory with 0600 files in the same assigned disposable cluster; marker and keys are excluded from uploaded result evidence. After reconstructs service configuration without issuing credentials or grants, introspects the original access token and checks exactly one original grant. Device ten-minute expiry is never extended: actual database clock determines whether each original code retains pending/denied/consumed behavior or has naturally expired. After revokes the original parent, requires minimal inactive introspection and unchanged one-grant count. No reseed, refresh, device replacement or expiry bypass."
+    },
+    {
       "test": "TestPGOAuthRestartPersistence",
       "source": "tests/integration/oauth_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "680491a12d95614b9ac9984b109a9ece37cf3aba42b3f937dc96824f59dde087",
       "marker_files": [
         "state.json",
@@ -935,7 +1026,7 @@
       "test": "TestPGPostAutomodSavedDecisionRestartPersistence",
       "source": "tests/integration/post_automod_test.go",
       "function_sha256": "652191a4d7d6ac10ee6967404d2c3fa890c81abb0c630a7018ac3533ccb7073c",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "post-automod-saved.json"
       ],
@@ -1002,9 +1093,21 @@
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
     },
     {
+      "test": "TestPGPostPinSavedRestartPersistence",
+      "source": "tests/integration/post_pins_test.go",
+      "function_sha256": "772885afeac0da3e4e0cc7db2ec4e165295e7f22d14b6eafdfb237da812a109f",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "post-pins.json"
+      ],
+      "persistent_directories_or_files": [],
+      "named_database_markers": {},
+      "storage_contract": "Before issues an original one-hour root proof before pin targets, pins two original posts then unpins one, and exclusively saves actor/publisher/post IDs, exact pin/unpin/audit snapshots and elapsed-clock public verifier snapshot. After compares raw saved state before creating read adapters, uses only the original credential to filter pinned/unpinned lists and checks exact IDs/modes/counts, then rechecks unchanged snapshots. No after seeding, issuance, refresh, private signer, policy or target write. Same assigned disposable cluster and private marker only."
+    },
+    {
       "test": "TestPGPostRealmRestartPersistence",
       "source": "tests/integration/post_realms_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "65f6570528b1265ca05c37d4836196f1c90917970be3549be200fde792cf0516",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1021,7 +1124,7 @@
       "test": "TestPGPostScheduleSavedRestartPersistence",
       "source": "tests/integration/post_scheduling_test.go",
       "function_sha256": "50ef444f14e89e3bd1f02cd1070f0d9e4a5260c1d79a5a1269ae206c21af1cd5",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "post-scheduling.json"
       ],
@@ -1045,7 +1148,7 @@
     {
       "test": "TestPGPresenceProgressionRestartPersistence",
       "source": "tests/integration/presence_progression_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "a238a1023d8bd470617f2f2ca35a3bcbce5857380bdd2b1556a7edf4884aa4c9",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1057,7 +1160,7 @@
     {
       "test": "TestPGProductStockRestartPersistence",
       "source": "tests/integration/product_stock_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "aeaa4b463e9fc5a15c20bff7ca8f01887e6aa63944c020020e968b3ab8c6709d",
       "marker_files": [
         "product-stock-restart.json"
@@ -1082,9 +1185,47 @@
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
     },
     {
+      "test": "TestPGProgressionSourceSavedRestartPersistence",
+      "source": "tests/integration/progression_sources_test.go",
+      "function_sha256": "5ce674a714b9df29b600ba4c4f8cf693d592a2e752634db792e6c95a70566b26",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "progression-sources.json",
+        "fixture-template.json"
+      ],
+      "persistent_directories_or_files": [
+        "progression-sources.json",
+        "fixture-template.json"
+      ],
+      "named_database_markers": {
+        "fixture-template.json": "Runner-owned sealed schema-only template, exact candidate/schema fingerprint, template OID and original disposable cluster identity; no copied application rows.",
+        "progression-sources.json": "Before-only unique progression database clone name/OID/comment and original template/cluster identity, original actor/source ID, byte-exact source row and public authority configuration."
+      },
+      "storage_contract": "Before clones the reviewed zero-row schema template and initializes canonical progression definitions only in its isolated database. Creates one original topical source under the original authority and verifies no event has consumed it. Saves original source JSON and public verifier snapshot with the exact existing database identity. After requires the same named database/OID/cluster/candidate/schema and unchanged original source, verifies the event is still absent, reconstructs a real maintenance transaction guard using only saved public verification configuration, and projects that pending original source to exactly one event. A second worker invocation must not duplicate it. No after account or target seed, schema install, definition restore, credential issuance/refresh, source repair or replacement database. Isolation prevents unrelated global ProcessDue tests from consuming the original pending source before the actual restart."
+    },
+    {
+      "test": "TestPGPublisherContentSavedRestartPersistence",
+      "source": "tests/integration/publisher_content_notifications_test.go",
+      "function_sha256": "6b74d0ed132a43bdd715c8baa409e2356b718e4090f61edfd52f641782b3aec8",
+      "group_before_and_after": "group-b",
+      "marker_files": [
+        "publisher-content-notifications.json",
+        "fixture-template.json"
+      ],
+      "persistent_directories_or_files": [
+        "publisher-content-notifications.json",
+        "fixture-template.json"
+      ],
+      "named_database_markers": {
+        "fixture-template.json": "Runner-owned sealed schema-only template marker binding the exact reviewed candidate/schema fingerprint, template OID and original disposable PostgreSQL cluster identity; the template contains zero copied application rows.",
+        "publisher-content-notifications.json": "Before-only marker binding the unique isolated pubnotify database name, OID and database comment to the original template/cluster identity, plus the original actors and one-hour tokens, publisher, post, exact pending notification intent, exact public state snapshot and public authority snapshot."
+      },
+      "storage_contract": "Before clones the reviewed zero-row schema template into a unique isolated pubnotify database, creates the original actors and one-hour credentials, publisher, notifying subscription and public post, leaves the original content-notification intent pending, verifies that no matching notification outbox row exists, and saves the exact intent/public state, public authority and database identity. After requires the same database/OID/comment/template/cluster/candidate/schema and verifies the exact pending intent, exact public state and zero matching outbox rows before constructing two production backends; it then drains the original pending intent with both workers and asserts exactly one matching notification outbox row and exactly one completed original intent. After performs no fixture creation, seed, credential issuance or refresh, schema installation, target/subscription/post reconstruction, intent repair, marker replacement, or replacement-database creation. The after phase deliberately completes the original pending intent to prove two-worker exactly-once continuation; it does not claim transport delivery or a read-only restart."
+    },
+    {
       "test": "TestPGPublisherRatingRestartPersistence",
       "source": "tests/integration/publisher_ratings_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "4fe0153589f4db61db66612ca391ce04942da091943c9f9a33ee42d357119624",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1096,7 +1237,7 @@
     {
       "test": "TestPGPublisherSponsorshipRestartPersistence",
       "source": "tests/integration/publisher_sponsorship_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "eb7f74deca415f4e9bda92d8e1ecb27ac31cefdf2fdb8509335dd7d3456f79fc",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1109,7 +1250,7 @@
       "test": "TestPGPublisherSubscriptionSavedRestartPersistence",
       "source": "tests/integration/publisher_subscription_state_test.go",
       "function_sha256": "fef8693e6066be70b01beee2df717e92722191cc85546369dc5a120b1e791ea0",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "publisher-subscription-state.json"
       ],
@@ -1121,7 +1262,7 @@
       "test": "TestPGPublishingControlsSavedRestartPersistence",
       "source": "tests/integration/publishing_controls_test.go",
       "function_sha256": "362c08145dbd154626e6f5e48a6794c48e1c1179e5cd48cf1df8ce912ef9e624",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "publishing-controls.json"
       ],
@@ -1134,7 +1275,7 @@
     {
       "test": "TestPGReaderRestartPersistence",
       "source": "tests/integration/reader_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "9dbff46b612959d1b784768d709faba5bb839ebeefa2f9b6f29a59e307e80458",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1148,7 +1289,7 @@
       "test": "TestPGRealmBoostRestartPersistence",
       "source": "tests/integration/realm_boosts_test.go",
       "function_sha256": "bafa2ed2698fd0b8560837cdc62f7f07e90f9218131e30c6e5325951f43f1ba6",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "marker_files": [
         "realm-boost-record.json"
       ],
@@ -1213,7 +1354,7 @@
     {
       "test": "TestPGRecurringProductRestartPersistence",
       "source": "tests/integration/recurring_products_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "7ac5a378bf7f7972ea7ce94c08dad639175f23b8498990adcb9c07637c358d64",
       "marker_files": [
         "recurring-product-restart.json"
@@ -1225,7 +1366,7 @@
     {
       "test": "TestPGRefreshContinuityRestartPersistence",
       "source": "tests/integration/refresh_continuity_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "e7db93ea05bd7d940b38ef274374077f9102a61cd5547c858f1e453698b5f770",
       "marker_files": [
         "synthetic-refresh-continuity.json"
@@ -1240,7 +1381,7 @@
       "test": "TestPGRelationshipExpiryRestartPersistence",
       "source": "tests/integration/relationship_expiry_test.go",
       "function_sha256": "d17580c666777f697966adbdb4e273b2b02eab960b608c285078e4e63fdbe5d2",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "relationship-expiry-restart.json"
       ],
@@ -1261,9 +1402,30 @@
       "storage_contract": "Unchanged same named test performs its existing before/after branches in one runner-local SOLSYNTH_DISPOSABLE_PG and database cluster. No fixture is transferred between groups."
     },
     {
+      "test": "TestPGRewindConfiguredAdaptersSavedRestartPersistence",
+      "source": "tests/integration/rewind_adapters_test.go",
+      "function_sha256": "c62115b7956e7cf92313a439058a9f9f4ce1d7b09d8eae9564f4130cb719de69",
+      "group_before_and_after": "group-a",
+      "marker_files": [
+        "rewind-configured-adapters.json",
+        "rewind-configured-dictionary.txt",
+        "fixture-template.json"
+      ],
+      "persistent_directories_or_files": [
+        "rewind-configured-adapters.json",
+        "rewind-configured-dictionary.txt",
+        "fixture-template.json"
+      ],
+      "named_database_markers": {
+        "fixture-template.json": "Runner-owned sealed schema-only template marker binding the exact reviewed candidate/schema fingerprint, template OID and original disposable PostgreSQL cluster identity; the template contains zero copied application rows.",
+        "rewind-configured-adapters.json": "Before-only marker binding the unique isolated rewind database name, OID and database comment to the original template/cluster identity, plus the original actor, one-hour token, point, share code, year, dictionary SHA-256, public authority snapshot, exact point row and exact canonical action-history rows."
+      },
+      "storage_contract": "Before exclusively creates the mode-0600 configured dictionary, clones the reviewed zero-row schema template into a unique isolated rewind database, creates the original proof and target data, persists an immutable rewind point/share through the configured canonical SQL action adapter and dictionary tokenizer, and saves exact point/action snapshots and database identity. After requires the same dictionary bytes by saved SHA-256 and the same database/OID/comment/template/cluster/candidate/schema, restores the saved public authority, authenticates the original token, compares the persisted point and action rows before reads, verifies the same owner point, stored top words and public redaction, and finally verifies the point row remains unchanged. After performs no fixture creation, seed, credential issuance or refresh, schema installation, target creation, snapshot rebuild or repair, marker replacement, or replacement-database creation; this case validates persisted configured-adapter output rather than recomputing the snapshot."
+    },
+    {
       "test": "TestPGRewindRestartPersistence",
       "source": "tests/integration/rewind_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "56d003807f99aeb5a3e4cbd1f3b1b00c4b3af073e5ca8c1a6cdc42ba906d02f8",
       "marker_files": [
         "rewind-record.json"
@@ -1278,7 +1440,7 @@
       "test": "TestPGRoomMediaSavedRestartPersistence",
       "source": "tests/integration/room_media_test.go",
       "function_sha256": "e0a1537a412dc150da7df071c5c883ab524a07a4a9b64016629d68f85de9de2f",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "room-media.json"
       ],
@@ -1293,7 +1455,7 @@
       "test": "TestPGShippingRestartPersistence",
       "source": "tests/integration/shipping_test.go",
       "function_sha256": "c07a02088594fbfa322ff4d0ed6153be4b968100465f6820f278b462a121faaa",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "marker_files": [
         "shipping-destination.json"
       ],
@@ -1319,7 +1481,7 @@
     {
       "test": "TestPGSocialRestartPersistence",
       "source": "tests/integration/social_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "5ac4af3c6ecb76e856c615230e87c8281cbb80b2f15cab9c5046c43da13749ca",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1359,7 +1521,7 @@
     {
       "test": "TestPGSurveysStickersRestartPersistence",
       "source": "tests/integration/surveys_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "3b97690b743146fa3b0cdb3ee1c9572c869e0ca3bbddeaad754301818212ad09",
       "marker_files": [
         "surveys-stickers-restart.json"
@@ -1374,7 +1536,7 @@
     {
       "test": "TestPGTaxonomyRestartPersistence",
       "source": "tests/integration/taxonomy_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "657569620ed00dd50b7ac81ea91c53140a80974d72ef29e7c551a5dfdc482bd1",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1399,7 +1561,7 @@
     {
       "test": "TestPGTicketsExamsRestartPersistence",
       "source": "tests/integration/tickets_test.go",
-      "group_before_and_after": "group-a",
+      "group_before_and_after": "group-b",
       "function_sha256": "12a71f882be725b67028e2a155acf702d0c62ed7892797a57daf674f9da400f0",
       "marker_files": [
         "tickets-exams-record.json"
@@ -1435,7 +1597,7 @@
     {
       "test": "TestPGWalletFundsRestartPersistence",
       "source": "tests/integration/wallet_funds_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "7d54eb5b844b52b3841618a10fa83b02da6b7cfa463429599c9c59bde60df453",
       "marker_files": [
         "wallet-funds-state.json"
@@ -1449,7 +1611,7 @@
     {
       "test": "TestPGWalletRestartPersistence",
       "source": "tests/integration/wallet_test.go",
-      "group_before_and_after": "group-b",
+      "group_before_and_after": "group-a",
       "function_sha256": "f14ecf960d14d80173932ebf8e394aa32dd9581490fbc86599def476500319ba",
       "marker_files": [],
       "persistent_directories_or_files": [],
@@ -1514,7 +1676,7 @@
     },
     {
       "test": "TestPGBackendSigninHTTPProcessRestart",
-      "group": "group-b",
+      "group": "group-a",
       "fixture": "The named test creates its own synthetic DB/file fixtures and starts/stops actual compiled processes; the entire case is indivisible."
     },
     {
@@ -1537,7 +1699,7 @@
     "parent_test": "TestPGAuthorityLifecycle",
     "helper": "TestAuthorityProcessHelper",
     "fixture": "Child test process uses its parent case synthetic keys/token directory and existing database; stays within one selected top-level case. Helper is not an extra TestPG assignment.",
-    "group": "group-b"
+    "group": "group-a"
   },
   "limits": [
     "Existing restart cases that reconstruct independent authentication/fixture services are preserved byte-for-byte; this change does not certify or alter those inherited fixture semantics.",
@@ -1548,7 +1710,7 @@
     {
       "test": "TestPGArtworkComposedUploadDedupOwnershipAndRemoval",
       "source": "tests/integration/presence_artwork_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "ad43adbeda79dd09f073e46d9ead5c063fb5abf82066956975e11c332f65c40c"
     },
     {
@@ -1560,7 +1722,7 @@
     {
       "test": "TestPGBackendAccountHistoryAuthoredRoutes",
       "source": "tests/integration/account_history_test.go",
-      "function_sha256": "2ec448c8a5a9b9e0b542563cce84a4bbf12bb5931ec0a5870dc7e8854a386374",
+      "function_sha256": "1c953fb984fa2fcfb8502ab764882730956ee7ddae595c371ab2d7d4025b8c2c",
       "group": "group-a"
     },
     {
@@ -1602,7 +1764,7 @@
     {
       "test": "TestPGBackendAutocompleteComposition",
       "source": "tests/integration/backend_utilities_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "8b59b7500c601b42b226ee7754bc3e0e098994fa54f7a9acd8aec289c37b84ad"
     },
     {
@@ -1632,32 +1794,38 @@
     {
       "test": "TestPGBackendCallsFederationRestartPersistence",
       "source": "tests/integration/backend_external_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "1c02b635b724987b893beb5652eff5254527b345db065c77b9db854550da5a9d"
+    },
+    {
+      "test": "TestPGBackendChatCanonicalCompositionRechecksAfterSourceLockWait",
+      "source": "tests/integration/chat_composition_test.go",
+      "function_sha256": "eaf9f729a716ec54264cba4dad45cb4860cf0c2c7a8930421814e2a67fbb4b44",
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendChatDetailsAuthoredRoutesAndFailClosedPolicy",
       "source": "tests/integration/backend_chat_details_test.go",
       "function_sha256": "46b4e0eba5ecd95c83f289af6ac8545dd0eb3c3a9c876506f140ca50f4c0de16",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendChatDetailsCanonicalProfileConfiguration",
       "source": "tests/integration/backend_chat_details_test.go",
       "function_sha256": "0cd2a4842221ca70757e44cda97031f4e8ba22cec1079cd899376c707e0e85b0",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendChatMediaAndReactionsComposition",
       "source": "tests/integration/chat_media_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "9961bd4ceda9ff6fde0434675b3d171d39ca4f267872dc2233a49b3aa473ba43"
     },
     {
       "test": "TestPGBackendChatOrganizationRoutes",
       "source": "tests/integration/chat_organization_test.go",
       "function_sha256": "08add1c06534779c72e51a381d8697ced7b779d9920ed4aa12be484b489b2f90",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendChatRelationsComposition",
@@ -1666,22 +1834,46 @@
       "function_sha256": "021c4115d077b86e7ebb989c01b262e85643d6248fc72773ecb5c571bc7e499b"
     },
     {
+      "test": "TestPGBackendChatSubscriptionSyncRoutes",
+      "source": "tests/integration/chat_subscription_sync_test.go",
+      "function_sha256": "b25917870928dbd9b049e6d7ac7b8a07d489137765a50092917f730d6a623a01",
+      "group": "group-b"
+    },
+    {
       "test": "TestPGBackendChatThreadsForwardAndRedirectComposition",
       "source": "tests/integration/chat_threads_forward_test.go",
       "function_sha256": "c5cb6c1a7e75916545410c2a39b5cc7421182bae75f1a743dc08d0eeef7617d8",
       "group": "group-a"
     },
     {
+      "test": "TestPGBackendChatTransientMultipartAndWebSocketComposition",
+      "source": "tests/integration/chat_transient_test.go",
+      "function_sha256": "52abd4b0e7c70f0dae8f98638db73b738ad8249f5753430ff094658287bff8e7",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGBackendChatTypedFundSurveyComposition",
+      "source": "tests/integration/chat_composition_test.go",
+      "function_sha256": "5cd817cd07b6a4e1a8d37c1bec1358540b2d10bb6cb78992020fc26339dbf9ca",
+      "group": "group-a"
+    },
+    {
       "test": "TestPGBackendContentComposition",
       "source": "tests/integration/backend_content_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "8e0d3ac240a78edba6553f7af46fc8aa1da3cbb9293df36c2a6f029bae3fbe9d"
     },
     {
       "test": "TestPGBackendContentModerationComposition",
       "source": "tests/integration/backend_content_moderation_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "bb511b9393cf5e2f38bed0125d4166b86c1ae81c7a86c2afb5ef40b73b69ed9a"
+    },
+    {
+      "test": "TestPGBackendDisabledVoiceRequiresNoVoiceSchemaOrWorker",
+      "source": "tests/integration/chat_voice_configuration_test.go",
+      "function_sha256": "5509c88b02641456517cb0f3aac55b1fb33b1e11e328e00d0801e82e59729032",
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendDomainCollectionsComposition",
@@ -1705,24 +1897,24 @@
       "test": "TestPGBackendFederationDeliveryLeaseComposition",
       "source": "tests/integration/backend_federation_delivery_test.go",
       "function_sha256": "3c8f221a08fc5482b724e7ddd5cb6a6d5ce9eacc81028cd4dd08247c8abcbc8e",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendFederationDiscoveryComposition",
       "source": "tests/integration/backend_federation_discovery_test.go",
       "function_sha256": "160b1cc66222e9659215373655777a2063a8a7dc2c0ee27231c5344de2e7d999",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendFederationPublicAdmissionComposition",
       "source": "tests/integration/backend_federation_public_admission_test.go",
       "function_sha256": "71b72fcb14e378b0298ebd57b7077fc4f00477635787398585dc58072e42d6df",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendFortuneComposition",
       "source": "tests/integration/backend_identity_reports_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "0e1c3476a663d87dfb8ca589fdb3e632fe3ae0a2ccc299393ee34385f15a3318"
     },
     {
@@ -1752,7 +1944,7 @@
     {
       "test": "TestPGBackendLivestreamChatComposition",
       "source": "tests/integration/backend_livestream_chat_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "891dde9ebcaecfe4c3f60727a6f1930fb18afe8b1d269fc919454bc921bb8183"
     },
     {
@@ -1770,8 +1962,14 @@
     {
       "test": "TestPGBackendMerchantCatalogComposition",
       "source": "tests/integration/backend_merchant_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "99abd206a935e10df14c14e82cb978c7acfead78c4ee5a96abb758e8fa61d1e2"
+    },
+    {
+      "test": "TestPGBackendMiniappAuthoredMultipartAndCanonicalMedia",
+      "source": "tests/integration/miniapp_upload_test.go",
+      "function_sha256": "0dfdfd52cdcd559a2edd4283ac9bcb3551f6a33c5bcc537d0a6a2e3206558315",
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendOAuthComposition",
@@ -1800,7 +1998,7 @@
     {
       "test": "TestPGBackendPostAwardCheckoutAndRelease",
       "source": "tests/integration/backend_post_awards_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "5d5b558cdf445febbf0ec4a473f6700cb2861adf60c5847677ad757e8443b28c"
     },
     {
@@ -1818,13 +2016,13 @@
     {
       "test": "TestPGBackendPresenceProgressionLocationComposition",
       "source": "tests/integration/backend_presence_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "4ffd43fb64b18b3d9d6d89d52d249aa1de84043fb79567c830ed22f14ee23aab"
     },
     {
       "test": "TestPGBackendPublisherCommerceComposition",
       "source": "tests/integration/backend_publisher_commerce_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "68a5fffe9beeb71c8f6718ef0ac3fcbc19d5b0ba59d755ecf3f61b009814575d"
     },
     {
@@ -1848,13 +2046,13 @@
     {
       "test": "TestPGBackendRefreshContinuesBroadcastChatThenLogoutRevokes",
       "source": "tests/integration/refresh_continuity_test.go",
-      "group": "group-a",
+      "group": "group-b",
       "function_sha256": "c498f456869791254348b11bc03ce4d4895769176dc2ffe3e9ed95002a6708c3"
     },
     {
       "test": "TestPGBackendRestartPersistence",
       "source": "tests/integration/backend_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "730debacfb02ced55dbf58c92e0317ebc6506b81598bf075ef7495632c4fcf64"
     },
     {
@@ -1872,7 +2070,7 @@
     {
       "test": "TestPGBackendSigninHTTPProcessRestart",
       "source": "tests/integration/backend_signin_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "18c02315b8a8053132f02e8df64ab5d4f4d6c358ed7bc31924febf52b6ac81d6"
     },
     {
@@ -1894,39 +2092,51 @@
       "function_sha256": "4d9520c4305ca427cdf4c7184858fb28bfdacba60695a24412803c34dadb20ce"
     },
     {
+      "test": "TestPGBackendVoiceReadProtectionDriveEndpoints",
+      "source": "tests/integration/voice_media_protection_test.go",
+      "function_sha256": "a26fe3501552e1eabbd9b8a41588d583225e18f1f09214dc6a9313d4ce985d28",
+      "group": "group-a"
+    },
+    {
       "test": "TestPGBackendWalletExchangeDisabledAndTreasuryLiquidity",
       "source": "tests/integration/wallet_exchange_test.go",
       "function_sha256": "ef4cc4d6500cf9588e75436511a0eee92c652485581564fb29f73920188bb84a",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendWalletExchangeOriginalProofRestartPersistence",
       "source": "tests/integration/wallet_exchange_test.go",
       "function_sha256": "e39428839a2093972460bac2bf3d044b3a73421583a6b2af2e2cb887dcd3c07f",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendWalletExchangePINReplayAndConservation",
       "source": "tests/integration/wallet_exchange_test.go",
       "function_sha256": "7e016f73be7b7e7cf9a2e6e0fd58addd05f4556ae45eb0fa49a663866df222ff",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendWalletReportingFundsDoNotDoubleCount",
       "source": "tests/integration/wallet_reporting_test.go",
       "function_sha256": "167ad7e61dd0da609529117272b64fcf000adaf2ffb06a85667f3a93ce2d8dee",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGBackendWalletReportingLifecyclePrivacyAndDates",
       "source": "tests/integration/wallet_reporting_test.go",
       "function_sha256": "f717362400148668a17a787db4be889703c136f99b7574f7054abb0813432e6a",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGBackendWalletReportingRestartPersistence",
       "source": "tests/integration/wallet_reporting_test.go",
       "function_sha256": "5d3e8920d6e73142f7a91bace0b544faa6aedefe29e6c7b3adc205e268f5eef7",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGBackendWebSocketSubscriptionCommandsPersistPerConnection",
+      "source": "tests/integration/chat_subscription_sync_test.go",
+      "function_sha256": "e47d44cc441bef03d3907440b4c84b015d390f6493a9517066a1c3a2646d5923",
       "group": "group-b"
     },
     {
@@ -1948,22 +2158,232 @@
       "group": "group-b"
     },
     {
+      "test": "TestPGChatCanonicalCompositionRechecksAfterAttachmentWait",
+      "source": "tests/integration/chat_composition_test.go",
+      "function_sha256": "8265108c722cf7b90d6993b4c286755c52ca7a5f428ed82ef68e4d59e2433f12",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCheckInCaptchaOriginalAuthorityAfterProvider",
+      "source": "tests/integration/identity_completion_test.go",
+      "function_sha256": "ff4493d07fa78e6eb363be917110771b34b22d76454e9d6ee26cecf047e45e10",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGCollectionNavigationAuthoredOrderingAndHiddenAnchors",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-a",
+      "function_sha256": "1b9d40c277581c927d20a45bb7b21b5a58393bf9cce06d31df0e654f773a0c6b"
+    },
+    {
+      "test": "TestPGCollectionNavigationMediaWaitRechecksProjectionAndProof",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-b",
+      "function_sha256": "376a39ab43ee6ba45307f3e1748fbc889e7c802e98990734086e17125949d1ee"
+    },
+    {
+      "test": "TestPGCollectionNavigationNestedMediaAndCurrentPrivacy",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-a",
+      "function_sha256": "d259d79a3291a5d65dda021d9aec5c4b6d9a43f93ce4e70c63bad699fab05c7b"
+    },
+    {
+      "test": "TestPGCollectionNavigationRealmPrivacyAndMembership",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-b",
+      "function_sha256": "65e237d5cdb8ca8c40609ce4a1dd16293f2f82744fc71e8daad064d873ebe143"
+    },
+    {
+      "test": "TestPGCollectionNavigationSinglePoolAndRestartPersistence",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-a",
+      "function_sha256": "5609170d81ba5296b154408d03f378ed627ec6279232b08b03c28e9d914e281b"
+    },
+    {
+      "test": "TestPGCollectionPublicationBoundsAndProofAfterWait",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "b176bb11d94ab8ad16463f1ee05bac8865b4f1b590afe61a5d257b091054289b",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGCollectionPublicationCurrentAudienceAndIncarnations",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "d831af2936f7702d9048bf824d755a283f17460ea944cb2196cefb69f0030366",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCollectionPublicationDraftScheduleAndEligibility",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "e90a8255ddc5cebfda6b6cf4faed9bf424600b48b312535e248cfbd400009c12",
+      "group": "group-b"
+    },
+    {
       "test": "TestPGCollectionPublicationFinalEnqueueWaitRechecksComposition",
       "source": "tests/integration/collection_publication_test.go",
       "function_sha256": "dd9f0895f46fe7708adfa69062572960cb7e13b3814946dd904ccfc1ce143ee6",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCollectionPublicationInboxReplayRevocation",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "b2ac66948de8ac1b3cb265e7c2cdf05d01fdc30d615c08739bf052acf6467ab4",
       "group": "group-b"
+    },
+    {
+      "test": "TestPGCollectionPublicationLifecycleAndDeduplication",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "031235f76437a1e6f7dedf068c66ed8ecd722aaccc00daa9991153bfe3ab6a54",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCollectionPublicationRealmMembershipAndOwnerPolicy",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "c1099fb0b86671474c06617b2ea8d892c95ae709c2197c37fb6536b4101b6b1f",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGCollectionPublicationRollbackNamespaceAndConcurrentWorkers",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "a7af7386df5fbedc87a9f68c8081d20b13a19f66d16094f3331353374e562783",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCollectionPublicationSavedRestartPersistence",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "7b898212f76b124e604c2091b52d73d46a5507c96c488efffdb7a88fc6836f02",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGCollectionPublicationWaitRechecksSourcesAndCancellation",
+      "source": "tests/integration/collection_publication_test.go",
+      "function_sha256": "e336705b3ce55bfb3e18427c150ff73293b0eb3d319c7d28564d89d43e994ed9",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGCollectionSubscriptionAuthoredHTTPAndIncarnations",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-b",
+      "function_sha256": "1ab163b07063f946e1b1e0eb6a593ef0f0fc22bd75960a6ce025159e0cd44c9b"
+    },
+    {
+      "test": "TestPGCollectionSubscriptionConcurrentAndAuditRollback",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-a",
+      "function_sha256": "83fb828de4d25cead10565ca38a7eb79451c122e9bf38a1ac70f0b03cd5e56d1"
+    },
+    {
+      "test": "TestPGCollectionSubscriptionRenameAndAdminDeleteIsolation",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-b",
+      "function_sha256": "6a2c2f6301efc43bb6899437a0d03c4630ae6fa4e883ab99e549fd7dc45618f6"
+    },
+    {
+      "test": "TestPGCollectionSubscriptionWaitRechecksIdentityAndProof",
+      "source": "tests/integration/collection_subscription_navigation_test.go",
+      "group": "group-a",
+      "function_sha256": "b0273b771751d6ffa443ff1993d06e115101d196c295f4c678cd8023050b2865"
     },
     {
       "test": "TestPGCouponBackendHTTPPolicyAndBinding",
       "source": "tests/integration/coupon_backend_test.go",
       "function_sha256": "6a3208a3bd7ab76b9c4a3da9647d5fd4fadf2d28647d4e6bad442fe345341edf",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGDeveloperBotMediaCreateRollbackAndQuotaExpiry",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "e0d6d127ec2d23e4558133083045038de79b1ea286016f24dbab6bda6cd834cb",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGDeveloperBotUpdateWaitUsesCurrentPunishment",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "b506c8412589b83ebf391100a9cf709c5f216226f97c635eda8d9c371340f58a",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGDeveloperMediaAuditWaitUsesCurrentUploader",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "b0c0d747a011272543240da67c363df5634a7ab291691a12758f3111d95d6bee",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGDeveloperMediaComposedAppProductBotLifecycle",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "9f69aacc5b6de34481215c09ae863056cbab35caa629bd99d53f3e82131c21da",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGDeveloperMediaCurrentAudienceAndNestedProjection",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "a7a2c80dda1b6e9922c25c47fab741e30f30911bf841f65cbf1ed948cf923f36",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGDeveloperMediaManagerOwnerAfterFileAndAuditWait",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "e18377eebe14957bdcf82b208e1374c21b9dbafbc05d7ef5150e863b525af7f7",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGDeveloperMediaOwnershipReadinessAndAtomicRollback",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "6cec2050aaccdebd1631ecab0cafdbb5e05b91a729a0f032d241ea70275f4481",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGDeveloperMediaQuotaSavedRestartPersistence",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "e568b1c2d73a0cb2dd67a3fdf5f6f7c4a2f6dfd3083f08784e96fceaf2612749",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGDeveloperMediaReadWaitRechecksPrivacy",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "d6ccec57035c3a376b53978e0e323ce2623a6a0c4eb9358ab3eeeae3b3dcf4f9",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGDeveloperMediaWriteWaitPreservesOriginalProof",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "5f22d428e563cbbf9523ea140363bdcf7c5f1d83999dda485ad1583d5b23b122",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGDeveloperQuotaConfiguredPolicyAndIsolation",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "84779dbf597e2426777c692ca13dbd7a99cd5b8f7449f9acc565d0f40061f41b",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGDeveloperQuotaWaitUsesCurrentPolicyAndProof",
+      "source": "tests/integration/developer_media_quota_test.go",
+      "function_sha256": "31c6197b74f9c1a49be3b2cef559474ef4dd7b23d719491ff4fdd1283fd97995",
       "group": "group-a"
     },
     {
       "test": "TestPGMLSBackendAuthorityAndGatewayComposition",
       "source": "tests/integration/chat_mls_test.go",
-      "group": "group-b",
+      "group": "group-a",
       "function_sha256": "de6593c1672b799b0a894b32de15eb889382507cb4262b1114d5f5a561457a9b"
+    },
+    {
+      "test": "TestPGMediaLivePhotoCompositionOwnershipAudienceAndCleanup",
+      "source": "tests/integration/media_management_test.go",
+      "function_sha256": "b0f7cf2ef57d2b8e26de9460c7131b0bc86b72c26b14fb89aed018a9042801ac",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGOAuthRegistrationOwnershipAndResourceHostScopes",
+      "source": "tests/integration/oauth_extensions_test.go",
+      "function_sha256": "bf80956b33d2659a8adaa5101b91e8a527629f37382b40d284a118a5151a71a7",
+      "group": "group-a"
+    },
+    {
+      "test": "TestPGOAuthResourceScopesCreatePostAndChatWithOriginalActor",
+      "source": "tests/integration/oauth_extensions_test.go",
+      "function_sha256": "d4841897e1e56b6681648879f1b15d1e2d06eed8e2f3fc3cd9a69df6fe5f35c3",
+      "group": "group-b"
     },
     {
       "test": "TestPGPasskitCompositionRegistrationIsolationAndUpdates",
@@ -1975,13 +2395,13 @@
       "test": "TestPGPostAutomodEditorSummaryAndExplicitEvidenceAuthority",
       "source": "tests/integration/post_automod_editor_projection_test.go",
       "function_sha256": "097c1d4e3a1be5fd20424ebc378f42976b110ddc288c5be48082d5f69aa951cd",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGPostAutomodRealmAndNestedEvidenceIsolation",
       "source": "tests/integration/post_automod_review_test.go",
       "function_sha256": "ba8660369eeb754de2171e531c990098dfa69054cb4de392472b4cff7d87bacb",
-      "group": "group-a"
+      "group": "group-b"
     },
     {
       "test": "TestPGPostCompositionCanonicalLivePrivacy",
@@ -2035,7 +2455,7 @@
       "test": "TestPGPostScheduleBackendProjectionAndDeferredFederation",
       "source": "tests/integration/post_scheduling_test.go",
       "function_sha256": "f7147dd9bf1d0c32009cd630e84c01cfa007661ea20611f7ec85a472de27be6f",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGRealmPermissionBackendDTOAndNullClear",
@@ -2044,124 +2464,28 @@
       "function_sha256": "649fb752ec68dee61b4f71f49c0c9e691074b75fb5adf2f66a1b35fc961a5f89"
     },
     {
+      "test": "TestPGRealtimeTicketRedeemsAcrossBackendInstances",
+      "source": "tests/integration/backend_test.go",
+      "function_sha256": "92208926518341533a8738b07a9a8db0e19dc6a89f9cb6ea7ba83b56513e51d7",
+      "group": "group-b"
+    },
+    {
+      "test": "TestPGRewindActualCanonicalActivityDictionaryHostAndPrivacy",
+      "source": "tests/integration/rewind_adapters_test.go",
+      "function_sha256": "940381e9653d13bfec217359e047db355d1458f6cb7120bd49d2f14627b01798",
+      "group": "group-b"
+    },
+    {
       "test": "TestPGRoomMediaConcurrentSlotsAndBackendComposition",
       "source": "tests/integration/room_media_test.go",
       "function_sha256": "031cfbe08a811177d9aec74cba394d9d514415f7a2ffbe9f8bca52719e5d6cc8",
-      "group": "group-b"
+      "group": "group-a"
     },
     {
       "test": "TestPGTicketMediaComposedLifecycleAndPrivateAudience",
       "source": "tests/integration/ticket_media_test.go",
       "group": "group-b",
       "function_sha256": "6c5f78f818fabf0e7ae9b7f0dca5858faf7f3c5f6d4b76406e0ecc12fe2294ec"
-    },
-    {
-      "test": "TestPGCollectionSubscriptionAuthoredHTTPAndIncarnations",
-      "source": "tests/integration/collection_subscription_navigation_test.go",
-      "group": "group-a",
-      "function_sha256": "1ab163b07063f946e1b1e0eb6a593ef0f0fc22bd75960a6ce025159e0cd44c9b"
-    },
-    {
-      "test": "TestPGCollectionNavigationAuthoredOrderingAndHiddenAnchors",
-      "source": "tests/integration/collection_subscription_navigation_test.go",
-      "group": "group-b",
-      "function_sha256": "1b9d40c277581c927d20a45bb7b21b5a58393bf9cce06d31df0e654f773a0c6b"
-    },
-    {
-      "test": "TestPGCollectionNavigationNestedMediaAndCurrentPrivacy",
-      "source": "tests/integration/collection_subscription_navigation_test.go",
-      "group": "group-b",
-      "function_sha256": "d259d79a3291a5d65dda021d9aec5c4b6d9a43f93ce4e70c63bad699fab05c7b"
-    },
-    {
-      "test": "TestPGCollectionSubscriptionConcurrentAndAuditRollback",
-      "source": "tests/integration/collection_subscription_navigation_test.go",
-      "group": "group-b",
-      "function_sha256": "83fb828de4d25cead10565ca38a7eb79451c122e9bf38a1ac70f0b03cd5e56d1"
-    },
-    {
-      "test": "TestPGCollectionSubscriptionWaitRechecksIdentityAndProof",
-      "source": "tests/integration/collection_subscription_navigation_test.go",
-      "group": "group-b",
-      "function_sha256": "b0273b771751d6ffa443ff1993d06e115101d196c295f4c678cd8023050b2865"
-    },
-    {
-      "test": "TestPGCollectionNavigationMediaWaitRechecksProjectionAndProof",
-      "source": "tests/integration/collection_subscription_navigation_test.go",
-      "group": "group-a",
-      "function_sha256": "376a39ab43ee6ba45307f3e1748fbc889e7c802e98990734086e17125949d1ee"
-    },
-    {
-      "test": "TestPGCollectionNavigationSinglePoolAndRestartPersistence",
-      "source": "tests/integration/collection_subscription_navigation_test.go",
-      "group": "group-b",
-      "function_sha256": "5609170d81ba5296b154408d03f378ed627ec6279232b08b03c28e9d914e281b"
-    },
-    {
-      "test": "TestPGCollectionNavigationRealmPrivacyAndMembership",
-      "source": "tests/integration/collection_subscription_navigation_test.go",
-      "group": "group-a",
-      "function_sha256": "65e237d5cdb8ca8c40609ce4a1dd16293f2f82744fc71e8daad064d873ebe143"
-    },
-    {
-      "test": "TestPGCollectionSubscriptionRenameAndAdminDeleteIsolation",
-      "source": "tests/integration/collection_subscription_navigation_test.go",
-      "group": "group-a",
-      "function_sha256": "6a2c2f6301efc43bb6899437a0d03c4630ae6fa4e883ab99e549fd7dc45618f6"
-    },
-    {
-      "test": "TestPGCollectionPublicationBoundsAndProofAfterWait",
-      "source": "tests/integration/collection_publication_test.go",
-      "function_sha256": "b176bb11d94ab8ad16463f1ee05bac8865b4f1b590afe61a5d257b091054289b",
-      "group": "group-a"
-    },
-    {
-      "test": "TestPGCollectionPublicationCurrentAudienceAndIncarnations",
-      "source": "tests/integration/collection_publication_test.go",
-      "function_sha256": "d831af2936f7702d9048bf824d755a283f17460ea944cb2196cefb69f0030366",
-      "group": "group-b"
-    },
-    {
-      "test": "TestPGCollectionPublicationDraftScheduleAndEligibility",
-      "source": "tests/integration/collection_publication_test.go",
-      "function_sha256": "e90a8255ddc5cebfda6b6cf4faed9bf424600b48b312535e248cfbd400009c12",
-      "group": "group-a"
-    },
-    {
-      "test": "TestPGCollectionPublicationInboxReplayRevocation",
-      "source": "tests/integration/collection_publication_test.go",
-      "function_sha256": "b2ac66948de8ac1b3cb265e7c2cdf05d01fdc30d615c08739bf052acf6467ab4",
-      "group": "group-a"
-    },
-    {
-      "test": "TestPGCollectionPublicationLifecycleAndDeduplication",
-      "source": "tests/integration/collection_publication_test.go",
-      "function_sha256": "031235f76437a1e6f7dedf068c66ed8ecd722aaccc00daa9991153bfe3ab6a54",
-      "group": "group-b"
-    },
-    {
-      "test": "TestPGCollectionPublicationRealmMembershipAndOwnerPolicy",
-      "source": "tests/integration/collection_publication_test.go",
-      "function_sha256": "c1099fb0b86671474c06617b2ea8d892c95ae709c2197c37fb6536b4101b6b1f",
-      "group": "group-a"
-    },
-    {
-      "test": "TestPGCollectionPublicationRollbackNamespaceAndConcurrentWorkers",
-      "source": "tests/integration/collection_publication_test.go",
-      "function_sha256": "a7af7386df5fbedc87a9f68c8081d20b13a19f66d16094f3331353374e562783",
-      "group": "group-b"
-    },
-    {
-      "test": "TestPGCollectionPublicationSavedRestartPersistence",
-      "source": "tests/integration/collection_publication_test.go",
-      "function_sha256": "7b898212f76b124e604c2091b52d73d46a5507c96c488efffdb7a88fc6836f02",
-      "group": "group-a"
-    },
-    {
-      "test": "TestPGCollectionPublicationWaitRechecksSourcesAndCancellation",
-      "source": "tests/integration/collection_publication_test.go",
-      "function_sha256": "e336705b3ce55bfb3e18427c150ff73293b0eb3d319c7d28564d89d43e994ed9",
-      "group": "group-b"
     }
   ],
   "fixture_source_files": [
@@ -2175,7 +2499,7 @@
     },
     {
       "source": "tests/integration/account_history_test.go",
-      "sha256": "a6ce9cf5d4da36e6fcad5933f6925c6ffd71d00c3dcacbb9bf6eabd3703fd8ff"
+      "sha256": "397e93ca48cc5873e8e67df16c3f153fc9c25405ea9c55378eaf6a923a589e55"
     },
     {
       "source": "tests/integration/account_settings_test.go",
@@ -2199,7 +2523,7 @@
     },
     {
       "source": "tests/integration/affiliation_test.go",
-      "sha256": "b3eba31de9a0018b8928bec27f7d103188d8856678c3d4f85f690295c5319950"
+      "sha256": "a55bbbbdd6fdf3cb51dab0d02e88c9fb76ea46563c7c706a6a99185d1aa0bfba"
     },
     {
       "source": "tests/integration/app_publisher_owner_review_test.go",
@@ -2323,7 +2647,7 @@
     },
     {
       "source": "tests/integration/backend_test.go",
-      "sha256": "f707d7aa5a71cc6ab814e866bf6ef06df402a72705f0d30d77328af914c1bdcb"
+      "sha256": "03eb2c36384dd65a44d0aaf9d11d6f1bebe74f71356d7c2752eac5ebbd6191d6"
     },
     {
       "source": "tests/integration/backend_ticket_test.go",
@@ -2359,11 +2683,11 @@
     },
     {
       "source": "tests/integration/bot_execution_test.go",
-      "sha256": "a0751fd6ca2dded3cf8ab9b72eca54456260f754d0fead0cbba5192a4039dd74"
+      "sha256": "f1d5cb84acdcd1a3e1910887846c7a44f9fa40946c3546615de07aa91ce3dd2b"
     },
     {
       "source": "tests/integration/bots_test.go",
-      "sha256": "81c46545335e1e5f658ad85c6880627869a1f3322019e720273a8403270fa13f"
+      "sha256": "cdb37adbe508fe477b77a6a63c3b980d692aaf73026a4d8e78e8f40b948b8eeb"
     },
     {
       "source": "tests/integration/calendar_activity_test.go",
@@ -2382,12 +2706,20 @@
       "sha256": "787ce9179709ecc78c1ebc0a9cd22e7b6d2c3030fe5defabca36304d3e049b0f"
     },
     {
+      "source": "tests/integration/chat_composition_test.go",
+      "sha256": "a45e24be6f25672e32512262ed6edb1bcafa22574d4f0617b56ce75321d9a30d"
+    },
+    {
       "source": "tests/integration/chat_details_test.go",
       "sha256": "1187cdf6300864dbca30bbdc127f934c2ee3709deb74564bf9c7c585b5c3e8b3"
     },
     {
       "source": "tests/integration/chat_lifecycle_test.go",
       "sha256": "4be9dc5a2a5f13dc2f7b75d4ef6afeb92417d3641959c305e7072c859f982ab6"
+    },
+    {
+      "source": "tests/integration/chat_live_events_test.go",
+      "sha256": "9c5dda046e76924b24c11118bc954b4e5026ec8e0f6ee7e79a8c4471163daeba"
     },
     {
       "source": "tests/integration/chat_media_test.go",
@@ -2414,12 +2746,24 @@
       "sha256": "1335b0049f1c3ad659ff54bb2f57c67ff8f4c13cd2298e556662029bc63c1670"
     },
     {
+      "source": "tests/integration/chat_subscription_sync_test.go",
+      "sha256": "c6cf5638826eddbff468ac6d51975aec12efe13e5e83ae13a0f9c142fe4ae001"
+    },
+    {
       "source": "tests/integration/chat_threads_forward_review_test.go",
       "sha256": "25698bc9114e8c8ef1342f1cd68f9d31c838eba9e91a3c185ee347f5f298928c"
     },
     {
       "source": "tests/integration/chat_threads_forward_test.go",
       "sha256": "2b6d80bd12315ce3d582b45cd3eceb944a98149bbad0221d6dfb6daeacfc4f15"
+    },
+    {
+      "source": "tests/integration/chat_transient_test.go",
+      "sha256": "441f101af6f6d96fc04f62297a9e515cc21d368abbd2030dfb3671aea81c6b79"
+    },
+    {
+      "source": "tests/integration/chat_voice_configuration_test.go",
+      "sha256": "81f67a70f7d998925600ff239957030fed8e59486fdc742074755377a3978657"
     },
     {
       "source": "tests/integration/checkout_owner_policy_test.go",
@@ -2443,7 +2787,7 @@
     },
     {
       "source": "tests/integration/commerce_test.go",
-      "sha256": "3ebdbf57daa111cbf524d7ecbcde1789281ee99c70e75cbf1da3acf99e65716f"
+      "sha256": "ca964d8d2850e17acc142240204a39396d0481939a728fcada6d39a3ff4fec61"
     },
     {
       "source": "tests/integration/content_autocomplete_test.go",
@@ -2463,11 +2807,11 @@
     },
     {
       "source": "tests/integration/coupon_catalog_review_test.go",
-      "sha256": "f8b967613c23c44009f2d86da82616be2cd0f7cba77fab49ba50747d492119ad"
+      "sha256": "99066824a69995d64f1f2ab5f3965f55d8a27ff91c2906f91b385bf5f572ec3c"
     },
     {
       "source": "tests/integration/coupon_checkout_test.go",
-      "sha256": "12c4ab4bd2665a6f6d698fae9a8e9869b01eecad4121b42a58cd66b22960fed3"
+      "sha256": "a76930cc511805a98e31cf2a23619ed3d44b9240efe81d5fa898253936abe6aa"
     },
     {
       "source": "tests/integration/coupon_restart_test.go",
@@ -2491,7 +2835,11 @@
     },
     {
       "source": "tests/integration/developer_management_test.go",
-      "sha256": "6f7f902d1812c41fbccb99d14abc1c1a6f48deb2c3abf3fcf344ceff10c28d4c"
+      "sha256": "678cf4fc4ff5e2635e6a953ba7fb731069602be41d91992060485ba3eb560dd5"
+    },
+    {
+      "source": "tests/integration/developer_media_quota_test.go",
+      "sha256": "8a75a358211a6f50a5f70ae679732e60c68a8a06b611309db61af6723508ac8d"
     },
     {
       "source": "tests/integration/direct_recovery_privacy_test.go",
@@ -2511,7 +2859,7 @@
     },
     {
       "source": "tests/integration/domain_trust_test.go",
-      "sha256": "db848ae4317494a0414549c97aa33339dfb03e4c4dd396a3bb03335d27065d77"
+      "sha256": "3f8b1dc3e5d618a9aa61c43acc5cb603a918ca844c71202b890de82af2e3b385"
     },
     {
       "source": "tests/integration/factor_origin_test.go",
@@ -2524,6 +2872,10 @@
     {
       "source": "tests/integration/factor_setup_test.go",
       "sha256": "752efa65fdf334c4266037250acebeecf746359bc4d5b1ba07a0e642821e45fa"
+    },
+    {
+      "source": "tests/integration/federation_broader_test.go",
+      "sha256": "0ee01e76ea20abd332cb37b73bd33961551fe6229e48bf7395890aecd3fe01a4"
     },
     {
       "source": "tests/integration/federation_cleanup_receipts_test.go",
@@ -2571,7 +2923,7 @@
     },
     {
       "source": "tests/integration/federation_test.go",
-      "sha256": "fbae949d583afb73348f522c87380ef90d30c2ecde0d9c448ab29564322799f5"
+      "sha256": "0e427948818eba68a9294655e70db77928a94e0c37c36c6f752ec35e61ecc56d"
     },
     {
       "source": "tests/integration/fortunes_test.go",
@@ -2594,28 +2946,60 @@
       "sha256": "57ca93eb975963de5d2fec0b2d67483f9eb833ebe1728ced8045860bbcccbfa2"
     },
     {
+      "source": "tests/integration/identity_completion_test.go",
+      "sha256": "e888aede8b03d1c05e6191570235dcf92b53c7b8a543a204e009f8215fb7fd9b"
+    },
+    {
+      "source": "tests/integration/identity_delivery_review_test.go",
+      "sha256": "c338bfb6bc60daf519e5f3137c782806febe7919db5c3029119bfb42bebd1ba2"
+    },
+    {
       "source": "tests/integration/identity_guard_review_test.go",
       "sha256": "998270edce0471d5b48ac41a1d95ca82d669241cbcd3b3ccc36fc2a6abfb8987"
     },
     {
+      "source": "tests/integration/identity_saved_restart_test.go",
+      "sha256": "7d0802ed5a9ff5731d4d05afbae246b21586c226e62846dd323dff76ab50557c"
+    },
+    {
+      "source": "tests/integration/identity_terminal_guards_test.go",
+      "sha256": "8fd80c222731ee43acddcc7dc36ab9136143d9068518c98d4cb392cdb80fd972"
+    },
+    {
       "source": "tests/integration/livestream_awards_test.go",
-      "sha256": "c8ecbf4c23a4290dab17a7d678770c1059699963b39f06c3d031e59e8c54ba7f"
+      "sha256": "07eddf3f9d9e3c755ff79a43657b263884edd3d049bf4e1fba0745aad844dd9c"
     },
     {
       "source": "tests/integration/livestream_chat_test.go",
-      "sha256": "ef2d4b6c88e3b8c3373da95cfa544ea21c3d1b4418ac9ed941dca8289bb3e87a"
+      "sha256": "28b7678e096a75266a95f7f2a039c0f16d9b53498ed01b7a02005649c8661f39"
     },
     {
       "source": "tests/integration/livestream_outputs_test.go",
-      "sha256": "7814eeec7b530f4a0b4565fedc8d18539f73c0e2c65a5e4d10da247d28ed9470"
+      "sha256": "214263e788b9d995a64c36af9ae7af00e1383f6fc538f4ad8563b298814bea16"
     },
     {
       "source": "tests/integration/livestreams_test.go",
-      "sha256": "074c194bcb99e618b8631fc14303602de53c3f3eb0c28e27ae63321bc2609d37"
+      "sha256": "1060de326cefc4cfc623caea9da4af0ca8611b7f2c490252db9885a4118e2644"
+    },
+    {
+      "source": "tests/integration/locations_completion_test.go",
+      "sha256": "0481e114471ad83f5dfdac623d55043b3b8501359ef7bd07acba593232d8a20d"
+    },
+    {
+      "source": "tests/integration/locations_media_final_review_test.go",
+      "sha256": "b9a3ea3f61e6ca7eed60dab57a38bebd05a4a3ab01ae7cfad033c9c7e2fa9a28"
+    },
+    {
+      "source": "tests/integration/locations_media_review_test.go",
+      "sha256": "f2881612ce608067fec645a8b0455158479043e5aeaa1d35d01917aa9e53aa67"
     },
     {
       "source": "tests/integration/locations_test.go",
       "sha256": "9dfe61bfc0c804e6223e1c57b12f7c5fe350a89faebe66e63a0380c9474988eb"
+    },
+    {
+      "source": "tests/integration/media_management_test.go",
+      "sha256": "eb3b54cb507b36eba5bb9d1eacc1679a6100a55c55781d148feacddac8430284"
     },
     {
       "source": "tests/integration/media_resumable_test.go",
@@ -2631,11 +3015,19 @@
     },
     {
       "source": "tests/integration/merchants_test.go",
-      "sha256": "e5cdfaa9fb60f3c40092a1dde3ef75ea361d78da7ed5a1f902e0a167c1466f3f"
+      "sha256": "0646f5e82e641559bf9f4f2ff56a1005c5a096e06ae3c79ade39e219ca2df6f4"
     },
     {
       "source": "tests/integration/messager_test.go",
       "sha256": "f29c0f5083b552b092c29cbdb7d8311371786653942a58e5795fbeef28a7fb10"
+    },
+    {
+      "source": "tests/integration/miniapp_upload_authority_review_test.go",
+      "sha256": "d5485f1b28de9f8e391ee746523413f18cd9ec1077dbc5766eb3abc80c4b2496"
+    },
+    {
+      "source": "tests/integration/miniapp_upload_test.go",
+      "sha256": "e2156faf8e267269de048b6ba06fbc75cfb68d38d8c69a24577e7ee9b0cb1b33"
     },
     {
       "source": "tests/integration/namecards_test.go",
@@ -2652,6 +3044,14 @@
     {
       "source": "tests/integration/notifications_test.go",
       "sha256": "a5e7e33cfbe9c1ec92a9d62ea22c4495e72d4ef9813c573fba86927a8adf5848"
+    },
+    {
+      "source": "tests/integration/oauth_extensions_restart_test.go",
+      "sha256": "49372de1897fb2139300b364f429b3d7093fcbda1523bc22abac15690eea3783"
+    },
+    {
+      "source": "tests/integration/oauth_extensions_test.go",
+      "sha256": "f3463dbf2bc3daef5a2147c9fc0c7e04403194cb6ed5e343a8f03bfb1e02f54b"
     },
     {
       "source": "tests/integration/oauth_review_test.go",
@@ -2699,7 +3099,7 @@
     },
     {
       "source": "tests/integration/post_awards_test.go",
-      "sha256": "ad8bce5bc4eceaf484f69278f1945413a14f2f593bba69d2e33545cb216bb7eb"
+      "sha256": "df026b6c82d79db5e354057c49875fc2408732fbc8334417dc9ce136757d92ab"
     },
     {
       "source": "tests/integration/post_composition_review_test.go",
@@ -2716,6 +3116,10 @@
     {
       "source": "tests/integration/post_media_test.go",
       "sha256": "2eb6bd1c526a2f43f266658243dacdffb198e1bd3305092663cbe929cfec208b"
+    },
+    {
+      "source": "tests/integration/post_pins_test.go",
+      "sha256": "879f7024a4894d23f8f90ef20284f8454fa6d3c56101d38e8aed4a96a8a216ac"
     },
     {
       "source": "tests/integration/post_realms_test.go",
@@ -2739,15 +3143,23 @@
     },
     {
       "source": "tests/integration/presence_progression_test.go",
-      "sha256": "eff0b535b2b3086f8d1967009cd3a6baaccf689bc57831c2f1af283db23b262a"
+      "sha256": "08cf55a2bc70ebeac45145564596dbf20a47a5bf9ec843172589bff108e9a949"
     },
     {
       "source": "tests/integration/product_stock_test.go",
-      "sha256": "7cace0960a87873d67b1b3018aad09ed6d5500fb04d1421a110cb0c4213a3472"
+      "sha256": "67f8e075f6a2262dddd03b0fdd8e558712d8005a94a335d105967945a44d4170"
     },
     {
       "source": "tests/integration/profile_media_test.go",
       "sha256": "f7b36f218ba1a82dff95acb77995779887a158e94a8af1e165ef7ce3a4e37c6c"
+    },
+    {
+      "source": "tests/integration/progression_sources_test.go",
+      "sha256": "1290854bae7555614af4b66e6e6edf25d8430d1b167f6ce488207fe9f7177361"
+    },
+    {
+      "source": "tests/integration/publisher_content_notifications_test.go",
+      "sha256": "89afc1529286f3db5dc5e04643d3fe02eaa6b914ca264d016822f9196710c89c"
     },
     {
       "source": "tests/integration/publisher_ratings_test.go",
@@ -2766,8 +3178,12 @@
       "sha256": "9db38c8793a5c8c1f6c9936ee0eca7d74a413c301effcf1ac68324196c341516"
     },
     {
+      "source": "tests/integration/publishing_config_offline_test.go",
+      "sha256": "13405f98467c65b38950aa5f3dd779ad035ea8d5a647657d0c7558bb411dc77c"
+    },
+    {
       "source": "tests/integration/publishing_controls_test.go",
-      "sha256": "ed277e736ba0b76803ea80129c18d109974c338ea9d9cf895bf39f4ba050e3d3"
+      "sha256": "7ee8808f0543621f8cd55ad1d1ce57468f70b46189c947f8948bd0a6307be92f"
     },
     {
       "source": "tests/integration/reader_test.go",
@@ -2807,7 +3223,7 @@
     },
     {
       "source": "tests/integration/realm_publishing_test.go",
-      "sha256": "3796c8a0bace44780f579db1c9b17e078e3fa964e2af91c11dd2639397c6047c"
+      "sha256": "e1c351a43c5b98bfd176d7d2b864fedfc933d288f05a8d40f569d1c34e8c291c"
     },
     {
       "source": "tests/integration/recurring_expiry_test.go",
@@ -2815,7 +3231,7 @@
     },
     {
       "source": "tests/integration/recurring_products_test.go",
-      "sha256": "26952579ca074526758a3bd875572ad2d39d1eabf1958ea51903c24c1197a56c"
+      "sha256": "05feb4a13676ea2a6c97ab10740c6547714ea1c0f8800b9e0cf2170baf2660ec"
     },
     {
       "source": "tests/integration/refresh_continuity_test.go",
@@ -2832,6 +3248,10 @@
     {
       "source": "tests/integration/restart_fixture_test.go",
       "sha256": "487ca66fd4db89c23ac90bc4110845a09e5e2986796a9b8b4a5c989ca6f4c5cc"
+    },
+    {
+      "source": "tests/integration/rewind_adapters_test.go",
+      "sha256": "ef4255612ae556c304513df0ca0c9672dbf968104adbe2b29c7c71f3410f6fdb"
     },
     {
       "source": "tests/integration/rewind_test.go",
@@ -2851,7 +3271,7 @@
     },
     {
       "source": "tests/integration/shipping_test.go",
-      "sha256": "123ae60b2ab8d7f08caf793c5ddce49c2948ac10ac7863780ddd63d98fd5f7ff"
+      "sha256": "c674f65d98f8302cea0220c6ad796543b6278c7beb1fd2a0568f791577bc6227"
     },
     {
       "source": "tests/integration/signin_test.go",
@@ -2898,6 +3318,14 @@
       "sha256": "22ff163ab9b9754e3d78dc77545b67d60f211d46f7f156d28ec5e1e22d4b019a"
     },
     {
+      "source": "tests/integration/voice_media_protection_test.go",
+      "sha256": "d8ab8c902ebaca8ede154d29e35f5ec312c1ea7196a95d1d8c7d743c6d9f19f8"
+    },
+    {
+      "source": "tests/integration/wallet_completion_test.go",
+      "sha256": "d6ad66c3230d114f4491b5713ed5f9bfbf5aaeb4f2101faeb3f250a0bfea8133"
+    },
+    {
       "source": "tests/integration/wallet_exchange_test.go",
       "sha256": "620e3f5e92cce1fa3c3ac6d1b57a4116bfc27d87e2a91fe2efd3da2f9e199c48"
     },
@@ -2911,7 +3339,7 @@
     },
     {
       "source": "tests/integration/wallet_reporting_test.go",
-      "sha256": "e27b641d7801ba9d50056a4956f2cb27980fb995da9884de2f9bb6b1f171e177"
+      "sha256": "7e1ee1f708f47179d6aed318096f562dafaabab707b12c468afc51c5535e2d6e"
     },
     {
       "source": "tests/integration/wallet_test.go",
@@ -2919,7 +3347,7 @@
     },
     {
       "source": "tests/integration/wallet_transfer_requests_test.go",
-      "sha256": "5c298cbe3a72b3af8d7489d4f0cc20b02d52588bd40115b19888f9b102b6ecd1"
+      "sha256": "092832989aa1e924dc86cf4cb261c40fa9e8694b95ad33563a1d21bd8699c667"
     },
     {
       "source": "tests/integration/watchers_test.go",
@@ -3069,12 +3497,13 @@
     "test": "TestPGPostCompositionSavedRestartPersistence",
     "group_before_and_after": "group-a",
     "reason": "Global ProcessFundsDue tests use a synthetic seven-day future clock and can expire this unrelated one-day restart fund in the shared database.",
-    "schema_sha256": "f30e89ada74fb4a7f8944574022529afd309b28508cd567167c6835ebb6d282d",
+    "schema_sha256": "2dafd3bd8eb5a4d1c849914185e12e7509edd46605e05ff3f7abf253308b55b4",
     "ordered_schema_files": [
       "internal/authoritypg/schema.sql",
       "internal/authoritypg/assurance_schema.sql",
       "internal/authoritypg/continuity_schema.sql",
       "internal/authoritypg/activation_schema.sql",
+      "internal/authoritypg/stream_ticket_schema.sql",
       "internal/readerpg/schema.sql",
       "internal/accountpg/schema.sql",
       "internal/accountpg/name_schema.sql",
@@ -3086,6 +3515,8 @@
       "internal/ticketpg/schema.sql",
       "internal/affiliationpg/schema.sql",
       "internal/notificationpg/schema.sql",
+      "internal/notificationpg/devices_schema.sql",
+      "internal/notificationpg/wellbeing_schema.sql",
       "internal/notificationpg/friend_schema.sql",
       "internal/apppg/schema.sql",
       "internal/oauthpg/schema.sql",
@@ -3094,7 +3525,9 @@
       "internal/mediapg/resumable_schema.sql",
       "internal/mediapg/artwork_schema.sql",
       "internal/botpg/schema.sql",
+      "internal/developmediapg/schema.sql",
       "internal/walletpg/schema.sql",
+      "internal/affiliationpg/paid_schema.sql",
       "internal/walletpg/pin_schema.sql",
       "internal/walletpg/transfer_requests_schema.sql",
       "internal/walletpg/funds_schema.sql",
@@ -3107,14 +3540,15 @@
       "internal/commercepg/maintenance_schema.sql",
       "internal/translationpg/schema.sql",
       "internal/postpg/schema.sql",
+      "internal/socialpg/schema.sql",
       "internal/federationpg/schema.sql",
       "internal/federationpg/identity_schema.sql",
       "internal/federationpg/discovery_schema.sql",
       "internal/federationpg/public_admission_schema.sql",
       "internal/federationpg/quote_schema.sql",
       "internal/federationpg/delivery_schema.sql",
+      "internal/federationpg/broader_schema.sql",
       "internal/application/schema.sql",
-      "internal/socialpg/schema.sql",
       "internal/realmboostpg/schema.sql",
       "internal/socialpg/permissions_schema.sql",
       "internal/realmmemberpg/schema.sql",
@@ -3149,6 +3583,8 @@
       "internal/presencepg/schema.sql",
       "internal/progressionpg/schema.sql",
       "internal/accounthistorypg/schema.sql",
+      "internal/accounthistorypg/request_context_schema.sql",
+      "internal/connectionpg/schema.sql",
       "internal/notabledaypg/schema.sql",
       "internal/calendarmediapg/schema.sql",
       "internal/fortunepg/schema.sql",
@@ -3160,6 +3596,7 @@
       "internal/postpg/scheduling_schema.sql",
       "internal/blogpg/schema.sql",
       "internal/livestreampg/schema.sql",
+      "internal/publishernotificationpg/schema.sql",
       "internal/adminpg/schema.sql",
       "internal/livestreampg/chat_schema.sql",
       "internal/livestreampg/outputs_schema.sql",
@@ -3170,6 +3607,8 @@
       "internal/postawardpg/schema.sql",
       "internal/postembedpg/schema.sql",
       "internal/chatpg/organization_schema.sql",
+      "internal/chatpg/transient_schema.sql",
+      "internal/mediapg/voice_schema.sql",
       "internal/activitypg/schema.sql",
       "internal/friendeventpg/schema.sql"
     ],
@@ -3207,11 +3646,11 @@
       },
       {
         "source": "scripts/test-fixture-isolation.py",
-        "sha256": "75c38b182b1baee90ca90de4999e6823a55a97c9d20f63ac8d50eac2ddf113f9"
+        "sha256": "a671d41a1d543c315ff58ceff8c5c2c122157dad5296028f9daf4fc81cb2a21e"
       },
       {
         "source": "scripts/integration-postgres.sh",
-        "sha256": "b06c57bd35c051a2bef3660d66d74ddc7802619b2995312b389820b3c9120a37"
+        "sha256": "4bd41b7a90c0ff5bbd35f6ac7a5c81c6bf4b18836c4fce93677f2b09d5cb0664"
       },
       {
         "source": ".github/workflows/postgres-validation.yml",
@@ -3219,7 +3658,7 @@
       },
       {
         "source": "scripts/verify.sh",
-        "sha256": "1ea18a571e44061eca6172234a119a7a9434fcadaa885d34432c67c1c6c5b595"
+        "sha256": "df3dbea544f20a6dd675355e91f7b3e357419065473b553dd320800570553b0d"
       },
       {
         "source": "tests/integration/disposable_database_test.go",
@@ -3252,12 +3691,101 @@
       {
         "source": "docs/composer-restart-isolation.md",
         "sha256": "e3a97887bda049a022de876b24dfef4029745275f642a3a546c8540e9bf744e2"
+      },
+      {
+        "source": "scripts/check-readiness-relations.py",
+        "sha256": "68defab14c49d73d6987e766be630d32a16b36068302ac227fe0e0b8afc90a52"
       }
     ],
     "runtime_case_counts": {
-      "before": 940,
-      "after": 110
+      "before": 1147,
+      "after": 120
     },
     "actual_cluster_validation": "Pending exact-candidate authorized private CI; offline checks are not database evidence."
+  },
+  "voice_configuration_review": {
+    "basis": "Independent 5.6 Sol review of retention-gated readiness/cleanup and actual missing-table PG regression; original assertions and restart fixtures unchanged.",
+    "case": "TestPGBackendDisabledVoiceRequiresNoVoiceSchemaOrWorker",
+    "group": "group-b"
+  },
+  "integrated_source_review": {
+    "status": "Unactivated draft; independent catalogue review and exact-candidate private PostgreSQL CI are still required.",
+    "base_commit": "e71b407927f3957d8787226b36d249f6d213d134",
+    "scope": "Preserves every previously registered case and restart phase; adds all current source and compiled declarations. No database execution or successful CI is inferred from this catalogue.",
+    "source_approvals": [
+      {
+        "lane": "OAuth extensions and original-device restart",
+        "root_commit": "d03dc66e269f0c93a010373405357499ca86796b",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "miniapp and bot",
+        "root_commit": "9b1de07",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "publishing and pins",
+        "root_commit": "d25226e",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "wallet and commerce",
+        "root_commit": "9fd90e5",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "chat synchronization and delivery",
+        "root_commit": "97a075f",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "canonical voice protection",
+        "patch_sha256": "02047fc9a4b6a1c81bc11ca25d9bbeb3234dfbe8c00d1b893e5a50d293cbcc0c",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "operations and archive authorization",
+        "author_commit": "450ac2515bdb2944adb4f7f2e534d6d7739dc5dc",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "immutable progression facts and daily snapshots",
+        "author_commit": "4c23becbe382a13c49c33d7a14f8cc3baa9a7a83",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "federation broader operations and actual key custody",
+        "author_commit": "1ce0f23779e01159e08e36e8ac46f938266715fa",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "Rewind configured canonical activity and dictionary adapters",
+        "author_commit": "4ab97f80762eae9ef56eea4e98fabd54a67effd6",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "publisher post and livestream content notifications",
+        "author_commit": "6e184925254413a4ee1aba8f6519332a8da93b76",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "identity realm progression and actual device delivery",
+        "author_commit": "8368f020eb1fb494fb78f764f8b624f7cb5fc33b",
+        "reviewer": "independent gpt-5.6-sol"
+      },
+      {
+        "lane": "location NFC and media management",
+        "author_commit": "b3f02699e8f6ebb386e3d3e581fa84407fb68638",
+        "reviewer": "independent gpt-5.6-sol"
+      }
+    ],
+    "original_suite": {
+      "before": 963,
+      "after": 112
+    },
+    "current_suite": {
+      "before": 1147,
+      "after": 120
+    }
   }
 }

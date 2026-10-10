@@ -46,7 +46,7 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if r == nil || r.db == nil {
 		return oauth.ErrUnavailable
 	}
-	_, e := r.db.ExecContext(ctx, `SELECT oauth_epoch FROM owned_custom_apps LIMIT 0; SELECT version FROM owned_app_consents LIMIT 0; SELECT email,verified_at FROM owned_authority_credentials LIMIT 0; SELECT request_hash,owner_id,app_epoch FROM owned_oauth_requests LIMIT 0; SELECT hash,consent_version,session_id FROM owned_oauth_codes LIMIT 0; SELECT session_id,owner_id,secret_hash FROM owned_oauth_grants LIMIT 0; SELECT hash,epoch,used_at FROM owned_oauth_refresh LIMIT 0; SELECT account_id,action FROM owned_oauth_audit LIMIT 0`)
+	_, e := r.db.ExecContext(ctx, `SELECT oauth_epoch FROM owned_custom_apps LIMIT 0; SELECT version FROM owned_app_consents LIMIT 0; SELECT email,verified_at FROM owned_authority_credentials LIMIT 0; SELECT request_hash,owner_id,app_epoch FROM owned_oauth_requests LIMIT 0; SELECT hash,consent_version,session_id FROM owned_oauth_codes LIMIT 0; SELECT session_id,owner_id,secret_hash FROM owned_oauth_grants LIMIT 0; SELECT hash,epoch,used_at FROM owned_oauth_refresh LIMIT 0; SELECT account_id,action FROM owned_oauth_audit LIMIT 0; SELECT hash,user_hash,preview_parent_id,consent_version,used_at FROM owned_oauth_devices LIMIT 0`)
 	return e
 }
 

@@ -126,6 +126,90 @@ func TestPGPostAwardCheckoutReceiptAndConservation(t *testing.T) {
 	walletAssertBalance(t, walletpg.New(f.db), f.treasury.ID, "points", "0.000", "0.000", "0.000")
 	walletAssertBalance(t, walletpg.New(f.db), f.beneficiary.ID, "points", "5.125", "0.000", "5.125")
 }
+
+func TestPGPublisherRewardPreviewViewerAndScopedSettlementRoutes(t *testing.T) {
+	f := newPostAwardFixture(t, "")
+	p := f.post(t, f.individual, "publisher reward preview", posts.Public)
+	f.pay(t, f.order(t, p, "preview", "5", a.Positive))
+	if _, e := f.accounts.ChangeMember(f.ctx, f.actor, f.individual.ID, accounts.MemberChange{Action: accounts.InviteMember, AccountID: f.other, Role: accounts.Viewer}); e != nil {
+		t.Fatal(e)
+	}
+	if _, e := f.accounts.ChangeMember(f.otherCtx, f.other, f.individual.ID, accounts.MemberChange{Action: accounts.AcceptInvite}); e != nil {
+		t.Fatal(e)
+	}
+	preview, e := f.accounts.PublisherRewards(f.otherCtx, f.other, f.individual.ID)
+	if e != nil || preview.PendingCount != 1 || preview.PendingAmount != "5.000" {
+		t.Fatal(preview, e)
+	}
+	scoped := func(permission string) context.Context {
+		pair, e := f.issuer.IssueSession(context.Background(), f.actor, authority.SessionOptions{Label: "reward settlement", Scopes: []string{permission}})
+		if e != nil {
+			t.Fatal(e)
+		}
+		proof, e := f.verifier.Authenticate(context.Background(), pair.Token)
+		if e != nil {
+			t.Fatal(e)
+		}
+		return f.guard.Bind(context.Background(), proof)
+	}
+	if _, e = f.awards.SettlePublisherRewards(scoped("publishers.rewards.resettle"), f.actor, 100); !errors.Is(e, authority.ErrForbidden) {
+		t.Fatal("wrong settlement scope accepted", e)
+	}
+	if n, e := f.awards.SettlePublisherRewards(scoped("publishers.rewards.settle"), f.actor, 100); e != nil || n != 1 {
+		t.Fatal(n, e)
+	}
+	preview, e = f.accounts.PublisherRewards(f.otherCtx, f.other, f.individual.ID)
+	if e != nil || preview.PendingCount != 0 || preview.SettledAmount != "5.000" {
+		t.Fatal(preview, e)
+	}
+}
+
+func TestPGPublisherRewardResettleSkipsReceiptsFromPreviousTreasury(t *testing.T) {
+	f := newPostAwardFixture(t, "")
+	p := f.post(t, f.individual, "treasury rotation reward", posts.Public)
+	old := f.order(t, p, "old-treasury", "5", a.Positive)
+	f.pay(t, old)
+	query(t, f.db, `UPDATE owned_post_award_receipts SET attempts=7,next_attempt_at=clock_timestamp()+interval '1 day' WHERE purchase_id IN(SELECT id FROM owned_post_award_purchases WHERE order_id=$1::uuid)`, old.OrderID)
+
+	newTreasury := authorityUUID(t)
+	if e := authoritypg.SeedSynthetic(context.Background(), f.db, newTreasury, "synthetic_rotated_treasury_"+newTreasury[:8], f.config.Now()); e != nil {
+		t.Fatal(e)
+	}
+	newWallet := walletCreate(t, walletpg.New(f.db), newTreasury)
+	rotatedConfig := f.cfg
+	rotatedConfig.TreasuryAccountID, rotatedConfig.TreasuryWalletID = newTreasury, newWallet.ID
+	rotated, e := postawardpg.New(f.db, f.guard, f.checkout, f.social, rotatedConfig)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = rotated.Ready(f.ctx); e != nil {
+		t.Fatal(e)
+	}
+	f.checkout.WithPostAwards(rotated)
+	current, e := rotated.CreateOrder(f.otherCtx, f.other, p.ID, "new-treasury", a.Request{Amount: walletAmount(t, "6"), Attitude: a.Positive})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if paid, e := f.checkout.PayOrder(f.otherCtx, f.other, current.OrderID, &f.payer.ID); e != nil || paid.Status != c.Finished {
+		t.Fatal(paid, e)
+	}
+	window := f.config.Now().UTC()
+	count, e := rotated.ResettlePublisherRewards(f.ctx, f.actor, a.ResettleRequest{DateFrom: window.Add(-time.Hour), DateTo: window.Add(time.Hour)}, 100)
+	if e != nil || count != 1 {
+		t.Fatal("mixed treasury resettle", count, e)
+	}
+	var oldAttempts int
+	var oldSettled, currentSettled bool
+	if e = f.db.QueryRow(`SELECT r.attempts,r.settled_at IS NOT NULL FROM owned_post_award_receipts r JOIN owned_post_award_purchases p ON p.id=r.purchase_id WHERE p.order_id=$1::uuid`, old.OrderID).Scan(&oldAttempts, &oldSettled); e != nil {
+		t.Fatal(e)
+	}
+	if e = f.db.QueryRow(`SELECT r.settled_at IS NOT NULL FROM owned_post_award_receipts r JOIN owned_post_award_purchases p ON p.id=r.purchase_id WHERE p.order_id=$1::uuid`, current.OrderID).Scan(&currentSettled); e != nil {
+		t.Fatal(e)
+	}
+	if oldAttempts != 7 || oldSettled || !currentSettled {
+		t.Fatal("treasury rotation receipt isolation", oldAttempts, oldSettled, currentSettled)
+	}
+}
 func TestPGPostAwardNegativeAndExplicitRounding(t *testing.T) {
 	f := newPostAwardFixture(t, a.Documented80)
 	p := f.post(t, f.individual, "Synthetic exact split award", posts.Public)

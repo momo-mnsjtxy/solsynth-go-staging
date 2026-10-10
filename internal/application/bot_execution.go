@@ -20,3 +20,12 @@ func (b *Backend) ProcessBotMessagesDue(ctx context.Context, limit int) (int, er
 	}
 	return b.bots.ProcessMessagesDue(ctx, limit)
 }
+
+// ProcessBotEnrollmentRenewalsDue reconciles only previously recorded bounded
+// renewal consents against current authority and room state.
+func (b *Backend) ProcessBotEnrollmentRenewalsDue(ctx context.Context, limit int) (int, error) {
+	if b == nil || b.bots == nil || !b.bots.ExecutionEnabled() {
+		return 0, bots.ErrUnsupported
+	}
+	return b.bots.ProcessEnrollmentRenewalsDue(ctx, limit)
+}

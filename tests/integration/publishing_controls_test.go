@@ -28,17 +28,20 @@ import (
 	"solsynth.local/go-migration/ports/sphere/posts"
 )
 
-func publishingApp(t *testing.T, f postMediaFixture) *application.Backend {
-	t.Helper()
+func publishingAppConfig(f postMediaFixture) application.Config {
 	visibility := int32(0)
 	policy := messagerpg.IndependentPolicy{NoneEncryptionMode: 77, NotifyAll: 10, NotifyMentions: 20, NotifyNone: 30}
-	config := application.Config{Authority: f.config, PublicVisibility: &visibility, MessagerPolicy: &policy, MaxMediaBytes: 65536}
-	// Text-only restart fixtures have no store. Keep the interface nil instead
-	// of enabling media with a typed nil filesystem pointer.
+	cfg := application.Config{Authority: f.config, PublicVisibility: &visibility, MessagerPolicy: &policy, MaxMediaBytes: 65536}
+	// An absent concrete adapter must remain an absent interface. Text-only
+	// restart reads do not configure or reconstruct a media object store.
 	if f.store != nil {
-		config.MediaStore = f.store
+		cfg.MediaStore = f.store
 	}
-	app, e := application.NewPostgres(f.db, nil, config)
+	return cfg
+}
+func publishingApp(t *testing.T, f postMediaFixture) *application.Backend {
+	t.Helper()
+	app, e := application.NewPostgres(f.db, nil, publishingAppConfig(f))
 	if e != nil {
 		t.Fatal(e)
 	}

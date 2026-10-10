@@ -2,8 +2,11 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io"
+	"os"
+	"path/filepath"
 	"solsynth.local/go-migration/internal/application"
 	"testing"
 )
@@ -35,5 +38,45 @@ func TestAccountExtrasExplicitSettlementConfiguration(t *testing.T) {
 		if e == nil && (c.NameCards != nil) != tc.enabled {
 			t.Fatal("unexpected paid enablement")
 		}
+	}
+}
+
+func TestRewindActualDictionaryAndCanonicalActivityConfiguration(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "dictionary.txt")
+	if err := os.WriteFile(path, []byte("研究 100\n生命 100\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	for _, args := range [][]string{
+		{"--rewind-stop-words=" + path},
+		{"--rewind-max-tokens=1"},
+		{"--rewind-dictionary=relative.txt"},
+		{"--rewind-dictionary=" + path, "--rewind-max-tokens=0"},
+	} {
+		fs := flag.NewFlagSet("synthetic", flag.ContinueOnError)
+		fs.SetOutput(io.Discard)
+		options := accountExtraFlags(fs)
+		if err := fs.Parse(args); err != nil {
+			t.Fatal(err)
+		}
+		if err := options.apply(&application.Config{}); err == nil {
+			t.Fatal("invalid dictionary config", args)
+		}
+	}
+	fs := flag.NewFlagSet("synthetic", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	options := accountExtraFlags(fs)
+	if err := fs.Parse([]string{"--enable-rewind-action-activity", "--rewind-dictionary=" + path, "--rewind-max-tokens=100"}); err != nil {
+		t.Fatal(err)
+	}
+	var config application.Config
+	if err := options.apply(&config); err != nil {
+		t.Fatal(err)
+	}
+	if config.Rewind == nil || !config.Rewind.CanonicalActionActivity || config.Rewind.Tokenizer == nil {
+		t.Fatal("actual adapters not composed")
+	}
+	words, err := config.Rewind.Tokenizer.TopWords(context.Background(), []string{"研究生命研究生命"}, 100)
+	if err != nil || len(words) != 2 || words[0].Count != 2 || words[1].Count != 2 {
+		t.Fatal(words, err)
 	}
 }

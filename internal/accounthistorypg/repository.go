@@ -7,6 +7,7 @@ import (
 	_ "embed"
 	"errors"
 	"math"
+	"solsynth.local/go-migration/internal/connectionpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/history"
 	"sort"
@@ -14,7 +15,12 @@ import (
 )
 
 //go:embed schema.sql
-var Schema string
+var baseSchema string
+
+//go:embed request_context_schema.sql
+var RequestContextSchema string
+
+var Schema = baseSchema + "\n" + connectionpg.Schema + "\n" + RequestContextSchema
 
 type Guard interface {
 	Preflight(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
@@ -35,7 +41,7 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if r == nil || r.db == nil || r.guard == nil || r.timeline == nil {
 		return history.ErrUnavailable
 	}
-	_, e := r.db.ExecContext(ctx, `SELECT id,source_id FROM owned_account_action_history LIMIT 0; SELECT id,source_kind,source_ref,source_record FROM owned_account_credit_records LIMIT 0; SELECT id,verified_at,source_ref FROM owned_account_connections LIMIT 0`)
+	_, e := r.db.ExecContext(ctx, `SELECT id,source_id FROM owned_account_action_history LIMIT 0; SELECT id,source_kind,source_ref,source_record FROM owned_account_credit_records LIMIT 0; SELECT id,verified_at,source_ref FROM owned_account_connections LIMIT 0;SELECT source,source_id,session_id,ip_address,user_agent FROM owned_account_action_context LIMIT 0`)
 	return e
 }
 func (r *Repository) Timeline(ctx context.Context, actor, ref string, f history.Filter) ([]history.TimelineItem, int, error) {
@@ -175,18 +181,29 @@ func (r *Repository) Actions(ctx context.Context, actor string, f history.Filter
 	}
 	defer tx.Rollback()
 	// Count and page share one SQL snapshot, including an empty/out-of-range page.
-	rows, e := tx.QueryContext(ctx, `WITH filtered AS MATERIALIZED(SELECT * FROM owned_account_action_history WHERE account_id=$1::uuid`+bounds+` AND position(lower($4::text) in lower(action))>0),page AS(SELECT * FROM filtered ORDER BY created_at DESC,id LIMIT $5::integer OFFSET $6::integer) SELECT totals.n,page.id::text,page.action,page.target,page.source,page.source_id,page.created_at FROM(SELECT count(*) AS n FROM filtered)totals LEFT JOIN page ON true ORDER BY page.created_at DESC,page.id`, actor, f.From, f.To, f.Action, f.Take, f.Offset)
+	rows, e := tx.QueryContext(ctx, `WITH filtered AS MATERIALIZED(SELECT * FROM owned_account_action_history WHERE account_id=$1::uuid`+bounds+` AND position(lower($4::text) in lower(action))>0),page AS(SELECT * FROM filtered ORDER BY created_at DESC,id LIMIT $5::integer OFFSET $6::integer) SELECT totals.n,page.id::text,page.action,page.target,page.source,page.source_id,page.created_at,c.session_id::text,host(c.ip_address),c.user_agent FROM(SELECT count(*) AS n FROM filtered)totals LEFT JOIN page ON true LEFT JOIN owned_account_action_context c ON c.source=page.source AND c.source_id=page.source_id AND c.account_id=page.account_id ORDER BY page.created_at DESC,page.id`, actor, f.From, f.To, f.Action, f.Take, f.Offset)
 	if e != nil {
 		return
 	}
 	for rows.Next() {
-		var id, action, target, source, sourceID sql.NullString
+		var id, action, target, source, sourceID, session, peer, agent sql.NullString
 		var created sql.NullTime
-		if e = rows.Scan(&total, &id, &action, &target, &source, &sourceID, &created); e != nil {
+		if e = rows.Scan(&total, &id, &action, &target, &source, &sourceID, &created, &session, &peer, &agent); e != nil {
 			break
 		}
 		if id.Valid {
-			out = append(out, history.ActionLog{ID: id.String, AccountID: actor, Action: action.String, Meta: map[string]any{"target_id": target.String, "source": source.String, "source_id": sourceID.String}, CreatedAt: created.Time, UpdatedAt: created.Time})
+			v := history.ActionLog{ID: id.String, AccountID: actor, Action: action.String, Meta: map[string]any{"target_id": target.String, "source": source.String, "source_id": sourceID.String}, CreatedAt: created.Time, UpdatedAt: created.Time}
+			if session.Valid {
+				v.SessionID = &session.String
+			}
+			if peer.Valid {
+				v.IPAddress = &peer.String
+			}
+			if agent.Valid {
+				v.UserAgent = &agent.String
+				v.Meta["user_agent_untrusted"] = true
+			}
+			out = append(out, v)
 		}
 	}
 	if e == nil {

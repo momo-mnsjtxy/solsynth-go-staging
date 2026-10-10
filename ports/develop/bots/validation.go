@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"path"
 	"regexp"
+	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/develop"
 	"strings"
 	"time"
@@ -45,8 +46,8 @@ func ValidatePatch(p Patch, create bool) error {
 	if p.Birthday != nil && (p.Birthday.Year() < 1900 || p.Birthday.Year() > 2200) {
 		return ErrInvalid
 	}
-	if p.PictureID != nil || p.BackgroundID != nil {
-		return ErrUnsupported
+	if p.PictureID != nil && !authority.ValidID(*p.PictureID) || p.BackgroundID != nil && !authority.ValidID(*p.BackgroundID) {
+		return ErrInvalid
 	}
 	return nil
 }
@@ -105,8 +106,10 @@ func ValidateMini(p MiniPatch, create bool) error {
 	if create && p.Slug == nil || p.Slug != nil && !namePattern.MatchString(*p.Slug) || p.Stage != nil && (*p.Stage < 0 || *p.Stage > 2) {
 		return ErrInvalid
 	}
-	if p.IconID != nil || p.BackgroundID != nil {
-		return ErrUnsupported
+	for _, id := range []*string{p.IconID, p.BackgroundID} {
+		if id != nil && strings.TrimSpace(*id) != "" && !authority.ValidID(*id) {
+			return ErrInvalid
+		}
 	}
 	if p.Manifest == nil {
 		return nil

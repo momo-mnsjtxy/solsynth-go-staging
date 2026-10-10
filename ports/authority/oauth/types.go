@@ -53,7 +53,7 @@ type ClientInfo struct {
 type Decision struct {
 	RedirectURI string `json:"redirect_uri"`
 }
-type TokenRequest struct{ GrantType, Code, RedirectURI, CodeVerifier, RefreshToken, ClientID, ClientSecret string }
+type TokenRequest struct{ GrantType, Code, RedirectURI, CodeVerifier, RefreshToken, ClientID, ClientSecret, DeviceCode string }
 type Tokens struct {
 	AccessToken      string `json:"access_token"`
 	TokenType        string `json:"token_type"`
@@ -100,7 +100,7 @@ func Scopes(raw string) ([]string, error) {
 		}
 		seen[s] = true
 	}
-	if !seen["openid"] || len(parts) > 4 {
+	if !seen["openid"] || len(parts) > 32 {
 		return nil, ErrScope
 	}
 	sort.Strings(parts)
@@ -157,7 +157,7 @@ func Validate(r Request, a apps.App) ([]string, error) {
 		return nil, ErrClient
 	}
 	for _, g := range c.AllowedGrantTypes {
-		if g != "authorization_code" && g != "refresh_token" {
+		if g != "authorization_code" && g != "refresh_token" && g != DeviceGrant {
 			return nil, ErrClient
 		}
 	}

@@ -15,17 +15,24 @@ func (v *Verifier) RecordedSessionEligible(tx Transaction, id string, version, e
 	if len(permissions) == 0 {
 		return false, nil
 	}
-	return v.recordedSessionEligible(tx, id, version, epoch, now, permissions)
+	return v.recordedSessionEligible(tx, id, version, epoch, now, permissions, false)
 }
 
 // RecordedAuthenticationEligible is only for previously recorded admissions
 // whose original contract required authentication and canonical membership. It
 // grants no permission and cannot authorize a new request or admission.
 func (v *Verifier) RecordedAuthenticationEligible(tx Transaction, id string, version, epoch int64, now time.Time) (bool, error) {
-	return v.recordedSessionEligible(tx, id, version, epoch, now, nil)
+	return v.recordedSessionEligible(tx, id, version, epoch, now, nil, false)
 }
 
-func (v *Verifier) recordedSessionEligible(tx Transaction, id string, version, epoch int64, now time.Time, permissions []string) (bool, error) {
+// RecordedConnectionEligible reconciles a previously authenticated transport
+// lease. Delegated sessions retain their canonical OAuth binding and ordinary
+// parent chain; this supplies no permission, principal, or new admission.
+func (v *Verifier) RecordedConnectionEligible(tx Transaction, id string, version, epoch int64, now time.Time) (bool, error) {
+	return v.recordedSessionEligible(tx, id, version, epoch, now, nil, true)
+}
+
+func (v *Verifier) recordedSessionEligible(tx Transaction, id string, version, epoch int64, now time.Time, permissions []string, connection bool) (bool, error) {
 	if v == nil || v.service == nil || tx == nil {
 		return false, ErrUnavailable
 	}
@@ -56,7 +63,18 @@ func (v *Verifier) recordedSessionEligible(tx Transaction, id string, version, e
 	seen := map[string]bool{}
 	current := initial
 	for depth := 0; ; depth++ {
-		if depth >= 64 || seen[current.ID] || current.AccountID != a.ID || current.AccountVersion != version || current.Type != 0 || current.ClientID != "" || current.RevokedAt != nil || !current.ExpiresAt.After(now) || current.CreatedAt.After(now) || current.Epoch < 1 || current.AuthorizationEpoch < 1 || current.AuthorizationEpoch > current.Epoch {
+		if depth >= 64 || seen[current.ID] || current.AccountID != a.ID || current.AccountVersion != version || current.RevokedAt != nil || !current.ExpiresAt.After(now) || current.CreatedAt.After(now) || current.Epoch < 1 || current.AuthorizationEpoch < 1 || current.AuthorizationEpoch > current.Epoch {
+			return false, nil
+		}
+		if current.Type == 1 && connection && depth == 0 {
+			binding, ok := tx.(SessionBindingTransaction)
+			if !ok || current.Category != OAuthSessionCategory {
+				return false, nil
+			}
+			if e = binding.CheckSessionBinding(current, now); e != nil {
+				return denial(e)
+			}
+		} else if current.Type != 0 || current.ClientID != "" {
 			return false, nil
 		}
 		seen[current.ID] = true

@@ -31,6 +31,11 @@ CREATE TABLE commerce_v1.subscriptions (
 );
 CREATE INDEX commerce_subscription_account ON commerce_v1.subscriptions(account_id,identifier,begun_at DESC,id);
 CREATE INDEX commerce_subscription_due ON commerce_v1.subscriptions(ended_at,id) WHERE status=1;
+CREATE TABLE commerce_v1.subscription_trials (
+ account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),identifier text NOT NULL,
+ subscription_id uuid NOT NULL UNIQUE REFERENCES commerce_v1.subscriptions(id),created_at timestamptz NOT NULL,
+ PRIMARY KEY(account_id,identifier)
+);
 CREATE TABLE commerce_v1.gifts (
  id uuid PRIMARY KEY, gifter_id uuid NOT NULL REFERENCES owned_authority_accounts(id), recipient_id uuid REFERENCES owned_authority_accounts(id),
  redeemer_id uuid REFERENCES owned_authority_accounts(id), subscription_id uuid UNIQUE REFERENCES commerce_v1.subscriptions(id),
@@ -43,11 +48,48 @@ CREATE TABLE commerce_v1.idempotency (
  owner_key text NOT NULL, request_key varchar(128) NOT NULL, fingerprint char(64) NOT NULL, resource_id uuid NOT NULL, kind varchar(16) NOT NULL,
  PRIMARY KEY(owner_key,request_key)
 );
+CREATE TABLE IF NOT EXISTS commerce_v1.merchant_settlements(
+ id uuid PRIMARY KEY,publisher_id uuid NOT NULL REFERENCES owned_publishers(id),
+ app_id uuid NOT NULL REFERENCES owned_custom_apps(id),order_id uuid NOT NULL UNIQUE REFERENCES commerce_v1.orders(id),
+ wallet_id uuid NOT NULL REFERENCES wallet_v1.wallets(id),currency varchar(128) NOT NULL,
+ amount numeric(32,3) NOT NULL CHECK(amount>0),status integer NOT NULL CHECK(status BETWEEN 0 AND 2),
+ created_at timestamptz NOT NULL,settled_at timestamptz,settled_by uuid REFERENCES owned_authority_accounts(id),
+	 CHECK(status<>1 OR settled_at IS NOT NULL),CHECK(settled_at IS NULL OR settled_at>=created_at)
+);
+CREATE INDEX IF NOT EXISTS merchant_settlement_publisher ON commerce_v1.merchant_settlements(publisher_id,created_at DESC,id);
+CREATE INDEX IF NOT EXISTS merchant_settlement_pending ON commerce_v1.merchant_settlements(publisher_id,id) WHERE status=0;
 CREATE TABLE commerce_v1.provider_receipts (
- provider varchar(32) NOT NULL, external_id varchar(256) NOT NULL, fingerprint char(64) NOT NULL, subscription_id uuid NOT NULL UNIQUE REFERENCES commerce_v1.subscriptions(id),
- PRIMARY KEY(provider,external_id)
+	 id uuid PRIMARY KEY,
+ provider varchar(32) NOT NULL, external_id varchar(256) NOT NULL, fingerprint char(64) NOT NULL, subscription_id uuid NOT NULL UNIQUE REFERENCES commerce_v1.subscriptions(id), created_at timestamptz NOT NULL,
+	 UNIQUE(provider,external_id)
 );
 CREATE TABLE commerce_v1.outbox (
  sequence bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, event_id uuid NOT NULL UNIQUE, event_type text NOT NULL CHECK(event_type LIKE 'commerce.%'),
  aggregate_id uuid NOT NULL, payload jsonb NOT NULL, created_at timestamptz NOT NULL, published_at timestamptz
 );
+
+-- A funded eligible Stellar cycle may credit more than one month. Each month
+-- receives its own immutable source ID while an order/month uniqueness key
+-- makes payment replay harmless.
+CREATE TABLE IF NOT EXISTS commerce_v1.stellar_support_months(
+ id uuid PRIMARY KEY,
+ order_id uuid NOT NULL CONSTRAINT stellar_support_month_order REFERENCES commerce_v1.orders(id),
+ subscription_id uuid NOT NULL CONSTRAINT stellar_support_month_subscription REFERENCES commerce_v1.subscriptions(id),
+ account_id uuid NOT NULL CONSTRAINT stellar_support_month_account REFERENCES owned_authority_accounts(id),
+ transaction_id uuid NOT NULL CONSTRAINT stellar_support_month_transaction REFERENCES wallet_v1.transactions(id),
+ payer_wallet_id uuid NOT NULL CONSTRAINT stellar_support_month_payer REFERENCES wallet_v1.wallets(id),
+ payee_wallet_id uuid NOT NULL CONSTRAINT stellar_support_month_payee REFERENCES wallet_v1.wallets(id),
+ currency varchar(128) NOT NULL,amount numeric(32,3) NOT NULL,confirmed_at timestamptz NOT NULL,
+ cycle_days integer NOT NULL,month_index integer NOT NULL,credited_months integer NOT NULL,
+ occurred_at timestamptz NOT NULL,
+ CONSTRAINT stellar_support_month_shape CHECK(amount>0 AND cycle_days BETWEEN 1 AND 366 AND month_index>0 AND credited_months>0 AND month_index<=credited_months),
+ CONSTRAINT stellar_support_month_order_index UNIQUE(order_id,month_index)
+);
+CREATE INDEX IF NOT EXISTS stellar_support_months_due ON commerce_v1.stellar_support_months(occurred_at,id);
+CREATE OR REPLACE FUNCTION commerce_v1.stellar_support_month_immutable() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ RAISE EXCEPTION 'stellar support source facts are immutable' USING ERRCODE='55000';
+END $$;
+DROP TRIGGER IF EXISTS stellar_support_month_immutable ON commerce_v1.stellar_support_months;
+CREATE TRIGGER stellar_support_month_immutable BEFORE UPDATE OR DELETE ON commerce_v1.stellar_support_months
+ FOR EACH ROW EXECUTE FUNCTION commerce_v1.stellar_support_month_immutable();

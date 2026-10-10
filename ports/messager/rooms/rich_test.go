@@ -18,7 +18,7 @@ func TestRichMessageStrictFieldsAndBounds(t *testing.T) {
 			t.Fatal(body, e)
 		}
 	}
-	for _, body := range []string{`{"attachments_id":["https://example.invalid"]}`, `{"attachments_id":["c2000000-0000-4000-8000-000000000001","c2000000-0000-4000-8000-000000000001"]}`, `{"meta":[]}`, `{"embeds":[null]}`} {
+	for _, body := range []string{`{"attachments_id":["https://example.invalid"]}`, `{"attachments_id":["c2000000-0000-4000-8000-000000000001","c2000000-0000-4000-8000-000000000001"]}`, `{"meta":[]}`, `{"embeds":[null]}`, `{"content":"bypass","meta":{"embeds":[{"type":"meet","id":"c2000000-0000-4000-8000-000000000001"}]}}`} {
 		var p TextRequest
 		e := json.Unmarshal([]byte(body), &p)
 		if e == nil {

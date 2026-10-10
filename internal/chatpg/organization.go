@@ -32,7 +32,7 @@ func (o *Organization) Ready(ctx context.Context) error {
 	if o == nil || o.r == nil || o.r.db == nil || o.reader == nil {
 		return rooms.ErrUnavailable
 	}
-	_, e := o.r.db.ExecContext(ctx, `SELECT id,account_id,name,sort_order FROM owned_chat_groups LIMIT 0;SELECT member_id,group_id,account_id FROM owned_chat_group_members LIMIT 0;SELECT id,room_id,message_id,expires_at FROM owned_chat_pins LIMIT 0;SELECT member_id,last_read_at FROM owned_chat_read_receipts LIMIT 0`)
+	_, e := o.r.db.ExecContext(ctx, `SELECT id,account_id,name,sort_order FROM owned_chat_groups LIMIT 0;SELECT member_id,group_id,account_id FROM owned_chat_group_members LIMIT 0;SELECT id,room_id,message_id,expires_at FROM owned_chat_pins LIMIT 0;SELECT member_id,last_read_at FROM owned_chat_read_receipts LIMIT 0;SELECT id,member_id,room_id,account_id,last_read_at,excluded_device_id FROM owned_chat_read_events LIMIT 0;SELECT id,account_id,session_id,account_version,authorization_epoch,mls_device_id,expires_at,closed_at FROM owned_chat_connections LIMIT 0;SELECT connection_id,member_id,joined_at,expires_at FROM owned_chat_subscriptions LIMIT 0`)
 	return e
 }
 func (o *Organization) valid(actor string) error {

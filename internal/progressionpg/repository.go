@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"solsynth.local/go-migration/internal/auditcapture"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/progression"
 	"sort"
@@ -23,9 +24,12 @@ type TransactionGuard interface {
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
 }
 type Repository struct {
-	db      *sql.DB
-	guard   TransactionGuard
-	reports CheckInReports
+	points        SourcePointPayout
+	checkinPolicy *CheckInPolicy
+	checkinPerks  CheckInPerks
+	db            *sql.DB
+	guard         TransactionGuard
+	reports       CheckInReports
 }
 
 // CheckInReports shares the canonical transaction. Implementations must not
@@ -75,6 +79,16 @@ func (r *Repository) within(ctx context.Context, actor string, permissions []str
 	if e = fn(tx, now.UTC()); e != nil {
 		return mapped(e)
 	}
+	if actor != "" {
+		if len(permissions) == 0 {
+			_, e = r.guard.Authenticate(ctx, r.db, tx, actor)
+		} else {
+			_, e = r.guard.Authorize(ctx, r.db, tx, actor, permissions...)
+		}
+		if e != nil {
+			return e
+		}
+	}
 	return tx.Commit()
 }
 func mapped(e error) error {
@@ -94,8 +108,11 @@ func newID() (string, error) {
 	return s[:8] + "-" + s[8:12] + "-" + s[12:16] + "-" + s[16:20] + "-" + s[20:], nil
 }
 func audit(ctx context.Context, tx *sql.Tx, actor, action, target string, now time.Time) error {
-	_, e := tx.ExecContext(ctx, `INSERT INTO owned_progression_audit(actor_id,action,target,occurred_at)VALUES($1,$2,$3,$4)`, actor, action, target, now)
-	return e
+	var id int64
+	if e := tx.QueryRowContext(ctx, `INSERT INTO owned_progression_audit(actor_id,action,target,occurred_at)VALUES($1,$2,$3,$4)RETURNING id`, actor, action, target, now).Scan(&id); e != nil {
+		return e
+	}
+	return auditcapture.Record(ctx, tx, actor, "owned_progression_audit", id)
 }
 func zone(ctx context.Context, tx *sql.Tx, actor string) (*time.Location, error) {
 	var name string

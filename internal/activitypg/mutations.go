@@ -15,11 +15,14 @@ func (r *Repository) Set(ctx context.Context, actor string, q activities.Request
 	if e = activities.Normalize(&q, session); e != nil {
 		return
 	}
+	if q.ManualID != nil && strings.HasPrefix(*q.ManualID, "provider:") && q.TrustedConnectionID == "" {
+		return out, activities.ErrInvalid
+	}
 	if actor == "" {
 		return out, activities.ErrInvalid
 	}
 	permission := ""
-	if id != "" {
+	if id != "" || q.ManualID != nil && (strings.HasPrefix(*q.ManualID, "sensor:") || strings.HasPrefix(*q.ManualID, "provider:")) {
 		permission = activities.ManagePermission
 	}
 	tx, _, p, e := r.begin(ctx, actor, actor, permission)
@@ -27,6 +30,13 @@ func (r *Repository) Set(ctx context.Context, actor string, q activities.Request
 		return
 	}
 	defer tx.Rollback()
+	if q.TrustedConnectionID != "" {
+		var current string
+		e = tx.QueryRowContext(ctx, `SELECT provided_identifier FROM owned_account_connections WHERE id=$1::uuid AND account_id=$2::uuid AND provider=$3::text AND revoked_at IS NULL AND verified_at<=clock_timestamp()`, q.TrustedConnectionID, actor, q.TrustedProvider).Scan(&current)
+		if e != nil || current != q.ProviderIdentifier {
+			return out, activities.ErrNotFound
+		}
+	}
 	now, e := clock(ctx, tx)
 	if e != nil {
 		return

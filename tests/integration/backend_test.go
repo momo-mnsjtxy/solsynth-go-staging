@@ -115,6 +115,33 @@ func backendDecode[T any](t *testing.T, w *httptest.ResponseRecorder) T {
 	return v
 }
 
+func TestPGRealtimeTicketRedeemsAcrossBackendInstances(t *testing.T) {
+	f := newBackendFixture(t)
+	issued := backendDecode[struct {
+		Ticket string `json:"ticket"`
+	}](t, backendCall(t, f.app, "POST", "/api/realtime/tickets", f.token, "", 200))
+	if len(issued.Ticket) != 43 {
+		t.Fatal("ticket shape")
+	}
+	second := backendApp(t, f.db, f.config)
+	server := httptest.NewServer(second)
+	defer server.Close()
+	conn, response, err := websocket.DefaultDialer.Dial("ws"+strings.TrimPrefix(server.URL, "http")+"/ws?ticket="+url.QueryEscape(issued.Ticket), nil)
+	if err != nil {
+		if response != nil {
+			t.Fatalf("second instance status %d", response.StatusCode)
+		}
+		t.Fatal(err)
+	}
+	_ = conn.Close()
+	// The atomically deleted hash cannot be replayed on either replica.
+	w := httptest.NewRecorder()
+	second.ServeHTTP(w, httptest.NewRequest("GET", "/ws?ticket="+url.QueryEscape(issued.Ticket), nil))
+	if w.Code != 401 {
+		t.Fatal("ticket replay", w.Code, w.Body.String())
+	}
+}
+
 func TestPGBackendDomainComposition(t *testing.T) {
 	f := newBackendFixture(t)
 	backendCall(t, f.app, "GET", "/readyz", "", "", 200)

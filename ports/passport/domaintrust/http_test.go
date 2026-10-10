@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 type fake struct {
@@ -15,9 +16,15 @@ type fake struct {
 	calls  int
 	result Result
 	err    error
+	purge  MetricMaintenance
 }
 
 func (f *fake) Validate(context.Context, string) (Result, error) { f.calls++; return f.result, f.err }
+func (f *fake) PurgeMetrics(_ context.Context, _ string, q MetricMaintenance) (MetricPurgeResult, error) {
+	f.calls++
+	f.purge = q
+	return MetricPurgeResult{Purged: 2}, f.err
+}
 func TestPublicValidationProjectionAndRequestURI(t *testing.T) {
 	f := &fake{result: Result{IsAllowed: true, MatchedRule: &Rule{ID: "private-rule", Reason: ptr("private operator metadata")}}}
 	h := NewHandler(f, nil)
@@ -67,5 +74,23 @@ func TestDomainAdminRouteRequiresCanonicalAuth(t *testing.T) {
 	NewHandler(f, func(*http.Request, bool) (string, error) { return "", nil }).ServeHTTP(w, r)
 	if w.Code != 401 {
 		t.Fatal(w.Code, w.Body.String())
+	}
+}
+
+func TestDomainMetricPurgeRouteIsAuthenticatedAndStrict(t *testing.T) {
+	f := &fake{}
+	auth := func(*http.Request, bool) (string, error) { return "00000000-0000-4000-8000-000000000001", nil }
+	h := NewHandler(f, auth)
+	r := httptest.NewRequest("POST", "/api/domain-blocks/metrics/purge", strings.NewReader(`{"older_than":"2025-01-01T00:00:00Z","limit":17}`))
+	r.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	if w.Code != 200 || f.calls != 1 || f.purge.Limit != 17 || !f.purge.OlderThan.Equal(time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)) || !strings.Contains(w.Body.String(), `"purged":2`) {
+		t.Fatal(w.Code, w.Body.String(), f.calls, f.purge)
+	}
+	w = httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("POST", "/api/domain-blocks/metrics/purge?unexpected=1", strings.NewReader(`{"older_than":"2025-01-01T00:00:00Z","limit":17}`)))
+	if w.Code != 400 || f.calls != 1 {
+		t.Fatal(w.Code, w.Body.String(), f.calls)
 	}
 }

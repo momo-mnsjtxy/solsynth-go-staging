@@ -75,6 +75,13 @@ type Metric struct {
 	VerifiedCount int64     `json:"verified_count"`
 	LastCheckedAt time.Time `json:"last_checked_at"`
 }
+type MetricMaintenance struct {
+	OlderThan time.Time `json:"older_than"`
+	Limit     int       `json:"limit"`
+}
+type MetricPurgeResult struct {
+	Purged int64 `json:"purged"`
+}
 type Page struct{ Offset, Limit int }
 
 func (p Page) Bounds() Page {
@@ -106,5 +113,6 @@ type Repository interface {
 	Delete(context.Context, string, string) error
 	Metrics(context.Context, string, Page) ([]Metric, int, error)
 	Metric(context.Context, string, string) (Metric, error)
+	PurgeMetrics(context.Context, string, MetricMaintenance) (MetricPurgeResult, error)
 }
 type Auth func(*http.Request, bool) (string, error)

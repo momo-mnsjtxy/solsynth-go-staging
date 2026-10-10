@@ -94,6 +94,16 @@ func (r *Repository) write(ctx context.Context, actor, permission string, fn fun
 	if e = fn(tx, r.now().UTC()); e != nil {
 		return e
 	}
+	if r.guard != nil {
+		if permission == "" {
+			_, e = r.guard.Authenticate(ctx, r.db, tx, actor)
+		} else {
+			_, e = r.guard.Authorize(ctx, r.db, tx, actor, permission)
+		}
+		if e != nil {
+			return e
+		}
+	}
 	return tx.Commit()
 }
 func (r *Repository) read(ctx context.Context, actor string, required bool) (*sql.Tx, error) {

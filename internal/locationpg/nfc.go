@@ -29,6 +29,16 @@ func (r *Repository) RegisterTag(ctx context.Context, actor string, v locations.
 	if r.guard == nil && !p.Account.Superuser {
 		return locations.Tag{}, locations.ErrForbidden
 	}
+	if e = lockNFCUID(ctx, tx, normalized); e != nil {
+		return locations.Tag{}, e
+	}
+	var exists bool
+	if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_encrypted_nfc_tags WHERE uid=$1)`, normalized).Scan(&exists); e != nil {
+		return locations.Tag{}, e
+	}
+	if exists {
+		return locations.Tag{}, locations.ErrConflict
+	}
 	id, e := uid()
 	if e != nil {
 		return locations.Tag{}, e
@@ -39,6 +49,9 @@ func (r *Repository) RegisterTag(ctx context.Context, actor string, v locations.
 		return locations.Tag{}, e
 	}
 	if e = audit(ctx, tx, actor, id, "nfc.register", now); e != nil {
+		return locations.Tag{}, e
+	}
+	if e = r.recheck(ctx, tx, actor, "nfc.admin.manage"); e != nil {
 		return locations.Tag{}, e
 	}
 	return out, tx.Commit()
@@ -67,7 +80,20 @@ func (r *Repository) Tags(ctx context.Context, actor string) ([]locations.Tag, e
 	if e != nil {
 		return nil, e
 	}
-	return out, tx.Commit()
+	if e = r.recheck(ctx, tx, actor, ""); e != nil {
+		return nil, e
+	}
+	if e = tx.Commit(); e != nil {
+		return nil, e
+	}
+	encrypted, e := r.encryptedTags(ctx, actor, false)
+	if e != nil {
+		return nil, e
+	}
+	for _, v := range encrypted {
+		out = append(out, v.Tag)
+	}
+	return out, nil
 }
 func (r *Repository) UpdateTag(ctx context.Context, actor, id string, v locations.TagPatch) (locations.Tag, error) {
 	if !authority.ValidID(id) || !locations.Text(v.Label, 64) {
@@ -79,6 +105,10 @@ func (r *Repository) UpdateTag(ctx context.Context, actor, id string, v location
 	}
 	defer tx.Rollback()
 	t, _, e := tag(tx.QueryRowContext(ctx, `SELECT `+tagFields+` FROM owned_nfc_tags WHERE id=$1 AND account_id=$2 AND deleted_at IS NULL FOR UPDATE`, id, actor))
+	if e == locations.ErrNotFound {
+		tx.Rollback()
+		return r.ChangeEncryptedTag(ctx, actor, id, v, false)
+	}
 	if e != nil {
 		return t, e
 	}
@@ -93,6 +123,9 @@ func (r *Repository) UpdateTag(ctx context.Context, actor, id string, v location
 		return locations.Tag{}, e
 	}
 	if e = audit(ctx, tx, actor, id, "nfc.update", now); e != nil {
+		return locations.Tag{}, e
+	}
+	if e = r.recheck(ctx, tx, actor, "nfc.tags.update"); e != nil {
 		return locations.Tag{}, e
 	}
 	return t, tx.Commit()
@@ -116,9 +149,14 @@ func (r *Repository) DeleteTag(ctx context.Context, actor, id string) error {
 		return e
 	}
 	if n == 0 {
-		return locations.ErrNotFound
+		tx.Rollback()
+		_, e = r.ChangeEncryptedTag(ctx, actor, id, locations.TagPatch{}, true)
+		return e
 	}
 	if e = audit(ctx, tx, actor, id, "nfc.delete", now); e != nil {
+		return e
+	}
+	if e = r.recheck(ctx, tx, actor, "nfc.tags.delete"); e != nil {
 		return e
 	}
 	return tx.Commit()
@@ -163,6 +201,30 @@ func (r *Repository) ResolveTag(ctx context.Context, actor, selector string, byI
 	out = locations.TagResolution{ID: t.ID, Account: a, Friend: friend && actor != owner, Claimed: true, Actions: []string{"view_profile"}}
 	if actor != "" && actor != owner && !friend {
 		out.Actions = append(out.Actions, "add_friend")
+	}
+	// Account projection queries can themselves wait on the database. Refresh
+	// the bilateral audience and owner before the terminal retained proof.
+	blocked, friend, e = socialState(ctx, tx, actor, owner)
+	if e != nil {
+		return locations.TagResolution{}, e
+	}
+	if blocked {
+		return locations.TagResolution{}, locations.ErrNotFound
+	}
+	a, e = account(ctx, tx, owner)
+	if e != nil {
+		return locations.TagResolution{}, e
+	}
+	out.Account = a
+	out.Friend = friend && actor != owner
+	out.Actions = []string{"view_profile"}
+	if actor != "" && actor != owner && !friend {
+		out.Actions = append(out.Actions, "add_friend")
+	}
+	if actor != "" {
+		if e = r.recheck(ctx, tx, actor, ""); e != nil {
+			return locations.TagResolution{}, e
+		}
 	}
 	return out, tx.Commit()
 }

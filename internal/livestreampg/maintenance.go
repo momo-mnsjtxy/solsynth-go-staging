@@ -454,6 +454,11 @@ func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
 		count, e = r.ProcessOutputsDue(ctx, limit)
 		n += count
 		result = errors.Join(result, e)
+		if r.outputs.ArchiveImporter != nil {
+			count, e = r.ProcessArchiveImportsDue(ctx, limit)
+			n += count
+			result = errors.Join(result, e)
+		}
 	}
 	return n, result
 }

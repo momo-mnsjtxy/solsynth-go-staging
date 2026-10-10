@@ -165,7 +165,7 @@ func (r *Repository) publisher(ctx context.Context, tx *sql.Tx, actor, selector 
 	if authority.ValidID(selector) {
 		match = `u.id=$2::uuid`
 	}
-	q := `SELECT u.id::text,COALESCE((SELECT requires_approval FROM owned_publisher_follow_policy f WHERE f.publisher_id=u.id),false) FROM owned_publishers u WHERE u.deleted_at IS NULL AND ` + match + ` AND ` + accountpg.ActivePublisherOwnerPredicate("u") + ` AND $1::text IS NOT NULL AND ` + postpg.PublisherPredicate(r.visibility)
+	q := `SELECT u.id::text,COALESCE((SELECT requires_approval AND(expires_at IS NULL OR expires_at>statement_timestamp()) FROM owned_publisher_follow_policy f WHERE f.publisher_id=u.id),false) FROM owned_publishers u WHERE u.deleted_at IS NULL AND ` + match + ` AND ` + accountpg.ActivePublisherOwnerPredicate("u") + ` AND $1::text IS NOT NULL AND ` + postpg.PublisherPredicate(r.visibility)
 	if r.visibility != nil {
 		q += ` AND NOT (` + r.visibility.PostBlockedSQL() + `)`
 	}

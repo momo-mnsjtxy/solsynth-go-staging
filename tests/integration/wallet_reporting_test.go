@@ -122,6 +122,9 @@ func TestPGWalletReportingOrderPaginationAndSettlement(t *testing.T) {
 			}
 		}
 	}
+	if released, settleErr := merchantRepo(t, f).Settle(f.ctx, f.actor, f.publisher); settleErr != nil || len(released) != 1 {
+		t.Fatal("explicit merchant settlement", released, settleErr)
+	}
 	sort.Sort(sort.Reverse(sort.StringSlice(ids))) // The trusted fixture clock gives all orders one timestamp.
 	for i, id := range ids {
 		page, e := repo.WalletOrders(f.ctx, f.actor, w.OrderHistoryQuery{TransactionQuery: w.TransactionQuery{WalletID: f.wallet.ID, Take: 1, Offset: i}})

@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func (s *Service) outputsHTTP(w http.ResponseWriter, r *http.Request, ctx context.Context, actor string, parts []string) {
@@ -53,9 +54,33 @@ func (s *Service) outputsHTTP(w http.ResponseWriter, r *http.Request, ctx contex
 		if e == nil {
 			e = repo.StopOutput(ctx, actor, parts[0], parts[1])
 		}
+	case len(parts) == 4 && parts[1] == "hls" && parts[3] == "import":
+		if r.Method != "POST" {
+			method(w, "POST")
+			return
+		}
+		if len(r.Header.Values("Idempotency-Key")) != 1 {
+			e = ErrInvalid
+			break
+		}
+		e = empty(w, r)
+		if e == nil {
+			out, e = repo.RequestArchiveImport(ctx, actor, parts[0], parts[2], r.Header.Get("Idempotency-Key"))
+		}
+	case len(parts) == 5 && parts[1] == "hls" && parts[3] == "imports":
+		if r.Method != "GET" {
+			method(w, "GET")
+			return
+		}
+		out, e = repo.GetArchiveImport(ctx, actor, parts[0], parts[2], parts[4])
 	case len(parts) == 4 && parts[1] == "hls":
 		if r.Method != "GET" {
 			method(w, "GET")
+			return
+		}
+		download := r.URL.Query().Get("download")
+		if download != "" && download != "true" {
+			failure(w, ErrInvalid)
 			return
 		}
 		var data Playback
@@ -68,6 +93,9 @@ func (s *Service) outputsHTTP(w http.ResponseWriter, r *http.Request, ctx contex
 		w.Header().Set("Pragma", "no-cache")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Content-Length", strconv.Itoa(len(data.Body)))
+		if download == "true" {
+			w.Header().Set("Content-Disposition", `attachment; filename="`+strings.ReplaceAll(parts[3], `"`, "")+`"`)
+		}
 		w.WriteHeader(200)
 		_, _ = w.Write(data.Body)
 		return

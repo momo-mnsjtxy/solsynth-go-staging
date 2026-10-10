@@ -9,6 +9,8 @@ import (
 )
 
 const PermissionTransferRequests = "wallets.transfer.requests.manage"
+const PermissionTransferRequestInspect = "wallets.transfer.requests.inspect"
+const PermissionTransferRequestPurge = "wallets.transfer.requests.purge"
 
 // Numeric states are owned persistence semantics. The retained authored Flutter
 // model consumes the other fields and does not deserialize the original enum.
@@ -45,6 +47,10 @@ type TransferRequestRepository interface {
 	CreateTransferRequest(context.Context, string, Owner, string, CreateTransferRequest) (TransferRequestRecord, error)
 	PublicTransferRequest(context.Context, string) (TransferRequestRecord, error)
 	ResolveTransferRequest(context.Context, string, string) (TransferRequestRecord, error)
+}
+type TransferRequestMaintenanceRepository interface {
+	InspectTransferRequests(context.Context, string, int, int) ([]TransferRequestRecord, int64, error)
+	PurgeTransferRequests(context.Context, string, time.Time, int) (int64, error)
 }
 
 func ValidateTransferRequest(q CreateTransferRequest) error {

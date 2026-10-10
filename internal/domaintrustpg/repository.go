@@ -341,4 +341,38 @@ func (r *Repository) Metric(ctx context.Context, actor, host string) (out d.Metr
 	return
 }
 
+func (r *Repository) PurgeMetrics(ctx context.Context, actor string, q d.MetricMaintenance) (out d.MetricPurgeResult, e error) {
+	if q.Limit < 1 || q.Limit > 10000 || q.OlderThan.IsZero() || q.OlderThan.After(r.cfg.Now().UTC().Add(-time.Hour)) {
+		return out, d.ErrInvalid
+	}
+	tx, e := r.begin(ctx, actor, "domain.trust.metrics.purge", true)
+	if e != nil {
+		return out, e
+	}
+	defer tx.Rollback()
+	res, e := tx.ExecContext(ctx, `DELETE FROM owned_domain_trust_metrics WHERE domain IN(SELECT domain FROM owned_domain_trust_metrics WHERE last_checked_at<$1::timestamptz ORDER BY last_checked_at,domain COLLATE "C" LIMIT $2::integer FOR UPDATE SKIP LOCKED)`, q.OlderThan.UTC(), q.Limit)
+	if e != nil {
+		return out, e
+	}
+	out.Purged, e = res.RowsAffected()
+	if e != nil {
+		return out, e
+	}
+	e = r.commit(ctx, tx, actor, "domain.trust.metrics.purge")
+	return out, e
+}
+
+// PurgeMetricsDue is host-policy retention. It accepts no user identity and is
+// reachable only from the explicitly configured backend maintenance worker.
+func (r *Repository) PurgeMetricsDue(ctx context.Context, retention time.Duration, limit int) (int64, error) {
+	if r == nil || r.db == nil || retention < time.Hour || retention > 10*365*24*time.Hour || limit < 1 || limit > 10000 {
+		return 0, d.ErrInvalid
+	}
+	result, e := r.db.ExecContext(ctx, `DELETE FROM owned_domain_trust_metrics WHERE domain IN(SELECT domain FROM owned_domain_trust_metrics WHERE last_checked_at<clock_timestamp()-($1::bigint*interval '1 microsecond') ORDER BY last_checked_at,domain COLLATE "C" LIMIT $2::integer FOR UPDATE SKIP LOCKED)`, retention.Microseconds(), limit)
+	if e != nil {
+		return 0, e
+	}
+	return result.RowsAffected()
+}
+
 var _ d.Repository = (*Repository)(nil)

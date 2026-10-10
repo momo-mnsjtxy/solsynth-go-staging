@@ -19,8 +19,29 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if b == nil || b.db == nil || b.authorityDB == nil {
 		return errors.New("backend unavailable")
 	}
+	if b.publisherNotifications != nil {
+		if e := b.publisherNotifications.Ready(ctx); e != nil {
+			return e
+		}
+	}
+	if e := b.notificationDevices.ready(ctx); e != nil {
+		return e
+	}
+	if b.notificationWorker != nil && b.notificationWorker.Repository != nil {
+		if e := b.notificationWorker.Repository.NightOwlReady(ctx); e != nil {
+			return e
+		}
+	}
+	if e := b.accountConnections.ready(ctx); e != nil {
+		return e
+	}
 	if b.accountHistory != nil {
 		if e := b.accountHistory.Ready(ctx); e != nil {
+			return e
+		}
+	}
+	if b.progression != nil {
+		if e := b.progression.Ready(ctx); e != nil {
 			return e
 		}
 	}
@@ -67,14 +88,14 @@ func (b *Backend) Ready(ctx context.Context) error {
 		return e
 	}
 	var ready bool
-	err := b.authorityDB.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name) IS NOT NULL) FROM (VALUES ('owned_authority_accounts'), ('owned_authority_sessions'), ('owned_authority_grants'), ('owned_authority_groups'), ('owned_authority_group_members'), ('owned_authority_group_grants'), ('owned_authority_punishments')) AS required(name)`).Scan(&ready)
+	err := b.authorityDB.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name) IS NOT NULL) FROM (VALUES ('owned_authority_accounts'), ('owned_authority_sessions'), ('owned_authority_grants'), ('owned_authority_groups'), ('owned_authority_group_members'), ('owned_authority_group_grants'), ('owned_authority_punishments'), ('owned_authority_stream_tickets')) AS required(name)`).Scan(&ready)
 	if err != nil || !ready {
 		return errors.New("authority schema unavailable")
 	}
 	if err := authoritypg.New(b.authorityDB).ContinuityReady(ctx); err != nil {
 		return errors.New("authority continuity schema unavailable")
 	}
-	err = b.db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name) IS NOT NULL) FROM (VALUES ('owned_authority_accounts'), ('owned_accounts_profiles'), ('owned_publishers'), ('owned_publisher_members'), ('owned_publishing_settings'), ('owned_publisher_quota'), ('owned_publisher_entitlements'), ('owned_accounts_audit'), ('account_board_items'), ('owned_taxonomy.posts'), ('owned_taxonomy.post_tags'), ('owned_taxonomy.post_categories'), ('owned_taxonomy.post_tag_links'), ('owned_taxonomy.post_category_links'), ('owned_taxonomy.post_category_subscriptions'), ('owned_taxonomy.actions'), ('owned_text_posts'), ('owned_text_post_audit'), ('owned_post_media'), ('owned_merchant_management_audit'), ('owned_presence_activities'), ('owned_activity_catalog'), ('owned_activity_events'), ('owned_presence_preferences'), ('owned_presence_last_seen'), ('owned_presence_sessions'), ('owned_presence_statuses'), ('owned_presence_activity_days'), ('owned_progression_definitions'), ('owned_progression_events'), ('owned_progression_progress'), ('owned_progression_grants'), ('owned_progression_experience'), ('owned_progression_badges'), ('owned_progression_checkins'), ('owned_progression_level_policy'), ('owned_progression_audit'), ('owned_progression_outbox'), ('owned_progression_projection_receipts'), ('owned_meets'), ('owned_meet_participants'), ('owned_location_pins'), ('owned_nfc_tags'), ('owned_location_audit'), ('owned_surveys'), ('owned_survey_answers'), ('owned_survey_audit'), ('owned_survey_subscriptions'), ('owned_survey_notifications'), ('owned_sticker_packs'), ('owned_stickers'), ('owned_sticker_ownerships'), ('owned_sticker_audit'), ('owned_post_relations'), ('owned_publisher_follow_policy'), ('owned_publisher_follows'), ('owned_timeline_interests'), ('owned_timeline_preferences'), ('owned_timeline_audit'), ('owned_post_watch_preferences'), ('commerce_v1.orders'), ('commerce_v1.subscriptions'), ('commerce_v1.gifts'), ('commerce_v1.definitions'), ('commerce_v1.outbox'), ('commerce_v1.subscription_maintenance_quarantine'), ('owned_developers'), ('owned_dev_projects'), ('owned_custom_apps'), ('owned_app_products'), ('owned_app_widgets'), ('owned_app_secrets'), ('owned_app_consents'), ('owned_apps_audit'), ('notification_v1.streams'), ('notification_v1.inbox'), ('notification_v1.outbox'), ('notification_v1.events'), ('notification_v1.receipts'), ('notification_v1.deliveries'), ('owned_social_effective_relationships'), ('owned_realms'), ('owned_realm_members'), ('owned_post_reactions'), ('owned_post_bookmarks'), ('owned_post_collections'), ('owned_post_collection_items'), ('owned_taxonomy.owned_collection_subscription_live'), ('owned_collection_publications'), ('owned_collection_publication_notifications'), ('owned_collection_publication_subscriptions'), ('chat_rooms'), ('chat_members'), ('chat_messages'), ('chat_reactions'), ('wallet_v1.wallets'), ('wallet_v1.pockets'), ('wallet_v1.transactions'), ('wallet_v1.outbox'), ('wallet_v1.payment_policies'), ('wallet_v1.realm_grants')) AS required(name)`).Scan(&ready)
+	err = b.db.QueryRowContext(ctx, `SELECT bool_and(to_regclass(name) IS NOT NULL) FROM (VALUES ('owned_authority_accounts'), ('owned_accounts_profiles'), ('owned_publishers'), ('owned_publisher_members'), ('owned_publishing_settings'), ('owned_publisher_quota'), ('owned_publisher_entitlements'), ('owned_publisher_features'), ('owned_publisher_relationships'), ('owned_accounts_audit'), ('account_board_items'), ('owned_taxonomy.posts'), ('owned_taxonomy.post_tags'), ('owned_taxonomy.post_categories'), ('owned_taxonomy.post_tag_links'), ('owned_taxonomy.post_category_links'), ('owned_taxonomy.post_category_subscriptions'), ('owned_taxonomy.actions'), ('owned_text_posts'), ('owned_text_post_audit'), ('owned_post_boosts'), ('owned_post_progression_sources'), ('owned_post_featured_days'), ('owned_post_media'), ('owned_merchant_management_audit'), ('owned_presence_activities'), ('owned_activity_catalog'), ('owned_activity_events'), ('owned_presence_preferences'), ('owned_presence_last_seen'), ('owned_presence_sessions'), ('owned_presence_statuses'), ('owned_presence_activity_days'), ('owned_progression_definitions'), ('owned_progression_events'), ('owned_progression_progress'), ('owned_progression_grants'), ('owned_progression_experience'), ('owned_progression_badges'), ('owned_progression_checkins'), ('owned_progression_level_policy'), ('owned_progression_audit'), ('owned_progression_outbox'), ('owned_progression_projection_receipts'), ('owned_meets'), ('owned_meet_participants'), ('owned_location_pins'), ('owned_nfc_tags'), ('owned_location_audit'), ('owned_surveys'), ('owned_survey_answers'), ('owned_survey_audit'), ('owned_survey_subscriptions'), ('owned_survey_notifications'), ('owned_sticker_packs'), ('owned_stickers'), ('owned_sticker_ownerships'), ('owned_sticker_audit'), ('owned_post_relations'), ('owned_publisher_follow_policy'), ('owned_publisher_follows'), ('owned_timeline_interests'), ('owned_timeline_preferences'), ('owned_timeline_audit'), ('owned_post_watch_preferences'), ('commerce_v1.orders'), ('commerce_v1.subscriptions'), ('commerce_v1.gifts'), ('commerce_v1.definitions'), ('commerce_v1.outbox'), ('commerce_v1.subscription_maintenance_quarantine'), ('commerce_v1.subscription_trials'), ('commerce_v1.stellar_support_months'), ('commerce_v1.merchant_settlements'), ('commerce_v1.order_reversals'), ('owned_developers'), ('owned_dev_projects'), ('owned_custom_apps'), ('owned_app_products'), ('owned_app_widgets'), ('owned_app_secrets'), ('owned_app_consents'), ('owned_apps_audit'), ('notification_v1.streams'), ('notification_v1.inbox'), ('notification_v1.outbox'), ('notification_v1.events'), ('notification_v1.receipts'), ('notification_v1.deliveries'), ('owned_social_effective_relationships'), ('owned_realms'), ('owned_realm_members'), ('owned_post_reactions'), ('owned_post_bookmarks'), ('owned_post_collections'), ('owned_post_collection_items'), ('owned_taxonomy.owned_collection_subscription_live'), ('owned_collection_publications'), ('owned_collection_publication_notifications'), ('owned_collection_publication_subscriptions'), ('chat_rooms'), ('chat_members'), ('chat_messages'), ('chat_reactions'), ('wallet_v1.wallets'), ('wallet_v1.pockets'), ('wallet_v1.transactions'), ('wallet_v1.outbox'), ('wallet_v1.payment_policies'), ('wallet_v1.realm_grants')) AS required(name)`).Scan(&ready)
 	if err != nil || !ready {
 		return errors.New("domain schema unavailable")
 	}
@@ -91,8 +112,47 @@ func (b *Backend) Ready(ctx context.Context) error {
 	if err := b.publisherCommerce.ready(ctx); err != nil {
 		return err
 	}
-	if _, err := b.db.ExecContext(ctx, `SELECT awarded_score,blog_metadata FROM owned_text_posts LIMIT 0`); err != nil {
+	if _, err := b.db.ExecContext(ctx, `SELECT awarded_score,blog_metadata,pin_mode FROM owned_text_posts LIMIT 0; SELECT background_file_id,icon_file_id FROM owned_post_collections LIMIT 0`); err != nil {
 		return err
+	}
+	if _, err := b.db.ExecContext(ctx, `SELECT target_publisher_id,action_publisher_id,account_id,published_at,tag_id,category_id,score,featured_day,featured_rank FROM owned_post_progression_sources LIMIT 0; SELECT day,completed_at,candidate_count FROM owned_post_featured_days LIMIT 0; SELECT transaction_id,payer_wallet_id,payee_wallet_id,currency,amount,confirmed_at,cycle_days FROM commerce_v1.stellar_support_months LIMIT 0`); err != nil {
+		return errors.New("progression source schema unavailable")
+	}
+	err = b.db.QueryRowContext(ctx, `SELECT
+	 bool_and(EXISTS(SELECT 1 FROM pg_constraint c WHERE c.conrelid=required.relation::regclass AND c.conname=required.name AND c.convalidated))
+	 FROM(VALUES
+	  ('owned_post_progression_sources','owned_post_progression_source_kind'),
+	  ('owned_post_progression_sources','owned_post_progression_source_shape'),
+	  ('owned_post_progression_sources','owned_post_progression_source_post'),
+	  ('owned_post_progression_sources','owned_post_progression_source_target_publisher'),
+	  ('owned_post_progression_sources','owned_post_progression_source_action_publisher'),
+	  ('owned_post_progression_sources','owned_post_progression_source_account'),
+	  ('owned_post_progression_sources','owned_post_progression_source_tag'),
+	  ('owned_post_progression_sources','owned_post_progression_source_category'),
+	  ('owned_post_featured_days','owned_post_featured_day_count'),
+	  ('commerce_v1.stellar_support_months','stellar_support_month_shape'),
+	  ('commerce_v1.stellar_support_months','stellar_support_month_order'),
+	  ('commerce_v1.stellar_support_months','stellar_support_month_subscription'),
+	  ('commerce_v1.stellar_support_months','stellar_support_month_account'),
+	  ('commerce_v1.stellar_support_months','stellar_support_month_transaction'),
+	  ('commerce_v1.stellar_support_months','stellar_support_month_payer'),
+	  ('commerce_v1.stellar_support_months','stellar_support_month_payee'),
+	  ('commerce_v1.stellar_support_months','stellar_support_month_order_index')
+	 )required(relation,name)`).Scan(&ready)
+	if err != nil || !ready {
+		return errors.New("progression source constraints unavailable")
+	}
+	err = b.db.QueryRowContext(ctx, `SELECT
+	 to_regclass('owned_post_progression_topical_once') IS NOT NULL
+	 AND to_regclass('owned_post_progression_featured_day_rank') IS NOT NULL
+	 AND to_regclass('owned_post_progression_featured_day_post') IS NOT NULL
+	 AND to_regclass('owned_post_progression_due') IS NOT NULL
+	 AND EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='public.owned_post_featured_days'::regclass AND conname='owned_post_featured_days_pkey' AND contype='p' AND conkey=ARRAY[(SELECT attnum FROM pg_attribute WHERE attrelid='public.owned_post_featured_days'::regclass AND attname='day' AND NOT attisdropped)]::smallint[])
+	 AND to_regclass('commerce_v1.stellar_support_months_due') IS NOT NULL
+	 AND EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='owned_post_progression_sources'::regclass AND tgname='owned_post_progression_source_immutable' AND NOT tgisinternal AND tgenabled<>'D')
+	 AND EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='commerce_v1.stellar_support_months'::regclass AND tgname='stellar_support_month_immutable' AND NOT tgisinternal AND tgenabled<>'D')`).Scan(&ready)
+	if err != nil || !ready {
+		return errors.New("progression source integrity unavailable")
 	}
 	if b.wallet != nil {
 		if err := b.wallet.ExchangeReady(ctx); err != nil {
@@ -107,6 +167,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 	}
 	if err := b.domainCollections.ready(ctx); err != nil {
 		return err
+	}
+	if b.locations != nil {
+		if err := b.locations.Ready(ctx); err != nil {
+			return errors.New("location extension schema unavailable")
+		}
 	}
 	if err := b.accountExtras.ready(ctx); err != nil {
 		return err
@@ -148,6 +213,9 @@ func (b *Backend) Ready(ctx context.Context) error {
 		}
 	}
 	if b.chat != nil {
+		if e := b.chat.TransientReady(ctx); e != nil {
+			return e
+		}
 		if err := b.chat.RelationsReady(ctx); err != nil {
 			return err
 		}
@@ -214,6 +282,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 		return errors.New("chat write schema unavailable")
 	}
 	if b.media != nil {
+		if b.voiceEnabled {
+			if err := b.media.VoiceReady(ctx); err != nil {
+				return err
+			}
+		}
 		if err := b.media.ArtworkReady(ctx); err != nil {
 			return err
 		}

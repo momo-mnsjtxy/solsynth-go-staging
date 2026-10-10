@@ -31,3 +31,14 @@ CREATE TABLE IF NOT EXISTS owned_activity_events (
  action text NOT NULL CHECK(action IN('set','start','update','end','delete')),
  occurred_at timestamptz NOT NULL,UNIQUE(activity_id,revision)
 );
+-- A background observation renews only an explicitly admitted activity. It
+-- never manufactures a request proof or outlives the owner's bounded consent.
+CREATE TABLE IF NOT EXISTS owned_provider_presence_consents (
+ connection_id uuid PRIMARY KEY,account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),provider text NOT NULL CHECK(provider IN('steam','lastfm')),
+ activity_id uuid NOT NULL REFERENCES owned_presence_activities(id),session_id uuid NOT NULL,account_version bigint NOT NULL,authorization_epoch bigint NOT NULL,
+ provided_identifier text NOT NULL,visibility integer NOT NULL CHECK(visibility BETWEEN 0 AND 2),lease_minutes integer NOT NULL CHECK(lease_minutes BETWEEN 1 AND 60),
+ created_at timestamptz NOT NULL,expires_at timestamptz NOT NULL,revoked_at timestamptz,next_at timestamptz NOT NULL,claim_id uuid,claimed_until timestamptz,
+ FOREIGN KEY(account_id,session_id) REFERENCES owned_authority_sessions(account_id,id),CHECK(expires_at>created_at AND expires_at<=created_at+interval '24 hours'),CHECK((claim_id IS NULL)=(claimed_until IS NULL))
+);
+CREATE INDEX IF NOT EXISTS owned_provider_presence_due ON owned_provider_presence_consents(next_at,connection_id)WHERE revoked_at IS NULL;
+CREATE TABLE IF NOT EXISTS owned_provider_presence_rate(provider text PRIMARY KEY CHECK(provider IN('steam','lastfm')),next_at timestamptz NOT NULL);

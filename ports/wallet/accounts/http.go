@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Authenticator must derive principals from verified authority state. Header
@@ -78,7 +79,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	if r.Method == "GET" && strings.HasPrefix(path, "/api/wallets/transfer/requests/") {
+	if r.Method == "GET" && strings.HasPrefix(path, "/api/wallets/transfer/requests/") && path != "/api/wallets/transfer/requests/admin" {
 		id := strings.TrimPrefix(path, "/api/wallets/transfer/requests/")
 		if !ValidID(id) {
 			fail(w, ErrNotFound)
@@ -149,6 +150,65 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	var value any
 	switch {
+	case r.Method == "GET" && suffix == "/transfer/requests/admin":
+		repo, ok := h.Service.Store.(TransferRequestMaintenanceRepository)
+		if !ok {
+			e = ErrUnavailable
+			break
+		}
+		if e = h.Service.permission(ctx, p, PermissionTransferRequestInspect); e != nil {
+			break
+		}
+		for key, values := range r.URL.Query() {
+			if key != "offset" && key != "take" || len(values) != 1 {
+				e = ErrInvalid
+				break
+			}
+		}
+		if e != nil {
+			break
+		}
+		offset, take := 0, 50
+		if raw := r.URL.Query().Get("offset"); raw != "" {
+			offset, e = strconv.Atoi(raw)
+		}
+		if e == nil {
+			if raw := r.URL.Query().Get("take"); raw != "" {
+				take, e = strconv.Atoi(raw)
+			}
+		}
+		if e != nil || offset < 0 || offset > 100000 || take < 1 || take > 200 {
+			e = ErrInvalid
+			break
+		}
+		var total int64
+		value, total, e = repo.InspectTransferRequests(ctx, p.AccountID, offset, take)
+		if e == nil {
+			w.Header().Set("X-Total", strconv.FormatInt(total, 10))
+		}
+	case r.Method == "POST" && suffix == "/transfer/requests/purge":
+		repo, ok := h.Service.Store.(TransferRequestMaintenanceRepository)
+		if !ok {
+			e = ErrUnavailable
+			break
+		}
+		if e = h.Service.permission(ctx, p, PermissionTransferRequestPurge); e != nil {
+			break
+		}
+		if len(r.URL.Query()) != 0 {
+			e = ErrInvalid
+			break
+		}
+		var request struct {
+			OlderThan time.Time `json:"older_than"`
+			Limit     int       `json:"limit"`
+		}
+		if e = decode(w, r, &request, false); e != nil {
+			break
+		}
+		var n int64
+		n, e = repo.PurgeTransferRequests(ctx, p.AccountID, request.OlderThan, request.Limit)
+		value = map[string]int64{"purged": n}
 	case r.Method == "GET" && suffix == "":
 		value, e = h.Service.Get(ctx, p, "")
 	case r.Method == "GET" && suffix == "/all":

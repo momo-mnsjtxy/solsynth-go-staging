@@ -30,6 +30,12 @@ func discoveryDocuments(t *testing.T, k testKeys) (DiscoveryTarget, []byte, []by
 func TestDiscoveryPinnedTwoDocumentObservation(t *testing.T) {
 	c, k := keyFixture(t)
 	target, jrd, actor := discoveryDocuments(t, k)
+	var actorDocument map[string]any
+	if json.Unmarshal(actor, &actorDocument) != nil {
+		t.Fatal("invalid fixture actor")
+	}
+	actorDocument["alsoKnownAs"] = []string{"https://remote.example.test/actors/old"}
+	actor, _ = json.Marshal(actorDocument)
 	calls := 0
 	fetch := syntheticFetch(func(ctx context.Context, uri, accept string) (FetchResponse, error) {
 		if _, ok := ctx.Deadline(); !ok {
@@ -46,7 +52,7 @@ func TestDiscoveryPinnedTwoDocumentObservation(t *testing.T) {
 		return FetchResponse{}, ErrInvalid
 	})
 	out, retry, e := Discover(context.Background(), c, target, k.remote, fetch)
-	if e != nil || retry || calls != 2 || out.ID != target.Actor || out.Name != "&lt;script&gt;unsafe&lt;/script&gt;" || out.Observation != "unsigned_document_matches_configured_pin" {
+	if e != nil || retry || calls != 2 || out.ID != target.Actor || out.Name != "&lt;script&gt;unsafe&lt;/script&gt;" || out.Observation != "unsigned_document_matches_configured_pin" || len(out.AlsoKnownAs) != 1 {
 		t.Fatal(out, retry, e, calls)
 	}
 	var mapped map[string]any

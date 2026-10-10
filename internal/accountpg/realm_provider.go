@@ -125,7 +125,7 @@ func (r *Repository) visiblePublisher(ctx context.Context, q querier, viewer, re
 		return p, e
 	}
 	var allowed bool
-	e = q.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publishers p WHERE p.id=$1 AND $2::text IS NOT NULL AND `+r.publisherVisible("p", "$2")+`)`, p.ID, viewer).Scan(&allowed)
+	e = q.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM owned_publishers p WHERE p.id=$1 AND $2::text IS NOT NULL AND `+ActivePublisherOwnerPredicate("p")+` AND `+r.publisherVisible("p", "$2")+` AND `+PublisherRelationshipPredicate("p", "$2", false)+`)`, p.ID, viewer).Scan(&allowed)
 	if e != nil {
 		return accounts.Publisher{}, e
 	}

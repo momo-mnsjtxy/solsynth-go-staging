@@ -34,23 +34,47 @@ func products(ctx context.Context, q queryer, app, ref string, public bool) ([]a
 	}
 	return out, rows.Err()
 }
-func (r *Repository) PublicProducts(ctx context.Context, slug, ref string) ([]apps.Product, error) {
-	a, e := r.PublicApp(ctx, slug)
-	if e != nil {
-		return nil, e
-	}
-	return products(ctx, r.db, a.ID, ref, true)
+func (r *Repository) PublicProducts(ctx context.Context, slug, ref string) (out []apps.Product, e error) {
+	e = r.read(ctx, nil, func(tx *sql.Tx) error {
+		a, err := appScan(tx.QueryRowContext(ctx, `SELECT `+appColumns+appJoins+` WHERE lower(a.slug)=lower($1) AND a.status=1 AND pub.shadowbanned_at IS NULL AND `+activeApp, slug))
+		if err != nil {
+			return err
+		}
+		out, err = products(ctx, tx, a.ID, ref, true)
+		if err != nil {
+			return err
+		}
+		for i := range out {
+			if err = r.loadProductMedia(ctx, tx, "", &out[i]); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return
 }
 func (r *Repository) Products(ctx context.Context, s apps.Scope, ref string, p *apps.ProductPatch, action string) ([]apps.Product, error) {
 	if r == nil || r.db == nil {
 		return nil, apps.ErrUnavailable
 	}
 	if action == "read" {
-		if _, e := scope(ctx, r.db, s, 0, false); e != nil {
-			return nil, e
-		}
-		return products(ctx, r.db, s.App, ref, false)
+		var out []apps.Product
+		e := r.read(ctx, &s, func(tx *sql.Tx) error {
+			var e error
+			out, e = products(ctx, tx, s.App, ref, false)
+			if e != nil {
+				return e
+			}
+			for i := range out {
+				if e = r.loadProductMedia(ctx, tx, s.Actor, &out[i]); e != nil {
+					return e
+				}
+			}
+			return nil
+		})
+		return out, e
 	}
+
 	if p != nil {
 		if e := apps.ValidateProduct(*p, action == "create"); e != nil {
 			return nil, e
@@ -130,6 +154,7 @@ func (r *Repository) Products(ctx context.Context, s apps.Scope, ref string, p *
 			if v.State.StockMode != "unlimited" && v.State.StockQuantity == nil {
 				return apps.ErrInvalid
 			}
+			v.Picture, v.Background = nil, nil
 			v.UpdatedAt = now
 			if action == "create" {
 				if _, e := tx.ExecContext(ctx, `INSERT INTO owned_app_products(id,app_id,identifier,document,created_at,updated_at)VALUES($1,$2,$3,$4::jsonb,$5,$5)`, v.ID, s.App, v.Identifier, encoded(v), now); e != nil {
@@ -141,13 +166,40 @@ func (r *Repository) Products(ctx context.Context, s apps.Scope, ref string, p *
 				}
 			}
 		}
+		// Persist product metadata without cached file identities or visibility.
+		v.Picture, v.Background = nil, nil
+		if action == "delete" {
+			if r.media != nil {
+				if e := r.media.Remove(ctx, tx, "product", v.ID); e != nil {
+					return e
+				}
+			}
+		} else {
+			if e := r.applyMedia(ctx, tx, s.Actor, "product", v.ID, p.PictureID, p.BackgroundID); e != nil {
+				return e
+			}
+		}
 		if r.productCatalog != nil {
 			if e := r.productCatalog.SyncProduct(ctx, tx, v, action == "delete"); e != nil {
 				return e
 			}
 		}
+		if _, e := scope(ctx, tx, s, 50, true); e != nil {
+			return e
+		}
+		if e := audit(ctx, tx, s.Actor, s.App, "developers.apps.products."+action, v.ID, now); e != nil {
+			return e
+		}
+		if action != "delete" {
+			if e := r.loadProductMedia(ctx, tx, s.Actor, &v); e != nil {
+				return e
+			}
+		}
+		if _, e := scope(ctx, tx, s, 50, true); e != nil {
+			return e
+		}
 		out = append(out, v)
-		return audit(ctx, tx, s.Actor, s.App, "developers.apps.products."+action, v.ID, now)
+		return nil
 	})
 	return out, e
 }

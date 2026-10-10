@@ -18,13 +18,14 @@ import (
 var Schema string
 
 type Repository struct {
-	db     *sql.DB
-	access rooms.AccessPolicy
-	none   int32
+	db         *sql.DB
+	access     rooms.AccessPolicy
+	none       int32
+	voiceReads bool
 }
 
 func New(db *sql.DB, access rooms.AccessPolicy, none int32) *Repository {
-	return &Repository{db, access, none}
+	return &Repository{db: db, access: access, none: none}
 }
 func (r *Repository) Ready(ctx context.Context) error {
 	if r == nil || r.db == nil || r.access == nil {
@@ -118,7 +119,7 @@ func (r *Repository) Load(ctx context.Context, tx *sql.Tx, actor string, m *mess
 		return nil
 	}
 	mid := m.ID
-	if m.Type == "messages.update" {
+	if m.Type == "messages.update" || m.Type == "messages.sync.finalize" {
 		var meta struct {
 			ID string `json:"message_id"`
 		}

@@ -30,6 +30,7 @@ type Repository struct {
 	guard          TransactionGuard
 	cache          board.Cache
 	productCatalog ProductCatalog
+	media          apps.MediaStore
 }
 
 // New enables public reads and app-authenticated operations. Account-owned
@@ -93,6 +94,9 @@ func (r *Repository) write(ctx context.Context, actor, permission string, fn fun
 	if e = fn(tx, now.UTC()); e != nil {
 		return mapped(e)
 	}
+	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, permission); e != nil {
+		return e
+	}
 	return tx.Commit()
 }
 func audit(ctx context.Context, tx *sql.Tx, actor, app, action, target string, now time.Time) error {
@@ -104,8 +108,14 @@ func audit(ctx context.Context, tx *sql.Tx, actor, app, action, target string, n
 	return e
 }
 func developer(ctx context.Context, q queryer, actor, name string, role int, lock bool) (apps.Developer, error) {
+	return developerWithOwnerPolicy(ctx, q, actor, name, role, lock, true)
+}
+func developerWithOwnerPolicy(ctx context.Context, q queryer, actor, name string, role int, lock, requireActiveOwner bool) (apps.Developer, error) {
 	var d apps.Developer
 	s := `SELECT d.id::text,d.publisher_id::text,p.name,d.created_at FROM owned_developers d JOIN owned_publishers p ON p.id=d.publisher_id JOIN owned_publisher_members m ON m.publisher_id=p.id JOIN owned_authority_accounts a ON a.id=m.account_id WHERE ` + accountpg.PublisherNamePredicate("p", "$1") + ` AND p.deleted_at IS NULL AND p.type=0 AND m.account_id=$2 AND m.joined_at IS NOT NULL AND m.revoked_at IS NULL AND m.role>=$3 AND NOT a.disabled`
+	if requireActiveOwner {
+		s += ` AND EXISTS(SELECT 1 FROM owned_authority_accounts owner WHERE owner.id=p.account_id AND NOT owner.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments punishment WHERE punishment.account_id=owner.id AND punishment.kind='disable_account' AND(punishment.starts_at IS NULL OR punishment.starts_at<=clock_timestamp())AND(punishment.expires_at IS NULL OR punishment.expires_at>clock_timestamp())))`
+	}
 	if lock {
 		s += ` FOR UPDATE OF p,m`
 	}
@@ -116,10 +126,15 @@ func developer(ctx context.Context, q queryer, actor, name string, role int, loc
 	return d, e
 }
 func scope(ctx context.Context, q queryer, s apps.Scope, role int, lock bool) (apps.Developer, error) {
+	return scopeWithOwnerPolicy(ctx, q, s, role, lock, true)
+}
+
+// Only explicit credential deletion may clean up a disabled resource owner.
+func scopeWithOwnerPolicy(ctx context.Context, q queryer, s apps.Scope, role int, lock, requireActiveOwner bool) (apps.Developer, error) {
 	if !authority.ValidID(s.Actor) || !authority.ValidID(s.Project) || s.App != "" && !authority.ValidID(s.App) {
 		return apps.Developer{}, apps.ErrInvalid
 	}
-	d, e := developer(ctx, q, s.Actor, s.Developer, role, lock)
+	d, e := developerWithOwnerPolicy(ctx, q, s.Actor, s.Developer, role, lock, requireActiveOwner)
 	if e != nil {
 		return d, e
 	}
@@ -313,23 +328,34 @@ func (r *Repository) Apps(ctx context.Context, s apps.Scope, p *apps.AppPatch, a
 		return nil, apps.ErrUnavailable
 	}
 	if action == "read" {
-		if _, e := scope(ctx, r.db, s, 0, false); e != nil {
-			return nil, e
-		}
-		rows, e := r.db.QueryContext(ctx, `SELECT `+appColumns+appJoins+` WHERE `+activeApp+` AND a.project_id=$1 AND($2='' OR a.id::text=$2) ORDER BY a.name,a.id`, s.Project, s.App)
-		if e != nil {
-			return nil, e
-		}
-		defer rows.Close()
-		for rows.Next() {
-			a, e := appScan(rows)
+		e := r.read(ctx, &s, func(tx *sql.Tx) error {
+			rows, e := tx.QueryContext(ctx, `SELECT `+appColumns+appJoins+` WHERE `+activeApp+` AND a.project_id=$1 AND($2='' OR a.id::text=$2) ORDER BY a.name,a.id`, s.Project, s.App)
 			if e != nil {
-				return nil, e
+				return e
 			}
-			out = append(out, a)
-		}
-		return out, rows.Err()
+			for rows.Next() {
+				a, e := appScan(rows)
+				if e != nil {
+					rows.Close()
+					return e
+				}
+				out = append(out, a)
+			}
+			e = rows.Err()
+			rows.Close()
+			if e != nil {
+				return e
+			}
+			for i := range out {
+				if e = r.loadAppMedia(ctx, tx, s.Actor, &out[i]); e != nil {
+					return e
+				}
+			}
+			return nil
+		})
+		return out, e
 	}
+
 	if p != nil {
 		if e := apps.ValidateApp(*p, action == "create"); e != nil {
 			return nil, e
@@ -399,16 +425,52 @@ func (r *Repository) Apps(ctx context.Context, s apps.Scope, p *apps.AppPatch, a
 				}
 			}
 		}
+		if action == "delete" {
+			if r.media != nil {
+				if e = r.media.Remove(ctx, tx, "app", a.ID); e != nil {
+					return e
+				}
+			}
+		} else {
+			if e = r.applyMedia(ctx, tx, s.Actor, "app", a.ID, p.PictureID, p.BackgroundID); e != nil {
+				return e
+			}
+		}
+		finalScope := s
+		if action == "delete" {
+			finalScope.App = ""
+		}
+		if _, e = scope(ctx, tx, finalScope, 50, true); e != nil {
+			return e
+		}
+		if e = audit(ctx, tx, s.Actor, a.ID, "developers.apps."+action, a.ID, now); e != nil {
+			return e
+		}
+		// A retained image can belong to a different uploader whose account or
+		// file changed during the audit wait. Project current metadata afterwards.
+		if action != "delete" {
+			if e = r.loadAppMedia(ctx, tx, s.Actor, &a); e != nil {
+				return e
+			}
+		}
+		if _, e = scope(ctx, tx, finalScope, 50, true); e != nil {
+			return e
+		}
 		out = append(out, a)
-		return audit(ctx, tx, s.Actor, a.ID, "developers.apps."+action, a.ID, now)
+		return nil
 	})
 	return out, e
 }
-func (r *Repository) PublicApp(ctx context.Context, slug string) (apps.App, error) {
-	if r == nil || r.db == nil {
-		return apps.App{}, apps.ErrUnavailable
-	}
-	return appScan(r.db.QueryRowContext(ctx, `SELECT `+appColumns+appJoins+` WHERE lower(a.slug)=lower($1) AND a.status=1 AND pub.shadowbanned_at IS NULL AND `+activeApp, slug))
+func (r *Repository) PublicApp(ctx context.Context, slug string) (out apps.App, e error) {
+	e = r.read(ctx, nil, func(tx *sql.Tx) error {
+		var err error
+		out, err = appScan(tx.QueryRowContext(ctx, `SELECT `+appColumns+appJoins+` WHERE lower(a.slug)=lower($1) AND a.status=1 AND pub.shadowbanned_at IS NULL AND `+activeApp, slug))
+		if err != nil {
+			return err
+		}
+		return r.loadAppMedia(ctx, tx, "", &out)
+	})
+	return
 }
 func (r *Repository) Discover(ctx context.Context, q develop.Query) (develop.Page, error) {
 	out := develop.Page{Apps: []develop.AppDiscovery{}}

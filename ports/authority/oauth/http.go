@@ -15,7 +15,7 @@ import (
 
 func RouteMatches(p string) bool {
 	p = strings.TrimPrefix(p, "/stargate")
-	return p == "/.well-known/openid-configuration" || p == "/auth/open/authorize" || p == "/auth/open/token" || p == "/auth/open/userinfo" || p == "/auth/open/jwks" || p == "/auth/open/revoke" || p == "/auth/open/consent"
+	return p == "/.well-known/openid-configuration" || p == "/auth/open/authorize" || p == "/auth/open/token" || p == "/auth/open/userinfo" || p == "/auth/open/jwks" || p == "/auth/open/revoke" || p == "/auth/open/consent" || p == "/auth/open/device" || p == "/auth/open/device/verify" || p == "/auth/open/introspect" || p == "/auth/open/register"
 }
 func (s *Service) Handler() http.Handler { return http.HandlerFunc(s.serve) }
 func respond(w http.ResponseWriter, status int, v any) {
@@ -146,6 +146,9 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, 16384)
 	p := strings.TrimPrefix(r.URL.Path, "/stargate")
+	if s.serveExtension(w, r, p) {
+		return
+	}
 	if p == "/.well-known/openid-configuration" || p == "/auth/open/jwks" {
 		if r.Method != "GET" {
 			w.Header().Set("Allow", "GET")
@@ -165,7 +168,7 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 			fail(w, ErrUnavailable)
 			return
 		}
-		respond(w, 200, map[string]any{"issuer": s.Metadata.OAuthIssuer(), "authorization_endpoint": s.AuthorizationEndpoint, "token_endpoint": issuer + "/auth/open/token", "userinfo_endpoint": issuer + "/auth/open/userinfo", "jwks_uri": issuer + "/auth/open/jwks", "revocation_endpoint": issuer + "/auth/open/revoke", "response_types_supported": []string{"code"}, "grant_types_supported": []string{"authorization_code", "refresh_token"}, "subject_types_supported": []string{"public"}, "id_token_signing_alg_values_supported": []string{"RS256"}, "token_endpoint_auth_methods_supported": []string{"none", "client_secret_basic", "client_secret_post"}, "code_challenge_methods_supported": []string{"S256"}, "scopes_supported": []string{"openid", "profile", "email", "offline_access"}, "claims_supported": []string{"iss", "aud", "sub", "sid", "iat", "exp", "auth_time", "nonce", "name", "preferred_username", "locale", "email", "email_verified"}, "authorization_response_iss_parameter_supported": true})
+		respond(w, 200, map[string]any{"issuer": s.Metadata.OAuthIssuer(), "authorization_endpoint": s.AuthorizationEndpoint, "token_endpoint": issuer + "/auth/open/token", "userinfo_endpoint": issuer + "/auth/open/userinfo", "jwks_uri": issuer + "/auth/open/jwks", "revocation_endpoint": issuer + "/auth/open/revoke", "response_types_supported": []string{"code"}, "device_authorization_endpoint": issuer + "/auth/open/device", "introspection_endpoint": issuer + "/auth/open/introspect", "registration_endpoint": issuer + "/auth/open/register", "introspection_endpoint_auth_methods_supported": []string{"client_secret_basic", "client_secret_post"}, "grant_types_supported": []string{"authorization_code", "refresh_token", DeviceGrant}, "subject_types_supported": []string{"public"}, "id_token_signing_alg_values_supported": []string{"RS256"}, "token_endpoint_auth_methods_supported": []string{"none", "client_secret_basic", "client_secret_post"}, "code_challenge_methods_supported": []string{"S256"}, "scopes_supported": []string{"openid", "profile", "email", "offline_access", "posts.view", "posts.create", "posts.update", "posts.delete", "chat.view", "chat.messages.create", "chat.messages.update", "chat.messages.delete", "profile.read", "wallet.read", "notifications.read", "realms.read"}, "claims_supported": []string{"iss", "aud", "sub", "sid", "iat", "exp", "auth_time", "nonce", "name", "preferred_username", "locale", "email", "email_verified"}, "authorization_response_iss_parameter_supported": true})
 		return
 	}
 	if p == "/auth/open/token" || p == "/auth/open/revoke" {
@@ -174,7 +177,7 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(405)
 			return
 		}
-		keys := []string{"grant_type", "code", "redirect_uri", "code_verifier", "refresh_token", "client_id", "client_secret"}
+		keys := []string{"grant_type", "code", "redirect_uri", "code_verifier", "refresh_token", "client_id", "client_secret", "device_code"}
 		if p == "/auth/open/revoke" {
 			keys = []string{"token", "token_type_hint", "client_id", "client_secret"}
 		}
@@ -200,7 +203,7 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request) {
 			respond(w, 200, nil)
 			return
 		}
-		out, e := s.Repository.Token(r.Context(), TokenRequest{GrantType: v.Get("grant_type"), Code: v.Get("code"), RedirectURI: v.Get("redirect_uri"), CodeVerifier: v.Get("code_verifier"), RefreshToken: v.Get("refresh_token"), ClientID: client, ClientSecret: secret})
+		out, e := s.Repository.Token(r.Context(), TokenRequest{GrantType: v.Get("grant_type"), Code: v.Get("code"), RedirectURI: v.Get("redirect_uri"), CodeVerifier: v.Get("code_verifier"), RefreshToken: v.Get("refresh_token"), ClientID: client, ClientSecret: secret, DeviceCode: v.Get("device_code")})
 		if e != nil {
 			fail(w, e)
 			return

@@ -20,6 +20,15 @@ func (b *Backend) RunNotifications(ctx context.Context, onError func(string)) er
 	return b.notificationWorker.Run(ctx, onError)
 }
 
+// ProcessNotificationStep runs one finite production worker step, including at
+// most one provider delivery after its database lease transaction commits.
+func (b *Backend) ProcessNotificationStep(ctx context.Context) (int, error) {
+	if b == nil || b.notificationWorker == nil {
+		return 0, errors.New("notification worker unavailable")
+	}
+	return b.notificationWorker.Step(ctx)
+}
+
 // ProcessSurveyNotifications performs a bounded local-only step through the same
 // projector registered in RunNotifications. It never dispatches external push.
 func (b *Backend) ProcessSurveyNotifications(ctx context.Context, limit int) (int, error) {
@@ -36,4 +45,13 @@ func (b *Backend) ProcessCollectionPublicationNotifications(ctx context.Context,
 		return 0, errors.New("collection publication notifications unavailable")
 	}
 	return b.collectionNotifications(ctx, limit)
+}
+
+// ProcessPublisherContentNotifications projects durable post-publication and
+// livestream-start intents into the ordinary notification outbox.
+func (b *Backend) ProcessPublisherContentNotifications(ctx context.Context, limit int) (int, error) {
+	if b == nil || b.publisherNotifications == nil {
+		return 0, errors.New("publisher content notifications unavailable")
+	}
+	return b.publisherNotifications.ProcessDue(ctx, limit)
 }

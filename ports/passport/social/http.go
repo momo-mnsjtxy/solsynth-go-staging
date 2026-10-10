@@ -364,13 +364,50 @@ func (s *Service) realmHTTP(w http.ResponseWriter, r *http.Request, actor string
 			}
 			send(w, 200, v)
 		case len(p) == 2 && p[1] == "members":
-			for _, key := range []string{"withStatus", "with_status", "accountName", "account_name", "labelId", "label_id"} {
-				if r.URL.Query().Get(key) != "" {
-					failure(w, ErrUnsupported)
+			f := MemberFilter{Offset: off, Take: take, OrderBy: r.URL.Query().Get("orderBy")}
+			q := r.URL.Query()
+			for _, pair := range [][2]string{{"withStatus", "with_status"}, {"accountName", "account_name"}, {"labelId", "label_id"}} {
+				if q.Has(pair[0]) && q.Has(pair[1]) {
+					failure(w, ErrInvalid)
 					return
 				}
+				value := q.Get(pair[0])
+				if value == "" {
+					value = q.Get(pair[1])
+				}
+				switch pair[0] {
+				case "withStatus":
+					if value != "" {
+						var e error
+						f.WithStatus, e = strconv.ParseBool(value)
+						if e != nil {
+							failure(w, ErrInvalid)
+							return
+						}
+					}
+				case "accountName":
+					f.AccountName = value
+				case "labelId":
+					f.LabelID = value
+				}
 			}
-			v, total, e := s.Repository.Members(ctx, actor, p[0], off, take)
+			var v []Member
+			var total int64
+			var e error
+			if e = ValidateMemberFilter(f); e != nil {
+				failure(w, e)
+				return
+			}
+			if f.WithStatus || f.AccountName != "" || f.LabelID != "" || f.OrderBy != "" {
+				ext, ok := s.Repository.(MemberQueryRepository)
+				if !ok {
+					failure(w, ErrUnavailable)
+					return
+				}
+				v, total, e = ext.MembersFiltered(ctx, actor, p[0], f)
+			} else {
+				v, total, e = s.Repository.Members(ctx, actor, p[0], off, take)
+			}
 			if e != nil {
 				failure(w, e)
 				return

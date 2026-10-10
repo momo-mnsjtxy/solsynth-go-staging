@@ -136,3 +136,7 @@ func checkTOTP(secret []byte, code string, now time.Time, last int64) (int64, bo
 func totpSecret(secret []byte) string {
 	return base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(secret)
 }
+
+// HashAdministrativePassword uses the identical credential format and policy as
+// self-service enrollment. Callers must enforce explicit administrative authority.
+func HashAdministrativePassword(password string) ([]byte, error) { return hashPassword(password) }

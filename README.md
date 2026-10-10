@@ -1,8 +1,10 @@
-Current owned backend checkpoint: see [scope and validation](docs/owned-backend-checkpoint.json) and [authenticated host](docs/authenticated-backend-host.md). The original operation inventory remains a historical baseline; full platform completion is not claimed.
+Current all-drafts integration: see [completion scope and exact validation status](docs/all-drafts-completion-scope.json), [owned backend checkpoint](docs/owned-backend-checkpoint.json), and [authenticated host](docs/authenticated-backend-host.md). The sections below retain historical checkpoints; their test counts and CI claims do not certify the current commit.
+
+The reviewed completion scope excludes external payment channels, migration/deployment, and legacy compatibility. Internal wallet and funded rewards remain included. Configured software adapters are implemented; operator configuration, external service and NFC hardware activation, client adaptation, and the exact candidate's private PostgreSQL/restart CI are separate acceptance requirements. No production deployment or completed-platform claim follows from ordinary tests.
 
 # Solsynth Go migration workspace
 
-**Status: initial, local-only domain ports and migration evidence. This is not a functional replacement for the Solsynth backend.**
+**Historical initial status: local domain ports and migration evidence. Consult the current completion scope above for later implementation and validation.**
 
 The requested target is backend functional parity while retaining the existing frontend clients. The organization contains multiple products and already-migrated Go services. Replacing clients or rebuilding existing Go services is not part of this initial stage.
 
@@ -19,7 +21,7 @@ The policy and board packages are Go library functions with synthetic contract t
 
 ## Test locally
 
-Use a real Go compiler (Go 1.25+); this workspace was verified with Go 1.26.4. The `/usr/bin/go` executable in the current environment is not the Go compiler.
+Use the real Go 1.26.4 compiler and the pinned Python parser dependencies. Download and verify Go modules before the offline verification script.
 
 ```sh
 GOPATH=/workspace/shared/go GOMODCACHE=/workspace/shared/go/pkg/mod \
@@ -67,7 +69,7 @@ The command accepts `--storage postgres --postgres-dsn-env SOLSYNTH_POSTGRES_DSN
 
 The adapter targets the licensed `post_watch_preferences` schema, applies no DDL at startup, and supports transactionally merged preference patches across cooperating Go processes. The original nullable unique index can permit duplicate live rows; the adapter refuses them instead of selecting an arbitrary preference. Existing C# writers do not share its advisory-lock protocol, so mixed-writer deployment is unsupported.
 
-Run the separate `scripts/integration-postgres.sh` only in a suitable disposable environment. Ordinary `go test ./...` skips actual database cases when no disposable test DSN is configured; a package-level `ok` does not mean PostgreSQL was tested. See the dedicated integration verification record for whether real tests ran. Exact Shared audit hooks, legacy concurrent writers and production auth remain explicit gaps.
+Run `scripts/integration-postgres.sh` only through the authorized private GitHub Actions workflow with its disposable database environment. Do not run it locally or spoof its CI guards. Ordinary `go test ./...` skips actual database cases when no disposable test DSN is configured; a package-level `ok` does not mean PostgreSQL was tested. Check all four jobs and both groups' after-restart evidence for the exact candidate SHA. This paragraph's older adapter checkpoint does not describe the current owned authority implementation.
 
 ## Actual CI validation and watcher boundary
 

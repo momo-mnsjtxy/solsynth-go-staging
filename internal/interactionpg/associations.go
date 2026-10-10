@@ -141,11 +141,27 @@ func normalized(v []string) []string {
 	return out
 }
 
+func (r *Repository) RecheckProjection(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post) error {
+	// Load uses fresh canonical metadata predicates but initializes all association
+	// fields. Keep its metadata result without erasing the caller's nested posts.
+	current := *p
+	if e := r.Load(ctx, tx, actor, &current); e != nil {
+		return e
+	}
+	p.Tags, p.Categories = current.Tags, current.Categories
+	p.PublisherCollections = current.PublisherCollections
+	p.ReactionsCount, p.ReactionsMade = current.ReactionsCount, current.ReactionsMade
+	return nil
+}
+
 // Load runs entirely in the caller's snapshot, after its visibility check.
 func (r *Repository) Load(ctx context.Context, tx *sql.Tx, actor string, p *posts.Post) error {
 	postpg.EmptyAssociations(p)
 	if p.DeletedAt != nil {
 		return nil
+	}
+	if e := tx.QueryRowContext(ctx, `SELECT count(*) FROM owned_post_boosts b JOIN owned_publishers u ON u.id=b.publisher_id WHERE b.post_id=$2 AND `+postpg.VisiblePublisherPredicate(r.visibility, "u", "$1", true), actor, p.ID).Scan(&p.BoostCount); e != nil {
+		return e
 	}
 	rows, e := tx.QueryContext(ctx, `SELECT t.id::text,t.slug,t.name,t.description,t.owner_publisher_id::text,t.is_protected,t.is_event,t.event_ends_at FROM owned_taxonomy.post_tags t JOIN owned_taxonomy.post_tag_links l ON l.tags_id=t.id WHERE l.posts_id=$1 AND t.deleted_at IS NULL AND (t.owner_publisher_id IS NULL OR EXISTS(SELECT 1 FROM owned_publishers owner WHERE owner.id=t.owner_publisher_id AND owner.type=0 AND owner.deleted_at IS NULL AND owner.shadowbanned_at IS NULL AND EXISTS(SELECT 1 FROM owned_authority_accounts a WHERE a.id=owner.account_id AND NOT a.disabled))) ORDER BY t.slug,t.id`, p.ID)
 	if e != nil {

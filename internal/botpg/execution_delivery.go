@@ -30,10 +30,13 @@ func messageEventRow(ctx context.Context, tx *sql.Tx, id string, lock bool) (v m
 	return
 }
 
-type executionAncestry struct{ account, app, project, publisher, owner string }
+type executionAncestry struct {
+	account, app, project, publisher, owner string
+	appEpoch                                int64
+}
 
 func observeExecution(ctx context.Context, tx *sql.Tx, bot string) (v executionAncestry, e error) {
-	e = tx.QueryRowContext(ctx, `SELECT b.account_id::text,b.app_id::text,b.project_id::text,pub.id::text,COALESCE(pub.account_id::text,'')`+ancestry+` JOIN owned_bots b ON b.app_id=a.id WHERE b.id=$1`, bot).Scan(&v.account, &v.app, &v.project, &v.publisher, &v.owner)
+	e = tx.QueryRowContext(ctx, `SELECT b.account_id::text,b.app_id::text,b.project_id::text,pub.id::text,COALESCE(pub.account_id::text,''),a.oauth_epoch`+ancestry+` JOIN owned_bots b ON b.app_id=a.id WHERE b.id=$1`, bot).Scan(&v.account, &v.app, &v.project, &v.publisher, &v.owner, &v.appEpoch)
 	return
 }
 func cancelMessageEvent(ctx context.Context, tx *sql.Tx, id, reason string) error {
@@ -155,12 +158,19 @@ func (r *Repository) prepareMessageEvent(ctx context.Context, id string, dispatc
 		return false, e
 	}
 	cancel := func(reason string) (bool, error) { return true, cancelMessageEvent(ctx, tx, id, reason) }
-	if observed != fresh || !current.Active || current.Generation != v.generation || current.Adapter != v.adapter || current.issuer != old.issuer || current.owner != observed.owner || !current.ExpiresAt.After(at) || !v.expires.After(at) {
+	if observed != fresh || !current.Active || current.Generation != v.generation || current.Adapter != v.adapter || current.issuer != old.issuer || current.owner != observed.owner || current.appEpoch != fresh.appEpoch || !current.ExpiresAt.After(at) || !v.expires.After(at) {
 		return cancel("enrollment_or_ancestry_changed")
 	}
-	roomOwner, e := executionRoom(ctx, tx, v.room, r.execution.config.NoneEncryptionMode, false)
-	if errors.Is(e, bots.ErrNotFound) || errors.Is(e, bots.ErrUnsupported) || e == nil && roomOwner != current.issuer {
+	roomState, e := r.executionRoom(ctx, tx, v.room, current.issuer, fresh.account, false)
+	if errors.Is(e, bots.ErrNotFound) || errors.Is(e, bots.ErrUnsupported) || errors.Is(e, bots.ErrForbidden) || e == nil && (roomState.owner != current.issuer || roomState.kind == 1 && !roomState.botConfirmed) {
 		return cancel("room_changed")
+	}
+	if e != nil {
+		return false, e
+	}
+	mlsBinding, e := r.mlsDeviceBinding(ctx, tx, v.room, fresh.account, roomState.encryption == r.execution.config.MLSEncryptionMode)
+	if errors.Is(e, bots.ErrForbidden) || e == nil && mlsBinding != current.mlsBinding {
+		return cancel("mls_device_binding_changed")
 	}
 	if e != nil {
 		return false, e
@@ -248,9 +258,14 @@ func (r *Repository) prepareMessageEvent(ctx context.Context, id string, dispatc
 	if !cfg.SupportChat || !subscribed {
 		return cancel("subscription_revoked")
 	}
-	payload := bots.MessageDelivery{EventID: v.id, EventType: "bot.chat.message", BotID: v.bot, BotAccountID: fresh.account, RoomID: v.room, MessageID: v.message, SenderAccountID: v.actor, MessageType: "text"}
+	payload := bots.MessageDelivery{EventID: v.id, EventType: "bot.chat.message", BotID: v.bot, BotAccountID: fresh.account, RoomID: v.room, MessageID: v.message, SenderAccountID: v.actor, MessageType: "text", Meta: json.RawMessage(`null`), EncryptionMeta: json.RawMessage(`null`)}
 	var updated time.Time
-	e = tx.QueryRowContext(ctx, `SELECT COALESCE(m.content,''),m.created_at,m.updated_at FROM chat_messages m JOIN chat_members sender ON sender.id=m.sender_id WHERE m.id=$1 AND m.chat_room_id=$2 AND sender.account_id=$3 AND m.type='text' AND m.deleted_at IS NULL AND m.edited_at IS NULL AND m.encryption_meta IS NULL AND m.forwarded_message_id IS NULL AND COALESCE(m.meta->'forwarded_message_id','null'::jsonb)='null'::jsonb AND COALESCE(m.meta->'encryption_meta','null'::jsonb)='null'::jsonb`, v.message, v.room, v.actor).Scan(&payload.Content, &payload.CreatedAt, &updated)
+	if roomState.encryption == r.execution.config.MLSEncryptionMode {
+		payload.MessageType = "mls"
+		e = tx.QueryRowContext(ctx, `SELECT m.encryption_meta,m.created_at,m.updated_at FROM chat_messages m JOIN chat_members sender ON sender.id=m.sender_id WHERE m.id=$1 AND m.chat_room_id=$2 AND sender.account_id=$3 AND m.type='text' AND m.deleted_at IS NULL AND m.edited_at IS NULL AND m.encryption_meta IS NOT NULL AND m.encryption_meta<>'null'::jsonb AND m.forwarded_message_id IS NULL AND COALESCE(m.meta->'forwarded_message_id','null'::jsonb)='null'::jsonb`, v.message, v.room, v.actor).Scan(&payload.EncryptionMeta, &payload.CreatedAt, &updated)
+	} else {
+		e = tx.QueryRowContext(ctx, `SELECT COALESCE(m.content,''),m.created_at,m.updated_at FROM chat_messages m JOIN chat_members sender ON sender.id=m.sender_id WHERE m.id=$1 AND m.chat_room_id=$2 AND sender.account_id=$3 AND m.type='text' AND m.deleted_at IS NULL AND m.edited_at IS NULL AND(m.encryption_meta IS NULL OR m.encryption_meta='null'::jsonb) AND m.forwarded_message_id IS NULL AND COALESCE(m.meta->'forwarded_message_id','null'::jsonb)='null'::jsonb`, v.message, v.room, v.actor).Scan(&payload.Content, &payload.CreatedAt, &updated)
+	}
 	if errors.Is(e, sql.ErrNoRows) {
 		return cancel("message_deleted_or_changed")
 	}
@@ -261,7 +276,6 @@ func (r *Repository) prepareMessageEvent(ctx context.Context, id string, dispatc
 		return cancel("message_changed")
 	}
 	payload.CreatedAt = payload.CreatedAt.UTC()
-	payload.Meta = json.RawMessage(`null`)
 	// Arbitrary client metadata may contain private reply/forward/embed data.
 	// This bounded text contract never sends it to a third-party adapter.
 	adapter := r.execution.adapters[v.adapter]
@@ -287,6 +301,16 @@ func (r *Repository) prepareMessageEvent(ctx context.Context, id string, dispatc
 	}
 	if !alive {
 		return cancel("sender_authority_revoked")
+	}
+	// Relation, realm and MLS membership reads above may have waited behind
+	// unrelated authority rows. Observe the complete room shape again at the
+	// dispatch boundary so a late membership/device revocation wins.
+	roomState, e = r.executionRoom(ctx, tx, v.room, current.issuer, fresh.account, false)
+	if errors.Is(e, bots.ErrNotFound) || errors.Is(e, bots.ErrUnsupported) || errors.Is(e, bots.ErrForbidden) || e == nil && (roomState.owner != current.issuer || roomState.kind == 1 && !roomState.botConfirmed) {
+		return cancel("room_changed")
+	}
+	if e != nil {
+		return false, e
 	}
 	if e = tx.QueryRowContext(ctx, `SELECT clock_timestamp()`).Scan(&at); e != nil {
 		return false, e

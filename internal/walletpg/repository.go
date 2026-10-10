@@ -227,25 +227,9 @@ func (r *Repository) CreateWallet(ctx context.Context, owner accounts.Owner, nam
 	if e = lock(ctx, tx, "owner:"+owner.Key()); e != nil {
 		return accounts.Wallet{}, e
 	}
-	var count int
-	var hasPrimary bool
-	e = tx.QueryRowContext(ctx, `SELECT count(*),COALESCE(bool_or(is_primary),false) FROM wallet_v1.wallets WHERE deleted_at IS NULL AND (account_id=$1 OR realm_id=$2)`, nullable(owner.AccountID), nullable(owner.RealmID)).Scan(&count, &hasPrimary)
-	if e != nil {
-		return accounts.Wallet{}, e
-	}
-	if owner.AccountID != "" && count >= 3 {
-		return accounts.Wallet{}, accounts.ErrQuota
-	}
-	id, e := uuid()
-	if e != nil {
-		return accounts.Wallet{}, e
-	}
 	now := r.now().UTC()
-	w, e := scanWallet(tx.QueryRowContext(ctx, `INSERT INTO wallet_v1.wallets(id,account_id,realm_id,name,is_primary,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$6) RETURNING `+walletCols, id, nullable(owner.AccountID), nullable(owner.RealmID), name, !hasPrimary, now))
+	w, e := createWalletInTransaction(ctx, tx, owner, name, now)
 	if e != nil {
-		return w, e
-	}
-	if e = event(ctx, tx, "wallet.created", w.ID, w, now); e != nil {
 		return w, e
 	}
 	return w, tx.Commit()

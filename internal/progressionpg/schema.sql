@@ -109,3 +109,9 @@ CREATE TABLE IF NOT EXISTS owned_progression_projection_receipts (
  processed_at timestamptz NOT NULL,outcome text NOT NULL CHECK(outcome IN('applied','gone','disabled')),
  PRIMARY KEY(kind,account_id,source_id)
 );
+-- Additional owned deliveries retain per-grant packet idempotency.
+ALTER TABLE owned_progression_outbox DROP CONSTRAINT IF EXISTS owned_progression_outbox_grant_id_key;
+CREATE UNIQUE INDEX IF NOT EXISTS owned_progression_delivery_kind ON owned_progression_outbox(grant_id,packet_type);
+ALTER TABLE owned_progression_outbox DROP CONSTRAINT IF EXISTS owned_progression_outbox_packet_type_check;
+ALTER TABLE owned_progression_outbox ADD CONSTRAINT owned_progression_outbox_packet_type_check CHECK(packet_type IN('progression.completed','progression.points.granted'));
+ALTER TABLE owned_progression_checkins ADD COLUMN IF NOT EXISTS backdated_from timestamptz;

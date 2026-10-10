@@ -507,5 +507,23 @@ func (r *Repository) completeDiscovery(ctx context.Context, w discoveryWork, sta
 	if e != nil {
 		return e
 	}
+	if status == "succeeded" && result != nil {
+		_, currentKey, currentBinding, bindingErr := r.discoveryTargetWithQuery(ctx, tx, w.Resource)
+		if bindingErr != nil || currentBinding != w.binding {
+			return f.ErrForbidden
+		}
+		aliases, marshalErr := json.Marshal(result.AlsoKnownAs)
+		if marshalErr != nil {
+			return marshalErr
+		}
+		remoteBinding, bindingErr := deliveryBinding(currentKey)
+		if bindingErr != nil {
+			return bindingErr
+		}
+		_, e = tx.ExecContext(ctx, `INSERT INTO owned_federation_actor_assertions(publisher_id,actor_uri,key_id,key_fingerprint,remote_binding,aliases,discovery_id,observed_at)VALUES($1,$2,$3,$4,$5,$6,$7,$8)ON CONFLICT(publisher_id,actor_uri)DO UPDATE SET key_id=EXCLUDED.key_id,key_fingerprint=EXCLUDED.key_fingerprint,remote_binding=EXCLUDED.remote_binding,aliases=EXCLUDED.aliases,discovery_id=EXCLUDED.discovery_id,observed_at=EXCLUDED.observed_at`, w.publisher, result.ID, result.KeyID, result.KeyFingerprint, remoteBinding, aliases, w.ID, result.ObservedAt)
+		if e != nil {
+			return e
+		}
+	}
 	return tx.Commit()
 }

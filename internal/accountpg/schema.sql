@@ -46,3 +46,17 @@ ALTER TABLE owned_publishing_settings ADD COLUMN IF NOT EXISTS default_reply_pub
 ALTER TABLE owned_publishing_settings ADD COLUMN IF NOT EXISTS default_fediverse_publisher_id uuid REFERENCES owned_publishers(id);
 ALTER TABLE owned_publishing_settings ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT clock_timestamp();
 ALTER TABLE owned_publishing_settings ADD COLUMN IF NOT EXISTS updated_at timestamptz;
+
+CREATE TABLE IF NOT EXISTS owned_publisher_features(
+ publisher_id uuid NOT NULL REFERENCES owned_publishers(id),flag text NOT NULL CHECK(length(flag) BETWEEN 1 AND 128),
+ actor_id uuid NOT NULL REFERENCES owned_authority_accounts(id),created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL,expired_at timestamptz,
+ PRIMARY KEY(publisher_id,flag)
+);
+ALTER TABLE owned_publisher_features ADD COLUMN IF NOT EXISTS expired_at timestamptz;
+CREATE TABLE IF NOT EXISTS owned_publisher_relationships(
+ account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),publisher_id uuid NOT NULL REFERENCES owned_publishers(id),
+ blocked_at timestamptz,muted_at timestamptz,updated_at timestamptz NOT NULL,
+ PRIMARY KEY(account_id,publisher_id),CHECK(blocked_at IS NOT NULL OR muted_at IS NOT NULL)
+);
+CREATE INDEX IF NOT EXISTS owned_publisher_relationships_blocked ON owned_publisher_relationships(account_id,updated_at DESC,publisher_id) WHERE blocked_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS owned_publisher_relationships_muted ON owned_publisher_relationships(account_id,updated_at DESC,publisher_id) WHERE muted_at IS NOT NULL;

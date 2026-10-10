@@ -23,11 +23,14 @@ import (
 var Schema string
 
 type Repository struct {
-	db         *sql.DB
-	guard      *authoritypg.TransactionGuard
-	publishers *accountpg.Repository
-	social     *socialpg.Repository
-	now        func() time.Time
+	db                    *sql.DB
+	guard                 *authoritypg.TransactionGuard
+	publishers            *accountpg.Repository
+	social                *socialpg.Repository
+	now                   func() time.Time
+	maintenance           maintenanceStore
+	walletProduct         json.RawMessage
+	walletProductTreasury string
 }
 
 func New(db *sql.DB, g *authoritypg.TransactionGuard) *Repository {

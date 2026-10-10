@@ -71,6 +71,7 @@ type Meet struct {
 	Participants    []Participant              `json:"participants"`
 	Pins            []Pin                      `json:"pins"`
 	Image           any                        `json:"image"`
+	ImageID         *string                    `json:"-"`
 }
 type CreateMeet struct {
 	Visibility       *int                       `json:"visibility"`

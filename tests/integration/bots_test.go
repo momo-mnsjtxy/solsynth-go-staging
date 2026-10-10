@@ -158,7 +158,7 @@ func TestPGBotsScopeIsolationHTTPAndFreshAuthority(t *testing.T) {
 	backendCall(t, f.http, "GET", "/api/bots/"+b.ID+"/commands", "", "", 200)
 	backendCall(t, f.http, "POST", root+"/commands"+f.query, f.token, `{"name":"hello","description":"Synthetic help","parameters":[]}`, 200)
 	backendCall(t, f.http, "POST", root+"/commands"+f.query, f.token, `{"name":"run","description":"Synthetic","execute":"not permitted"}`, 400)
-	backendCall(t, f.http, "POST", root+"/keys"+f.query, f.token, `{"label":"Synthetic"}`, 501)
+	backendCall(t, f.http, "POST", root+"/keys"+f.query, f.token, `{"label":"Synthetic"}`, 200)
 	wrong := f.scope
 	wrong.App = authorityUUID(t)
 	if _, e := f.repo.Bots(f.ctx, wrong, b.ID, nil, "read"); !errors.Is(e, bots.ErrNotFound) {

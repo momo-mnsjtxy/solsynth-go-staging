@@ -2,23 +2,31 @@
 package affiliationpg
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"database/sql"
 	_ "embed"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"github.com/jackc/pgx/v5/pgconn"
 	"solsynth.local/go-migration/internal/authoritypg"
+	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/authority"
 	a "solsynth.local/go-migration/ports/passport/affiliation"
 	"solsynth.local/go-migration/ports/passport/tickets"
+	wallet "solsynth.local/go-migration/ports/wallet/accounts"
 	"strings"
 	"time"
 )
 
 //go:embed schema.sql
 var Schema string
+
+//go:embed paid_schema.sql
+var PaidSchema string
 
 // Activation joins an already locked account's transaction. It never performs
 // network I/O or commits independently.
@@ -28,6 +36,13 @@ type Activation interface {
 type Config struct {
 	Now        func() time.Time
 	Activation Activation
+	Purchase   *PurchaseConfig
+}
+type PurchaseConfig struct {
+	Currency, TreasuryAccountID, TreasuryWalletID string
+	Price                                         wallet.Amount
+	MaxUsages, MaxPurchases                       int
+	MaxLifetime, PurchasePeriod                   time.Duration
 }
 type Repository struct {
 	db    *sql.DB
@@ -42,13 +57,27 @@ func New(db *sql.DB, g *authoritypg.TransactionGuard, c Config) (*Repository, er
 	if c.Now == nil {
 		c.Now = time.Now
 	}
+	if c.Purchase != nil && (!authority.ValidID(c.Purchase.TreasuryAccountID) || !authority.ValidID(c.Purchase.TreasuryWalletID) || !wallet.ValidCurrency(c.Purchase.Currency) || c.Purchase.Price.Sign() <= 0 || c.Purchase.MaxUsages < 1 || c.Purchase.MaxUsages > 1000 || c.Purchase.MaxPurchases < 1 || c.Purchase.MaxPurchases > 1000 || c.Purchase.MaxLifetime < time.Hour || c.Purchase.MaxLifetime > 365*24*time.Hour || c.Purchase.PurchasePeriod < time.Hour || c.Purchase.PurchasePeriod > 365*24*time.Hour) {
+		return nil, a.ErrInvalid
+	}
 	return &Repository{db, g, c}, nil
 }
 func (r *Repository) BindAuthority(ctx context.Context, p authority.Principal) context.Context {
 	return r.guard.Bind(ctx, p)
 }
 func (r *Repository) Ready(ctx context.Context) error {
-	_, e := r.db.ExecContext(ctx, `SELECT id,account_id,revoked_at FROM owned_affiliation_spells LIMIT 0;SELECT id,recipient_id FROM owned_affiliation_results LIMIT 0;SELECT actor_id,operation FROM owned_affiliation_audit LIMIT 0`)
+	q := `SELECT id,account_id,revoked_at FROM owned_affiliation_spells LIMIT 0;SELECT id,recipient_id FROM owned_affiliation_results LIMIT 0;SELECT actor_id,operation FROM owned_affiliation_audit LIMIT 0`
+	if r.cfg.Purchase != nil {
+		q += `;SELECT spell_id,transaction_id FROM owned_affiliation_purchases LIMIT 0`
+	}
+	_, e := r.db.ExecContext(ctx, q)
+	if e == nil && r.cfg.Purchase != nil {
+		var ready bool
+		e = r.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM wallet_v1.wallets w JOIN owned_authority_accounts a ON a.id=w.account_id WHERE w.id=$1::uuid AND w.account_id=$2::uuid AND w.realm_id IS NULL AND w.deleted_at IS NULL AND NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=a.id AND p.kind='disable_account' AND(p.starts_at IS NULL OR p.starts_at<=clock_timestamp())AND(p.expires_at IS NULL OR p.expires_at>clock_timestamp())))`, r.cfg.Purchase.TreasuryWalletID, r.cfg.Purchase.TreasuryAccountID).Scan(&ready)
+		if e == nil && !ready {
+			e = a.ErrPurchase
+		}
+	}
 	return e
 }
 func (r *Repository) now() time.Time { return r.cfg.Now().UTC().Truncate(time.Microsecond) }
@@ -95,7 +124,7 @@ func scan(row interface{ Scan(...any) error }) (v a.Spell, e error) {
 }
 func (r *Repository) check(ctx context.Context, tx *sql.Tx, actor, op string, pre bool) error {
 	perm := []string{}
-	if op == "invite.create" {
+	if op == "invite.create" || op == "purchase" {
 		perm = []string{a.InviteIssuePermission}
 	} else if op == "create" || op == "delete" {
 		perm = []string{"affiliations.manage"}
@@ -109,7 +138,7 @@ func (r *Repository) check(ctx context.Context, tx *sql.Tx, actor, op string, pr
 	} else {
 		p, e = r.guard.Authenticate(ctx, r.db, tx, actor)
 	}
-	if e == nil && (op == "consume" || op == "invite.create") {
+	if e == nil && (op == "consume" || op == "invite.create" || op == "purchase") {
 		e = a.Root(p)
 	}
 	return e
@@ -205,7 +234,7 @@ func (r *Repository) Execute(ctx context.Context, actor string, c a.Command) (ou
 	}
 	switch c.Operation {
 	case "purchase":
-		return out, a.ErrPurchase
+		out.Value, e = r.purchase(ctx, tx, actor, c)
 	case "create", "invite.create":
 		out.Value, e = r.create(ctx, tx, actor, c)
 	case "delete":
@@ -251,6 +280,88 @@ func (r *Repository) Execute(ctx context.Context, actor string, c a.Command) (ou
 		return a.Result{}, mapped(e)
 	}
 	return out, nil
+}
+
+func (r *Repository) purchase(ctx context.Context, tx *sql.Tx, actor string, c a.Command) (a.InvitePurchaseReceipt, error) {
+	var out a.InvitePurchaseReceipt
+	if r.cfg.Purchase == nil || c.Purchase == nil {
+		return out, a.ErrPurchase
+	}
+	q, p := c.Purchase, r.cfg.Purchase
+	if !authority.ValidID(q.PayerWalletID) || q.Key == "" || len(q.Key) > 128 || q.MaxUsages < 1 || q.MaxUsages > p.MaxUsages || !q.ExpiresAt.After(r.now()) || q.ExpiresAt.After(r.now().Add(p.MaxLifetime)) || q.Remark != nil && (len(*q.Remark) > 4096 || strings.ContainsRune(*q.Remark, 0)) {
+		return out, a.ErrInvalid
+	}
+	remark := ""
+	if q.Remark != nil {
+		remark = *q.Remark
+	}
+	fingerprint := sha256.Sum256([]byte(fmt.Sprintf("%s\x00%s\x00%s\x00%s\x00%s\x00%d\x00%s", q.PayerWalletID, p.TreasuryWalletID, p.Currency, p.Price.String(), remark, q.MaxUsages, q.ExpiresAt.UTC().Format(time.RFC3339Nano))))
+	var payerOwner, treasuryOwner string
+	if e := tx.QueryRowContext(ctx, `SELECT account_id::text FROM wallet_v1.wallets WHERE id=$1::uuid AND realm_id IS NULL AND deleted_at IS NULL`, q.PayerWalletID).Scan(&payerOwner); e != nil {
+		return out, mapped(e)
+	}
+	if e := tx.QueryRowContext(ctx, `SELECT account_id::text FROM wallet_v1.wallets WHERE id=$1::uuid AND realm_id IS NULL AND deleted_at IS NULL`, p.TreasuryWalletID).Scan(&treasuryOwner); e != nil {
+		return out, mapped(e)
+	}
+	if payerOwner != actor || treasuryOwner != p.TreasuryAccountID {
+		return out, authority.ErrForbidden
+	}
+	var existing string
+	var storedHash []byte
+	e := tx.QueryRowContext(ctx, `SELECT spell_id::text,request_hash FROM owned_affiliation_purchases WHERE actor_id=$1::uuid AND idempotency_key=$2::text`, actor, q.Key).Scan(&existing, &storedHash)
+	if e == nil {
+		if !bytes.Equal(storedHash, fingerprint[:]) {
+			return out, a.ErrConflict
+		}
+		out.Transaction, e = scanPurchaseTransaction(tx.QueryRowContext(ctx, `SELECT t.id::text,t.payer_wallet_id::text,t.payee_wallet_id::text,t.currency,t.amount::text,t.remarks,t.status,t.created_at,t.updated_at,t.deleted_at FROM owned_affiliation_purchases p JOIN wallet_v1.transactions t ON t.id=p.transaction_id WHERE p.spell_id=$1::uuid AND t.actor_id=$2::uuid AND t.payer_wallet_id=$3::uuid AND t.payee_wallet_id=$4::uuid AND t.currency=$5::text AND t.amount=$6::numeric AND t.remarks IS NOT DISTINCT FROM $7::text AND t.status=2 AND t.deleted_at IS NULL AND t.idempotency_key=$8::text AND t.purpose='transfer'`, existing, actor, q.PayerWalletID, p.TreasuryWalletID, p.Currency, p.Price, q.Remark, "affiliation-purchase:"+q.Key))
+		if e != nil {
+			return out, a.ErrConflict
+		}
+		out.Spell, e = scan(tx.QueryRowContext(ctx, `SELECT `+columns+` FROM owned_affiliation_spells s WHERE s.id=$1::uuid`, existing))
+		return out, e
+	}
+	if !errors.Is(e, sql.ErrNoRows) {
+		return out, e
+	}
+	var at time.Time
+	if e := tx.QueryRowContext(ctx, `SELECT clock_timestamp()`).Scan(&at); e != nil {
+		return out, e
+	}
+	var recent int
+	if e := tx.QueryRowContext(ctx, `SELECT count(*) FROM owned_affiliation_purchases WHERE actor_id=$1::uuid AND created_at >= $2::timestamptz`, actor, at.Add(-p.PurchasePeriod)).Scan(&recent); e != nil {
+		return out, e
+	}
+	if recent >= p.MaxPurchases {
+		return out, a.ErrConflict
+	}
+	out.Transaction, e = walletpg.FundedTransfer(ctx, tx, actor, q.PayerWalletID, p.TreasuryWalletID, p.Currency, p.Price, q.Remark, "affiliation-purchase:"+q.Key, at)
+	if e != nil {
+		return out, e
+	}
+	if e = tx.QueryRowContext(ctx, `SELECT account_id::text FROM wallet_v1.wallets WHERE id=$1::uuid AND realm_id IS NULL AND deleted_at IS NULL`, q.PayerWalletID).Scan(&payerOwner); e != nil {
+		return out, e
+	}
+	if e = tx.QueryRowContext(ctx, `SELECT account_id::text FROM wallet_v1.wallets WHERE id=$1::uuid AND realm_id IS NULL AND deleted_at IS NULL`, p.TreasuryWalletID).Scan(&treasuryOwner); e != nil {
+		return out, e
+	}
+	if payerOwner != actor || treasuryOwner != p.TreasuryAccountID {
+		return out, authority.ErrForbidden
+	}
+	max := q.MaxUsages
+	c.Create = &a.Create{MaxUsages: &max}
+	c.ExpiresAt = &q.ExpiresAt
+	c.Operation = "invite.create"
+	out.Spell, e = r.create(ctx, tx, actor, c)
+	if e != nil {
+		return out, e
+	}
+	_, e = tx.ExecContext(ctx, `INSERT INTO owned_affiliation_purchases(spell_id,transaction_id,actor_id,idempotency_key,currency,amount,request_hash,created_at)VALUES($1::uuid,$2::uuid,$3::uuid,$4::text,$5::text,$6::numeric,$7::bytea,$8::timestamptz)`, out.Spell.ID, out.Transaction.ID, actor, q.Key, p.Currency, p.Price, fingerprint[:], at)
+	return out, e
+}
+
+func scanPurchaseTransaction(row interface{ Scan(...any) error }) (v wallet.Transaction, e error) {
+	e = row.Scan(&v.ID, &v.PayerWalletID, &v.PayeeWalletID, &v.Currency, &v.Amount, &v.Remarks, &v.Status, &v.CreatedAt, &v.UpdatedAt, &v.DeletedAt)
+	return
 }
 func (r *Repository) audit(ctx context.Context, tx *sql.Tx, actor, sid, op string) error {
 	_, e := tx.ExecContext(ctx, `INSERT INTO owned_affiliation_audit(actor_id,spell_id,operation,occurred_at)VALUES($1,$2,$3,$4)`, actor, sid, op, r.now())

@@ -129,6 +129,9 @@ func TestPGMerchantsCatalogRoundTripAndDisable(t *testing.T) {
 	if e != nil || paid.Amount.String() != "3.333" {
 		t.Fatal("captured catalog quote did not settle unchanged", paid, e)
 	}
+	if released, settleErr := r.Settle(f.ctx, f.actor, f.publisher); settleErr != nil || len(released) != 1 {
+		t.Fatal("explicit catalog settlement", released, settleErr)
+	}
 	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "96.667", "0.000", "96.667")
 	if e = r.DeleteDefinition(f.ctx, f.actor, key); e != nil {
 		t.Fatal(e)
@@ -203,6 +206,82 @@ func TestPGMerchantsReportsExactAndIsolated(t *testing.T) {
 	q.To = &to
 	if rows, n, e := r.Orders(f.ctx, f.actor, f.publisher, q); e != nil || n != 0 || len(rows) != 0 {
 		t.Fatal("exclusive upper boundary", rows, n, e)
+	}
+}
+
+func TestPGMerchantSettlementManualReleaseAndConservedReversal(t *testing.T) {
+	f := newCommerceFixture(t)
+	r := merchantRepo(t, f)
+	o := commerceOrder(t, f, "merchant-settlement", false)
+	if _, e := f.r.PayOrder(f.ctx, f.actor, o.ID, &f.wallet.ID); e != nil {
+		t.Fatal(e)
+	}
+	if _, e := f.r.UpdateOrder(f.ctx, o.ID, c.UpdateStatus{Credentials: f.credentials, Status: c.Finished}); e != nil {
+		t.Fatal(e)
+	}
+	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "89.999", "10.001", "89.999")
+	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "0.000", "0.000", "0.000")
+	pending, e := r.PendingSettlements(f.ctx, f.actor, f.publisher)
+	if e != nil || pending["synthetic-commerce"].Count != 1 || pending["synthetic-commerce"].Amount.String() != "10.001" {
+		t.Fatal(pending, e)
+	}
+	settled, e := r.Settle(f.ctx, f.actor, f.publisher)
+	if e != nil || len(settled) != 1 {
+		t.Fatal(settled, e)
+	}
+	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "89.999", "0.000", "89.999")
+	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "10.001", "0.000", "10.001")
+	if replay, e := r.Settle(f.ctx, f.actor, f.publisher); e != nil || len(replay) != 0 {
+		t.Fatal(replay, e)
+	}
+	refund, e := r.RefundOrder(f.ctx, f.actor, o.ID, "refund-1")
+	if e != nil || refund.PayerWalletID != f.payee.ID || refund.PayeeWalletID != f.wallet.ID {
+		t.Fatal(refund, e)
+	}
+	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "100.000", "0.000", "100.000")
+	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "0.000", "0.000", "0.000")
+	again, e := r.RefundOrder(f.ctx, f.actor, o.ID, "refund-1")
+	if e != nil || again.ID != refund.ID {
+		t.Fatal(again, e)
+	}
+}
+
+func TestPGFundedAdminAdjustmentAndSingleUseTrial(t *testing.T) {
+	f := newCommerceFixture(t)
+	r := merchantRepo(t, f)
+	adjust := merchants.BalanceAdjustment{WalletID: f.payee.ID, TreasuryWalletID: f.wallet.ID, Currency: "synthetic-commerce", Amount: walletAmount(t, "7.500")}
+	one, e := r.AdjustBalance(f.ctx, f.actor, adjust, "credit-1")
+	if e != nil {
+		t.Fatal(e)
+	}
+	again, e := r.AdjustBalance(f.ctx, f.actor, adjust, "credit-1")
+	if e != nil || again.ID != one.ID {
+		t.Fatal(again, e)
+	}
+	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "92.500", "0.000", "92.500")
+	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "7.500", "0.000", "7.500")
+	negative := adjust
+	negative.Amount = walletAmount(t, "-2.500")
+	if _, e = r.AdjustBalance(f.ctx, f.actor, negative, "debit-1"); e != nil {
+		t.Fatal(e)
+	}
+	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "95.000", "0.000", "95.000")
+	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "5.000", "0.000", "5.000")
+	key := "trial-" + f.app
+	definition := merchantDefinition(f, key)
+	definition.FreeTrialDays = 2
+	if _, _, e = r.UpsertDefinition(f.ctx, f.actor, definition); e != nil {
+		t.Fatal(e)
+	}
+	s, e := f.r.CreateSubscription(f.ctx, f.actor, c.CreateSubscription{Identifier: key, PaymentMethod: "solian.wallet", IsFreeTrial: true}, "trial-1", false)
+	if e != nil || !s.IsActive || !s.IsFreeTrial || s.FinalPrice.Sign() != 0 {
+		t.Fatal(s, e)
+	}
+	if _, e = f.r.CancelSubscription(f.ctx, f.actor, key); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.r.CreateSubscription(f.ctx, f.actor, c.CreateSubscription{Identifier: key, PaymentMethod: "solian.wallet", IsFreeTrial: true}, "trial-2", false); !errors.Is(e, c.ErrConflict) {
+		t.Fatal("reused trial", e)
 	}
 }
 func TestPGMerchantsCatalogConcurrentUpsertAndRollback(t *testing.T) {

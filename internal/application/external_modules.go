@@ -157,8 +157,13 @@ func (x externalModules) processDue(ctx context.Context, limit int) (count int, 
 		err = errors.Join(err, e)
 	}
 	if x.federation != nil {
+		n, e := x.federation.ProcessKeyCommands(ctx, limit)
+		count += n
+		if !errors.Is(e, federation.ErrUnavailable) {
+			err = errors.Join(err, e)
+		}
 		if x.admissionFetcher != nil {
-			n, e := x.federation.ProcessPublicAdmissions(ctx, x.admissionFetcher, limit)
+			n, e = x.federation.ProcessPublicAdmissions(ctx, x.admissionFetcher, limit)
 			count += n
 			err = errors.Join(err, e)
 		}
@@ -167,11 +172,14 @@ func (x externalModules) processDue(ctx context.Context, limit int) (count int, 
 			count += n
 			err = errors.Join(err, e)
 		}
-		n, e := x.federation.ReconcilePosts(ctx, limit)
+		n, e = x.federation.ReconcilePosts(ctx, limit)
 		count += n
 		err = errors.Join(err, e)
 		if x.transport != nil {
 			n, e = x.federation.ProcessDeliveries(ctx, x.transport, limit)
+			count += n
+			err = errors.Join(err, e)
+			n, e = x.federation.ProcessRealmDeliveries(ctx, x.transport, limit)
 			count += n
 			err = errors.Join(err, e)
 		}

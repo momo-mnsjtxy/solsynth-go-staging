@@ -50,3 +50,13 @@ CREATE TABLE IF NOT EXISTS owned_realm_profile_audit (
  realm_id uuid NOT NULL REFERENCES owned_realms(id),member_id uuid NOT NULL REFERENCES owned_realm_members(id),
  action text NOT NULL CHECK(action IN('profile.updated','profile.cleared')),occurred_at timestamptz NOT NULL
 );
+CREATE TABLE IF NOT EXISTS owned_realm_source_experience(
+ id uuid PRIMARY KEY,realm_id uuid NOT NULL REFERENCES owned_realms(id),account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),
+ source_kind text NOT NULL CHECK(source_kind IN('realm.chat.message','realm.post.created')),source_id uuid NOT NULL,
+ joined_at timestamptz NOT NULL,delta bigint NOT NULL CHECK(delta>0),perk_level integer NOT NULL CHECK(perk_level BETWEEN 0 AND 3),created_at timestamptz NOT NULL,
+ UNIQUE(realm_id,account_id,source_kind,source_id)
+);
+CREATE TABLE IF NOT EXISTS owned_realm_source_receipts(
+ realm_id uuid NOT NULL REFERENCES owned_realms(id),account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),source_kind text NOT NULL,source_id uuid NOT NULL,
+ processed_at timestamptz NOT NULL,outcome text NOT NULL CHECK(outcome IN('applied','gone')),PRIMARY KEY(realm_id,account_id,source_kind,source_id)
+);

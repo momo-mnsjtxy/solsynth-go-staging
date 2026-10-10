@@ -113,7 +113,7 @@ func TestActivityJSONAndDestinationPolicy(t *testing.T) {
 			t.Fatal("allowed destination", s)
 		}
 	}
-	for _, s := range []string{`{"id":"a","id":"b"}`, `{"object":{"bcc":[]}}`, `{"x":1} {"x":2}`, strings.Repeat("[", 15) + "0" + strings.Repeat("]", 15)} {
+	for _, s := range []string{`{"id":"a","id":"b"}`, `{"object":{"bcc":[]}}`, `{"Actor":"https://remote.example.test/a"}`, `{"publicKey":{"PublicKeyPem":"hidden"}}`, `{"x":1} {"x":2}`, strings.Repeat("[", 15) + "0" + strings.Repeat("]", 15)} {
 		if CheckJSON([]byte(s)) == nil {
 			t.Fatal("accepted JSON", s)
 		}

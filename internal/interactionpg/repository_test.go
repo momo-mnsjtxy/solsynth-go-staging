@@ -18,7 +18,7 @@ func TestUnavailableAndInvalidIdentifiers(t *testing.T) {
 	if _, _, e := r.Reactions(ctx, "", "bad", interactions.Page{Take: 20}); !errors.Is(e, posts.ErrNotFound) {
 		t.Fatal(e)
 	}
-	if _, _, e := r.Collections(ctx, "", "", interactions.Page{Take: 20, Query: "long"}); !errors.Is(e, interactions.ErrUnsupported) {
+	if _, _, e := r.Collections(ctx, "", "", interactions.Page{Take: 20, Query: "long"}); !errors.Is(e, interactions.ErrUnavailable) {
 		t.Fatal(e)
 	}
 	if _, e := validIDs([]string{"notuuid"}); !errors.Is(e, interactions.ErrInvalid) {

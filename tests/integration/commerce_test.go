@@ -20,6 +20,7 @@ import (
 	"solsynth.local/go-migration/ports/develop/apps"
 	wallet "solsynth.local/go-migration/ports/wallet/accounts"
 	c "solsynth.local/go-migration/ports/wallet/commerce"
+	"solsynth.local/go-migration/ports/wallet/merchants"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -175,6 +176,10 @@ func TestPGCommerceOrderSettlementAndIsolation(t *testing.T) {
 	}
 	if _, e = f.r.UpdateOrder(f.ctx, o.ID, c.UpdateStatus{Credentials: f.credentials, Status: c.Cancelled}); !errors.Is(e, c.ErrConflict) {
 		t.Fatal("finished order refunded", e)
+	}
+	settlements := merchantRepo(t, f)
+	if released, settleErr := settlements.Settle(f.ctx, f.actor, f.publisher); settleErr != nil || len(released) != 1 {
+		t.Fatal("explicit merchant settlement", released, settleErr)
 	}
 	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "95.753", "0.000", "95.753")
 	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "4.247", "0.000", "4.247")
@@ -379,7 +384,7 @@ func TestPGCommerceRestartPersistence(t *testing.T) {
 	if _, e := f.r.PayOrder(f.ctx, f.actor, o.ID, &f.wallet.ID); e != nil {
 		t.Fatal(e)
 	}
-	p := c.VerifiedPurchase{Provider: "paddle", ExternalID: "synthetic-" + f.app, AccountID: f.actor, Identifier: f.plan, BegunAt: time.Now().UTC().Truncate(time.Second), DurationDays: 1, Testing: true}
+	p := c.VerifiedPurchase{Provider: "paddle", ExternalID: "synthetic-" + f.app, AccountID: f.actor, Identifier: f.plan, BegunAt: time.Unix(f.clock.Load(), 0).UTC().Add(-24 * time.Hour), DurationDays: 1, Testing: true}
 	s, e := f.r.ApplyProvider(f.ctx, p)
 	if e != nil {
 		t.Fatal(e)
@@ -387,6 +392,10 @@ func TestPGCommerceRestartPersistence(t *testing.T) {
 	again, e := f.r.ApplyProvider(f.ctx, p)
 	if e != nil || again.ID != s.ID {
 		t.Fatal("provider replay", again, e)
+	}
+	billing, e := merchantRepo(t, f).Billing(f.ctx, f.actor, merchants.AdminQuery{})
+	if e != nil || billing.Total != 1 || len(billing.Items) != 1 || billing.Items[0].SubscriptionID != s.ID || !billing.Items[0].CreatedAt.Equal(time.Unix(f.clock.Load(), 0).UTC()) || billing.Items[0].CreatedAt.Equal(p.BegunAt) {
+		t.Fatal("provider receipt used entitlement start as creation time", billing, e)
 	}
 	p.DurationDays = 2
 	if _, e = f.r.ApplyProvider(f.ctx, p); !errors.Is(e, c.ErrIdempotency) {

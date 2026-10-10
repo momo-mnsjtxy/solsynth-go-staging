@@ -19,7 +19,30 @@ var (
 	ErrConflict             = errors.New("notification idempotency conflict")
 	ErrCursor               = errors.New("realtime cursor requires reset")
 	ErrDeliveryUnconfigured = errors.New("external notification delivery is not configured")
+	ErrDeliveryUncertain    = errors.New("external notification acceptance is uncertain")
+	ErrDeliveryInProgress   = errors.New("external notification dispatch is in progress")
 )
+
+// HeadCursor asks the durable store to establish a fresh connection at the
+// current committed high-water mark. It is an in-process sentinel and is never
+// accepted from an explicit HTTP cursor.
+const HeadCursor int64 = -1
+
+// CursorReset identifies the nearest cursor from which a client can recover.
+// Older cursors recover from the retained floor; cursors beyond the stream
+// recover from the current high-water mark.
+type CursorReset struct{ Cursor int64 }
+
+func (e *CursorReset) Error() string        { return ErrCursor.Error() }
+func (e *CursorReset) Is(target error) bool { return target == ErrCursor }
+
+func RecoverableCursor(err error) (int64, bool) {
+	var reset *CursorReset
+	if errors.As(err, &reset) {
+		return reset.Cursor, true
+	}
+	return 0, false
+}
 
 const DefaultApp = "dev.solsynth.solian"
 const MaxPayload = 65536

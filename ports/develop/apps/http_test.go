@@ -66,7 +66,7 @@ func TestValidationRejectsUnavailableProvidersAndScopeEscalation(t *testing.T) {
 	if ValidateApp(AppPatch{OAuthConfig: &OAuthConfig{AllowedScopes: []string{bad}}}, false) == nil {
 		t.Fatal("unknown scope")
 	}
-	for _, scope := range []string{BoardScope, "orders.create", "orders.status.manage", "orders.metrics.read"} {
+	for _, scope := range []string{BoardScope, "orders.create", "orders.status.manage", "orders.metrics.read", "orders.payouts.manage"} {
 		if !SupportedClientScope(scope) {
 			t.Fatal(scope)
 		}

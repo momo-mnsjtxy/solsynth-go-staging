@@ -23,6 +23,7 @@ type OutputConfig struct {
 	MaxPlaylistBytes, MaxSegmentBytes int64
 	OperationTimeout                  time.Duration
 	HLSNamespaces                     []string
+	ArchiveImporter                   live.ArchiveImporter
 }
 
 func (r *Repository) WithOutputs(c OutputConfig, store live.ArtifactStore) error {
@@ -44,6 +45,9 @@ func (r *Repository) WithOutputs(c OutputConfig, store live.ArtifactStore) error
 		}
 	}
 	c.HLSNamespaces = append([]string(nil), c.HLSNamespaces...)
+	if c.ArchiveImporter != nil && c.ArchiveImporter.ArchiveImportContract() != live.ArchiveImportContract {
+		return live.ErrInvalid
+	}
 	r.outputs = &c
 	r.outputStore = store
 	return nil
@@ -73,8 +77,13 @@ func (r *Repository) OutputsReady(ctx context.Context) error {
 	if _, e := r.outputProvider(); e != nil {
 		return e
 	}
-	if _, e := r.db.ExecContext(ctx, `SELECT id,phase,egress_id,authorization_epoch,policy_hash FROM owned_livestream_outputs LIMIT 0`); e != nil {
+	if _, e := r.db.ExecContext(ctx, `SELECT id,phase,egress_id,authorization_epoch,policy_hash FROM owned_livestream_outputs LIMIT 0;SELECT id,state,media_id,playlist_sha256,lease_token,source_sha256 FROM owned_livestream_archive_imports LIMIT 0`); e != nil {
 		return e
+	}
+	if r.outputs.ArchiveImporter != nil {
+		if e := r.outputs.ArchiveImporter.ArchiveImportReady(ctx); e != nil {
+			return live.ErrOutputUnavailable
+		}
 	}
 	for _, ns := range r.outputs.HLSNamespaces {
 		if e := r.outputStore.StreamingReady(ctx, ns); e != nil {
@@ -120,7 +129,7 @@ func outputResponse(v outputRecord) live.OutputResponse {
 	if v.Egress != nil {
 		result.EgressID = *v.Egress
 	}
-	if v.Kind == "hls" && v.Phase == "active" {
+	if v.Kind == "hls" && (v.Phase == "active" || v.Phase == "done") {
 		path := "/api/livestreams/" + v.Stream + "/hls/" + v.ID + "/" + v.Playlist
 		result.PlaylistURL = &path
 		result.PlaylistName = &v.Playlist

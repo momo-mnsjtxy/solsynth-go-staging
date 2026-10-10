@@ -78,6 +78,7 @@ Federation requires `--enable-federation` and
       "actor": "https://remote.example.test/actors/example",
       "inbox": "https://remote.example.test/inbox",
       "key_id": "https://remote.example.test/actors/example#main-key",
+      "incarnation": "00000000-0000-4000-8000-000000000002",
       "public_key_file": "/explicit/trust/remote-public.pem"
     }
   ]
@@ -86,8 +87,9 @@ Federation requires `--enable-federation` and
 
 These are illustrative names/IDs, not working credentials. Existing local keys
 are bound by canonical publisher ID, never account ID. Private-key files must
-be regular, absolute paths with no group/other permissions. Remote actor, inbox
-and key owner/origin bindings are checked against the explicit allowlist. No
+be regular, absolute paths with no group/other permissions. Remote actor, inbox,
+key owner/origin and operator-assigned incarnation bindings are checked against
+the explicit allowlist. No
 remote discovery occurs. Duplicate/unknown JSON fields and duplicate key/actor
 bindings are rejected. Configuration is capped at 1 MiB, 128 remote origins and
 1000 local/remote key entries. No credential or provider response is logged.

@@ -13,6 +13,7 @@ import (
 	"unicode/utf8"
 
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/media"
 	"solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/sphere/blogs"
 	"solsynth.local/go-migration/ports/sphere/postmedia"
@@ -56,20 +57,23 @@ const (
 )
 
 type Collection struct {
-	ID          string             `json:"id"`
-	PublisherID string             `json:"publisher_id"`
-	Publisher   accounts.Publisher `json:"publisher"`
-	Slug        string             `json:"slug"`
-	Name        *string            `json:"name"`
-	Description *string            `json:"description"`
-	Background  any                `json:"background"`
-	Icon        any                `json:"icon"`
-	CreatedAt   time.Time          `json:"created_at"`
-	UpdatedAt   time.Time          `json:"updated_at"`
-	DeletedAt   *time.Time         `json:"deleted_at"`
+	ID           string             `json:"id"`
+	PublisherID  string             `json:"publisher_id"`
+	Publisher    accounts.Publisher `json:"publisher"`
+	Slug         string             `json:"slug"`
+	Name         *string            `json:"name"`
+	Description  *string            `json:"description"`
+	BackgroundID *string            `json:"-"`
+	IconID       *string            `json:"-"`
+	Background   *media.File        `json:"background"`
+	Icon         *media.File        `json:"icon"`
+	CreatedAt    time.Time          `json:"created_at"`
+	UpdatedAt    time.Time          `json:"updated_at"`
+	DeletedAt    *time.Time         `json:"deleted_at"`
 }
 
 type Post struct {
+	PinMode              *int                          `json:"pin_mode"`
 	Meta                 *Metadata                     `json:"meta,omitempty"`
 	Schedule             *Schedule                     `json:"schedule,omitempty"`
 	Automod              *AutomodDecision              `json:"automod,omitempty"`
@@ -91,6 +95,7 @@ type Post struct {
 	PublisherCollections []Collection                  `json:"publisher_collections"`
 	ReactionsCount       map[string]int64              `json:"reactions_count"`
 	ReactionsMade        map[string]bool               `json:"reactions_made"`
+	BoostCount           int64                         `json:"boost_count"`
 	ID                   string                        `json:"id"`
 	Title                *string                       `json:"title"`
 	Description          *string                       `json:"description"`
@@ -108,6 +113,27 @@ type Post struct {
 	UpdatedAt            time.Time                     `json:"updated_at"`
 	DeletedAt            *time.Time                    `json:"deleted_at"`
 	LockedAt             *time.Time                    `json:"locked_at"`
+}
+
+type Boost struct {
+	ID          string             `json:"id"`
+	PostID      string             `json:"post_id"`
+	PublisherID string             `json:"publisher_id"`
+	AccountID   string             `json:"account_id"`
+	Content     *string            `json:"content"`
+	BoostedAt   time.Time          `json:"boosted_at"`
+	Publisher   accounts.Publisher `json:"publisher"`
+}
+
+type ReactionListing struct {
+	ID        string           `json:"id"`
+	PostID    string           `json:"post_id"`
+	AccountID string           `json:"account_id"`
+	Symbol    string           `json:"symbol"`
+	Attitude  int              `json:"attitude"`
+	CreatedAt time.Time        `json:"created_at"`
+	Account   accounts.Account `json:"account"`
+	Post      Post             `json:"post"`
 }
 type Patch struct {
 	Embeds          *[]Embed          `json:"-"`
@@ -135,6 +161,7 @@ type Patch struct {
 	PublishedAt     *time.Time        `json:"published_at"`
 }
 type ListOptions struct {
+	Pinned       *bool
 	Offset, Take int
 	Publisher    string
 	Realm        string
@@ -150,6 +177,19 @@ type Repository interface {
 	Get(context.Context, string, string) (Post, error)
 	GetSlug(context.Context, string, string, string) (Post, error)
 	List(context.Context, string, ListOptions) ([]Post, int64, error)
+}
+
+// CompletionRepository is optional so narrow repositories retain their exact
+// capability surface while the aggregate host can expose the authored reads
+// and boost lifecycle.
+type CompletionRepository interface {
+	BoostPost(context.Context, string, string, *string) (Boost, error)
+	UnboostPost(context.Context, string, string) error
+	PostBoosts(context.Context, string, string, int, int) ([]Boost, int64, error)
+	Featured(context.Context, string, int, int) ([]Post, int64, error)
+	Adjacent(context.Context, string, string, bool, ListOptions) (Post, error)
+	ReactionUser(context.Context, string, string, int, int) ([]ReactionListing, int64, error)
+	Replies(context.Context, string, string, string, int, int, bool) ([]Post, int64, error)
 }
 
 // Empty identity with nil error is permitted for public reads only. The host

@@ -29,7 +29,7 @@ type Client struct {
 
 func SupportedClientScope(scope string) bool {
 	switch scope {
-	case BoardScope, "coupons.manage", "orders.create", "orders.status.manage", "orders.metrics.read", "orders.fulfillment.read", OAuthClientAuthScope:
+	case BoardScope, "coupons.manage", "orders.create", "orders.status.manage", "orders.metrics.read", "orders.fulfillment.read", "orders.payouts.manage", OAuthClientAuthScope:
 		return true
 	}
 	return false
@@ -86,17 +86,19 @@ type Links struct {
 	TermsOfService *string `json:"terms_of_service"`
 }
 type App struct {
-	ID          string       `json:"id"`
-	ProjectID   string       `json:"project_id"`
-	PublisherID string       `json:"publisher_id"`
-	Slug        string       `json:"slug"`
-	Name        string       `json:"name"`
-	Description *string      `json:"description"`
-	Status      int          `json:"status"`
-	Links       *Links       `json:"links"`
-	OAuthConfig *OAuthConfig `json:"oauth_config"`
-	CreatedAt   time.Time    `json:"created_at"`
-	UpdatedAt   time.Time    `json:"updated_at"`
+	Picture     map[string]any `json:"picture"`
+	Background  map[string]any `json:"background"`
+	ID          string         `json:"id"`
+	ProjectID   string         `json:"project_id"`
+	PublisherID string         `json:"publisher_id"`
+	Slug        string         `json:"slug"`
+	Name        string         `json:"name"`
+	Description *string        `json:"description"`
+	Status      int            `json:"status"`
+	Links       *Links         `json:"links"`
+	OAuthConfig *OAuthConfig   `json:"oauth_config"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
 }
 type AppPatch struct {
 	Slug         *string           `json:"slug"`
@@ -121,19 +123,21 @@ type Fulfillment struct {
 	RequiredScopes    []string `json:"required_scopes"`
 }
 type Product struct {
-	ID              string       `json:"id"`
-	AppID           string       `json:"app_id"`
-	Identifier      string       `json:"identifier"`
-	DisplayName     string       `json:"display_name"`
-	Description     *string      `json:"description"`
-	Currency        string       `json:"currency"`
-	Price           json.Number  `json:"price"`
-	Recurrence      string       `json:"recurrence"`
-	GroupIdentifier *string      `json:"group_identifier"`
-	Fulfillment     *Fulfillment `json:"fulfillment"`
-	State           ProductState `json:"state"`
-	CreatedAt       time.Time    `json:"created_at"`
-	UpdatedAt       time.Time    `json:"updated_at"`
+	Picture         map[string]any `json:"picture"`
+	Background      map[string]any `json:"background"`
+	ID              string         `json:"id"`
+	AppID           string         `json:"app_id"`
+	Identifier      string         `json:"identifier"`
+	DisplayName     string         `json:"display_name"`
+	Description     *string        `json:"description"`
+	Currency        string         `json:"currency"`
+	Price           json.Number    `json:"price"`
+	Recurrence      string         `json:"recurrence"`
+	GroupIdentifier *string        `json:"group_identifier"`
+	Fulfillment     *Fulfillment   `json:"fulfillment"`
+	State           ProductState   `json:"state"`
+	CreatedAt       time.Time      `json:"created_at"`
+	UpdatedAt       time.Time      `json:"updated_at"`
 }
 type ProductStatePatch struct {
 	IsEnabled     *bool   `json:"is_enabled"`
@@ -212,6 +216,7 @@ type Service struct {
 	Repository   Repository
 	Authority    Authority
 	CustomOrders CustomOrderStore
+	Quota        QuotaStore
 }
 
 var keyPattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$`)
@@ -233,8 +238,8 @@ func ValidateApp(p AppPatch, create bool) error {
 	if p.Status != nil && (*p.Status < 0 || *p.Status > 2) {
 		return ErrInvalid
 	}
-	if p.PictureID != nil || p.BackgroundID != nil {
-		return ErrProvider
+	if p.PictureID != nil && !authority.ValidID(*p.PictureID) || p.BackgroundID != nil && !authority.ValidID(*p.BackgroundID) {
+		return ErrInvalid
 	}
 	if p.OAuthConfig != nil {
 		if len(p.OAuthConfig.AllowedScopes) > 32 {
@@ -285,8 +290,8 @@ func ValidateProduct(p ProductPatch, create bool) error {
 	if p.DisplayName != nil && strings.TrimSpace(*p.DisplayName) == "" || p.Currency != nil && strings.TrimSpace(*p.Currency) == "" || !ValidText(p.Identifier, 128, create) || p.Identifier != nil && !ValidKey(*p.Identifier) || !ValidText(p.DisplayName, 1024, create) || !ValidText(p.Currency, 128, create) || !ValidText(p.Description, 4096, false) {
 		return ErrInvalid
 	}
-	if p.PictureID != nil || p.BackgroundID != nil {
-		return ErrProvider
+	if p.PictureID != nil && !authority.ValidID(*p.PictureID) || p.BackgroundID != nil && !authority.ValidID(*p.BackgroundID) {
+		return ErrInvalid
 	}
 	if p.Recurrence != nil && *p.Recurrence != "none" && *p.Recurrence != "weekly" && *p.Recurrence != "monthly" && *p.Recurrence != "yearly" {
 		return ErrProvider

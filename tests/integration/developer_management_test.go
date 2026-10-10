@@ -302,6 +302,14 @@ func TestPGDeveloperCustomOrderConcurrencyAtomicityAndSettlement(t *testing.T) {
 	if _, e = f.r.UpdateOrder(f.ctx, original.ID, c.UpdateStatus{Credentials: f.credentials, Status: c.Finished}); e != nil {
 		t.Fatal(e)
 	}
+	settlements := merchantRepo(t, f.commerceFixture)
+	pending, e := settlements.PendingSettlements(f.ctx, f.actor, f.publisher)
+	if e != nil || pending["synthetic-commerce"].Count != 1 {
+		t.Fatal("finished order was not pending", pending, e)
+	}
+	if released, settleErr := settlements.Settle(f.ctx, f.actor, f.publisher); settleErr != nil || len(released) != 1 {
+		t.Fatal("explicit merchant settlement", released, settleErr)
+	}
 	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "96.999", "0.000", "96.999")
 	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "3.001", "0.000", "3.001")
 	if n := commerceCount(t, f.db, `SELECT count(*) FROM wallet_v1.transactions WHERE managed_by=$1`, original.ID); n != 1 {

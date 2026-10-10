@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/passport/accounts"
+	"solsynth.local/go-migration/ports/passport/presence"
 	"time"
 )
 
@@ -108,6 +109,7 @@ type RealmPatch struct {
 	BackgroundID *string `json:"background_id"`
 }
 type Member struct {
+	Status               *presence.Status   `json:"status,omitempty"`
 	Nick                 *string            `json:"nick"`
 	Bio                  *string            `json:"bio"`
 	LabelID              *string            `json:"label_id,omitempty"`

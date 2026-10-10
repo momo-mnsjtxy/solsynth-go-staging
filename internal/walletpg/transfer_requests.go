@@ -186,3 +186,80 @@ func transferRequestError(e error) error {
 	}
 	return mapErr(e)
 }
+
+func (r *Repository) InspectTransferRequests(ctx context.Context, actor string, offset, take int) (out []accounts.TransferRequestRecord, total int64, e error) {
+	out = []accounts.TransferRequestRecord{}
+	if r == nil || r.authority == nil || !accounts.ValidID(actor) || offset < 0 || offset > 100000 || take < 1 || take > 200 {
+		return out, 0, accounts.ErrInvalid
+	}
+	tx, e := r.begin(ctx, false)
+	if e != nil {
+		return
+	}
+	defer tx.Rollback()
+	if e = r.writeAuthority(ctx, tx, accounts.Owner{AccountID: actor}, actor, accounts.PermissionTransferRequestInspect); e != nil {
+		return
+	}
+	if e = tx.QueryRowContext(ctx, `SELECT count(*) FROM wallet_v1.transfer_requests`).Scan(&total); e != nil {
+		return
+	}
+	rows, e := tx.QueryContext(ctx, `SELECT `+requestFields+` FROM wallet_v1.transfer_requests r JOIN wallet_v1.wallets w ON w.id=r.payee_wallet_id ORDER BY r.created_at DESC,r.id LIMIT $1 OFFSET $2`, take, offset)
+	if e != nil {
+		return out, total, e
+	}
+	defer rows.Close()
+	for rows.Next() {
+		v, x := scanRequest(rows)
+		if x != nil {
+			return out, total, x
+		}
+		out = append(out, v)
+	}
+	if e = rows.Err(); e != nil {
+		return
+	}
+	if e = r.writeAuthority(ctx, tx, accounts.Owner{AccountID: actor}, actor, accounts.PermissionTransferRequestInspect); e != nil {
+		return
+	}
+	e = tx.Commit()
+	return
+}
+
+func (r *Repository) PurgeTransferRequests(ctx context.Context, actor string, olderThan time.Time, limit int) (n int64, e error) {
+	if r == nil || r.authority == nil || !accounts.ValidID(actor) || olderThan.IsZero() || olderThan.After(r.now().UTC().Add(-time.Hour)) || limit < 1 || limit > 10000 {
+		return 0, accounts.ErrInvalid
+	}
+	tx, e := r.begin(ctx, false)
+	if e != nil {
+		return 0, e
+	}
+	defer tx.Rollback()
+	if e = r.writeAuthority(ctx, tx, accounts.Owner{AccountID: actor}, actor, accounts.PermissionTransferRequestPurge); e != nil {
+		return 0, e
+	}
+	res, e := tx.ExecContext(ctx, `DELETE FROM wallet_v1.transfer_requests WHERE id IN(SELECT id FROM wallet_v1.transfer_requests WHERE ((status=0 AND expires_at<$1::timestamptz) OR (status IN(1,2) AND COALESCE(fulfilled_at,expires_at)<$1::timestamptz)) ORDER BY COALESCE(fulfilled_at,expires_at),id LIMIT $2::integer FOR UPDATE SKIP LOCKED)`, olderThan.UTC(), limit)
+	if e != nil {
+		return 0, e
+	}
+	n, e = res.RowsAffected()
+	if e != nil {
+		return 0, e
+	}
+	if e = r.writeAuthority(ctx, tx, accounts.Owner{AccountID: actor}, actor, accounts.PermissionTransferRequestPurge); e != nil {
+		return 0, e
+	}
+	return n, tx.Commit()
+}
+
+// PurgeTransferRequestsDue is an operator-configured retention worker seam. It
+// deletes only terminal or expired rows and cannot transfer funds.
+func (r *Repository) PurgeTransferRequestsDue(ctx context.Context, retention time.Duration, limit int) (int64, error) {
+	if r == nil || r.db == nil || retention < time.Hour || retention > 10*365*24*time.Hour || limit < 1 || limit > 10000 {
+		return 0, accounts.ErrInvalid
+	}
+	result, e := r.db.ExecContext(ctx, `DELETE FROM wallet_v1.transfer_requests WHERE id IN(SELECT id FROM wallet_v1.transfer_requests WHERE ((status=0 AND expires_at<clock_timestamp()-($1::bigint*interval '1 microsecond'))OR(status IN(1,2)AND COALESCE(fulfilled_at,expires_at)<clock_timestamp()-($1::bigint*interval '1 microsecond'))) ORDER BY COALESCE(fulfilled_at,expires_at),id LIMIT $2::integer FOR UPDATE SKIP LOCKED)`, retention.Microseconds(), limit)
+	if e != nil {
+		return 0, e
+	}
+	return result.RowsAffected()
+}

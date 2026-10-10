@@ -10,17 +10,23 @@ import (
 	"encoding/json"
 	"errors"
 	"html"
+	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"solsynth.local/go-migration/internal/accountpg"
 	"solsynth.local/go-migration/ports/authority"
 	f "solsynth.local/go-migration/ports/federation"
+	"solsynth.local/go-migration/ports/passport/accounts"
 )
 
 //go:embed schema.sql
 var baseSchema string
-var Schema = baseSchema + "\n" + IdentitySchema + "\n" + QuoteSchema + "\n" + DeliverySchema
+
+//go:embed broader_schema.sql
+var BroaderSchema string
+var Schema = baseSchema + "\n" + IdentitySchema + "\n" + QuoteSchema + "\n" + DeliverySchema + "\n" + BroaderSchema
 
 type TransactionGuard interface {
 	Authorize(context.Context, *sql.DB, *sql.Tx, string, ...string) (authority.Principal, error)
@@ -34,6 +40,18 @@ type Repository struct {
 	server           *f.ServerConfig
 	publicPolicies   map[string]f.PublicAdmissionPolicy
 	pinnedKeys       f.KeyProvider
+	profileMedia     interface {
+		Load(context.Context, *sql.Tx, string, *accounts.Account) error
+	}
+}
+
+// WithProfileMedia wires the canonical profile-media audience projector into
+// ActivityPub actor reads. It does not copy media visibility rules here.
+func (r *Repository) WithProfileMedia(projector interface {
+	Load(context.Context, *sql.Tx, string, *accounts.Account) error
+}) *Repository {
+	r.profileMedia = projector
+	return r
 }
 
 func New(db *sql.DB, c f.Config, keys f.KeyProvider, guard TransactionGuard) (*Repository, error) {
@@ -151,8 +169,29 @@ func (r *Repository) localKey(ctx context.Context, p publisher) (f.PublicKey, er
 	return f.PublicKey{ID: p.keyID, Owner: p.actorURI, PEM: pem}, nil
 }
 func (r *Repository) Actor(ctx context.Context, name string) (f.Actor, error) {
-	p, e := r.publisherName(ctx, r.db, name, true)
+	tx, e := r.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead, ReadOnly: true})
 	if e != nil {
+		return f.Actor{}, e
+	}
+	defer tx.Rollback()
+	p, e := r.publisherName(ctx, tx, name, true)
+	if e != nil {
+		return f.Actor{}, e
+	}
+	var account accounts.Account
+	if r.profileMedia != nil {
+		account, e = accountpg.New(r.db).PublicAccountInTransaction(ctx, tx, p.owner)
+		if e != nil {
+			return f.Actor{}, f.ErrNotFound
+		}
+		if e = r.profileMedia.Load(ctx, tx, "", &account); e != nil {
+			if errors.Is(e, accounts.ErrNotFound) {
+				return f.Actor{}, f.ErrNotFound
+			}
+			return f.Actor{}, f.ErrUnavailable
+		}
+	}
+	if e = tx.Commit(); e != nil {
 		return f.Actor{}, e
 	}
 	key, e := r.localKey(ctx, p)
@@ -160,7 +199,21 @@ func (r *Repository) Actor(ctx context.Context, name string) (f.Actor, error) {
 		return f.Actor{}, e
 	}
 	id := r.actorID(p)
-	return f.Actor{Context: []string{f.Context, "https://w3id.org/security/v1"}, ID: id, Type: "Person", Username: p.name, Name: p.nick, Summary: html.EscapeString(p.bio), Inbox: id + "/inbox", Outbox: id + "/outbox", Followers: id + "/followers", Following: id + "/following", Published: p.created, PublicKey: key, Manual: p.manual}, nil
+	out := f.Actor{Context: []string{f.Context, "https://w3id.org/security/v1"}, ID: id, Type: "Person", Username: p.name, Name: p.nick, Summary: html.EscapeString(p.bio), Inbox: id + "/inbox", Outbox: id + "/outbox", Followers: id + "/followers", Following: id + "/following", Featured: id + "/featured", URL: r.config.Origin + "/publishers/" + url.PathEscape(p.name), Published: p.created, PublicKey: key, Manual: p.manual, Discoverable: true}
+	if account.Profile != nil {
+		out.Icon = r.profileImage(account.Profile.Picture)
+		out.Image = r.profileImage(account.Profile.Background)
+	}
+	return out, nil
+}
+
+func (r *Repository) profileImage(file map[string]any) *f.Image {
+	id, idOK := file["id"].(string)
+	mimeType, mimeOK := file["mime_type"].(string)
+	if !idOK || !mimeOK || !authority.ValidID(id) || !strings.HasPrefix(mimeType, "image/") {
+		return nil
+	}
+	return &f.Image{Type: "Image", MediaType: mimeType, URL: r.config.Origin + "/api/files/" + id}
 }
 func (r *Repository) note(ctx context.Context, q queryer, id string) (f.Note, string, time.Time, error) {
 	var n f.Note
@@ -169,22 +222,41 @@ func (r *Repository) note(ctx context.Context, q queryer, id string) (f.Note, st
 	if !authority.ValidID(id) {
 		return n, "", updated, f.ErrNotFound
 	}
-	e := q.QueryRowContext(ctx, `SELECT p.publisher_id::text,p.content,p.published_at,p.updated_at FROM owned_text_posts p WHERE p.id=$1 AND p.deleted_at IS NULL AND p.shadowbanned_at IS NULL AND p.drafted_at IS NULL AND p.realm_id IS NULL AND p.visibility=0 AND p.published_at<= $2`, id, r.config.Clock()).Scan(&pid, &content, &n.Published, &updated)
+	var realmID sql.NullString
+	e := q.QueryRowContext(ctx, `SELECT p.publisher_id::text,p.realm_id::text,p.content,p.published_at,p.updated_at FROM owned_text_posts p WHERE p.id=$1 AND p.deleted_at IS NULL AND p.shadowbanned_at IS NULL AND p.drafted_at IS NULL AND p.visibility=0 AND p.published_at<= $2`, id, r.config.Clock()).Scan(&pid, &realmID, &content, &n.Published, &updated)
 	if e != nil {
 		return n, "", updated, mapped(e)
 	}
-	pub, e := r.publisher(ctx, q, pid, true)
-	if e != nil {
-		return n, "", updated, e
+	attributed, followers := "", ""
+	if realmID.Valid {
+		realm, re := r.realmByID(ctx, q, realmID.String)
+		if re != nil {
+			return n, "", updated, re
+		}
+		if pid == realm.publisher {
+			attributed, followers = realm.actor, realm.actor+"/followers"
+		} else {
+			pub, pe := r.publisher(ctx, q, pid, true)
+			if pe != nil {
+				return n, "", updated, pe
+			}
+			attributed, followers = r.actorID(pub), r.actorID(pub)+"/followers"
+		}
+	} else {
+		pub, pe := r.publisher(ctx, q, pid, true)
+		if pe != nil {
+			return n, "", updated, pe
+		}
+		attributed, followers = r.actorID(pub), r.actorID(pub)+"/followers"
 	}
 	n.Context = f.Context
 	n.ID = r.objectID(id)
 	n.Type = "Note"
-	n.AttributedTo = r.actorID(pub)
+	n.AttributedTo = attributed
 	n.Content = html.EscapeString(content)
 	n.MediaType = "text/html"
 	n.To = []string{f.Public}
-	n.CC = []string{n.AttributedTo + "/followers"}
+	n.CC = []string{followers}
 	n.Updated = updated
 	return n, pid, updated, nil
 }
@@ -377,6 +449,9 @@ func (r *Repository) Settings(ctx context.Context, actor, ref string, s f.Settin
 		}
 	}
 	if e = r.audit(ctx, tx, actor, p.id, "settings"); e != nil {
+		return e
+	}
+	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, f.Permission); e != nil {
 		return e
 	}
 	return tx.Commit()

@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"encoding/binary"
 	"encoding/hex"
+	"solsynth.local/go-migration/internal/auditcapture"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/authority/signin"
 	"sort"
@@ -95,8 +96,12 @@ func (t *transaction) Contacts() (out []signin.Contact, e error) {
 	return out, rows.Err()
 }
 func (t *transaction) contactAudit(id, action string, now time.Time) error {
-	_, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_contact_audit(account_id,contact_id,action,occurred_at)VALUES($1::uuid,$2::uuid,$3::text,$4::timestamptz)`, t.canonical.Account().ID, id, action, now)
-	return e
+	var record int64
+	actor := t.canonical.Account().ID
+	if e := t.tx.QueryRowContext(t.ctx, `INSERT INTO owned_authority_contact_audit(account_id,contact_id,action,occurred_at)VALUES($1::uuid,$2::uuid,$3::text,$4::timestamptz)RETURNING id`, actor, id, action, now).Scan(&record); e != nil {
+		return e
+	}
+	return auditcapture.Record(t.ctx, t.tx, actor, "owned_authority_contact_audit", record)
 }
 func (t *transaction) AddContact(input signin.ContactInput, now time.Time) (out signin.Contact, e error) {
 	if e = signin.ValidateContact(&input); e != nil {

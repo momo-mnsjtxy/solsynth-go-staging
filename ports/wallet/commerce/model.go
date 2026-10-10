@@ -130,6 +130,7 @@ type Definition struct {
 	BasePrice                  wallet.Amount       `json:"base_price"`
 	PayeeWalletID              string              `json:"-"`
 	CycleDurationDays          int                 `json:"cycle_duration_days"`
+	FreeTrialDays              int                 `json:"free_trial_days,omitempty"`
 	AllowInternalWalletRenewal bool                `json:"allow_internal_wallet_renewal"`
 	AllowGift                  bool                `json:"allow_gift"`
 	AllowedPaymentMethods      []string            `json:"allowed_payment_methods"`
@@ -224,6 +225,18 @@ type Metrics struct {
 	PaidIncomingAmount     wallet.Amount            `json:"paid_incoming_amount"`
 	ProductIncomingAmounts map[string]wallet.Amount `json:"product_incoming_amounts"`
 	ProductOrderCounts     map[string]int           `json:"product_order_counts"`
+}
+
+type AppPayout struct {
+	Credentials
+	PayeeAccountID string        `json:"payee_account_id"`
+	Currency       string        `json:"currency"`
+	Amount         wallet.Amount `json:"amount"`
+	Remarks        *string       `json:"remarks"`
+}
+
+type PayoutStore interface {
+	CreateAppPayout(context.Context, AppPayout, string) (wallet.Transaction, error)
 }
 
 // All writes require mandatory transaction authority in the production Store.

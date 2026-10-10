@@ -47,29 +47,30 @@ func (p Policy) ValidNotify(n int32) bool {
 
 // Room and Member are explicitly versioned projections, not full legacy DTOs.
 type Room struct {
-	Slug            *string        `json:"slug"`
-	RecoveryOnly    bool           `json:"recovery_only,omitempty"`
-	Picture         map[string]any `json:"picture"`
-	Background      map[string]any `json:"background"`
-	Type            int            `json:"type"`
-	RealmID         *string        `json:"realm_id,omitempty"`
-	Realm           *social.Realm  `json:"realm,omitempty"`
-	DirectMembers   []Member       `json:"direct_members,omitempty"`
-	Members         []Member       `json:"members,omitempty"`
-	RelationGuard   bool           `json:"-"`
-	ID              string         `json:"id"`
-	AccountID       string         `json:"account_id"`
-	Name            string         `json:"name"`
-	Description     string         `json:"description"`
-	IsPublic        bool           `json:"is_public"`
-	IsCommunity     bool           `json:"is_community"`
-	EncryptionMode  int32          `json:"encryption_mode"`
-	MLSGroupID      *string        `json:"mls_group_id,omitempty"`
-	MLSStateVersion int64          `json:"mls_state_version,omitempty"`
-	MLSEpoch        int64          `json:"mls_epoch,omitempty"`
-	CreatedAt       time.Time      `json:"created_at"`
-	UpdatedAt       time.Time      `json:"updated_at"`
-	DeletedAt       *time.Time     `json:"deleted_at"`
+	Slug               *string        `json:"slug"`
+	RecoveryOnly       bool           `json:"recovery_only,omitempty"`
+	Picture            map[string]any `json:"picture"`
+	Background         map[string]any `json:"background"`
+	Type               int            `json:"type"`
+	RealmID            *string        `json:"realm_id,omitempty"`
+	Realm              *social.Realm  `json:"realm,omitempty"`
+	DirectMembers      []Member       `json:"direct_members,omitempty"`
+	Members            []Member       `json:"members,omitempty"`
+	RelationGuard      bool           `json:"-"`
+	ID                 string         `json:"id"`
+	AccountID          string         `json:"account_id"`
+	Name               string         `json:"name"`
+	Description        string         `json:"description"`
+	IsPublic           bool           `json:"is_public"`
+	IsCommunity        bool           `json:"is_community"`
+	ReadReceiptsPublic bool           `json:"is_read_receipts_public"`
+	EncryptionMode     int32          `json:"encryption_mode"`
+	MLSGroupID         *string        `json:"mls_group_id,omitempty"`
+	MLSStateVersion    int64          `json:"mls_state_version,omitempty"`
+	MLSEpoch           int64          `json:"mls_epoch,omitempty"`
+	CreatedAt          time.Time      `json:"created_at"`
+	UpdatedAt          time.Time      `json:"updated_at"`
+	DeletedAt          *time.Time     `json:"deleted_at"`
 }
 type Member struct {
 	Nick         *string           `json:"nick"`
@@ -91,14 +92,15 @@ type RoomPatch struct {
 	PictureID    *string `json:"picture_id"`
 	BackgroundID *string `json:"background_id"`
 	// Removal is available only through the explicit owned media DELETE route.
-	RemovePicture    bool    `json:"-"`
-	RemoveBackground bool    `json:"-"`
-	RealmID          *string `json:"realm_id"`
-	Name             *string `json:"name"`
-	Description      *string `json:"description"`
-	IsPublic         *bool   `json:"is_public"`
-	IsCommunity      *bool   `json:"is_community"`
-	EncryptionMode   *int32  `json:"encryption_mode"`
+	RemovePicture      bool    `json:"-"`
+	RemoveBackground   bool    `json:"-"`
+	RealmID            *string `json:"realm_id"`
+	Name               *string `json:"name"`
+	Description        *string `json:"description"`
+	IsPublic           *bool   `json:"is_public"`
+	IsCommunity        *bool   `json:"is_community"`
+	ReadReceiptsPublic *bool   `json:"is_read_receipts_public"`
+	EncryptionMode     *int32  `json:"encryption_mode"`
 }
 
 type TimeoutCause struct {
@@ -142,6 +144,18 @@ type TextRequest struct {
 	EncryptionMeta     *EncryptionMeta   `json:"encryption_meta,omitempty"`
 	SurveyID           *string           `json:"survey_id,omitempty"`
 	FundID             *string           `json:"fund_id,omitempty"`
+	MeetID             *string           `json:"meet_id,omitempty"`
+	NotableDayID       *string           `json:"notable_day_id,omitempty"`
+	CalendarEventID    *string           `json:"calendar_event_id,omitempty"`
+	LocationName       *string           `json:"location_name,omitempty"`
+	LocationAddress    *string           `json:"location_address,omitempty"`
+	LocationWKT        *string           `json:"location_wkt,omitempty"`
+	SurveySet          bool              `json:"-"`
+	FundSet            bool              `json:"-"`
+	MeetSet            bool              `json:"-"`
+	NotableDaySet      bool              `json:"-"`
+	CalendarEventSet   bool              `json:"-"`
+	LocationSet        bool              `json:"-"`
 	Content            string            `json:"content"`
 	ContentSet         bool              `json:"-"`
 	AttachmentsID      *[]string         `json:"attachments_id,omitempty"`

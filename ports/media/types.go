@@ -26,6 +26,7 @@ var (
 	ErrNotFound     = &Failure{404, "MEDIA_NOT_FOUND"}
 	ErrForbidden    = &Failure{403, "MEDIA_FORBIDDEN"}
 	ErrQuota        = &Failure{403, "MEDIA_QUOTA_EXCEEDED"}
+	ErrRateLimit    = &Failure{429, "MEDIA_RATE_LIMIT"}
 	ErrQuotaMissing = &Failure{403, "MEDIA_QUOTA_NOT_CONFIGURED"}
 	ErrConflict     = &Failure{409, "MEDIA_IDEMPOTENCY_CONFLICT"}
 	ErrPending      = &Failure{409, "MEDIA_UPLOAD_IN_PROGRESS"}
@@ -61,6 +62,7 @@ type Upload struct {
 	Usage                                  string
 	Size                                   int64
 	Public                                 bool
+	Options                                Options
 }
 
 // Object keys are generated opaque UUIDs, never names or request paths.

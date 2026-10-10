@@ -13,11 +13,11 @@ import (
 
 var _ live.DataProvider = (*LiveKit)(nil)
 
-func (p *LiveKit) SendStreamData(ctx context.Context, room string, recipients []string, payload []byte) error {
+func (p *LiveKit) SendStreamData(ctx context.Context, operation, room string, recipients []string, payload []byte) error {
 	if p == nil {
 		return live.ErrUnconfigured
 	}
-	if !live.Text(room, 256) || room == "" || len(recipients) < 1 || len(recipients) > 100 || len(payload) == 0 || len(payload) > live.MaxDataPacketBytes || !utf8.Valid(payload) || !json.Valid(payload) {
+	if !authority.ValidID(operation) || !live.Text(room, 256) || room == "" || len(recipients) < 1 || len(recipients) > 100 || len(payload) == 0 || len(payload) > live.MaxDataPacketBytes || !utf8.Valid(payload) || !json.Valid(payload) {
 		return live.ErrInvalid
 	}
 	seen := map[string]bool{}
@@ -29,7 +29,7 @@ func (p *LiveKit) SendStreamData(ctx context.Context, room string, recipients []
 	}
 	// Empty destinations mean broadcast in LiveKit and are deliberately forbidden.
 	// The server acknowledges acceptance only; reliable packets have no offline buffer.
-	if e := p.request(ctx, "SendData", room, map[string]any{"room": room, "data": payload, "kind": "RELIABLE", "destination_identities": recipients}, nil, false); e != nil {
+	if e := p.request(ctx, "SendData", room, map[string]any{"room": room, "data": payload, "kind": "RELIABLE", "destination_identities": recipients, "topic": "solsynth-event-" + operation}, nil, false); e != nil {
 		return live.ErrProvider
 	}
 	return nil

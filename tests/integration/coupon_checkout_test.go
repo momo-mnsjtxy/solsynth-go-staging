@@ -178,6 +178,9 @@ func TestPGCouponCapacityConcurrentCheckoutAndFailureRollback(t *testing.T) {
 	if _, e := f.r.UpdateOrder(f.ctx, paidID, c.UpdateStatus{Credentials: f.credentials, Status: c.Finished}); e != nil {
 		t.Fatal(e)
 	}
+	if released, settleErr := merchantRepo(t, f).Settle(f.ctx, f.actor, f.publisher); settleErr != nil || len(released) != 1 {
+		t.Fatal("explicit coupon settlement", released, settleErr)
+	}
 	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "3.246", "0.000", "3.246")
 }
 func TestPGCouponBuyerScopeIssuerAndQuoteChanges(t *testing.T) {
@@ -397,6 +400,11 @@ func TestPGCouponGiftRedemptionPreservesFirstCyclePolicy(t *testing.T) {
 	}
 	if _, e = buyer.r.SubscriptionOrder(buyer.ctx, buyer.actor, redeemed.Subscription.ID); !errors.Is(e, c.ErrConflict) {
 		t.Fatal("gift coupon became a permanent renewal price", e)
+	}
+	walletAssertBalance(t, walletpg.New(f.db), f.wallet.ID, "synthetic-commerce", "97.668", "2.332", "97.668")
+	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "0.000", "0.000", "0.000")
+	if settled, settleErr := merchantRepo(t, f).Settle(f.ctx, f.actor, f.publisher); settleErr != nil || len(settled) != 1 {
+		t.Fatal("explicit coupon gift settlement", settled, settleErr)
 	}
 	walletAssertBalance(t, walletpg.New(f.db), f.payee.ID, "synthetic-commerce", "2.332", "0.000", "2.332")
 	if n := commerceCount(t, f.db, `SELECT count(*) FROM commerce_v1.coupon_redemptions WHERE coupon_id=$1`, cp.ID); n != 1 {

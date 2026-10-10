@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 // Amount is immutable, exact base-10 thousandths. Its zero value is zero.
@@ -19,6 +20,13 @@ type Amount struct{ value string }
 
 var decimalSyntax = regexp.MustCompile(`^(-?)([0-9]+)(?:\.([0-9]+))?(?:[eE]([+-]?[0-9]+))?$`)
 var maxUnits, _ = new(big.Int).SetString("79228162514264337593543950335000", 10)
+
+// ValidCurrency is the canonical wallet currency boundary. Currency values are
+// opaque and case-sensitive, but whitespace/control aliases are never distinct
+// ledger units.
+func ValidCurrency(v string) bool {
+	return v != "" && utf8.ValidString(v) && utf8.RuneCountInString(v) <= 128 && v == strings.TrimSpace(v) && !strings.ContainsAny(v, "\x00\r\n")
+}
 
 func ParseAmount(s string) (Amount, error) {
 	if len(s) > 128 {

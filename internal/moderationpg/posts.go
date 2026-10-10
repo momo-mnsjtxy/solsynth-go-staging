@@ -152,7 +152,7 @@ func (r *Repository) mutatePosts(ctx context.Context, actor, ref string, cmd c.C
 		if e != nil {
 			return nil, e
 		}
-		old := map[string]any{"visibility": p.Visibility, "realm_id": p.RealmID, "locked": p.LockedAt != nil, "shadowban_reason": p.ShadowbanReason}
+		old := map[string]any{"visibility": p.Visibility, "realm_id": p.RealmID, "pin_mode": p.PinMode, "locked": p.LockedAt != nil, "shadowban_reason": p.ShadowbanReason}
 		switch cmd.Action {
 		case "lock":
 			if p.LockedAt != nil {
@@ -189,9 +189,12 @@ func (r *Repository) mutatePosts(ctx context.Context, actor, ref string, cmd c.C
 			}
 			p.Visibility = posts.Private
 			p.RealmID = nil
+			if p.PinMode != nil && *p.PinMode == posts.RealmPin {
+				p.PinMode = nil
+			}
 		}
 		p.UpdatedAt = now
-		_, e = tx.ExecContext(ctx, `UPDATE owned_text_posts SET visibility=$2,realm_id=$3,locked_at=$4,shadowban_reason=NULLIF($5::text,'none'),shadowbanned_at=$6,deleted_at=$7,updated_at=$8 WHERE id=$1`, p.ID, p.Visibility, p.RealmID, p.LockedAt, p.ShadowbanReason, p.ShadowbannedAt, p.DeletedAt, now)
+		_, e = tx.ExecContext(ctx, `UPDATE owned_text_posts SET visibility=$2,pin_mode=CASE WHEN pin_mode=1 AND realm_id IS DISTINCT FROM $3::uuid THEN NULL ELSE pin_mode END,realm_id=$3,locked_at=$4,shadowban_reason=NULLIF($5::text,'none'),shadowbanned_at=$6,deleted_at=$7,updated_at=$8 WHERE id=$1`, p.ID, p.Visibility, p.RealmID, p.LockedAt, p.ShadowbanReason, p.ShadowbannedAt, p.DeletedAt, now)
 		if e != nil {
 			return nil, e
 		}
@@ -207,7 +210,7 @@ func (r *Repository) mutatePosts(ctx context.Context, actor, ref string, cmd c.C
 		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_text_post_audit(actor_id,post_id,action,occurred_at)VALUES($1,$2,$3,$4)`, actor, p.ID, action, now); e != nil {
 			return nil, e
 		}
-		if e = r.audit(ctx, tx, actor, c.PostKind, p.ID, cmd.Action, map[string]any{"before": old, "visibility": p.Visibility, "realm_id": p.RealmID, "locked": p.LockedAt != nil, "shadowban_reason": p.ShadowbanReason, "reason": cmd.Reason, "scoped": !global}); e != nil {
+		if e = r.audit(ctx, tx, actor, c.PostKind, p.ID, cmd.Action, map[string]any{"before": old, "visibility": p.Visibility, "realm_id": p.RealmID, "pin_mode": p.PinMode, "locked": p.LockedAt != nil, "shadowban_reason": p.ShadowbanReason, "reason": cmd.Reason, "scoped": !global}); e != nil {
 			return nil, e
 		}
 		out = append(out, p)

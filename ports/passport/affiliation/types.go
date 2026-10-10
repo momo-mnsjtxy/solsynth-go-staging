@@ -4,6 +4,7 @@ package affiliation
 import (
 	"context"
 	"solsynth.local/go-migration/ports/authority"
+	wallet "solsynth.local/go-migration/ports/wallet/accounts"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -64,6 +65,17 @@ type InviteCreate struct {
 	Create
 	ExpiresAt *time.Time `json:"expires_at"`
 }
+type InvitePurchase struct {
+	PayerWalletID string    `json:"payer_wallet_id"`
+	MaxUsages     int       `json:"max_usages"`
+	ExpiresAt     time.Time `json:"expires_at"`
+	Remark        *string   `json:"remark"`
+	Key           string    `json:"-"`
+}
+type InvitePurchaseReceipt struct {
+	Spell       Spell              `json:"spell"`
+	Transaction wallet.Transaction `json:"transaction"`
+}
 type Query struct {
 	Take, Offset int
 	Order        string
@@ -73,6 +85,7 @@ type Command struct {
 	Operation, ID, Word, Resource string
 	Create                        *Create
 	ExpiresAt                     *time.Time
+	Purchase                      *InvitePurchase
 	Query                         Query
 }
 type Result struct {

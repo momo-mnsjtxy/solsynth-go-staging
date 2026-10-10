@@ -18,6 +18,7 @@ func loadMini(ctx context.Context, tx *sql.Tx, app, id string) (v bots.MiniApp, 
 		return v, mapped(e)
 	}
 	v.Version = "1.0.0"
+	v.DownloadCountSemantics = "authorized_package_open"
 	if len(raw) > 0 {
 		var m bots.MiniManifest
 		if e = json.Unmarshal(raw, &m); e != nil {
@@ -33,7 +34,7 @@ func loadMini(ctx context.Context, tx *sql.Tx, app, id string) (v bots.MiniApp, 
 	}
 	var sha string
 	var size int64
-	x := tx.QueryRowContext(ctx, `SELECT f.sha256,f.size FROM owned_bot_miniapps m JOIN owned_media_files f ON f.id=m.package_file_id JOIN owned_authority_accounts owner ON owner.id=f.account_id WHERE m.id=$1 AND f.state='ready' AND f.is_public AND NOT owner.disabled AND m.package_fingerprint=f.sha256`, id).Scan(&sha, &size)
+	x := tx.QueryRowContext(ctx, `SELECT f.sha256,f.size FROM owned_bot_miniapps m JOIN owned_media_files f ON f.id=m.package_file_id JOIN owned_authority_accounts owner ON owner.id=f.account_id WHERE m.id=$1 AND f.state='ready' AND (f.is_public OR m.package_owner_id=f.account_id) AND `+miniMediaActiveOwner+` AND m.package_fingerprint=f.sha256`, id).Scan(&sha, &size)
 	if x == nil {
 		url := "/api/miniapps/" + v.Slug + "/package"
 		v.PackageURL = &url
@@ -41,6 +42,9 @@ func loadMini(ctx context.Context, tx *sql.Tx, app, id string) (v bots.MiniApp, 
 		v.PackageSize = &size
 	} else if x != sql.ErrNoRows {
 		return v, x
+	}
+	if e = loadMiniMedia(ctx, tx, &v); e != nil {
+		return v, e
 	}
 	return v, nil
 }
@@ -111,6 +115,9 @@ func (r *Repository) MiniApps(ctx context.Context, s apps.Scope, ref string, p *
 				if _, e = tx.ExecContext(ctx, `UPDATE owned_bot_miniapps SET deleted_at=$2,updated_at=$2 WHERE id=$1`, ref, now); e != nil {
 					return e
 				}
+				if _, e = tx.ExecContext(ctx, `DELETE FROM owned_miniapp_media WHERE miniapp_id=$1`, ref); e != nil {
+					return e
+				}
 				return audit(ctx, tx, s, "miniapp.delete", ref, now)
 			}
 			if action == "update" {
@@ -134,6 +141,11 @@ func (r *Repository) MiniApps(ctx context.Context, s apps.Scope, ref string, p *
 				if _, e = tx.ExecContext(ctx, `UPDATE owned_bot_miniapps SET slug=$2,plugin_id=$3,stage=$4,manifest=$5,updated_at=$6 WHERE id=$1`, ref, textOr(p.Slug, old.Slug), plugin, stage, raw, now); e != nil {
 					return e
 				}
+			}
+		}
+		if action == "create" || action == "update" {
+			if e := applyMiniMedia(ctx, tx, s.Actor, ref, p); e != nil {
+				return e
 			}
 		}
 		v, e := loadMini(ctx, tx, s.App, ref)

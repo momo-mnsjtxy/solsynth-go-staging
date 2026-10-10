@@ -277,7 +277,7 @@ func TestPGProgressionConcurrentCheckInAndIsolation(t *testing.T) {
 	}
 	h := (&progression.Service{Repository: f.progression, Authority: f.verifier, Bind: f.guard.Bind}).Handler()
 	ppHTTP(t, h, "POST", "/api/accounts/me/check-in", f.token, `{"experience":999}`, 400)
-	ppHTTP(t, h, "POST", "/api/accounts/me/check-in?backdated=2020-01-01", f.token, `null`, 501)
+	ppHTTP(t, h, "POST", "/api/accounts/me/check-in?backdated=2020-01-01", f.token, `null`, 400)
 	ppHTTP(t, h, "POST", "/api/accounts/me/check-in", f.token, `null`, 200)
 	ppHTTP(t, h, "POST", "/api/admin/progression/achievements", f.token, `{"identifier":"forged","title":"forged","summary":"forged","trigger":{"actions":["post.create"],"mode":"count"}}`, 403)
 }

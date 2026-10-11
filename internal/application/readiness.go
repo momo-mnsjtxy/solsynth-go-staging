@@ -40,6 +40,11 @@ func (b *Backend) Ready(ctx context.Context) error {
 			return e
 		}
 	}
+	if b.pets != nil {
+		if e := b.pets.Ready(ctx); e != nil {
+			return e
+		}
+	}
 	if b.progression != nil {
 		if e := b.progression.Ready(ctx); e != nil {
 			return e

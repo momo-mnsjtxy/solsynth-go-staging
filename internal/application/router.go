@@ -33,6 +33,7 @@ import (
 // modules holds in-process domain handlers. There is no reverse proxy, service
 // discovery, gRPC schema, or network hop in this independently authored host.
 type modules struct {
+	pets                                                                                                                                                                                                                                                 http.Handler
 	notificationDevices                                                                                                                                                                                                                                  http.Handler
 	presenceSensors                                                                                                                                                                                                                                      http.Handler
 	accountConnections                                                                                                                                                                                                                                   http.Handler
@@ -73,6 +74,20 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// between services. Neither a service-name prefix nor traversal is authority.
 	if p == "" || p[0] != '/' || path.Clean(p) != p || strings.Contains(p, "\\") || strings.Contains(p, "//") || r.URL.RawPath != "" && r.URL.EscapedPath() != p {
 		problem(w, 400, "INVALID_ROUTE_PATH")
+		return
+	}
+
+	// Pets have only the canonical API and Passport alias; no cross-service alias.
+	if under(p, "/api/pets") || under(p, "/passport/pets") {
+		if h.pets == nil {
+			problem(w, 503, "PET_UNAVAILABLE")
+			return
+		}
+		copy := r.Clone(r.Context())
+		u := *r.URL
+		u.Path = strings.Replace(p, "/passport/", "/api/", 1)
+		copy.URL = &u
+		h.pets.ServeHTTP(w, copy)
 		return
 	}
 	if notifications.DeviceHandles(p) {

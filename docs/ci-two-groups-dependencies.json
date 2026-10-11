@@ -3497,7 +3497,7 @@
     "test": "TestPGPostCompositionSavedRestartPersistence",
     "group_before_and_after": "group-a",
     "reason": "Global ProcessFundsDue tests use a synthetic seven-day future clock and can expire this unrelated one-day restart fund in the shared database.",
-    "schema_sha256": "2dafd3bd8eb5a4d1c849914185e12e7509edd46605e05ff3f7abf253308b55b4",
+    "schema_sha256": "a9c6ced62023afaa886b68bb9fd34d70a3b1d69211e30834c83e45084f29b659",
     "ordered_schema_files": [
       "internal/authoritypg/schema.sql",
       "internal/authoritypg/assurance_schema.sql",
@@ -3506,6 +3506,7 @@
       "internal/authoritypg/stream_ticket_schema.sql",
       "internal/readerpg/schema.sql",
       "internal/accountpg/schema.sql",
+      "internal/petpg/schema.sql",
       "internal/accountpg/name_schema.sql",
       "internal/signinpg/schema.sql",
       "internal/signinpg/address_schema.sql",
@@ -3650,7 +3651,7 @@
       },
       {
         "source": "scripts/integration-postgres.sh",
-        "sha256": "4bd41b7a90c0ff5bbd35f6ac7a5c81c6bf4b18836c4fce93677f2b09d5cb0664"
+        "sha256": "354b8030e8fb4e4923427d2cf259e79ac7c95df5456ce05c144d9ad289078dfc"
       },
       {
         "source": ".github/workflows/postgres-validation.yml",

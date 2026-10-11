@@ -1,0 +1,47 @@
+{
+  "feature": "Independent virtual-pet backend",
+  "verified_at_utc": "2026-10-11T06:41:41Z",
+  "upstream_repository": "https://github.com/momo-mnsjtxy/solsynth-go-staging",
+  "upstream_base_commit": "6bd739873f3475af2ec8668e3940e6698d96c7c5",
+  "archive_sha256": "8bf485f7dce99fc0f664da7748671ba0ecf0159deccf43d064ed3aad112a3ede",
+  "local_archive_baseline_commit": "96b436407d3d779a61414c965a4d2fc3dc042b99",
+  "toolchains": {
+    "go": "1.26.9 linux/amd64",
+    "go_archive_sha256": "42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d",
+    "postgresql": "17.11",
+    "pglast": "6.7 (PostgreSQL 16.1 grammar)",
+    "pyyaml": "6.0.3"
+  },
+  "passed": [
+    "scripts/verify.sh: all static gates, formatting, go build ./..., go vet ./..., go test -count=1 ./..., go test -race -count=1 ./...",
+    "19 pet domain/HTTP tests and 2 dedicated application routing tests",
+    "7 real PostgreSQL pet tests with -race, PET_TEST_DISPOSABLE=1, isolated local TCP database pet_test",
+    "Separate before and after processes around actual pg_ctl restart: TestPostgresPetServerRestartPersistence",
+    "Zero remaining pet schemas after tests; local PostgreSQL stopped"
+  ],
+  "not_run_or_not_delivered": [
+    "Historical full-platform PostgreSQL suite (1147 before/120 restart-after cases) was not executed; ordinary full Go suite explicitly skipped its DB cases",
+    "Full-platform credential-continuity restart acceptance; pet restart after phase used fresh authentication",
+    "Client UI and original artwork (API asset keys are identifiers only)",
+    "Production schema migration, deployment, remote push or paid CI"
+  ],
+  "test_scope": {
+    "real_postgres_cases": [
+      "TestPostgresPetLifecycleReplayAndCoins",
+      "TestPostgresPetConcurrentAdoptionAndCAS",
+      "TestPostgresPetAuthorityAndRollback",
+      "TestPostgresPetLazyDecayAndFreshPoolPersistence",
+      "TestPostgresPetFinalGuardFailureRollsBack",
+      "TestPostgresPetAccountWaitRechecksDisable",
+      "TestPostgresPetHTTPIntegration"
+    ],
+    "restart_case": "TestPostgresPetServerRestartPersistence",
+    "isolation": "Own disposable cluster, loopback TCP, synthetic user, pet_test database, random schema per normal test"
+  },
+  "implementation_notes": [
+    "Canonical same-pool TransactionGuard before/after every self transaction; separate-pool hosts fail closed for pets",
+    "Append-only application command journal and pet state commit atomically; exact replay before version CAS",
+    "No payment/wallet mutation, random paid reward, irreversible neglect death or QQ proprietary assets",
+    "Pure lazy bounded decay; no periodic pet worker required"
+  ]
+}

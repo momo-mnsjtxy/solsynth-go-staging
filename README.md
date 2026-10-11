@@ -1,3 +1,5 @@
+New additive feature: [virtual pets](docs/virtual-pets.md) documents the care/growth API, pet-only earned currency, explicit schema installation, and validation limits. It is separate from the historical parity scope below.
+
 Current all-drafts integration: see [completion scope and exact validation status](docs/all-drafts-completion-scope.json), [owned backend checkpoint](docs/owned-backend-checkpoint.json), and [authenticated host](docs/authenticated-backend-host.md). The sections below retain historical checkpoints; their test counts and CI claims do not certify the current commit.
 
 The reviewed completion scope excludes external payment channels, migration/deployment, and legacy compatibility. Internal wallet and funded rewards remain included. Configured software adapters are implemented; operator configuration, external service and NFC hardware activation, client adaptation, and the exact candidate's private PostgreSQL/restart CI are separate acceptance requirements. No production deployment or completed-platform claim follows from ordinary tests.

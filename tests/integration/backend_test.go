@@ -293,10 +293,7 @@ func TestPGBackendHTTPProcessRestart(t *testing.T) {
 	if err := os.WriteFile(public, pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: x509.MarshalPKCS1PublicKey(&f.config.SigningKey.PublicKey)}), 0600); err != nil {
 		t.Fatal(err)
 	}
-	u := &url.URL{Scheme: "postgres", User: url.User("synthetic"), Host: "localhost:55432", Path: "/postgres"}
-	q := url.Values{"host": {filepath.Join(os.Getenv("SOLSYNTH_DISPOSABLE_PG"), "socket")}, "sslmode": {"disable"}}
-	u.RawQuery = q.Encode()
-	t.Setenv("BACKEND_PROCESS_TEST_DSN", u.String())
+	t.Setenv("BACKEND_PROCESS_TEST_DSN", backendProcessDSN(t))
 	args := []string{"--serve", "--dsn-env=BACKEND_PROCESS_TEST_DSN", "--issuer=" + f.config.Issuer, "--audience=" + f.config.Audience, "--key-id=synthetic", "--trusted-public-key-file=" + public, "--taxonomy-public-visibility=0", "--messager-none-encryption=77", "--messager-notify-all=10", "--messager-notify-mentions=20", "--messager-notify-none=30"}
 	mediaRoot := t.TempDir()
 	args = append(args, "--media-root="+mediaRoot, "--media-max-bytes=1048576")

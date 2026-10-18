@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Private-CI-only schema template; import/fingerprint never connects to PostgreSQL."""
+"""Guarded disposable schema template; import/fingerprint never connects to PostgreSQL."""
 import argparse
 import hashlib
 import json
@@ -39,9 +39,49 @@ def identifier(value):
     return '"' + value + '"'
 
 
+def validate_execution_mode(env):
+    mode = env.get('PG_TEST_MODE', '')
+    if mode == 'local-disposable':
+        # A local run has its own explicit identity. It must never acquire the
+        # authorization or receipts of a GitHub execution by setting CI flags.
+        if any(value for name, value in env.items()
+               if name in ('CI', 'PG_TEST_PRIVATE_CI') or name.startswith('GITHUB_')):
+            raise ValueError('local disposable mode cannot contain CI or GitHub execution variables')
+        return mode
+    if mode or env.get('GITHUB_ACTIONS') != 'true' or env.get('PG_TEST_PRIVATE_CI') != 'true':
+        raise ValueError('disposable execution requires authorized private CI or explicit local mode')
+    return 'private-ci'
+
+
+def source_candidate(env):
+    mode = validate_execution_mode(env)
+    head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    candidate = head if mode == 'local-disposable' else env.get('GITHUB_SHA', '')
+    dirty = subprocess.run(['git', 'diff', '--quiet', 'HEAD', '--'], cwd=ROOT).returncode
+    untracked = subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard'], cwd=ROOT, text=True)
+    if not re.fullmatch(r'[a-f0-9]{40}', candidate) or head != candidate or dirty or untracked.strip():
+        raise ValueError('disposable execution requires the exact clean candidate checkout')
+    return candidate
+
+
+def connection_settings(env, run):
+    mode = validate_execution_mode(env)
+    transport = env.get('PG_TEST_LOCAL_TRANSPORT', '')
+    port = env.get('PG_TEST_LOCAL_PORT', '')
+    password = env.get('PG_TEST_LOCAL_PASSWORD', '')
+    if transport == 'loopback-tcp' and mode == 'local-disposable':
+        if not re.fullmatch(r'[1-9][0-9]{3,4}', port) or not 1024 <= int(port) <= 65535 or not re.fullmatch(r'[a-f0-9]{64}', password):
+            raise ValueError('local TCP requires a canonical unprivileged port and private random credential')
+        return {'dsn': f'host=127.0.0.1 port={port} user=synthetic dbname=postgres sslmode=disable password={password}',
+                'host': '127.0.0.1', 'port': port, 'password': password}
+    if transport or port or password:
+        raise ValueError('local transport variables require explicit local loopback TCP mode')
+    return {'dsn': f'host={run}/socket port=55432 user=synthetic dbname=postgres sslmode=disable',
+            'host': str(run / 'socket'), 'port': '55432', 'password': ''}
+
+
 def validate_environment(env):
-    if env.get('GITHUB_ACTIONS') != 'true' or env.get('PG_TEST_PRIVATE_CI') != 'true':
-        raise ValueError('template creation requires authorized private CI')
+    mode = validate_execution_mode(env)
     parent = Path(env.get('PG_TEST_ROOT', ''))
     run = Path(env.get('SOLSYNTH_DISPOSABLE_PG', ''))
     if (not re.fullmatch(r'/[A-Za-z0-9_./-]+', str(run)) or not parent.is_absolute() or not run.is_absolute() or run.parent != parent
@@ -55,10 +95,10 @@ def validate_environment(env):
             or marker.stat().st_mode & 0o077 or socket.is_symlink()
             or not socket.is_dir() or socket.stat().st_mode & 0o077):
         raise ValueError('private disposable marker and socket directory required')
-    expected = f'host={run}/socket port=55432 user=synthetic dbname=postgres sslmode=disable'
+    expected = connection_settings(env, run)['dsn']
     if env.get('PG_TEST_DSN') != expected or not re.fullmatch(r'[a-f0-9]{40}', env.get('PG_TEST_CANDIDATE', '')):
         raise ValueError('exact disposable connection and candidate required')
-    if env.get('GITHUB_SHA') != env['PG_TEST_CANDIDATE']:
+    if mode == 'private-ci' and env.get('GITHUB_SHA') != env['PG_TEST_CANDIDATE']:
         raise ValueError('candidate differs from CI checkout')
     return run
 
@@ -80,9 +120,16 @@ def baseline_queries(root=ROOT):
 class Postgres:
     def __init__(self, env, run):
         self.bin = Path(env['PG_BIN'])
-        self.env = {'PATH': env.get('PATH', ''), 'LC_ALL': 'C', 'PGHOST': str(run / 'socket'),
-                    'PGPORT': '55432', 'PGUSER': 'synthetic', 'PGSSLMODE': 'disable',
+        connection = connection_settings(env, run)
+        self.env = {'PATH': env.get('PATH', ''), 'LC_ALL': 'C', 'PGHOST': connection['host'],
+                    'PGPORT': connection['port'], 'PGUSER': 'synthetic', 'PGSSLMODE': 'disable',
                     'PGCONNECT_TIMEOUT': '10', 'PGOPTIONS': '-c statement_timeout=120000 -c timezone=UTC'}
+        if connection['password']:
+            self.env['PGPASSWORD'] = connection['password']
+            # A loopback endpoint can belong to another local server. Bind the
+            # authenticated server to this run before any dump, clone or audit.
+            if self.sql('postgres', "SELECT current_setting('data_directory')") != str(run / 'data'):
+                raise ValueError('local TCP server does not own this disposable data directory')
 
     def tool(self, binary, database, args, text=None):
         try:
@@ -181,18 +228,19 @@ def prepare(pg, run, candidate, schema_hash, paths, baselines):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('operation', choices=('fingerprint', 'prepare'))
+    parser.add_argument('operation', choices=('candidate', 'fingerprint', 'prepare'))
     args = parser.parse_args()
     try:
+        if args.operation == 'candidate':
+            print(source_candidate(os.environ))
+            return
         schema_hash, paths = fingerprint()
         if args.operation == 'fingerprint':
             print(schema_hash)
             return
         run = validate_environment(os.environ)
         candidate = os.environ['PG_TEST_CANDIDATE']
-        head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
-        dirty = subprocess.run(['git', 'diff', '--quiet', 'HEAD', '--'], cwd=ROOT).returncode
-        if head != candidate or dirty or os.environ.get('PG_TEST_SCHEMA_SHA256') != schema_hash:
+        if source_candidate(os.environ) != candidate or os.environ.get('PG_TEST_SCHEMA_SHA256') != schema_hash:
             raise ValueError('template requires the exact clean candidate and schema fingerprint')
         prepare(Postgres(os.environ, run), run, candidate, schema_hash, paths, baseline_queries())
         print('Verified schema-only disposable template: zero application rows; source baseline audited; connections disabled')

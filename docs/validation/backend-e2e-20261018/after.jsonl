@@ -1,0 +1,8 @@
+{"Time":"2026-10-18T16:19:44.415592835+09:00","Action":"start","Package":"solsynth.local/go-migration/tests/integration"}
+{"Time":"2026-10-18T16:19:44.474541247+09:00","Action":"run","Package":"solsynth.local/go-migration/tests/integration","Test":"TestPGBackendRestartPersistence"}
+{"Time":"2026-10-18T16:19:44.474602318+09:00","Action":"output","Package":"solsynth.local/go-migration/tests/integration","Test":"TestPGBackendRestartPersistence","Output":"=== RUN   TestPGBackendRestartPersistence\n"}
+{"Time":"2026-10-18T16:19:44.563456683+09:00","Action":"output","Package":"solsynth.local/go-migration/tests/integration","Test":"TestPGBackendRestartPersistence","Output":"--- PASS: TestPGBackendRestartPersistence (0.09s)\n"}
+{"Time":"2026-10-18T16:19:44.563500458+09:00","Action":"pass","Package":"solsynth.local/go-migration/tests/integration","Test":"TestPGBackendRestartPersistence","Elapsed":0.09}
+{"Time":"2026-10-18T16:19:44.563513358+09:00","Action":"output","Package":"solsynth.local/go-migration/tests/integration","Output":"PASS\n"}
+{"Time":"2026-10-18T16:19:45.571507243+09:00","Action":"output","Package":"solsynth.local/go-migration/tests/integration","Output":"ok  \tsolsynth.local/go-migration/tests/integration\t1.155s\n"}
+{"Time":"2026-10-18T16:19:45.571548555+09:00","Action":"pass","Package":"solsynth.local/go-migration/tests/integration","Elapsed":1.156}

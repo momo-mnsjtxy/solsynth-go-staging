@@ -49,9 +49,11 @@ PATH="$PWD/.venv/bin:$PATH" bash scripts/verify.sh
 
 本次重构与实际检查结果见 [`docs/hop-refactor-20261018.md`](docs/hop-refactor-20261018.md)，包括完整本地验证日志与源码指纹。
 
+后续真实后端进程与 PostgreSQL 重启验证已通过，结果与证据见 [`docs/backend-e2e-20261018.md`](docs/backend-e2e-20261018.md)。
+
 当前业务范围索引为 [`docs/all-drafts-completion-scope.json`](docs/all-drafts-completion-scope.json)，原始来源闭环为 [`docs/all-drafts-source-closure.json`](docs/all-drafts-source-closure.json)。这些文档中的提交号和测试结果只对应所记录的版本；本次改动的结果以本次验证记录为准。外部支付渠道、迁移部署、旧版本兼容保持原有范围约定。
 
-真实数据库与重启用例只由现有受保护的私有 CI 运行。本轮不触发 GitHub Actions：用户此前说明月度运行额度已耗尽。不得伪造 CI 环境或撤销测试保护来获得通过标记。外部服务和 NFC 硬件需独立配置与验证，普通测试不构成生产验收。
+真实数据库与重启用例默认使用受保护的私有 CI；另有显式本地临时模式供后端进程端到端验证，命令和隔离条件见 [开发与验证](docs/development.md#数据库和重启验证)。本轮不触发 GitHub Actions：用户此前说明月度运行额度已耗尽。不得伪造 CI 环境或撤销测试保护来获得通过标记。外部服务和 NFC 硬件需独立配置与验证，普通测试不构成生产验收。
 
 旧 README 已原样归档到 [`docs/history/README-before-hop-20261018.md`](docs/history/README-before-hop-20261018.md)。`docs/` 下的阶段性设计、审计和 checkpoint 保留为有版本边界的历史证据；优先用当前源码确认运行行为。
 

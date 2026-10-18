@@ -43,10 +43,27 @@ func verificationDatabase(t *testing.T) *sql.DB {
 	t.Helper()
 	// database checks the marked disposable cluster before any provider listener.
 	db := database(t)
-	if os.Getenv("CI") != "true" {
-		t.Fatal("verification provider sockets are restricted to synthetic CI")
-	}
+	verificationSocketGuard(t)
 	return db
+}
+
+// Provider listeners use the same complete disposable boundary as PostgreSQL.
+// Local execution is explicit; private CI retains its additional CI=true gate.
+func validateVerificationSocketConfig(c disposableDatabaseConfig, required string) error {
+	if err := validateDisposableDatabaseConfig(c); err != nil {
+		return err
+	}
+	if required != "1" || (c.mode == "" && c.genericCI != "true") {
+		return errors.New("required disposable execution guard missing before provider listener")
+	}
+	return nil
+}
+
+func verificationSocketGuard(t *testing.T) {
+	t.Helper()
+	if err := validateVerificationSocketConfig(disposableDatabaseEnvironment(), os.Getenv("PG_TEST_REQUIRED")); err != nil {
+		t.Fatal(err)
+	}
 }
 
 type verificationSMTPFixture struct {
@@ -58,9 +75,7 @@ type verificationSMTPFixture struct {
 
 func verificationSMTPServer(t *testing.T, mode string) *verificationSMTPFixture {
 	t.Helper()
-	if os.Getenv("CI") != "true" || os.Getenv("PG_TEST_REQUIRED") != "1" {
-		t.Fatal("synthetic CI guard required before SMTP listener")
-	}
+	verificationSocketGuard(t)
 	key, e := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if e != nil {
 		t.Fatal(e)
@@ -241,9 +256,7 @@ func (t verificationHTTPTransport) RoundTrip(r *http.Request) (*http.Response, e
 }
 func verificationCaptchaServer(t *testing.T) *verification.Turnstile {
 	t.Helper()
-	if os.Getenv("CI") != "true" || os.Getenv("PG_TEST_REQUIRED") != "1" {
-		t.Fatal("synthetic CI guard required before HTTP listener")
-	}
+	verificationSocketGuard(t)
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if r.Method != "POST" || r.URL.Path != "/turnstile/v0/siteverify" || r.ParseForm() != nil || r.PostForm.Get("secret") != "synthetic-provider-secret" || r.PostForm.Get("idempotency_key") == "" {

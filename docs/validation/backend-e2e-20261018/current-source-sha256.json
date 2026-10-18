@@ -1,0 +1,16 @@
+{
+  "scripts/check-backend-e2e-results.py": "9038e295c7e0497f32dc834115977bed64c17f0bbb02caa823f0cce4b9ec0aeb",
+  "scripts/fixture_template.py": "763cb59c73477a03f7c571e2e706b53507fbbaad0d9fa27a8d26243076a5ffe2",
+  "scripts/integration-postgres.sh": "639e6e5f42ce7eec637e0d30dd57c0ae20c26a04d55f5f8d6e1c05014b853edd",
+  "scripts/reviewed_sources.py": "f7b7653b9800e682c13d54dc8b02a53b491e5e020d59d2d978f76f60a1d06717",
+  "scripts/test-fixture-isolation.py": "1f0c2093d082c98c733641b28c9c5cda8167625f0e993f2fdc030b763df421d9",
+  "scripts/test-integration-groups.py": "0b14657fe63c66111490bf4703a6d04f0952e1310534bee8082d06d86b5e75cb",
+  "scripts/test-local-e2e-guards.py": "0de0d0c272c71a732ed0d3423f2a8c5eb49c6f69a686430f1c738eaf02c929ba",
+  "scripts/verify.sh": "440f2fb15ce66e13252699f6421f0413c2fab5afd2490e1ffb10232c49fd9a4a",
+  "tests/integration/backend_signin_test.go": "69ca48e1f6a7c9c254faa562bd70fa31fdecd4151c9bdd5c08697e935069c6f0",
+  "tests/integration/backend_test.go": "e99601ed026a4341d921f4546975bd1037b97686aba02e95eda8ceb25a7ef93e",
+  "tests/integration/disposable_database_offline_test.go": "0f18dd569cfc0404c4769b81e314feab8b47bd35753696ebb6c6b015e556877b",
+  "tests/integration/disposable_database_test.go": "d8835b7dfc309d47ee3cd7da8fa162fdf61fcb18b9023fd6388902a14668b8ef",
+  "tests/integration/verification_adapters_test.go": "a68b0b45d291e1e06ff9b44968b2be79645719fa1b576bd599b3a8a1b7736a7a",
+  "tests/integration/watchpg_test.go": "997bd37be87eace35b195d1c9dc9d0da39c18ba34ddb14d46bbf98ac53fd41fb"
+}

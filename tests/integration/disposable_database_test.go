@@ -9,10 +9,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -43,7 +45,9 @@ type isolatedRestartDatabase struct {
 }
 
 type disposableDatabaseConfig struct {
-	root, parent, dsn, candidate, schemaHash, ci, privateCI string
+	root, parent, dsn, candidate, schemaHash, mode, ci, privateCI, genericCI string
+	localTransport, localPort, localPassword                                 string
+	githubEnvironment                                                        bool
 }
 
 var (
@@ -56,9 +60,80 @@ var (
 	fixtureCluster  = regexp.MustCompile(`^[0-9]+$`)
 )
 
+// Local runs opt in explicitly and cannot borrow CI identity. An absent mode
+// retains the existing private CI contract; unknown modes fail closed.
+func validateDisposableExecutionMode(c disposableDatabaseConfig) error {
+	switch c.mode {
+	case "":
+		if c.ci != "true" || c.privateCI != "true" {
+			return errors.New("isolated fixture requires authorized private CI")
+		}
+		if c.localTransport != "" || c.localPort != "" || c.localPassword != "" {
+			return errors.New("local transport settings are forbidden in private CI")
+		}
+	case "local-disposable":
+		if c.genericCI != "" || c.ci != "" || c.privateCI != "" || c.githubEnvironment {
+			return errors.New("local disposable execution cannot claim CI identity")
+		}
+	default:
+		return errors.New("unknown disposable execution mode")
+	}
+	return nil
+}
+
+func hasGithubEnvironment(environment []string) bool {
+	for _, entry := range environment {
+		name, value, _ := strings.Cut(entry, "=")
+		if strings.HasPrefix(name, "GITHUB_") && value != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func disposableDatabaseEnvironment() disposableDatabaseConfig {
+	parent := os.Getenv("PG_TEST_ROOT")
+	if parent == "" {
+		parent = "/workspace/shared/solsynth-go-integration"
+	}
+	return disposableDatabaseConfig{
+		root: os.Getenv("SOLSYNTH_DISPOSABLE_PG"), parent: parent,
+		dsn: os.Getenv("PG_TEST_DSN"), candidate: os.Getenv("PG_TEST_CANDIDATE"),
+		schemaHash: os.Getenv("PG_TEST_SCHEMA_SHA256"), mode: os.Getenv("PG_TEST_MODE"),
+		ci: os.Getenv("GITHUB_ACTIONS"), privateCI: os.Getenv("PG_TEST_PRIVATE_CI"),
+		genericCI: os.Getenv("CI"), githubEnvironment: hasGithubEnvironment(os.Environ()),
+		localTransport: os.Getenv("PG_TEST_LOCAL_TRANSPORT"), localPort: os.Getenv("PG_TEST_LOCAL_PORT"),
+		localPassword: os.Getenv("PG_TEST_LOCAL_PASSWORD"),
+	}
+}
+
+// Unix sockets remain the default. A local runner may explicitly select one
+// password-authenticated loopback port when the host forbids Unix sockets.
+func disposableExpectedDSN(c disposableDatabaseConfig) (string, error) {
+	switch c.localTransport {
+	case "":
+		if c.localPort != "" || c.localPassword != "" {
+			return "", errors.New("unexpected local transport credentials")
+		}
+		return "host=" + filepath.Join(c.root, "socket") + " port=55432 user=synthetic dbname=postgres sslmode=disable", nil
+	case "loopback-tcp":
+		port, err := strconv.Atoi(c.localPort)
+		if c.mode != "local-disposable" || err != nil || port < 1024 || port > 65535 || strconv.Itoa(port) != c.localPort || !fixtureHex64.MatchString(c.localPassword) {
+			return "", errors.New("invalid explicit local loopback transport configuration")
+		}
+		return "host=127.0.0.1 port=" + c.localPort + " user=synthetic dbname=postgres sslmode=disable password=" + c.localPassword, nil
+	default:
+		return "", errors.New("unknown disposable local transport")
+	}
+}
+
 func validateDisposableDatabaseConfig(c disposableDatabaseConfig) error {
-	if c.ci != "true" || c.privateCI != "true" {
-		return errors.New("isolated fixture requires authorized private CI")
+	if err := validateDisposableExecutionMode(c); err != nil {
+		return err
+	}
+	expectedDSN, err := disposableExpectedDSN(c)
+	if err != nil {
+		return err
 	}
 	if !fixtureRootPath.MatchString(c.root) || !filepath.IsAbs(c.root) || !filepath.IsAbs(c.parent) || filepath.Clean(c.root) != c.root || filepath.Clean(c.parent) != c.parent || filepath.Dir(c.root) != c.parent || !fixtureRunName.MatchString(filepath.Base(c.root)) {
 		return errors.New("isolated fixture requires the marked disposable root")
@@ -82,8 +157,41 @@ func validateDisposableDatabaseConfig(c disposableDatabaseConfig) error {
 	if err != nil || string(data) != "synthetic-only\n" {
 		return errors.New("disposable marker mismatch")
 	}
-	if c.dsn != "host="+filepath.Join(c.root, "socket")+" port=55432 user=synthetic dbname=postgres sslmode=disable" || !fixtureHex40.MatchString(c.candidate) || !fixtureHex64.MatchString(c.schemaHash) {
+	if c.dsn != expectedDSN || !fixtureHex40.MatchString(c.candidate) || !fixtureHex64.MatchString(c.schemaHash) {
 		return errors.New("exact disposable connection and source hashes required")
+	}
+	return nil
+}
+
+// The child backend accepts a PostgreSQL URL. Convert only the exact connection
+// already validated above, and pass the result through the child's environment.
+func backendProcessDSN(t *testing.T) string {
+	t.Helper()
+	c := disposableDatabaseEnvironment()
+	if err := validateDisposableDatabaseConfig(c); err != nil {
+		t.Fatal(err)
+	}
+	u := &url.URL{Scheme: "postgres", User: url.User("synthetic"), Host: "localhost:55432", Path: "/postgres"}
+	q := url.Values{"sslmode": {"disable"}}
+	if c.localTransport == "loopback-tcp" {
+		u.Host = "127.0.0.1:" + c.localPort
+		u.User = url.UserPassword("synthetic", c.localPassword)
+	} else {
+		q.Set("host", filepath.Join(c.root, "socket"))
+	}
+	u.RawQuery = q.Encode()
+	return u.String()
+}
+
+// A TCP address alone does not identify the marked cluster. Before any fixture
+// SQL, bind the connected server to the runner's exact data directory.
+func verifyDisposableServerDirectory(ctx context.Context, db *sql.DB, c disposableDatabaseConfig) error {
+	if c.mode != "local-disposable" || c.localTransport != "loopback-tcp" {
+		return nil
+	}
+	var directory string
+	if err := db.QueryRowContext(ctx, `SELECT current_setting('data_directory')`).Scan(&directory); err != nil || directory != filepath.Join(c.root, "data") {
+		return errors.New("local disposable PostgreSQL directory does not match the marked cluster")
 	}
 	return nil
 }
@@ -119,7 +227,7 @@ func isolatedDatabaseConfig(t *testing.T) (disposableDatabaseConfig, fixtureTemp
 	if os.Getenv("PG_TEST_DSN") == "" {
 		_ = database(t) // Preserve the ordinary offline skip/required-DSN contract.
 	}
-	c := disposableDatabaseConfig{root: os.Getenv("SOLSYNTH_DISPOSABLE_PG"), parent: os.Getenv("PG_TEST_ROOT"), dsn: os.Getenv("PG_TEST_DSN"), candidate: os.Getenv("PG_TEST_CANDIDATE"), schemaHash: os.Getenv("PG_TEST_SCHEMA_SHA256"), ci: os.Getenv("GITHUB_ACTIONS"), privateCI: os.Getenv("PG_TEST_PRIVATE_CI")}
+	c := disposableDatabaseEnvironment()
 	if err := validateDisposableDatabaseConfig(c); err != nil {
 		t.Fatal(err)
 	}
@@ -144,6 +252,9 @@ func isolatedDatabaseConfig(t *testing.T) (disposableDatabaseConfig, fixtureTemp
 
 func connectDisposableDatabase(t *testing.T, c disposableDatabaseConfig, name string) *sql.DB {
 	t.Helper()
+	if err := validateDisposableDatabaseConfig(c); err != nil {
+		t.Fatal(err)
+	}
 	if name != "template1" && !fixtureDBName.MatchString(name) {
 		t.Fatal("invalid isolated database name")
 	}
@@ -156,6 +267,11 @@ func connectDisposableDatabase(t *testing.T, c disposableDatabaseConfig, name st
 	}
 	db.SetMaxIdleConns(0)
 	t.Cleanup(func() { db.Close() })
+	check, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := verifyDisposableServerDirectory(check, db, c); err != nil {
+		t.Fatal(err)
+	}
 	return db
 }
 

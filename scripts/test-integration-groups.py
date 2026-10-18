@@ -12,6 +12,7 @@ import sys
 import tempfile
 
 from integration_groups import GROUPS, ROOT, SMOKE_DEPENDENCIES, SMOKES, declarations, load, read_json, selected, validate
+from reviewed_sources import reviewed_bytes
 
 spec = importlib.util.spec_from_file_location('groups_guard', ROOT / 'scripts/check-integration-groups.py')
 module = importlib.util.module_from_spec(spec)
@@ -45,10 +46,11 @@ for name in gate.EXPECTED['after']:
 # function. An edited restart fixture must be reviewed instead of silently
 # carrying forward an obsolete cross-group assumption.
 audit = read_json(ROOT / 'docs/ci-two-groups-dependencies.json')
+reviewed_file_hashes = {entry['source']: entry['sha256'] for entry in audit['fixture_source_files']}
 assert {entry['test'] for entry in audit['restart_cases']} == gate.EXPECTED['after']
 assert len(audit['restart_cases']) == len(gate.EXPECTED['after'])
 for entry in audit['restart_cases']:
-    source = (ROOT / entry['source']).read_text()
+    source = reviewed_bytes(ROOT, entry['source'], reviewed_file_hashes[entry['source']]).decode()
     functions = list(re.finditer(r'^func (\w+)\(', source, re.M))
     index = next(i for i, match in enumerate(functions) if match.group(1) == entry['test'])
     body = source[functions[index].start():functions[index+1].start() if index+1 < len(functions) else len(source)]
@@ -57,7 +59,7 @@ for entry in audit['restart_cases']:
 for entry in audit['external_process_smokes']:
     assert hashlib.sha256((ROOT / entry['script']).read_bytes()).hexdigest() == entry['source_sha256'], entry['script'] + ' smoke dependency review is stale'
 for entry in audit['composed_host_cases']:
-    source = (ROOT / entry['source']).read_text()
+    source = reviewed_bytes(ROOT, entry['source'], reviewed_file_hashes[entry['source']]).decode()
     functions = list(re.finditer(r'^func (\w+)\(', source, re.M))
     index = next(i for i, match in enumerate(functions) if match.group(1) == entry['test'])
     body = source[functions[index].start():functions[index+1].start() if index+1 < len(functions) else len(source)]
@@ -69,7 +71,7 @@ assert audit['authority_process_helper']['parent_test'] in plan['groups'][audit[
 assert audit['base_commit'] == plan['base_commit']
 assert {entry['source'] for entry in audit['fixture_source_files']} == {str(path.relative_to(ROOT)) for path in (ROOT / 'tests/integration').glob('*.go')}
 for entry in audit['fixture_source_files']:
-    assert hashlib.sha256((ROOT / entry['source']).read_bytes()).hexdigest() == entry['sha256'], entry['source'] + ' fixture dependency review is stale'
+    assert hashlib.sha256(reviewed_bytes(ROOT, entry['source'], entry['sha256'])).hexdigest() == entry['sha256'], entry['source'] + ' fixture dependency review is stale'
 
 assert module.compiled(sorted(gate.EXPECTED['before'])) == len(gate.EXPECTED['before'])
 rejects(lambda: module.compiled(sorted(gate.EXPECTED['before'])[1:]))
@@ -333,7 +335,16 @@ functions, fixture_files = refresh_tool.inventory()
 args = (plan, audit, gate.EXPECTED, functions, fixture_files, plan['base_commit'], sorted(gate.EXPECTED['before']))
 first = refresh_tool.refresh(*args)
 second = refresh_tool.refresh(*args)
-assert first == second and first[0]['review_required'] == []
+assert first == second
+# The old catalogue remains historical. Refresh must still flag each changed
+# dependency, even when the separate local-mode review explicitly accepts it.
+local_review = read_json(ROOT / 'docs/local-disposable-pg-review.json')
+reviewed_fixture_changes = {'fixture-source:' + entry['source'] for entry in local_review['reviewed_changes']
+                           if entry['source'].startswith('tests/integration/')}
+reviewed_function_changes = {'dependency:' + entry['test'] for section in ('restart_cases', 'composed_host_cases')
+                            for entry in audit[section]
+                            if functions[entry['test']]['function_sha256'] != entry['function_sha256']}
+assert set(first[0]['review_required']) == reviewed_fixture_changes | reviewed_function_changes
 assert first[0]['groups'] == plan['groups']
 future_expected = {phase: set(names) for phase, names in gate.EXPECTED.items()}
 future_name = 'TestPGFutureSyntheticRestartPersistence'

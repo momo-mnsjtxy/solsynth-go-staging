@@ -9,8 +9,10 @@ from pathlib import Path
 import re
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import fixture_template as fixture
+from reviewed_sources import reviewed_bytes
 
 gate_spec = importlib.util.spec_from_file_location('current_gate', fixture.ROOT / 'scripts/check-integration-results.py')
 gate = importlib.util.module_from_spec(gate_spec)
@@ -107,6 +109,122 @@ class IsolationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             fixture.validate_environment(self.env)
 
+    def local_environment(self):
+        env = {name: value for name, value in self.env.items()
+               if name not in ('CI', 'PG_TEST_PRIVATE_CI') and not name.startswith('GITHUB_')}
+        return {**env, 'PG_TEST_MODE': 'local-disposable'}
+
+    def test_explicit_local_execution_controls(self):
+        env = self.local_environment()
+        self.assertEqual(fixture.validate_environment(env), self.run)
+        for key, value in [('PG_TEST_MODE', ''), ('PG_TEST_MODE', 'local'),
+                           ('CI', 'true'), ('CI', 'false'),
+                           ('PG_TEST_PRIVATE_CI', 'true'), ('GITHUB_ACTIONS', 'true'),
+                           ('GITHUB_SHA', 'a'*40), ('GITHUB_RUN_ID', '123'),
+                           ('GITHUB_UNRECOGNIZED_CONTEXT', 'present'),
+                           ('PG_TEST_DSN', env['PG_TEST_DSN']+' dbname=production'),
+                           ('PG_TEST_DSN', env['PG_TEST_DSN']+' password=never-log-this'),
+                           ('PG_TEST_CANDIDATE', 'main')]:
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                fixture.validate_environment({**env, key: value})
+        # Selecting local mode does not relax the filesystem or marker guard.
+        (self.run / '.solsynth-disposable').write_text('unrelated\n')
+        with self.assertRaises(ValueError):
+            fixture.validate_environment(env)
+
+    def test_source_candidate_binding(self):
+        local = self.local_environment()
+        with patch.object(fixture.subprocess, 'check_output', side_effect=lambda args, **_: 'a'*40+'\n' if args[1] == 'rev-parse' else ''), \
+                patch.object(fixture.subprocess, 'run') as git_diff:
+            git_diff.return_value.returncode = 0
+            self.assertEqual(fixture.source_candidate(self.env), 'a'*40)
+            self.assertEqual(fixture.source_candidate(local), 'a'*40)
+            with self.assertRaises(ValueError):
+                fixture.source_candidate({**self.env, 'GITHUB_SHA': 'b'*40})
+            git_diff.return_value.returncode = 1
+            for env in (self.env, local):
+                with self.subTest(mode=env.get('PG_TEST_MODE')), self.assertRaises(ValueError):
+                    fixture.source_candidate(env)
+        with patch.object(fixture.subprocess, 'check_output', side_effect=lambda args, **_: 'main\n' if args[1] == 'rev-parse' else ''), \
+                patch.object(fixture.subprocess, 'run') as git_diff:
+            git_diff.return_value.returncode = 0
+            with self.assertRaises(ValueError):
+                fixture.source_candidate(local)
+        with patch.object(fixture.subprocess, 'check_output', side_effect=lambda args, **_: 'a'*40+'\n' if args[1] == 'rev-parse' else 'untracked-source.py\n'), \
+                patch.object(fixture.subprocess, 'run') as git_diff:
+            git_diff.return_value.returncode = 0
+            for env in (self.env, local):
+                with self.subTest(mode=env.get('PG_TEST_MODE')), self.assertRaises(ValueError):
+                    fixture.source_candidate(env)
+
+    def test_explicit_local_tcp_connection_controls(self):
+        env = {**self.local_environment(), 'PG_TEST_LOCAL_TRANSPORT': 'loopback-tcp',
+               'PG_TEST_LOCAL_PORT': '55321', 'PG_TEST_LOCAL_PASSWORD': 'a'*64}
+        env['PG_TEST_DSN'] = ('host=127.0.0.1 port=55321 user=synthetic dbname=postgres '
+                              'sslmode=disable password=' + 'a'*64)
+        self.assertEqual(fixture.validate_environment(env), self.run)
+        for key, value in [('PG_TEST_LOCAL_TRANSPORT', ''), ('PG_TEST_LOCAL_TRANSPORT', 'tcp'),
+                           ('PG_TEST_LOCAL_PORT', '055321'), ('PG_TEST_LOCAL_PORT', '1023'),
+                           ('PG_TEST_LOCAL_PORT', '65536'), ('PG_TEST_LOCAL_PORT', '+55321'),
+                           ('PG_TEST_LOCAL_PASSWORD', 'A'*64), ('PG_TEST_LOCAL_PASSWORD', 'a'*63),
+                           ('PG_TEST_DSN', env['PG_TEST_DSN'].replace('127.0.0.1', 'localhost')),
+                           ('PG_TEST_DSN', env['PG_TEST_DSN']+' dbname=production')]:
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                fixture.validate_environment({**env, key: value})
+        for base in (self.env, self.local_environment()):
+            for key in ('PG_TEST_LOCAL_PORT', 'PG_TEST_LOCAL_PASSWORD'):
+                with self.subTest(mode=base.get('PG_TEST_MODE'), key=key), self.assertRaises(ValueError):
+                    fixture.validate_environment({**base, key: env[key]})
+        with self.assertRaises(ValueError):
+            fixture.validate_environment({**self.env, **{key: value for key, value in env.items()
+                                         if key.startswith('PG_TEST_LOCAL_')}})
+        with patch.object(fixture.Postgres, 'sql', return_value=str(self.run / 'data')) as server_identity:
+            tcp = fixture.Postgres({**env, 'PG_BIN': '/synthetic/bin'}, self.run)
+            server_identity.assert_called_once_with('postgres', "SELECT current_setting('data_directory')")
+        self.assertEqual(tcp.env['PGHOST'], '127.0.0.1')
+        self.assertEqual(tcp.env['PGPORT'], '55321')
+        self.assertEqual(tcp.env['PGPASSWORD'], 'a'*64)
+        unix = fixture.Postgres({**self.env, 'PG_BIN': '/synthetic/bin'}, self.run)
+        self.assertEqual(unix.env['PGHOST'], str(self.run / 'socket'))
+        self.assertNotIn('PGPASSWORD', unix.env)
+
+    def test_local_tcp_server_must_own_the_disposable_data_directory(self):
+        env = {**self.local_environment(), 'PG_BIN': '/synthetic/bin',
+               'PG_TEST_LOCAL_TRANSPORT': 'loopback-tcp',
+               'PG_TEST_LOCAL_PORT': '55321', 'PG_TEST_LOCAL_PASSWORD': 'a'*64}
+        for actual in (str(self.parent / 'other-data'), '', str(self.run / 'data')+'/',
+                       str(self.run / 'data' / '..' / 'data')):
+            with self.subTest(actual=actual), \
+                    patch.object(fixture.Postgres, 'sql', return_value=actual) as server_identity, \
+                    self.assertRaises(ValueError):
+                fixture.Postgres(env, self.run)
+            server_identity.assert_called_once_with('postgres', "SELECT current_setting('data_directory')")
+        with patch.object(fixture.Postgres, 'sql') as server_identity:
+            fixture.Postgres({**self.env, 'PG_BIN': '/synthetic/bin'}, self.run)
+            server_identity.assert_not_called()
+
+    def test_runner_refuses_inherited_mode_and_mixed_ci_before_creation(self):
+        env = {name: value for name, value in os.environ.items()
+               if name not in ('CI', 'PG_TEST_PRIVATE_CI') and not name.startswith('GITHUB_')}
+        forbidden_root = self.parent / 'must-not-be-created'
+        env.update(PG_TEST_MODE='local-disposable', PG_TEST_ROOT=str(forbidden_root))
+        runner = str(fixture.ROOT / 'scripts/integration-postgres.sh')
+        cases = [([], env, 'requires --local-disposable'),
+                 (['--unknown'], env, 'usage:'),
+                 (['--backend-e2e'], env, 'usage:'),
+                 (['--local-tcp'], env, 'usage:'),
+                 (['--local-disposable', '--local-tcp'], env, 'usage:'),
+                 (['--local-disposable'], {**env, 'PG_TEST_LOCAL_TRANSPORT': 'loopback-tcp'}, 'requires explicit --local-tcp'),
+                 (['--local-disposable'], {**env, 'CI': 'true'}, 'cannot contain CI'),
+                 (['--local-disposable'], {**env, 'GITHUB_RUN_ID': '123'}, 'cannot contain CI')]
+        for args, environment, message in cases:
+            with self.subTest(args=args, message=message):
+                result = fixture.subprocess.run(['bash', runner, *args], env=environment,
+                                                text=True, capture_output=True, timeout=20)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(message, result.stderr)
+                self.assertFalse(forbidden_root.exists())
+
     def test_marker_and_socket_permissions(self):
         marker = self.run / '.solsynth-disposable'
         marker.chmod(0o644)
@@ -197,8 +315,12 @@ def check_wiring(runner, workflow, composer, helper):
     before = runner.index('PG_TEST_PHASE=before ')
     if runner.count('python3 scripts/fixture_template.py prepare') != 1 or not max(m.end() for m in installs) < start < before:
         raise ValueError('template must follow every install and precede before fixtures')
-    if 'export PG_TEST_CANDIDATE="${GITHUB_SHA:?exact CI candidate required}"' not in runner or 'PG_TEST_SCHEMA_SHA256=$(python3 scripts/fixture_template.py fingerprint)' not in runner:
+    if 'PG_TEST_CANDIDATE=$(python3 scripts/fixture_template.py candidate)' not in runner or 'PG_TEST_SCHEMA_SHA256=$(python3 scripts/fixture_template.py fingerprint)' not in runner:
         raise ValueError('candidate/schema binding missing')
+    if '1:--local-disposable:) export PG_TEST_MODE=local-disposable' not in runner or 'Local disposable mode requires --local-disposable' not in runner:
+        raise ValueError('local execution requires explicit command-line authorization')
+    if '--commit "$PG_TEST_CANDIDATE"' not in runner:
+        raise ValueError('result evidence must bind the validated candidate')
     if 'PG_TEST_PRIVATE_CI: ${{ github.event.repository.private }}' not in workflow:
         raise ValueError('private repository gate missing')
     body = composer.split('func TestPGPostCompositionSavedRestartPersistence',1)[1].split('\nfunc ',1)[0]
@@ -228,7 +350,7 @@ class WiringTests(unittest.TestCase):
         self.assertEqual(sum(x['rows'] for x in review['source_baselines']), 61)
         self.assertTrue(all(x['copied_to_template'] is False for x in review['source_baselines']))
         for entry in review['dependency_sources']:
-            self.assertEqual(entry['sha256'], hashlib.sha256((fixture.ROOT / entry['source']).read_bytes()).hexdigest(), entry['source'])
+            self.assertEqual(entry['sha256'], hashlib.sha256(reviewed_bytes(fixture.ROOT, entry['source'], entry['sha256'])).hexdigest(), entry['source'])
 
     def test_runner_and_after_failure_controls(self):
         root = fixture.ROOT
@@ -238,7 +360,10 @@ class WiringTests(unittest.TestCase):
         mutations = [
             (0, 'python3 scripts/fixture_template.py prepare', ''),
             (0, 'PG_TEST_PHASE=before ', 'python3 scripts/fixture_template.py prepare\nPG_TEST_PHASE=before '),
-            (0, 'export PG_TEST_CANDIDATE=', 'export MISSING_CANDIDATE='),
+            (0, 'PG_TEST_CANDIDATE=$(python3 scripts/fixture_template.py candidate)', 'PG_TEST_CANDIDATE=stale'),
+            (0, '1:--local-disposable:) export PG_TEST_MODE=local-disposable', '1:--local-disposable:) export PG_TEST_MODE='),
+            (0, 'Local disposable mode requires --local-disposable', 'local mode inherited from environment'),
+            (0, '--commit "$PG_TEST_CANDIDATE"', '--commit "stale"'),
             (0, 'PG_TEST_SCHEMA_SHA256=$(python3 scripts/fixture_template.py fingerprint)', 'PG_TEST_SCHEMA_SHA256=stale'),
             (1, 'PG_TEST_PRIVATE_CI:', 'MISSING_PRIVATE_CI:'),
             (2, 'openIsolatedRestartDatabase(t, state.Database)', 'database(t)'),

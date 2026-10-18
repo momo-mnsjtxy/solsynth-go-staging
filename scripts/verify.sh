@@ -8,6 +8,7 @@ python3 scripts/test-integration-guard.py
 python3 scripts/test-integration-groups.py
 python3 scripts/test-integration-wiring.py
 python3 scripts/test-fixture-isolation.py
+python3 scripts/test-local-e2e-guards.py
 python3 scripts/check-postgres-syntax.py
 python3 scripts/check-readiness-relations.py
 python3 scripts/verify-coverage-plan.py

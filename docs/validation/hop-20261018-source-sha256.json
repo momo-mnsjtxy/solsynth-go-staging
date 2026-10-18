@@ -1,0 +1,179 @@
+{
+  "base_commit": "6bd739873f3475af2ec8668e3940e6698d96c7c5",
+  "base_tree": "37a7b41b121af000cde64f96ad5e54f0536ea974",
+  "go_version": "go1.26.4",
+  "verification_command": "bash scripts/verify.sh",
+  "verification_exit_code": 0,
+  "postgresql_executed": false,
+  "deleted_go_files": [
+    "cmd/backend/config.go"
+  ],
+  "go_files": [
+    {
+      "path": "cmd/backend/address.go",
+      "bytes": 1088,
+      "sha256": "03d93f8a1196eeb8b48946c962fa2e1de9b3a1e8faa3b98adcf05a9c3450d053"
+    },
+    {
+      "path": "cmd/backend/configuration.go",
+      "bytes": 15290,
+      "sha256": "55f0ff905393bb4993cddfddad4724b992d612072038d75e79dadd525d8d99b4"
+    },
+    {
+      "path": "cmd/backend/database.go",
+      "bytes": 4930,
+      "sha256": "aa6db90a64b9817272e400821bd7dc86c9aaf258cd51de3f1ece246751cdb866"
+    },
+    {
+      "path": "cmd/backend/main.go",
+      "bytes": 2465,
+      "sha256": "b26afbf9f5f37f658d3e6808c0a28535708defe5341cfe4d5c7fbcb963862c00"
+    },
+    {
+      "path": "cmd/backend/options.go",
+      "bytes": 9966,
+      "sha256": "96c8c872d9fdb46cf8a10b9346ed64c50ba06b7875b228e77f072f7f2e491307"
+    },
+    {
+      "path": "cmd/backend/public_key.go",
+      "bytes": 2159,
+      "sha256": "5845a7377369e1f864bb9d7005be25ef6ef42223b92981d745612a4025b0e675"
+    },
+    {
+      "path": "cmd/backend/server.go",
+      "bytes": 5073,
+      "sha256": "01d99fc8d422033d538fc59e1c47e92caa6a5c85151ff2a57264742bd9dbecfb"
+    },
+    {
+      "path": "cmd/backend/startup_test.go",
+      "bytes": 6182,
+      "sha256": "3927b7fddfc1ec8bfa567e6d06edc752efc0a0a760e0706a9fc669574d674711"
+    },
+    {
+      "path": "internal/application/account_authentication.go",
+      "bytes": 3507,
+      "sha256": "77d48aec9026ca0cfa06ca70079101679f9c1dfdbfc3ebe0777ebdf32f7d8da5"
+    },
+    {
+      "path": "internal/application/account_calendar.go",
+      "bytes": 2008,
+      "sha256": "eafa99386e98599432d2e07211011d377f71d31f31b28bd3eb7ed27656283021"
+    },
+    {
+      "path": "internal/application/account_lifecycle.go",
+      "bytes": 6715,
+      "sha256": "b4afa2e3b22c194ea95ff7e5ec26dcb247e17f042033a81dbdee4c97de2b7f21"
+    },
+    {
+      "path": "internal/application/backend.go",
+      "bytes": 27450,
+      "sha256": "d7d9f1cad5833e3ca876d11728ce9f9747a652403864ec73945cc325c207ee3e"
+    },
+    {
+      "path": "internal/application/backend_composition_test.go",
+      "bytes": 7644,
+      "sha256": "ee91659e7b912322a5de473933c168b7d75b9905dbddeff020cb2f6f6895a077"
+    },
+    {
+      "path": "internal/application/bot_delivery.go",
+      "bytes": 2271,
+      "sha256": "ba086dc2c55476928c6004ec1ceea4846ce379f662f41efa8566f0d70d4a5ca2"
+    },
+    {
+      "path": "internal/application/chat_rooms.go",
+      "bytes": 3792,
+      "sha256": "85979f10ad18a5940dcfc0a8e18042a5658924450eef57c7421f39a8997e4738"
+    },
+    {
+      "path": "internal/application/content_engagement.go",
+      "bytes": 2980,
+      "sha256": "16fd68d296182f428d05b8c0e43ced6e2b6b9d02c7016e8cb92c26fedd6b5edb"
+    },
+    {
+      "path": "internal/application/developer_commerce.go",
+      "bytes": 4472,
+      "sha256": "db5530cc38fc7821e0329ac894eca433f9bf5882c730d6132ce2398db4cad8ba"
+    },
+    {
+      "path": "internal/application/media_storage.go",
+      "bytes": 4699,
+      "sha256": "12deb4407661c76a2b2a25dd0aeb69729009228b347cb9300f49d1f24ffe0d9a"
+    },
+    {
+      "path": "internal/application/notification_delivery.go",
+      "bytes": 6326,
+      "sha256": "164d81f3f9be0bfbb27d968e41ed13ec4376106bb1c3cdab9fa14e80185e0c45"
+    },
+    {
+      "path": "internal/application/post_publishing.go",
+      "bytes": 4102,
+      "sha256": "274010be04d4bc438ca4c1b4b126c6ed3cdceb90230021007518f7fd886b4128"
+    },
+    {
+      "path": "internal/application/readiness.go",
+      "bytes": 20706,
+      "sha256": "90a8f985cd379569fd29618753acb2eaa8b05a59d6522d15858270985a7ce0cc"
+    },
+    {
+      "path": "internal/application/readiness_test.go",
+      "bytes": 8578,
+      "sha256": "26a20d166b277eb8adee7281a173c29ba65318379e9974623034685efc6e3e41"
+    },
+    {
+      "path": "internal/application/reading_content.go",
+      "bytes": 2679,
+      "sha256": "0e8ddcaa89443564cc35adfc1c966c8a426056436a23868ea0830160ca912b02"
+    },
+    {
+      "path": "internal/application/route_account.go",
+      "bytes": 4125,
+      "sha256": "71e05b9e50138d7dab115474625f26721dac955dc2b4c282df6cce0548e83802"
+    },
+    {
+      "path": "internal/application/route_commerce.go",
+      "bytes": 2008,
+      "sha256": "7d0ffd8cc680f0f2dbbc43583b28ff45066ea8165b1f3ecb56b8cb6a36975caf"
+    },
+    {
+      "path": "internal/application/route_content.go",
+      "bytes": 4861,
+      "sha256": "44e45761e373356baaa8b509a84c4a82a8a9b8db48bac4d07a379770ae225733"
+    },
+    {
+      "path": "internal/application/route_families_test.go",
+      "bytes": 9565,
+      "sha256": "fe13cb36de911b203034746eacf1bb8f0bbff9acc23d4dd31617d81d47c5ce8d"
+    },
+    {
+      "path": "internal/application/route_gateway.go",
+      "bytes": 4321,
+      "sha256": "70f023acfdd4ca59cada3a180bc3cecaf0bcc824f10736f09732038db8bbb8bc"
+    },
+    {
+      "path": "internal/application/route_ingress.go",
+      "bytes": 4579,
+      "sha256": "b5f53d65f6b0037667d8491bdf7842b58acc9a156fd326c0b80be5b5f233d388"
+    },
+    {
+      "path": "internal/application/route_locations.go",
+      "bytes": 1470,
+      "sha256": "8b3d1f21f421d2bffe036254df8e4a1c5c8d63446fd8973807888a7749b4821d"
+    },
+    {
+      "path": "internal/application/route_social.go",
+      "bytes": 2450,
+      "sha256": "27cfb776aa16700ce2f6c0dc39e45cd035a3889948ee139b791b0aaa97b13907"
+    },
+    {
+      "path": "internal/application/route_utilities.go",
+      "bytes": 3057,
+      "sha256": "fa63f16b318fb21c592c4104d496a6a64d7dcdb349e2c1153e278d899dff63e4"
+    },
+    {
+      "path": "internal/application/router.go",
+      "bytes": 5628,
+      "sha256": "2627a707c643ee9f349f06f55e66c277aae4d156b191e3c921ada17f259a1124"
+    }
+  ],
+  "verify_log_sha256": "0191bfa1ff5c89b80b7b87536d4ff09092f60cda19a1cf34f612e9e7b01d3f56"
+}

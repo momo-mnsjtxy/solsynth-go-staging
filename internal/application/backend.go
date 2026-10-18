@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+// 应用装配入口：校验显式政策，按业务依赖连接仓库、HTTP 入口与维护任务。
+// 调用：宿主持有数据库连接，NewPostgres 只组装，不迁移、不访问数据库、不启动任务。
+// 示例：backend, err := application.NewPostgres(db, db, config)；随后由宿主提供 HTTP 与调度。
 package application
 
 import (
@@ -13,25 +16,17 @@ import (
 	"solsynth.local/go-migration/internal/accountsettingspg"
 	"solsynth.local/go-migration/internal/activitypg"
 	"solsynth.local/go-migration/internal/affiliationpg"
-	"solsynth.local/go-migration/internal/apppg"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/autocompletepg"
 	"solsynth.local/go-migration/internal/blogpg"
-	"solsynth.local/go-migration/internal/boardpg"
 	"solsynth.local/go-migration/internal/botpg"
-	"solsynth.local/go-migration/internal/calendarmediapg"
-	"solsynth.local/go-migration/internal/chatmediapg"
 	"solsynth.local/go-migration/internal/chatpg"
 	"solsynth.local/go-migration/internal/commercepg"
 	"solsynth.local/go-migration/internal/connectionpg"
-	"solsynth.local/go-migration/internal/developmediapg"
 	"solsynth.local/go-migration/internal/fortunepg"
-	"solsynth.local/go-migration/internal/friendeventpg"
-	"solsynth.local/go-migration/internal/interactionpg"
 	"solsynth.local/go-migration/internal/livestreampg"
 	"solsynth.local/go-migration/internal/locationpg"
 	"solsynth.local/go-migration/internal/mediapg"
-	"solsynth.local/go-migration/internal/merchantpg"
 	"solsynth.local/go-migration/internal/messagerpg"
 	"solsynth.local/go-migration/internal/moderationpg"
 	"solsynth.local/go-migration/internal/namecardpg"
@@ -40,72 +35,39 @@ import (
 	"solsynth.local/go-migration/internal/oauthpg"
 	"solsynth.local/go-migration/internal/postawardpg"
 	"solsynth.local/go-migration/internal/postembedpg"
-	"solsynth.local/go-migration/internal/postmediapg"
 	"solsynth.local/go-migration/internal/postpg"
-	"solsynth.local/go-migration/internal/presencepg"
-	"solsynth.local/go-migration/internal/profilemediapg"
 	"solsynth.local/go-migration/internal/progressionpg"
 	"solsynth.local/go-migration/internal/publishernotificationpg"
 	"solsynth.local/go-migration/internal/publisherratingpg"
 	"solsynth.local/go-migration/internal/readerpg"
 	"solsynth.local/go-migration/internal/realmboostpg"
 	"solsynth.local/go-migration/internal/realmmemberpg"
-	"solsynth.local/go-migration/internal/realtime"
 	"solsynth.local/go-migration/internal/rewindpg"
-	"solsynth.local/go-migration/internal/roommediapg"
 	"solsynth.local/go-migration/internal/signinpg"
 	"solsynth.local/go-migration/internal/socialpg"
 	"solsynth.local/go-migration/internal/sponsorshippg"
-	"solsynth.local/go-migration/internal/stickerpg"
-	"solsynth.local/go-migration/internal/surveypg"
 	"solsynth.local/go-migration/internal/taxonomypg"
-	"solsynth.local/go-migration/internal/ticketmediapg"
 	"solsynth.local/go-migration/internal/ticketpg"
-	"solsynth.local/go-migration/internal/timelinepg"
 	"solsynth.local/go-migration/internal/translationpg"
 	"solsynth.local/go-migration/internal/walletpg"
 	"solsynth.local/go-migration/ports/admin/content"
 	"solsynth.local/go-migration/ports/authority"
-	"solsynth.local/go-migration/ports/authority/oauth"
 	"solsynth.local/go-migration/ports/authority/signin"
-	"solsynth.local/go-migration/ports/develop/apps"
-	"solsynth.local/go-migration/ports/develop/bots"
 	"solsynth.local/go-migration/ports/media"
-	"solsynth.local/go-migration/ports/messager/rooms"
 	"solsynth.local/go-migration/ports/notifications"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
-	"solsynth.local/go-migration/ports/passport/accountsettings"
 	"solsynth.local/go-migration/ports/passport/activities"
-	"solsynth.local/go-migration/ports/passport/affiliation"
-	"solsynth.local/go-migration/ports/passport/artwork"
 	"solsynth.local/go-migration/ports/passport/board"
 	"solsynth.local/go-migration/ports/passport/fortunes"
-	"solsynth.local/go-migration/ports/passport/friends"
-	"solsynth.local/go-migration/ports/passport/history"
 	"solsynth.local/go-migration/ports/passport/ipcheck"
-	"solsynth.local/go-migration/ports/passport/notabledays"
 	"solsynth.local/go-migration/ports/passport/passkit"
-	"solsynth.local/go-migration/ports/passport/presence"
-	"solsynth.local/go-migration/ports/passport/progression"
 	"solsynth.local/go-migration/ports/passport/social"
-	"solsynth.local/go-migration/ports/passport/tickets"
-	"solsynth.local/go-migration/ports/sphere/autocomplete"
-	"solsynth.local/go-migration/ports/sphere/blogshttp"
-	"solsynth.local/go-migration/ports/sphere/interactions"
 	live "solsynth.local/go-migration/ports/sphere/livestreams"
 	"solsynth.local/go-migration/ports/sphere/locations"
-	"solsynth.local/go-migration/ports/sphere/posts"
-	"solsynth.local/go-migration/ports/sphere/reader"
-	"solsynth.local/go-migration/ports/sphere/stickers"
-	"solsynth.local/go-migration/ports/sphere/surveys"
 	"solsynth.local/go-migration/ports/sphere/taxonomy"
-	"solsynth.local/go-migration/ports/sphere/timeline"
-	"solsynth.local/go-migration/ports/sphere/translation"
 	walletaccounts "solsynth.local/go-migration/ports/wallet/accounts"
 	"solsynth.local/go-migration/ports/wallet/commerce"
 	"solsynth.local/go-migration/ports/wallet/exchangecatalog"
-	"solsynth.local/go-migration/ports/wallet/merchants"
-	"solsynth.local/go-migration/ports/wallet/productcatalog"
 )
 
 // Config is injected by the embedding application. Enum values are mandatory
@@ -286,194 +248,23 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	signinRepo := signinpg.New(db, aStore, guard).WithPaymentPIN(paymentPIN)
 	accountRepo := accountpg.NewWithAuthority(db, guard).WithPublicContacts(signinRepo)
 	accountHTTP := bindIdentity(v, bindTransactionAuthority(guard, (&profiles.Service{Repository: accountRepo, Authority: proofIdentity{identity}}).Handler()))
-	var readerRepo *readerpg.Repository
-	var readerHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "READER_UNCONFIGURED") })
-	if c.Reader != nil {
-		if authorityDB != db || guard == nil {
-			return nil, errors.New("reader requires canonical same-pool authority")
-		}
-		cfg := *c.Reader
-		if cfg.Now == nil {
-			cfg.Now = c.Authority.Now
-		}
-		readerRepo, err = readerpg.New(db, guard, cfg)
-		if err != nil {
-			return nil, err
-		}
-		readerHTTP = bindIdentity(v, bindTransactionAuthority(guard, reader.NewHandler(readerRepo, postIdentity{identity})))
-	}
-	var translationRepo *translationpg.Repository
-	var translationHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "TRANSLATION_UNCONFIGURED") })
-	if c.Translation != nil {
-		if authorityDB != db || guard == nil {
-			return nil, errors.New("translation requires canonical same-pool authority")
-		}
-		cfg := *c.Translation
-		if cfg.Now == nil {
-			cfg.Now = c.Authority.Now
-		}
-		translationRepo, err = translationpg.New(db, guard, cfg)
-		if err != nil {
-			return nil, err
-		}
-		translationHTTP = bindIdentity(v, bindTransactionAuthority(guard, translation.NewHandler(translationRepo, postIdentity{identity})))
-	}
-	cache := board.NewGroupCache()
-	appRepo := apppg.NewWithAuthority(db, guard).WithBoardCache(cache)
-	appService := &apps.Service{Repository: appRepo, Authority: proofIdentity{identity}}
-	var botRepo *botpg.Repository
-	if guard != nil {
-		botRepo = botpg.NewWithAuthority(db, guard)
-		appService.Quota = botRepo
-		if c.MiniAppUploadTimeout != 0 {
-			if err = botRepo.ConfigurePackageUploadTimeout(c.MiniAppUploadTimeout); err != nil {
-				return nil, err
-			}
-		}
-	}
-	merchantRepo := merchantpg.New(db, guard)
-	merchantHTTP := merchants.NewHandler(merchantRepo, postIdentity{identity})
-	if !c.CommerceCouponPolicy.Empty() && !c.CommerceCouponPolicy.Valid() {
-		return nil, errors.New("invalid explicit coupon policy")
-	}
-	commerceRepo := commercepg.New(db, guard, commercepg.AppAdapters(appRepo)).WithPaymentAuthorization(paymentPIN).WithCouponPolicy(c.CommerceCouponPolicy)
-	appRepo.WithProductCatalog(commerceRepo)
-	appService.CustomOrders = commercepg.NewManagedOrders(commerceRepo, appRepo)
-	if c.Authority.Now != nil {
-		commerceRepo.WithClock(c.Authority.Now)
-		merchantRepo.WithClock(c.Authority.Now)
-	}
-	merchantRepo.WithMaintenance(commerceRepo)
-	if catalog, catalogErr := productcatalog.New(c.CatalogProviders...); catalogErr == nil {
-		if raw, jsonErr := catalog.JSON(); jsonErr == nil {
-			merchantRepo.WithWalletProductCatalog(raw)
-			if walletaccounts.ValidID(c.WalletProductTreasuryWalletID) {
-				merchantRepo.WithWalletProductTreasury(c.WalletProductTreasuryWalletID)
-			}
-		}
-	}
-	commerceHTTP := (&commerce.Service{Store: commerceRepo, Identity: commerceIdentity{identity}, Payments: paymentPIN.Atomic(), Providers: c.CommerceProviders}).Handler()
-	appNormal := bindIdentity(v, bindTransactionAuthority(guard, appService.Handler()))
-	appHTTP := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if apps.IsAppCredentialRoute(r) {
-			appService.AppHandler().ServeHTTP(w, r)
-			return
-		}
-		appNormal.ServeHTTP(w, r)
-	})
-	bRepo := boardpg.NewWithAuthority(db, guard, nil)
-	bh := board.NewHTTPHandler(board.HTTPOptions{Service: board.Service{Repository: bRepo, Catalog: appRepo, Normalizer: board.DocumentedEnvelope{}, Cache: cache}, Authority: boardIdentity{identity}, Accounts: accountResolver{aStore}, AccountCache: cache, Delete: bRepo})
-	mr, err := messagerpg.NewWithIndependentPolicy(db, *c.MessagerPolicy)
+	// 按依赖顺序组装业务；每个动作保留原有权限默认及配置校验。
+	reading, err := readingContentFor(db, authorityDB, c, v, guard)
 	if err != nil {
 		return nil, err
 	}
-	cr, err := chatpg.NewWithAuthority(db, rooms.Policy{NoneEncryptionMode: c.MessagerPolicy.NoneEncryptionMode, NotifyAll: c.MessagerPolicy.NotifyAll, NotifyMentions: c.MessagerPolicy.NotifyMentions, NotifyNone: c.MessagerPolicy.NotifyNone}, guard)
+	developer, err := developerCommerceFor(db, c, v, guard, aStore, paymentPIN)
 	if err != nil {
 		return nil, err
 	}
-	if botRepo != nil {
-		cr.WithBotIdentity(botRepo)
-		botRepo.WithReplySender(cr)
+	chat, err := chatRoomsFor(db, c, v, guard, developer.commerceRepo, developer.botRepo)
+	if err != nil {
+		return nil, err
 	}
-	if c.EnableMLSDelivery {
-		if c.MessagerPolicy.NoneEncryptionMode == rooms.MLSEncryptionMode {
-			return nil, errors.New("plaintext mapping must differ from authored MLS mode 3")
-		}
-		cr.WithMLSDelivery()
-	}
-	chatMedia := chatmediapg.New(db, cr, c.MessagerPolicy.NoneEncryptionMode).WithVoiceReadProtection(c.ChatVoiceRetention != 0)
-	cr.WithAssociations(chatMedia)
-	roomMedia := roommediapg.New(db, cr, c.MessagerPolicy.NoneEncryptionMode)
-	cr.WithRoomMedia(roomMedia)
-	mr.WithMessageDecorator(chatMedia)
-	var chatSearch rooms.SearchEntitlement
-	if c.ChatSearchPerks != nil {
-		chatSearch, err = commerceRepo.ChatSearchPerks(c.ChatSearchPerks)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if c.ChatProfilePerks != nil {
-		perks, e := commerceRepo.ChatProfilePerks(c.ChatProfilePerks)
-		if e != nil {
-			return nil, e
-		}
-		cr.WithProfilePerks(perks)
-	}
-	if c.ChatVoiceRetention != 0 && (c.MediaStore == nil || c.ChatVoiceRetention < time.Hour || c.ChatVoiceRetention > 365*24*time.Hour) {
-		return nil, errors.New("voice requires canonical media and explicit retention from one hour to one year")
-	}
-	chatOrganization := chatpg.NewOrganization(cr, mr, chatSearch)
-	mh := (&rooms.Service{Repository: cr, Organization: chatOrganization, Authority: proofIdentity{identity}, Reader: mr}).Handler()
-	th := taxonomy.NewAuthorityHandler(taxonomypg.NewWithAuthority(db, *c.PublicVisibility, guard), taxonomyIdentity{identity, publisherRepository{accountRepo}}, time.Now)
-	presenceRepo := presencepg.NewWithAuthority(db, guard)
-	var fortuneRepo *fortunepg.Repository
-	var fortuneHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "FORTUNE_UNCONFIGURED") })
-	if c.Fortunes != nil {
-		fortuneRepo, err = fortunepg.New(db, guard, *c.Fortunes)
-		if err != nil {
-			return nil, err
-		}
-		fortuneHTTP = (&fortunes.Service{Repository: fortuneRepo, Authority: v, AllowAnonymousCatalogue: c.Fortunes.AllowAnonymousCatalogue}).Handler()
-	}
-	progressionRepo := progressionpg.NewWithAuthority(db, guard)
-	if fortuneRepo != nil {
-		progressionRepo = progressionpg.NewWithCheckInReports(db, guard, fortuneRepo)
-	}
-	if c.ProgressionSourcePoints != nil {
-		p, e := progressionpg.NewFundedSourcePoints(*c.ProgressionSourcePoints)
-		if e != nil {
-			return nil, e
-		}
-		progressionRepo.WithSourcePointPayout(p)
-	}
-	if c.ProgressionCheckIn != nil {
-		progressionRepo.WithCheckInPerks(commerceRepo)
-		if e := progressionRepo.WithCheckInPolicy(*c.ProgressionCheckIn); e != nil {
-			return nil, e
-		}
-	}
-	var bindProof func(context.Context, authority.Principal) context.Context
-	if guard != nil {
-		bindProof = guard.Bind
-	}
-	activityRepo := activitypg.New(db, guard).WithSteamProvider(c.SteamPresence).WithProvider("lastfm", c.LastFMPresence)
-	accountConnections, e := accountConnectionsFor(db, guard, v, c.AccountConnections)
-	if e != nil {
-		return nil, e
-	}
-	accountHistoryRepo := accounthistorypg.New(db, guard, activityRepo)
-	accountHistoryHTTP := (&history.Service{Repository: accountHistoryRepo, Authority: v, Bind: bindProof}).Handler()
-	friendsHTTP := (&friends.Service{Repository: activityRepo, Authority: v, Bind: bindProof}).Handler()
-	activityHTTP := (&activities.Service{Repository: activityRepo, Authority: v, Bind: bindProof}).Handler()
-	presenceHTTP := (&presence.Service{Repository: presenceRepo, Authority: v, Bind: bindProof}).Handler()
-	progressionHTTP := (&progression.Service{Repository: progressionRepo, Authority: v, Bind: bindProof, Captcha: c.ProgressionCaptcha}).Handler()
-	var ticketRepo *ticketpg.Repository
-	var ticketHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "TICKETS_AUTHORITY_UNAVAILABLE") })
-	if guard != nil {
-		ticketConfig := ticketpg.Config{}
-		if c.Tickets != nil {
-			ticketConfig = *c.Tickets
-		}
-		if ticketConfig.Rewards == nil {
-			ticketConfig.Rewards = progressionRepo
-		}
-		ticketRepo, err = ticketpg.New(db, guard, ticketConfig)
-		if err != nil {
-			return nil, err
-		}
-		ticketHTTP = bindIdentity(v, (&tickets.Service{Repository: ticketRepo, Authority: proofIdentity{identity}}).Handler())
-	}
-	var affiliationRepo *affiliationpg.Repository
-	var affiliationHTTP http.Handler = (&affiliation.Service{}).Handler()
-	if guard != nil {
-		affiliationRepo, err = affiliationpg.New(db, guard, affiliationpg.Config{Now: c.Authority.Now, Activation: ticketRepo, Purchase: c.AffiliationPurchase})
-		if err != nil {
-			return nil, err
-		}
-		ticketRepo.WithInviteAdmission(affiliationRepo)
-		signinRepo.WithAffiliation(affiliationRepo).WithActivation(ticketRepo)
-		affiliationHTTP = (&affiliation.Service{Repository: affiliationRepo, Authority: v}).Handler()
+	taxonomyHTTP := taxonomy.NewAuthorityHandler(taxonomypg.NewWithAuthority(db, *c.PublicVisibility, guard), taxonomyIdentity{identity, publisherRepository{accountRepo}}, time.Now)
+	accounts, err := accountLifecycleFor(db, c, v, guard, developer.commerceRepo, signinRepo)
+	if err != nil {
+		return nil, err
 	}
 	locationRepo := locationpg.NewWithAuthority(db, guard)
 	if err = locationRepo.WithEncryptedNFC(c.NFCKeyEncryptionKey, c.NFCLocker); err != nil {
@@ -481,250 +272,84 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	}
 	locationRepo.WithGeocoder(c.LocationGeocoder)
 	locationHTTP := locations.NewHandler(locationRepo, postIdentity{identity})
+	// 圈子访问权同时连接聊天、账号与呼叫，随后再创建内容投影。
 	socialRepo := socialpg.NewWithAuthority(db, guard)
-	cr.WithSocial(socialRepo)
-	mr.WithRoomAccess(cr)
+	chat.chatRepo.WithSocial(socialRepo)
+	chat.messageReader.WithRoomAccess(chat.chatRepo)
 	if external.calls != nil {
-		external.calls.WithRoomAccess(cr)
+		external.calls.WithRoomAccess(chat.chatRepo)
 	}
 	accountRepo.WithRealms(socialRepo)
 	socialHTTP := (&social.Service{Repository: socialRepo, Authority: proofIdentity{identity}}).Handler()
-	interactionRepo := interactionpg.NewWithAuthority(db, guard).WithVisibility(socialRepo)
-	interactionHTTP := interactions.NewHandler(interactionRepo, postIdentity{identity})
-	postRepository := postpg.NewWithAuthority(db, guard)
-	if guard == nil {
-		postRepository = postpg.New(db)
+	publishing, err := postPublishingFor(db, authorityDB, c, v, guard, socialRepo, reading.readerRepo)
+	if err != nil {
+		return nil, err
 	}
-	postMedia := postmediapg.New(db, interactionRepo).WithVisibility(socialRepo)
-	postComposition := postembedpg.New(db, postMedia, socialRepo)
-	timelineRepo := timelinepg.NewWithAuthority(db, guard).WithVisibility(socialRepo).WithAssociations(postComposition)
-	interactionRepo.WithPostProjection(timelineRepo)
-	timelineHTTP := timeline.NewHandler(timelineRepo, postIdentity{identity})
-	postRepository.WithAssociations(timelineRepo).WithVisibility(socialRepo).WithAutomod(c.PostAutomodReview)
-	timelineRepo.WithAutomod(c.PostAutomodReview)
-	var scheduledPosts *postpg.Repository
-	if guard != nil {
-		scheduledPosts = postRepository.WithScheduling()
-	}
-	var blogRepo *blogpg.Repository
-	var blogHTTP http.Handler = blogshttp.NewHandler(nil, nil)
-	if c.Blogs != nil {
-		if guard == nil || authorityDB != db {
-			return nil, errors.New("blogs require canonical same-pool authority")
-		}
-		cfg := *c.Blogs
-		if cfg.Now == nil {
-			cfg.Now = c.Authority.Now
-		}
-		if cfg.Previewer == nil && readerRepo != nil {
-			cfg.Previewer = readerRepo
-		}
-		blogRepo, err = blogpg.New(db, guard, cfg)
-		if err != nil {
-			return nil, err
-		}
-		postRepository.WithBlogs(blogRepo)
-		blogHTTP = bindIdentity(v, bindTransactionAuthority(guard, blogshttp.NewHandler(blogRepo, postIdentity{identity})))
-	}
-	ph := posts.NewHandler(postRepository, postIdentity{identity})
-	wh, wallet := walletHandler(db, identity, paymentPIN, guard, socialRepo)
+	walletHTTP, wallet := walletHandler(db, identity, paymentPIN, guard, socialRepo)
 	wallet.WithClock(c.Authority.Now).WithExchangePolicy(exchangePolicy)
-	var signinHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "SIGNIN_ISSUER_UNCONFIGURED") })
-	var signinService *signin.Service
-	if c.Signin != nil {
-		if authorityDB != db {
-			return nil, errors.New("sign-in requires same-pool canonical authority")
-		}
-		if c.SessionService == nil {
-			c.SessionService, err = authority.New(aStore, c.Authority)
-			if err != nil {
-				return nil, err
-			}
-		}
-		signinService, err = signin.New(signinRepo, c.SessionService, v, *c.Signin)
-		if err != nil {
-			return nil, err
-		}
-		signinHTTP = signinService.Handler()
+	auth, err := authenticationFor(db, authorityDB, c, v, guard, aStore, signinRepo, developer.appRepo)
+	if err != nil {
+		return nil, err
 	}
-	var oauthRepo *oauthpg.Repository
-	var oauthHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "OAUTH_UNCONFIGURED") })
-	if c.OAuthEnabled {
-		if authorityDB != db || guard == nil {
-			return nil, errors.New("OAuth requires canonical same-pool authority")
-		}
-		if c.SessionService == nil {
-			c.SessionService, err = authority.New(aStore, c.Authority)
-			if err != nil {
-				return nil, err
-			}
-		}
-		oauthRepo, err = oauthpg.NewWithAuthority(db, aStore, c.SessionService, guard, appRepo)
-		if err != nil {
-			return nil, err
-		}
-		oauthHTTP = (&oauth.Service{Repository: oauthRepo, Verifier: v, Metadata: c.SessionService, Bind: guard.Bind, AuthorizationEndpoint: c.OAuthConsentURL}).Handler()
-	}
-	session := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 501, "AUTHORITY_ISSUER_ROLE_REQUIRED") })
-	var sessionHTTP http.Handler = session
-	if c.SessionService != nil {
-		sessionHTTP = c.SessionService.Handler()
-		if signinService != nil {
-			mux := http.NewServeMux()
-			signinService.RegisterRoutes(mux)
-			mux.Handle("/", sessionHTTP)
-			sessionHTTP = mux
-		}
-	}
-	var mediaRepo *mediapg.Repository
-	var calendarMedia *calendarmediapg.Repository
-	var developerMedia *developmediapg.Repository
-	var artworkHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "MEDIA_STORAGE_UNCONFIGURED") })
-	var mediaHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "MEDIA_STORAGE_UNCONFIGURED") })
-	if c.MediaStore != nil {
-		if authorityDB != db || c.MaxMediaBytes <= 0 {
-			return nil, errors.New("media requires same-pool authority and explicit positive size limit")
-		}
-		mediaRepo, err = mediapg.New(db, c.MediaStore, guard, mediapg.Config{MaxFileBytes: c.MaxMediaBytes, PendingTTL: time.Hour})
-		if err != nil {
-			return nil, err
-		}
-		if err = mediaRepo.WithPools(c.MediaPools); err != nil {
-			return nil, err
-		}
-		mediaRepo.WithRemoteFetcher(c.MediaRemoteFetcher)
-		mediaRepo.WithRenderer(c.MediaRenderer)
-		if c.ChatVoiceRetention != 0 {
-			if err = cr.WithVoiceStorage(mediaRepo, c.ChatVoiceRetention); err != nil {
-				return nil, err
-			}
-		}
-		ticketMedia := ticketmediapg.New(db, ticketRepo)
-		ticketRepo.WithMedia(ticketMedia)
-		calendarMedia = calendarmediapg.New(db)
-		developerMedia = developmediapg.New(db)
-		appRepo.WithMedia(developerMedia)
-		readVisibility := mediapg.AnyReadVisibility{postMedia, chatMedia, roomMedia, ticketMedia, calendarMedia, developerMedia}
-		if botRepo != nil {
-			readVisibility = append(readVisibility, botRepo)
-		}
-		profileMedia := profilemediapg.New(db, readVisibility)
-		accountRepo.WithProfileMedia(profileMedia)
-		locationRepo.WithMedia().WithMediaProtection(chatMedia)
-		mediaRepo.WithReadVisibility(mediapg.AnyReadVisibility{profileMedia, locationRepo}).WithFileReadProtection(chatMedia)
-		if external.federation != nil {
-			external.federation.WithProfileMedia(profileMedia)
-		}
-		artworkHTTP = (&artwork.Service{Repository: mediaRepo, Authority: proofIdentity{identity}}).Handler()
-		mediaHTTP = (&media.Service{Repository: mediaRepo, Authority: proofIdentity{identity}, MaxFileBytes: c.MaxMediaBytes}).Handler()
+	storage, err := mediaStorageFor(
+		db,
+		authorityDB,
+		c,
+		v,
+		guard,
+		accountRepo,
+		developer.appRepo,
+		developer.botRepo,
+		chat.chatRepo,
+		chat.chatMedia,
+		chat.roomMedia,
+		publishing.postMedia,
+		accounts.ticketRepo,
+		locationRepo,
+		external,
+	)
+	if err != nil {
+		return nil, err
 	}
 	passkitModule, err := passkitFor(db, c, v, guard)
 	if err != nil {
 		return nil, err
 	}
-	var calendarRepo *notabledaypg.Repository
-	var calendarHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "CALENDAR_AUTHORITY_UNAVAILABLE") })
-	if guard != nil {
-		var activity notabledaypg.ActivityOverlay = notabledaypg.CanonicalActivityOverlay{}
-		if fortuneRepo != nil {
-			activity = fortunepg.CalendarOverlay{Base: activity, Reports: fortuneRepo}
-		}
-		calendarRepo, err = notabledaypg.New(db, guard, notabledaypg.Config{Now: c.Authority.Now, Activity: activity})
-		if err != nil {
-			return nil, err
-		}
-		if calendarMedia != nil {
-			calendarRepo.WithMedia(calendarMedia)
-		}
-		calendarHTTP = bindIdentity(v, (&notabledays.Service{Repository: calendarRepo, Authority: proofIdentity{identity}}).Handler())
+	calendar, err := calendarFor(db, c, v, guard, accounts.fortuneRepo, storage.calendarMedia)
+	if err != nil {
+		return nil, err
 	}
-	var botHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "BOT_AUTHORITY_UNAVAILABLE") })
-	if c.BotExecution != nil && guard == nil {
-		return nil, bots.ErrUnavailable
+	bots, err := botDeliveryFor(c, v, guard, developer.botRepo, chat.chatRepo, storage.mediaRepo, storage.developerMedia)
+	if err != nil {
+		return nil, err
 	}
-	if guard != nil {
-		if mediaRepo != nil {
-			botRepo.WithMedia(mediaRepo).WithProfileMedia(developerMedia)
-		}
-		if c.BotExecution != nil {
-			if cr == nil || c.MessagerPolicy == nil || c.BotExecution.Runtime.NoneEncryptionMode != int(c.MessagerPolicy.NoneEncryptionMode) {
-				return nil, bots.ErrInvalid
-			}
-			c.BotExecution.Runtime.EnableMLSOpaque = c.EnableMLSDelivery
-			c.BotExecution.Runtime.MLSEncryptionMode = int(rooms.MLSEncryptionMode)
-			if err = botRepo.WithExecution(c.BotExecution.Runtime, c.BotExecution.Adapters...); err != nil {
-				return nil, err
-			}
-			cr.WithTextMessageObserver(botRepo)
-		}
-		botHTTP = (&bots.Service{Repository: botRepo, Authority: v, Bind: guard.Bind}).Handler()
+	engagement, err := contentEngagementFor(db, v, guard, socialRepo, chat.chatRepo, wallet, storage.mediaRepo)
+	if err != nil {
+		return nil, err
 	}
-	surveysRepo := surveypg.NewWithAuthority(db, guard).WithVisibility(socialRepo)
-	stickersRepo := stickerpg.NewWithAuthority(db, guard).WithVisibility(socialRepo)
-	cr.WithMessageComposer(NewChatMessageComposer(wallet, surveysRepo))
-	if mediaRepo != nil {
-		surveysRepo.WithMedia(mediaRepo)
-		stickersRepo.WithMedia(mediaRepo)
-	}
-	var autocompleteRepo *autocompletepg.Repository
-	var autocompleteHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "AUTOCOMPLETE_AUTHORITY_UNAVAILABLE") })
-	if guard != nil {
-		autocompleteRepo, err = autocompletepg.New(db, guard, autocompletepg.Config{Stickers: stickersRepo, Rooms: cr})
-		if err != nil {
-			return nil, err
-		}
-		autocompleteHTTP = bindIdentity(v, bindTransactionAuthority(guard, autocomplete.NewHandler(autocompleteRepo, postIdentity{identity})))
-	}
-	surveysHTTP := surveys.NewHandler(surveysRepo, postIdentity{identity})
-	stickersHTTP := stickers.NewHandler(stickersRepo, postIdentity{identity})
 	if c.NotificationApp == "" {
 		c.NotificationApp = "dev.solsynth.solian"
 	}
-	surveysRepo.WithNotificationApp(c.NotificationApp)
-	interactionRepo.WithPublicationNotifications(c.NotificationApp)
-	var settingsRepo *accountsettingspg.Repository
-	var settingsHTTP http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { problem(w, 503, "SETTINGS_AUTHORITY_UNAVAILABLE") })
-	if guard != nil {
-		settingsRepo, err = accountsettingspg.New(db, guard, c.NotificationApp)
-		if err != nil {
-			return nil, err
-		}
-		settingsHTTP = (&accountsettings.Service{Repository: settingsRepo, Authority: v}).Handler()
-	}
-	notificationRepo := notificationpg.New(db, guard, c.NotificationApp).WithNightOwlReminders(c.NightOwlReminders).WithRoomAccess(cr).WithChatEvents(cr).WithFriendEvents(friendeventpg.New(db, guard, activityRepo).WithStatus(presenceRepo)).WithCollectionPublications(interactionRepo)
-	publisherNotifications := publishernotificationpg.New(db, socialRepo, notificationRepo, c.NotificationApp)
-	notificationRepo.WithPublisherContent(publisherNotifications)
-	postRepository.WithPublicationObserver(publicationObservers{interactionRepo, publisherNotifications})
-	timelineRepo.WithSubscriptionNotifications(publisherSubscriptionNotifications{notificationRepo, db, c.NotificationApp})
-	if settingsRepo != nil {
-		notificationRepo.WithPreferencePolicy(settingsRepo)
-	}
-	notificationIdentity := notificationIdentity{identity}
-	notificationHTTP := (notifications.HTTP{Repository: notificationRepo, Identity: notificationIdentity, App: c.NotificationApp}).Handler()
-	realtimeHTTP, err := realtime.New(notificationRepo, notificationIdentity, realtime.Config{App: c.NotificationApp, Commands: placeholderCommands(cr), Connections: chatOrganization})
+	engagement.surveysRepo.WithNotificationApp(c.NotificationApp)
+	publishing.interactionRepo.WithPublicationNotifications(c.NotificationApp)
+	delivery, err := notificationsFor(
+		db,
+		c,
+		v,
+		guard,
+		accounts.activityRepo,
+		accounts.presenceRepo,
+		accounts.progressionRepo,
+		chat.chatRepo,
+		chat.chatOrganization,
+		engagement.surveysRepo,
+		publishing.interactionRepo,
+		publishing.postRepository,
+		publishing.timelineRepo,
+		socialRepo,
+	)
 	if err != nil {
 		return nil, err
-	}
-	surveyNotifications := func(ctx context.Context, limit int) (int, error) {
-		return surveysRepo.ProcessNotifications(ctx, notificationRepo, c.NotificationApp, limit)
-	}
-	collectionNotifications := func(ctx context.Context, limit int) (int, error) {
-		return interactionRepo.ProcessPublicationNotifications(ctx, notificationRepo, c.NotificationApp, limit)
-	}
-	deviceModule, err := notificationDevicesFor(db, guard, v, c.NotificationDevices, progressionRepo, notificationRepo)
-	if err != nil {
-		return nil, err
-	}
-	publisherContentNotifications := publisherNotifications.ProcessDue
-	notificationWorker := &notificationpg.Worker{LocalProjections: []func(context.Context, int) (int, error){surveyNotifications, collectionNotifications, publisherContentNotifications}, Repository: notificationRepo, Wallet: true, Chat: true, ChatNoneEncryptionMode: int(c.MessagerPolicy.NoneEncryptionMode), Sender: c.NotificationSender}
-	if c.NightOwlReminders {
-		notificationWorker.LocalProjections = append(notificationWorker.LocalProjections, notificationRepo.ProcessNightOwls)
-	}
-	if deviceModule.repo != nil {
-		if notificationWorker.Sender != nil {
-			return nil, errors.New("notification sender and device delivery cannot both be configured")
-		}
-		notificationWorker.Sender = deviceModule.repo
 	}
 	catalogs, err := publicCatalogs(c)
 	if err != nil {
@@ -734,14 +359,14 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	extras, err := accountExtrasFor(db, c, v, guard, commerceRepo, accountRepo, socialRepo, cr)
+	extras, err := accountExtrasFor(db, c, v, guard, developer.commerceRepo, accountRepo, socialRepo, chat.chatRepo)
 	if err != nil {
 		return nil, err
 	}
 	var moderationRepo *moderationpg.Repository
 	var moderationHTTP http.Handler = content.NewHandler(nil, nil)
 	if guard != nil {
-		moderationRepo, err = moderationpg.New(db, guard, moderationpg.Config{Now: c.Authority.Now, PostAssociations: timelineRepo, AutomodReview: c.PostAutomodReview})
+		moderationRepo, err = moderationpg.New(db, guard, moderationpg.Config{Now: c.Authority.Now, PostAssociations: publishing.timelineRepo, AutomodReview: c.PostAutomodReview})
 		if err != nil {
 			return nil, err
 		}
@@ -750,35 +375,35 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if external.federation != nil {
 		accountRepo.WithPublishingFederation(external.federation)
 	}
-	streamHTTP, err := external.configureStreams(db, c, v, guard, accountRepo, socialRepo, mediaRepo, commerceRepo)
+	streamHTTP, err := external.configureStreams(db, c, v, guard, accountRepo, socialRepo, storage.mediaRepo, developer.commerceRepo)
 	if err != nil {
 		return nil, err
 	}
 	if external.streams != nil {
-		external.streams.WithActivationObserver(publisherNotifications)
-		timelineRepo.WithSubscriptionStreams(external.streams.SubscriptionReader())
+		external.streams.WithActivationObserver(delivery.publisherNotifications)
+		publishing.timelineRepo.WithSubscriptionStreams(external.streams.SubscriptionReader())
 	} else {
 		var subscriptionMedia live.MediaProvider
-		if mediaRepo != nil {
-			subscriptionMedia = mediaRepo
+		if storage.mediaRepo != nil {
+			subscriptionMedia = storage.mediaRepo
 		}
-		timelineRepo.WithSubscriptionStreams(livestreampg.NewSubscriptionReader(accountRepo, socialRepo, subscriptionMedia))
+		publishing.timelineRepo.WithSubscriptionStreams(livestreampg.NewSubscriptionReader(accountRepo, socialRepo, subscriptionMedia))
 	}
 	admin, err := adminModulesFor(db, guard, v, c.Authority.Now)
 	if err != nil {
 		return nil, err
 	}
 	if admin.repo != nil {
-		admin.repo.WithPresenceScanner(activityRepo)
+		admin.repo.WithPresenceScanner(accounts.activityRepo)
 		if c.NightOwlReminders {
-			admin.repo.WithNightOwlSender(notificationRepo)
+			admin.repo.WithNightOwlSender(delivery.notificationRepo)
 		}
 	}
-	publisherCommerce, err := publisherCommerceFor(db, c, guard, v, socialRepo, timelineRepo, commerceRepo)
+	publisherCommerce, err := publisherCommerceFor(db, c, guard, v, socialRepo, publishing.timelineRepo, developer.commerceRepo)
 	if err != nil {
 		return nil, err
 	}
-	realmBoosts, err := realmBoostsFor(db, guard, v, commerceRepo, socialRepo, moderationRepo, c.RealmBoosts)
+	realmBoosts, err := realmBoostsFor(db, guard, v, developer.commerceRepo, socialRepo, moderationRepo, c.RealmBoosts)
 	if err != nil {
 		return nil, err
 	}
@@ -786,8 +411,115 @@ func NewPostgres(db, authorityDB *sql.DB, c Config) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := router{modules{notificationDevices: deviceModule.handler, presenceSensors: (&activities.Service{Repository: activityRepo, Authority: v, Bind: bindProof}).SensorHandler(), accountConnections: accountConnections.handler, accountHistory: accountHistoryHTTP, realmMemberHistory: realmMembers.repo != nil, realmMembers: realmMembers.handler, blogs: blogHTTP, realmBoosts: realmBoosts.handler, affiliations: affiliationHTTP, passkit: passkitModule, artwork: bindIdentity(v, bindTransactionAuthority(guard, artworkHTTP)), publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, livestreams: streamHTTP, moderation: moderationHTTP, namecards: extras.cardsHTTP, rewind: extras.rewindHTTP, ipcheck: ipHTTP, accountSettings: settingsHTTP, translation: translationHTTP, autocomplete: autocompleteHTTP, reader: readerHTTP, oauth: oauthHTTP, fortunes: fortuneHTTP, calendar: calendarHTTP, bots: botHTTP, tickets: ticketHTTP, merchants: bindIdentity(v, bindTransactionAuthority(guard, merchantHTTP)), calls: external.callHTTP, federationPublic: external.federationPublic, federationPrivate: external.federationPrivate, presence: presenceHTTP, activities: activityHTTP, friends: friendsHTTP, progression: progressionHTTP, locations: bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)), surveys: bindIdentity(v, bindTransactionAuthority(guard, surveysHTTP)), stickers: bindIdentity(v, bindTransactionAuthority(guard, stickersHTTP)), timeline: bindIdentity(v, bindTransactionAuthority(guard, timelineHTTP)), signin: signinHTTP, commerce: bindIdentity(v, bindTransactionAuthority(guard, commerceHTTP)), apps: appHTTP, notifications: bindIdentity(v, bindTransactionAuthority(guard, notificationHTTP)), realtime: newSharedStreamTickets(authorityDB, v, bindIdentity(v, bindTransactionAuthority(guard, realtimeHTTP))), media: bindIdentity(v, bindTransactionAuthority(guard, mediaHTTP)), social: bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)), interactions: bindIdentity(v, bindTransactionAuthority(guard, interactionHTTP)), public: bindIdentity(v, catalogs), board: bindIdentity(v, bindTransactionAuthority(guard, bh)), taxonomy: bindIdentity(v, bindTransactionAuthority(guard, th)), posts: bindIdentity(v, bindTransactionAuthority(guard, ph)), messager: bindIdentity(v, bindTransactionAuthority(guard, mh)), wallet: wh, accounts: accountHTTP, session: sessionHTTP}}
-	return &Backend{notificationDevices: deviceModule, accountConnections: accountConnections, collectionNotifications: collectionNotifications, publisherNotifications: publisherNotifications, accountHistory: accountHistoryRepo, surveyNotifications: surveyNotifications, activities: activityRepo, chatOrganization: chatOrganization, postComposition: postComposition, realmMembers: realmMembers, blogs: blogRepo, realmBoosts: realmBoosts, scheduledPosts: scheduledPosts, affiliations: affiliationRepo, social: socialRepo, passkit: passkitModule, publisherCommerce: publisherCommerce, domainCollections: domainCollections, admin: admin, moderation: moderationRepo, moderationSink: notificationRepo, moderationApp: c.NotificationApp, accountExtras: extras, accountSettings: settingsRepo, translation: translationRepo, autocomplete: autocompleteRepo, chat: cr, reader: readerRepo, oauth: oauthRepo, fortunes: fortuneRepo, external: external, handler: captureRequestAudit(v, h), verifier: v, wallet: wallet, media: mediaRepo, voiceEnabled: c.ChatVoiceRetention != 0, notificationWorker: notificationWorker, operationsRetention: c.OperationsRetention, commerce: commerceRepo, locations: locationRepo, progression: progressionRepo, tickets: ticketRepo, bots: botRepo, calendar: calendarRepo, progressionNotifications: progressionNotifications{notificationRepo, c.NotificationApp}, signinEnabled: signinService != nil, db: db, authorityDB: authorityDB}, nil
+	// 业务 Handler 统一在此绑定身份与事务证明，避免漏掉入口的权限边界。
+	h := router{modules: modules{
+		notificationDevices: delivery.deviceModule.handler,
+		presenceSensors:     (&activities.Service{Repository: accounts.activityRepo, Authority: v, Bind: accounts.bindProof}).SensorHandler(),
+		accountConnections:  accounts.accountConnections.handler,
+		accountHistory:      accounts.accountHistoryHTTP,
+		realmMemberHistory:  realmMembers.repo != nil,
+		realmMembers:        realmMembers.handler,
+		blogs:               publishing.blogHTTP,
+		realmBoosts:         realmBoosts.handler,
+		affiliations:        accounts.affiliationHTTP,
+		passkit:             passkitModule,
+		artwork:             bindIdentity(v, bindTransactionAuthority(guard, storage.artworkHTTP)),
+		publisherCommerce:   publisherCommerce,
+		domainCollections:   domainCollections,
+		admin:               admin,
+		livestreams:         streamHTTP,
+		moderation:          moderationHTTP,
+		namecards:           extras.cardsHTTP,
+		rewind:              extras.rewindHTTP,
+		ipcheck:             ipHTTP,
+		accountSettings:     delivery.settingsHTTP,
+		translation:         reading.translationHTTP,
+		autocomplete:        engagement.autocompleteHTTP,
+		reader:              reading.readerHTTP,
+		oauth:               auth.oauthHTTP,
+		fortunes:            accounts.fortuneHTTP,
+		calendar:            calendar.calendarHTTP,
+		bots:                bots.botHTTP,
+		tickets:             accounts.ticketHTTP,
+		merchants:           bindIdentity(v, bindTransactionAuthority(guard, developer.merchantHTTP)),
+		calls:               external.callHTTP,
+		federationPublic:    external.federationPublic,
+		federationPrivate:   external.federationPrivate,
+		presence:            accounts.presenceHTTP,
+		activities:          accounts.activityHTTP,
+		friends:             accounts.friendsHTTP,
+		progression:         accounts.progressionHTTP,
+		locations:           bindIdentity(v, bindTransactionAuthority(guard, locationHTTP)),
+		surveys:             bindIdentity(v, bindTransactionAuthority(guard, engagement.surveysHTTP)),
+		stickers:            bindIdentity(v, bindTransactionAuthority(guard, engagement.stickersHTTP)),
+		timeline:            bindIdentity(v, bindTransactionAuthority(guard, publishing.timelineHTTP)),
+		signin:              auth.signinHTTP,
+		commerce:            bindIdentity(v, bindTransactionAuthority(guard, developer.commerceHTTP)),
+		apps:                developer.appHTTP,
+		notifications:       bindIdentity(v, bindTransactionAuthority(guard, delivery.notificationHTTP)),
+		realtime:            newSharedStreamTickets(authorityDB, v, bindIdentity(v, bindTransactionAuthority(guard, delivery.realtimeHTTP))),
+		media:               bindIdentity(v, bindTransactionAuthority(guard, storage.mediaHTTP)),
+		social:              bindIdentity(v, bindTransactionAuthority(guard, socialHTTP)),
+		interactions:        bindIdentity(v, bindTransactionAuthority(guard, publishing.interactionHTTP)),
+		public:              bindIdentity(v, catalogs),
+		board:               bindIdentity(v, bindTransactionAuthority(guard, developer.boardHTTP)),
+		taxonomy:            bindIdentity(v, bindTransactionAuthority(guard, taxonomyHTTP)),
+		posts:               bindIdentity(v, bindTransactionAuthority(guard, publishing.postsHTTP)),
+		messager:            bindIdentity(v, bindTransactionAuthority(guard, chat.chatHTTP)),
+		wallet:              walletHTTP,
+		accounts:            accountHTTP,
+		session:             auth.sessionHTTP,
+	}}
+	return &Backend{
+		notificationDevices:      delivery.deviceModule,
+		accountConnections:       accounts.accountConnections,
+		collectionNotifications:  delivery.collectionNotifications,
+		publisherNotifications:   delivery.publisherNotifications,
+		accountHistory:           accounts.accountHistoryRepo,
+		surveyNotifications:      delivery.surveyNotifications,
+		activities:               accounts.activityRepo,
+		chatOrganization:         chat.chatOrganization,
+		postComposition:          publishing.postComposition,
+		realmMembers:             realmMembers,
+		blogs:                    publishing.blogRepo,
+		realmBoosts:              realmBoosts,
+		scheduledPosts:           publishing.scheduledPosts,
+		affiliations:             accounts.affiliationRepo,
+		social:                   socialRepo,
+		passkit:                  passkitModule,
+		publisherCommerce:        publisherCommerce,
+		domainCollections:        domainCollections,
+		admin:                    admin,
+		moderation:               moderationRepo,
+		moderationSink:           delivery.notificationRepo,
+		moderationApp:            c.NotificationApp,
+		accountExtras:            extras,
+		accountSettings:          delivery.settingsRepo,
+		translation:              reading.translationRepo,
+		autocomplete:             engagement.autocompleteRepo,
+		chat:                     chat.chatRepo,
+		reader:                   reading.readerRepo,
+		oauth:                    auth.oauthRepo,
+		fortunes:                 accounts.fortuneRepo,
+		external:                 external,
+		handler:                  captureRequestAudit(v, h),
+		verifier:                 v,
+		wallet:                   wallet,
+		media:                    storage.mediaRepo,
+		voiceEnabled:             c.ChatVoiceRetention != 0,
+		notificationWorker:       delivery.notificationWorker,
+		operationsRetention:      c.OperationsRetention,
+		commerce:                 developer.commerceRepo,
+		locations:                locationRepo,
+		progression:              accounts.progressionRepo,
+		tickets:                  accounts.ticketRepo,
+		bots:                     developer.botRepo,
+		calendar:                 calendar.calendarRepo,
+		progressionNotifications: progressionNotifications{delivery.notificationRepo, c.NotificationApp},
+		signinEnabled:            auth.signinService != nil,
+		db:                       db,
+		authorityDB:              authorityDB,
+	}, nil
 
 }
 

@@ -1,0 +1,342 @@
+Validated 2 workflows with unique mapping keys; three malformed/duplicate controls rejected
+Verified 566 pinned source/license snapshots
+Verified 566 source snapshots, 41 mutation rejections and missing-file rejection
+Verified PostgreSQL guard: 1147 before / 120 after, exact declarations/selectors, 30 result negatives and two phase-name negatives; no database tests executed
+Verified 112 disposable schemas / 382 distinct tables, required binary/phase wiring and 35 regression rejections; no database or HTTP started
+Verified explicit two-group coverage, same-group restart selectors and 89 assignment/evidence rejections; synthetic guard events only, no PostgreSQL executed
+Verified 112 disposable schemas / 382 distinct tables, required binary/phase wiring and 35 regression rejections; no database or HTTP started
+.........
+----------------------------------------------------------------------
+Ran 9 tests in 0.042s
+
+OK
+Parsed 121 SQL files and 60 PL/pgSQL bodies with pglast 6.7 / PostgreSQL 16.1; four negative controls rejected. No catalog, type, constraint, locking or transaction execution claimed.
+Checked 140 distinct static readiness relation names against 604 explicit table/view/sequence/index declarations; three missing/search-path controls rejected. 0 pg_catalog references and 10 dynamic/unrecognized calls excluded. No server, SQL types, constraints or actual readiness executed.
+Verified lossless coverage-plan parts, canonical hashes and all 818 static records
+Verified lossless coverage-plan reconstruction and modified-part rejection
+Checked 4277 static SQL calls; skipped 517 unresolved, 71 variadic and 24 non-SQL constant calls. Four wrong-count controls rejected; quoted/comment references ignored. No SQL types, schema, dynamic construction or execution validated.
+Verified 1147 exact compiled PostgreSQL case declarations; no database tests executed
+ok  	solsynth.local/go-migration/cmd/account-service	0.015s
+ok  	solsynth.local/go-migration/cmd/authority	0.318s
+ok  	solsynth.local/go-migration/cmd/backend	4.613s
+ok  	solsynth.local/go-migration/cmd/chat-service	0.010s
+ok  	solsynth.local/go-migration/cmd/develop-discovery	0.006s
+ok  	solsynth.local/go-migration/cmd/messager-sync	0.006s
+ok  	solsynth.local/go-migration/cmd/nodeinfo	0.018s
+ok  	solsynth.local/go-migration/cmd/passport-board	0.007s
+ok  	solsynth.local/go-migration/cmd/post-service	0.020s
+ok  	solsynth.local/go-migration/cmd/solsynth-go	0.010s
+ok  	solsynth.local/go-migration/cmd/taxonomy	0.016s
+ok  	solsynth.local/go-migration/cmd/wallet-service	0.157s
+?   	solsynth.local/go-migration/internal/accounthistorypg	[no test files]
+ok  	solsynth.local/go-migration/internal/accountpg	0.009s
+?   	solsynth.local/go-migration/internal/accountsettingspg	[no test files]
+ok  	solsynth.local/go-migration/internal/activitypg	0.009s
+ok  	solsynth.local/go-migration/internal/adminpg	0.101s
+?   	solsynth.local/go-migration/internal/affiliationpg	[no test files]
+ok  	solsynth.local/go-migration/internal/application	17.274s
+ok  	solsynth.local/go-migration/internal/apppg	0.007s
+ok  	solsynth.local/go-migration/internal/auditcapture	0.004s
+ok  	solsynth.local/go-migration/internal/authoritypg	0.013s
+?   	solsynth.local/go-migration/internal/autocompletepg	[no test files]
+?   	solsynth.local/go-migration/internal/blogpg	[no test files]
+ok  	solsynth.local/go-migration/internal/boardpg	0.003s
+ok  	solsynth.local/go-migration/internal/botdispatch	0.005s
+ok  	solsynth.local/go-migration/internal/botpg	0.179s
+?   	solsynth.local/go-migration/internal/calendarmediapg	[no test files]
+ok  	solsynth.local/go-migration/internal/callpg	0.005s
+?   	solsynth.local/go-migration/internal/chatmediapg	[no test files]
+ok  	solsynth.local/go-migration/internal/chatpg	0.010s
+?   	solsynth.local/go-migration/internal/collectionadminpg	[no test files]
+ok  	solsynth.local/go-migration/internal/commercepg	0.012s
+?   	solsynth.local/go-migration/internal/connectionpg	[no test files]
+ok  	solsynth.local/go-migration/internal/connectionprovider	0.011s
+?   	solsynth.local/go-migration/internal/developmediapg	[no test files]
+ok  	solsynth.local/go-migration/internal/developpg	0.004s
+?   	solsynth.local/go-migration/internal/domaintrustpg	[no test files]
+ok  	solsynth.local/go-migration/internal/federationhttp	0.097s
+ok  	solsynth.local/go-migration/internal/federationpg	0.006s
+?   	solsynth.local/go-migration/internal/fortunepg	[no test files]
+ok  	solsynth.local/go-migration/internal/friendeventpg	0.006s
+ok  	solsynth.local/go-migration/internal/interactionpg	0.004s
+?   	solsynth.local/go-migration/internal/livestreampg	[no test files]
+ok  	solsynth.local/go-migration/internal/locationpg	0.024s
+ok  	solsynth.local/go-migration/internal/mediapg	0.341s
+ok  	solsynth.local/go-migration/internal/mediastore	0.051s
+?   	solsynth.local/go-migration/internal/merchantpg	[no test files]
+ok  	solsynth.local/go-migration/internal/messagerpg	0.005s
+?   	solsynth.local/go-migration/internal/moderationpg	[no test files]
+?   	solsynth.local/go-migration/internal/namecardpg	[no test files]
+ok  	solsynth.local/go-migration/internal/nodeinfopg	0.004s
+ok  	solsynth.local/go-migration/internal/notabledaypg	0.004s
+ok  	solsynth.local/go-migration/internal/notificationpg	0.007s
+?   	solsynth.local/go-migration/internal/oauthpg	[no test files]
+?   	solsynth.local/go-migration/internal/passkitpg	[no test files]
+?   	solsynth.local/go-migration/internal/postawardpg	[no test files]
+?   	solsynth.local/go-migration/internal/postembedpg	[no test files]
+ok  	solsynth.local/go-migration/internal/postmediapg	0.005s
+ok  	solsynth.local/go-migration/internal/postpg	0.014s
+?   	solsynth.local/go-migration/internal/presencepg	[no test files]
+ok  	solsynth.local/go-migration/internal/profilemediapg	0.004s
+ok  	solsynth.local/go-migration/internal/progressionpg	0.011s
+ok  	solsynth.local/go-migration/internal/publishernotificationpg	0.005s
+?   	solsynth.local/go-migration/internal/publisherratingpg	[no test files]
+ok  	solsynth.local/go-migration/internal/pushprovider	0.068s
+ok  	solsynth.local/go-migration/internal/readerfetch	0.015s
+?   	solsynth.local/go-migration/internal/readerpg	[no test files]
+ok  	solsynth.local/go-migration/internal/realmboostpg	0.008s
+ok  	solsynth.local/go-migration/internal/realmmemberpg	0.005s
+ok  	solsynth.local/go-migration/internal/realtime	0.039s
+ok  	solsynth.local/go-migration/internal/rewindpg	0.017s
+?   	solsynth.local/go-migration/internal/roommediapg	[no test files]
+ok  	solsynth.local/go-migration/internal/rtcprovider	0.006s
+?   	solsynth.local/go-migration/internal/signinpg	[no test files]
+ok  	solsynth.local/go-migration/internal/socialpg	0.006s
+ok  	solsynth.local/go-migration/internal/sponsorshippg	0.007s
+?   	solsynth.local/go-migration/internal/stickerpg	[no test files]
+ok  	solsynth.local/go-migration/internal/surveypg	0.011s
+ok  	solsynth.local/go-migration/internal/taxonomypg	0.022s
+ok  	solsynth.local/go-migration/internal/tencenttranslation	0.009s
+?   	solsynth.local/go-migration/internal/testpasskit	[no test files]
+ok  	solsynth.local/go-migration/internal/ticketmediapg	0.006s
+ok  	solsynth.local/go-migration/internal/ticketpg	0.005s
+ok  	solsynth.local/go-migration/internal/timelinepg	0.006s
+?   	solsynth.local/go-migration/internal/translationpg	[no test files]
+ok  	solsynth.local/go-migration/internal/verification	2.023s
+ok  	solsynth.local/go-migration/internal/walletpg	0.324s
+ok  	solsynth.local/go-migration/internal/watchpg	0.004s
+ok  	solsynth.local/go-migration/internal/watchstore	0.012s
+ok  	solsynth.local/go-migration/ports/admin/accounts	0.004s
+ok  	solsynth.local/go-migration/ports/admin/collections	0.003s
+ok  	solsynth.local/go-migration/ports/admin/content	0.006s
+ok  	solsynth.local/go-migration/ports/admin/statistics	0.007s
+ok  	solsynth.local/go-migration/ports/admin/verification	0.005s
+ok  	solsynth.local/go-migration/ports/authority	0.305s
+ok  	solsynth.local/go-migration/ports/authority/oauth	0.004s
+ok  	solsynth.local/go-migration/ports/authority/signin	0.693s
+ok  	solsynth.local/go-migration/ports/develop	0.015s
+ok  	solsynth.local/go-migration/ports/develop/apps	0.007s
+ok  	solsynth.local/go-migration/ports/develop/bots	0.152s
+ok  	solsynth.local/go-migration/ports/federation	1.362s
+ok  	solsynth.local/go-migration/ports/media	0.032s
+ok  	solsynth.local/go-migration/ports/messager	0.051s
+ok  	solsynth.local/go-migration/ports/messager/calls	0.016s
+ok  	solsynth.local/go-migration/ports/messager/rooms	0.031s
+ok  	solsynth.local/go-migration/ports/notifications	0.021s
+ok  	solsynth.local/go-migration/ports/passport/accounts	0.016s
+ok  	solsynth.local/go-migration/ports/passport/accountsettings	0.011s
+ok  	solsynth.local/go-migration/ports/passport/activities	0.016s
+ok  	solsynth.local/go-migration/ports/passport/affiliation	0.014s
+?   	solsynth.local/go-migration/ports/passport/artwork	[no test files]
+ok  	solsynth.local/go-migration/ports/passport/badgediscovery	0.019s
+ok  	solsynth.local/go-migration/ports/passport/board	0.071s
+?   	solsynth.local/go-migration/ports/passport/connections	[no test files]
+ok  	solsynth.local/go-migration/ports/passport/domaintrust	0.024s
+ok  	solsynth.local/go-migration/ports/passport/fortunes	0.018s
+ok  	solsynth.local/go-migration/ports/passport/friends	0.004s
+ok  	solsynth.local/go-migration/ports/passport/history	0.006s
+ok  	solsynth.local/go-migration/ports/passport/ipcheck	0.005s
+ok  	solsynth.local/go-migration/ports/passport/namecards	0.013s
+ok  	solsynth.local/go-migration/ports/passport/notabledays	0.059s
+ok  	solsynth.local/go-migration/ports/passport/passkit	1.267s
+ok  	solsynth.local/go-migration/ports/passport/presence	0.003s
+?   	solsynth.local/go-migration/ports/passport/progression	[no test files]
+ok  	solsynth.local/go-migration/ports/passport/realmboosts	0.005s
+ok  	solsynth.local/go-migration/ports/passport/realmmembers	0.006s
+ok  	solsynth.local/go-migration/ports/passport/rewind	0.005s
+ok  	solsynth.local/go-migration/ports/passport/social	0.005s
+ok  	solsynth.local/go-migration/ports/passport/tickets	0.005s
+ok  	solsynth.local/go-migration/ports/passport/username	0.011s
+ok  	solsynth.local/go-migration/ports/sphere	0.023s
+ok  	solsynth.local/go-migration/ports/sphere/autocomplete	0.012s
+ok  	solsynth.local/go-migration/ports/sphere/automod	0.017s
+ok  	solsynth.local/go-migration/ports/sphere/blogs	0.011s
+ok  	solsynth.local/go-migration/ports/sphere/blogshttp	0.004s
+ok  	solsynth.local/go-migration/ports/sphere/interactions	0.008s
+ok  	solsynth.local/go-migration/ports/sphere/livestreams	0.007s
+ok  	solsynth.local/go-migration/ports/sphere/locations	0.006s
+ok  	solsynth.local/go-migration/ports/sphere/nodeinfo	0.006s
+ok  	solsynth.local/go-migration/ports/sphere/postawards	0.007s
+ok  	solsynth.local/go-migration/ports/sphere/postmedia	0.006s
+ok  	solsynth.local/go-migration/ports/sphere/posts	0.027s
+ok  	solsynth.local/go-migration/ports/sphere/publisherrating	0.006s
+ok  	solsynth.local/go-migration/ports/sphere/reader	0.007s
+ok  	solsynth.local/go-migration/ports/sphere/sponsorship	0.013s
+ok  	solsynth.local/go-migration/ports/sphere/stickers	0.009s
+ok  	solsynth.local/go-migration/ports/sphere/surveys	0.006s
+ok  	solsynth.local/go-migration/ports/sphere/taxonomy	0.085s
+ok  	solsynth.local/go-migration/ports/sphere/timeline	0.010s
+ok  	solsynth.local/go-migration/ports/sphere/translation	0.006s
+ok  	solsynth.local/go-migration/ports/wallet/accounts	0.010s
+ok  	solsynth.local/go-migration/ports/wallet/commerce	0.019s
+ok  	solsynth.local/go-migration/ports/wallet/exchangecatalog	0.067s
+ok  	solsynth.local/go-migration/ports/wallet/merchants	0.009s
+ok  	solsynth.local/go-migration/ports/wallet/productcatalog	0.302s
+?   	solsynth.local/go-migration/scripts/sqlargs	[no test files]
+ok  	solsynth.local/go-migration/tests/contract	0.212s
+ok  	solsynth.local/go-migration/tests/contract/recovery-regression-oracle	0.005s
+ok  	solsynth.local/go-migration/tests/integration	0.071s
+ok  	solsynth.local/go-migration/tests/transactionguard	0.006s
+ok  	solsynth.local/go-migration/cmd/account-service	1.017s
+ok  	solsynth.local/go-migration/cmd/authority	1.083s
+ok  	solsynth.local/go-migration/cmd/backend	4.389s
+ok  	solsynth.local/go-migration/cmd/chat-service	1.044s
+ok  	solsynth.local/go-migration/cmd/develop-discovery	1.026s
+ok  	solsynth.local/go-migration/cmd/messager-sync	1.016s
+ok  	solsynth.local/go-migration/cmd/nodeinfo	1.017s
+ok  	solsynth.local/go-migration/cmd/passport-board	1.010s
+ok  	solsynth.local/go-migration/cmd/post-service	1.123s
+ok  	solsynth.local/go-migration/cmd/solsynth-go	1.039s
+ok  	solsynth.local/go-migration/cmd/taxonomy	1.027s
+ok  	solsynth.local/go-migration/cmd/wallet-service	1.183s
+?   	solsynth.local/go-migration/internal/accounthistorypg	[no test files]
+ok  	solsynth.local/go-migration/internal/accountpg	1.015s
+?   	solsynth.local/go-migration/internal/accountsettingspg	[no test files]
+ok  	solsynth.local/go-migration/internal/activitypg	1.031s
+ok  	solsynth.local/go-migration/internal/adminpg	1.137s
+?   	solsynth.local/go-migration/internal/affiliationpg	[no test files]
+ok  	solsynth.local/go-migration/internal/application	1.538s
+ok  	solsynth.local/go-migration/internal/apppg	1.012s
+ok  	solsynth.local/go-migration/internal/auditcapture	1.009s
+ok  	solsynth.local/go-migration/internal/authoritypg	1.011s
+?   	solsynth.local/go-migration/internal/autocompletepg	[no test files]
+?   	solsynth.local/go-migration/internal/blogpg	[no test files]
+ok  	solsynth.local/go-migration/internal/boardpg	1.011s
+ok  	solsynth.local/go-migration/internal/botdispatch	1.025s
+ok  	solsynth.local/go-migration/internal/botpg	4.378s
+?   	solsynth.local/go-migration/internal/calendarmediapg	[no test files]
+ok  	solsynth.local/go-migration/internal/callpg	1.015s
+?   	solsynth.local/go-migration/internal/chatmediapg	[no test files]
+ok  	solsynth.local/go-migration/internal/chatpg	1.023s
+?   	solsynth.local/go-migration/internal/collectionadminpg	[no test files]
+ok  	solsynth.local/go-migration/internal/commercepg	1.024s
+?   	solsynth.local/go-migration/internal/connectionpg	[no test files]
+ok  	solsynth.local/go-migration/internal/connectionprovider	1.014s
+?   	solsynth.local/go-migration/internal/developmediapg	[no test files]
+ok  	solsynth.local/go-migration/internal/developpg	1.017s
+?   	solsynth.local/go-migration/internal/domaintrustpg	[no test files]
+ok  	solsynth.local/go-migration/internal/federationhttp	1.047s
+ok  	solsynth.local/go-migration/internal/federationpg	1.027s
+?   	solsynth.local/go-migration/internal/fortunepg	[no test files]
+ok  	solsynth.local/go-migration/internal/friendeventpg	1.031s
+ok  	solsynth.local/go-migration/internal/interactionpg	1.022s
+?   	solsynth.local/go-migration/internal/livestreampg	[no test files]
+ok  	solsynth.local/go-migration/internal/locationpg	1.021s
+ok  	solsynth.local/go-migration/internal/mediapg	1.281s
+ok  	solsynth.local/go-migration/internal/mediastore	1.083s
+?   	solsynth.local/go-migration/internal/merchantpg	[no test files]
+ok  	solsynth.local/go-migration/internal/messagerpg	1.020s
+?   	solsynth.local/go-migration/internal/moderationpg	[no test files]
+?   	solsynth.local/go-migration/internal/namecardpg	[no test files]
+ok  	solsynth.local/go-migration/internal/nodeinfopg	1.011s
+ok  	solsynth.local/go-migration/internal/notabledaypg	1.017s
+ok  	solsynth.local/go-migration/internal/notificationpg	1.016s
+?   	solsynth.local/go-migration/internal/oauthpg	[no test files]
+?   	solsynth.local/go-migration/internal/passkitpg	[no test files]
+?   	solsynth.local/go-migration/internal/postawardpg	[no test files]
+?   	solsynth.local/go-migration/internal/postembedpg	[no test files]
+ok  	solsynth.local/go-migration/internal/postmediapg	1.018s
+ok  	solsynth.local/go-migration/internal/postpg	1.024s
+?   	solsynth.local/go-migration/internal/presencepg	[no test files]
+ok  	solsynth.local/go-migration/internal/profilemediapg	1.020s
+ok  	solsynth.local/go-migration/internal/progressionpg	1.077s
+ok  	solsynth.local/go-migration/internal/publishernotificationpg	1.023s
+?   	solsynth.local/go-migration/internal/publisherratingpg	[no test files]
+ok  	solsynth.local/go-migration/internal/pushprovider	1.094s
+ok  	solsynth.local/go-migration/internal/readerfetch	1.076s
+?   	solsynth.local/go-migration/internal/readerpg	[no test files]
+ok  	solsynth.local/go-migration/internal/realmboostpg	1.017s
+ok  	solsynth.local/go-migration/internal/realmmemberpg	1.024s
+ok  	solsynth.local/go-migration/internal/realtime	1.054s
+ok  	solsynth.local/go-migration/internal/rewindpg	1.023s
+?   	solsynth.local/go-migration/internal/roommediapg	[no test files]
+ok  	solsynth.local/go-migration/internal/rtcprovider	1.025s
+?   	solsynth.local/go-migration/internal/signinpg	[no test files]
+ok  	solsynth.local/go-migration/internal/socialpg	1.013s
+ok  	solsynth.local/go-migration/internal/sponsorshippg	1.016s
+?   	solsynth.local/go-migration/internal/stickerpg	[no test files]
+ok  	solsynth.local/go-migration/internal/surveypg	1.016s
+ok  	solsynth.local/go-migration/internal/taxonomypg	1.015s
+ok  	solsynth.local/go-migration/internal/tencenttranslation	1.016s
+?   	solsynth.local/go-migration/internal/testpasskit	[no test files]
+ok  	solsynth.local/go-migration/internal/ticketmediapg	1.011s
+ok  	solsynth.local/go-migration/internal/ticketpg	1.013s
+ok  	solsynth.local/go-migration/internal/timelinepg	1.018s
+?   	solsynth.local/go-migration/internal/translationpg	[no test files]
+ok  	solsynth.local/go-migration/internal/verification	3.030s
+ok  	solsynth.local/go-migration/internal/walletpg	4.356s
+ok  	solsynth.local/go-migration/internal/watchpg	1.012s
+ok  	solsynth.local/go-migration/internal/watchstore	1.020s
+ok  	solsynth.local/go-migration/ports/admin/accounts	1.015s
+ok  	solsynth.local/go-migration/ports/admin/collections	1.015s
+ok  	solsynth.local/go-migration/ports/admin/content	1.018s
+ok  	solsynth.local/go-migration/ports/admin/statistics	1.015s
+ok  	solsynth.local/go-migration/ports/admin/verification	1.017s
+ok  	solsynth.local/go-migration/ports/authority	1.144s
+ok  	solsynth.local/go-migration/ports/authority/oauth	1.015s
+ok  	solsynth.local/go-migration/ports/authority/signin	6.073s
+ok  	solsynth.local/go-migration/ports/develop	1.035s
+ok  	solsynth.local/go-migration/ports/develop/apps	1.022s
+ok  	solsynth.local/go-migration/ports/develop/bots	1.351s
+ok  	solsynth.local/go-migration/ports/federation	2.846s
+ok  	solsynth.local/go-migration/ports/media	1.020s
+ok  	solsynth.local/go-migration/ports/messager	1.187s
+ok  	solsynth.local/go-migration/ports/messager/calls	1.027s
+ok  	solsynth.local/go-migration/ports/messager/rooms	1.047s
+ok  	solsynth.local/go-migration/ports/notifications	1.015s
+ok  	solsynth.local/go-migration/ports/passport/accounts	1.031s
+ok  	solsynth.local/go-migration/ports/passport/accountsettings	1.016s
+ok  	solsynth.local/go-migration/ports/passport/activities	1.023s
+ok  	solsynth.local/go-migration/ports/passport/affiliation	1.016s
+?   	solsynth.local/go-migration/ports/passport/artwork	[no test files]
+ok  	solsynth.local/go-migration/ports/passport/badgediscovery	1.043s
+ok  	solsynth.local/go-migration/ports/passport/board	1.310s
+?   	solsynth.local/go-migration/ports/passport/connections	[no test files]
+ok  	solsynth.local/go-migration/ports/passport/domaintrust	1.043s
+ok  	solsynth.local/go-migration/ports/passport/fortunes	1.061s
+ok  	solsynth.local/go-migration/ports/passport/friends	1.015s
+ok  	solsynth.local/go-migration/ports/passport/history	1.018s
+ok  	solsynth.local/go-migration/ports/passport/ipcheck	1.015s
+ok  	solsynth.local/go-migration/ports/passport/namecards	1.018s
+ok  	solsynth.local/go-migration/ports/passport/notabledays	1.467s
+ok  	solsynth.local/go-migration/ports/passport/passkit	2.340s
+ok  	solsynth.local/go-migration/ports/passport/presence	1.011s
+?   	solsynth.local/go-migration/ports/passport/progression	[no test files]
+ok  	solsynth.local/go-migration/ports/passport/realmboosts	1.018s
+ok  	solsynth.local/go-migration/ports/passport/realmmembers	1.016s
+ok  	solsynth.local/go-migration/ports/passport/rewind	1.014s
+ok  	solsynth.local/go-migration/ports/passport/social	1.024s
+ok  	solsynth.local/go-migration/ports/passport/tickets	1.019s
+ok  	solsynth.local/go-migration/ports/passport/username	1.013s
+ok  	solsynth.local/go-migration/ports/sphere	1.017s
+ok  	solsynth.local/go-migration/ports/sphere/autocomplete	1.027s
+ok  	solsynth.local/go-migration/ports/sphere/automod	1.031s
+ok  	solsynth.local/go-migration/ports/sphere/blogs	1.015s
+ok  	solsynth.local/go-migration/ports/sphere/blogshttp	1.015s
+ok  	solsynth.local/go-migration/ports/sphere/interactions	1.039s
+ok  	solsynth.local/go-migration/ports/sphere/livestreams	1.020s
+ok  	solsynth.local/go-migration/ports/sphere/locations	1.020s
+ok  	solsynth.local/go-migration/ports/sphere/nodeinfo	1.019s
+ok  	solsynth.local/go-migration/ports/sphere/postawards	1.015s
+ok  	solsynth.local/go-migration/ports/sphere/postmedia	1.017s
+ok  	solsynth.local/go-migration/ports/sphere/posts	1.066s
+ok  	solsynth.local/go-migration/ports/sphere/publisherrating	1.016s
+ok  	solsynth.local/go-migration/ports/sphere/reader	1.016s
+ok  	solsynth.local/go-migration/ports/sphere/sponsorship	1.018s
+ok  	solsynth.local/go-migration/ports/sphere/stickers	1.013s
+ok  	solsynth.local/go-migration/ports/sphere/surveys	1.015s
+ok  	solsynth.local/go-migration/ports/sphere/taxonomy	1.438s
+ok  	solsynth.local/go-migration/ports/sphere/timeline	1.031s
+ok  	solsynth.local/go-migration/ports/sphere/translation	1.017s
+ok  	solsynth.local/go-migration/ports/wallet/accounts	1.023s
+ok  	solsynth.local/go-migration/ports/wallet/commerce	1.041s
+ok  	solsynth.local/go-migration/ports/wallet/exchangecatalog	1.199s
+ok  	solsynth.local/go-migration/ports/wallet/merchants	1.017s
+ok  	solsynth.local/go-migration/ports/wallet/productcatalog	1.885s
+?   	solsynth.local/go-migration/scripts/sqlargs	[no test files]
+ok  	solsynth.local/go-migration/tests/contract	1.592s
+ok  	solsynth.local/go-migration/tests/contract/recovery-regression-oracle	1.016s
+ok  	solsynth.local/go-migration/tests/integration	1.190s
+ok  	solsynth.local/go-migration/tests/transactionguard	1.022s
+PostgreSQL integration tests were SKIPPED (no PG_TEST_DSN); package ok is not database validation.
+Use scripts/integration-postgres.sh in an authorized environment with private Unix sockets.

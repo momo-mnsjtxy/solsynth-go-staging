@@ -1,257 +1,58 @@
-Current all-drafts integration: see [completion scope and exact validation status](docs/all-drafts-completion-scope.json), [owned backend checkpoint](docs/owned-backend-checkpoint.json), and [authenticated host](docs/authenticated-backend-host.md). The sections below retain historical checkpoints; their test counts and CI claims do not certify the current commit.
+# Solian Go 后端
 
-The reviewed completion scope excludes external payment channels, migration/deployment, and legacy compatibility. Internal wallet and funded rewards remain included. Configured software adapters are implemented; operator configuration, external service and NFC hardware activation, client adaptation, and the exact candidate's private PostgreSQL/restart CI are separate acceptance requirements. No production deployment or completed-platform claim follows from ordinary tests.
+这是 Solian / Solsynth 已有 Go 后端的续建工作树。主程序是 [`cmd/backend`](cmd/backend)，将身份、账户、聊天、内容、钱包等业务组合为一个进程；原有客户端、HTTP 路径、JSON 契约和数据库协议保持各自的明确边界。
 
-# Solsynth Go migration workspace
+本轮依据 [HOP：面向人类编程](https://github.com/kernel4632/HOP) 整理接手入口、启动流程和业务路由。先看本文定位，再读 [开发与验证](docs/development.md)；自动化协作者同时遵循 [AGENTS.md](AGENTS.md)。
 
-**Historical initial status: local domain ports and migration evidence. Consult the current completion scope above for later implementation and validation.**
+## 从需求找到代码
 
-The requested target is backend functional parity while retaining the existing frontend clients. The organization contains multiple products and already-migrated Go services. Replacing clients or rebuilding existing Go services is not part of this initial stage.
+| 要改什么 | 从哪里读 | 业务与数据 |
+| --- | --- | --- |
+| 程序启动、参数、外部服务配置 | [`cmd/backend/main.go`](cmd/backend/main.go) | [`options.go`](cmd/backend/options.go) 定义参数，[`configuration.go`](cmd/backend/configuration.go) 校验配置，[`server.go`](cmd/backend/server.go) 运行服务；地址、DSN、公钥分别在 `address.go`、`database.go`、`public_key.go`，领域配置在 `*_config.go` |
+| HTTP 路径、服务前缀、路由优先级 | [`internal/application/router.go`](internal/application/router.go) | `route_account.go`、`route_content.go` 等按业务分派；`route_gateway.go` 维护前缀优先级，请求认证在 [`identity.go`](internal/application/identity.go) |
+| 业务组合、构造和后台任务 | [`internal/application/backend.go`](internal/application/backend.go) | `account_authentication.go`、`post_publishing.go`、`chat_rooms.go` 等组装业务；`posts.go`、`wallet.go`、`notifications.go` 等组合跨业务操作 |
+| 登录、会话、OAuth、权限 | [`ports/authority`](ports/authority) | `internal/authoritypg`、`internal/signinpg`、`internal/oauthpg` |
+| 账户、好友、空间、成员、成长 | [`ports/passport`](ports/passport) | `internal/accountpg`、`internal/socialpg`、`internal/realmmemberpg`、`internal/progressionpg` |
+| 帖子、时间线、互动、分类、直播 | [`ports/sphere`](ports/sphere) | `internal/postpg`、`internal/timelinepg`、`internal/interactionpg`、`internal/taxonomypg`、`internal/livestreampg` |
+| 聊天、房间、同步、通话 | [`ports/messager`](ports/messager) | `internal/chatpg`、`internal/messagerpg`、`internal/realtime`、`internal/callpg` |
+| 钱包、资金、订单、商家 | [`ports/wallet`](ports/wallet) | `internal/walletpg`、`internal/commercepg`、`internal/merchantpg` |
+| 媒体、通知、应用、联邦 | [`ports/media`](ports/media)、[`ports/notifications`](ports/notifications)、[`ports/develop`](ports/develop)、[`ports/federation`](ports/federation) | 对应 `internal/mediapg`、`notificationpg`、`apppg`、`botpg`、`federationpg` 及网络提供方 |
+| 数据结构、就绪检查、数据库用例 | 各业务 `internal/*pg/*.sql`、[`readiness.go`](internal/application/readiness.go) | [`tests/integration`](tests/integration)、[`scripts/integration-postgres.sh`](scripts/integration-postgres.sh) |
 
-## Implemented so far
+典型执行路径：`cmd/backend` → `internal/application` 选择业务与校验身份 → `ports/<业务>` 执行契约和业务规则 → `internal/<业务>pg` 事务读写 PostgreSQL → HTTP 响应或持久投递任务。这里的包边界承担契约、授权和事务职责；整理代码时保留这些职责。
 
-The three initial policy packages below derive from the licensed DysonNetwork revision `4ee2d0cebb9da8284a92483fee6dce795bf6947c`, with source snapshots, licenses, and per-package provenance retained:
+## 先在本地检查
 
-- `ports/passport/username`: account username normalization and candidate generation with injected lookup, randomness, and clock
-- `ports/sphere`: deterministic timeline ranking and selection, separated from database, identity, visibility, and moderation signal resolution
-- `ports/messager`: room-sync exact-sequence and inclusive-range recovery selection
-- `ports/passport/board`: partial transport-independent board service using pinned licensed client/server contracts, with mandatory validation/cache/repository interfaces
+使用 Go **1.26.4**、Python 3、C 编译器（供 race 检查），并预先取得 `go.mod` / `go.sum` 锁定的模块和 Python 依赖。`GO_BIN` 可指向已有 Go 编译器：
 
-The policy and board packages are Go library functions with synthetic contract tests. A loopback-only development HTTP service for post-watch preferences is implemented and tested with an atomic local JSON persistence adapter. A transport-independent Passport board service is also included with explicit unresolved production adapters. No production HTTP service, upstream database migration, authentication implementation, or deployment has been completed. See `docs/parity-matrix.json` and package parity inventories for the remaining work and evidence.
-
-## Test locally
-
-Use the real Go 1.26.4 compiler and the pinned Python parser dependencies. Download and verify Go modules before the offline verification script.
-
-```sh
-GOPATH=/workspace/shared/go GOMODCACHE=/workspace/shared/go/pkg/mod \
-  GO_BIN=/workspace/shared/toolchains/go/bin/go GOCACHE="$PWD/.cache/go-build" bash ./scripts/verify.sh
+```bash
+export GO_BIN="${GO_BIN:-go}"
+"$GO_BIN" version
+"$GO_BIN" mod download
+"$GO_BIN" mod verify
+python3 -m venv .venv
+.venv/bin/python -m pip install -r scripts/sql-parser-requirements.txt
+PATH="$PWD/.venv/bin:$PATH" bash scripts/verify.sh
 ```
 
-The initial policy ports use the standard library; the PostgreSQL command now uses pgx v5.10.0 with dependencies pinned in go.mod/go.sum. Run `go mod download` once in a network-enabled development environment before the offline verification script. Tests are synthetic and do not contact Solsynth production or use personal data. Passing them establishes only the cases checked. Independent .NET differential oracles cover the recovered exchange catalog and badge handlers only. No full existing-client end-to-end test has run.
+`verify.sh` 离线执行证据、SQL、路由相关编译检查，以及 build、vet、普通测试和 race。没有受控的 `PG_TEST_DSN` 时，真实 PostgreSQL 用例会跳过；测试包的 `ok` 不代表数据库、进程重启或现有客户端验收通过。
 
-## Architecture direction
+查看启动参数：
 
-Preserve current service boundaries and transport contracts until measured evidence supports consolidation. The first refactoring boundary separates deterministic domain policy from infrastructure adapters. Database access, account lookup, authorization, external RPC, and event delivery must stay explicit dependencies rather than being replaced by successful-looking in-memory stubs.
-
-Existing Stargate, DysonFS/FileSystem, Metoer, Blade, and other Go components require license and interface review before integration. In particular, absence of a license is not permission to copy an implementation. The backend migration must preserve client-facing JSON names, null behavior, integer widths, timestamps, pagination, authorization failures, event ordering, and operational behavior. The compatibility inventory records known differences.
-
-Do not deploy these packages as a replacement API. Completion requires every endpoint, authorization rule, database transition, event, storage action, scheduled job, failure mode, and migration/rollback procedure to be mapped and tested against the accepted baseline.
-
-## Inventory and provenance limits
-
-`inventory/sosys-repositories.json` lists all 19 repositories visible on the two public SoSYS organization pages at review time. It does not establish private repository coverage or repository-level mirror/archive status. The organization API returned 403 and was not retried; later repository-page retrieval was cancelled and not retried. The raw successfully read organization pages are retained as inventory evidence.
-
-The source snapshots preserve exact upstream revisions and license notices; they are not a clone of complete Git history. A Stargate clone was cancelled and was not retried. No upstream commits, branches, pull requests, deployments, accounts, or credentials were created.
-
-## Licensing
-
-The derived initial ports are distributed under AGPL-3.0 with upstream license text preserved. See `LICENSE.txt` and package provenance. No unlicensed implementation is included. Other repositories remain subject to independent license review; interface-only independent implementation must record its lawful contract sources and must not be represented as clean-room if implementation was inspected.
-
-## Post-watch preference development slice
-
-The Go host implements the licensed post-watch preference service contract at `GET/PUT /api/posts/watch`, with a local atomic JSON persistence adapter. This is a development adapter, not a migration of the PostgreSQL schema. It supports one server process per data file; do not share its file across processes. The file contains account preference data and should remain private.
-
-Authentication fails closed by default. Production authentication and permission middleware are not implemented. For synthetic local testing only, explicitly provide a fixture account and the matching `X-Test-Account` header. The command refuses non-loopback listen addresses. Never use actual account data with this development authentication mode.
-
-```sh
-GOTOOLCHAIN=local GOCACHE="$PWD/.cache/go-build" \
-  /workspace/shared/toolchains/go/bin/go run -buildvcs=false ./cmd/solsynth-go \
-  --listen 127.0.0.1:8080 --data /tmp/solsynth-watch-demo.json \
-  --fixture-account synthetic-test-account
+```bash
+"$GO_BIN" run -buildvcs=false ./cmd/backend --help
 ```
 
-Example fixture requests and the precise payload contract are covered by the HTTP contract tests. The remaining production gates include a verified identity adapter, real permission semantics, a PostgreSQL migration/rollback, concurrency across replicas, matching upstream error serialization, and existing-client tests.
+实际配置校验和启动示例见 [开发与验证](docs/development.md#配置与启动)。`cmd/backend` 默认只校验配置；显式添加 `--serve` 才连接数据库并监听 `127.0.0.1:8090`。启动不会安装数据库结构、创建用户、发放权限或生成持久密钥。
 
-## PostgreSQL adapter checkpoint
+## 验证与历史依据
 
-The command accepts `--storage postgres --postgres-dsn-env SOLSYNTH_POSTGRES_DSN`. The named environment variable supplies the connection string, which is never logged. Authentication still fails closed unless explicitly using the synthetic loopback fixture mode; PostgreSQL support does not create production authentication. Use canonical lowercase UUIDs for fixture account IDs in PostgreSQL mode.
+本次重构与实际检查结果见 [`docs/hop-refactor-20261018.md`](docs/hop-refactor-20261018.md)，包括完整本地验证日志与源码指纹。
 
-The adapter targets the licensed `post_watch_preferences` schema, applies no DDL at startup, and supports transactionally merged preference patches across cooperating Go processes. The original nullable unique index can permit duplicate live rows; the adapter refuses them instead of selecting an arbitrary preference. Existing C# writers do not share its advisory-lock protocol, so mixed-writer deployment is unsupported.
+当前业务范围索引为 [`docs/all-drafts-completion-scope.json`](docs/all-drafts-completion-scope.json)，原始来源闭环为 [`docs/all-drafts-source-closure.json`](docs/all-drafts-source-closure.json)。这些文档中的提交号和测试结果只对应所记录的版本；本次改动的结果以本次验证记录为准。外部支付渠道、迁移部署、旧版本兼容保持原有范围约定。
 
-Run `scripts/integration-postgres.sh` only through the authorized private GitHub Actions workflow with its disposable database environment. Do not run it locally or spoof its CI guards. Ordinary `go test ./...` skips actual database cases when no disposable test DSN is configured; a package-level `ok` does not mean PostgreSQL was tested. Check all four jobs and both groups' after-restart evidence for the exact candidate SHA. This paragraph's older adapter checkpoint does not describe the current owned authority implementation.
+真实数据库与重启用例只由现有受保护的私有 CI 运行。本轮不触发 GitHub Actions：用户此前说明月度运行额度已耗尽。不得伪造 CI 环境或撤销测试保护来获得通过标记。外部服务和 NFC 硬件需独立配置与验证，普通测试不构成生产验收。
 
-## Actual CI validation and watcher boundary
+旧 README 已原样归档到 [`docs/history/README-before-hop-20261018.md`](docs/history/README-before-hop-20261018.md)。`docs/` 下的阶段性设计、审计和 checkpoint 保留为有版本边界的历史证据；优先用当前源码确认运行行为。
 
-The preference adapter's six required real PostgreSQL cases and post-restart persistence assertion passed without skips on PostgreSQL 16.15 in [the private validation run](https://github.com/momo-mnsjtxy/solsynth-go-staging/actions/runs/37625612233), at commit `f08a88900dd49c1c2c4ba174dd75578448c519e1`. Ordinary build/vet/race checks passed too. The earlier local socket limitation remains a property of the local environment, not the final database test outcome; the dated result is retained in `docs/ci-result-2026-10-07.json`.
-
-Watcher and one-hop chain queries are a separate compatibility candidate. They are disabled in ordinary `watchpg.New(db)` construction and return an explicit policy error. Only the clearly named synthetic-compatibility constructor enables the fixed soft-delete-only policy for testing. No watcher HTTP endpoint or notification delivery is wired. The complete upstream global-filter policy remains unverified; passing candidate tests cannot establish production recipient or visibility parity. Authentication also remains fail-closed pending the contracts described in `internal/auth/HTTP_RECONSTRUCTION.md`.
-
-## Excluded protocol repository
-
-The unlicensed Solsynth protocol-definition repository is excluded from this work. Its `.proto`/schema files, descriptor exports and generated bindings must not be copied or used as an interface-only substitute. Existing code and synthetic SQL projections are grounded in the separately verified AGPL DysonNetwork/Solian callers, models and migrations. No excluded protocol definitions or bindings are included. Authentication and other missing contracts remain unresolved; the earlier suggestion to supply that repository’s protocol exports is withdrawn.
-
-## Board PostgreSQL compatibility candidate
-
-`internal/boardpg` adds real SQL persistence for the existing transport-independent board service, grounded in licensed DysonNetwork-owned migrations and its pinned current EF snapshot. Account-scoped transactions now include the read used to preserve app-owned payloads, validation and replacement/save; cache invalidation occurs after commit. JSON decoding preserves large numbers, and failed replacements must roll back instead of discarding retained tombstones or changing the source indexes.
-
-Normal `boardpg.New(db)` construction is disabled. The isolated compatibility-test constructor explicitly selects a candidate active-row/audit policy because the excluded shared hooks remain unverified. No board HTTP endpoint, command wiring, authentication, permission adapter or permissive payload validator is added. Cooperating Go writers share the lock protocol; mixed legacy/Go writers are unsupported. The actual-PG workflow requires the five board cases alongside the previous ten cases and checks both preference and board state after a server restart.
-
-## Additional bounded policies
-
-Five further executable policies now cover message heading formatting, unread
-aggregation, placeholder state transitions, notification body construction and
-publisher/realm discovery selection. They use the retained licensed snapshots and
-explicit pre-resolved inputs; they add no HTTP routes or production adapters.
-Their tests exercise real computations, including time, Unicode, state-transition
-and selection-order boundaries. `scripts/verify.sh` now verifies 436 retained
-source/license/oracle evidence entries against pinned expectations, with eleven
-mutation-rejection checks and a missing-file rejection check. See
-`docs/policy-followup.md` and the per-module provenance files.
-
-## Develop discovery: real SQL and HTTP compatibility slice
-
-`cmd/develop-discovery` serves the candidate `GET /api/apps` projection and,
-with independent opt-in described below, the miniapp package-download candidate.
-Its default mode returns 503 without opening a database. The enabled synthetic
-mode reads PostgreSQL persistently; it has no success-data fallback or RPC stubs.
-Startup never creates tables or modifies data. The source projection is six fields
-with nullable description and X-Total; search/paging and related counts execute in
-real SQL. No app creation/update endpoint is claimed.
-
-Enable only against disposable synthetic data, explicitly selecting the fixture's
-status number (42 is used in tests, **not an upstream Production mapping**):
-
-```sh
-go run ./cmd/develop-discovery --listen 127.0.0.1:8081   --synthetic-production-status=42 --postgres-dsn-env=PG_TEST_DSN
-```
-
-`internal/developpg/testdata/schema.sql` is a minimal test projection, not a full
-schema or migration. The complete supported verification command is
-`scripts/integration-postgres.sh` in an environment with Go and PostgreSQL 16.
-It creates a marked private-socket database, inserts synthetic rows through
-integration tests, requires thirty database cases and six restart
-assertions, and launches real HTTP processes before/after the database restart.
-The smoke script also restarts the application and checks default-deny behavior.
-
-Production status mapping, shared global filters, pagination middleware and global
-auth behavior remain unresolved. Synthetic soft-delete filtering, local pagination
-bounds and stronger count/page snapshot consistency are explicit candidates, not
-complete parity. See `ports/develop/PROVENANCE.md` for evidence and differences.
-The original PostWatch authorization boundary is retained while the host also
-routes the recovered catalog/badge families.
-
-
-## Local recovery integration, 2026-10-08
-
-Latest main `fcb3449501070745bbce4a0a3ba43a4df9ccf9bc` and 187 locally verified recovery blobs were reconciled. Newer policies, Develop discovery and source-integrity checks are preserved. Recovery-only catalogs, badges, tests and provenance are retained. This combined tree has not been published or validated by CI.
-
-## Local anonymous exchange-catalog endpoint
-
-`ports/wallet/exchangecatalog` implements the documented anonymous `GET /api/wallets/exchange` operation from the pinned, licensed Wallet controller. It reads configured exchange options; it does not execute exchanges or move funds. Source parsing, ordered case-insensitive configuration providers, decimal precision/rounding/scale, complete-response configuration errors and MVC method/path behavior are covered by an independently executed .NET 10 reference suite. The reference imports no excluded Shared/protocol assembly.
-
-The local host accepts repeatable `--exchange-config` UTF-8 JSON files in low-to-high precedence order. Configuration is an explicit startup snapshot, not a claim to reproduce ASP.NET's complete host, environment-provider or hot-reload lifecycle. With no configuration the catalog is `[]`, matching the checked-in default. `--storage none` lets this stateless endpoint run while the persistence-backed watch endpoint remains unavailable. The host still binds loopback only, and the existing authenticated watch route remains fail-closed.
-
-```sh
-go run -buildvcs=false ./cmd/solsynth-go --storage none \
-  --exchange-config appsettings.json --exchange-config appsettings.local.json
-```
-
-The local oracle records 1,793 configuration/decimal fixtures and six actual MVC method/path cases; its independently collected scalar-casing map contains 1,475 mappings. See `tests/contract/exchange-oracle/validation.json` and its reproduction instructions for exact versions, hashes and boundaries. The recovered addition is locally integrated with the latest main; remote publication and combined CI remain pending. It does not establish whole-platform parity or implement the separate protected funds-exchange POST operation.
-
-## Local badge discovery family
-
-The anonymous badge manifest and SVG routes are integrated through `--badge-icons`, whose default is the upstream `./Resources/BadgeIcons`. To use the included art, pass `--badge-icons ./ports/passport/badgediscovery/assets`. A missing directory keeps the manifest available without icon URLs; configured files are read on each request. The host remains loopback-only and does not grant access to protected watch operations.
-
-The 23 badge definitions preserve the licensed controller's order and fields. Twelve included icons have verified Google Material Symbols Apache-2.0 provenance; `whatshot.svg` is newly authored replacement artwork with an intentionally different appearance. The unverified upstream image is excluded. See the asset provenance and original-art notice in the package.
-
-File access deliberately uses safe directory containment instead of reproducing the upstream lexical path-prefix check. This is documented hardening, not a claim that every unsafe path has identical behavior. This local family does not implement badge-awarding rules, progression state, or account-badge persistence.
-
-## Evidence chronology
-
-`docs/local-final-checkpoint.json`, `docs/recovery-checkpoint.md`, and recovered
-`*-live-smoke-result.json` files are unchanged historical observations from the
-older recovery workspace. Their old remote head, absence of a local Git repository,
-and local socket failures do not describe this continuation tree or negate later
-CI passes. `docs/recovery-input-blobs.json` pins that input byte-for-byte.
-The main baseline's CI result applies only to its exact commit; local combined
-build/vet/unit/race results and pending combined PostgreSQL/HTTP process checks
-are tracked separately in the continuation report.
-
-## 2026-10-08 runnable continuation candidates
-
-The loopback Develop host now also supports `GET /api/miniapps/{slug}/package`
-behind independent `--synthetic-miniapp-stage` and `--synthetic-package-directory`
-flags, together with the existing explicit discovery status/DSN flags. It performs
-real SQL lookup and an atomic counter increment before returning a redirect or
-reading a confined synthetic local ZIP. It never follows remote redirect targets.
-The local file adapter is not a replacement for Minio/S3. Counter-before-storage
-failure ordering is preserved; no fake successful download or retry is returned.
-See `ports/develop/packages-PROVENANCE.md` for established behavior and differences.
-Public product/entity and bot-command responses remain blocked by incomplete
-lawful entity JSON evidence; no guessed serializers were added.
-
-`cmd/nodeinfo` serves the three source-declared NodeInfo discovery/statistics
-routes with real read-only PostgreSQL counts, an explicit synthetic Fediverse type
-and explicit soft-delete candidate policy. Default construction remains disabled.
-The source's snake_case payloads, 2.0/2.1 differences and unusual active-publisher
-predicate are retained, rather than silently substituted with standard assumptions.
-Its advertised `/nodeinfo/*` links differ from controller `/.well-known/nodeinfo/*`
-paths; no unverified gateway alias is invented. See `ports/sphere/nodeinfo/PROVENANCE.md`.
-
-Both families are runnable development candidates, not completed production APIs.
-The combined thirteen local route operations do not measure whole-platform completion.
-The integration runner now requires 30 non-skipped actual PostgreSQL cases, six
-post-restart assertions, and separate compiled-process HTTP checks. Those new
-checks have not run on this combined tree: local sockets are disallowed, and
-private CI awaits publication approval. Ordinary package `ok` is not a DB pass.
-
-Independent review corrected two recovered compatibility defects: comma-only
-JSON containers are rejected, and badge ASCII route literals no longer accept
-Unicode simple-fold substitutes that MVC rejects. Both fixes match a newly
-executed .NET regression oracle, separate from the unchanged original fixtures.
-The original exchange and badge oracles were also independently reproduced.
-
-See `docs/operation-coverage-plan.md` and its machine-readable JSON for remaining
-operations, dependencies and completion gates; `docs/identity-resolution-audit.md`
-records the precise unresolved production contract rather than treating all
-existing authentication documentation as missing.
-
-The same explicitly gated Sphere host also serves source-backed
-`GET /.well-known/host-meta` from configured domain only, without querying storage.
-It preserves the missing-versus-empty domain distinction and XRD template. XML
-attribute escaping is a documented improvement over direct interpolation.
-The actual WebFinger account lookup is not implemented by this config-only route.
-
-## Expanded licensed-client/document continuation
-
-The independently verified evidence now includes all 23 authored Solian auth
-Dart files plus relevant native clients/models, the complete 46-file owned Blade
-Go implementation, and targeted authored product/bot consumers. Those establish
-more usable HTTP and data contracts. They do not turn every client-consumed
-projection into a complete server serializer or resolve all current permissions.
-Socommon remains unaccessed under the existing source-permission boundary.
-
-`cmd/develop-discovery --synthetic-bot-commands` adds
-`GET /api/bots/{botId}/commands` after the existing discovery/DSN opt-in. It reads
-actual PostgreSQL command configuration, preserves missing-config empty results
-without writing defaults, and keeps unknown storage conventions explicitly gated.
-The known DTO comes from owned BOT_CHAT_API documentation, corroborated by a
-19-case independently authored documented-model fixture. That fixture is not an
-oracle for the excluded original shared model or Npgsql mapping.
-
-The PostWatch/catalog host now supports the source-documented wallet-product
-catalog through independent `--synthetic-wallet-product-catalog` opt-in and
-repeatable `--wallet-product-config` files. Currency must be explicit unless a
-caller deliberately supplies `--synthetic-wallet-product-default-currency`.
-Its configured output matches 383 reachable .NET binder/projection cases,
-including decimals, provider precedence, nulls, ordering and duplicate names.
-The reference has five additional direct-object diagnostics outside this Go
-configuration-only API. The command never executes checkout or payment calls.
-See `ports/wallet/productcatalog/PROVENANCE.md` and the contract review for the
-unknown no-configuration currency constant and source/docs dictionary-casing drift.
-
-Run `scripts/verify-dotnet-oracles.sh` to reproduce the bounded references with
-certificate generation disabled before every .NET process. It uses disposable
-tool homes and package-source-free NuGet configs. Retained source repositories
-under inventory are read-only evidence, not imported replacement dependencies.
-
-The machine-readable operation plan uses a compact integrity-checked index and
-controller-level parts to keep publication requests bounded. Reassembly via
-`inventory/operation-sources/coverage_format.py` reproduces the original complete
-818-record canonical JSON byte-for-byte; no coverage fields were removed.
-
-Publication safety review omitted five Blade deployment configuration snapshots
-containing credential-shaped examples or sensitive gateway settings. Their
-reference metadata remains, while all owned Go source/tests are preserved. No
-credential values or certificate stores are included in the published tree.
+本仓库及派生实现遵循 [AGPL-3.0-only](LICENSE.txt)，附加来源与声明见 [NOTICE.md](NOTICE.md)、各包 `PROVENANCE.md` 和源码清单。保留上游快照、许可、oracle 与哈希记录，修改业务实现时不要顺手重写这些证据。

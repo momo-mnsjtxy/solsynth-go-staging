@@ -1,16 +1,39 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
+# Only this explicit command-line opt-in may select local execution. Do not
+# manufacture CI variables; every fixture still verifies the private cluster.
+backend_e2e=0
+local_tcp=0
+case "$#:${1:-}:${2:-}" in
+  0::) [[ "${PG_TEST_MODE:-}" != local-disposable ]] || { echo 'Local disposable mode requires --local-disposable' >&2; exit 2; } ;;
+  1:--local-disposable:) export PG_TEST_MODE=local-disposable ;;
+  2:--local-disposable:--backend-e2e|2:--backend-e2e:--local-disposable)
+    export PG_TEST_MODE=local-disposable
+    backend_e2e=1 ;;
+  3:--local-disposable:--backend-e2e)
+    [[ "$3" == --local-tcp ]] || { echo 'unknown local backend transport option' >&2; exit 2; }
+    export PG_TEST_MODE=local-disposable
+    backend_e2e=1
+    local_tcp=1 ;;
+  *) echo 'usage: integration-postgres.sh [--local-disposable [--backend-e2e [--local-tcp]]]' >&2; exit 2 ;;
+esac
+if [[ "$local_tcp" != 1 && -n "${PG_TEST_LOCAL_TRANSPORT:-}${PG_TEST_LOCAL_PORT:-}${PG_TEST_LOCAL_PASSWORD:-}" ]]; then
+  echo 'Local transport requires explicit --local-tcp for the local backend suite' >&2
+  exit 2
+fi
 export PG_BIN="${PG_BIN:-/workspace/shared/toolchains/postgres/bin}"
 GO_BIN="${GO_BIN:-/workspace/shared/toolchains/go/bin/go}"
 root="${PG_TEST_ROOT:-/workspace/shared/solsynth-go-integration}"
 [[ "$root" == /* ]] || { echo 'PG_TEST_ROOT must be absolute' >&2; exit 2; }
 group="${PG_TEST_GROUP:-all}"
 case "$group" in all|group-a|group-b) ;; *) echo 'unknown PG_TEST_GROUP' >&2; exit 2 ;; esac
+if [[ "$backend_e2e" == 1 ]]; then group=backend-e2e; fi
 python3 scripts/check-integration-groups.py validate
-# Database/template creation is confined to the explicitly authorized private CI.
-[[ "${GITHUB_ACTIONS:-}" == true && "${PG_TEST_PRIVATE_CI:-}" == true ]] || { echo 'Disposable PostgreSQL creation requires authorized private CI' >&2; exit 2; }
-export PG_TEST_CANDIDATE="${GITHUB_SHA:?exact CI candidate required}"
+# Validate authorization and clean source before creating a run directory.
+# CI binds GITHUB_SHA; local mode derives its candidate from the actual HEAD.
+export PG_TEST_CANDIDATE
+PG_TEST_CANDIDATE=$(python3 scripts/fixture_template.py candidate)
 export PG_TEST_SCHEMA_SHA256
 PG_TEST_SCHEMA_SHA256=$(python3 scripts/fixture_template.py fingerprint)
 umask 077
@@ -19,7 +42,24 @@ run=$(mktemp -d "$root/run.XXXXXXXX")
 mkdir "$run/socket"
 printf 'synthetic-only\n' > "$run/.solsynth-disposable"
 export PG_TEST_ROOT="$root"
+if [[ "$local_tcp" == 1 ]]; then
+  export PG_TEST_LOCAL_TRANSPORT=loopback-tcp
+  # Probe an available loopback port and use a synthetic SCRAM credential.
+  # PostgreSQL must still bind the selected port successfully; no retry can
+  # attach this suite to an existing listener or database.
+  read -r PG_TEST_LOCAL_PORT PG_TEST_LOCAL_PASSWORD < <(python3 - <<'PY'
+import secrets
+import socket
+with socket.socket() as listener:
+    listener.bind(('127.0.0.1', 0))
+    print(listener.getsockname()[1], secrets.token_hex(32))
+PY
+  )
+  export PG_TEST_LOCAL_PORT PG_TEST_LOCAL_PASSWORD
+  export PG_TEST_DSN="host=127.0.0.1 port=$PG_TEST_LOCAL_PORT user=synthetic dbname=postgres sslmode=disable password=$PG_TEST_LOCAL_PASSWORD"
+else
 export PG_TEST_DSN="host=$run/socket port=55432 user=synthetic dbname=postgres sslmode=disable"
+fi
 export SOLSYNTH_DISPOSABLE_PG="$run"
 export PG_TEST_REQUIRED=1
 export GOTOOLCHAIN=local
@@ -36,7 +76,7 @@ mkdir "$results/$group"
 running=0
 cleanup() {
   status=$?
-  for evidence in before.jsonl after.jsonl cluster-before.txt cluster-after.txt process-smokes.txt receipt.json; do
+  for evidence in before.jsonl after.jsonl cluster-before.txt cluster-after.txt process-smokes.txt fixture-template.json receipt.json; do
     if [[ -f "$run/$evidence" ]]; then
       if ! cp "$run/$evidence" "$results/$group/$evidence"; then status=1; fi
     fi
@@ -48,9 +88,18 @@ cleanup() {
   exit "$status"
 }
 trap cleanup EXIT
-"$PG_BIN/initdb" -D "$run/data" -U synthetic --auth=trust --no-locale > "$run/initdb.log"
+if [[ "$local_tcp" == 1 ]]; then
+  printf '%s\n' "$PG_TEST_LOCAL_PASSWORD" > "$run/postgres-password"
+  "$PG_BIN/initdb" -D "$run/data" -U synthetic --auth-local=trust --auth-host=scram-sha-256 --pwfile="$run/postgres-password" --no-locale > "$run/initdb.log"
+else
+  "$PG_BIN/initdb" -D "$run/data" -U synthetic --auth=trust --no-locale > "$run/initdb.log"
+fi
 start() {
+  if [[ "$local_tcp" == 1 ]]; then
+    "$PG_BIN/pg_ctl" -D "$run/data" -l "$run/postgres.log" -o "-p $PG_TEST_LOCAL_PORT -c listen_addresses=127.0.0.1 -c unix_socket_directories=''" -w start
+  else
   "$PG_BIN/pg_ctl" -D "$run/data" -l "$run/postgres.log" -o "-k $run/socket -p 55432 -c listen_addresses='' -c unix_socket_permissions=0700" -w start
+  fi
   running=1
 }
 start
@@ -183,8 +232,15 @@ export TAXONOMY_BINARY="$run/taxonomy"
 "$GO_BIN" build -o "$run/solsynth-go" ./cmd/solsynth-go
 "$GO_BIN" build -o "$run/nodeinfo" ./cmd/nodeinfo
 "$PG_BIN/psql" "$PG_TEST_DSN" -A -t -F '|' -v ON_ERROR_STOP=1 -c 'SELECT system_identifier,pg_postmaster_start_time() FROM pg_control_system()' > "$run/cluster-before.txt"
+if [[ "$backend_e2e" == 1 ]]; then
+  # This explicit subset validates the unified host only. Its result guard
+  # cannot issue the full PostgreSQL catalogue's acceptance receipt.
+PG_TEST_PHASE=before "$GO_BIN" test -timeout 10m -race -count=1 -json -run '^(TestPGBackendHTTPProcessRestart|TestPGBackendSigninHTTPProcessRestart|TestPGBackendRestartPersistence)$' ./tests/integration | tee "$run/before.jsonl"
+  python3 scripts/check-backend-e2e-results.py before "$run/before.jsonl"
+else
 PG_TEST_PHASE=before "$GO_BIN" test -timeout 40m -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern before --group "$group")" ./tests/integration | tee "$run/before.jsonl"
-python3 scripts/check-integration-results.py before "$run/before.jsonl" --group "$group"
+  python3 scripts/check-integration-results.py before "$run/before.jsonl" --group "$group"
+fi
 if [[ "$group" == all || "$group" == group-a ]]; then
   python3 scripts/verify-develop-http.py "$run/develop-discovery"
   printf 'develop-before\n' >> "$run/process-smokes.txt"
@@ -195,8 +251,13 @@ fi
 running=0
 start
 "$PG_BIN/psql" "$PG_TEST_DSN" -A -t -F '|' -v ON_ERROR_STOP=1 -c 'SELECT system_identifier,pg_postmaster_start_time() FROM pg_control_system()' > "$run/cluster-after.txt"
+if [[ "$backend_e2e" == 1 ]]; then
+PG_TEST_PHASE=after "$GO_BIN" test -timeout 10m -race -count=1 -json -run '^TestPGBackendRestartPersistence$' ./tests/integration | tee "$run/after.jsonl"
+  python3 scripts/check-backend-e2e-results.py after "$run/after.jsonl"
+else
 PG_TEST_PHASE=after "$GO_BIN" test -timeout 10m -race -count=1 -json -run "$(python3 scripts/check-integration-results.py --pattern after --group "$group")" ./tests/integration | tee "$run/after.jsonl"
-python3 scripts/check-integration-results.py after "$run/after.jsonl" --group "$group"
+  python3 scripts/check-integration-results.py after "$run/after.jsonl" --group "$group"
+fi
 if [[ "$group" == all || "$group" == group-a ]]; then
   python3 scripts/verify-develop-http.py "$run/develop-discovery"
   printf 'develop-after\n' >> "$run/process-smokes.txt"
@@ -205,7 +266,10 @@ if [[ "$group" == all || "$group" == group-a ]]; then
   python3 scripts/verify-candidate-http.py "$run/develop-discovery" "$run/nodeinfo" "$PG_BIN/psql"
   printf 'candidate-after\n' >> "$run/process-smokes.txt"
 fi
-if [[ "$group" != all ]]; then
+if [[ "$backend_e2e" != 1 && "$group" != all ]]; then
   python3 scripts/check-integration-groups.py finalize --group "$group" --directory "$run" \
-    --commit "${GITHUB_SHA:-$(git rev-parse HEAD)}" --run-id "${GITHUB_RUN_ID:-local}" --attempt "${GITHUB_RUN_ATTEMPT:-1}"
+    --commit "$PG_TEST_CANDIDATE" --run-id "${GITHUB_RUN_ID:-local}" --attempt "${GITHUB_RUN_ATTEMPT:-1}"
+fi
+if [[ "$backend_e2e" == 1 ]]; then
+  python3 scripts/check-backend-e2e-results.py finalize "$run"
 fi

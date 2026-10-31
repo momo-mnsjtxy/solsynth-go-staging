@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "source_commit": "fa15bf7d9bbf76f987fee9447d64f6dd4c776088",
+  "source_tree": "793052328e80500146413c55748f2e4f40cc7093",
+  "authorization": "User requested backend end-to-end testing on 2026-10-18; preserve no-Actions constraint. Local execution is explicitly selected and never claims CI identity.",
+  "original_review": "docs/ci-two-groups-dependencies.json",
+  "original_review_sha256": "3bd879cfb1a16dc4d43637e4dc87536e8970d86b6c79f2bc2b00dec5f1c1b813",
+  "reviewed_changes": [
+    {
+      "source": "scripts/fixture_template.py",
+      "before_sha256": "e25759df126525c6d2b216d043ae9857838e59d163bc701b0d42ee67c2f47816",
+      "after_sha256": "763cb59c73477a03f7c571e2e706b53507fbbaad0d9fa27a8d26243076a5ffe2",
+      "retained_before": "docs/history/local-pg-baseline/scripts/fixture_template.py",
+      "review_reason": "Explicit local disposable test mode; retain private-CI defaults, fixture isolation, exact source and schema binding, and existing backend assertions."
+    },
+    {
+      "source": "scripts/integration-postgres.sh",
+      "before_sha256": "4bd41b7a90c0ff5bbd35f6ac7a5c81c6bf4b18836c4fce93677f2b09d5cb0664",
+      "after_sha256": "639e6e5f42ce7eec637e0d30dd57c0ae20c26a04d55f5f8d6e1c05014b853edd",
+      "retained_before": "docs/history/local-pg-baseline/scripts/integration-postgres.sh",
+      "review_reason": "Explicit local disposable test mode; retain private-CI defaults, fixture isolation, exact source and schema binding, and existing backend assertions."
+    },
+    {
+      "source": "scripts/test-fixture-isolation.py",
+      "before_sha256": "a671d41a1d543c315ff58ceff8c5c2c122157dad5296028f9daf4fc81cb2a21e",
+      "after_sha256": "1f0c2093d082c98c733641b28c9c5cda8167625f0e993f2fdc030b763df421d9",
+      "retained_before": "docs/history/local-pg-baseline/scripts/test-fixture-isolation.py",
+      "review_reason": "Explicit local disposable test mode; retain private-CI defaults, fixture isolation, exact source and schema binding, and existing backend assertions."
+    },
+    {
+      "source": "scripts/test-integration-groups.py",
+      "before_sha256": "65fe1ed5e12427a0bff907456ff3ffc5ca1ae08d78bbcd307c88ea4f1fa1e085",
+      "after_sha256": "0b14657fe63c66111490bf4703a6d04f0952e1310534bee8082d06d86b5e75cb",
+      "retained_before": "docs/history/local-pg-baseline/scripts/test-integration-groups.py",
+      "review_reason": "Explicit local disposable test mode; retain private-CI defaults, fixture isolation, exact source and schema binding, and existing backend assertions."
+    },
+    {
+      "source": "scripts/verify.sh",
+      "before_sha256": "df3dbea544f20a6dd675355e91f7b3e357419065473b553dd320800570553b0d",
+      "after_sha256": "440f2fb15ce66e13252699f6421f0413c2fab5afd2490e1ffb10232c49fd9a4a",
+      "retained_before": "docs/history/local-pg-baseline/scripts/verify.sh",
+      "review_reason": "Explicit local disposable test mode; retain private-CI defaults, fixture isolation, exact source and schema binding, and existing backend assertions."
+    },
+    {
+      "source": "tests/integration/backend_signin_test.go",
+      "before_sha256": "0e133ae0c08023a9420f2ec9a4d0c43f86186acba612d8d5db7abee9caf5544e",
+      "after_sha256": "69ca48e1f6a7c9c254faa562bd70fa31fdecd4151c9bdd5c08697e935069c6f0",
+      "retained_before": "docs/history/local-pg-baseline/tests/integration/backend_signin_test.go.txt",
+      "review_reason": "Explicit local disposable test mode; retain private-CI defaults, fixture isolation, exact source and schema binding, and existing backend assertions."
+    },
+    {
+      "source": "tests/integration/backend_test.go",
+      "before_sha256": "03eb2c36384dd65a44d0aaf9d11d6f1bebe74f71356d7c2752eac5ebbd6191d6",
+      "after_sha256": "e99601ed026a4341d921f4546975bd1037b97686aba02e95eda8ceb25a7ef93e",
+      "retained_before": "docs/history/local-pg-baseline/tests/integration/backend_test.go.txt",
+      "review_reason": "Explicit local disposable test mode; retain private-CI defaults, fixture isolation, exact source and schema binding, and existing backend assertions."
+    },
+    {
+      "source": "tests/integration/disposable_database_offline_test.go",
+      "before_sha256": "95ef062ea516dc8f883289dc5d9a5f63637b3c57ce296854064242b31f49c40b",
+      "after_sha256": "0f18dd569cfc0404c4769b81e314feab8b47bd35753696ebb6c6b015e556877b",
+      "retained_before": "docs/history/local-pg-baseline/tests/integration/disposable_database_offline_test.go.txt",
+      "review_reason": "Explicit local disposable test mode; retain private-CI defaults, fixture isolation, exact source and schema binding, and existing backend assertions."
+    },
+    {
+      "source": "tests/integration/disposable_database_test.go",
+      "before_sha256": "9fafe9a24ce7b7d915af1eba884d6915ba1cf4931dbbe70fdf7d2113a0501fbf",
+      "after_sha256": "d8835b7dfc309d47ee3cd7da8fa162fdf61fcb18b9023fd6388902a14668b8ef",
+      "retained_before": "docs/history/local-pg-baseline/tests/integration/disposable_database_test.go.txt",
+      "review_reason": "Explicit local disposable test mode; retain private-CI defaults, fixture isolation, exact source and schema binding, and existing backend assertions."
+    },
+    {
+      "source": "tests/integration/verification_adapters_test.go",
+      "before_sha256": "22ff163ab9b9754e3d78dc77545b67d60f211d46f7f156d28ec5e1e22d4b019a",
+      "after_sha256": "a68b0b45d291e1e06ff9b44968b2be79645719fa1b576bd599b3a8a1b7736a7a",
+      "retained_before": "docs/history/local-pg-baseline/tests/integration/verification_adapters_test.go.txt",
+      "review_reason": "Explicit local disposable test mode; retain private-CI defaults, fixture isolation, exact source and schema binding, and existing backend assertions."
+    },
+    {
+      "source": "tests/integration/watchpg_test.go",
+      "before_sha256": "be466d5ef4cfe6608c095c7fc72b49583e468018d4314a63c14165d9026e607f",
+      "after_sha256": "997bd37be87eace35b195d1c9dc9d0da39c18ba34ddb14d46bbf98ac53fd41fb",
+      "retained_before": "docs/history/local-pg-baseline/tests/integration/watchpg_test.go.txt",
+      "review_reason": "Explicit local disposable test mode; retain private-CI defaults, fixture isolation, exact source and schema binding, and existing backend assertions."
+    }
+  ],
+  "new_sources": [
+    {
+      "source": "scripts/reviewed_sources.py",
+      "sha256": "f7b7653b9800e682c13d54dc8b02a53b491e5e020d59d2d978f76f60a1d06717"
+    },
+    {
+      "source": "scripts/check-backend-e2e-results.py",
+      "sha256": "9038e295c7e0497f32dc834115977bed64c17f0bbb02caa823f0cce4b9ec0aeb"
+    },
+    {
+      "source": "scripts/test-local-e2e-guards.py",
+      "sha256": "0de0d0c272c71a732ed0d3423f2a8c5eb49c6f69a686430f1c738eaf02c929ba"
+    }
+  ],
+  "scope": "Only backend process E2E: three required cases before PostgreSQL restart and one required persistence case after restart. No full catalogue receipt or production-data use."
+}

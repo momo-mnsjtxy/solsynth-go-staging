@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "suite": "backend-e2e",
+  "full_postgresql_catalogue": false,
+  "candidate": "a773edd3e1391d560ea0111322775a510ff20e55",
+  "schema_sha256": "2dafd3bd8eb5a4d1c849914185e12e7509edd46605e05ff3f7abf253308b55b4",
+  "cluster_system_identifier": "7697904063585247279",
+  "postmaster_before": "2026-10-18T16:19:18.835880+09:00",
+  "postmaster_after": "2026-10-18T16:19:42.714952+09:00",
+  "counts": {
+    "before": 3,
+    "after": 1
+  },
+  "files": {
+    "before.jsonl": "0d25cb062b74e48ed0f518734f9aff368cd289cbff57ff1e9a9116b488871075",
+    "after.jsonl": "5eb29af7a62b53795a2d4fea5a0c33cbd79534d5ed06ec4896fe8a753f69b9a9",
+    "cluster-before.txt": "3fedd56d6f660709cd0e7c65f8838458aebf6b657fee6a143eaa276c6035f1e2",
+    "cluster-after.txt": "7b41ec6bd6e249187530d2319133bdfbf18275edc24a05dd96a184f161d7e250",
+    "fixture-template.json": "8cc58f804aadd5b757491a6c9cb23e86d104cc23a396260b542961274136fe52"
+  }
+}

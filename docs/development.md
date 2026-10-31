@@ -100,7 +100,19 @@ backend_args=(
 
 ## 数据库和重启验证
 
-`tests/integration` 中的真实数据库测试需要受保护的临时集群、合成数据和明确的候选提交。未配置 `PG_TEST_DSN` 的普通 `go test` 会跳过这些用例。`scripts/integration-postgres.sh` 仅允许现有授权私有 GitHub Actions 环境创建临时数据库；不得在本地伪造 `GITHUB_ACTIONS`、`PG_TEST_PRIVATE_CI` 或撤销 marker/fixture guard。
+`tests/integration` 中的真实数据库测试需要受保护的临时集群、合成数据和明确的候选提交。未配置 `PG_TEST_DSN` 的普通 `go test` 会跳过这些用例。`scripts/integration-postgres.sh` 默认保持现有授权私有 GitHub Actions 入口；显式传入 `--local-disposable` 才选择本地临时集群。本地入口拒绝混入 `CI`、`GITHUB_*`、`PG_TEST_PRIVATE_CI`，候选绑定干净的实际 Git HEAD；不接受操作者提供的生产 DSN。
+
+需要本地验证后端进程时，先提交代码并准备 PostgreSQL 16、Go 和 Python 依赖，然后指定临时目录和工具：
+
+```bash
+PG_BIN=/path/to/postgresql16/bin GO_BIN=/path/to/go \
+  PG_TEST_ROOT=/tmp/solian-e2e \
+  bash scripts/integration-postgres.sh --local-disposable --backend-e2e
+```
+
+如果运行环境禁止 Unix socket，但允许 TCP loopback，在命令末尾追加 `--local-tcp`。该选项只允许固定的后端 E2E 子集：运行器自行选择随机 `127.0.0.1` 端口和临时 SCRAM 密码，PostgreSQL 关闭 Unix socket 和外部监听。它保留私有目录、marker、精确连接串、源码和 schema 指纹、空模板与集群身份验证，不降低现有 CI 的保护条件。密码只进入私有运行目录和进程环境，不进入验证报告。
+
+焦点模式只运行 `TestPGBackendHTTPProcessRestart`、`TestPGBackendSigninHTTPProcessRestart`、`TestPGBackendRestartPersistence`，真实停止并启动 PostgreSQL 后再运行最后一项的恢复阶段。结果守卫拒绝失败、跳过、遗漏或重复；结果明确标为 backend-e2e，不能当作全部 1,147/120 项数据库套件通过。现有工程没有完整 Solian 前端，此处验证的是后端进程与 HTTP/WebSocket 链路。
 
 合格数据库证据必须同时包含当前提交的普通检查、两个 PostgreSQL 分组、各自的数据库重启后断言以及汇总校验，详见 `.github/workflows/`、`scripts/integration-groups.json` 和 `scripts/check-integration-results.py`。进程/数据库重启与纯单元测试是不同验证层次，报告时分别列出。
 

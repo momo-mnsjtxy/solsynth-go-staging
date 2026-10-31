@@ -1,0 +1,19 @@
+{
+  "suite": "backend-e2e",
+  "result": "pass",
+  "tested_local_commit": "a773edd3e1391d560ea0111322775a510ff20e55",
+  "production_source_commit": "fa15bf7d9bbf76f987fee9447d64f6dd4c776088",
+  "production_go_source_unchanged": true,
+  "postgresql": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+  "go": "1.26.4",
+  "transport": "127.0.0.1 random port, synthetic SCRAM password; Unix sockets disabled",
+  "ci_claimed": false,
+  "github_actions_executed": false,
+  "runtime_environment": "Executor maps only namespace UID 0 and grants no Linux capabilities. Standard PostgreSQL binaries ran through an LD_PRELOAD identity translation shim, retained as namespace_uid.c.txt. PostgreSQL binaries and application binaries were not patched.",
+  "full_postgresql_catalogue_executed": false,
+  "frontend_ui_tested": false,
+  "external_providers_tested": false,
+  "required_before": 3,
+  "required_after": 1,
+  "skipped_required_cases": 0
+}

@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"solsynth.local/go-migration/ports/authority"
@@ -23,9 +22,7 @@ func TestPGBackendSigninHTTPProcessRestart(t *testing.T) {
 	if e := os.WriteFile(pub, pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: x509.MarshalPKCS1PublicKey(&cfg.SigningKey.PublicKey)}), 0600); e != nil {
 		t.Fatal(e)
 	}
-	u := &url.URL{Scheme: "postgres", User: url.User("synthetic"), Host: "localhost:55432", Path: "/postgres"}
-	u.RawQuery = url.Values{"host": {filepath.Join(os.Getenv("SOLSYNTH_DISPOSABLE_PG"), "socket")}, "sslmode": {"disable"}}.Encode()
-	t.Setenv("SYNTHETIC_SIGNIN_PROCESS_DSN", u.String())
+	t.Setenv("SYNTHETIC_SIGNIN_PROCESS_DSN", backendProcessDSN(t))
 	t.Setenv("SYNTHETIC_SIGNIN_HASH", base64.StdEncoding.EncodeToString(cfg.RefreshHashKey))
 	t.Setenv("SYNTHETIC_SIGNIN_REPLAY", base64.StdEncoding.EncodeToString(cfg.ReplaySealKey))
 	t.Setenv("SYNTHETIC_SIGNIN_SEAL", base64.StdEncoding.EncodeToString(f.config.SealKey))

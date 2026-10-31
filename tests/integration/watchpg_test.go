@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -17,27 +16,29 @@ import (
 
 func database(t *testing.T) *sql.DB {
 	t.Helper()
-	dsn, root := os.Getenv("PG_TEST_DSN"), os.Getenv("SOLSYNTH_DISPOSABLE_PG")
-	if dsn == "" {
-		if os.Getenv("PG_TEST_REQUIRED") == "1" {
+	c := disposableDatabaseEnvironment()
+	if c.dsn == "" {
+		if os.Getenv("PG_TEST_REQUIRED") == "1" || c.mode != "" {
 			t.Fatal("required PostgreSQL integration DSN is missing")
 		}
 		t.Skip("actual PostgreSQL integration requires scripts/integration-postgres.sh")
 	}
-	parent := os.Getenv("PG_TEST_ROOT")
-	if parent == "" {
-		parent = "/workspace/shared/solsynth-go-integration"
-	}
-	marker, markerErr := os.ReadFile(filepath.Join(root, ".solsynth-disposable"))
-	if !filepath.IsAbs(root) || filepath.Dir(root) != filepath.Clean(parent) || !strings.HasPrefix(filepath.Base(root), "run.") || markerErr != nil || string(marker) != "synthetic-only\n" || !strings.Contains(dsn, "host="+filepath.Join(root, "socket")+" ") {
-		t.Fatal("refusing a database outside the disposable test cluster")
-	}
-	db, err := sql.Open("pgx", dsn)
-	if err != nil {
+	// Validate the complete execution identity, private directories, marker and
+	// exact local DSN before database/sql can contact any endpoint.
+	if err := validateDisposableDatabaseConfig(c); err != nil {
 		t.Fatal(err)
+	}
+	db, err := sql.Open("pgx", c.dsn)
+	if err != nil {
+		t.Fatal("cannot open disposable PostgreSQL connection")
 	}
 	t.Cleanup(func() { db.Close() })
 	if err = db.PingContext(context.Background()); err != nil {
+		t.Fatal("disposable PostgreSQL connection is unavailable")
+	}
+	check, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := verifyDisposableServerDirectory(check, db, c); err != nil {
 		t.Fatal(err)
 	}
 	return db

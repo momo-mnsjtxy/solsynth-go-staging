@@ -1,0 +1,17 @@
+#define _GNU_SOURCE
+#include <dlfcn.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+/* This executor maps only UID 0 and has no Linux capabilities. Translate that
+ * namespace identity for unchanged PostgreSQL binaries; no OS credential or
+ * capability is changed. The launcher is used only for disposable test data. */
+uid_t getuid(void) { return 65534; }
+uid_t geteuid(void) { return 65534; }
+gid_t getgid(void) { return 65534; }
+gid_t getegid(void) { return 65534; }
+static void translate(struct stat *s) { if(s->st_uid==0)s->st_uid=65534; if(s->st_gid==0)s->st_gid=65534; }
+int stat(const char *p, struct stat *s) { static int(*real)(const char*,struct stat*); if(!real)real=dlsym(RTLD_NEXT,"stat"); int r=real(p,s); if(!r)translate(s); return r; }
+int lstat(const char *p, struct stat *s) { static int(*real)(const char*,struct stat*); if(!real)real=dlsym(RTLD_NEXT,"lstat"); int r=real(p,s); if(!r)translate(s); return r; }
+int fstat(int f, struct stat *s) { static int(*real)(int,struct stat*); if(!real)real=dlsym(RTLD_NEXT,"fstat"); int r=real(f,s); if(!r)translate(s); return r; }
+int fstatat(int f,const char*p,struct stat*s,int flags){static int(*real)(int,const char*,struct stat*,int); if(!real)real=dlsym(RTLD_NEXT,"fstatat");int r=real(f,p,s,flags);if(!r)translate(s);return r;}

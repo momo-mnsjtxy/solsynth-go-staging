@@ -1,127 +1,100 @@
-# 开发与验证
+# 开发指南
 
-本文面向第一次接手现有 Go 后端的开发者。项目入口和按业务找代码的表格在 [README](../README.md)；历史设计与阶段结果有各自的提交边界，不能替代当前源码和本次执行结果。
+本文帮助你从一个业务需求找到实现、修改代码并运行检查。编译和启动命令在 [README](../README.md)，参数解释在 [配置说明](configuration.md)。下文命令都在仓库根目录执行。
+
+## 从需求找到代码
+
+| 要改什么 | 先读哪里 | 业务与持久化 |
+| --- | --- | --- |
+| 启动、参数、关闭流程 | [cmd/backend/main.go](../cmd/backend/main.go) | `options.go` 登记参数，`configuration.go` 校验配置，`server.go` 管理服务生命周期 |
+| HTTP 路径、服务前缀和别名 | [internal/application/router.go](../internal/application/router.go) | 相邻 `route_*.go` 按业务分派，`route_gateway.go` 决定前缀优先级，`route_stargate.go` 对应 Stargate 迁移路径 |
+| 登录、会话、OAuth、权限 | [ports/authority](../ports/authority) | `internal/authoritypg`、`internal/signinpg`、`internal/oauthpg` |
+| 账户、好友、空间、成员、成长 | [ports/passport](../ports/passport) | `internal/accountpg`、`internal/socialpg`、`internal/realmmemberpg`、`internal/progressionpg` |
+| 帖子、时间线、互动、分类、直播 | [ports/sphere](../ports/sphere) | `internal/postpg`、`internal/timelinepg`、`internal/interactionpg`、`internal/taxonomypg`、`internal/livestreampg` |
+| 聊天、房间、同步、通话 | [ports/messager](../ports/messager) | `internal/chatpg`、`internal/messagerpg`、`internal/realtime`、`internal/callpg` |
+| 钱包、资金、订单、商家 | [ports/wallet](../ports/wallet) | `internal/walletpg`、`internal/commercepg`、`internal/merchantpg` |
+| 媒体、通知、应用、联邦 | [ports/media](../ports/media)、[ports/notifications](../ports/notifications)、[ports/develop](../ports/develop)、[ports/federation](../ports/federation) | 对应 `internal/mediapg`、`notificationpg`、`apppg`、`botpg`、`federationpg` 及提供方实现 |
+| 表结构、就绪检查、数据库测试 | 各业务 `internal/*pg/*.sql` | `internal/application/readiness.go`、`tests/integration`、`scripts/integration-postgres.sh` |
+
+这里的 `ports` 包定义业务操作和 HTTP 契约，`internal/*pg` 实现 PostgreSQL 读写与事务。`internal/application/backend.go` 的 `NewPostgres` 把它们组合起来；`identity.go` 建立请求身份，`transaction.go` 处理跨业务事务。
 
 ## 顺着一个功能阅读
 
-先找到调用者使用的 HTTP 路径，再在 `internal/application/router.go` 和相邻业务路由文件中找到它交给哪个模块。`route_ingress.go` 处理设备、成员、PassKit 和公开协议；`route_account.go`、`route_locations.go` 处理账户与位置别名；`route_gateway.go` 保持服务前缀覆盖顺序；`route_content.go`、`route_social.go`、`route_utilities.go`、`route_commerce.go` 分别处理内容、社交、工具和商业路由。`internal/application/backend.go` 的 `NewPostgres` 组合模块；同目录的 `identity.go` 建立受验证的请求身份，业务组合文件把身份和跨业务依赖接上。
+以发帖为例，按调用顺序读：`cmd/backend` → `internal/application/route_content.go` → `ports/sphere/posts` → `internal/postpg`。组装逻辑在 `post_publishing.go`，跨业务操作在 `posts.go`。先看 HTTP 输入和响应，再跟进业务规则、权限检查和事务写入。
 
-随后读 `ports/<业务>` 下的 HTTP 输入、业务操作和数据契约，最后读实际注入的 `internal/<业务>pg` 数据实现与 SQL。同一目录中的 `*_test.go` 覆盖纯逻辑与 HTTP 契约；`tests/integration` 才包含真实 PostgreSQL、事务竞争和重启用例。不要从历史独立命令误判统一主程序的覆盖面。
-
-`internal/application` 的业务组装可以按以下文件直接查找：
+查其他业务的组合关系时，从 `internal/application` 中相应文件开始：
 
 | 业务 | 组装文件 |
 | --- | --- |
 | 账户、登录、成长、日历 | `account_authentication.go`、`account_lifecycle.go`、`account_calendar.go` |
-| 发布、阅读、翻译、问卷、贴纸、引用 | `post_publishing.go`、`reading_content.go`、`content_engagement.go` |
-| 房间、聊天媒体、机器人执行 | `chat_rooms.go`、`bot_delivery.go` |
-| 开发者应用、商家与订单 | `developer_commerce.go` |
-| 媒体存储与保护、通知与实时投递 | `media_storage.go`、`notification_delivery.go` |
+| 发布、阅读、翻译、问卷、贴纸 | `post_publishing.go`、`reading_content.go`、`content_engagement.go` |
+| 聊天房间、聊天媒体、机器人投递 | `chat_rooms.go`、`bot_delivery.go` |
+| 开发者应用、商家、订单 | `developer_commerce.go` |
+| 媒体存储、通知、实时投递 | `media_storage.go`、`notification_delivery.go` |
 
-例如帖子主线是：`cmd/backend` → `internal/application` 的帖子路由及 `posts.go` → `ports/sphere/posts` → `internal/postpg`。聊天主线落到 `ports/messager/rooms`、`internal/chatpg` 和 `internal/messagerpg`；钱包主线落到 `ports/wallet/accounts` 和 `internal/walletpg`。跨域写入还要读 `internal/application/transaction.go`、业务 guard 和锁顺序。
+修改前搜索调用方和现有测试，例如：
 
-修改前用 `rg -n '路径片段|操作名' cmd internal ports tests` 检查调用方。按业务命名新文件，将业务决策、特殊顺序和输入检查的理由写在附近。Go 包编译会自动包含目录中的 `.go` 文件；HTTP 路由和数据库 schema 则需要显式、安全地接线，不能通过扫描文件自动暴露接口或安装 DDL。
+```bash
+rg -n 'CreatePost|/api/posts' cmd internal ports tests
+```
+
+同包的 `*_test.go` 主要覆盖逻辑和 HTTP 契约；真实 PostgreSQL、事务竞争和重启用例在 `tests/integration`。修改涉及授权、通知或多个业务写入时，一并阅读 guard、事件投递和锁顺序，避免只改表面的 HTTP 处理。
+
+沿用现有 Go 包和业务命名。文件头说明职责与调用方法，复杂步骤旁写清顺序和原因。Go 自动编译同包源码；新 HTTP 路由、数据库 DDL 和集成用例仍需在各自入口显式登记，防止无意暴露接口或执行迁移。
 
 ## 工具和日常检查
 
-验证基准编译器为 Go 1.26.4，模块语言版本由 `go.mod` 指定。Python 3 依赖固定在 `scripts/sql-parser-requirements.txt`，race 检查需要 C 编译器。
+准备 Go **1.26.4**、Python 3 和 C 编译器。Go 模块按 README 下载；Python 依赖固定在 `scripts/sql-parser-requirements.txt`。下面用 Python **3.12** 创建隔离环境，放进被 Git 忽略的本地缓存目录：
 
 ```bash
 export GO_BIN="${GO_BIN:-go}"
-"$GO_BIN" version
-"$GO_BIN" mod download
-"$GO_BIN" mod verify
-python3 -m venv .venv
-.venv/bin/python -m pip install -r scripts/sql-parser-requirements.txt
+python3.12 -m venv .cache/verify-venv
+.cache/verify-venv/bin/python -m pip install -r scripts/sql-parser-requirements.txt
 ```
 
-完整本地检查使用同一个入口，它会关闭 Go 网络拉取：
+SQL 检查固定使用 PostgreSQL 16 语法。如果软件源找不到 `pglast==6.7`，先用 Git 和 C 编译器从上游同版本构建，再重跑上面的依赖安装命令：
 
 ```bash
-PATH="$PWD/.venv/bin:$PATH" bash scripts/verify.sh
+.cache/verify-venv/bin/python -m pip install 'git+https://github.com/lelit/pglast.git@v6.7'
 ```
 
-需要先验证单个业务时，直接运行对应包；通过后再执行完整检查：
+先检查改动涉及的包，再运行统一检查。下面以启动、路由和三个常见业务为例，按实际改动选择包：
 
 ```bash
-"$GO_BIN" test -count=1 ./internal/application ./cmd/backend
+"$GO_BIN" test -count=1 ./cmd/backend ./internal/application
 "$GO_BIN" test -race -count=1 ./ports/sphere/posts ./ports/messager/rooms ./ports/wallet/accounts
+PATH="$PWD/.cache/verify-venv/bin:$PATH" bash scripts/verify.sh
 ```
 
-`scripts/verify.sh` 同时检查工作流 YAML、保留来源、集成测试注册、fixture 隔离、PostgreSQL 16 语法、就绪关系、操作清单、SQL 参数与 `gofmt`。这些检查是现有工程约束；不要因只改路由就跳过来源检查，也不要为通过检查刷新已锁定的证据哈希。
+`verify.sh` 离线执行来源、SQL、路由及集成用例登记、fixture 隔离和格式检查，然后运行 build、vet、普通测试和 race。依赖必须提前下载；它不会在检查时联网补模块。未配置受控的 `PG_TEST_DSN` 时，真实数据库用例会跳过。
 
 ## 配置与启动
 
-`cmd/backend/main.go` 顺序执行管理命令分派、参数解析、配置校验和服务启动。`options.go` 是命令行参数与默认值的唯一来源；`configuration.go` 保持身份、票据、聊天、资金和外部提供方的校验顺序，并负责释放配置阶段取得的资源；`server.go` 管理连接检查、监听、后台任务和关闭。监听地址、显式数据库 URL 和公钥文件的安全边界分别集中在 `address.go`、`database.go`、`public_key.go`。
-
-默认动作是校验显式配置。只有 `--serve` 会打开数据库、检查所需 schema 并监听 HTTP。配置检查阶段可能读取明确指定的密钥、语料、文件或提供方配置；它不连接数据库，也不安装数据库结构。
-
-以下 Bash 示例使用**外部已准备好的** RSA 公钥、显式数据库 URL 和实际数据库的聊天枚举。先把变量填为目标开发环境的值；不要把真实密钥或 DSN 写进仓库。分类公开值固定为当前 Go schema 的 `0`，通知的三个枚举必须各不相同。
-
-```bash
-export GO_BIN="${GO_BIN:-go}"
-export SOLSYNTH_BACKEND_DSN='postgresql://synthetic@127.0.0.1/solian_dev?sslmode=disable'
-export SOLIAN_PUBLIC_KEY_FILE='/absolute/path/to/trusted-public.pem'
-export SOLIAN_ISSUER='https://issuer.example.test'
-export SOLIAN_AUDIENCE='solian-development'
-export SOLIAN_KEY_ID='development-key'
-export SOLIAN_CHAT_ENCRYPTION_NONE='0'
-export SOLIAN_CHAT_NOTIFY_ALL='0'
-export SOLIAN_CHAT_NOTIFY_MENTIONS='1'
-export SOLIAN_CHAT_NOTIFY_NONE='2'
-
-backend_args=(
-  --issuer "$SOLIAN_ISSUER"
-  --audience "$SOLIAN_AUDIENCE"
-  --key-id "$SOLIAN_KEY_ID"
-  --trusted-public-key-file "$SOLIAN_PUBLIC_KEY_FILE"
-  --taxonomy-public-visibility 0
-  --messager-none-encryption "$SOLIAN_CHAT_ENCRYPTION_NONE"
-  --messager-notify-all "$SOLIAN_CHAT_NOTIFY_ALL"
-  --messager-notify-mentions "$SOLIAN_CHAT_NOTIFY_MENTIONS"
-  --messager-notify-none "$SOLIAN_CHAT_NOTIFY_NONE"
-)
-"$GO_BIN" run -buildvcs=false ./cmd/backend "${backend_args[@]}"
-```
-
-示例 URL、issuer 和枚举仅展示合成开发配置，不对应上游生产策略。公钥 PEM 必须真实存在且匹配目标 issuer；验证模式不会生成它。TCP DSN 默认要求 `verify-full`，只有明确本地/临时环境支持关闭 TLS。程序拒绝环境中非空的 `PGHOST`、`PGPASSWORD`、`PGSERVICE` 等隐式 libpq 配置；使用独立环境并通过 `--dsn-env` 指定唯一的 DSN 变量。
-
-目标开发库的 schema 与依赖已经由操作者审查并安装后，在同一终端显式启动：
-
-```bash
-"$GO_BIN" run -buildvcs=false ./cmd/backend "${backend_args[@]}" --serve --listen 127.0.0.1:8090
-```
-
-`/healthz` 用于存活检查，`/readyz` 检查当前启用模块要求的关系和部分完整性约束。`internal/application/readiness.go` 按业务阶段顺序返回首个错误，内部原因保留用于排查，对外继续返回受控状态；它不能代替数据库迁移、完整 schema 审核或客户端验证。启动失败不会自动建表或补用户。
-
-默认后端只配置 token 公钥验证。登录或 OAuth 签发须显式开启相应能力，并提供独立私钥、刷新哈希和 seal 密钥；所有参数以 `go run ./cmd/backend --help` 和 `cmd/backend/*_config.go` 为准。媒体、SMTP、CAPTCHA、推送、通话、联邦、NFC 等提供方也按功能显式启用。缺少配置时保留受控错误，禁止替换成伪造成功。
-
-`cmd/backend` 还提供联邦政策初始化/撤销等显式子命令。它们会写入数据库，不能当配置预检运行；操作依据见 [联邦公开接纳](federation-public-admission.md) 和对应命令源码。
+使用 [README 的启动示例](../README.md#配置与启动)。修改启动参数时，参数登记从 `cmd/backend/options.go` 找，业务校验从相应 `*_config.go` 找；数据库 URL、公钥和监听地址分别由 `database.go`、`public_key.go`、`address.go` 校验。
 
 ## 数据库和重启验证
 
-`tests/integration` 中的真实数据库测试需要受保护的临时集群、合成数据和明确的候选提交。未配置 `PG_TEST_DSN` 的普通 `go test` 会跳过这些用例。`scripts/integration-postgres.sh` 默认保持现有授权私有 GitHub Actions 入口；显式传入 `--local-disposable` 才选择本地临时集群。本地入口拒绝混入 `CI`、`GITHUB_*`、`PG_TEST_PRIVATE_CI`，候选绑定干净的实际 Git HEAD；不接受操作者提供的生产 DSN。
+本地集成测试使用运行器创建的临时 PostgreSQL 16 集群。先准备 PostgreSQL 工具、Go 和上述 Python 环境，并将待测修改提交到干净的 Git HEAD；运行器用该提交绑定测试源码。`PG_TEST_ROOT` 必须是绝对路径。不要传入现有数据库的 DSN。
 
-需要本地验证后端进程时，先提交代码并准备 PostgreSQL 16、Go 和 Python 依赖，然后指定临时目录和工具：
+后端进程与重启测试：
 
 ```bash
-PG_BIN=/path/to/postgresql16/bin GO_BIN=/path/to/go \
+PATH="$PWD/.cache/verify-venv/bin:$PATH" \
+  PG_BIN=/path/to/postgresql16/bin GO_BIN=/path/to/go1.26.4/bin/go \
   PG_TEST_ROOT=/tmp/solian-e2e \
   bash scripts/integration-postgres.sh --local-disposable --backend-e2e
 ```
 
-如果运行环境禁止 Unix socket，但允许 TCP loopback，在命令末尾追加 `--local-tcp`。该选项只允许固定的后端 E2E 子集：运行器自行选择随机 `127.0.0.1` 端口和临时 SCRAM 密码，PostgreSQL 关闭 Unix socket 和外部监听。它保留私有目录、marker、精确连接串、源码和 schema 指纹、空模板与集群身份验证，不降低现有 CI 的保护条件。密码只进入私有运行目录和进程环境，不进入验证报告。
+这会运行 `TestPGBackendHTTPProcessRestart`、`TestPGBackendSigninHTTPProcessRestart`、`TestPGBackendRestartPersistence`，停止并重启 PostgreSQL 后再检查恢复。它验证后端 HTTP/WebSocket 和持久化链路，不包含 Solian 前端。
 
-焦点模式只运行 `TestPGBackendHTTPProcessRestart`、`TestPGBackendSigninHTTPProcessRestart`、`TestPGBackendRestartPersistence`，真实停止并启动 PostgreSQL 后再运行最后一项的恢复阶段。结果守卫拒绝失败、跳过、遗漏或重复；结果明确标为 backend-e2e，不能当作全部 1,147/120 项数据库套件通过。现有工程没有完整 Solian 前端，此处验证的是后端进程与 HTTP/WebSocket 链路。
+若环境禁止 Unix socket，但允许本机 TCP，在命令末尾加 `--local-tcp`。它只支持上述后端 E2E 子集，使用随机本机端口和临时 SCRAM 密码，保留集群标记、源码检查及空模板检查。本地模式拒绝混入 `CI`、`GITHUB_*`、`PG_TEST_PRIVATE_CI`。
 
-合格数据库证据必须同时包含当前提交的普通检查、两个 PostgreSQL 分组、各自的数据库重启后断言以及汇总校验，详见 `.github/workflows/`、`scripts/integration-groups.json` 和 `scripts/check-integration-results.py`。进程/数据库重启与纯单元测试是不同验证层次，报告时分别列出。
+完整数据库套件分为两个分组，各自需要重启后检查，再由结果脚本汇总。分组定义和调用方式见 `scripts/integration-groups.json`、`scripts/integration-postgres.sh`、`scripts/check-integration-results.py`；原有私有 CI 入口保留。后端 E2E 子集通过不能替代完整数据库套件通过。
 
-本轮不触发 Actions，原因是用户此前明确月度运行额度已耗尽。保存提交或 PR 时也检查工作流的 `push` 触发行为；使用跳过 CI 的提交说明，不能为省额度改掉测试保护。普通检查的成功只说明实际执行的范围，不能延伸成当前数据库或生产环境的成功结论。
+当前约定不触发 GitHub Actions。需要提交时使用带 `[skip ci]` 的说明，推送前检查工作流触发条件，不修改工作流来省运行额度。
 
 ## 来源、文档与变更边界
 
-`SOURCE_MANIFEST.json`、各来源 `manifest.json`、`PROVENANCE.md`、`inventory/`、`source/`、`upstream/`、`*-evidence/` 和独立 oracle 固定了来源、许可或历史结果。先读 `scripts/check-source-evidence.py` 识别受保护内容；不要对这些目录批量改名、格式化、翻译或更新哈希来掩盖差异。普通可编辑 Go 实现与来源快照必须区分。
+`source/`、`upstream/`、`inventory/`、`*-evidence/`、manifest、`PROVENANCE.md` 和独立 oracle 保存固定来源或历史结果。`scripts/check-source-evidence.py` 会检查这些内容；失败时找实际差异，不刷新哈希。日常业务修改默认保持 HTTP 契约、身份验证、事件顺序、数据库结构与锁协议。
 
-当前范围和来源闭环分别由 [all-drafts 范围索引](all-drafts-completion-scope.json) 与 [来源闭环](all-drafts-source-closure.json) 记录。`architecture.md`、`authenticated-backend-host.md`、`owned-backend-checkpoint.json` 等保留较早快照；它们的旧能力清单、测试数量和限制仅对应记录时的版本。当前架构入口以本页、README 和运行源码为准。旧 README 的完整内容见 [归档](history/README-before-hop-20261018.md)。
-
-本轮 HOP 重构保持已有 HTTP 路径/字段、错误序列化、路由优先级、身份验证、数据库协议和默认启用策略。后续整理优先消除重复与含糊命名，围绕实际业务动作拆分；授权新结构不等于授权更改已有账户数据、接口契约或外部服务。
+文档更新方式见 [文档目录](README.md#维护文档)，旧设计和已有测试记录从 [历史文档](history/README.md) 查。

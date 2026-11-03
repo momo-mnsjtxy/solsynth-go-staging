@@ -2,6 +2,8 @@
 
 这是 Solian / Solsynth 已有 Go 后端的续建工作树。主程序是 [`cmd/backend`](cmd/backend)，将身份、账户、聊天、内容、钱包等业务组合为一个进程；原有客户端、HTTP 路径、JSON 契约和数据库协议保持各自的明确边界。
 
+已同步 2026-11-02 可读上游的新增功能与修复，改动和配置见 [本次同步说明](docs/upstream-sync-20261102.md)。
+
 本轮依据 [HOP：面向人类编程](https://github.com/kernel4632/HOP) 整理接手入口、启动流程和业务路由。先看本文定位，再读 [开发与验证](docs/development.md)；自动化协作者同时遵循 [AGENTS.md](AGENTS.md)。
 
 ## 从需求找到代码

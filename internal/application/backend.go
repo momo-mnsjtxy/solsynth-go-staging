@@ -77,6 +77,7 @@ type Config struct {
 	SteamPresence           activitypg.ProviderObserver
 	LastFMPresence          activitypg.ProviderObserver
 	ProgressionSourcePoints *progressionpg.SourcePointConfig
+	CheckInStreakGold       *progressionpg.SourcePointConfig
 	ProgressionCheckIn      *progressionpg.CheckInPolicy
 	ProgressionCaptcha      signin.Captcha
 	NotificationDevices     *notificationpg.DeviceConfig
@@ -616,6 +617,9 @@ func (b *Backend) ProcessDue(ctx context.Context, limit int) (int, error) {
 	pointCount, pointErr := b.progression.ProcessSourcePoints(ctx, limit)
 	n += pointCount
 	e = errors.Join(e, pointErr)
+	goldCount, goldErr := b.progression.ProcessCheckInStreakGold(ctx, limit)
+	n += goldCount
+	e = errors.Join(e, goldErr)
 	d, de := b.progression.DispatchCompletions(ctx, limit, b.progressionNotifications)
 	if b.tickets != nil {
 		rewards, re := b.tickets.RetryPendingRewards(ctx, limit)

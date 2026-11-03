@@ -144,7 +144,7 @@ func (r *Repository) Secrets(ctx context.Context, s apps.Scope, ref string, req 
 		}
 		// Secret and audit writes can wait. Revalidate the original actor proof
 		// and current owner after those waits, without adding owner locks.
-		if _, e = r.guard.Authorize(ctx, r.db, tx, s.Actor, "developers.apps.secrets.manage"); e != nil {
+		if _, e = r.authorizeWrite(ctx, tx, s.Actor, "developers.apps.secrets.manage"); e != nil {
 			return e
 		}
 		if action != "delete" {

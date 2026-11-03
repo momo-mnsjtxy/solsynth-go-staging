@@ -3,9 +3,34 @@ package posts
 
 import (
 	"encoding/json"
+	"net/http/httptest"
 	"testing"
 	"time"
 )
+
+func TestDraftListingIncludesScheduledOnlyWhenRequested(t *testing.T) {
+	for _, tc := range []struct {
+		query   string
+		include bool
+		invalid bool
+	}{
+		{"", false, false},
+		{"?include_scheduled=false", false, false},
+		{"?include_scheduled=true", true, false},
+		{"?include_scheduled=TRUE", true, false},
+		{"?include_scheduled=wrong", false, true},
+		{"?include_scheduled=true&include_scheduled=false", false, true},
+	} {
+		r := httptest.NewRequest("GET", "/api/posts/drafts"+tc.query, nil)
+		o, e := listOptions(r, true)
+		if (e != nil) != tc.invalid || e == nil && (o.IncludeScheduled != tc.include || !o.Drafts) {
+			t.Fatal(tc.query, o, e)
+		}
+	}
+	if _, e := listOptions(httptest.NewRequest("GET", "/api/posts?include_scheduled=true", nil), false); e == nil {
+		t.Fatal("scheduled draft selector accepted on public post listing")
+	}
+}
 
 func TestScheduledWireProjectionKeepsStoredDraftPrivate(t *testing.T) {
 	now := time.Date(2026, 10, 8, 22, 0, 0, 0, time.UTC)

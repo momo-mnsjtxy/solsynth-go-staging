@@ -185,7 +185,14 @@ func TestPGBackendDomainComposition(t *testing.T) {
 	appRoot := "/develop/private/apps/" + customApp.ID
 	backendCall(t, f.app, "GET", "/develop/apps/"+customApp.Slug, "", "", 200)
 	backendCall(t, f.app, "POST", appRoot+"/board"+appQuery, f.token, `{"key":"weather","name":"Weather","is_enabled":true,"payload_type":"object","renderer_type":"data","required_fields":["temperature"],"field_types":[{"name":"temperature","type":"number"}],"max_payload_bytes":200}`, 200)
-	appSecret := backendDecode[apps.Secret](t, backendCall(t, f.app, "POST", appRoot+"/secrets"+appQuery, f.token, `{"expires_in":"01:00:00"}`, 201))
+	deniedSecret := backendCall(t, f.app, "POST", appRoot+"/secrets"+appQuery, f.token, `{"expires_in":"01:00:00"}`, 403)
+	if !bytes.Contains(deniedSecret.Body.Bytes(), []byte("AUTH_SUDO_REQUIRED")) {
+		t.Fatal(deniedSecret.Body.String())
+	}
+	// Elevate only this credential mutation; the common backend fixture remains
+	// an ordinary session for its existing cross-domain and process tests.
+	credentialToken := pgIssueDeveloperCredential(t, f.db, f.issuer, f.actor, f.config).Token
+	appSecret := backendDecode[apps.Secret](t, backendCall(t, f.app, "POST", appRoot+"/secrets"+appQuery, credentialToken, `{"expires_in":"01:00:00"}`, 201))
 	if appSecret.Secret == nil {
 		t.Fatal("no one-time app secret")
 	}
@@ -303,9 +310,15 @@ func TestPGBackendHTTPProcessRestart(t *testing.T) {
 	p.call(t, "GET", "/readyz", "", 200, nil)
 	p.call(t, "GET", "/.well-known/badges", "", 200, nil)
 	p.call(t, "GET", "/wallet/wallets/exchange", "", 200, headers)
+	p.call(t, "GET", "/stargate/wallets/exchange", "", 200, headers)
 	p.call(t, "GET", "/passport/accounts/me/board", "", 401, nil)
+	p.call(t, "GET", "/stargate/accounts/me/board", "", 401, nil)
 	body := fmt.Sprintf(`[{"id":%q,"widget_key":"memo","payload":{"content":"backend-process-restart"}}]`, authorityUUID(t))
 	p.call(t, "PUT", "/passport/accounts/me/board", body, 200, headers)
+	aliasedBoard, _ := p.call(t, "GET", "/stargate/accounts/me/board", "", 200, headers)
+	if !bytes.Contains(aliasedBoard, []byte("backend-process-restart")) {
+		t.Fatal("Stargate board does not share the canonical account data")
+	}
 	p.call(t, "PATCH", "/passport/accounts/me", `{"bio":"process-profile-restart"}`, 200, headers)
 	walletRaw, _ := p.call(t, "POST", "/wallet/wallets", `{"name":"Process wallet"}`, 200, headers)
 	var savedWallet wallet.Wallet
@@ -419,7 +432,12 @@ func TestPGBackendHTTPProcessRestart(t *testing.T) {
 	if !bytes.Contains(walletAfter, []byte("Process wallet")) {
 		t.Fatal("wallet lost across process restart")
 	}
+	aliasedWallet, _ := p.call(t, "GET", "/stargate/wallets/"+savedWallet.ID, "", 200, headers)
+	if !bytes.Equal(walletAfter, aliasedWallet) {
+		t.Fatal("Stargate wallet diverged from its canonical wallet after restart")
+	}
 	p.call(t, "GET", "/wallet/wallets/"+savedWallet.ID, "", 403, map[string]string{"Authorization": "Bearer " + f.otherToken})
+	p.call(t, "GET", "/stargate/wallets/"+savedWallet.ID, "", 403, map[string]string{"Authorization": "Bearer " + f.otherToken})
 	postAfter, _ := p.call(t, "GET", "/sphere/posts/"+savedPost.ID, "", 200, nil)
 	if !bytes.Contains(postAfter, []byte("process-post-restart")) {
 		t.Fatal("post lost across process restart")
@@ -428,6 +446,7 @@ func TestPGBackendHTTPProcessRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.call(t, "GET", "/passport/accounts/me/board", "", 403, headers)
+	p.call(t, "GET", "/stargate/accounts/me/board", "", 403, headers)
 	p.stop()
 }
 

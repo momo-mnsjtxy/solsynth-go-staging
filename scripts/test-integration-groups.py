@@ -341,6 +341,11 @@ assert first == second
 local_review = read_json(ROOT / 'docs/local-disposable-pg-review.json')
 reviewed_fixture_changes = {'fixture-source:' + entry['source'] for entry in local_review['reviewed_changes']
                            if entry['source'].startswith('tests/integration/')}
+# A later review preserves the old inventory and accepts explicit fixture
+# changes without erasing the refresh tool's pending-review observations.
+upstream_review = read_json(ROOT / 'docs/upstream-sync-fixture-review-20261102.json')
+reviewed_fixture_changes |= {'fixture-source:' + entry['source'] for entry in upstream_review['reviewed_changes']
+                            if entry['source'].startswith('tests/integration/')}
 reviewed_function_changes = {'dependency:' + entry['test'] for section in ('restart_cases', 'composed_host_cases')
                             for entry in audit[section]
                             if functions[entry['test']]['function_sha256'] != entry['function_sha256']}

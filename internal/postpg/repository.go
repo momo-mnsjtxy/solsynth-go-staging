@@ -551,6 +551,9 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	if o.Drafts && actor == "" {
 		return nil, 0, posts.ErrUnauthenticated
 	}
+	if o.IncludeScheduled && !o.Drafts {
+		return nil, 0, posts.ErrInvalid
+	}
 	tx, e := r.readList(ctx, actor, o.Pinned != nil)
 	if e != nil {
 		return nil, 0, e
@@ -601,10 +604,19 @@ func (r *Repository) List(ctx context.Context, actor string, o posts.ListOptions
 	order := `p.published_at`
 	if o.Drafts {
 		where += ` AND p.drafted_at IS NOT NULL AND ` + EditorPredicateWithVisibility(r.visibility)
+		// Pending schedules use canonical draft storage so clock passage alone
+		// cannot publish them. Match the wire distinction in the draft listing:
+		// scheduled entries are opt-in, while failed/cancelled intents are drafts.
+		if r.scheduling && !o.IncludeScheduled {
+			where += ` AND NOT EXISTS(SELECT 1 FROM owned_post_schedules schedule WHERE schedule.post_id=p.id AND schedule.state='pending')`
+		}
 		if r.visibility != nil {
 			where += ` AND NOT (` + r.visibility.PostBlockedSQL() + `)`
 		}
-		order = `p.drafted_at`
+		order = `COALESCE(p.drafted_at,p.updated_at)`
+		if o.IncludeScheduled {
+			order = `p.updated_at`
+		}
 	} else {
 		where += ` AND ` + ListingPredicate(r.visibility)
 	}

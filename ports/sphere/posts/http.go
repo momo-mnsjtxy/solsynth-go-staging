@@ -279,11 +279,19 @@ func listOptions(r *http.Request, drafts bool) (ListOptions, error) {
 	allowed := []string{"offset", "take", "pub", "realm"}
 	if !drafts {
 		allowed = append(allowed, "type", "order", "orderDesc", "pinned")
+	} else {
+		allowed = append(allowed, "include_scheduled")
 	}
 	if e = query(q, allowed...); e != nil {
 		return ListOptions{}, e
 	}
 	o := ListOptions{Take: 20, Publisher: q.Get("pub"), Realm: strings.TrimSpace(q.Get("realm")), Drafts: drafts}
+	if q.Has("include_scheduled") {
+		o.IncludeScheduled, e = strconv.ParseBool(q.Get("include_scheduled"))
+		if e != nil {
+			return o, ErrInvalid
+		}
+	}
 	if strings.Contains(o.Publisher, ",") {
 		return o, ErrUnsupported
 	}

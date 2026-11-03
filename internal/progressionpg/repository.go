@@ -25,6 +25,7 @@ type TransactionGuard interface {
 }
 type Repository struct {
 	points        SourcePointPayout
+	checkinGold   SourcePointPayout
 	checkinPolicy *CheckInPolicy
 	checkinPerks  CheckInPerks
 	db            *sql.DB

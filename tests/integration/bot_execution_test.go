@@ -229,6 +229,12 @@ func TestPGBotExecutionMLSOpaquePayload(t *testing.T) {
 	query(t, f.db, `INSERT INTO owned_mls_groups(id,room_id,epoch,state_version)VALUES($1,$2,0,1)`, group, f.room.ID)
 	query(t, f.db, `INSERT INTO owned_mls_memberships(group_id,device_id,member_id,membership_since,state,epoch)VALUES($1,$2,$3,$4,'active',0)`, group, device, botMember, botJoined)
 	query(t, f.db, `INSERT INTO owned_mls_memberships(group_id,device_id,member_id,membership_since,state,epoch)VALUES($1,$2,$3,$4,'active',0)`, group, actorDevice, actorMember, actorJoined)
+	// Changing this room from plain text to MLS invalidates the original
+	// enrollment's empty device binding. Explicitly consent to this exact active
+	// device set before testing delivery; adding a replacement later must revoke it.
+	if _, e := f.repo.Enrollment(f.ctx, f.scope, f.bot.ID, f.room.ID, &bots.EnrollmentRequest{Adapter: f.adapter.Name(), ExpiresAt: time.Now().Add(40 * time.Minute)}, "set"); e != nil {
+		t.Fatal("MLS enrollment consent", e)
+	}
 	version := int64(1)
 	encryption := &rooms.EncryptionMeta{StateVersion: &version, Ciphertext: "Y2lwaGVydGV4dA==", Header: "aGVhZGVy", Scheme: "chat.mls.v2", Epoch: 0}
 	clientID := "mls-bot-execution"
@@ -536,6 +542,11 @@ func TestPGBotEnrollmentRenewalRechecksMLSDevice(t *testing.T) {
 	query(t, f.db, `INSERT INTO owned_mls_devices(id,account_id)VALUES($1,$2),($3,$2),($4,$5)`, device, f.bot.Account.ID, replacement, actorDevice, f.actor)
 	query(t, f.db, `INSERT INTO owned_mls_groups(id,room_id,epoch,state_version)VALUES($1,$2,0,1)`, group, f.room.ID)
 	query(t, f.db, `INSERT INTO owned_mls_memberships(group_id,device_id,member_id,membership_since,state,epoch)VALUES($1,$2,$3,$4,'active',0),($1,$5,$3,$4,'active',0),($1,$6,$7,$8,'active',0)`, group, device, botMember, botJoined, replacement, actorDevice, actorMember, actorJoined)
+	// The setup changed the room and complete MLS membership set after the
+	// common plain-room consent; bind explicit consent before renewal policy.
+	if _, e := f.repo.Enrollment(f.ctx, f.scope, f.bot.ID, f.room.ID, &bots.EnrollmentRequest{Adapter: f.adapter.Name(), ExpiresAt: time.Now().Add(40 * time.Minute)}, "set"); e != nil {
+		t.Fatal("MLS renewal consent", e)
+	}
 	botSetRenewalDue(t, f)
 	query(t, f.db, `UPDATE owned_mls_devices SET revoked_at=clock_timestamp() WHERE id=$1`, device)
 	if n, e := f.repo.ProcessEnrollmentRenewalsDue(f.ctx, 100); e != nil || n != 1 {
@@ -570,6 +581,11 @@ func TestPGBotEnrollmentRenewalRejectsMLSMembershipIncarnation(t *testing.T) {
 	query(t, f.db, `INSERT INTO owned_mls_devices(id,account_id)VALUES($1,$2),($3,$4)`, device, f.bot.Account.ID, actorDevice, f.actor)
 	query(t, f.db, `INSERT INTO owned_mls_groups(id,room_id,epoch,state_version)VALUES($1,$2,0,1)`, group, f.room.ID)
 	query(t, f.db, `INSERT INTO owned_mls_memberships(group_id,device_id,member_id,membership_since,state,epoch)VALUES($1,$2,$3,$4,'active',0),($1,$5,$6,$7,'active',0)`, group, device, botMember, botJoined, actorDevice, actorMember, actorJoined)
+	// The setup changed the room and complete MLS membership set after the
+	// common plain-room consent; bind explicit consent before renewal policy.
+	if _, e := f.repo.Enrollment(f.ctx, f.scope, f.bot.ID, f.room.ID, &bots.EnrollmentRequest{Adapter: f.adapter.Name(), ExpiresAt: time.Now().Add(40 * time.Minute)}, "set"); e != nil {
+		t.Fatal("MLS renewal consent", e)
+	}
 	botSetRenewalDue(t, f)
 	query(t, f.db, `UPDATE owned_mls_memberships SET epoch=epoch+1 WHERE group_id=$1 AND device_id=$2`, group, device)
 	if n, e := f.repo.ProcessEnrollmentRenewalsDue(f.ctx, 100); e != nil || n != 1 {
@@ -650,10 +666,10 @@ func TestPGBotExecutionEnrollmentScopesAndHTTP(t *testing.T) {
 	f := newBotExecutionFixture(t)
 	root := "/api/private/bots/" + f.bot.ID + "/execution/" + f.room.ID + f.query
 	backendCall(t, f.http, "GET", root, f.token, "", 200)
-	renewAt := time.Now().Add(20 * time.Minute).UTC().Format(time.RFC3339Nano)
+	renewAt := time.Now().Add(20 * time.Minute).UTC().Truncate(time.Microsecond).Format(time.RFC3339Nano)
 	backendCall(t, f.http, "POST", strings.Replace(root, f.query, "/renew"+f.query, 1), f.token, `{"expires_at":"`+renewAt+`"}`, 200)
 	renewed, e := f.repo.Enrollment(f.ctx, f.scope, f.bot.ID, f.room.ID, nil, "read")
-	if e != nil || renewed.ExpiresAt.Format(time.RFC3339Nano) != renewAt || renewed.Generation < 2 {
+	if e != nil || renewed.ExpiresAt.UTC().Format(time.RFC3339Nano) != renewAt || renewed.Generation < 2 {
 		t.Fatal("renewal", renewed, e)
 	}
 	backendCall(t, f.http, "GET", root, f.otherToken, "", 403)
@@ -679,13 +695,39 @@ func TestPGBotExecutionEnrollmentScopesAndHTTP(t *testing.T) {
 	if e := authoritypg.New(f.db).ReplacePolicy(f.ctx, f.actor, []authority.Rule{{Pattern: "*"}}, nil); e != nil {
 		t.Fatal(e)
 	}
+	// Restoring permissions does not restore a prior sudo receipt. Complete
+	// the real two-factor flow before creating the next bot for adapter isolation.
+	issuer, e := authority.New(authoritypg.New(f.db), f.config)
+	if e != nil {
+		t.Fatal(e)
+	}
+	pgElevateDeveloperSession(t, f.db, issuer, f.actor, f.token, f.config)
 	second := botCreate(t, f.botFixture, "bound-adapter")
 	if _, e := f.repo.Enrollment(f.ctx, f.scope, second.ID, f.room.ID, &bots.EnrollmentRequest{Adapter: f.adapter.Name(), ExpiresAt: time.Now().Add(10 * time.Minute)}, "set"); !errors.Is(e, bots.ErrUnsupported) {
 		t.Fatal("cross-bot adapter", e)
 	}
+	if n := botCount(t, f.botFixture, `SELECT count(*) FROM owned_bots WHERE id=$1 AND app_id=$2 AND deleted_at IS NULL AND is_active`, f.bot.ID, f.scope.App); n != 1 {
+		t.Fatal("guarded-room bot/app fixture missing", n)
+	}
+	if n := botCount(t, f.botFixture, `SELECT count(*) FROM owned_chat_realm_links WHERE room_id=$1`, f.room.ID); n != 0 {
+		t.Fatal("guarded-room fixture unexpectedly has a realm binding", n)
+	}
+	executionState := func() string {
+		var state string
+		if e := f.db.QueryRow(`SELECT jsonb_build_object('enrollment',(SELECT to_jsonb(e) FROM owned_bot_enrollments e WHERE bot_id=$1 AND room_id=$2),'outbox',(SELECT COALESCE(jsonb_agg(to_jsonb(o) ORDER BY o.id),'[]'::jsonb) FROM owned_bot_message_outbox o WHERE bot_id=$1 AND room_id=$2))::text`, f.bot.ID, f.room.ID).Scan(&state); e != nil {
+			t.Fatal(e)
+		}
+		return state
+	}
+	beforeGuard := executionState()
+	// Guarded groups require a canonical realm binding. Valid realm execution is
+	// covered above; a bare guard flag must not expose the existing enrollment.
 	query(t, f.db, `UPDATE chat_rooms SET owned_relation_guard=true WHERE id=$1`, f.room.ID)
-	if _, e := f.repo.Enrollment(f.ctx, f.scope, f.bot.ID, f.room.ID, nil, "read"); !errors.Is(e, bots.ErrUnsupported) {
-		t.Fatal("guarded room", e)
+	if _, e := f.repo.Enrollment(f.ctx, f.scope, f.bot.ID, f.room.ID, nil, "read"); !errors.Is(e, bots.ErrNotFound) {
+		t.Fatal("guarded room missing realm binding", e)
+	}
+	if executionState() != beforeGuard {
+		t.Fatal("guarded room rejection changed enrollment or message outbox")
 	}
 	query(t, f.db, `UPDATE chat_rooms SET owned_relation_guard=false,encryption_mode=3 WHERE id=$1`, f.room.ID)
 	if _, e := f.repo.RoomCommands(f.otherCtx, f.other, f.room.ID); !errors.Is(e, bots.ErrUnsupported) {
@@ -710,7 +752,7 @@ func TestPGBotExecutionFreshRevocationAndMembership(t *testing.T) {
 			case "forwarded_reference":
 				query(t, f.db, `UPDATE chat_messages SET forwarded_message_id=id WHERE id=$1`, m.ID)
 			case "encryption_metadata":
-				query(t, f.db, `UPDATE chat_messages SET meta='{"encryption_meta":{"ciphertext":"synthetic opaque"}}'::jsonb WHERE id=$1`, m.ID)
+				query(t, f.db, `UPDATE chat_messages SET encryption_meta='{"ciphertext":"synthetic opaque"}'::jsonb WHERE id=$1`, m.ID)
 			case "app_draft":
 				query(t, f.db, `UPDATE owned_custom_apps SET status=0 WHERE id=$1`, f.app.ID)
 			case "issuer_session_scopes", "sender_session_scopes":

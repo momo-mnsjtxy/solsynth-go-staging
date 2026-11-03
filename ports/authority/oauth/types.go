@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/develop/apps"
-	"sort"
 	"strings"
 	"time"
 )
@@ -103,8 +102,23 @@ func Scopes(raw string) ([]string, error) {
 	if !seen["openid"] || len(parts) > 32 {
 		return nil, ErrScope
 	}
-	sort.Strings(parts)
-	return parts, nil
+	resolved, e := authority.ExpandOAuthScopes(parts)
+	if e != nil {
+		return nil, ErrScope
+	}
+	return resolved, nil
+}
+
+// ScopeAllowed permits a concrete consent scope only when the app's configured
+// exact grant or resource wildcard covers it. Other client-only scope strings
+// cannot widen the OAuth signing contract.
+func ScopeAllowed(list []string, required string) bool {
+	for _, allowed := range list {
+		if authority.OAuthScopeCovers(allowed, required) {
+			return true
+		}
+	}
+	return false
 }
 func Contains(list []string, s string) bool {
 	for _, v := range list {
@@ -166,7 +180,7 @@ func Validate(r Request, a apps.App) ([]string, error) {
 		return nil, e
 	}
 	for _, scope := range s {
-		if !Contains(c.AllowedScopes, scope) {
+		if !ScopeAllowed(c.AllowedScopes, scope) {
 			return nil, ErrScope
 		}
 	}

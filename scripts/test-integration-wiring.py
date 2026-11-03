@@ -110,6 +110,8 @@ REQUIRED_SCHEMAS = {
     "internal/messagerpg/testdata/schema.sql",
     "internal/taxonomypg/testdata/schema.sql",
  "internal/authoritypg/assurance_schema.sql",
+ "internal/authoritypg/sudo_schema.sql",
+ "internal/signinpg/sudo_schema.sql",
  "internal/signinpg/payment_pin_schema.sql",
  "internal/signinpg/factor_setup_schema.sql",
  "internal/walletpg/pin_schema.sql",
@@ -137,6 +139,8 @@ def check(runner, read_schema=None):
     if set(schemas) != REQUIRED_SCHEMAS or len(schemas) != len(REQUIRED_SCHEMAS):
         raise ValueError("missing, unexpected or duplicate disposable schema install")
     for schema, dependencies in {
+        "internal/authoritypg/sudo_schema.sql": ("internal/authoritypg/schema.sql",),
+        "internal/signinpg/sudo_schema.sql": ("internal/signinpg/schema.sql", "internal/authoritypg/sudo_schema.sql"),
         "internal/authoritypg/stream_ticket_schema.sql": ("internal/authoritypg/schema.sql",),
         "internal/affiliationpg/paid_schema.sql": ("internal/affiliationpg/schema.sql", "internal/walletpg/schema.sql"),
         "internal/botpg/schema.sql": ("internal/apppg/schema.sql", "internal/mediapg/schema.sql"),

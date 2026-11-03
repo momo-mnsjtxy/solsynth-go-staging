@@ -181,6 +181,36 @@ func TestPGBlogCreationEditingMediaAndVisibility(t *testing.T) {
 	if e != nil || p.Meta != nil {
 		t.Fatal(p, e)
 	}
+	// Native Solian URLs keep the full blog permission/domain boundary, but
+	// never fetch a second card for a page rendered directly by the client.
+	nativeURL := "https://solian.app/posts/" + f.actor
+	before := f.previews.Load()
+	if _, e = f.posts.Create(f.ctx, f.actor, f.pub.ID, posts.Patch{Type: postInt(posts.Blog), Content: &nativeURL}); !errors.Is(e, blogs.ErrUnverified) || f.previews.Load() != before {
+		t.Fatal("native link bypassed domain verification", e, f.previews.Load())
+	}
+	f.configBlog.Verifier = blogVerifyFunc(func(_ context.Context, d, name string) (bool, error) {
+		return d == "solian.app" && name == f.pub.Name, nil
+	})
+	f = blogPool(t, f)
+	if _, e = f.domains.Add(f.ctx, f.actor, f.pub.ID, "solian.app"); e != nil {
+		t.Fatal(e)
+	}
+	native := createBlog(t, f, posts.Patch{Content: &nativeURL, Title: &custom})
+	if native.Meta != nil || native.Title == nil || *native.Title != custom || f.previews.Load() != before {
+		t.Fatal("native link fetched duplicate metadata", native, f.previews.Load())
+	}
+	read, e = f.posts.Get(context.Background(), "", native.ID)
+	if e != nil || read.Meta != nil || read.Content != nativeURL {
+		t.Fatal("native blog projection did not persist", read, e)
+	}
+	future := scheduleFuture(t, f.db)
+	pending := createBlog(t, f, posts.Patch{Content: &nativeURL, PublishedAt: &future})
+	scheduleDue(t, f.db, pending)
+	processSchedule(t, f.postMediaFixture)
+	scheduleState(t, f.db, pending.Schedule.ID, "published")
+	if published, e := f.posts.Get(context.Background(), "", pending.ID); e != nil || published.Meta != nil || f.previews.Load() != before {
+		t.Fatal("native scheduled publication required preview", published, e, f.previews.Load())
+	}
 }
 func TestPGBlogPreviewFailureAndRevocationNeverCommit(t *testing.T) {
 	f := newBlogFixture(t)

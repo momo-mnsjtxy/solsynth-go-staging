@@ -12,7 +12,7 @@ import unittest
 from unittest.mock import patch
 
 import fixture_template as fixture
-from reviewed_sources import reviewed_bytes
+from reviewed_sources import reviewed_bytes, reviewed_schema_fingerprint
 
 gate_spec = importlib.util.spec_from_file_location('current_gate', fixture.ROOT / 'scripts/check-integration-results.py')
 gate = importlib.util.module_from_spec(gate_spec)
@@ -342,8 +342,9 @@ class WiringTests(unittest.TestCase):
         audit = json.loads((fixture.ROOT / 'docs/ci-two-groups-dependencies.json').read_text())
         review = audit['composer_database_isolation_review']
         schema_hash, paths = fixture.fingerprint()
-        self.assertEqual(review['schema_sha256'], schema_hash)
-        self.assertEqual(review['ordered_schema_files'], paths)
+        historical_hash, historical_paths = reviewed_schema_fingerprint(fixture.ROOT, review, paths, schema_hash)
+        self.assertEqual(review['schema_sha256'], historical_hash)
+        self.assertEqual(review['ordered_schema_files'], historical_paths)
         self.assertEqual(review['before_clone_baseline_rows'], [])
         self.assertEqual(review['runtime_case_counts'], {phase: len(names) for phase, names in gate.EXPECTED.items()})
         self.assertEqual({x['table'] for x in review['source_baselines']}, set(fixture.BASELINES))

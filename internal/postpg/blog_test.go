@@ -44,3 +44,22 @@ func TestBlogMetadataRequiresPersistedProjectionAndEffectiveType(t *testing.T) {
 		t.Fatal("non-blog consumed embeds", e)
 	}
 }
+
+func TestNativeBlogMetadataDoesNotDuplicateClientCard(t *testing.T) {
+	p := posts.Post{Type: posts.Blog, Content: "https://solian.app/posts/synthetic"}
+	if e := decodeBlog(&p, nil); e != nil || p.Meta != nil {
+		t.Fatal("native blog required a fetched card", p, e)
+	}
+	old := posts.BlogMetadata(reader.Link{URL: p.Content, Title: "Previously fetched card"})
+	b, e := encodeBlog(posts.Post{Type: posts.Blog, Content: p.Content, Meta: old})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = decodeBlog(&p, b.([]byte)); e != nil || p.Meta != nil {
+		t.Fatal("old native link preview still rendered", p, e)
+	}
+	p.Content = "https://solian.app.foreign.example/posts/synthetic"
+	if e = decodeBlog(&p, nil); !errors.Is(e, blogs.ErrUnavailable) {
+		t.Fatal("foreign blog bypassed persisted projection", p, e)
+	}
+}

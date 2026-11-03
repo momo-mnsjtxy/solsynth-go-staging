@@ -15,6 +15,19 @@ type blogRepo struct {
 	calls int
 }
 
+func TestNativeSolianLinksUseHostBoundary(t *testing.T) {
+	for _, raw := range []string{"https://solian.app/posts/1", "https://SOLIAN.APP/posts/1", "https://www.solian.app/", "https://sub.solian.app/posts/1"} {
+		if !IsNativeSolianLink(raw) {
+			t.Fatal("native Solian link was not recognized", raw)
+		}
+	}
+	for _, raw := range []string{"https://solian.app.evil.example/", "https://evils olian.app/", "https://evilsolian.app/", "https://solian.app@evil.example/", "https://solian.app.evil.example/solian.app", "https://other.example/?url=https://solian.app/", "javascript://solian.app/", "/solian.app/posts/1"} {
+		if IsNativeSolianLink(raw) {
+			t.Fatal("foreign or malformed link treated as native", raw)
+		}
+	}
+}
+
 func (r *blogRepo) CheckBlogPermission(_ context.Context, actor, pub, url string) (blogs.Permission, error) {
 	r.calls++
 	return blogs.Permission{CanCreate: true, Domain: "blog.example", PublisherName: pub}, nil

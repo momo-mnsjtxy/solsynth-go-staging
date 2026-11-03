@@ -177,7 +177,7 @@ func (r *Repository) within(ctx context.Context, s apps.Scope, target, permissio
 	if permission == "" {
 		_, e = r.guard.Authenticate(ctx, r.db, tx, s.Actor)
 	} else {
-		_, e = r.guard.Authorize(ctx, r.db, tx, s.Actor, permission)
+		_, e = r.authorizeWrite(ctx, tx, s.Actor, permission)
 	}
 	if e != nil {
 		return e
@@ -218,7 +218,7 @@ func (r *Repository) within(ctx context.Context, s apps.Scope, target, permissio
 		if permission == "" {
 			_, e = r.guard.Authenticate(ctx, r.db, tx, s.Actor)
 		} else {
-			_, e = r.guard.Authorize(ctx, r.db, tx, s.Actor, permission)
+			_, e = r.authorizeWrite(ctx, tx, s.Actor, permission)
 		}
 		if e != nil {
 			return e

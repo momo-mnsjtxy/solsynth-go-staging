@@ -45,6 +45,19 @@ func (g *TransactionGuard) Authorize(ctx context.Context, db *sql.DB, tx *sql.Tx
 	return g.check(ctx, db, tx, actor, true, permissions, true)
 }
 
+// AuthorizeSudo preserves ordinary policy checks before requiring live, canonical
+// credential assurance in the same locked transaction. Call again after domain
+// lock waits and before commit, just like Authorize.
+func (g *TransactionGuard) AuthorizeSudo(ctx context.Context, db *sql.DB, tx *sql.Tx, actor string, permissions ...string) (authority.Principal, error) {
+	fresh, err := g.Authorize(ctx, db, tx, actor, permissions...)
+	if err != nil {
+		return authority.Principal{}, err
+	}
+	envelope := ctx.Value(transactionProofKey{}).(transactionProof)
+	snapshot := &transaction{tx: tx, ctx: ctx, account: fresh.Account, readOnly: true}
+	return g.verifier.RequireSudoTransaction(ctx, envelope.proof, snapshot)
+}
+
 // AuthorizeWithGrant requires a current grant for one sensitive permission,
 // preserving the same original-proof, pool, isolation and account-lock checks.
 func (g *TransactionGuard) AuthorizeWithGrant(ctx context.Context, db *sql.DB, tx *sql.Tx, actor, requiredGrant string, permissions ...string) (authority.Principal, error) {

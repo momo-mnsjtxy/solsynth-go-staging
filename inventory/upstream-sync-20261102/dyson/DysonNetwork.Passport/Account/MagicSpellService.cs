@@ -1,0 +1,319 @@
+using System.Security.Cryptography;
+using System.Text.Json;
+using DysonNetwork.Passport.Mailer;
+using DysonNetwork.Passport.Examination;
+using DysonNetwork.Shared.Cache;
+using DysonNetwork.Shared.EventBus;
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Queue;
+using DysonNetwork.Shared.Registry;
+using Microsoft.EntityFrameworkCore;
+using DysonNetwork.Shared.Localization;
+using DysonNetwork.Shared.Proto;
+using NodaTime;
+
+namespace DysonNetwork.Passport.Account;
+
+public class MagicSpellService(
+    AppDatabase db,
+    IConfiguration configuration,
+    ILogger<MagicSpellService> logger,
+    ILocalizationService localizer,
+    EmailService email,
+    ICacheService cache,
+    IEventBus eventBus,
+    RemoteAccountContactService remoteContacts,
+    DyAccountService.DyAccountServiceClient remoteAccounts,
+    TestService tests
+)
+{
+    private static string? GetMetaString(SnMagicSpell spell, string key)
+    {
+        if (!spell.Meta.TryGetValue(key, out var value)) return null;
+
+        return value switch
+        {
+            string text => text,
+            JsonElement { ValueKind: JsonValueKind.String } element => element.GetString(),
+            _ => null
+        };
+    }
+
+    public async Task<SnMagicSpell> CreateMagicSpell(
+        SnAccount account,
+        MagicSpellType type,
+        Dictionary<string, object> meta,
+        Instant? expiredAt = null,
+        Instant? affectedAt = null,
+        string? code = null,
+        bool preventRepeat = false
+    )
+    {
+        if (preventRepeat)
+        {
+            var now = SystemClock.Instance.GetCurrentInstant();
+            var existingSpell = await db.MagicSpells
+                .Where(s => s.AccountId == account.Id)
+                .Where(s => s.Type == type)
+                .Where(s => s.ExpiresAt == null || s.ExpiresAt > now)
+                .FirstOrDefaultAsync();
+            if (existingSpell is not null)
+                return existingSpell;
+        }
+
+        var spellWord = code ?? _GenerateRandomString(128);
+        var spell = new SnMagicSpell
+        {
+            Spell = spellWord,
+            Type = type,
+            ExpiresAt = expiredAt,
+            AffectedAt = affectedAt,
+            AccountId = account.Id,
+            Meta = meta
+        };
+
+        db.MagicSpells.Add(spell);
+        await db.SaveChangesAsync();
+
+        return spell;
+    }
+
+    private const string SpellNotifyCacheKeyPrefix = "spells:notify:";
+
+    public async Task NotifyMagicSpell(SnMagicSpell spell, bool bypassVerify = false)
+    {
+        var cacheKey = SpellNotifyCacheKeyPrefix + spell.Id;
+        var (found, _) = await cache.GetAsyncWithStatus<bool?>(cacheKey);
+        if (found)
+        {
+            logger.LogInformation("Skip sending magic spell {SpellId} due to already sent.", spell.Id);
+            return;
+        }
+
+        if (!spell.AccountId.HasValue)
+            throw new ArgumentException("Spell is missing account id.");
+
+        string recipient;
+        if (spell.Type == MagicSpellType.ContactVerification)
+        {
+            var contactMethod = GetMetaString(spell, "contact_method");
+            if (string.IsNullOrWhiteSpace(contactMethod))
+                throw new InvalidOperationException("Contact method is not found.");
+
+            recipient = contactMethod;
+        }
+        else
+        {
+            var contacts = await remoteContacts.ListContactsAsync(
+                spell.AccountId.Value,
+                AccountContactType.Email,
+                verifiedOnly: !bypassVerify
+            );
+            recipient = contacts
+                .OrderByDescending(c => c.IsPrimary)
+                .Select(c => c.Content)
+                .FirstOrDefault() ?? throw new ArgumentException("Account has no contact method that can use");
+        }
+
+        var account = await remoteAccounts.GetAccountAsync(new DyGetAccountRequest
+        {
+            Id = spell.AccountId.Value.ToString()
+        });
+
+        var link = $"{configuration.GetValue<string>("SiteUrl")}/spells/{Uri.EscapeDataString(spell.Spell)}";
+
+        logger.LogInformation("Sending magic spell... {Link}", link);
+
+        var accountLanguage = account.Language;
+        var recipientName = string.IsNullOrWhiteSpace(account.Nick) ? account.Name : account.Nick;
+
+        try
+        {
+            switch (spell.Type)
+            {
+                case MagicSpellType.AccountActivation:
+                case MagicSpellType.ContactVerification:
+                    await email.SendTemplatedEmailAsync(
+                        recipientName,
+                        recipient,
+                        localizer.Get("contractMethodVerificationTitle", accountLanguage),
+                        "ContactVerification",
+                        new { nick = recipientName, link },
+                        accountLanguage
+                    );
+                    break;
+                case MagicSpellType.AccountRemoval:
+                    await email.SendTemplatedEmailAsync(
+                        recipientName,
+                        recipient,
+                        localizer.Get("emailAccountDeletionTitle", accountLanguage),
+                        "AccountDeletion",
+                        new { nick = recipientName, link },
+                        accountLanguage
+                    );
+                    break;
+                case MagicSpellType.AuthPasswordReset:
+                    await email.SendTemplatedEmailAsync(
+                        recipientName,
+                        recipient,
+                        localizer.Get("passwordResetTitle", accountLanguage),
+                        "PasswordReset",
+                        new { nick = recipientName, link },
+                        accountLanguage
+                    );
+                    break;
+                case MagicSpellType.AccountDeactivation:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            await cache.SetAsync(cacheKey, true, TimeSpan.FromMinutes(5));
+        }
+        catch (Exception err)
+        {
+            logger.LogError($"Error sending magic spell (${spell.Spell})... {err}");
+        }
+    }
+
+    public async Task ResendMagicSpell(SnMagicSpell spell, bool bypassVerify = true)
+    {
+        await cache.RemoveAsync(SpellNotifyCacheKeyPrefix + spell.Id);
+        await NotifyMagicSpell(spell, bypassVerify);
+    }
+
+    public async Task<IReadOnlyList<string>> ApplyMagicSpell(SnMagicSpell spell)
+    {
+        var publishedEventTypes = new List<string>();
+        AccountContactVerifiedEvent? accountContactVerifiedEvent = null;
+        AccountRemovalConfirmedEvent? accountRemovalConfirmedEvent = null;
+
+        switch (spell.Type)
+        {
+            case MagicSpellType.AuthPasswordReset:
+                throw new ArgumentException(
+                    "For password reset spell, please use the ApplyPasswordReset method instead."
+                );
+            case MagicSpellType.AccountRemoval:
+                // Account/auth deletion is now owned by Padlock. Passport only clears profile-domain projections.
+                if (spell.AccountId.HasValue)
+                {
+                    var accountId = spell.AccountId.Value;
+                    await db.AccountStatuses.Where(s => s.AccountId == accountId).ExecuteDeleteAsync();
+                    await db.PresenceActivities.Where(p => p.AccountId == accountId).ExecuteDeleteAsync();
+                    // Relationship rows are owned by Stargate; it purges them when it
+                    // consumes the AccountRemovalConfirmedEvent published below.
+                    await db.Badges.Where(b => b.AccountId == accountId).ExecuteDeleteAsync();
+                    await db.RealmMembers.Where(m => m.AccountId == accountId).ExecuteDeleteAsync();
+                    await db.PermissionGroupMembers
+                        .Where(m => m.Actor == accountId.ToString())
+                        .ExecuteDeleteAsync();
+                }
+                if (spell.AccountId.HasValue)
+                {
+                    accountRemovalConfirmedEvent = new AccountRemovalConfirmedEvent
+                    {
+                        AccountId = spell.AccountId.Value,
+                        SpellId = spell.Id,
+                        ConfirmedAt = SystemClock.Instance.GetCurrentInstant()
+                    };
+                }
+                break;
+            case MagicSpellType.AccountActivation:
+                // Legacy account-activation spells are treated as contact verification only.
+                if (spell.AccountId.HasValue)
+                {
+                    var activatedAt = SystemClock.Instance.GetCurrentInstant();
+                    if (Guid.TryParse(GetMetaString(spell, "contact_id"), out var activationContactId))
+                    {
+                        accountContactVerifiedEvent = new AccountContactVerifiedEvent
+                        {
+                            AccountId = spell.AccountId.Value,
+                            ContactId = activationContactId,
+                            SpellId = spell.Id,
+                            VerifiedAt = activatedAt
+                        };
+                    }
+                }
+                break;
+            case MagicSpellType.ContactVerification:
+                if (!spell.AccountId.HasValue)
+                    throw new InvalidOperationException("Contact verification spell is missing account id.");
+                var contactIdRaw = GetMetaString(spell, "contact_id");
+                if (contactIdRaw is null)
+                    throw new InvalidOperationException("Contact verification spell is missing contact id.");
+                if (!Guid.TryParse(contactIdRaw, out var contactId))
+                    throw new InvalidOperationException("Contact verification spell contains an invalid contact id.");
+
+                accountContactVerifiedEvent = new AccountContactVerifiedEvent
+                {
+                    AccountId = spell.AccountId.Value,
+                    ContactId = contactId,
+                    SpellId = spell.Id,
+                    VerifiedAt = SystemClock.Instance.GetCurrentInstant()
+                };
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        db.Remove(spell);
+        await db.SaveChangesAsync();
+
+        if (accountContactVerifiedEvent is not null)
+        {
+            await eventBus.PublishAsync(AccountContactVerifiedEvent.Type, accountContactVerifiedEvent);
+            publishedEventTypes.Add(AccountContactVerifiedEvent.Type);
+            if (await tests.TryActivateAfterContactVerification(accountContactVerifiedEvent.AccountId))
+                publishedEventTypes.Add(AccountActivatedEvent.Type);
+        }
+        if (accountRemovalConfirmedEvent is not null)
+        {
+            await eventBus.PublishAsync(AccountRemovalConfirmedEvent.Type, accountRemovalConfirmedEvent);
+            publishedEventTypes.Add(AccountRemovalConfirmedEvent.Type);
+        }
+
+        return publishedEventTypes;
+    }
+
+    public async Task<IReadOnlyList<string>> ApplyPasswordReset(SnMagicSpell spell, string newPassword)
+    {
+        if (spell.Type != MagicSpellType.AuthPasswordReset)
+            throw new ArgumentException("This spell is not a password reset spell.");
+        if (!spell.AccountId.HasValue)
+            throw new ArgumentException("Password reset spell is missing account id.");
+        if (string.IsNullOrWhiteSpace(newPassword))
+            throw new ArgumentException("New password cannot be empty.");
+
+        try
+        {
+            await remoteAccounts.ResetPasswordFactorAsync(new DyResetPasswordFactorRequest
+            {
+                AccountId = spell.AccountId.Value.ToString(),
+                NewPassword = newPassword,
+                SpellId = spell.Id.ToString()
+            });
+        }
+        catch (Grpc.Core.RpcException ex)
+        {
+            throw new InvalidOperationException(ex.Status.Detail);
+        }
+
+        db.Remove(spell);
+        await db.SaveChangesAsync();
+        return Array.Empty<string>();
+    }
+
+    private static string _GenerateRandomString(int length)
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        var result = new char[length];
+        using var rng = RandomNumberGenerator.Create();
+        for (var i = 0; i < length; i++)
+        {
+            var bytes = new byte[1];
+            rng.GetBytes(bytes);
+            result[i] = chars[bytes[0] % chars.Length];
+        }
+        return new string(result);
+    }
+}

@@ -1,0 +1,478 @@
+{
+  "version": 1,
+  "dyson": {
+    "repository": "https://src.solsynth.dev/SoSYS/DysonNetwork",
+    "base": "4ee2d0cebb9da8284a92483fee6dce795bf6947c",
+    "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+    "branch": "master"
+  },
+  "solian": {
+    "repository": "https://src.solsynth.dev/SoSYS/Solian",
+    "revision": "c430ad0e4c26bd567071218ec695d02fdc4659de",
+    "branch": "v3"
+  },
+  "scope": "Selected authored implementation, documentation and caller files; no Shared submodule, protocol definitions, generated bindings or migration designers were read or imported. Existing source snapshots remain unchanged.",
+  "files": [
+    {
+      "file": "dyson/DysonNetwork.Develop/Identity/BotAccountController.cs",
+      "upstream_path": "DysonNetwork.Develop/Identity/BotAccountController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "673a42a996aa4075db5560c9e2f6e6529e58c6f7",
+      "sha256": "c5866ee9d0efa497a65c84b20c6727d90f03344a714148659d6a98baabb17a2d",
+      "bytes": 28721
+    },
+    {
+      "file": "dyson/DysonNetwork.Develop/Identity/CustomAppController.cs",
+      "upstream_path": "DysonNetwork.Develop/Identity/CustomAppController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "f4c955af4b70db1b86607cec60f83c8bb246e068",
+      "sha256": "a726499554f8c00330aedfe4358d997ba6bd5ac569ce7bc1fc247f565d4c5c20",
+      "bytes": 37326
+    },
+    {
+      "file": "dyson/DysonNetwork.Develop/Project/DevProjectController.cs",
+      "upstream_path": "DysonNetwork.Develop/Project/DevProjectController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "a20b14aad35452664e2a3923e17872145005673f",
+      "sha256": "bca57591d14e38e12107b8bf514b47f23d384f3616a937e7e92b027d53634fb5",
+      "bytes": 6394
+    },
+    {
+      "file": "dyson/DysonNetwork.Messager/Chat/ChatService.cs",
+      "upstream_path": "DysonNetwork.Messager/Chat/ChatService.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "084c0e22118f854e28bc784d944fd7355120f25a",
+      "sha256": "1682f6baf3577662a29b66fa19913b0d7139a35697c262a4b77884c3dff4db32",
+      "bytes": 119165
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Account/AccountAdminController.cs",
+      "upstream_path": "DysonNetwork.Passport/Account/AccountAdminController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "3325dc00dc510a3ab533350b8c3d9f5995561024",
+      "sha256": "ca2937bd50d8ebb5157e44fdcb7042e47efc477ca3083b4719b9b1b453f0d235",
+      "bytes": 27149
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Account/AccountController.cs",
+      "upstream_path": "DysonNetwork.Passport/Account/AccountController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "60842f98783d3106fc9a4ed2aa3022772d1364aa",
+      "sha256": "3cb8ce95d23aabfc25188978cac2bd8942fe14c9d536a089b876d460f3637960",
+      "bytes": 14718
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Account/AccountEventController.cs",
+      "upstream_path": "DysonNetwork.Passport/Account/AccountEventController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "ee698f556913de14a90629f35fcfd3de8611e8a1",
+      "sha256": "4564b436d28cfaf8d51dc6722eb0c041aa529e1b67a8e27817dcd54cca66326f",
+      "bytes": 23711
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Account/AccountEventService.cs",
+      "upstream_path": "DysonNetwork.Passport/Account/AccountEventService.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "9650f3ce7047ed2f726fb99a8d9f73e28fb6bed0",
+      "sha256": "9f0d8a2103b5d8e0fe52e96e36b3962162df5cda8d88f0e7b733a0faaab26b6d",
+      "bytes": 104083
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Account/AccountServiceGrpc.cs",
+      "upstream_path": "DysonNetwork.Passport/Account/AccountServiceGrpc.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "14c108842fd327aec536990048e8a23b65ada703",
+      "sha256": "1c5bdaabe1ac499e29866b600269e74f3881d4f6c56dafbda48b8cb02dff455e",
+      "bytes": 32222
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Account/MagicSpellService.cs",
+      "upstream_path": "DysonNetwork.Passport/Account/MagicSpellService.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "d735273c26646bdb1381c98a1fb5018ec66c022c",
+      "sha256": "639fd288fc11be2e444683bc64ff563157ca7083eb813b652813e80b9bbff9ce",
+      "bytes": 12614
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Account/Presences/LastFmPresenceService.cs",
+      "upstream_path": "DysonNetwork.Passport/Account/Presences/LastFmPresenceService.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "e60a252ae1ee499de4609b8dda8867588e3f5999",
+      "sha256": "e67ff91ed5bdfd9c343a7a7dad90110a18e76f13007b38f69d1c66795c528f75",
+      "bytes": 14238
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Account/Presences/PresenceUpdateJob.cs",
+      "upstream_path": "DysonNetwork.Passport/Account/Presences/PresenceUpdateJob.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "a23b1349afc6b53cf96afefbdd9ed49723ad3ba0",
+      "sha256": "d5290db53c629bef7d0e61bdff391bd2aa1fb8031993253c4a77dbafb6e4e7e4",
+      "bytes": 3818
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Account/Presences/SteamPresenceService.cs",
+      "upstream_path": "DysonNetwork.Passport/Account/Presences/SteamPresenceService.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "ebafcda96baf91b7cf550859034da3b202a74e1e",
+      "sha256": "cf19bd6e90a8ce265176333e73d80c99d558ddc0253d68afa44e0e712885ffcd",
+      "bytes": 12503
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Account/RelationshipService.cs",
+      "upstream_path": "DysonNetwork.Passport/Account/RelationshipService.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "f602b13d5f5fe67513da5523e4674252eb9f0518",
+      "sha256": "9bac9a4e450e8971c922db9feb83e8928f3399e03ba26f077c8bb1857c7868e3",
+      "bytes": 15084
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Account/StargateProfileClient.cs",
+      "upstream_path": "DysonNetwork.Passport/Account/StargateProfileClient.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "f4baa9eec7d152ea79410265ff1b795304cea287",
+      "sha256": "3457ae9e2c2ebd5ff1ffc940800dc5ddfb816f12306fef68686e01e9d501cb0a",
+      "bytes": 1104
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/AppDatabase.cs",
+      "upstream_path": "DysonNetwork.Passport/AppDatabase.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "7acefe60e1afa97c4c2250ac680982e42e554920",
+      "sha256": "56b788bbbc1f44852ece76c97fef94593e3aac19514aa9d43599d7497d07e1c9",
+      "bytes": 18205
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Program.cs",
+      "upstream_path": "DysonNetwork.Passport/Program.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "de9263267dc72dc3c81e627ebf8758b4aed65793",
+      "sha256": "2174c813ebc2786f15f61af9d11524180317afa0a03966f31f671a02f6cf4786",
+      "bytes": 2098
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Realm/RealmController.cs",
+      "upstream_path": "DysonNetwork.Passport/Realm/RealmController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "2a47aaf55cfc75853ecc6c39f27f99e84aadea00",
+      "sha256": "503e4262bca33c8c091214271c1ea099f1c965246b2ebaee05d92edd487b17b0",
+      "bytes": 58407
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Rewind/PassRewindService.cs",
+      "upstream_path": "DysonNetwork.Passport/Rewind/PassRewindService.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "74cdbd1280e2d91594304ea087e1571685bef98d",
+      "sha256": "e65057c1a37c853fef768ebc94ef937781ce9c985ec3ea8d3fd92de091b0e771",
+      "bytes": 3980
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Startup/ScheduledJobsConfiguration.cs",
+      "upstream_path": "DysonNetwork.Passport/Startup/ScheduledJobsConfiguration.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "2b496104adffd9c31884d79b2856faf279a09d71",
+      "sha256": "285f8df74f86fda7bf9930c52af78121c83fca0958e9938023679de1db1de488",
+      "bytes": 3990
+    },
+    {
+      "file": "dyson/DysonNetwork.Passport/Startup/ServiceCollectionExtensions.cs",
+      "upstream_path": "DysonNetwork.Passport/Startup/ServiceCollectionExtensions.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "e310be55021c1343c126cf05aa2d8e1800f4b436",
+      "sha256": "8c764c496be41e157eedd83d00ddbf3549f1567a9fc22489306436534bb8328d",
+      "bytes": 20907
+    },
+    {
+      "file": "dyson/DysonNetwork.Shared.Tests/Auth/PermissionKeysWalletAdminTests.cs",
+      "upstream_path": "DysonNetwork.Shared.Tests/Auth/PermissionKeysWalletAdminTests.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "a31ab478c29c57ffed172aa51c62a06b51d4c9a4",
+      "sha256": "be9b1b9f83bd0cdf5b3d42ad92f4a93fd71650ce038af0dc0de078caa616ff36",
+      "bytes": 4118
+    },
+    {
+      "file": "dyson/DysonNetwork.Shared.Tests/Auth/PermissionScopeGateTests.cs",
+      "upstream_path": "DysonNetwork.Shared.Tests/Auth/PermissionScopeGateTests.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "db58c96edd25f65095f383f3616093a7c9b62bf2",
+      "sha256": "1ec727fef86d8cd8507307e92738d3281f9d003ae4d6ce9b868d4d0a789e65b2",
+      "bytes": 2183
+    },
+    {
+      "file": "dyson/DysonNetwork.Shared.Tests/Auth/RemotePermissionMiddlewareSudoTests.cs",
+      "upstream_path": "DysonNetwork.Shared.Tests/Auth/RemotePermissionMiddlewareSudoTests.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "648296c8070effec5c26cb3a2a11d773995861d2",
+      "sha256": "b1d62e4029d200c1f730ebcb6ce620adf25bc299fe3aa7a088e131e7aa53f9b7",
+      "bytes": 14137
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere.Tests/Networking/SsrfGuardTests.cs",
+      "upstream_path": "DysonNetwork.Sphere.Tests/Networking/SsrfGuardTests.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "bacfaa5ed3d21103573a669a1926044321111b13",
+      "sha256": "fc01e10db74956e3b0dc83157845d5a6c2c0e06f007664cce4640606e61c621b",
+      "bytes": 5923
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere.Tests/Reader/WebReaderAuthorizationTests.cs",
+      "upstream_path": "DysonNetwork.Sphere.Tests/Reader/WebReaderAuthorizationTests.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "0aae9109b7f8236690b46095a85ba572b9c4b8c0",
+      "sha256": "47fbdfd8871b914f1a74e2d7c951d8ced02006c41952a72cdbcb338557984f91",
+      "bytes": 3250
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere/ActivityPub/ActivityPubFollowController.cs",
+      "upstream_path": "DysonNetwork.Sphere/ActivityPub/ActivityPubFollowController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "5408cf297329538a71fb4f2e4ea5c31db1390f7b",
+      "sha256": "52f1d96e205690cc39327d8f3538d91d8b1067339e4f75c45b1f5c050bea9e0e",
+      "bytes": 16941
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere/AppDatabase.cs",
+      "upstream_path": "DysonNetwork.Sphere/AppDatabase.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "0141973513b9b7df1c729d92cc33567f994f39d1",
+      "sha256": "e5f243c9a75098c5eac863ca1cff7b17f74e4593f6dacf380b9cbfbc4c11f4ee",
+      "bytes": 17256
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere/Networking/SsrfGuard.cs",
+      "upstream_path": "DysonNetwork.Sphere/Networking/SsrfGuard.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "bf38a41276a327db408b7949b8cfcb0ade5783c1",
+      "sha256": "469876cc67ce901e78ff5878a8258c0de68877de4090b012f805bea088a27370",
+      "bytes": 6544
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere/Post/PostActionController.cs",
+      "upstream_path": "DysonNetwork.Sphere/Post/PostActionController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "65bfbefa1aaaf71fa108844e29e75d2552145c0c",
+      "sha256": "989e2bf722ccb057f0b3de578c34ca4bde1405c40ea008bf65680fa00d17a9da",
+      "bytes": 89562
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere/Post/PostController.cs",
+      "upstream_path": "DysonNetwork.Sphere/Post/PostController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "0a344256744708da4bed62452b583cbb316635f9",
+      "sha256": "7b0d69da0b579b2587e66eae06a5556d6219b7a663aea2797c1088193d58299d",
+      "bytes": 91941
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere/Post/PostService.cs",
+      "upstream_path": "DysonNetwork.Sphere/Post/PostService.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "805fb7f003865f60bef7e7889694bf386c89aa5f",
+      "sha256": "22757bf38bc0ae490e19844a5a2f12a122f229204767ebc346fd2a1732dd61d1",
+      "bytes": 142021
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere/Post/ScheduledPostPublishJob.cs",
+      "upstream_path": "DysonNetwork.Sphere/Post/ScheduledPostPublishJob.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "9ec379e378daafabfadf398ef64696646afde0d5",
+      "sha256": "ff6279196378a784536f7fe037319828078546c0bb461456f590740d8f13217e",
+      "bytes": 652
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere/Post/ScheduledPostPublishService.cs",
+      "upstream_path": "DysonNetwork.Sphere/Post/ScheduledPostPublishService.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "d7c8eb9ba88445d5e57d5602bb509bf0fe9de8d9",
+      "sha256": "e47797fefae755520837ab743a93ecaae8ff500df400d12844f07a0d605ac009",
+      "bytes": 4118
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere/Reader/WebReaderController.cs",
+      "upstream_path": "DysonNetwork.Sphere/Reader/WebReaderController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "bb8925e3abd7352923841bcbec8449d9352c501e",
+      "sha256": "1279f25f1d6641bcb2eb7131f819a6ddcd6ce31be87638de9bfac6a2ceee0ec5",
+      "bytes": 2843
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere/Reader/WebReaderService.cs",
+      "upstream_path": "DysonNetwork.Sphere/Reader/WebReaderService.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "3996f71a94d4608fbb72f3763548c7973de662d4",
+      "sha256": "a9fd1ee6620719b75b9cea28120c6245051bd89ff89c4e5c7cd399a71d2b03ca",
+      "bytes": 20574
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere/Startup/ScheduledJobsConfiguration.cs",
+      "upstream_path": "DysonNetwork.Sphere/Startup/ScheduledJobsConfiguration.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "ba92a68ab88d68f753c648149e91ac08e18880fd",
+      "sha256": "50c537b8f92e49f8a80372e6b82d4d361b5dcbdbc21a639e88f6dcb09da61749",
+      "bytes": 5733
+    },
+    {
+      "file": "dyson/DysonNetwork.Sphere/Startup/ServiceCollectionExtensions.cs",
+      "upstream_path": "DysonNetwork.Sphere/Startup/ServiceCollectionExtensions.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "6fafcebd085c515a99527d8ecffe7d54c0ef7d57",
+      "sha256": "ec9f8c9b7a239c440fc8cdee47a03206f46b5fb250a65d1effec99bf15cdc40f",
+      "bytes": 16724
+    },
+    {
+      "file": "dyson/DysonNetwork.Wallet/Payment/PaymentAdminController.cs",
+      "upstream_path": "DysonNetwork.Wallet/Payment/PaymentAdminController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "d11c5ba30cd2e071e45c6687f76de6cbda42352c",
+      "sha256": "457b2e99a3c7d718589a88f70c6af29c4481a313a6195e9cf70ec06474e55636",
+      "bytes": 15165
+    },
+    {
+      "file": "dyson/DysonNetwork.Wallet/Payment/WalletProductAdminController.cs",
+      "upstream_path": "DysonNetwork.Wallet/Payment/WalletProductAdminController.cs",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "746d165e13e6f44c6205b3274c165a729edf26d4",
+      "sha256": "a61df87abcf3aa1b74d4ae307ab99b99d78dffcd16e6997260c2f8b3412ca863",
+      "bytes": 2282
+    },
+    {
+      "file": "dyson/docs/API_POSTS.md",
+      "upstream_path": "docs/API_POSTS.md",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "2c61820e9d60410eae25caa20a34dd53e9cbdb26",
+      "sha256": "5ba6905856dccc2f83f3ebe60dea164b690d248cea3859f2d753c7f503c8ab8c",
+      "bytes": 6366
+    },
+    {
+      "file": "dyson/docs/CHECK_IN_FORTUNE_REPORT.md",
+      "upstream_path": "docs/CHECK_IN_FORTUNE_REPORT.md",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "6c5040e8fb5ae4f2083e38becff19db36d0f8760",
+      "sha256": "ea87f15e8453d281abe37c5b6a9bfc1723ee64219af764cde7309e730ff72d85",
+      "bytes": 8758
+    },
+    {
+      "file": "dyson/docs/PERMISSIONS.md",
+      "upstream_path": "docs/PERMISSIONS.md",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "469dca7222b16ed4e764d2dbfdc58a5f196490c5",
+      "sha256": "3d701a92b699f69cad05721e36a2edbfd4b5a50b98e2244ea7fab34d3b8efbba",
+      "bytes": 11900
+    },
+    {
+      "file": "dyson/docs/POST_SUBSCRIPTIONS.md",
+      "upstream_path": "docs/POST_SUBSCRIPTIONS.md",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "0c005d92e95cebc2c306384b1351f5e4e5aebf43",
+      "sha256": "5ef520c0f0b159b22faed284e9d07745d2f576133e1daebee4c1f4ccb7d7a51f",
+      "bytes": 10637
+    },
+    {
+      "file": "dyson/docs/SHARED_API_ERRORS.md",
+      "upstream_path": "docs/SHARED_API_ERRORS.md",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "828dd2010b5afe07d7a1f17bf03a6c52166b512d",
+      "sha256": "a814692a8498ed63eadc85797141a25d2ce9626057f91c715b3e79986e4050ba",
+      "bytes": 6532
+    },
+    {
+      "file": "dyson/LICENSE.txt",
+      "upstream_path": "LICENSE.txt",
+      "revision": "74aeaa76ae0784e91007b9d798360edcdfd980bb",
+      "blob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523
+    },
+    {
+      "file": "solian/lib/thoughts/plugins/agenda_plugin.dart",
+      "upstream_path": "lib/thoughts/plugins/agenda_plugin.dart",
+      "revision": "c430ad0e4c26bd567071218ec695d02fdc4659de",
+      "blob": "8bdebe6a283e415f615e9bc9ae2b4ba0864c86e4",
+      "sha256": "babbd2c35f8ded209eb2c07bad7348b15c43e77679229d81ce64eb7ecbcdd8d7",
+      "bytes": 11716
+    },
+    {
+      "file": "solian/lib/realms/screens/realms.dart",
+      "upstream_path": "lib/realms/screens/realms.dart",
+      "revision": "c430ad0e4c26bd567071218ec695d02fdc4659de",
+      "blob": "0694585edf1622f13bf2e170d2685daa389ff866",
+      "sha256": "344103f4b31c2ee47c40686b18e3ebb5efe1dc5318751a0767089507a2233003",
+      "bytes": 11806
+    },
+    {
+      "file": "solian/lib/wallets/wallet.dart",
+      "upstream_path": "lib/wallets/wallet.dart",
+      "revision": "c430ad0e4c26bd567071218ec695d02fdc4659de",
+      "blob": "ded7b61cc7f5e7797d661e5943e30819bbfe7da4",
+      "sha256": "010cbd3fc8b82f327f3ec765aa5039fda205d49db5f1dbdd8f6b5eb45b61fb0c",
+      "bytes": 183374
+    },
+    {
+      "file": "solian/lib/accounts/screens/me/board_edit.dart",
+      "upstream_path": "lib/accounts/screens/me/board_edit.dart",
+      "revision": "c430ad0e4c26bd567071218ec695d02fdc4659de",
+      "blob": "df820d5953e1557b637c72507c06780f82d1c23e",
+      "sha256": "0c62dae03d288204d03283788c6446c831219ba589353d2ea6eaf2d47a33a881",
+      "bytes": 34653
+    },
+    {
+      "file": "solian/LICENSE.txt",
+      "upstream_path": "LICENSE.txt",
+      "revision": "c430ad0e4c26bd567071218ec695d02fdc4659de",
+      "blob": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+      "bytes": 34522
+    },
+    {
+      "file": "socommon/LICENSE.txt",
+      "upstream_path": "LICENSE.txt",
+      "revision": "7179f511defc28c8c98f242a5fd62cd4c6146297",
+      "blob": "bae94e189e62df1b8d5bd11435d954b25bee9d7b",
+      "sha256": "4df3c306dddaaf4baffdff5ca820cc679ac8cd6dc263c6a74517783e42fa7a3b",
+      "bytes": 34522
+    },
+    {
+      "file": "socommon/packages/solar_network_sdk/lib/src/api/domains/auth_api.dart",
+      "upstream_path": "packages/solar_network_sdk/lib/src/api/domains/auth_api.dart",
+      "revision": "7179f511defc28c8c98f242a5fd62cd4c6146297",
+      "blob": "fb3505c817aae7b954041b7c52ac1ae9ed802d72",
+      "sha256": "2fc6c6222aba2a541ba499cd20fc3d75e6cf87629672bdd3828df417c0c89ee8",
+      "bytes": 18414
+    },
+    {
+      "file": "socommon/packages/solar_network_foundation/lib/src/auth/sudo_prompt.dart",
+      "upstream_path": "packages/solar_network_foundation/lib/src/auth/sudo_prompt.dart",
+      "revision": "7179f511defc28c8c98f242a5fd62cd4c6146297",
+      "blob": "0a742907a34c141b5cd460a2a4341df5fb145003",
+      "sha256": "fb7b2fe091b15959aa770d77f5a904967eeeac9cd05cde58dd301431c1b14445",
+      "bytes": 11517
+    },
+    {
+      "file": "socommon/packages/solar_network_foundation/test/sudo_prompt_test.dart",
+      "upstream_path": "packages/solar_network_foundation/test/sudo_prompt_test.dart",
+      "revision": "7179f511defc28c8c98f242a5fd62cd4c6146297",
+      "blob": "de9b226ec1115a603982089ae7ded04075f7b6bf",
+      "sha256": "df02569de9640c59d6ddc0fc4146ccbfe0591d44d7dea2c7aed85f406caf7db2",
+      "bytes": 11549
+    },
+    {
+      "file": "socommon/packages/solar_network_sdk/lib/src/models/auth/auth_challenge.dart",
+      "upstream_path": "packages/solar_network_sdk/lib/src/models/auth/auth_challenge.dart",
+      "revision": "7179f511defc28c8c98f242a5fd62cd4c6146297",
+      "blob": "b1a21812e6a3ff476f7bf0b65a11f2f64d4771ec",
+      "sha256": "13fa59e3f43bbc840dc4945f306507e7805e7b4ddc715b38ce633b39f92afb99",
+      "bytes": 1031
+    },
+    {
+      "file": "socommon/packages/solar_network_sdk/lib/src/models/auth/misc.dart",
+      "upstream_path": "packages/solar_network_sdk/lib/src/models/auth/misc.dart",
+      "revision": "7179f511defc28c8c98f242a5fd62cd4c6146297",
+      "blob": "131d46f80fb70af165d673cae06dbeb6302996e8",
+      "sha256": "166a24d71ba75a54078be193171e397d6c14a23a8e9b9fc48439ee56bf72691a",
+      "bytes": 2301
+    }
+  ],
+  "socommon": {
+    "repository": "https://src.solsynth.dev/SoSYS/Socommon",
+    "revision": "7179f511defc28c8c98f242a5fd62cd4c6146297",
+    "source": "Solian pinned SDK submodule; authored Dart callers only, not generated models"
+  }
+}

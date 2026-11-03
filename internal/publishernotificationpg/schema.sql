@@ -56,3 +56,21 @@ CREATE TABLE owned_publisher_content_notification_receipts (
  CONSTRAINT owned_publisher_content_receipt_kind CHECK(outcome IN('enqueued','suppressed')),
  CONSTRAINT owned_publisher_content_receipt_outcome CHECK((outcome='enqueued')=(outbox_id IS NOT NULL))
 );
+
+-- Publication captures watcher membership before the post transaction commits;
+-- recipient locks and inbox projection are deferred to the local worker.
+CREATE TABLE owned_post_watch_notification_intents (
+ id uuid PRIMARY KEY,
+ publication_id uuid NOT NULL REFERENCES owned_publisher_content_notification_intents(id),
+ account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),
+ event text NOT NULL CHECK(event IN('replies','chains')),
+ head_id uuid NOT NULL REFERENCES owned_text_posts(id),
+ targets uuid[] NOT NULL CHECK(cardinality(targets)>=1),
+ witnesses jsonb NOT NULL CHECK(jsonb_typeof(witnesses)='array' AND jsonb_array_length(witnesses)>0),
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ processed_at timestamptz,
+ suppressed boolean NOT NULL DEFAULT false,
+ notification_id uuid REFERENCES notification_v1.outbox(id),
+ UNIQUE(publication_id,account_id,event)
+);
+CREATE INDEX owned_post_watch_notification_due ON owned_post_watch_notification_intents(created_at,id) WHERE processed_at IS NULL;

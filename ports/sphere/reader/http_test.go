@@ -34,17 +34,47 @@ func (r *fakeRepository) InvalidateAll(c context.Context, actor string) error {
 }
 
 type fakeAuth struct {
-	actor      string
-	err        error
-	permission *string
+	actor       string
+	err         error
+	identityErr error
+	permission  *string
 }
 
-func (a fakeAuth) Authenticate(*http.Request) (string, error) { return a.actor, nil }
+func (a fakeAuth) Authenticate(*http.Request) (string, error) { return a.actor, a.identityErr }
 func (a fakeAuth) Authorize(r *http.Request, key string) error {
 	if a.permission != nil {
 		*a.permission = key
 	}
 	return a.err
+}
+
+func TestPreviewRequiresAuthenticationBeforeCacheOrFetch(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		auth   Auth
+		status int
+	}{
+		{"no adapter", nil, 401},
+		{"anonymous", fakeAuth{}, 401},
+		{"revoked", fakeAuth{actor: "synthetic", identityErr: authority.ErrInvalid}, 401},
+		{"unavailable authority", fakeAuth{actor: "synthetic", identityErr: authority.ErrUnavailable}, 503},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := &fakeRepository{}
+			w := httptest.NewRecorder()
+			NewHandler(r, tc.auth).ServeHTTP(w, httptest.NewRequest("GET", "/api/scrap/link?url=https%3A%2F%2Fpreview.example%2F", nil))
+			if w.Code != tc.status || r.previews != 0 {
+				t.Fatal("unauthenticated preview reached repository", w.Code, r.previews)
+			}
+		})
+	}
+	// Reading previews does not require the privileged cache mutation grant.
+	r := &fakeRepository{}
+	w := httptest.NewRecorder()
+	NewHandler(r, fakeAuth{actor: "synthetic", err: authority.ErrForbidden}).ServeHTTP(w, httptest.NewRequest("GET", "/api/scrap/link?url=https%3A%2F%2Fpreview.example%2F", nil))
+	if w.Code != 200 || r.previews != 1 {
+		t.Fatal("preview incorrectly required cache.scrap", w.Code, r.previews)
+	}
 }
 func TestHTTPRoutesQueryAndAuthority(t *testing.T) {
 	r := &fakeRepository{}

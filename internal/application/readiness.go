@@ -346,14 +346,14 @@ func (b *Backend) readyConnectedServices(ctx context.Context) error {
 
 // --- 检查登录凭证与支付授权 ---
 func (b *Backend) readyCredentialSchemas(ctx context.Context) error {
-	if _, e := b.db.ExecContext(ctx, `SELECT code_hash,auth_time,methods FROM owned_authority_code_evidence LIMIT 0;SELECT session_id,session_epoch FROM owned_authority_credential_assurances LIMIT 0`); e != nil {
+	if _, e := b.db.ExecContext(ctx, `SELECT code_hash,auth_time,methods FROM owned_authority_code_evidence LIMIT 0;SELECT session_id,session_epoch FROM owned_authority_credential_assurances LIMIT 0;SELECT session_id,session_epoch,challenge_hash,factor_policy_version,auth_time,expires_at,methods,trust_points FROM owned_authority_sudo_elevations LIMIT 0`); e != nil {
 		return errors.New("credential assurance schema unavailable")
 	}
 	if _, e := b.db.ExecContext(ctx, `SELECT version,factor_id FROM wallet_v1.payment_policies LIMIT 0;SELECT hash,policy_version FROM wallet_v1.payment_authorizations LIMIT 0`); e != nil {
 		return errors.New("payment authorization schema unavailable")
 	}
 	if b.signinEnabled { // 只有启用本地登录时才要求登录因子表。
-		if _, e := b.db.ExecContext(ctx, `SELECT auth_methods FROM owned_authority_challenges LIMIT 0;SELECT id FROM owned_authority_factor_audit LIMIT 0`); e != nil {
+		if _, e := b.db.ExecContext(ctx, `SELECT auth_methods,sudo_session_id,sudo_session_epoch,sudo_policy_version,sudo_email FROM owned_authority_challenges LIMIT 0;SELECT challenge_hash,code_hash,used,expires_at FROM owned_authority_sudo_email_codes LIMIT 0;SELECT id FROM owned_authority_factor_audit LIMIT 0`); e != nil {
 			return errors.New("payment PIN factor schema unavailable")
 		}
 		var yes bool

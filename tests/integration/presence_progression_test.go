@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -280,6 +281,7 @@ func TestPGProgressionConcurrentCheckInAndIsolation(t *testing.T) {
 	ppHTTP(t, h, "POST", "/api/accounts/me/check-in?backdated=2020-01-01", f.token, `null`, 400)
 	ppHTTP(t, h, "POST", "/api/accounts/me/check-in", f.token, `null`, 200)
 	ppHTTP(t, h, "POST", "/api/admin/progression/achievements", f.token, `{"identifier":"forged","title":"forged","summary":"forged","trigger":{"actions":["post.create"],"mode":"count"}}`, 403)
+	t.Run("streak gold tiers and funded replay", exerciseCheckInStreakGold)
 }
 func ppPost(t *testing.T, f presenceProgressionFixture) (string, string) {
 	t.Helper()
@@ -514,4 +516,135 @@ func TestPGProgressionChatSocialProjection(t *testing.T) {
 	if _, e := f.progression.ProcessDue(f.ctx, 1000); e != nil {
 		t.Fatal("disabled account must be receipted safely", e)
 	}
+}
+
+// The registered check-in integration case includes tier rewards, gaps, replay,
+// and the actual funded worker. It uses the same isolated database guard.
+func exerciseCheckInStreakGold(t *testing.T) {
+	for _, tc := range []struct {
+		days int
+		gold int
+	}{{6, 0}, {7, 1}, {14, 1}, {30, 5}, {210, 6}, {1831, 0}, {2100, 6}} {
+		t.Run(fmt.Sprintf("%d days", tc.days), func(t *testing.T) {
+			f := newPresenceProgressionFixture(t)
+			t.Cleanup(func() {
+				// A later synthetic worker must not consume this fixture's grants.
+				query(t, f.db, `UPDATE owned_authority_accounts SET disabled=true WHERE id=$1`, f.actor)
+			})
+			// Persist actual UTC history, including a backdated day. The current
+			// day is earned only by the authenticated repository operation below.
+			query(t, f.db, `INSERT INTO owned_progression_checkins(id,account_id,day,level,reward_experience,created_at,backdated_from)SELECT gen_random_uuid(),$1::uuid,((clock_timestamp()AT TIME ZONE 'UTC')::date-n),2,100,(((clock_timestamp()AT TIME ZONE 'UTC')::date-n)::timestamp AT TIME ZONE 'UTC'),CASE WHEN n=1 THEN clock_timestamp()ELSE NULL END FROM generate_series(1,$2::integer)n`, f.actor, tc.days-1)
+			var wg sync.WaitGroup
+			errs := make(chan error, 4)
+			for range 4 {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					_, e := f.progression.CheckIn(f.ctx, f.actor)
+					errs <- e
+				}()
+			}
+			wg.Wait()
+			close(errs)
+			for e := range errs {
+				if e != nil {
+					t.Fatal(e)
+				}
+			}
+			wantGrants := int64(0)
+			if tc.gold > 0 {
+				wantGrants = 1
+			}
+			if got := ppScalar(t, f, `SELECT count(*) FROM owned_progression_grants WHERE account_id=$1 AND kind='check-in-streak'`, f.actor); got != wantGrants {
+				t.Fatalf("tier grants=%d, want %d", got, wantGrants)
+			}
+			if got := ppScalar(t, f, `SELECT COALESCE(sum((reward->>'source_points')::bigint),0) FROM owned_progression_grants WHERE account_id=$1 AND kind='check-in-streak' AND reward->>'source_points_currency'='golds'`, f.actor); got != int64(tc.gold) {
+				t.Fatalf("earned gold=%d, want %d", got, tc.gold)
+			}
+			if tc.days != 210 {
+				return
+			}
+			treasury := ppOther(t, f)
+			t.Cleanup(func() {
+				query(t, f.db, `UPDATE owned_authority_accounts SET disabled=true WHERE id=$1`, treasury)
+			})
+			payer := pgSourceWallet(t, f, treasury, "0")
+			payee := pgSourceWallet(t, f, f.actor, "0")
+			query(t, f.db, `UPDATE wallet_v1.pockets SET currency='golds' WHERE wallet_id IN($1::uuid,$2::uuid)`, payer, payee)
+			payout, e := progressionpg.NewFundedCheckInStreakGold(progressionpg.SourcePointConfig{TreasuryAccountID: treasury, TreasuryWalletID: payer, Currency: "golds", MaxPerGrant: 6, MaxPerDay: 100})
+			if e != nil {
+				t.Fatal(e)
+			}
+			if e = f.progression.WithCheckInStreakGoldPayout(payout); e != nil {
+				t.Fatal(e)
+			}
+			if n, e := f.progression.ProcessCheckInStreakGold(f.ctx, 100); e == nil || n != 0 {
+				t.Fatal("empty treasury paid gold", n, e)
+			}
+			if got := ppScalar(t, f, `SELECT count(*) FROM owned_progression_grants WHERE account_id=$1 AND source_points_granted_at IS NOT NULL`, f.actor); got != 0 {
+				t.Fatal("failed payout marked paid", got)
+			}
+			if _, e = f.progression.Today(f.ctx, f.actor); e != nil {
+				t.Fatal("wallet failure lost the check-in", e)
+			}
+			query(t, f.db, `UPDATE wallet_v1.pockets SET amount=100 WHERE wallet_id=$1 AND currency='golds'`, payer)
+			// The treasury is also a regular account and may earn a check-in
+			// tier. Its self-transfer is forbidden and must not block this queue.
+			query(t, f.db, `INSERT INTO owned_progression_checkins(id,account_id,day,level,reward_experience,created_at)SELECT gen_random_uuid(),$1::uuid,((clock_timestamp()AT TIME ZONE 'UTC')::date-n),2,100,(((clock_timestamp()AT TIME ZONE 'UTC')::date-n)::timestamp AT TIME ZONE 'UTC')FROM generate_series(1,6)n`, treasury)
+			treasuryPrincipal, e := f.verifier.Authenticate(f.ctx, pgIssue(t, f.issuer, treasury).Token)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if _, e = f.progression.CheckIn(f.guard.Bind(f.ctx, treasuryPrincipal), treasury); e != nil {
+				t.Fatal(e)
+			}
+			query(t, f.db, `UPDATE owned_progression_grants SET created_at=clock_timestamp()-interval '1 day' WHERE account_id=$1 AND kind='check-in-streak'`, treasury)
+			// An unrelated earned SourcePoints grant must stay in its own queue.
+			ordinary := pgSourceGrant(t, f, 7)
+			var count int
+			for range 2 {
+				worker := progressionpg.NewWithAuthority(f.db, f.guard)
+				if e = worker.WithCheckInStreakGoldPayout(payout); e != nil {
+					t.Fatal(e)
+				}
+				n, e := worker.ProcessCheckInStreakGold(f.ctx, 100)
+				if e != nil {
+					t.Fatal(e)
+				}
+				count += n
+			}
+			if count != 1 {
+				t.Fatal("worker replay paid more than once", count)
+			}
+			var payerBalance, payeeBalance, remark string
+			if e := f.db.QueryRow(`SELECT amount::text FROM wallet_v1.pockets WHERE wallet_id=$1 AND currency='golds'`, payer).Scan(&payerBalance); e != nil {
+				t.Fatal(e)
+			}
+			if e := f.db.QueryRow(`SELECT amount::text FROM wallet_v1.pockets WHERE wallet_id=$1 AND currency='golds'`, payee).Scan(&payeeBalance); e != nil {
+				t.Fatal(e)
+			}
+			if payerBalance != "94.000" || payeeBalance != "6.000" {
+				t.Fatal("gold not conserved", payerBalance, payeeBalance)
+			}
+			if e := f.db.QueryRow(`SELECT remarks FROM wallet_v1.transactions WHERE payer_wallet_id=$1 AND currency='golds'`, payer).Scan(&remark); e != nil || remark != "Check-in streak reward (210 days) on "+time.Now().UTC().Format("2006/01/02") {
+				t.Fatal("gold transaction provenance", remark, e)
+			}
+			if got := ppScalar(t, f, `SELECT count(*) FROM owned_progression_grants WHERE id=$1 AND source_points_granted_at IS NULL`, ordinary); got != 1 {
+				t.Fatal("gold worker consumed ordinary SourcePoints", got)
+			}
+			if got := ppScalar(t, f, `SELECT count(*) FROM owned_progression_grants WHERE account_id=$1 AND kind='check-in-streak' AND source_points_granted_at IS NULL`, treasury); got != 1 {
+				t.Fatal("treasury self-reward was falsely marked paid", got)
+			}
+		})
+	}
+	t.Run("gap stops streak", func(t *testing.T) {
+		f := newPresenceProgressionFixture(t)
+		query(t, f.db, `INSERT INTO owned_progression_checkins(id,account_id,day,level,reward_experience,created_at)SELECT gen_random_uuid(),$1::uuid,((clock_timestamp()AT TIME ZONE 'UTC')::date-n),2,100,(((clock_timestamp()AT TIME ZONE 'UTC')::date-n)::timestamp AT TIME ZONE 'UTC')FROM generate_series(1,8)n WHERE n<>3`, f.actor)
+		if _, e := f.progression.CheckIn(f.ctx, f.actor); e != nil {
+			t.Fatal(e)
+		}
+		if got := ppScalar(t, f, `SELECT count(*) FROM owned_progression_grants WHERE account_id=$1 AND kind='check-in-streak'`, f.actor); got != 0 {
+			t.Fatal("streak crossed missing UTC day", got)
+		}
+	})
 }

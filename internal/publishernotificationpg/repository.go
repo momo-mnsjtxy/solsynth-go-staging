@@ -97,7 +97,8 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if e != nil || !ok {
 		return errors.New("publisher content notification trigger unavailable")
 	}
-	return nil
+	_, e = r.db.ExecContext(ctx, `SELECT id,publication_id,account_id,event,head_id,targets,witnesses,processed_at,suppressed,notification_id FROM owned_post_watch_notification_intents LIMIT 0`)
+	return e
 }
 
 func (r *Repository) record(ctx context.Context, db *sql.DB, tx *sql.Tx, kind, source string, generation int64, publisher string, at time.Time) error {
@@ -130,7 +131,10 @@ func (r *Repository) RecordPublication(ctx context.Context, db *sql.DB, tx *sql.
 	if p.PublishedAt == nil {
 		return nil
 	}
-	return r.record(ctx, db, tx, "post.published", p.ID, 0, p.PublisherID, *p.PublishedAt)
+	if e := r.record(ctx, db, tx, "post.published", p.ID, 0, p.PublisherID, *p.PublishedAt); e != nil {
+		return e
+	}
+	return r.recordWatchPublication(ctx, tx, p)
 }
 
 func (r *Repository) RecordLivestreamActivation(ctx context.Context, db *sql.DB, tx *sql.Tx, streamID, publisherID string, generation int64, at time.Time) error {

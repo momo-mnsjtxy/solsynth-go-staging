@@ -419,8 +419,8 @@ func (s *Service) challenge(ctx context.Context, raw string, fn func(Transaction
 		if e != nil {
 			return e
 		}
-		if c.Purpose != "login" || c.Version != tx.Authority().Account().Version || !s.now().Before(c.ExpiredAt) {
-			return ErrInvalid
+		if err := s.validateChallenge(tx, c); err != nil {
+			return err
 		}
 		return fn(tx, c)
 	}))
@@ -442,14 +442,35 @@ func (s *Service) ChallengeFactors(ctx context.Context, raw string) ([]Factor, e
 				out = append(out, cleanFactor(f))
 			}
 		}
+
+		if c.Purpose == "sudo" && c.SudoEmail && !c.SecondOK {
+			out = append(out, Factor{ID: raw, Type: 1, Trustworthy: 1, CreatedAt: c.CreatedAt, EnabledAt: &c.CreatedAt})
+		}
 		return nil
 	})
 	return out, e
 }
 func (s *Service) PrepareFactor(ctx context.Context, raw, fid string) error {
+	// Resend budgets commit separately before the account transaction; even a
+	// one-connection pool must not wait on itself while holding the account lock.
+	if raw == fid && validToken(raw) {
+		if err := s.limit(ctx, "sudo-email-challenge", raw, 3, 10*time.Minute); err != nil {
+			return err
+		}
+		account, err := s.store.FindChallenge(ctx, digest(raw))
+		if err != nil {
+			return known(err)
+		}
+		if err = s.limit(ctx, "sudo-email-account", account, 10, 10*time.Minute); err != nil {
+			return err
+		}
+	}
 	return s.challenge(ctx, raw, func(tx Transaction, c Challenge) error {
 		if c.Completed {
 			return ErrInvalid
+		}
+		if c.Purpose == "sudo" && c.SudoEmail && fid == raw {
+			return s.prepareSudoEmail(ctx, tx, c, raw)
 		}
 		fs, e := tx.Factors()
 		if e != nil {
@@ -465,7 +486,7 @@ func (s *Service) PrepareFactor(ctx context.Context, raw, fid string) error {
 }
 func (s *Service) VerifyFactor(ctx context.Context, raw, fid, password, peer string) (Challenge, error) {
 	var out Challenge
-	if !validToken(raw) || !authority.ValidID(fid) || len(password) < 1 || len(password) > 1024 {
+	if !validToken(raw) || (!authority.ValidID(fid) && fid != raw) || len(password) < 1 || len(password) > 1024 {
 		return out, ErrInvalid
 	}
 	if e := s.limit(ctx, "verify-peer", peer, 60, 10*time.Minute); e != nil {
@@ -496,12 +517,22 @@ func (s *Service) VerifyFactor(ctx context.Context, raw, fid, password, peer str
 				break
 			}
 		}
+
+		if selected == nil && c.Purpose == "sudo" && c.SudoEmail && fid == raw {
+			selected = &Factor{ID: raw, Type: 1}
+		}
 		if selected == nil {
 			checkPassword(s.dummy, password)
 			return ErrInvalid
 		}
 		f := *selected
 		switch f.Type {
+		case 1:
+			if e := s.verifySudoEmail(tx, c, raw, password); e != nil {
+				return e
+			}
+			c.SecondOK = true
+			c.AuthMethods = append(c.AuthMethods, "email")
 		case 0:
 			if c.PasswordOK || !checkPassword(f.Secret, password) {
 				return ErrInvalid
@@ -535,6 +566,19 @@ func (s *Service) VerifyFactor(ctx context.Context, raw, fid, password, peer str
 			}
 			c.SecondOK = true
 			c.AuthMethods = append(c.AuthMethods, "recovery")
+			// Consuming the verified one-use recovery factor legitimately advances
+			// canonical factor policy in this same locked transaction.
+			if c.Purpose == "sudo" {
+				writer, ok := tx.(SudoTransaction)
+				if !ok {
+					return authority.ErrSudoUnavailable
+				}
+				c.SudoPolicyVersion, e = writer.SudoPolicyVersion()
+				if e != nil {
+					return e
+				}
+			}
+
 		default:
 			return ErrUnsupported
 		}
@@ -542,6 +586,31 @@ func (s *Service) VerifyFactor(ctx context.Context, raw, fid, password, peer str
 		c.BlacklistFactors = append(c.BlacklistFactors, f.ID)
 		out = state(c, raw)
 		if out.StepRemain == 0 {
+			if c.Purpose == "sudo" {
+				fresh, err := tx.Authenticate()
+				if err != nil {
+					return err
+				}
+				if err = s.validateChallenge(tx, c); err != nil {
+					return err
+				}
+				if !authority.ValidSudoMethods(c.AuthMethods) {
+					return ErrInvalid
+				}
+				writer, ok := tx.(SudoTransaction)
+				if !ok {
+					return authority.ErrSudoUnavailable
+				}
+				c.Completed = true
+				out.Completed = true
+				if err = tx.SaveChallenge(c); err != nil {
+					return err
+				}
+				if err = writer.SaveSudoElevation(c, fresh, s.now()); err != nil {
+					return err
+				}
+				return nil
+			}
 			if authority.ValidCredentialMethods(c.AuthMethods) {
 				e = s.authority.CreateVerifiedLoginCodeTransaction(ctx, tx.Authority(), raw, c.DeviceName, []string{"*"}, c.AuthMethods, s.now())
 			} else {
@@ -564,7 +633,7 @@ func (s *Service) VerifyFactor(ctx context.Context, raw, fid, password, peer str
 			if err != nil {
 				return err
 			}
-			if c.Completed || c.Purpose != "login" || c.Version != tx.Authority().Account().Version || !s.now().Before(c.ExpiredAt) {
+			if c.Completed || s.validateChallenge(tx, c) != nil {
 				return nil
 			}
 			c.FailedAttempts++

@@ -18,6 +18,7 @@ def check():
         shutil.copytree(root, copy, ignore=shutil.ignore_patterns('.git', '.cache', '__pycache__', 'bin', 'obj'))
         assert evidence.check(copy) == baseline_count
         mutations = [
+            "inventory/upstream-sync-20261102/dyson/DysonNetwork.Develop/Identity/CustomAppController.cs",
             "ports/passport/history/source/SocialCreditValidationJob.cs",
             "ports/passport/history/source/AccountEventService.timeline.excerpt.cs",
             "ports/passport/history/source/SOLIAN-LICENSE.txt",

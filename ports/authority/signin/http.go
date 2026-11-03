@@ -163,6 +163,24 @@ func (s *Service) RegisterRoutes(m *http.ServeMux) {
 		}
 		respond(w, 204, nil)
 	})
+	m.HandleFunc("POST /stargate/auth/sudo", func(w http.ResponseWriter, r *http.Request) {
+		token, err := authority.BearerToken(r)
+		if err != nil {
+			failure(w, err)
+			return
+		}
+		var request struct{}
+		if err = decode(w, r, &request); err != nil {
+			failure(w, err)
+			return
+		}
+		challenge, err := s.StartSudo(r.Context(), token, peer(r), r.UserAgent())
+		if err != nil {
+			failure(w, err)
+			return
+		}
+		respond(w, 200, challenge)
+	})
 	m.HandleFunc("POST /stargate/auth/challenge", func(w http.ResponseWriter, r *http.Request) {
 		var req StartRequest
 		if e := decode(w, r, &req); e != nil {
@@ -181,7 +199,7 @@ func (s *Service) RegisterRoutes(m *http.ServeMux) {
 		respond(w, 200, v)
 	})
 	m.HandleFunc("GET /stargate/auth/challenge/{id}", func(w http.ResponseWriter, r *http.Request) {
-		v, e := s.Challenge(r.Context(), r.PathValue("id"))
+		v, e := s.Challenge(s.challengeContext(r), r.PathValue("id"))
 		if e != nil {
 			failure(w, e)
 			return
@@ -189,7 +207,7 @@ func (s *Service) RegisterRoutes(m *http.ServeMux) {
 		respond(w, 200, v)
 	})
 	m.HandleFunc("GET /stargate/auth/challenge/{id}/factors", func(w http.ResponseWriter, r *http.Request) {
-		v, e := s.ChallengeFactors(r.Context(), r.PathValue("id"))
+		v, e := s.ChallengeFactors(s.challengeContext(r), r.PathValue("id"))
 		if e != nil {
 			failure(w, e)
 			return
@@ -197,7 +215,7 @@ func (s *Service) RegisterRoutes(m *http.ServeMux) {
 		respond(w, 200, v)
 	})
 	m.HandleFunc("POST /stargate/auth/challenge/{id}/factors/{factor}", func(w http.ResponseWriter, r *http.Request) {
-		if e := s.PrepareFactor(r.Context(), r.PathValue("id"), r.PathValue("factor")); e != nil {
+		if e := s.PrepareFactor(s.challengeContext(r), r.PathValue("id"), r.PathValue("factor")); e != nil {
 			failure(w, e)
 			return
 		}
@@ -212,7 +230,7 @@ func (s *Service) RegisterRoutes(m *http.ServeMux) {
 			failure(w, e)
 			return
 		}
-		v, e := s.VerifyFactor(r.Context(), r.PathValue("id"), req.FactorID, req.Password, peer(r))
+		v, e := s.VerifyFactor(s.challengeContext(r), r.PathValue("id"), req.FactorID, req.Password, peer(r))
 		if e != nil {
 			failure(w, e)
 			return

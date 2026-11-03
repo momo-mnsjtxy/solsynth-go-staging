@@ -619,6 +619,9 @@ func TestPGProgressionBirthdayBackdateEntitlementAndSeedSync(t *testing.T) {
 	if _, e = f.r.PayOrder(f.ctx, f.actor, order.ID, &f.wallet.ID); e != nil {
 		t.Fatal(e)
 	}
+	// Filling yesterday reaches seven stored UTC days. A backdated operation
+	// must not issue the daily-only gold tier, including on replay.
+	query(t, f.db, `INSERT INTO owned_progression_checkins(id,account_id,day,level,reward_experience,created_at)SELECT gen_random_uuid(),$1::uuid,((clock_timestamp()AT TIME ZONE 'UTC')::date-n),2,100,(((clock_timestamp()AT TIME ZONE 'UTC')::date-n)::timestamp AT TIME ZONE 'UTC')FROM generate_series(2,7)n`, f.actor)
 	a, e := r.BackdatedCheckIn(f.ctx, f.actor, yesterday)
 	if e != nil || a.BackdatedFrom == nil {
 		t.Fatal(a, e)
@@ -626,6 +629,10 @@ func TestPGProgressionBirthdayBackdateEntitlementAndSeedSync(t *testing.T) {
 	b, e := r.BackdatedCheckIn(f.ctx, f.actor, yesterday)
 	if e != nil || b.ID != a.ID {
 		t.Fatal("backdate replay", b, e)
+	}
+	var backdatedGold int
+	if e = f.db.QueryRow(`SELECT count(*) FROM owned_progression_grants WHERE account_id=$1 AND kind='check-in-streak'`, f.actor).Scan(&backdatedGold); e != nil || backdatedGold != 0 {
+		t.Fatal("backdated tier paid gold", backdatedGold, e)
 	}
 	if _, e = r.CheckIn(f.ctx, f.actor); e != nil {
 		t.Fatal(e)

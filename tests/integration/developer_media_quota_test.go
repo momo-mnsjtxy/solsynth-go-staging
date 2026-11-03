@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -387,6 +388,12 @@ func TestPGDeveloperQuotaWaitUsesCurrentPolicyAndProof(t *testing.T) {
 }
 
 func TestPGDeveloperMediaQuotaSavedRestartPersistence(t *testing.T) {
+	appJSON := func(v apps.App) string {
+		// Write responses use UTC while PostgreSQL reads may use the local zone.
+		// Compare every field and the exact timestamp instants in one representation.
+		v.CreatedAt, v.UpdatedAt = v.CreatedAt.UTC(), v.UpdatedAt.UTC()
+		return devJSON(t, v)
+	}
 	type saved struct {
 		Scope             apps.Scope
 		App               apps.App
@@ -408,7 +415,7 @@ func TestPGDeveloperMediaQuotaSavedRestartPersistence(t *testing.T) {
 		if e != nil {
 			t.Fatal(e)
 		}
-		pair := pgIssue(t, issuer, f.actor)
+		pair := pgIssueDeveloperCredential(t, f.db, issuer, f.actor, cfg)
 		f.config = cfg
 		f.token = pair.Token
 		f.v, e = authority.NewVerifier(authoritypg.New(f.db), cfg)
@@ -462,7 +469,7 @@ func TestPGDeveloperMediaQuotaSavedRestartPersistence(t *testing.T) {
 	appRepo := apppg.NewWithAuthority(db, guard).WithMedia(images)
 	botRepo := botpg.NewWithAuthority(db, guard).WithProfileMedia(images)
 	a, e := appRepo.Apps(ctx, state.Scope, nil, "read")
-	if e != nil || len(a) != 1 || devJSON(t, a[0]) != devJSON(t, state.App) {
+	if e != nil || len(a) != 1 || appJSON(a[0]) != appJSON(state.App) {
 		t.Fatal("original app/media changed", a, e)
 	}
 	products, e := appRepo.Products(ctx, state.Scope, state.Product.ID, nil, "read")
@@ -490,6 +497,11 @@ func TestPGDeveloperMediaQuotaSavedRestartPersistence(t *testing.T) {
 	host, e := application.NewPostgres(db, nil, application.Config{Authority: cfg, PublicVisibility: &visibility, MessagerPolicy: &policy, MediaStore: store, MaxMediaBytes: 1 << 20})
 	if e != nil {
 		t.Fatal(e)
+	}
+	appPath := "/api/private/apps/" + state.App.ID + "?dev=" + url.QueryEscape(state.Scope.Developer) + "&proj=" + url.QueryEscape(state.Scope.Project)
+	httpApp := backendDecode[apps.App](t, backendCall(t, host, "GET", appPath, state.Token, "", 200))
+	if appJSON(httpApp) != appJSON(state.App) {
+		t.Fatal("original HTTP app/media changed", httpApp)
 	}
 	if w := backendCall(t, host, "GET", "/api/files/"+state.File, "", "", 200); !bytes.Equal(w.Body.Bytes(), profilePNG(t)) {
 		t.Fatal("original bytes changed")

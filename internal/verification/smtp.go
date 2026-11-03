@@ -4,6 +4,7 @@ package verification
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
@@ -251,12 +252,23 @@ func (s *SMTP) Send(ctx context.Context, recipient, purpose, token string) error
 }
 
 func (s *SMTP) message(recipient, purpose, token string) ([]byte, error) {
-	if !mailbox(recipient) || len(token) != 43 {
+	if !mailbox(recipient) {
 		return nil, signin.ErrInput
 	}
-	decoded, err := base64.RawURLEncoding.DecodeString(token)
-	if err != nil || len(decoded) != 32 || base64.RawURLEncoding.EncodeToString(decoded) != token {
-		return nil, signin.ErrInput
+	var err error
+	if purpose == "sudo" {
+		if len(token) != 6 || strings.Trim(token, "0123456789") != "" {
+			return nil, signin.ErrInput
+		}
+	} else {
+		if len(token) != 43 {
+			return nil, signin.ErrInput
+		}
+		var decoded []byte
+		decoded, err = base64.RawURLEncoding.DecodeString(token)
+		if err != nil || len(decoded) != 32 || base64.RawURLEncoding.EncodeToString(decoded) != token {
+			return nil, signin.ErrInput
+		}
 	}
 	var target url.URL
 	var subject, text string
@@ -269,13 +281,26 @@ func (s *SMTP) message(recipient, purpose, token string) ([]byte, error) {
 		target = *s.resetURL
 		subject = "Reset your password"
 		text = "Choose a new password using the following one-use link:"
+	case "sudo":
+		subject = "Re-authenticate your session"
+		text = "Enter this one-use re-authentication code in the application:"
 	default:
 		return nil, signin.ErrInput
 	}
 	target.RawQuery = url.Values{"code": {token}}.Encode()
 	body := s.cfg.Name + "\n\n" + text + "\n\n" + target.String() + "\n\nThis link expires in 30 minutes and can be used once. If you did not request this, you can ignore this message.\n"
+	if purpose == "sudo" {
+		body = s.cfg.Name + "\n\n" + text + "\n\n" + token + "\n\nThis code expires in five minutes and can be used once. Do not share it. If you did not request this, ignore this message.\n"
+	}
 	var out bytes.Buffer
 	id := sha256.Sum256([]byte(purpose + "\x00" + recipient + "\x00" + token))
+	// A six-digit code must not be recoverable by brute-forcing a deterministic
+	// Message-ID exposed in relay metadata. Preserve stable IDs for random links.
+	if purpose == "sudo" {
+		if _, err = rand.Read(id[:]); err != nil {
+			return nil, signin.ErrDelivery
+		}
+	}
 	domain := strings.SplitN(s.cfg.From, "@", 2)[1]
 	fmt.Fprintf(&out, "From: %s\r\nTo: %s\r\nSubject: %s\r\nDate: %s\r\nMessage-ID: <%x@%s>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n",
 		(&mail.Address{Name: s.cfg.Name, Address: s.cfg.From}).String(), recipient, mime.QEncoding.Encode("utf-8", subject), s.now().UTC().Format(time.RFC1123Z), id[:], domain)

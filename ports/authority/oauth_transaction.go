@@ -54,14 +54,6 @@ func (s *Service) AuthenticateOAuth(ctx context.Context, token string) (Principa
 	return (&Verifier{service: s}).AuthenticateOAuth(ctx, token)
 }
 
-func OAuthScope(scope string) bool {
-	switch scope {
-	case "openid", "profile", "email", "offline_access", "posts.view", "posts.create", "posts.update", "posts.delete", "chat.view", "chat.messages.create", "chat.messages.update", "chat.messages.delete", "profile.read", "wallet.read", "notifications.read", "realms.read":
-		return true
-	}
-	return false
-}
-
 func oauthParent(tx Transaction, parent string, now time.Time) (Session, error) {
 	p, e := tx.Session(parent)
 	if e != nil || p.Type != 0 || p.AccountID != tx.Account().ID || p.RevokedAt != nil || p.AccountVersion != tx.Account().Version || !now.Before(p.ExpiresAt) {
@@ -85,6 +77,10 @@ func (s *Service) IssueOAuthTransaction(ctx context.Context, tx Transaction, par
 		return se, pair, e
 	}
 	if e = s.accountAllowed(tx, now, true); e != nil {
+		return se, pair, e
+	}
+	scopes, e = ExpandOAuthScopes(scopes)
+	if e != nil {
 		return se, pair, e
 	}
 	seen := map[string]bool{}

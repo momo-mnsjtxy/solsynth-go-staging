@@ -32,6 +32,7 @@ func NewFundedSourcePoints(c SourcePointConfig) (*FundedSourcePoints, error) {
 	return &FundedSourcePoints{c}, nil
 }
 func (p *FundedSourcePoints) SourcePointCurrency() string                   { return p.cfg.Currency }
+func (p *FundedSourcePoints) FundingAccountID() string                      { return p.cfg.TreasuryAccountID }
 func (r *Repository) WithSourcePointPayout(p SourcePointPayout) *Repository { r.points = p; return r }
 
 // ValidateSourcePointCompletion runs after marker/outbox writes as well as
@@ -137,6 +138,9 @@ func (p *FundedSourcePoints) PaySourcePointsInTransaction(ctx context.Context, t
 		return wallet.ErrConflict
 	}
 	remark := "Earned progression grant " + grant
+	if e = tx.QueryRowContext(ctx, `SELECT CASE WHEN kind='check-in-streak' THEN title ELSE $2::text END FROM owned_progression_grants WHERE id=$1::uuid`, grant, remark).Scan(&remark); e != nil {
+		return e
+	}
 	_, e = walletpg.FundedTransfer(ctx, tx, p.cfg.TreasuryAccountID, p.cfg.TreasuryWalletID, payee, currency, amount, &remark, key, now)
 	if e != nil {
 		return e
@@ -167,13 +171,29 @@ func (p *FundedSourcePoints) PaySourcePointsInTransaction(ctx context.Context, t
 // ProcessSourcePoints retries earned, unpaid grants without inventing balances,
 // silently minting funds, or suppressing provider/treasury failures.
 func (r *Repository) ProcessSourcePoints(ctx context.Context, limit int) (int, error) {
-	if r == nil || r.points == nil {
+	if r == nil {
+		return 0, nil
+	}
+	return r.processPointGrants(ctx, limit, r.points, false)
+}
+
+// Each payout owns a distinct grant family, so an ordinary points policy never
+// consumes or blocks the independently funded check-in gold queue.
+func (r *Repository) processPointGrants(ctx context.Context, limit int, payout SourcePointPayout, checkinGold bool) (int, error) {
+	if payout == nil {
 		return 0, nil
 	}
 	if limit < 1 || limit > 1000 {
 		return 0, progression.ErrInvalid
 	}
-	rows, e := r.db.QueryContext(ctx, `SELECT g.id::text,g.account_id::text FROM owned_progression_grants g JOIN owned_authority_accounts a ON a.id=g.account_id WHERE g.source_points_granted_at IS NULL AND (g.reward->>'source_points')::bigint>0 AND NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=a.id AND p.kind='disable_account'AND(p.starts_at IS NULL OR p.starts_at<=clock_timestamp())AND(p.expires_at IS NULL OR p.expires_at>clock_timestamp()))ORDER BY g.created_at,g.id LIMIT $1::integer`, limit)
+	var fundingAccount string
+	if p, ok := payout.(interface{ FundingAccountID() string }); ok {
+		fundingAccount = p.FundingAccountID()
+	}
+	// A treasury may itself check in, but a funded transfer to the same account
+	// is deliberately forbidden. Leave that grant unpaid and out of this policy's
+	// queue, so it cannot permanently block rewards for eligible recipients.
+	rows, e := r.db.QueryContext(ctx, `SELECT g.id::text,g.account_id::text FROM owned_progression_grants g JOIN owned_authority_accounts a ON a.id=g.account_id WHERE g.source_points_granted_at IS NULL AND (g.reward->>'source_points')::bigint>0 AND (g.kind='check-in-streak')=$2::boolean AND g.account_id::text<>$3::text AND NOT a.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments p WHERE p.account_id=a.id AND p.kind='disable_account'AND(p.starts_at IS NULL OR p.starts_at<=clock_timestamp())AND(p.expires_at IS NULL OR p.expires_at>clock_timestamp()))ORDER BY g.created_at,g.id LIMIT $1::integer`, limit, checkinGold, fundingAccount)
 	if e != nil {
 		return 0, e
 	}
@@ -216,7 +236,7 @@ func (r *Repository) ProcessSourcePoints(ctx context.Context, limit int) (int, e
 			if e := tx.QueryRowContext(ctx, `SELECT clock_timestamp()`).Scan(&now); e != nil {
 				return e
 			}
-			if e := r.points.PaySourcePointsInTransaction(ctx, tx, v.actor, v.id, currency, points, now); e != nil {
+			if e := payout.PaySourcePointsInTransaction(ctx, tx, v.actor, v.id, currency, points, now); e != nil {
 				return e
 			}
 			if _, e := tx.ExecContext(ctx, `UPDATE owned_progression_grants SET source_points_granted_at=$2::timestamptz,updated_at=$2::timestamptz WHERE id=$1::uuid`, v.id, now); e != nil {
@@ -226,11 +246,11 @@ func (r *Repository) ProcessSourcePoints(ctx context.Context, limit int) (int, e
 			if e != nil {
 				return e
 			}
-			_, e = tx.ExecContext(ctx, `INSERT INTO owned_progression_outbox(id,account_id,grant_id,packet_type,payload,created_at)SELECT $2::uuid,account_id,id,'progression.points.granted',jsonb_build_object('grant_id',id,'source_points',(reward->>'source_points')::bigint,'currency',COALESCE(NULLIF(reward->>'source_points_currency',''),$4::text)),$3::timestamptz FROM owned_progression_grants WHERE id=$1::uuid`, v.id, id, now, r.points.SourcePointCurrency())
+			_, e = tx.ExecContext(ctx, `INSERT INTO owned_progression_outbox(id,account_id,grant_id,packet_type,payload,created_at)SELECT $2::uuid,account_id,id,'progression.points.granted',jsonb_build_object('grant_id',id,'source_points',(reward->>'source_points')::bigint,'currency',COALESCE(NULLIF(reward->>'source_points_currency',''),$4::text)),$3::timestamptz FROM owned_progression_grants WHERE id=$1::uuid`, v.id, id, now, payout.SourcePointCurrency())
 			if e != nil {
 				return e
 			}
-			if e = r.points.ValidateSourcePointCompletion(ctx, tx, v.actor, now); e != nil {
+			if e = payout.ValidateSourcePointCompletion(ctx, tx, v.actor, now); e != nil {
 				return e
 			}
 			applied = true
@@ -272,10 +292,14 @@ func (r *Repository) Ready(ctx context.Context) error {
 	if e != nil {
 		return e
 	}
-	if p, ok := r.points.(interface {
-		Ready(context.Context, *sql.DB) error
-	}); ok {
-		return p.Ready(ctx, r.db)
+	for _, payout := range []SourcePointPayout{r.points, r.checkinGold} {
+		if p, ok := payout.(interface {
+			Ready(context.Context, *sql.DB) error
+		}); ok {
+			if e := p.Ready(ctx, r.db); e != nil {
+				return e
+			}
+		}
 	}
 	return nil
 }

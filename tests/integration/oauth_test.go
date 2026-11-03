@@ -68,7 +68,7 @@ func newOAuthFixture(t *testing.T, confidential bool) oauthFixture {
 		t.Fatal(e)
 	}
 	f.userToken = pgIssue(t, f.issuer, f.subject).Token
-	f.ownerToken = pgIssue(t, f.issuer, base.actor).Token
+	f.ownerToken = pgIssueDeveloperCredential(t, base.db, f.issuer, base.actor, config).Token
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	t.Cleanup(cancel)
 	p, e := f.verifier.Authenticate(ctx, f.userToken)
@@ -77,7 +77,7 @@ func newOAuthFixture(t *testing.T, confidential bool) oauthFixture {
 	}
 	f.ctx = f.transactionGuard.Bind(ctx, p)
 	f.service = (&oauth.Service{Repository: f.repo, Verifier: f.verifier, Metadata: f.issuer, Bind: f.transactionGuard.Bind, AuthorizationEndpoint: "https://synthetic-consent.invalid/authorize"}).Handler()
-	query(t, base.db, `INSERT INTO owned_authority_credentials(account_id,email,verified_at)VALUES($1,$2,clock_timestamp())`, f.subject, "synthetic-oauth-"+f.subject+"@example.invalid")
+	query(t, base.db, `INSERT INTO owned_authority_credentials(account_id,email,verified_at)VALUES($1,$2,clock_timestamp())ON CONFLICT(account_id)DO UPDATE SET email=EXCLUDED.email,verified_at=EXCLUDED.verified_at`, f.subject, "synthetic-oauth-"+f.subject+"@example.invalid")
 	if confidential {
 		secret := backendDecode[apps.Secret](t, backendCall(t, base.handler, "POST", "/api/private/apps/"+app.ID+"/secrets"+q, base.token, devJSON(t, apps.SecretRequest{Scopes: []string{apps.OAuthClientAuthScope}}), 201))
 		f.secret = *secret.Secret

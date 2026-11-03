@@ -286,3 +286,42 @@ func TestSMTPConfigurationFailsClosed(t *testing.T) {
 		t.Fatal("nil adapter did not close")
 	}
 }
+
+func TestSMTPSudoCodeDeliveryAndValidation(t *testing.T) {
+	fake := &fakeSMTP{}
+	mailer := fakeMailer(t, mailConfig(), fake)
+	raw, err := mailer.message("recipient@example.invalid", "sudo", "023456")
+	if err != nil {
+		t.Fatal(err)
+	}
+	message, err := mail.ReadMessage(bytes.NewReader(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := io.ReadAll(quotedprintable.NewReader(message.Body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Contains(body, []byte("023456")) || !bytes.Contains(body, []byte("five minutes")) || bytes.Contains(body, []byte("https://")) {
+		t.Fatal(string(body))
+	}
+	repeated, err := mailer.message("recipient@example.invalid", "sudo", "023456")
+	if err != nil {
+		t.Fatal(err)
+	}
+	repeatedMessage, err := mail.ReadMessage(bytes.NewReader(repeated))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if repeatedMessage.Header.Get("Message-ID") == message.Header.Get("Message-ID") {
+		t.Fatal("low-entropy sudo code leaked through deterministic metadata")
+	}
+	if err = mailer.Send(context.Background(), "recipient@example.invalid", "sudo", "023456"); err != nil || !fake.dataClosed {
+		t.Fatal("SMTP code was not actually accepted", err)
+	}
+	for _, code := range []string{"12345", "1234567", "abcdef", "12345\n", "123456\r\nBcc: bad"} {
+		if _, err = mailer.message("recipient@example.invalid", "sudo", code); err != signin.ErrInput {
+			t.Fatal(code, err)
+		}
+	}
+}

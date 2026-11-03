@@ -15,9 +15,17 @@ func oauthResourceScope(r *http.Request) string {
 	if r.URL.RawPath != "" || path.Clean(r.URL.Path) != r.URL.Path || strings.Contains(r.URL.Path, "\\") {
 		return ""
 	}
+	// Account self-read has a native Stargate handler rather than a moved alias.
+	// Keep this exact read separate from account mutations and subresources.
+	if r.Method == "GET" && r.URL.Path == "/stargate/accounts/me" {
+		return "profile.read"
+	}
 	p := strings.TrimPrefix(r.URL.Path, "/sphere")
 	p = strings.TrimPrefix(p, "/passport")
 	p = strings.TrimPrefix(p, "/messager")
+	if canonical, ok := movedStargatePath(p); ok {
+		p = canonical
+	}
 	parts := strings.Split(strings.Trim(p, "/"), "/")
 	if len(parts) < 2 || parts[0] != "api" {
 		return ""
@@ -81,10 +89,8 @@ func authenticateResource(v *authority.Verifier, r *http.Request) (authority.Pri
 	if e != nil {
 		return p, e
 	}
-	for _, s := range p.Session.Scopes {
-		if s == scope {
-			return p, nil
-		}
+	if authority.OAuthResourceScope(p.Session, scope) {
+		return p, nil
 	}
 	return authority.Principal{}, authority.ErrForbidden
 }

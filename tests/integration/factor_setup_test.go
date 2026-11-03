@@ -14,8 +14,11 @@ import (
 	"solsynth.local/go-migration/internal/application"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/messagerpg"
+	"solsynth.local/go-migration/internal/signinpg"
 	"solsynth.local/go-migration/ports/authority"
 	"solsynth.local/go-migration/ports/authority/signin"
+	"solsynth.local/go-migration/ports/develop/apps"
+	profiles "solsynth.local/go-migration/ports/passport/accounts"
 	"strings"
 	"sync"
 	"testing"
@@ -143,6 +146,142 @@ func TestPGFactorSetupAuthoredHTTPChainAndRefresh(t *testing.T) {
 			}
 		})
 	}
+	// Sudo is a separate, two-factor, session-bound HTTP exchange. Successful
+	// login, first-factor completion and token refresh never substitute for it.
+	sudoCheck := func(t *testing.T, f *factorSetupFixture, token string, want error) {
+		t.Helper()
+		proof, e := f.verifier.Authenticate(f.ctx, token)
+		if e != nil {
+			t.Fatal(e)
+		}
+		guard := authoritypg.NewTransactionGuard(authoritypg.New(f.db), f.verifier)
+		tx, e := f.db.BeginTx(f.ctx, nil)
+		if e != nil {
+			t.Fatal(e)
+		}
+		defer tx.Rollback()
+		_, e = guard.AuthorizeSudo(guard.Bind(f.ctx, proof), f.db, tx, f.account.ID, "developers.apps.secrets.manage")
+		if !errors.Is(e, want) {
+			t.Fatalf("sudo guard: got %v, want %v", e, want)
+		}
+	}
+	startSudo := func(t *testing.T, f *factorSetupFixture) (signin.Challenge, string, string) {
+		t.Helper()
+		c := backendDecode[signin.Challenge](t, f.call(t, "POST", "/stargate/auth/sudo", f.pair.Token, map[string]any{}, true, 200))
+		if c.StepRemain != 2 || c.StepTotal != 2 {
+			t.Fatal("sudo did not require both factors", c)
+		}
+		factors := backendDecode[[]signin.Factor](t, f.call(t, "GET", "/stargate/auth/challenge/"+c.ID+"/factors", f.pair.Token, nil, false, 200))
+		var password, email string
+		for _, factor := range factors {
+			if factor.Type == 0 {
+				password = factor.ID
+			}
+			if factor.Type == 1 {
+				email = factor.ID
+			}
+		}
+		if password == "" || email != c.ID {
+			t.Fatal("password and session-bound email fallback missing", factors)
+		}
+		return c, password, email
+	}
+	completeSudo := func(t *testing.T, f *factorSetupFixture, c signin.Challenge, password, email string) {
+		t.Helper()
+		path := "/stargate/auth/challenge/" + c.ID
+		partial := backendDecode[signin.Challenge](t, f.call(t, "PATCH", path, f.pair.Token, map[string]string{"factor_id": password, "password": syntheticPassword}, true, 200))
+		if partial.StepRemain != 1 || partial.StepTotal != 2 {
+			t.Fatal("password alone completed sudo", partial)
+		}
+		sudoCheck(t, f, f.pair.Token, authority.ErrSudoRequired)
+		f.call(t, "POST", path+"/factors/"+email, f.pair.Token, nil, false, 204)
+		var destination string
+		if e := f.db.QueryRow(`SELECT email FROM owned_authority_credentials WHERE account_id=$1`, f.account.ID).Scan(&destination); e != nil {
+			t.Fatal(e)
+		}
+		code := f.delivery.code(destination, "sudo")
+		if len(code) != 6 {
+			t.Fatal("sudo delivery did not produce a six-digit synthetic code")
+		}
+		done := backendDecode[signin.Challenge](t, f.call(t, "PATCH", path, f.pair.Token, map[string]string{"factor_id": email, "password": code}, true, 200))
+		if done.StepRemain != 0 || done.StepTotal != 2 {
+			t.Fatal("two-factor sudo did not complete", done)
+		}
+		sudoCheck(t, f, f.pair.Token, nil)
+		// Reinstall the full explicit schema with a persisted completed sudo row.
+		// Earlier base DDL briefly narrowed the purpose check before extensions,
+		// causing later fixtures to fail even though the complete schema was valid.
+		query(t, f.db, signinpg.Schema)
+		sudoCheck(t, f, f.pair.Token, nil)
+		f.call(t, "PATCH", path, f.pair.Token, map[string]string{"factor_id": email, "password": code}, true, 401)
+		f.call(t, "POST", "/stargate/auth/token", "", map[string]string{"grant_type": "authorization_code", "code": c.ID}, true, 401)
+	}
+	t.Run("sudo_http_developer_retry_and_session_isolation", func(t *testing.T) {
+		f := newFactorSetupFixture(t)
+		if e := authoritypg.New(f.db).ReplacePolicy(f.ctx, f.account.ID, []authority.Rule{{Pattern: "*"}}, nil); e != nil {
+			t.Fatal(e)
+		}
+		sudoCheck(t, f, f.pair.Token, authority.ErrSudoRequired)
+		query(t, f.db, `INSERT INTO owned_publisher_quota(account_id,total,starts_at)VALUES($1,2,clock_timestamp())`, f.account.ID)
+		name := "sudo_" + strings.ReplaceAll(f.account.ID, "-", "")
+		publisher := backendDecode[profiles.Publisher](t, f.call(t, "POST", "/sphere/publishers/individual", f.pair.Token, map[string]string{"name": name, "nick": "Synthetic sudo publisher"}, true, 200))
+		f.call(t, "POST", "/develop/developers/"+publisher.Name+"/enroll", f.pair.Token, nil, false, 200)
+		project := backendDecode[apps.Project](t, f.call(t, "POST", "/develop/private/projects?dev="+publisher.Name, f.pair.Token, map[string]string{"slug": "sudo-project", "name": "Synthetic sudo project"}, true, 201))
+		q := "?dev=" + publisher.Name + "&proj=" + project.ID
+		app := backendDecode[apps.App](t, f.call(t, "POST", "/develop/private/apps"+q, f.pair.Token, map[string]any{"slug": "sudo-app-" + project.ID, "name": "Synthetic sudo app", "status": 1, "oauth_config": map[string]any{"allowed_scopes": []string{apps.BoardScope}}}, true, 201))
+		secretPath := "/develop/private/apps/" + app.ID + "/secrets" + q
+		denied := f.call(t, "POST", secretPath, f.pair.Token, map[string]any{}, true, 403)
+		if !strings.Contains(denied.Body.String(), "AUTH_SUDO_REQUIRED") {
+			t.Fatal("credential mutation did not request sudo", denied.Body.String())
+		}
+		// The challenge path must never acquire a second connection while it
+		// already owns the only one for its account transaction.
+		previousMax := f.db.Stats().MaxOpenConnections
+		f.db.SetMaxOpenConns(1)
+		t.Cleanup(func() { f.db.SetMaxOpenConns(previousMax) })
+		c, password, email := startSudo(t, f)
+		path := "/stargate/auth/challenge/" + c.ID
+		second := f.credentialLogin(t, "", "")
+		other, _ := f.register(t, true)
+		otherPair := f.signinFixture.login(t, other.Name, syntheticPassword)
+		for _, token := range []string{"", second.Token, otherPair.Token} {
+			f.call(t, "GET", path, token, nil, false, 401)
+			f.call(t, "GET", path+"/factors", token, nil, false, 401)
+			f.call(t, "PATCH", path, token, map[string]string{"factor_id": password, "password": syntheticPassword}, true, 401)
+			f.call(t, "POST", path+"/factors/"+email, token, nil, false, 401)
+		}
+		// The three denied identity probes intentionally consumed this challenge's
+		// resend-attempt budget. Preserve its throttle; a separate valid-client flow
+		// starts a fresh challenge instead of sharing the exhausted negative fixture.
+		f.call(t, "POST", path+"/factors/"+email, f.pair.Token, nil, false, 429)
+		c, password, email = startSudo(t, f)
+		original := f.pair.Token
+		completeSudo(t, f, c, password, email)
+		secret := backendDecode[apps.Secret](t, f.call(t, "POST", secretPath, original, map[string]any{}, true, 201))
+		if secret.Secret == nil || *secret.Secret == "" {
+			t.Fatal("step-up did not authorize an actual credential write")
+		}
+		f.call(t, "POST", secretPath, second.Token, map[string]any{}, true, 403)
+		pending, _, _ := startSudo(t, f)
+		f.refresh(t)
+		sudoCheck(t, f, f.pair.Token, authority.ErrSudoRequired)
+		f.call(t, "POST", secretPath, f.pair.Token, map[string]any{}, true, 403)
+		f.call(t, "GET", "/stargate/auth/challenge/"+pending.ID, f.pair.Token, nil, false, 401)
+		f.call(t, "GET", "/stargate/auth/challenge/"+c.ID, original, nil, false, 401)
+	})
+	t.Run("sudo_elevation_and_challenge_expire", func(t *testing.T) {
+		f := newFactorSetupFixture(t)
+		if e := authoritypg.New(f.db).ReplacePolicy(f.ctx, f.account.ID, []authority.Rule{{Pattern: "*"}}, nil); e != nil {
+			t.Fatal(e)
+		}
+		pending, _, _ := startSudo(t, f)
+		c, password, email := startSudo(t, f)
+		completeSudo(t, f, c, password, email)
+		f.now.Add(301)
+		sudoCheck(t, f, f.pair.Token, authority.ErrSudoRequired)
+		f.call(t, "GET", "/stargate/auth/challenge/"+pending.ID, f.pair.Token, nil, false, 401)
+		f.call(t, "PATCH", "/stargate/auth/challenge/"+pending.ID, f.pair.Token, map[string]string{"factor_id": password, "password": syntheticPassword}, true, 401)
+	})
 }
 func TestPGFactorSetupExpiryFreshActivationAndPendingLifetime(t *testing.T) {
 	_ = database(t)

@@ -456,7 +456,7 @@ func (r *Repository) checkPublication(ctx context.Context, tx *sql.Tx, actor str
 		if r.blogs == nil {
 			return "", blogs.ErrUnavailable
 		}
-		if p.Meta == nil || len(p.Meta.Embeds) != 1 {
+		if !posts.IsNativeSolianLink(p.Content) && (p.Meta == nil || len(p.Meta.Embeds) != 1) {
 			return "blog_unavailable", nil
 		}
 		if e := r.blogs.RequireDomain(ctx, tx, p.Publisher, p.Content); e != nil {

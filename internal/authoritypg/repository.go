@@ -30,7 +30,10 @@ var ActivationSchema string
 //go:embed stream_ticket_schema.sql
 var StreamTicketSchema string
 
-var Schema = baseSchema + "\n" + AssuranceSchema + "\n" + ContinuitySchema + "\n" + ActivationSchema + "\n" + StreamTicketSchema
+//go:embed sudo_schema.sql
+var SudoSchema string
+
+var Schema = baseSchema + "\n" + AssuranceSchema + "\n" + ContinuitySchema + "\n" + ActivationSchema + "\n" + StreamTicketSchema + "\n" + SudoSchema
 
 type Repository struct{ db *sql.DB }
 

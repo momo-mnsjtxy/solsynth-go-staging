@@ -53,6 +53,12 @@ func (h router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		problem(w, http.StatusBadRequest, "INVALID_ROUTE_PATH")
 		return
 	}
+	if canonical, ok := movedStargatePath(r.URL.Path); ok {
+		// 使用同一处理器与事务边界；保留原 RequestURI，站内跳转跟随调用方前缀。
+		w = locationWriter{ResponseWriter: w, canonicalPrefix: "/api", externalPrefix: "/stargate"}
+		r = requestAtPath(r, canonical)
+		r.URL.RawPath = ""
+	}
 	// 专属入口必须先于网关选路，保留设备、签名和凭据协议自己的验证流程。
 	if h.serveDedicatedRoutes(w, r) || h.serveProtocolRoutes(w, r) ||
 		h.serveAccountAliases(w, r) || h.serveAccountExtras(w, r) ||

@@ -84,7 +84,7 @@ func (r *Repository) write(ctx context.Context, actor, permission string, fn fun
 		return e
 	}
 	defer tx.Rollback()
-	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, permission); e != nil {
+	if _, e = r.authorizeWrite(ctx, tx, actor, permission); e != nil {
 		return e
 	}
 	var now time.Time
@@ -94,7 +94,7 @@ func (r *Repository) write(ctx context.Context, actor, permission string, fn fun
 	if e = fn(tx, now.UTC()); e != nil {
 		return mapped(e)
 	}
-	if _, e = r.guard.Authorize(ctx, r.db, tx, actor, permission); e != nil {
+	if _, e = r.authorizeWrite(ctx, tx, actor, permission); e != nil {
 		return e
 	}
 	return tx.Commit()

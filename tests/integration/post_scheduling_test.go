@@ -104,6 +104,33 @@ func TestPGPostScheduleLifecycleAndNoEarlyVisibility(t *testing.T) {
 	f := newPostSchedulingFixture(t)
 	file := privatePostFile(t, f, "scheduled", "scheduled private bytes")
 	p := scheduledPost(t, f, posts.Patch{Attachments: mediaIDs(file.ID)})
+	// The API distinguishes an authored draft from a scheduled publication even
+	// though the guarded worker stores both behind the canonical draft boundary.
+	draftedAt := time.Now().UTC()
+	draft, e := f.posts.Create(f.ctx, f.actor, f.pub.ID, posts.Patch{Content: postString("Synthetic unscheduled draft"), DraftedAt: &draftedAt})
+	if e != nil {
+		t.Fatal(e)
+	}
+	ordinary, total, e := f.posts.List(f.ctx, f.actor, posts.ListOptions{Drafts: true, Publisher: f.pub.ID, Take: 20})
+	if e != nil || total != 1 || len(ordinary) != 1 || ordinary[0].ID != draft.ID {
+		t.Fatal("scheduled publication appeared in default drafts", ordinary, total, e)
+	}
+	combined, total, e := f.posts.List(f.ctx, f.actor, posts.ListOptions{Drafts: true, IncludeScheduled: true, Publisher: f.pub.ID, Take: 20})
+	if e != nil || total != 2 || len(combined) != 2 || combined[0].UpdatedAt.Before(combined[1].UpdatedAt) {
+		t.Fatal("combined scheduled/draft listing", combined, total, e)
+	}
+	var foundSchedule bool
+	for _, listed := range combined {
+		if listed.ID == p.ID {
+			foundSchedule = listed.Schedule != nil && listed.Schedule.State == "pending"
+		}
+	}
+	if !foundSchedule {
+		t.Fatal("combined listing lost scheduled projection")
+	}
+	if _, _, e := f.posts.List(f.otherCtx, f.other, posts.ListOptions{Drafts: true, IncludeScheduled: true, Publisher: f.pub.ID, Take: 20}); !errors.Is(e, posts.ErrForbidden) {
+		t.Fatal("scheduled listing bypassed publisher editor permission", e)
+	}
 	scheduleHidden(t, f, p.ID)
 	missingPostFile(t, f, context.Background(), "", file.ID)
 	if n, e := f.posts.ProcessScheduled(context.Background(), 100); e != nil || n != 0 {

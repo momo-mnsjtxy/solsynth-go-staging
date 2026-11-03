@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+// Reader HTTP boundary: authenticate every preview before reading the cache or
+// fetching a destination; cache invalidation additionally requires cache.scrap.
 package reader
 
 import (
@@ -44,6 +46,19 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 			respond(w, 405, &Failure{"METHOD_NOT_ALLOWED", "Method not allowed.", 405})
 			return
 		}
+		if auth == nil {
+			failure(w, ErrUnauthenticated)
+			return
+		}
+		actor, e := auth.Authenticate(r)
+		if e != nil {
+			failure(w, e)
+			return
+		}
+		if actor == "" {
+			failure(w, ErrUnauthenticated)
+			return
+		}
 		if repo == nil {
 			failure(w, ErrUnavailable)
 			return
@@ -78,19 +93,6 @@ func NewHandler(repo Repository, auth Auth) http.Handler {
 				return
 			}
 			respond(w, 200, v)
-			return
-		}
-		if auth == nil {
-			failure(w, ErrUnauthenticated)
-			return
-		}
-		actor, e := auth.Authenticate(r)
-		if e != nil {
-			failure(w, e)
-			return
-		}
-		if actor == "" {
-			failure(w, ErrUnauthenticated)
 			return
 		}
 		if e = auth.Authorize(r, "cache.scrap"); e != nil {

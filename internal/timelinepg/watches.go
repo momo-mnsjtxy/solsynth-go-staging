@@ -134,20 +134,41 @@ func (r *Repository) PatchPreferences(ctx context.Context, actor string, updates
 // identity endpoint. Each candidate's own visibility and bilateral block state
 // is rechecked in the same snapshot as canonical bookmark/reaction/reply rows.
 func (r *Repository) WatchAccounts(ctx context.Context, ids []string) (sphere.WatchAccounts, error) {
-	out := sphere.WatchAccounts{}
-	if len(ids) > 100 {
-		return out, timeline.ErrInvalid
-	}
-	for _, s := range ids {
-		if !authority.ValidID(s) {
-			return out, timeline.ErrInvalid
-		}
+	if e := validateWatchIDs(ids); e != nil {
+		return sphere.WatchAccounts{}, e
 	}
 	tx, e := r.read(ctx, "", false)
 	if e != nil {
-		return out, e
+		return sphere.WatchAccounts{}, e
 	}
 	defer tx.Rollback()
+	out, e := r.watchAccountsInTransaction(ctx, tx, ids)
+	if e == nil {
+		e = tx.Commit()
+	}
+	return out, e
+}
+
+func validateWatchIDs(ids []string) error {
+	if len(ids) > 100 {
+		return timeline.ErrInvalid
+	}
+	for _, id := range ids {
+		if !authority.ValidID(id) {
+			return timeline.ErrInvalid
+		}
+	}
+	return nil
+}
+
+func (r *Repository) watchAccountsInTransaction(ctx context.Context, tx *sql.Tx, ids []string) (sphere.WatchAccounts, error) {
+	out := sphere.WatchAccounts{}
+	if tx == nil {
+		return out, timeline.ErrInvalid
+	}
+	if e := validateWatchIDs(ids); e != nil {
+		return out, e
+	}
 	q := `WITH candidates AS(SELECT b.account_id,b.post_id,'bookmark' AS source FROM owned_post_bookmarks b WHERE b.post_id=ANY($1::uuid[]) UNION SELECT r.account_id,r.post_id,'reaction' FROM owned_post_reactions r WHERE r.post_id=ANY($1::uuid[]) UNION SELECT u.account_id,l.replied_post_id,'reply' FROM owned_post_relations l JOIN owned_text_posts x ON x.id=l.post_id JOIN owned_publishers u ON u.id=x.publisher_id WHERE l.replied_post_id=ANY($1::uuid[]) AND x.deleted_at IS NULL AND x.drafted_at IS NULL AND x.published_at<=CURRENT_TIMESTAMP AND u.deleted_at IS NULL AND u.account_id IS NOT NULL) SELECT DISTINCT c.account_id::text,c.source FROM candidates c JOIN owned_authority_accounts a ON a.id=c.account_id WHERE NOT a.disabled AND EXISTS(SELECT 1` + postpg.ActivePostFrom + ` AND p.id=c.post_id AND p.drafted_at IS NULL AND ` + strings.ReplaceAll(postpg.DetailPredicate(r.visibility), "$1", "c.account_id::text") + `) ORDER BY c.source,c.account_id::text`
 	rows, e := tx.QueryContext(ctx, q, ids)
 	if e != nil {
@@ -170,9 +191,6 @@ func (r *Repository) WatchAccounts(ctx context.Context, ids []string) (sphere.Wa
 	}
 	e = rows.Err()
 	rows.Close()
-	if e == nil {
-		e = tx.Commit()
-	}
 	return out, e
 }
 

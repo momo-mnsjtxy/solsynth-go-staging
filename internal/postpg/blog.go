@@ -103,8 +103,10 @@ func (r *Repository) prepareBlog(ctx context.Context, actor, selector, id, actio
 	if e != nil {
 		return nil, e
 	}
-	if prep == nil {
-		return nil, nil
+	if prep == nil || posts.IsNativeSolianLink(prep.url) {
+		// Native Solian links must not fetch the page merely to duplicate its
+		// client rendering. The preparation already binds permission and domain.
+		return prep, nil
 	}
 	link, e := r.blogs.Preview(ctx, prep.url)
 	if e != nil {
@@ -184,6 +186,10 @@ func (r *Repository) applyBlog(ctx context.Context, tx *sql.Tx, actor string, p 
 		return e
 	}
 	p.Content = canonical
+	if posts.IsNativeSolianLink(canonical) {
+		p.Meta = nil
+		return nil
+	}
 	if p.Title == nil || strings.TrimSpace(*p.Title) == "" {
 		p.Title = optional(&prep.link.Title)
 	}
@@ -201,7 +207,7 @@ func encodeBlog(p posts.Post) (any, error) {
 }
 func decodeBlog(p *posts.Post, b []byte) error {
 	if len(b) == 0 {
-		if p.Type == posts.Blog {
+		if p.Type == posts.Blog && !posts.IsNativeSolianLink(p.Content) {
 			return blogs.ErrUnavailable
 		}
 		return nil
@@ -209,7 +215,14 @@ func decodeBlog(p *posts.Post, b []byte) error {
 	if json.Unmarshal(b, &p.Meta) != nil || p.Meta == nil || len(p.Meta.Embeds) != 1 || len(p.Meta.Composed) != 0 || p.Meta.Thumbnail != nil || p.Meta.Embeds[0].Type != "link" {
 		return blogs.ErrUnavailable
 	}
-	return validateBlogPreview(p.Content, p.Meta.Embeds[0].Link)
+	if e := validateBlogPreview(p.Content, p.Meta.Embeds[0].Link); e != nil {
+		return e
+	}
+	if posts.IsNativeSolianLink(p.Content) {
+		// A previously stored preview must not keep duplicating the native card.
+		p.Meta = nil
+	}
+	return nil
 }
 func (r *Repository) CheckBlogPermission(ctx context.Context, actor, selector, raw string) (blogs.Permission, error) {
 	var out blogs.Permission

@@ -181,7 +181,7 @@ func TestPGOAuthRegistrationOwnershipAndResourceHostScopes(t *testing.T) {
 		w := httptest.NewRecorder()
 		host.ServeHTTP(w, r)
 		if w.Code != status {
-			t.Fatalf("register %d %s", w.Code, w.Body.String())
+			t.Fatalf("register status=%d want=%d body=%s", w.Code, status, w.Body.String())
 		}
 		return w
 	}
@@ -215,6 +215,75 @@ func TestPGOAuthRegistrationOwnershipAndResourceHostScopes(t *testing.T) {
 		t.Fatal(e)
 	}
 	backendCall(t, host, "GET", "/api/accounts/me", tokens.AccessToken, "", 401)
+	t.Run("wildcard_registration_consent_and_resource_policy", func(t *testing.T) {
+		f := newOAuthFixture(t, false)
+		visibility := int32(0)
+		policy := messagerpg.IndependentPolicy{NoneEncryptionMode: 77, NotifyAll: 10, NotifyMentions: 20, NotifyNone: 30}
+		host, err := application.NewPostgres(f.db, nil, application.Config{Authority: authorityConfig(t, f.keyDir, f.clock), SessionService: f.issuer, PublicVisibility: &visibility, MessagerPolicy: &policy, OAuthEnabled: true, OAuthConsentURL: "https://synthetic-consent.invalid/authorize"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = host.Ready(context.Background()); err != nil {
+			t.Fatal(err)
+		}
+		registration := oauth.Registration{Developer: f.dev, ProjectID: f.app.ProjectID, ClientName: "Synthetic wildcard resource client", RedirectURIs: []string{"https://synthetic-client.invalid/callback"}, GrantTypes: []string{"authorization_code", oauth.DeviceGrant}, ResponseTypes: []string{"code"}, Scope: "openid posts.* profile.*", TokenEndpointAuthMethod: "none"}
+		raw, err := json.Marshal(registration)
+		if err != nil {
+			t.Fatal(err)
+		}
+		registered := backendDecode[oauth.RegistrationResult](t, backendCall(t, host, "POST", "/stargate/auth/open/register", f.ownerToken, string(raw), 201))
+		if strings.Contains(registered.Scope, "*") || !strings.Contains(registered.Scope, "posts.create") {
+			t.Fatal("registration did not return concrete consent", registered)
+		}
+		discovery := backendDecode[struct {
+			Scopes []string `json:"scopes_supported"`
+		}](t, oauthHTTP(t, f.service, "GET", "/stargate/.well-known/openid-configuration", "", nil, 200))
+		if !oauth.Contains(discovery.Scopes, "posts.*") {
+			t.Fatal("wildcard support absent from discovery", discovery)
+		}
+		request, verifier := oauthRequest(f)
+		request.ClientID = registered.ClientID
+		request.Scope = registration.Scope
+		form := oauthForm(request)
+		preview := backendDecode[oauth.ClientInfo](t, oauthHTTP(t, f.service, "GET", "/stargate/auth/open/authorize?"+form.Encode(), f.ownerToken, nil, 200))
+		if len(preview.Scopes) != 6 || !oauth.Contains(preview.Scopes, "posts.delete") {
+			t.Fatal("consent did not display concrete wildcard grant", preview)
+		}
+		form.Set("authorize", "true")
+		decision := backendDecode[oauth.Decision](t, oauthHTTP(t, f.service, "POST", "/stargate/auth/open/authorize", f.ownerToken, form, 200))
+		redirect, err := url.Parse(decision.RedirectURI)
+		if err != nil {
+			t.Fatal(err)
+		}
+		tokens := backendDecode[oauth.Tokens](t, oauthHTTP(t, f.service, "POST", "/stargate/auth/open/token", "", url.Values{"grant_type": {"authorization_code"}, "client_id": {registered.ClientID}, "redirect_uri": {request.RedirectURI}, "code": {redirect.Query().Get("code")}, "code_verifier": {verifier}}, 200))
+		if strings.Contains(tokens.Scope, "*") || tokens.RefreshToken != "" {
+			t.Fatal("resource wildcard widened token/offline consent", tokens.Scope)
+		}
+		proof, err := f.verifier.AuthenticateOAuth(context.Background(), tokens.AccessToken)
+		if err != nil || proof.Account.ID != f.actor || !authority.OAuthResourceScope(proof.Session, "posts.create") {
+			t.Fatal("concrete signed grant not usable", proof.Session.Scopes, err)
+		}
+		backendCall(t, host, "GET", "/stargate/accounts/me", tokens.AccessToken, "", 200)
+		post := backendDecode[posts.Post](t, backendCall(t, host, "POST", "/sphere/posts?pub="+f.app.PublisherID, tokens.AccessToken, `{"content":"Synthetic wildcard delegated post","visibility":0}`, 200))
+		backendCall(t, host, "GET", "/sphere/posts/"+post.ID, tokens.AccessToken, "", 200)
+		backendCall(t, host, "GET", "/stargate/admin/accounts", tokens.AccessToken, "", 401)
+		backendCall(t, host, "DELETE", "/stargate/accounts/me", tokens.AccessToken, "", 401)
+		backendCall(t, host, "GET", "/stargate/wallets", tokens.AccessToken, "", 403)
+		query(t, f.db, `INSERT INTO owned_authority_grants(account_id,pattern,deny)VALUES($1,'posts.create',true)`, f.actor)
+		backendCall(t, host, "POST", "/sphere/posts?pub="+f.app.PublisherID, tokens.AccessToken, `{"content":"Synthetic canonical deny must block","visibility":0}`, 403)
+		var rejected int
+		if err = f.db.QueryRow(`SELECT count(*) FROM owned_text_posts WHERE publisher_id=$1 AND content='Synthetic canonical deny must block'`, f.app.PublisherID).Scan(&rejected); err != nil || rejected != 0 {
+			t.Fatal("fresh canonical deny failed to prevent persistence", rejected, err)
+		}
+		if err = f.repo.RevokeConsent(context.Background(), f.actor, registered.ClientID); err == nil {
+			// This direct call lacks its original authority proof and must not mutate
+			// consent; revoke through the public authenticated endpoint instead.
+			t.Fatal("unbound direct consent revocation accepted")
+		}
+		oauthHTTP(t, f.service, "DELETE", "/stargate/auth/open/consent", f.ownerToken, url.Values{"client_id": {registered.ClientID}}, 204)
+		backendCall(t, host, "GET", "/stargate/accounts/me", tokens.AccessToken, "", 401)
+
+	})
 }
 
 func oauthDeviceBlocker(t *testing.T, f oauthFixture, raw string) (*sql.Tx, int) {

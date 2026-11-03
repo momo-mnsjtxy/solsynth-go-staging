@@ -261,6 +261,344 @@ func TestPGPublisherContentScheduledPublication(t *testing.T) {
 	if n := contentOutboxCount(t, f, post.ID); n != 1 {
 		t.Fatal("scheduled notification", n)
 	}
+
+	// Publication watcher work uses the same durable hook for an immediate
+	// reply and a due scheduled reply, with no notification before publication.
+	backendCall(t, f.app, "POST", "/sphere/posts/"+post.ID+"/bookmark", f.otherToken, "", 200)
+	repo, readCtx := publisherNotificationReadRepo(t, f)
+	watcherCount := func(source string) int {
+		for range 100 {
+			n, e := repo.ProcessPending(context.Background(), 100)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if n == 0 {
+				break
+			}
+		}
+		return subscriptionCount(t, f.db, `SELECT count(*) FROM notification_v1.inbox WHERE account_id=$1 AND meta->>'post_id'=$2 AND meta->>'notification_type'='post_watch'`, f.other, source)
+	}
+	compose := func(relation string, scheduled bool, visibility int) posts.Post {
+		t.Helper()
+		timeField := ""
+		if scheduled {
+			timeField = fmt.Sprintf(`,"published_at":%q`, due.Format(time.RFC3339Nano))
+		}
+		return backendDecode[posts.Post](t, backendCall(t, f.app, "POST", "/sphere/posts?pub="+p.ID, f.token, fmt.Sprintf(`{"content":"synthetic watcher publication","visibility":%d,%q:%q%s}`, visibility, relation, post.ID, timeField), 200))
+	}
+	immediate := compose("replied_post_id", false, posts.Public)
+	drainPublisherContent(t, f.app)
+	if n := watcherCount(immediate.ID); n != 1 {
+		t.Fatal("ordinary reply watcher notification", n)
+	}
+	scheduled := compose("replied_post_id", true, posts.Public)
+	drainPublisherContent(t, f.app)
+	if n := watcherCount(scheduled.ID); n != 0 {
+		t.Fatal("early scheduled reply watcher notification", n)
+	}
+	query(t, f.db, `UPDATE owned_post_schedules SET due_at=clock_timestamp() WHERE post_id=$1`, scheduled.ID)
+	if n, e := f.app.ProcessScheduledPosts(context.Background(), 100); e != nil || n != 1 {
+		t.Fatal("scheduled reply publication", n, e)
+	}
+	var wg sync.WaitGroup
+	errs := make(chan error, 2)
+	second := backendApp(t, f.db, f.config)
+	for _, worker := range []*application.Backend{f.app, second} {
+		wg.Add(1)
+		go func(worker *application.Backend) {
+			defer wg.Done()
+			_, e := worker.ProcessPublisherContentNotifications(context.Background(), 100)
+			errs <- e
+		}(worker)
+	}
+	wg.Wait()
+	close(errs)
+	for e := range errs {
+		if e != nil {
+			t.Fatal(e)
+		}
+	}
+	drainPublisherContent(t, f.app, second)
+	if n := watcherCount(scheduled.ID); n != 1 {
+		t.Fatal("scheduled reply watcher duplicate or missing", n)
+	}
+	sender := &publisherNotificationSender{db: f.db, account: f.other}
+	dispatchWatchers := func() {
+		t.Helper()
+		for range 100 {
+			progressed, e := repo.DispatchOne(context.Background(), sender)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if !progressed {
+				return
+			}
+		}
+		t.Fatal("watcher provider queue did not become idle")
+	}
+	sentFor := func(source string) int {
+		count := 0
+		for _, delivery := range sender.items {
+			var meta map[string]any
+			if e := json.Unmarshal(delivery.Notification.Meta, &meta); e != nil {
+				t.Fatal(e)
+			}
+			if meta["post_id"] == source && meta["notification_type"] == "post_watch" {
+				count++
+			}
+		}
+		return count
+	}
+	dispatchWatchers()
+	dispatchWatchers()
+	if n := sentFor(scheduled.ID); n != 1 {
+		t.Fatal("scheduled watcher external delivery missing or duplicated", n)
+	}
+	if n := sentFor(immediate.ID); n != 1 {
+		t.Fatal("ordinary watcher external delivery missing or duplicated", n)
+	}
+	chain := compose("chained_post_id", false, posts.Public)
+	drainPublisherContent(t, f.app)
+	if n := watcherCount(chain.ID); n != 1 {
+		t.Fatal("chain watcher notification", n)
+	}
+
+	revokedPush := compose("replied_post_id", false, posts.Public)
+	drainPublisherContent(t, f.app)
+	if n := watcherCount(revokedPush.ID); n != 1 {
+		t.Fatal("watcher provider revocation positive control", n)
+	}
+	queued := compose("replied_post_id", false, posts.Public)
+	backendCall(t, f.app, "PUT", "/sphere/posts/watch", f.otherToken, `{"bookmark":{"replies":false}}`, 200)
+	drainPublisherContent(t, f.app)
+	if n := watcherCount(queued.ID); n != 0 {
+		t.Fatal("queued watcher ignored changed preference", n)
+	}
+	dispatchWatchers()
+	if n := sentFor(revokedPush.ID); n != 0 {
+		t.Fatal("watcher provider ignored preference revoked after projection", n)
+	}
+	page, e := repo.Replay(readCtx, f.other, notifications.DefaultApp, 0, 100)
+	if e != nil {
+		t.Fatal(e)
+	}
+	raw, _ := json.Marshal(page)
+	if strings.Contains(string(raw), scheduled.ID) || strings.Contains(string(raw), immediate.ID) {
+		t.Fatal("replay exposed reply notifications after preference revocation")
+	}
+	backendCall(t, f.app, "PUT", "/sphere/posts/watch", f.otherToken, `{"bookmark":{"replies":true}}`, 200)
+
+	removed := compose("replied_post_id", false, posts.Public)
+	backendCall(t, f.app, "DELETE", "/sphere/posts/"+post.ID+"/bookmark", f.otherToken, "", 204)
+	backendCall(t, f.app, "POST", "/sphere/posts/"+post.ID+"/bookmark", f.otherToken, "", 200)
+	drainPublisherContent(t, f.app)
+	if n := watcherCount(removed.ID); n != 0 {
+		t.Fatal("replaced bookmark revived an old watcher intent", n)
+	}
+	privateReply := compose("replied_post_id", false, posts.Private)
+	drainPublisherContent(t, f.app)
+	if n := watcherCount(privateReply.ID); n != 0 {
+		t.Fatal("public-parent watcher saw a private reply", n)
+	}
+	mutedReply := compose("replied_post_id", false, posts.Public)
+	// Effective relationships are a read-only expiry projection. Exercise the
+	// canonical authenticated writer when changing the notification audience.
+	backendCall(t, f.app, "POST", "/stargate/relationships/"+f.other+"/mute", f.token, `{}`, 200)
+	drainPublisherContent(t, f.app)
+	if n := watcherCount(mutedReply.ID); n != 0 {
+		t.Fatal("publisher-muted recipient received watcher notification", n)
+	}
+	backendCall(t, f.app, "DELETE", "/stargate/relationships/"+f.other, f.token, "", 204)
+	visible := compose("replied_post_id", false, posts.Public)
+	drainPublisherContent(t, f.app)
+	if n := watcherCount(visible.ID); n != 1 {
+		t.Fatal("public reply watcher positive control", n)
+	}
+	backendCall(t, f.app, "PATCH", "/sphere/posts/"+visible.ID, f.token, `{"visibility":3}`, 200)
+	list, _, e := repo.List(readCtx, f.other, notifications.DefaultApp, 100, 0)
+	if e != nil {
+		t.Fatal(e)
+	}
+	raw, _ = json.Marshal(list)
+	if strings.Contains(string(raw), visible.ID) {
+		t.Fatal("inbox exposed a withdrawn watcher source")
+	}
+	t.Run("large chain publication and current watcher membership", func(t *testing.T) {
+		exerciseLongChainPublicationWatchers(t, f, p)
+	})
+	t.Run("publication recipient foreign key does not deadlock watcher", func(t *testing.T) {
+		f := newBackendFixture(t)
+		// Force the formerly unsafe order: the worker observes the smaller
+		// recipient first while a publication already owns its author's row.
+		if f.other > f.actor {
+			f.actor, f.other = f.other, f.actor
+			f.token, f.otherToken = f.otherToken, f.token
+		}
+		p := subscriptionPublisher(t, f)
+		head := contentNotificationPost(t, f, p, posts.Public, "synthetic watch lock head")
+		backendCall(t, f.app, "POST", "/sphere/posts/"+head.ID+"/bookmark", f.otherToken, "", 200)
+		compose := func() posts.Post {
+			t.Helper()
+			return backendDecode[posts.Post](t, backendCall(t, f.app, "POST", "/sphere/posts?pub="+p.ID, f.token, fmt.Sprintf(`{"content":"synthetic watch lock reply","visibility":0,"replied_post_id":%q}`, head.ID), 200))
+		}
+		first := compose()
+		// Complete ordinary publisher discovery without claiming the pending
+		// watcher. This fixture has no subscriber, so each source costs one step.
+		for range 100 {
+			pending := subscriptionCount(t, f.db, `SELECT count(*) FROM owned_publisher_content_notification_intents WHERE completed_at IS NULL`)
+			if pending == 0 {
+				break
+			}
+			if n, e := f.app.ProcessPublisherContentNotifications(context.Background(), min(pending, 100)); e != nil || n == 0 {
+				t.Fatal("source discovery did not advance", n, e)
+			}
+		}
+		if n := subscriptionCount(t, f.db, `SELECT count(*) FROM owned_publisher_content_notification_intents WHERE completed_at IS NULL`); n != 0 {
+			t.Fatal("ordinary source discovery still pending", n)
+		}
+		pendingWatch := func(source string) int {
+			return subscriptionCount(t, f.db, `SELECT count(*) FROM owned_post_watch_notification_intents q JOIN owned_publisher_content_notification_intents i ON i.id=q.publication_id WHERE i.source_id=$1 AND q.account_id=$2 AND q.processed_at IS NULL AND NOT q.suppressed AND q.notification_id IS NULL`, source, f.other)
+		}
+		if n := pendingWatch(first.ID); n != 1 {
+			t.Fatal("missing pending watcher positive control", n)
+		}
+		notificationsRepo, _ := publisherNotificationReadRepo(t, f)
+		publication := publishernotificationpg.New(f.db, socialpg.New(f.db), notificationsRepo, notifications.DefaultApp)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		tx, e := f.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+		if e != nil {
+			t.Fatal(e)
+		}
+		defer tx.Rollback()
+		if _, e = tx.ExecContext(ctx, `SELECT id FROM owned_authority_accounts WHERE id=$1 FOR UPDATE`, f.actor); e != nil {
+			t.Fatal(e)
+		}
+		if _, e = tx.ExecContext(ctx, `SET LOCAL lock_timeout='250ms'`); e != nil {
+			t.Fatal(e)
+		}
+		// Prepare a second publication in that same transaction. Its real
+		// RecordPublication hook below must still obtain the recipient FK's
+		// KEY SHARE lock after the watch worker has tried the opposite order.
+		at := time.Now().UTC().Truncate(time.Microsecond)
+		second := posts.Post{ID: authorityUUID(t), PublisherID: p.ID, Publisher: p, Content: "synthetic watch lock concurrent publication", Visibility: posts.Public, CreatedAt: at, UpdatedAt: at, PublishedAt: &at}
+		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_text_posts(id,publisher_id,content,visibility,type,published_at,created_at,updated_at)VALUES($1,$2,$3,0,0,$4,$4,$4)`, second.ID, p.ID, second.Content, at); e != nil {
+			t.Fatal(e)
+		}
+		if _, e = tx.ExecContext(ctx, `INSERT INTO owned_post_relations(post_id,replied_post_id)VALUES($1,$2)`, second.ID, head.ID); e != nil {
+			t.Fatal(e)
+		}
+		workerCtx, workerCancel := context.WithTimeout(context.Background(), time.Second)
+		n, workerErr := f.app.ProcessPublisherContentNotifications(workerCtx, 100)
+		workerCancel()
+		if workerErr != nil || n != 0 {
+			t.Fatal("contended watcher must release its partial lock plan without claiming work", n, workerErr)
+		}
+		if n := pendingWatch(first.ID); n != 1 {
+			t.Fatal("contention changed or suppressed pending intent", n)
+		}
+		if e = publication.RecordPublication(ctx, f.db, tx, second); e != nil {
+			t.Fatal("publication recipient FK waited or deadlocked after worker contention", e)
+		}
+		if e = tx.Commit(); e != nil {
+			t.Fatal("contended publication could not commit", e)
+		}
+		backendCall(t, f.app, "GET", "/sphere/posts/"+second.ID, f.token, "", 200)
+		third := compose()
+		drainPublisherContent(t, f.app)
+		drainPublisherContent(t, f.app)
+		for range 100 {
+			n, e := notificationsRepo.ProcessPending(context.Background(), 100)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if n == 0 {
+				break
+			}
+		}
+		for _, source := range []string{first.ID, second.ID, third.ID} {
+			if n := subscriptionCount(t, f.db, `SELECT count(*) FROM notification_v1.inbox WHERE account_id=$1 AND meta->>'post_id'=$2 AND meta->>'notification_type'='post_watch'`, f.other, source); n != 1 {
+				t.Fatal("retry lost or duplicated watcher delivery", source, n)
+			}
+		}
+		sender := &publisherNotificationSender{db: f.db, account: f.other}
+		for range 2 {
+			for range 100 {
+				progressed, e := notificationsRepo.DispatchOne(context.Background(), sender)
+				if e != nil {
+					t.Fatal(e)
+				}
+				if !progressed {
+					break
+				}
+			}
+		}
+		for _, source := range []string{first.ID, second.ID, third.ID} {
+			count := 0
+			for _, delivery := range sender.items {
+				var meta map[string]any
+				if e := json.Unmarshal(delivery.Notification.Meta, &meta); e != nil {
+					t.Fatal(e)
+				}
+				if meta["post_id"] == source && meta["notification_type"] == "post_watch" {
+					count++
+				}
+			}
+			if count != 1 {
+				t.Fatal("retry lost or duplicated external watcher delivery", source, count)
+			}
+		}
+	})
+}
+
+// Long chains are ordinary content: bounded resolver queries must batch their
+// inputs without introducing a new publication limit. Witness-specific targets
+// retain the same visibility, identity and current chain-membership fences.
+func exerciseLongChainPublicationWatchers(t *testing.T, f backendFixture, p accounts.Publisher) {
+	t.Helper()
+	head := contentNotificationPost(t, f, p, posts.Public, "synthetic long chain head")
+	query(t, f.db, `WITH added AS(INSERT INTO owned_text_posts(id,publisher_id,content,visibility,type,published_at,created_at,updated_at)SELECT gen_random_uuid(),$1::uuid,'synthetic long chain member',0,0,clock_timestamp(),clock_timestamp(),clock_timestamp()FROM generate_series(1,103)RETURNING id)INSERT INTO owned_post_relations(post_id,chained_post_id)SELECT id,$2::uuid FROM added`, p.ID, head.ID)
+	var last string
+	if e := f.db.QueryRow(`SELECT p.id::text FROM owned_text_posts p JOIN owned_post_relations l ON l.post_id=p.id WHERE l.chained_post_id=$1 ORDER BY p.id DESC LIMIT 1`, head.ID).Scan(&last); e != nil {
+		t.Fatal(e)
+	}
+	backendCall(t, f.app, "POST", "/sphere/posts/"+last+"/bookmark", f.otherToken, "", 200)
+	compose := func() posts.Post {
+		t.Helper()
+		return backendDecode[posts.Post](t, backendCall(t, f.app, "POST", "/sphere/posts?pub="+p.ID, f.token, fmt.Sprintf(`{"content":"synthetic long chain publication","visibility":0,"chained_post_id":%q}`, head.ID), 200))
+	}
+	watchCount := func(source string) int {
+		return subscriptionCount(t, f.db, `SELECT count(*)FROM notification_v1.outbox WHERE account_id=$1 AND command->'Meta'->>'post_id'=$2 AND command->'Meta'->>'notification_type'='post_watch'`, f.other, source)
+	}
+	lateBatch := compose()
+	drainPublisherContent(t, f.app)
+	if got := watchCount(lateBatch.ID); got != 1 {
+		t.Fatal("watcher after the first 100 chain posts was lost", got)
+	}
+	var targetCount int
+	if e := f.db.QueryRow(`SELECT cardinality(q.targets)FROM owned_post_watch_notification_intents q JOIN owned_publisher_content_notification_intents i ON i.id=q.publication_id WHERE i.source_id=$1 AND q.account_id=$2 AND q.event='chains'`, lateBatch.ID, f.other).Scan(&targetCount); e != nil || targetCount > 2 {
+		t.Fatal("recipient copied unrelated chain dependencies", targetCount, e)
+	}
+	// A queued chain notification cannot survive its only witness moving out of
+	// the chain, even if that post and its original bookmark remain readable.
+	moved := compose()
+	query(t, f.db, `UPDATE owned_post_relations SET chained_post_id=NULL WHERE post_id=$1`, last)
+	drainPublisherContent(t, f.app)
+	if got := watchCount(moved.ID); got != 0 {
+		t.Fatal("detached witness revived chain notification", got)
+	}
+	query(t, f.db, `UPDATE owned_post_relations SET chained_post_id=$2 WHERE post_id=$1`, last, head.ID)
+	// One account may legitimately watch every post in a long chain. Its own
+	// dependency set can exceed 101 and must fit the persisted intent too.
+	query(t, f.db, `INSERT INTO owned_post_bookmarks(id,post_id,account_id,created_at)SELECT gen_random_uuid(),p.id,$2::uuid,clock_timestamp()FROM owned_text_posts p WHERE p.id=$1 OR EXISTS(SELECT 1 FROM owned_post_relations l WHERE l.post_id=p.id AND l.chained_post_id=$1)ON CONFLICT(post_id,account_id)DO NOTHING`, head.ID, f.other)
+	allPosts := compose()
+	if e := f.db.QueryRow(`SELECT cardinality(q.targets)FROM owned_post_watch_notification_intents q JOIN owned_publisher_content_notification_intents i ON i.id=q.publication_id WHERE i.source_id=$1 AND q.account_id=$2 AND q.event='chains'`, allPosts.ID, f.other).Scan(&targetCount); e != nil || targetCount <= 101 {
+		t.Fatal("large legitimate watcher set was rejected or truncated", targetCount, e)
+	}
+	drainPublisherContent(t, f.app)
+	if got := watchCount(allPosts.ID); got != 1 {
+		t.Fatal("large witness set duplicated or lost publication", got)
+	}
 }
 
 func newPublisherNotificationFixtureInDatabase(t *testing.T, db *sql.DB) backendFixture {

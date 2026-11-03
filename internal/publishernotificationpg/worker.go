@@ -65,7 +65,19 @@ func (r *Repository) ProcessDue(ctx context.Context, limit int) (int, error) {
 			return n, e
 		}
 		if !ok {
-			return n, nil
+			ok, e = r.processWatchOne(ctx)
+			if errors.Is(e, ErrWatchRetry) {
+				// processWatchOne has rolled back its entire lock plan. Like a
+				// skipped leased row, this item remains pending for the next run;
+				// it is neither completed nor counted as successful work.
+				return n, nil
+			}
+			if e != nil {
+				return n, e
+			}
+			if !ok {
+				return n, nil
+			}
 		}
 	}
 	return limit, nil
@@ -257,8 +269,12 @@ func (r *Repository) lockCurrent(ctx context.Context, tx *sql.Tx, in intent, c c
 }
 
 func (r *Repository) sourceEligibilitySQL(account, intentID, subscription, incarnation string) string {
+	// Shared visibility predicates accept a text actor, including an empty
+	// anonymous value. Keep UUID comparisons explicit after those predicates
+	// establish the parameter type, in both worker and inbox query contexts.
+	accountID := `NULLIF((` + account + `)::text,'')::uuid`
 	publisher := postpg.VisiblePublisherPredicate(r.visibility, "u", account, true)
-	common := `f.id=` + subscription + ` AND f.account_id=` + account + ` AND f.publisher_id=i.publisher_id AND f.incarnation=` + incarnation + ` AND f.incarnation_started_at<=i.occurred_at AND f.state='accepted' AND f.ended_at IS NULL AND f.notify
+	common := `f.id=` + subscription + ` AND f.account_id=` + accountID + ` AND f.publisher_id=i.publisher_id AND f.incarnation=` + incarnation + ` AND f.incarnation_started_at<=i.occurred_at AND f.state='accepted' AND f.ended_at IS NULL AND f.notify
 	 AND recipient.id=f.account_id AND NOT recipient.disabled AND NOT EXISTS(SELECT 1 FROM owned_authority_punishments pun WHERE pun.account_id=recipient.id AND pun.kind='disable_account' AND(pun.starts_at IS NULL OR pun.starts_at<=clock_timestamp())AND(pun.expires_at IS NULL OR pun.expires_at>clock_timestamp()))
 	 AND ` + publisher + `
 	 AND NOT EXISTS(SELECT 1 FROM owned_social_effective_relationships mute WHERE mute.status=-50 AND ((mute.account_id=COALESCE(u.account_id,realm.account_id) AND mute.related_id=f.account_id) OR(mute.related_id=COALESCE(u.account_id,realm.account_id) AND mute.account_id=f.account_id)))`
@@ -285,7 +301,7 @@ func (r *Repository) PublisherContentVisibleSQL() string {
 	if r == nil || r.visibility == nil {
 		return `FALSE`
 	}
-	return `EXISTS(SELECT 1 FROM owned_publisher_content_notification_receipts receipt JOIN owned_publisher_content_notification_intents source ON source.id=receipt.intent_id WHERE receipt.outbox_id=inbox.id AND receipt.account_id=NULLIF($1::text,'')::uuid AND receipt.outcome='enqueued' AND ` + r.sourceEligibilitySQL("NULLIF($1::text,'')::uuid", "source.id", "receipt.subscription_id", "receipt.subscription_incarnation") + `)`
+	return `(EXISTS(SELECT 1 FROM owned_publisher_content_notification_receipts receipt JOIN owned_publisher_content_notification_intents source ON source.id=receipt.intent_id WHERE receipt.outbox_id=inbox.id AND receipt.account_id=NULLIF($1::text,'')::uuid AND receipt.outcome='enqueued' AND ` + r.sourceEligibilitySQL("NULLIF($1::text,'')::uuid", "source.id", "receipt.subscription_id", "receipt.subscription_incarnation") + `) OR EXISTS(SELECT 1 FROM owned_post_watch_notification_intents q WHERE q.notification_id=inbox.id AND q.account_id=NULLIF($1::text,'')::uuid AND ` + r.watchEligibilitySQL("$1::text") + `))`
 }
 
 // PublisherContentDeliveryAllowed owns the current-policy lock plan for both
@@ -294,6 +310,9 @@ func (r *Repository) PublisherContentVisibleSQL() string {
 func (r *Repository) PublisherContentDeliveryAllowed(ctx context.Context, tx *sql.Tx, account, app, notificationID string) (bool, error) {
 	if r == nil || tx == nil || app != r.app {
 		return false, notifications.ErrUnavailable
+	}
+	if found, allowed, e := r.watchDeliveryAllowed(ctx, tx, account, notificationID); found || e != nil {
+		return allowed, e
 	}
 	var in intent
 	var c candidate

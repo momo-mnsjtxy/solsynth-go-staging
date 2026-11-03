@@ -2,6 +2,8 @@
 
 This checkpoint includes modified Go ports derived from Solsynth/DysonNetwork at commit `4ee2d0cebb9da8284a92483fee6dce795bf6947c`, whose applicable root license is GNU AGPL v3. The original license text is preserved in `LICENSE.txt` and beside source snapshots. Changes in this workspace were made on 2026-10-07.
 
+The 2026-11-02 update additionally derives selected changes from SoSYS/DysonNetwork `74aeaa76ae0784e91007b9d798360edcdfd980bb`, Solian `c430ad0e4c26bd567071218ec695d02fdc4659de`, and authored Socommon SDK callers at `7179f511defc28c8c98f242a5fd62cd4c6146297`. Their applicable AGPL license texts and selected unmodified source files are retained under `inventory/upstream-sync-20261102/`. The earlier snapshots and notices remain intact.
+
 Account-board contract work also uses the licensed Solsynth/Solian client at pinned revisions identified in its provenance. No ownership of upstream work is claimed. Source files and original notices supplied with the selected licensed snapshots are retained.
 
 The local command, JSON persistence adapter and synthetic tests are migration work in this checkpoint. Repository/service/API parity has not been established merely by translating selected source policies.

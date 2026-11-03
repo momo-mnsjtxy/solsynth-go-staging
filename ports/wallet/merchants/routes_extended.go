@@ -99,7 +99,7 @@ func handleExtended(w http.ResponseWriter, r *http.Request, repo Repository, aut
 				out, err = admin.AdminTransaction(r.Context(), actor, parts[4])
 			}
 		case len(parts) == 4 && parts[3] == "orders" && r.Method == http.MethodGet:
-			err = auth.Authorize(r, "orders.view")
+			err = auth.Authorize(r, PermissionAdminOrdersView)
 			var q AdminQuery
 			if err == nil {
 				q, err = adminQuery(r)
@@ -113,7 +113,7 @@ func handleExtended(w http.ResponseWriter, r *http.Request, repo Repository, aut
 				}
 			}
 		case len(parts) == 5 && parts[3] == "orders" && r.Method == http.MethodGet:
-			err = auth.Authorize(r, "orders.view")
+			err = auth.Authorize(r, PermissionAdminOrdersView)
 			if err == nil {
 				out, err = admin.AdminOrder(r.Context(), actor, parts[4])
 			}
@@ -126,7 +126,7 @@ func handleExtended(w http.ResponseWriter, r *http.Request, repo Repository, aut
 				out, err = admin.RefundOrder(r.Context(), actor, parts[4], r.Header.Get("Idempotency-Key"))
 			}
 		case len(parts) == 4 && parts[3] == "inbound-orders" && r.Method == http.MethodGet:
-			err = auth.Authorize(r, "orders.view")
+			err = auth.Authorize(r, PermissionAdminOrdersView)
 			var q AdminQuery
 			if err == nil {
 				q, err = adminQuery(r)
@@ -140,7 +140,7 @@ func handleExtended(w http.ResponseWriter, r *http.Request, repo Repository, aut
 				}
 			}
 		case len(parts) == 5 && parts[3] == "inbound-orders" && r.Method == http.MethodGet:
-			err = auth.Authorize(r, "orders.view")
+			err = auth.Authorize(r, PermissionAdminOrdersView)
 			if err == nil {
 				out, err = admin.AdminInboundOrder(r.Context(), actor, parts[4])
 			}
@@ -217,12 +217,12 @@ func handleExtended(w http.ResponseWriter, r *http.Request, repo Repository, aut
 		}
 		switch {
 		case len(parts) == 4 && parts[3] == "golds-resupply-pack" && r.Method == http.MethodGet:
-			err = auth.Authorize(r, "orders.view")
+			err = auth.Authorize(r, PermissionAdminProductsView)
 			if err == nil {
 				out, err = admin.WalletProductSummary(r.Context(), actor)
 			}
 		case len(parts) == 6 && parts[3] == "orders" && parts[5] == "apply" && r.Method == http.MethodPost:
-			err = auth.Authorize(r, "orders.pay")
+			err = auth.Authorize(r, PermissionAdminOrdersManage)
 			var v WalletProductApply
 			if err == nil {
 				err = decode(w, r, &v)

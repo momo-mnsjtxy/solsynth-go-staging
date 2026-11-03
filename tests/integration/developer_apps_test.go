@@ -3,7 +3,11 @@ package integration_test
 
 import (
 	"context"
+	"crypto/pbkdf2"
+	"crypto/rand"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -11,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -19,7 +24,9 @@ import (
 	"solsynth.local/go-migration/internal/apppg"
 	"solsynth.local/go-migration/internal/authoritypg"
 	"solsynth.local/go-migration/internal/boardpg"
+	"solsynth.local/go-migration/internal/signinpg"
 	"solsynth.local/go-migration/ports/authority"
+	"solsynth.local/go-migration/ports/authority/signin"
 	"solsynth.local/go-migration/ports/develop/apps"
 	profiles "solsynth.local/go-migration/ports/passport/accounts"
 	"solsynth.local/go-migration/ports/passport/board"
@@ -49,6 +56,90 @@ type developerFixture struct {
 	actor, other, token, otherToken, dev string
 }
 
+// Developer fixtures complete the same password and delivered-email challenge
+// as the client. They never write elevation rows or assert trusted auth methods.
+var developerPasswordOnce sync.Once
+var developerPasswordHash []byte
+var developerPasswordError error
+
+func pgIssueDeveloperCredential(t *testing.T, db *sql.DB, issuer *authority.Service, actor string, cfg authority.Config) authority.Pair {
+	t.Helper()
+	pair := pgIssue(t, issuer, actor)
+	pgElevateDeveloperSession(t, db, issuer, actor, pair.Token, cfg)
+	return pair
+}
+func pgElevateDeveloperSession(t *testing.T, db *sql.DB, issuer *authority.Service, actor, token string, cfg authority.Config) {
+	t.Helper()
+	query(t, db, signinpg.Schema)
+	developerPasswordOnce.Do(func() {
+		salt := make([]byte, 16)
+		if _, developerPasswordError = rand.Read(salt); developerPasswordError != nil {
+			return
+		}
+		var hash []byte
+		hash, developerPasswordError = pbkdf2.Key(sha256.New, syntheticPassword, salt, 600000, 32)
+		developerPasswordHash = []byte("pbkdf2-sha256$600000$" + base64.RawStdEncoding.EncodeToString(salt) + "$" + base64.RawStdEncoding.EncodeToString(hash))
+	})
+	if developerPasswordError != nil {
+		t.Fatal(developerPasswordError)
+	}
+	email := "synthetic_sudo_" + strings.ReplaceAll(actor, "-", "") + "@example.invalid"
+	query(t, db, `INSERT INTO owned_authority_credentials(account_id,email,verified_at)VALUES($1,$2,$3)ON CONFLICT(account_id)DO NOTHING`, actor, email, cfg.Now())
+	query(t, db, `INSERT INTO owned_authority_factors(id,account_id,type,created_at,enabled_at,secret,last_counter)VALUES($1,$2,0,$3,$3,$4,-1)ON CONFLICT(account_id,type)DO NOTHING`, authorityUUID(t), actor, cfg.Now(), developerPasswordHash)
+	var currentEmail string
+	if err := db.QueryRow(`SELECT email FROM owned_authority_credentials WHERE account_id=$1`, actor).Scan(&currentEmail); err != nil {
+		t.Fatal(err)
+	}
+	canonical := authoritypg.New(db)
+	verifier, err := authority.NewVerifier(canonical, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	guard := authoritypg.NewTransactionGuard(canonical, verifier)
+	store := signinpg.New(db, canonical, guard)
+	delivery := &syntheticDelivery{tokens: map[string]string{}}
+	seal := sha256.Sum256(append(append([]byte(nil), cfg.ReplaySealKey...), []byte("synthetic-developer-sudo")...))
+	service, err := signin.New(store, issuer, verifier, signin.Config{SealKey: seal[:], Issuer: "Synthetic Developer Sudo", Delivery: delivery, Now: cfg.Now})
+	if err != nil {
+		t.Fatal(err)
+	}
+	challenge, err := service.StartSudo(context.Background(), token, actor, "Synthetic developer")
+	if err != nil {
+		t.Fatal(err)
+	}
+	proof, err := verifier.Authenticate(context.Background(), token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := store.Bind(context.Background(), proof)
+	factors, err := service.ChallengeFactors(ctx, challenge.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var password, emailFactor string
+	for _, factor := range factors {
+		if factor.Type == 0 {
+			password = factor.ID
+		}
+		if factor.Type == 1 {
+			emailFactor = factor.ID
+		}
+	}
+	if password == "" || emailFactor == "" {
+		t.Fatal("synthetic password/email factors missing")
+	}
+	if _, err = service.VerifyFactor(ctx, challenge.ID, password, syntheticPassword, actor); err != nil {
+		t.Fatal(err)
+	}
+	if err = service.PrepareFactor(ctx, challenge.ID, emailFactor); err != nil {
+		t.Fatal(err)
+	}
+	done, err := service.VerifyFactor(ctx, challenge.ID, emailFactor, delivery.code(currentEmail, "sudo"), actor)
+	if err != nil || done.StepRemain != 0 {
+		t.Fatal("synthetic sudo failed", err, done.StepRemain)
+	}
+}
+
 func newDeveloperFixture(t *testing.T) developerFixture {
 	t.Helper()
 	db := accountDB(t)
@@ -70,8 +161,8 @@ func newDeveloperFixture(t *testing.T) developerFixture {
 	if e != nil {
 		t.Fatal(e)
 	}
-	f.token = pgIssue(t, issuer, f.actor).Token
-	f.otherToken = pgIssue(t, issuer, f.other).Token
+	f.token = pgIssueDeveloperCredential(t, db, issuer, f.actor, config).Token
+	f.otherToken = pgIssueDeveloperCredential(t, db, issuer, f.other, config).Token
 	f.v, e = authority.NewVerifier(authoritypg.New(db), config)
 	if e != nil {
 		t.Fatal(e)
@@ -124,6 +215,36 @@ func TestPGDeveloperAppsLifecycle(t *testing.T) {
 	f := newDeveloperFixture(t)
 	_, a, q := f.setup(t)
 	root := "/api/private/apps/" + a.ID
+	// A regular management session retains reads and project membership checks,
+	// but permission alone cannot delete an app or mint developer credentials.
+	issuer, err := authority.New(authoritypg.New(f.db), f.config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ordinary := pgIssue(t, issuer, f.actor).Token
+	for _, operation := range []struct{ method, path, body string }{
+		{"POST", root + "/secrets" + q, `{}`}, {"DELETE", root + q, ""},
+	} {
+		w := backendCall(t, f.handler, operation.method, operation.path, ordinary, operation.body, 403)
+		if !strings.Contains(w.Body.String(), "AUTH_SUDO_REQUIRED") {
+			t.Fatal(w.Body.String())
+		}
+	}
+	backendCall(t, f.handler, "GET", root+q, ordinary, "", 200)
+	backendCall(t, f.handler, "GET", "/api/private/projects?dev="+f.dev, "", "", 401)
+	backendCall(t, f.handler, "GET", "/api/private/projects?dev="+f.dev, f.otherToken, "", 403)
+	// Expired canonical evidence denies even when the bearer and permission remain
+	// current; restore only the synthetic record for the remaining lifecycle.
+	proof, err := f.v.Authenticate(context.Background(), f.token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	query(t, f.db, `UPDATE owned_authority_sudo_elevations SET auth_time=auth_time-interval '5 minutes',expires_at=expires_at-interval '5 minutes' WHERE session_id=$1`, proof.Session.ID)
+	denied := backendCall(t, f.handler, "POST", root+"/secrets"+q, f.token, `{}`, 403)
+	if !strings.Contains(denied.Body.String(), "AUTH_SUDO_REQUIRED") {
+		t.Fatal(denied.Body.String())
+	}
+	query(t, f.db, `UPDATE owned_authority_sudo_elevations SET auth_time=auth_time+interval '5 minutes',expires_at=expires_at+interval '5 minutes' WHERE session_id=$1`, proof.Session.ID)
 	backendCall(t, f.handler, "GET", root+q, "", "", 401)
 	backendCall(t, f.handler, "GET", root+q, f.otherToken, "", 403)
 	backendCall(t, f.handler, "GET", "/api/apps/"+a.Slug, "", "", 404)
@@ -202,6 +323,14 @@ func TestPGDeveloperAppsLifecycle(t *testing.T) {
 		}
 	}
 	backendCall(t, f.handler, "POST", root+"/board/payload", *secret.Secret, `{"account_id":"`+f.actor+`","widget_key":"weather","payload":{}}`, 403)
+	// The deliberate security-policy mutations above revoke the old sudo receipt
+	// even after permissions return to their original value. Complete a new real
+	// challenge before continuing the existing credential-rotation lifecycle.
+	staleSudo := backendCall(t, f.handler, "POST", root+"/secrets/"+secret.ID+"/rotate"+q, f.token, `{}`, 403)
+	if !strings.Contains(staleSudo.Body.String(), "AUTH_SUDO_REQUIRED") {
+		t.Fatal(staleSudo.Body.String())
+	}
+	pgElevateDeveloperSession(t, f.db, issuer, f.actor, f.token, f.config)
 	rotate := backendDecode[apps.Secret](t, backendCall(t, f.handler, "POST", root+"/secrets/"+secret.ID+"/rotate"+q, f.token, `{}`, 200))
 	backendCall(t, f.handler, "GET", appPath, *secret.Secret, "", 401)
 	backendCall(t, f.handler, "POST", root+"/board/payload", *rotate.Secret, body, 200)

@@ -1,0 +1,228 @@
+# Post API Reference
+
+This document covers the reply-related post APIs, batch management endpoints, and the reply count fields exposed on `SnPost`.
+
+See also: [Post Collections API](POST_COLLECTIONS.md) for collection management endpoints.
+
+## Reply Count Fields
+
+Posts now expose two reply count fields with different meanings:
+
+- `replies_count`: direct replies only
+- `thread_replies_count`: all descendant replies in the thread, including direct replies
+
+Use `replies_count` when loading the next page of comments from the direct replies endpoint.
+Use `thread_replies_count` for feed or timeline UI that wants the full discussion size.
+
+## List Direct Replies
+
+Returns only the direct children of the target post.
+
+```http
+GET /api/posts/{id}/replies?offset=0&take=20
+```
+
+### Query Parameters
+
+- `offset`: pagination offset for direct replies
+- `take`: page size for direct replies
+
+### Response Headers
+
+- `X-Total`: total number of direct replies to the target post
+
+### Response Shape
+
+```json
+[
+  {
+    "id": "reply-id",
+    "replied_post_id": "parent-post-id",
+    "replies_count": 2,
+    "thread_replies_count": 2
+  }
+]
+```
+
+Notes:
+
+- `replies_count` on each returned reply is still that reply's direct child count
+- `thread_replies_count` on each returned reply is the full descendant count below that reply
+- this endpoint does not nest children in the response body
+
+## List Threaded Replies
+
+Returns a flattened list of all visible replies (direct and descendants), ordered by hierarchy. The response is paginated at the top level only.
+
+```http
+GET /api/posts/{id}/replies/threaded?offset=0&take=20
+```
+
+### Query Parameters
+
+- `offset`: pagination offset for top-level direct replies
+- `take`: page size for top-level direct replies
+
+### Response Headers
+
+- `X-Total`: total number of direct replies to the target post
+
+### Response Shape
+
+Each item is a `ThreadedReplyNode`:
+
+```json
+[
+  {
+    "post": {
+      "id": "reply-a",
+      "replied_post_id": "parent-post-id",
+      "replies_count": 1,
+      "thread_replies_count": 3
+    },
+    "depth": 0,
+    "parentId": null
+  },
+  {
+    "post": {
+      "id": "reply-b",
+      "replied_post_id": "reply-a",
+      "replies_count": 1,
+      "thread_replies_count": 2
+    },
+    "depth": 1,
+    "parentId": "reply-a"
+  },
+  {
+    "post": {
+      "id": "reply-c",
+      "replied_post_id": "reply-b",
+      "replies_count": 0,
+      "thread_replies_count": 0
+    },
+    "depth": 2,
+    "parentId": "reply-b"
+  }
+]
+```
+
+### Fields
+
+- `post`: the full post object
+- `depth`: nesting level relative to the root replies (0 = direct reply to the target post)
+- `parentId`: the `id` of the parent post this reply responds to
+
+### Notes
+
+- pagination applies only to the top-level direct replies of the target post
+- descendants are returned in depth-first order
+- `depth` and `parentId` allow the client to reconstruct the tree structure on the frontend
+- visibility filtering still applies, so hidden replies are omitted
+
+## Batch Endpoints
+
+Requires `Editor` role on all affected publishers.
+
+### Batch Delete Posts
+
+```http
+POST /api/posts/batch/delete
+```
+
+**Request Body:**
+
+```json
+{
+  "post_ids": [
+    "f68871e8-1608-43dc-9ccf-3ef0cc63f3a0",
+    "a7b93d22-43dc-1608-9ccf-3ef0cc63f3a1"
+  ]
+}
+```
+
+Validates all posts exist and none are locked. Checks Editor role per publisher (supports cross-publisher batches). Each post is hard-deleted with cleanup (reactions soft-deleted, reply/forward references flagged).
+
+**Response:** `204 No Content`
+
+**Error Responses:**
+
+| Status | Condition |
+|--------|-----------|
+| `400 Bad Request` | One or more posts not found |
+| `401 Unauthorized` | Not authenticated |
+| `403 Forbidden` | Not an editor of one of the affected publishers |
+| `423 Locked` | One of the posts is locked |
+
+### Batch Update Visibility
+
+```http
+POST /api/posts/batch/visibility
+```
+
+**Request Body:**
+
+```json
+{
+  "post_ids": [
+    "f68871e8-1608-43dc-9ccf-3ef0cc63f3a0"
+  ],
+  "visibility": "public",
+  "drafted_at": null,
+  "published_at": "2026-05-10T12:00:00Z"
+}
+```
+
+All fields except `post_ids` are optional. Updates are applied uniformly to all specified posts.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `visibility` | string? | One of `public`, `friends`, `unlisted`, `private` |
+| `drafted_at` | Instant? | Marks as draft (clears `published_at`) |
+| `published_at` | Instant? | Publishes post (clears `drafted_at`). Cannot be in the past unless post was a draft. |
+
+`drafted_at` and `published_at` are mutually exclusive.
+
+**Response:** `204 No Content`
+
+**Error Responses:**
+
+| Status | Condition |
+|--------|-----------|
+| `400 Bad Request` | Both `drafted_at` and `published_at` set |
+| `400 Bad Request` | One or more posts not found |
+| `400 Bad Request` | `published_at` in the past on a published post |
+| `401 Unauthorized` | Not authenticated |
+| `403 Forbidden` | Not an editor of one of the affected publishers |
+| `423 Locked` | One of the posts is locked |
+
+## List Drafts and Scheduled Posts
+
+Drafts and scheduled posts share one authoring listing, ordered by the time they were last
+touched.
+
+```http
+GET /api/posts/drafts?offset=0&take=20&include_scheduled=true
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `offset` | int | Pagination offset |
+| `take` | int | Page size |
+| `pub` | string? | Only list posts of these publishers (comma separated). The caller must be at least an editor of every requested publisher. |
+| `include_scheduled` | bool | Also return scheduled posts (`published_at` in the future, `drafted_at` null). Defaults to `false`, which lists drafts only. |
+
+Only posts of publishers the caller is a member of are listed, and `X-Total` carries the row
+count of the same filter. Response is a list of `SnPost` with truncated content; fetch
+`GET /api/posts/{id}` for the full body before editing.
+
+Scheduled posts stay visible here (and in the creator listing) until `published_at` arrives,
+after which the scheduled publish job announces them to subscribers and watchers and they drop
+out of this listing.
+
+## Client Guidance
+
+- Use `/api/posts/{id}/replies` when implementing classic paged comments UI
+- Use `/api/posts/{id}/replies/threaded` when rendering a nested thread view
+- Do not replace `replies_count` with `thread_replies_count` in comment pagination logic

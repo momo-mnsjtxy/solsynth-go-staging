@@ -75,6 +75,14 @@ func TestPGAppPublisherOwnerEligibility(t *testing.T) {
 		query(t, f.db, `UPDATE `+ancestor.table+` SET deleted_at=NULL WHERE id=$1`, ancestor.id)
 	}
 	check(true)
+	// Prior owner policy changes intentionally revoked its sudo receipt. Renew
+	// it through the real factor flow so this next assertion still isolates the
+	// imported organization boundary rather than stopping at stale elevation.
+	issuer, e := authority.New(authoritypg.New(f.db), f.config)
+	if e != nil {
+		t.Fatal(e)
+	}
+	pgElevateDeveloperSession(t, f.db, issuer, f.actor, f.token, f.config)
 	// Organization app ownership remains explicitly unsupported. Imported rows
 	// cannot use the NULL direct account as a credential or scoped-management gate.
 	query(t, f.db, socialpg.Schema)

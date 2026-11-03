@@ -15,6 +15,7 @@ import (
 
 func TestPGBackendBotMiniappComposition(t *testing.T) {
 	f := newBackendFixture(t)
+	f.token = pgIssueDeveloperCredential(t, f.db, f.issuer, f.actor, f.config).Token
 	suffix := strings.ReplaceAll(f.actor, "-", "")
 	query(t, f.db, `INSERT INTO owned_publisher_quota(account_id,total,starts_at)VALUES($1,2,now())`, f.actor)
 	pub := backendDecode[profiles.Publisher](t, backendCall(t, f.app, "POST", "/sphere/publishers/individual", f.token, fmt.Sprintf(`{"name":%q,"nick":"Bot owner"}`, "portal_"+suffix), 200))

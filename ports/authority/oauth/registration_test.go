@@ -8,7 +8,7 @@ func TestRegistrationClosedMetadataAndOwnershipCoordinates(t *testing.T) {
 	if scopes, e := ValidateRegistration(base); e != nil || len(scopes) != 3 {
 		t.Fatal(scopes, e)
 	}
-	for _, mutate := range []func(*Registration){func(r *Registration) { r.Scope = "openid *" }, func(r *Registration) { r.GrantTypes = []string{"password"} }, func(r *Registration) { r.RedirectURIs = []string{"https://user:password@example.invalid/callback"} }, func(r *Registration) { r.ResponseTypes = []string{"token"} }, func(r *Registration) { r.TokenEndpointAuthMethod = "private_key_jwt" }, func(r *Registration) { r.ProjectID = "" }} {
+	for _, mutate := range []func(*Registration){func(r *Registration) { r.Scope = "openid admin.*" }, func(r *Registration) { r.GrantTypes = []string{"password"} }, func(r *Registration) { r.RedirectURIs = []string{"https://user:password@example.invalid/callback"} }, func(r *Registration) { r.ResponseTypes = []string{"token"} }, func(r *Registration) { r.TokenEndpointAuthMethod = "private_key_jwt" }, func(r *Registration) { r.ProjectID = "" }} {
 		r := base
 		mutate(&r)
 		if _, e := ValidateRegistration(r); e == nil {

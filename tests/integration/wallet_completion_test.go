@@ -1083,7 +1083,7 @@ func TestPGMerchantAdminReadsKeepOperatorScopesAndBillingIsolation(t *testing.T)
 	if err := authoritypg.SeedSynthetic(f.ctx, f.db, operator, "synthetic_wallet_operator_"+operator, time.Unix(f.clock.Load(), 0).UTC()); err != nil {
 		t.Fatal(err)
 	}
-	if err := authoritypg.New(f.db).ReplacePolicy(f.ctx, operator, []authority.Rule{{Pattern: "orders.view"}}, nil); err != nil {
+	if err := authoritypg.New(f.db).ReplacePolicy(f.ctx, operator, []authority.Rule{{Pattern: "orders.*"}}, nil); err != nil {
 		t.Fatal(err)
 	}
 	pair := pgIssue(t, f.issuer, operator)
@@ -1092,6 +1092,36 @@ func TestPGMerchantAdminReadsKeepOperatorScopesAndBillingIsolation(t *testing.T)
 		t.Fatal(err)
 	}
 	ctx := f.guard.Bind(f.ctx, proof)
+	// Customer order access never grants cross-account administration. Test the
+	// repositories directly as well as the HTTP gate: both enforce this boundary.
+	if _, err = r.AdminOrders(ctx, operator, merchants.AdminQuery{}); !errors.Is(err, authority.ErrForbidden) {
+		t.Fatal("customer order scope read all admin orders", err)
+	}
+	if _, err = r.AdminOrder(ctx, operator, o.ID); !errors.Is(err, authority.ErrForbidden) {
+		t.Fatal("customer order scope read a foreign admin order", err)
+	}
+	if _, err = r.AdminInboundOrders(ctx, operator, merchants.AdminQuery{}); !errors.Is(err, authority.ErrForbidden) {
+		t.Fatal("customer order scope read all inbound orders", err)
+	}
+	if _, err = r.AdminInboundOrder(ctx, operator, authorityUUID(t)); !errors.Is(err, authority.ErrForbidden) {
+		t.Fatal("customer order scope read an inbound order", err)
+	}
+	r.WithWalletProductCatalog(json.RawMessage(`{"identifier":"synthetic-admin-product","currency":"synthetic-commerce"}`)).WithWalletProductTreasury(f.payee.ID)
+	if _, err = r.WalletProductSummary(ctx, operator); !errors.Is(err, authority.ErrForbidden) {
+		t.Fatal("customer order scope read admin wallet product settings", err)
+	}
+	if _, err = r.ApplyWalletProduct(ctx, operator, o.ID, merchants.WalletProductApply{TreasuryWalletID: f.payee.ID}, "denied-customer-product-apply"); !errors.Is(err, authority.ErrForbidden) {
+		t.Fatal("customer order payment scope applied a wallet product", err)
+	}
+	if err = authoritypg.New(f.db).ReplacePolicy(f.ctx, operator, []authority.Rule{{Pattern: merchants.PermissionAdminOrdersView}}, nil); err != nil {
+		t.Fatal(err)
+	}
+	pair = pgIssue(t, f.issuer, operator)
+	proof, err = f.verifier.Authenticate(f.ctx, pair.Token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx = f.guard.Bind(f.ctx, proof)
 	orders, err := r.AdminOrders(ctx, operator, merchants.AdminQuery{})
 	if err != nil || orders.Total < 1 {
 		t.Fatal("orders operator could not read admin projection", orders, err)
@@ -1103,8 +1133,14 @@ func TestPGMerchantAdminReadsKeepOperatorScopesAndBillingIsolation(t *testing.T)
 	if !found {
 		t.Fatal("admin order projection omitted target")
 	}
-	if _, err = r.AdminTransactions(ctx, operator, merchants.AdminQuery{}); err == nil {
-		t.Fatal("orders-only operator read wallet ledger")
+	if _, err = r.AdminTransactions(ctx, operator, merchants.AdminQuery{}); !errors.Is(err, authority.ErrForbidden) {
+		t.Fatal("orders-only operator read wallet ledger", err)
+	}
+	if _, err = r.WalletProductSummary(ctx, operator); !errors.Is(err, authority.ErrForbidden) {
+		t.Fatal("orders-view operator read product management settings", err)
+	}
+	if _, err = r.ApplyWalletProduct(ctx, operator, o.ID, merchants.WalletProductApply{TreasuryWalletID: f.payee.ID}, "denied-admin-product-apply"); !errors.Is(err, authority.ErrForbidden) {
+		t.Fatal("orders-view operator applied a wallet product", err)
 	}
 	inbound, err := r.AdminInboundOrders(ctx, operator, merchants.AdminQuery{})
 	if err != nil || inbound.Total != 1 || len(inbound.Items) != 1 {

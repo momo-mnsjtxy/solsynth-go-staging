@@ -33,7 +33,7 @@ func (r *Repository) RegisterOAuth(ctx context.Context, s apps.Scope, req oauth.
 		c := apps.OAuthConfig{ClientURI: req.ClientURI, RedirectURIs: req.RedirectURIs, AllowedScopes: append([]string{}, scopes...), AllowedGrantTypes: req.GrantTypes, RequirePKCE: true, AllowOfflineAccess: oauth.Contains(scopes, "offline_access"), IsPublicClient: req.TokenEndpointAuthMethod == "none"}
 		if !c.IsPublicClient {
 			c.AllowedScopes = append(c.AllowedScopes, apps.OAuthClientAuthScope)
-			if _, e = r.guard.Authorize(ctx, r.db, tx, s.Actor, "developers.apps.secrets.manage"); e != nil {
+			if _, e = r.authorizeWrite(ctx, tx, s.Actor, "developers.apps.secrets.manage"); e != nil {
 				return e
 			}
 		}
@@ -60,7 +60,7 @@ func (r *Repository) RegisterOAuth(ctx context.Context, s apps.Scope, req oauth.
 			}
 			out.ClientSecret = &token
 			out.ClientSecretExpiresAt = expiry.Unix()
-			if _, e = r.guard.Authorize(ctx, r.db, tx, s.Actor, "developers.apps.secrets.manage"); e != nil {
+			if _, e = r.authorizeWrite(ctx, tx, s.Actor, "developers.apps.secrets.manage"); e != nil {
 				return e
 			}
 		}
@@ -68,7 +68,7 @@ func (r *Repository) RegisterOAuth(ctx context.Context, s apps.Scope, req oauth.
 			return e
 		}
 		if !c.IsPublicClient {
-			if _, e = r.guard.Authorize(ctx, r.db, tx, s.Actor, "developers.apps.secrets.manage"); e != nil {
+			if _, e = r.authorizeWrite(ctx, tx, s.Actor, "developers.apps.secrets.manage"); e != nil {
 				return e
 			}
 		}

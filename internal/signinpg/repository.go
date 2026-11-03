@@ -29,7 +29,10 @@ var FactorSetupSchema string
 //go:embed address_schema.sql
 var AddressSchema string
 
-var Schema = baseSchema + "\n" + PaymentPINSchema + "\n" + FactorSetupSchema + "\n" + AddressSchema
+//go:embed sudo_schema.sql
+var SudoSchema string
+
+var Schema = baseSchema + "\n" + PaymentPINSchema + "\n" + FactorSetupSchema + "\n" + AddressSchema + "\n" + SudoSchema
 
 type Repository struct {
 	admission  RegistrationAdmission
@@ -303,8 +306,9 @@ func (t *transaction) DeleteFactor(id string) error {
 func (t *transaction) Challenge(hash []byte) (signin.Challenge, error) {
 	var c signin.Challenge
 	var blacklist, methods []byte
-	var contact sql.NullString
-	e := t.tx.QueryRowContext(t.ctx, `SELECT hash,account_id::text,account_version,purpose,created_at,expires_at,device_name,platform,password_ok,second_ok,require_second,completed,blacklist,updated_at,device_id,ip_address,user_agent,failed_attempts,contact_id::text,auth_methods FROM owned_authority_challenges WHERE account_id=$1 AND hash=$2`, t.canonical.Account().ID, hash).Scan(&c.Hash, &c.AccountID, &c.Version, &c.Purpose, &c.CreatedAt, &c.ExpiredAt, &c.DeviceName, &c.Platform, &c.PasswordOK, &c.SecondOK, &c.RequireSecond, &c.Completed, &blacklist, &c.UpdatedAt, &c.DeviceID, &c.IPAddress, &c.UserAgent, &c.FailedAttempts, &contact, &methods)
+	var contact, sudoSession sql.NullString
+	e := t.tx.QueryRowContext(t.ctx, `SELECT hash,account_id::text,account_version,purpose,created_at,expires_at,device_name,platform,password_ok,second_ok,require_second,completed,blacklist,updated_at,device_id,ip_address,user_agent,failed_attempts,contact_id::text,auth_methods,sudo_session_id::text,COALESCE(sudo_session_epoch,0),sudo_email,COALESCE(sudo_policy_version,0) FROM owned_authority_challenges WHERE account_id=$1 AND hash=$2`, t.canonical.Account().ID, hash).Scan(&c.Hash, &c.AccountID, &c.Version, &c.Purpose, &c.CreatedAt, &c.ExpiredAt, &c.DeviceName, &c.Platform, &c.PasswordOK, &c.SecondOK, &c.RequireSecond, &c.Completed, &blacklist, &c.UpdatedAt, &c.DeviceID, &c.IPAddress, &c.UserAgent, &c.FailedAttempts, &contact, &methods, &sudoSession, &c.SudoSessionEpoch, &c.SudoEmail, &c.SudoPolicyVersion)
+	c.SudoSessionID = sudoSession.String
 	c.ContactID = contact.String
 	if errors.Is(e, sql.ErrNoRows) {
 		e = authority.ErrNotFound
@@ -344,7 +348,17 @@ func (t *transaction) SaveChallenge(c signin.Challenge) error {
 	} else if c.Purpose == "verify_contact" {
 		return authority.ErrInvalid
 	}
-	r, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_challenges(hash,account_id,account_version,purpose,created_at,expires_at,device_name,platform,password_ok,second_ok,require_second,completed,blacklist,updated_at,device_id,ip_address,user_agent,failed_attempts,contact_id,auth_methods) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19::uuid,$20::jsonb) ON CONFLICT(hash) DO UPDATE SET password_ok=EXCLUDED.password_ok,second_ok=EXCLUDED.second_ok,completed=EXCLUDED.completed,blacklist=EXCLUDED.blacklist,updated_at=EXCLUDED.updated_at,failed_attempts=EXCLUDED.failed_attempts,auth_methods=EXCLUDED.auth_methods WHERE owned_authority_challenges.account_id=EXCLUDED.account_id AND owned_authority_challenges.account_version=EXCLUDED.account_version AND owned_authority_challenges.purpose=EXCLUDED.purpose AND owned_authority_challenges.contact_id IS NOT DISTINCT FROM EXCLUDED.contact_id AND (NOT owned_authority_challenges.completed OR EXCLUDED.completed)`, c.Hash, c.AccountID, c.Version, c.Purpose, c.CreatedAt, c.ExpiredAt, c.DeviceName, c.Platform, c.PasswordOK, c.SecondOK, c.RequireSecond, c.Completed, b, c.UpdatedAt, c.DeviceID, c.IPAddress, c.UserAgent, c.FailedAttempts, contact, methods)
+
+	var sudoSession, sudoEpoch, sudoPolicy any
+	if c.Purpose == "sudo" {
+		if !authority.ValidID(c.SudoSessionID) || c.SudoSessionEpoch < 1 || c.SudoPolicyVersion < 1 {
+			return authority.ErrInvalid
+		}
+		sudoSession, sudoEpoch, sudoPolicy = c.SudoSessionID, c.SudoSessionEpoch, c.SudoPolicyVersion
+	} else if c.SudoSessionID != "" || c.SudoSessionEpoch != 0 || c.SudoPolicyVersion != 0 || c.SudoEmail {
+		return authority.ErrInvalid
+	}
+	r, e := t.tx.ExecContext(t.ctx, `INSERT INTO owned_authority_challenges(hash,account_id,account_version,purpose,created_at,expires_at,device_name,platform,password_ok,second_ok,require_second,completed,blacklist,updated_at,device_id,ip_address,user_agent,failed_attempts,contact_id,auth_methods,sudo_session_id,sudo_session_epoch,sudo_email,sudo_policy_version) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19::uuid,$20::jsonb,$21::uuid,$22::bigint,$23::boolean,$24::bigint) ON CONFLICT(hash) DO UPDATE SET password_ok=EXCLUDED.password_ok,second_ok=EXCLUDED.second_ok,completed=EXCLUDED.completed,blacklist=EXCLUDED.blacklist,updated_at=EXCLUDED.updated_at,failed_attempts=EXCLUDED.failed_attempts,auth_methods=EXCLUDED.auth_methods,sudo_policy_version=EXCLUDED.sudo_policy_version WHERE owned_authority_challenges.account_id=EXCLUDED.account_id AND owned_authority_challenges.account_version=EXCLUDED.account_version AND owned_authority_challenges.purpose=EXCLUDED.purpose AND owned_authority_challenges.contact_id IS NOT DISTINCT FROM EXCLUDED.contact_id AND owned_authority_challenges.sudo_session_id IS NOT DISTINCT FROM EXCLUDED.sudo_session_id AND owned_authority_challenges.sudo_session_epoch IS NOT DISTINCT FROM EXCLUDED.sudo_session_epoch AND owned_authority_challenges.sudo_email=EXCLUDED.sudo_email AND (NOT owned_authority_challenges.completed OR EXCLUDED.completed)`, c.Hash, c.AccountID, c.Version, c.Purpose, c.CreatedAt, c.ExpiredAt, c.DeviceName, c.Platform, c.PasswordOK, c.SecondOK, c.RequireSecond, c.Completed, b, c.UpdatedAt, c.DeviceID, c.IPAddress, c.UserAgent, c.FailedAttempts, contact, methods, sudoSession, sudoEpoch, c.SudoEmail, sudoPolicy)
 	if e != nil {
 		return e
 	}

@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"solsynth.local/go-migration/ports/sphere/blogs"
 	"solsynth.local/go-migration/ports/sphere/reader"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -26,6 +27,18 @@ type Metadata struct {
 
 func BlogMetadata(link reader.Link) *Metadata {
 	return &Metadata{Embeds: []LinkEmbed{{Type: "link", Link: link}}}
+}
+
+// IsNativeSolianLink identifies Solian pages rendered directly by the client.
+// It only controls preview presentation; publish permission and verified-domain
+// checks still apply to blog posts using these URLs.
+func IsNativeSolianLink(raw string) bool {
+	u, e := url.Parse(raw)
+	if e != nil || u.User != nil || u.Opaque != "" || !strings.EqualFold(u.Scheme, "https") && !strings.EqualFold(u.Scheme, "http") {
+		return false
+	}
+	host := strings.TrimSuffix(strings.ToLower(u.Hostname()), ".")
+	return host == "solian.app" || strings.HasSuffix(host, ".solian.app")
 }
 
 type BlogPermissionRepository interface {

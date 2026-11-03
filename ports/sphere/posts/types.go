@@ -161,13 +161,14 @@ type Patch struct {
 	PublishedAt     *time.Time        `json:"published_at"`
 }
 type ListOptions struct {
-	Pinned       *bool
-	Offset, Take int
-	Publisher    string
-	Realm        string
-	Type         *int
-	Drafts       bool
-	Ascending    bool
+	Pinned           *bool
+	Offset, Take     int
+	Publisher        string
+	Realm            string
+	Type             *int
+	Drafts           bool
+	IncludeScheduled bool
+	Ascending        bool
 }
 type Repository interface {
 	Create(context.Context, string, string, Patch) (Post, error)

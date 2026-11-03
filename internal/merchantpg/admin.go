@@ -153,7 +153,7 @@ func (r *Repository) AdminOrders(ctx context.Context, actor string, q merchants.
 	if err != nil {
 		return out, err
 	}
-	tx, err := r.begin(ctx, actor, "orders.view")
+	tx, err := r.begin(ctx, actor, merchants.PermissionAdminOrdersView)
 	if err != nil {
 		return out, err
 	}
@@ -185,7 +185,7 @@ func (r *Repository) AdminOrders(ctx context.Context, actor string, q merchants.
 		return out, err
 	}
 	rows.Close()
-	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, "orders.view"); err != nil {
+	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, merchants.PermissionAdminOrdersView); err != nil {
 		return out, err
 	}
 	return out, tx.Commit()
@@ -195,7 +195,7 @@ func (r *Repository) AdminOrder(ctx context.Context, actor, id string) (merchant
 	if !wallet.ValidID(id) {
 		return merchants.Order{}, merchants.ErrInvalid
 	}
-	tx, err := r.begin(ctx, actor, "orders.view")
+	tx, err := r.begin(ctx, actor, merchants.PermissionAdminOrdersView)
 	if err != nil {
 		return merchants.Order{}, err
 	}
@@ -208,7 +208,7 @@ func (r *Repository) AdminOrder(ctx context.Context, actor, id string) (merchant
 	if err = json.Unmarshal(raw, &v); err != nil {
 		return v, err
 	}
-	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, "orders.view"); err != nil {
+	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, merchants.PermissionAdminOrdersView); err != nil {
 		return v, err
 	}
 	return v, tx.Commit()
@@ -327,7 +327,7 @@ func (r *Repository) AdminInboundOrders(ctx context.Context, actor string, q mer
 	if err != nil {
 		return out, err
 	}
-	tx, err := r.begin(ctx, actor, "orders.view")
+	tx, err := r.begin(ctx, actor, merchants.PermissionAdminOrdersView)
 	if err != nil {
 		return out, err
 	}
@@ -351,7 +351,7 @@ func (r *Repository) AdminInboundOrders(ctx context.Context, actor string, q mer
 	if err = rows.Err(); err != nil {
 		return out, err
 	}
-	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, "orders.view"); err != nil {
+	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, merchants.PermissionAdminOrdersView); err != nil {
 		return out, err
 	}
 	return out, tx.Commit()
@@ -361,7 +361,7 @@ func (r *Repository) AdminInboundOrder(ctx context.Context, actor, id string) (m
 	if !wallet.ValidID(id) {
 		return merchants.InboundOrder{}, merchants.ErrInvalid
 	}
-	tx, err := r.begin(ctx, actor, "orders.view")
+	tx, err := r.begin(ctx, actor, merchants.PermissionAdminOrdersView)
 	if err != nil {
 		return merchants.InboundOrder{}, err
 	}
@@ -371,7 +371,7 @@ func (r *Repository) AdminInboundOrder(ctx context.Context, actor, id string) (m
 	if err != nil {
 		return v, mapped(err)
 	}
-	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, "orders.view"); err != nil {
+	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, merchants.PermissionAdminOrdersView); err != nil {
 		return v, err
 	}
 	return v, tx.Commit()
@@ -517,7 +517,7 @@ func (r *Repository) RunMaintenance(ctx context.Context, actor string, limit int
 }
 
 func (r *Repository) WalletProductSummary(ctx context.Context, actor string) (json.RawMessage, error) {
-	tx, err := r.begin(ctx, actor, "orders.view")
+	tx, err := r.begin(ctx, actor, merchants.PermissionAdminProductsView)
 	if err != nil {
 		return nil, err
 	}
@@ -525,7 +525,7 @@ func (r *Repository) WalletProductSummary(ctx context.Context, actor string) (js
 	if len(r.walletProduct) == 0 {
 		return nil, merchants.ErrUnavailable
 	}
-	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, "orders.view"); err != nil {
+	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, merchants.PermissionAdminProductsView); err != nil {
 		return nil, err
 	}
 	out := append(json.RawMessage(nil), r.walletProduct...)
@@ -549,7 +549,7 @@ func (r *Repository) ApplyWalletProduct(ctx context.Context, actor, orderID stri
 	if json.Unmarshal(r.walletProduct, &product) != nil || product.Identifier == nil || product.Currency == nil {
 		return wallet.Transaction{}, merchants.ErrUnavailable
 	}
-	tx, err := r.begin(ctx, actor, "orders.pay")
+	tx, err := r.begin(ctx, actor, merchants.PermissionAdminOrdersManage)
 	if err != nil {
 		return wallet.Transaction{}, err
 	}
@@ -580,7 +580,7 @@ func (r *Repository) ApplyWalletProduct(ctx context.Context, actor, orderID stri
 		if e != nil {
 			return out, merchants.ErrConflict
 		}
-		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, "orders.pay"); e != nil {
+		if _, e = r.guard.Authorize(ctx, r.db, tx, actor, merchants.PermissionAdminOrdersManage); e != nil {
 			return wallet.Transaction{}, e
 		}
 		return out, tx.Commit()
@@ -609,7 +609,7 @@ func (r *Repository) ApplyWalletProduct(ctx context.Context, actor, orderID stri
 	if err = commerceEvent(ctx, tx, "order.finished", orderID, o, o.UpdatedAt); err != nil {
 		return wallet.Transaction{}, err
 	}
-	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, "orders.pay"); err != nil {
+	if _, err = r.guard.Authorize(ctx, r.db, tx, actor, merchants.PermissionAdminOrdersManage); err != nil {
 		return wallet.Transaction{}, err
 	}
 	return out, tx.Commit()

@@ -37,11 +37,16 @@ func TestPGBackendReaderComposition(t *testing.T) {
 	if e = app.Ready(context.Background()); e != nil {
 		t.Fatal(e)
 	}
-	got := backendDecode[reader.Link](t, backendCall(t, app, "GET", path, "", "", 200))
+	backendCall(t, app, "GET", path, "", "", 401)
+	if calls.Load() != 0 {
+		t.Fatal("anonymous preview performed an outbound fetch")
+	}
+	got := backendDecode[reader.Link](t, backendCall(t, app, "GET", path, f.token, "", 200))
 	if got.URL != raw || got.Title != "Synthetic preview" {
 		t.Fatal("preview projection")
 	}
-	backendCall(t, app, "GET", "/api/scrap/link?url="+url.QueryEscape(raw), "", "", 200)
+	backendCall(t, app, "GET", "/api/scrap/link?url="+url.QueryEscape(raw), "", "", 401)
+	backendCall(t, app, "GET", "/api/scrap/link?url="+url.QueryEscape(raw), f.token, "", 200)
 	if calls.Load() != 1 {
 		t.Fatal("gateway cache identity")
 	}
@@ -55,7 +60,7 @@ func TestPGBackendReaderComposition(t *testing.T) {
 	purge := "/sphere/scrap/link/cache?url=" + url.QueryEscape(raw)
 	backendCall(t, app, "DELETE", purge, "", "", 401)
 	backendCall(t, app, "DELETE", purge, f.token, "", 200)
-	backendCall(t, app, "GET", path, "", "", 200)
+	backendCall(t, app, "GET", path, f.token, "", 200)
 	if calls.Load() != 2 {
 		t.Fatal("invalidation did not evict cache")
 	}

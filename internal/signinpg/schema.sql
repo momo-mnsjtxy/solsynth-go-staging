@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS owned_authority_factors (
 );
 CREATE TABLE IF NOT EXISTS owned_authority_challenges (
  hash bytea PRIMARY KEY CHECK(octet_length(hash)=32), account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),
- account_version bigint NOT NULL CHECK(account_version>0), purpose text NOT NULL CHECK(purpose IN('login','verify_email','reset_password')),
+ account_version bigint NOT NULL CHECK(account_version>0), purpose text NOT NULL CHECK(purpose IN('login','verify_email','reset_password','verify_contact','sudo')),
  created_at timestamptz NOT NULL, updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP, expires_at timestamptz NOT NULL,
  device_id text NOT NULL DEFAULT '', device_name text NOT NULL DEFAULT '', platform integer NOT NULL DEFAULT 0,
  ip_address text NOT NULL DEFAULT '', user_agent text NOT NULL DEFAULT '', failed_attempts integer NOT NULL DEFAULT 0 CHECK(failed_attempts>=0),
@@ -39,6 +39,9 @@ INSERT INTO owned_authority_contacts(id,account_id,type,credential_account_id,cr
  SELECT c.account_id,c.account_id,0,c.account_id,a.created_at,a.created_at FROM owned_authority_credentials c JOIN owned_authority_accounts a ON a.id=c.account_id
  WHERE NOT EXISTS(SELECT 1 FROM owned_authority_contacts m WHERE m.credential_account_id=c.account_id) ON CONFLICT DO NOTHING;
 ALTER TABLE owned_authority_challenges ADD COLUMN IF NOT EXISTS contact_id uuid REFERENCES owned_authority_contacts(id);
+-- The complete Schema is reentrant with persisted sudo rows. Keep the finite
+-- purpose set aligned with sudo_schema.sql before its session-binding extension
+-- is reapplied; narrowing it here would reject valid rows mid-install.
 ALTER TABLE owned_authority_challenges DROP CONSTRAINT IF EXISTS owned_authority_challenges_purpose_check;
-ALTER TABLE owned_authority_challenges ADD CONSTRAINT owned_authority_challenges_purpose_check CHECK(purpose IN('login','verify_email','reset_password','verify_contact'));
+ALTER TABLE owned_authority_challenges ADD CONSTRAINT owned_authority_challenges_purpose_check CHECK(purpose IN('login','verify_email','reset_password','verify_contact','sudo'));
 CREATE TABLE IF NOT EXISTS owned_authority_contact_audit(id bigserial PRIMARY KEY,account_id uuid NOT NULL REFERENCES owned_authority_accounts(id),contact_id uuid NOT NULL REFERENCES owned_authority_contacts(id),action text NOT NULL,occurred_at timestamptz NOT NULL);

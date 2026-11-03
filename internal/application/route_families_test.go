@@ -74,7 +74,7 @@ func TestRouteFamiliesPreserveUnavailableAndFallbackPolicies(t *testing.T) {
 		{"/api/accounts/me/presence/sensors", "", "ACTIVITIES_UNAVAILABLE", 503},
 		{"/api/accounts/me/connections/provider", "", "CONNECTION_PROVIDER_UNAVAILABLE", 503},
 		{"/passport/accounts/me/connections/provider", "accounts", "", 202},
-		{"/stargate/accounts/me/connections/provider", "accounts", "", 202},
+		{"/stargate/accounts/me/connections/provider", "", "CONNECTION_PROVIDER_UNAVAILABLE", 503},
 		{"/passport/accounts/me/connections", "", "ACCOUNT_HISTORY_UNAVAILABLE", 503},
 		{"/api/realms/room/members?label_id=label", "", "REALM_MEMBER_UNAVAILABLE", 503},
 		{"/api/realms/room/boosts", "", "REALM_BOOST_UNAVAILABLE", 503},

@@ -82,6 +82,15 @@ func accountLifecycleFor(
 		}
 		progressionRepo.WithSourcePointPayout(p)
 	}
+	if c.CheckInStreakGold != nil {
+		p, e := progressionpg.NewFundedCheckInStreakGold(*c.CheckInStreakGold)
+		if e != nil {
+			return accountLifecycleModules{}, e
+		}
+		if e := progressionRepo.WithCheckInStreakGoldPayout(p); e != nil {
+			return accountLifecycleModules{}, e
+		}
+	}
 	if c.ProgressionCheckIn != nil {
 		progressionRepo.WithCheckInPerks(commerceRepo)
 		if e := progressionRepo.WithCheckInPolicy(*c.ProgressionCheckIn); e != nil {

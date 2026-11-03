@@ -28,7 +28,20 @@ func (r *Repository) CreateAppPayout(ctx context.Context, req c.AppPayout, key s
 		return out, err
 	}
 	var payer, owner, payee string
-	err = tx.QueryRowContext(ctx, `SELECT m.wallet_id::text,COALESCE(w.account_id::text,'') FROM commerce_v1.merchants m JOIN wallet_v1.wallets w ON w.id=m.wallet_id AND w.deleted_at IS NULL WHERE m.app_id=$1::uuid FOR SHARE OF m`, app.AppID).Scan(&payer, &owner)
+	// Lock the merchant alone before resolving its wallet. If a rebinding wins
+	// while this statement waits, READ COMMITTED returns the new binding. Joining
+	// the wallet in this locking statement can instead retain an old join candidate
+	// during row rechecking and falsely report that the rebound merchant is absent.
+	err = tx.QueryRowContext(ctx, `SELECT m.wallet_id::text FROM commerce_v1.merchants m WHERE m.app_id=$1::uuid AND m.wallet_id IS NOT NULL FOR SHARE OF m`, app.AppID).Scan(&payer)
+	if errors.Is(err, sql.ErrNoRows) {
+		return out, c.ErrConflict
+	}
+	if err != nil {
+		return out, err
+	}
+	// Keep wallet acquisition in FundedTransfer's single UUID-sorted lock phase;
+	// the retained merchant lock already prevents another treasury rebinding.
+	err = tx.QueryRowContext(ctx, `SELECT COALESCE(account_id::text,'') FROM wallet_v1.wallets WHERE id=$1::uuid AND deleted_at IS NULL`, payer).Scan(&owner)
 	if errors.Is(err, sql.ErrNoRows) {
 		return out, c.ErrConflict
 	}

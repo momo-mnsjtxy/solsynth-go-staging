@@ -197,6 +197,13 @@ func (r *Repository) checkInAt(ctx context.Context, actor string, target *time.T
 		if e = insertXP(ctx, tx, actor, "check-in", "Check-in reward on "+now.Format("2006/01/02"), "check-in:"+actor+":"+day, 100, now); e != nil {
 			return e
 		}
+		// Record the earned tier with the check-in; a separate funded worker pays
+		// it so an unavailable or empty treasury never rejects the check-in.
+		if target == nil {
+			if e = recordCheckInStreakGold(ctx, tx, actor, id, now); e != nil {
+				return e
+			}
+		}
 		if r.reports != nil {
 			if e = r.reports.EnqueueCheckIn(ctx, tx, v, now); e != nil {
 				return e

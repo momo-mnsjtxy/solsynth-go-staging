@@ -16,7 +16,8 @@ def check(root):
                       "ports/sphere/nodeinfo/source", "ports/wallet/productcatalog/source",
                       "inventory/product-client-evidence", "ports/passport/artwork/source", "ports/passport/activities/source", "ports/passport/friends/source",
                       "ports/passport/affiliation/source", "ports/passport/social/contract-evidence",
-                      "inventory/operation-sources", "ports/federation/quote-evidence", "ports/federation/discovery-evidence", "ports/passport/passkit/source", "ports/passport/social/expiry-evidence"):
+                      "inventory/operation-sources", "ports/federation/quote-evidence", "ports/federation/discovery-evidence", "ports/passport/passkit/source", "ports/passport/social/expiry-evidence",
+                      "inventory/upstream-sync-20261102"):
 
 
         base = root / directory

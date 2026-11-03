@@ -1,0 +1,2679 @@
+﻿using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using DysonNetwork.Shared.Cache;
+using DysonNetwork.Shared.Data;
+using DysonNetwork.Shared.EventBus;
+using DysonNetwork.Shared.Localization;
+using DysonNetwork.Shared.Models;
+using DysonNetwork.Shared.Proto;
+using DysonNetwork.Shared.Queue;
+using DysonNetwork.Shared.Registry;
+using Grpc.Core;
+using Microsoft.EntityFrameworkCore;
+using NodaTime;
+using NodaTime.Serialization.Protobuf;
+using NodaTime.Extensions;
+
+namespace DysonNetwork.Passport.Account;
+
+public class AccountEventService(
+    AppDatabase db,
+    ICacheService cache,
+    ILocalizationService localizer,
+    Leveling.ExperienceService experienceService,
+    RemotePaymentService payment,
+    RemoteSubscriptionService subscriptions,
+    RemoteWebSocketService ws,
+    RemoteAccountConnectionService accountConnections,
+    RelationshipService relationships,
+    CheckInFortuneScheduler checkInFortuneScheduler,
+    DyAccountService.DyAccountServiceClient accountGrpc,
+    DyPersonalityService.DyPersonalityServiceClient personality,
+    DyAuthService.DyAuthServiceClient auth,
+    NotableDaysService notableDaysService,
+    IEventBus eventBus,
+    IConfiguration configuration,
+    ILogger<AccountEventService> logger
+)
+{
+    private sealed class WebSocketConnectionPresenceState
+    {
+        public Instant? IdleSince { get; set; }
+    }
+
+    private static readonly Random Random = new();
+    private const int FortuneReportVersion = 2;
+    private const int FortuneTipTitleMaxLength = 48;
+    private const int FortuneTipContentMaxLength = 180;
+    private static readonly JsonSerializerOptions FortuneReportJsonOptions = new(
+        JsonSerializerDefaults.Web
+    )
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        DictionaryKeyPolicy = JsonNamingPolicy.SnakeCaseLower,
+        PropertyNameCaseInsensitive = true,
+    };
+    private const int FortuneTipCount = 14; // This will be the max index for each type (positive/negative)
+    private const string CaptchaCacheKey = "checkin:captcha:";
+    private const int CaptchaProbabilityPercent = 20;
+
+    public async Task<bool> CheckInDailyDoAskCaptcha(SnAccount user)
+    {
+        var perkSubscription = await subscriptions.GetPerkSubscription(user.Id);
+        if (perkSubscription is not null)
+            return false;
+
+        var cacheKey = $"{CaptchaCacheKey}{user.Id}";
+        var needsCaptcha = await cache.GetAsync<bool?>(cacheKey);
+        if (needsCaptcha is not null)
+            return needsCaptcha!.Value;
+
+        var result = Random.Next(100) < CaptchaProbabilityPercent;
+        await cache.SetAsync(cacheKey, result, TimeSpan.FromHours(24));
+        return result;
+    }
+
+    public async Task<bool> CheckInDailyIsAvailable(SnAccount user)
+    {
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var lastCheckIn = await db
+            .AccountCheckInResults.Where(x => x.AccountId == user.Id)
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        if (lastCheckIn == null)
+            return true;
+
+        var lastDate = lastCheckIn.CreatedAt.InUtc().Date;
+        var currentDate = now.InUtc().Date;
+
+        return lastDate < currentDate;
+    }
+
+    public async Task<bool> CheckInBackdatedIsAvailable(SnAccount user, Instant backdated)
+    {
+        var backdatedDate = backdated.InUtc().Date;
+        var backdatedStart = backdatedDate.AtStartOfDayInZone(DateTimeZone.Utc).ToInstant();
+        var backdatedEnd = backdatedDate.PlusDays(1).AtStartOfDayInZone(DateTimeZone.Utc).ToInstant();
+
+        var monthStart = new LocalDate(backdatedDate.Year, backdatedDate.Month, 1);
+        var backdatedMonthStart = monthStart.AtStartOfDayInZone(DateTimeZone.Utc).ToInstant();
+        var backdatedMonthEnd = monthStart.PlusMonths(1).AtStartOfDayInZone(DateTimeZone.Utc).ToInstant();
+
+        // The first check, if that day already has a check-in
+        var lastCheckIn = await db
+            .AccountCheckInResults.Where(x => x.AccountId == user.Id)
+            .Where(x => x.CreatedAt >= backdatedStart && x.CreatedAt < backdatedEnd)
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
+        if (lastCheckIn is not null)
+            return false;
+
+        // The second check, is the user reached the max backdated check-ins limit,
+        // which is once a week, which is 4 times a month
+        var backdatedCheckInMonths = await db
+            .AccountCheckInResults.Where(x => x.AccountId == user.Id)
+            .Where(x => x.CreatedAt >= backdatedMonthStart && x.CreatedAt < backdatedMonthEnd)
+            .Where(x => x.BackdatedFrom != null)
+            .CountAsync();
+        return backdatedCheckInMonths < 4;
+    }
+
+    private const string CheckInLockKey = "checkin:lock:";
+    private const int CheckInWeeklyStreakDays = 7;
+    private const decimal CheckInWeeklyStreakGoldReward = 1m;
+    private const int CheckInMonthlyStreakDays = 30;
+    private const decimal CheckInMonthlyStreakGoldReward = 5m;
+    // The streak walk reads one row per checked-in day, so the lookback only
+    // has to be long enough to let the walk stop at a gap. Five years keeps the
+    // reward cadence exact for any realistic streak while bounding the query.
+    private const int CheckInStreakMaxLookbackDays = 366 * 5;
+
+    /// <summary>
+    /// Gold granted for reaching this streak length. Weekly tiers repeat every
+    /// seven days and monthly tiers every thirty, so a streak that hits both
+    /// (every 210 days) grants the sum.
+    /// </summary>
+    private static decimal GetCheckInStreakGoldReward(int streak)
+    {
+        if (streak <= 0)
+            return 0m;
+
+        var reward = 0m;
+        if (streak % CheckInWeeklyStreakDays == 0)
+            reward += CheckInWeeklyStreakGoldReward;
+        if (streak % CheckInMonthlyStreakDays == 0)
+            reward += CheckInMonthlyStreakGoldReward;
+        return reward;
+    }
+
+    /// <summary>
+    /// Consecutive UTC days ending on <paramref name="checkInDate"/> that have a
+    /// check-in, including backdated ones. The caller must have persisted the row
+    /// for <paramref name="checkInDate"/> first so the walk sees it.
+    /// </summary>
+    private async Task<int> ResolveCheckInStreak(Guid accountId, LocalDate checkInDate)
+    {
+        var windowStartDate = checkInDate.PlusDays(-(CheckInStreakMaxLookbackDays - 1));
+        var windowStart = windowStartDate.AtStartOfDayInZone(DateTimeZone.Utc).ToInstant();
+        var windowEnd = checkInDate.PlusDays(1).AtStartOfDayInZone(DateTimeZone.Utc).ToInstant();
+
+        var checkInInstants = await db
+            .AccountCheckInResults.Where(x => x.AccountId == accountId)
+            .Where(x => x.CreatedAt >= windowStart && x.CreatedAt < windowEnd)
+            .Select(x => x.CreatedAt)
+            .ToListAsync();
+        var checkInDates = checkInInstants.Select(x => x.InUtc().Date).ToHashSet();
+
+        var streak = 0;
+        for (var date = checkInDate; date >= windowStartDate && checkInDates.Contains(date); date = date.PlusDays(-1))
+            streak++;
+        return streak;
+    }
+
+    private async Task GrantCheckInStreakGoldReward(SnAccount account, LocalDate checkInDate)
+    {
+        try
+        {
+            var streak = await ResolveCheckInStreak(account.Id, checkInDate);
+            var reward = GetCheckInStreakGoldReward(streak);
+            if (reward <= 0m)
+                return;
+
+            await payment.CreateTransactionWithAccount(
+                null,
+                account.Id.ToString(),
+                WalletCurrency.GoldenPoint,
+                reward.ToString(CultureInfo.InvariantCulture),
+                $"Check-in streak reward ({streak} days) on {checkInDate:yyyy/MM/dd}"
+            );
+
+            logger.LogInformation(
+                "Granted {Reward} gold to account {AccountId} for a {Streak}-day check-in streak",
+                reward,
+                account.Id,
+                streak
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Failed to grant the check-in streak gold reward for account {AccountId} on {CheckInDate}",
+                account.Id,
+                checkInDate
+            );
+        }
+    }
+
+    public async Task<SnCheckInResult> CheckInDaily(
+        SnAccount account,
+        Instant? backdated = null,
+        int version = 1
+    )
+    {
+        var lockKey = $"{CheckInLockKey}{account.Id}";
+
+        try
+        {
+            var lk = await cache.AcquireLockAsync(
+                lockKey,
+                TimeSpan.FromMinutes(1),
+                TimeSpan.FromMilliseconds(100)
+            );
+
+            if (lk != null)
+                await lk.ReleaseAsync();
+        }
+        catch
+        {
+            // Ignore errors from this pre-check
+        }
+
+        // Now try to acquire the lock properly
+        await using var lockObj =
+            await cache.AcquireLockAsync(lockKey, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5))
+            ?? throw new InvalidOperationException("Check-in was in progress.");
+
+        var accountProfile = await accountGrpc.GetAccountAsync(new DyGetAccountRequest { Id = account.Id.ToString() });
+        var profile = accountProfile.Profile;
+
+        var accountBirthday = profile?.Birthday?.ToInstant();
+
+        var now = SystemClock.Instance.GetCurrentInstant();
+
+        var userTimeZone = DateTimeZone.Utc;
+        if (!string.IsNullOrEmpty(profile?.TimeZone))
+        {
+            userTimeZone =
+                DateTimeZoneProviders.Tzdb.GetZoneOrNull(profile.TimeZone)
+                ?? DateTimeZone.Utc;
+        }
+
+        var todayInUserTz = now.InZone(userTimeZone).Date;
+        var birthdayDate = accountBirthday?.InZone(userTimeZone).Date;
+
+        var isBirthday =
+            birthdayDate.HasValue
+            && birthdayDate.Value.Month == todayInUserTz.Month
+            && birthdayDate.Value.Day == todayInUserTz.Day;
+        List<CheckInFortuneTip> tips;
+        CheckInResultLevel checkInLevel;
+
+        if (isBirthday)
+        {
+            // Skip random logic and tips generation for birthday
+            checkInLevel = CheckInResultLevel.Special;
+            tips =
+            [
+                new CheckInFortuneTip
+                {
+                    IsPositive = true,
+                    Title = localizer.Get("fortuneTipSpecialTitleBirthday"),
+                    Content = localizer.Get(
+                        "fortuneTipSpecialContentBirthday",
+                        args: new { account.Nick }
+                    ),
+                },
+            ];
+        }
+        else
+        {
+            // Generate 2 positive tips
+            var positiveIndices = Enumerable
+                .Range(1, FortuneTipCount)
+                .OrderBy(_ => Random.Next())
+                .Take(2)
+                .ToList();
+            tips = positiveIndices
+                .Select(index => new CheckInFortuneTip
+                {
+                    IsPositive = true,
+                    Title = localizer.Get($"fortuneTipPositiveTitle{index}", account.Language),
+                    Content = localizer.Get($"fortuneTipPositiveContent{index}", account.Language),
+                })
+                .ToList();
+
+            // Generate 2 negative tips
+            var negativeIndices = Enumerable
+                .Range(1, FortuneTipCount)
+                .Except(positiveIndices)
+                .OrderBy(_ => Random.Next())
+                .Take(2)
+                .ToList();
+            tips.AddRange(
+                negativeIndices.Select(index => new CheckInFortuneTip
+                {
+                    IsPositive = false,
+                    Title = localizer.Get($"fortuneTipNegativeTitle{index}", account.Language),
+                    Content = localizer.Get($"fortuneTipNegativeContent{index}", account.Language),
+                })
+            );
+
+            // The 5 is specialized, keep it alone.
+            // Use weighted random distribution to make all levels reasonably achievable
+            // Weights: Worst: 10%, Worse: 20%, Normal: 40%, Better: 20%, Best: 10%
+            var randomValue = Random.Next(100);
+            checkInLevel = randomValue switch
+            {
+                < 10 => CheckInResultLevel.Worst, // 0-9: 10% chance
+                < 30 => CheckInResultLevel.Worse, // 10-29: 20% chance
+                < 70 => CheckInResultLevel.Normal, // 30-69: 40% chance
+                < 90 => CheckInResultLevel.Better, // 70-89: 20% chance
+                _ => CheckInResultLevel.Best, // 90-99: 10% chance
+            };
+        }
+
+        var result = new SnCheckInResult
+        {
+            Tips = tips,
+            Level = checkInLevel,
+            AccountId = account.Id,
+            RewardExperience = 100,
+            RewardPoints = backdated.HasValue ? null : 10,
+            BackdatedFrom = backdated.HasValue ? SystemClock.Instance.GetCurrentInstant() : null,
+            CreatedAt = backdated ?? SystemClock.Instance.GetCurrentInstant(),
+        };
+
+        try
+        {
+            if (result.RewardPoints.HasValue)
+                await payment.CreateTransactionWithAccount(
+                    null,
+                    account.Id.ToString(),
+                    WalletCurrency.SourcePoint,
+                    result.RewardPoints.Value.ToString(CultureInfo.InvariantCulture),
+                    $"Check-in reward on {now:yyyy/MM/dd}"
+                );
+        }
+        catch
+        {
+            result.RewardPoints = null;
+        }
+
+        db.AccountCheckInResults.Add(result);
+        await db.SaveChangesAsync(); // Remember to save changes to the database
+
+        // Backdated check-ins already skip the source-point reward; they must not
+        // feed the streak tier either, otherwise a backdated row recorded on an
+        // already-paid day would pay the same tier a second time.
+        if (backdated is null)
+            await GrantCheckInStreakGoldReward(account, result.CreatedAt.InUtc().Date);
+
+        if (result.RewardExperience is not null)
+            await experienceService.AddRecord(
+                "check-in",
+                $"Check-in reward on {now:yyyy/MM/dd}",
+                result.RewardExperience.Value,
+                account.Id
+            );
+
+        if (version >= FortuneReportVersion)
+            checkInFortuneScheduler.Schedule(result.Id, account);
+
+        // The lock will be automatically released by the await using statement
+        return result;
+    }
+
+    public SnCheckInResult PrepareCheckInResultForResponse(
+        SnAccount account,
+        SnCheckInResult result,
+        int version = FortuneReportVersion
+    )
+    {
+        if (version < FortuneReportVersion || result.FortuneReport is not null)
+            result.FortuneReport = CompleteFortuneReport(account, result);
+        return result;
+    }
+
+    public async Task GenerateCheckInFortuneAsync(Guid checkInResultId, SnAccount account)
+    {
+        var result = await db.AccountCheckInResults.FirstOrDefaultAsync(x => x.Id == checkInResultId);
+        if (result is null || result.FortuneReport is not null)
+            return;
+
+        var accountProfile = await accountGrpc.GetAccountAsync(
+            new DyGetAccountRequest { Id = account.Id.ToString() }
+        );
+        var profile = accountProfile.Profile;
+        var userTimeZone = !string.IsNullOrEmpty(profile?.TimeZone)
+            ? DateTimeZoneProviders.Tzdb.GetZoneOrNull(profile.TimeZone) ?? DateTimeZone.Utc
+            : DateTimeZone.Utc;
+        var checkInDate = result.CreatedAt.InZone(userTimeZone).Date;
+        var accountBirthday = profile?.Birthday?.ToInstant();
+        var birthdayDate = accountBirthday?.InZone(userTimeZone).Date;
+        var isBirthday = birthdayDate.HasValue
+            && birthdayDate.Value.Month == checkInDate.Month
+            && birthdayDate.Value.Day == checkInDate.Day;
+        var publicEvents = await GetPublicEventsForDate(account.Id, checkInDate, userTimeZone);
+        var notableDays = await GetNotableDaysForDate(account.Region, checkInDate);
+        var recentFortunes = await db
+            .AccountCheckInResults.AsNoTracking()
+            .Where(x => x.AccountId == account.Id && x.Id != result.Id && x.FortuneReport != null)
+            .OrderByDescending(x => x.CreatedAt)
+            .Take(8)
+            .ToListAsync();
+        var generation = await GenerateCheckInFortune(
+            account,
+            checkInDate,
+            isBirthday,
+            result.BackdatedFrom.HasValue,
+            result.Level,
+            CloneFortuneTips(result.Tips),
+            publicEvents,
+            notableDays,
+            recentFortunes
+        );
+        if (generation is null)
+            return;
+
+        result.Tips = generation.Tips;
+        result.FortuneReport = generation.Report;
+        await db.SaveChangesAsync();
+    }
+
+    private static List<CheckInFortuneTip> CloneFortuneTips(List<CheckInFortuneTip> tips)
+    {
+        return tips
+            .Select(t => new CheckInFortuneTip
+            {
+                IsPositive = t.IsPositive,
+                Title = t.Title,
+                Content = t.Content,
+            })
+            .ToList();
+    }
+
+    private async Task<CheckInFortuneGeneration?> GenerateCheckInFortune(
+        SnAccount account,
+        LocalDate checkInDate,
+        bool isBirthday,
+        bool isBackdated,
+        CheckInResultLevel level,
+        List<CheckInFortuneTip> tips,
+        List<SnUserCalendarEvent> publicEvents,
+        List<NotableDay> notableDays,
+        List<SnCheckInResult> recentFortunes
+    )
+    {
+        var model = configuration.GetValue<string>("CheckIn:Fortune:Model");
+        var timeoutSeconds = Math.Clamp(
+            configuration.GetValue<int?>("CheckIn:Fortune:TimeoutSeconds") ?? 90,
+            5,
+            900
+        );
+        var temperature = Math.Clamp(
+            configuration.GetValue<double?>("CheckIn:Fortune:Temperature") ?? 0.95,
+            0,
+            2
+        );
+        var topP = Math.Clamp(
+            configuration.GetValue<double?>("CheckIn:Fortune:TopP") ?? 0.98,
+            0,
+            1
+        );
+
+        logger.LogInformation(
+            "Starting MiChan check-in fortune generation for {AccountId}: model={Model}, timeout={TimeoutSeconds}s, temperature={Temperature}, top_p={TopP}, level={Level}, date={CheckInDate}",
+            account.Id,
+            string.IsNullOrWhiteSpace(model) ? "default" : model,
+            timeoutSeconds,
+            temperature,
+            topP,
+            level,
+            checkInDate
+        );
+
+        try
+        {
+            var request = new DyCompletePersonalityRequest
+            {
+                AgentId = "michan",
+                AccountId = account.Id.ToString(),
+                Message = BuildCheckInFortunePrompt(
+                    account,
+                    checkInDate,
+                    isBirthday,
+                    isBackdated,
+                    level,
+                    tips,
+                    publicEvents,
+                    notableDays,
+                    recentFortunes
+                ),
+                Temperature = temperature,
+                TopP = topP,
+            };
+            if (!string.IsNullOrWhiteSpace(model))
+                request.Model = model;
+
+            var response = await personality.CompleteAsync(
+                request,
+                deadline: DateTime.UtcNow.AddSeconds(timeoutSeconds)
+            );
+
+            var generation = TryParseFortuneGeneration(response.Content, tips);
+            if (generation is not null)
+            {
+                logger.LogInformation(
+                    "MiChan check-in fortune generation succeeded for {AccountId}: response_chars={ResponseLength}, tips={TipCount}",
+                    account.Id,
+                    response.Content.Length,
+                    generation.Tips.Count
+                );
+                return generation;
+            }
+
+            logger.LogWarning(
+                "MiChan returned an invalid check-in fortune generation for {AccountId}: {Content}",
+                account.Id,
+                TruncateLogText(response.Content, 512)
+            );
+        }
+        catch (OperationCanceledException ex)
+        {
+            logger.LogWarning(
+                "MiChan check-in fortune generation was canceled or timed out for {AccountId}: {Message}",
+                account.Id,
+                ex.Message
+            );
+        }
+        catch (RpcException ex) when (ex.StatusCode is StatusCode.Cancelled or StatusCode.DeadlineExceeded)
+        {
+            logger.LogWarning(
+                "MiChan check-in fortune generation was canceled or timed out for {AccountId}: {Message}",
+                account.Id,
+                ex.Message
+            );
+        }
+        catch (RpcException ex)
+        {
+            logger.LogWarning(
+                ex,
+                "MiChan check-in fortune generation failed through gRPC for {AccountId}",
+                account.Id
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to generate MiChan check-in fortune report for {AccountId}", account.Id);
+        }
+
+        return null;
+    }
+
+    private static string BuildCheckInFortunePrompt(
+        SnAccount account,
+        LocalDate checkInDate,
+        bool isBirthday,
+        bool isBackdated,
+        CheckInResultLevel level,
+        List<CheckInFortuneTip> tips,
+        List<SnUserCalendarEvent> publicEvents,
+        List<NotableDay> notableDays,
+        List<SnCheckInResult> recentFortunes
+    )
+    {
+        // An random number to avoid the prefix matching cache from the LLM provider
+        var rng = Random.Shared.Next(1, 100);
+
+        var drawLabel = GetFortuneDrawLabel(level);
+        var outputLanguage = string.IsNullOrWhiteSpace(account.Language)
+            ? "zh-Hans"
+            : account.Language;
+        var requestTimestamp = SystemClock
+            .Instance.GetCurrentInstant()
+            .ToDateTimeUtc()
+            .ToString("O", CultureInfo.InvariantCulture);
+        var tipLines = string.Join(
+            "\n",
+            tips.Select(t => $"- {(t.IsPositive ? "吉" : "忌")}：{t.Title}｜{t.Content}")
+        );
+        var recentFortuneLines = CreateRecentFortuneLines(recentFortunes);
+        var eventLines =
+            publicEvents.Count == 0
+                ? "- 无公开个人事件"
+                : string.Join(
+                    "\n",
+                    publicEvents.Select(e =>
+                        $"- {e.Title}{(string.IsNullOrWhiteSpace(e.Description) ? string.Empty : $"：{e.Description}")}"
+                    )
+                );
+        var notableDayLines =
+            notableDays.Count == 0
+                ? "- 无全球或地区节日"
+                : string.Join(
+                    "\n",
+                    notableDays.Select(d =>
+                        $"- {d.LocalName ?? d.GlobalName ?? d.LocalizableKey ?? "未命名纪念日"}{(string.IsNullOrWhiteSpace(d.GlobalName) || d.GlobalName == d.LocalName ? string.Empty : $" / {d.GlobalName}")}"
+                    )
+                );
+        return $$"""
+请求生成时间：{{requestTimestamp}}
+
+你是巫女咩酱。请保持系统人格文件中定义的咩酱说话方式和边界，
+正在为用户「{{account.Nick}}」写今日「{{checkInDate:yyyy-MM-dd}}」签到运势。
+用户抽中了 {{rng}} 号签
+
+用户信息：
+- ID: {{account.Id}}
+- 昵称：{{account.Nick}}
+- 用户名：@{{account.Name}}
+- 语言：{{account.Language ?? "unknown"}}
+- 地区：{{account.Region ?? "unknown"}}
+- 今天是否生日：{{(isBirthday ? "是" : "否")}}
+- 是否补签：{{(isBackdated ? "是" : "否")}}
+- 用户今日抽到了：{{drawLabel}}
+- 程序化运势等级：{{level}}
+- 当前程序化签文版本：{{FortuneReportVersion}}
+- 备用基础提示（只用于兜底和方向参考，禁止照抄或轻微改写）：
+{{tipLines}}
+- 近期已生成内容（今天必须避开这些表达、意象、行动、幸运物）：
+{{recentFortuneLines}}
+- 今日公开个人事件：
+{{eventLines}}
+- 今日全球或地区节日：
+{{notableDayLines}}
+
+请以咩酱本人的口吻，生成一份私人化的今日签文和提示。
+它可以有轻微仪式感，但不要过于严肃古板，也不要只复述基础提示。
+关于建议不能过于模糊，最好具体一点，要像真的在安排用户今天该怎么过。
+tips 也必须由咩酱重新生成，不是从备用基础提示里挑选。
+尤其是 tips 不能写成空泛的好运提醒，必须落到今天可感知的场景，例如学习、工作、社交、出行、整理、休息、金钱安排、情绪管理中的具体一种。
+
+请输出下面这种宽松文本格式，不要 Markdown，不要解释，不需要 JSON。每行一个字段，字段名必须保留英文：
+POEM: 签诗，1到2句，有意象但自然
+SUMMARY: 运势总评，80字以内
+SUMMARY_DETAIL: 今日建议，180到260字，像咩酱基于签位给用户的具体行动建议
+WISH: 愿望，60字以内
+LOVE: 爱情，60字以内
+STUDY: 学业，60字以内
+CAREER: 事业，60字以内
+HEALTH: 健康，60字以内
+LOST_ITEM: 失物，60字以内
+LUCKY_COLOR: 幸运色，短词
+LUCKY_DIRECTION: 幸运方位，短词
+LUCKY_TIME: 幸运时段，短词
+LUCKY_ITEM: 幸运小物，短词
+LUCKY_ACTION: 今日宜做，60字以内
+AVOID_ACTION: 今日忌做，60字以内
+RITUAL: 小仪式，80字以内，轻量、可执行、不要迷信化
+TIP+: 吉提示标题 | 具体提示，要写清今天适合做什么、在哪类场景做、为什么此时适合
+TIP+: 吉提示标题 | 具体提示，要写清今天适合做什么、在哪类场景做、为什么此时适合
+TIP-: 忌提示标题 | 具体提醒，要写清今天不适合怎么做、容易卡在哪里、建议怎么避开
+TIP-: 忌提示标题 | 具体提醒，要写清今天不适合怎么做、容易卡在哪里、建议怎么避开
+
+要求：
+- 使用用户偏好语言「{{outputLanguage}}」生成所有面向用户的字符串；如果该语言无法判断，使用简体中文。
+- 人格优先级高于任务包装：保持 MiChan 的自然、友好、体贴、略带思考感的表达；不要为了“运势”变成夸张古风、玄学大师、神社巫女或冷冰冰的模板文案。
+- 不要承诺真实预测，不要说一定会发生。
+- 不要给医疗、法律、金融强建议。
+- 语气可以有轻微仪式感，但要像 MiChan 给朋友写的今日提醒，不要恐吓用户。
+- 必须尊重“用户今日抽到了”的签位，不能自行更改签位。
+- 签位越高越明朗，签位越低越提醒谨慎。
+- 可以温柔地结合生日、公开个人事件、全球或地区节日，但不要暴露或推断未提供的私密信息。
+- summary_detail 更像今日建议，不要只是扩写总评；要告诉用户今天适合怎么行动、注意什么、把精力放在哪里。
+- lucky_* 和 ritual 要有当天的意象感，但保持生活化，不要像抽象模板。
+- tips 尽量有 4 条，通常 2 吉 2 忌；生日或特别签可以 3 吉 1 忌。服务端会兜底补齐 tips。
+- tips 要和 fortune_report 互相呼应，但不要逐字重复。
+- tips 每条都必须比“今天不错”“适合努力”“注意情绪”更进一步，至少包含一个明确行动或判断，例如“今天适合复习旧题，不适合临时换资料”“下午更适合发消息确认细节，不适合在多人场合硬聊结论”。
+- tips 标题不要使用“保持耐心”“稳住节奏”“今日留意”这类放在哪里都能成立的泛化标题，要让标题本身就能看出主题，例如“旧题回看”“先约时间再开聊”“把包里票据清掉”。
+- 如果有学习、工作、公开日程或节日线索，优先把其中 1 到 2 条 tips 写到这些场景里，让用户一眼就知道今天适合把精力放在哪。
+- 至少 1 条吉提示和 1 条忌提示要直接落在可执行的现实安排上，例如学习计划、沟通时机、收尾事项、出门准备、睡前整理，而不是抽象心态口号。
+- 每个字段都要具体，不要重复。
+- 不要复用近期已生成内容中的标题、短句、幸运色、幸运小物、今日宜忌、小仪式或核心意象。
+- 不要复制或轻微改写备用基础提示；如果意思相近，也要换成新的具体行动场景。
+- 字段值里不要换行。如果某个字段不确定，仍然输出字段名，并给出自然的短句。
+""";
+    }
+
+    private static string CreateRecentFortuneLines(List<SnCheckInResult> recentFortunes)
+    {
+        if (recentFortunes.Count == 0)
+            return "- 无近期生成内容";
+
+        return string.Join(
+            "\n",
+            recentFortunes.Select(f =>
+            {
+                var report = f.FortuneReport;
+                var tips = string.Join("；", f.Tips.Take(4).Select(t => $"{t.Title}/{t.Content}"));
+                var reportParts = report is null
+                    ? string.Empty
+                    : $"诗={report.Poem}；总评={report.Summary}；幸运={report.LuckyColor}/{report.LuckyTime}/{report.LuckyItem}；宜={report.LuckyAction}；忌={report.AvoidAction}；仪式={report.Ritual}";
+                return $"- {f.CreatedAt.InUtc().Date:yyyy-MM-dd}：{tips}；{reportParts}";
+            })
+        );
+    }
+
+    private static string GetFortuneDrawLabel(CheckInResultLevel level)
+    {
+        return level switch
+        {
+            CheckInResultLevel.Best => "上上签",
+            CheckInResultLevel.Better => "上签",
+            CheckInResultLevel.Normal => "中签",
+            CheckInResultLevel.Worse => "下签",
+            CheckInResultLevel.Worst => "下下签",
+            CheckInResultLevel.Special => "特别签",
+            _ => "中签",
+        };
+    }
+
+    private static CheckInFortuneGeneration? TryParseFortuneGeneration(
+        string content,
+        List<CheckInFortuneTip> seedTips
+    )
+    {
+        var looseGeneration = TryParseLooseFortuneGeneration(content, seedTips);
+        if (looseGeneration is not null)
+            return looseGeneration;
+
+        var json = ExtractJsonObject(content);
+        if (json is null)
+            return null;
+
+        try
+        {
+            var generation = JsonSerializer.Deserialize<CheckInFortuneGeneration>(
+                json,
+                FortuneReportJsonOptions
+            );
+            if (generation?.Report is null)
+                return null;
+
+            if (!IsValidFortuneReport(generation.Report))
+                return null;
+
+            generation.Tips = NormalizeGeneratedFortuneTips(generation.Tips, seedTips);
+
+            generation.Report = TrimFortuneReport(generation.Report);
+            return generation;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static CheckInFortuneGeneration? TryParseLooseFortuneGeneration(
+        string content,
+        List<CheckInFortuneTip> seedTips
+    )
+    {
+        var fields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var tips = new List<CheckInFortuneTip>();
+
+        foreach (var rawLine in StripCodeFence(content).Split('\n'))
+        {
+            var line = rawLine.Trim();
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            var separator = line.IndexOf(':');
+            if (separator < 0)
+                separator = line.IndexOf('：');
+            if (separator <= 0)
+                continue;
+
+            var key = line[..separator].Trim().TrimStart('-', '*').Trim();
+            var value = line[(separator + 1)..].Trim();
+            if (string.IsNullOrWhiteSpace(value))
+                continue;
+
+            if (key.Equals("TIP+", StringComparison.OrdinalIgnoreCase) || key.Equals("TIP-", StringComparison.OrdinalIgnoreCase))
+            {
+                tips.Add(ParseLooseFortuneTip(value, key.Equals("TIP+", StringComparison.OrdinalIgnoreCase)));
+                continue;
+            }
+
+            fields[key] = value;
+        }
+
+        if (fields.Count == 0)
+            return null;
+
+        var report = new CheckInFortuneReport
+        {
+            Version = FortuneReportVersion,
+            Poem = GetLooseField(fields, "POEM"),
+            Summary = GetLooseField(fields, "SUMMARY"),
+            SummaryDetail = GetLooseField(fields, "SUMMARY_DETAIL"),
+            Wish = GetLooseField(fields, "WISH"),
+            Love = GetLooseField(fields, "LOVE"),
+            Study = GetLooseField(fields, "STUDY"),
+            Career = GetLooseField(fields, "CAREER"),
+            Health = GetLooseField(fields, "HEALTH"),
+            LostItem = GetLooseField(fields, "LOST_ITEM"),
+            LuckyColor = GetLooseField(fields, "LUCKY_COLOR"),
+            LuckyDirection = GetLooseField(fields, "LUCKY_DIRECTION"),
+            LuckyTime = GetLooseField(fields, "LUCKY_TIME"),
+            LuckyItem = GetLooseField(fields, "LUCKY_ITEM"),
+            LuckyAction = GetLooseField(fields, "LUCKY_ACTION"),
+            AvoidAction = GetLooseField(fields, "AVOID_ACTION"),
+            Ritual = GetLooseField(fields, "RITUAL"),
+        };
+        if (!IsValidFortuneReport(report))
+            return null;
+
+        var generation = new CheckInFortuneGeneration
+        {
+            Tips = NormalizeGeneratedFortuneTips(tips, seedTips),
+            Report = TrimFortuneReport(report),
+        };
+        return generation;
+    }
+
+    private static string StripCodeFence(string content)
+    {
+        var trimmed = content.Trim();
+        if (!trimmed.StartsWith("```", StringComparison.Ordinal))
+            return trimmed;
+
+        var firstNewLine = trimmed.IndexOf('\n');
+        var lastFence = trimmed.LastIndexOf("```", StringComparison.Ordinal);
+        return firstNewLine >= 0 && lastFence > firstNewLine
+            ? trimmed[(firstNewLine + 1)..lastFence].Trim()
+            : trimmed;
+    }
+
+    private static CheckInFortuneTip ParseLooseFortuneTip(string value, bool isPositive)
+    {
+        var parts = value.Split('|', 2, StringSplitOptions.TrimEntries);
+        if (parts.Length == 2)
+            return new CheckInFortuneTip { IsPositive = isPositive, Title = parts[0], Content = parts[1] };
+
+        parts = value.Split('｜', 2, StringSplitOptions.TrimEntries);
+        if (parts.Length == 2)
+            return new CheckInFortuneTip { IsPositive = isPositive, Title = parts[0], Content = parts[1] };
+
+        return new CheckInFortuneTip
+        {
+            IsPositive = isPositive,
+            Title = isPositive ? "今日可取" : "今日留意",
+            Content = value,
+        };
+    }
+
+    private static string GetLooseField(Dictionary<string, string> fields, string key)
+    {
+        return fields.GetValueOrDefault(key) ?? string.Empty;
+    }
+
+    private static CheckInFortuneReport TrimFortuneReport(CheckInFortuneReport report)
+    {
+        report.Version = FortuneReportVersion;
+        report.Poem = TrimFortuneText(report.Poem, 120);
+        report.Summary = TrimFortuneText(report.Summary, 160);
+        report.SummaryDetail = TrimFortuneText(report.SummaryDetail, 360);
+        report.Wish = TrimFortuneText(report.Wish, 120);
+        report.Love = TrimFortuneText(report.Love, 120);
+        report.Study = TrimFortuneText(report.Study, 120);
+        report.Career = TrimFortuneText(report.Career, 120);
+        report.Health = TrimFortuneText(report.Health, 120);
+        report.LostItem = TrimFortuneText(report.LostItem, 120);
+        report.LuckyColor = TrimFortuneText(report.LuckyColor, 40);
+        report.LuckyDirection = TrimFortuneText(report.LuckyDirection, 40);
+        report.LuckyTime = TrimFortuneText(report.LuckyTime, 40);
+        report.LuckyItem = TrimFortuneText(report.LuckyItem, 40);
+        report.LuckyAction = TrimFortuneText(report.LuckyAction, 120);
+        report.AvoidAction = TrimFortuneText(report.AvoidAction, 120);
+        report.Ritual = TrimFortuneText(report.Ritual, 160);
+        return report;
+    }
+
+    private static string? ExtractJsonObject(string content)
+    {
+        var trimmed = StripCodeFence(content);
+
+        var start = trimmed.IndexOf('{');
+        var end = trimmed.LastIndexOf('}');
+        return start >= 0 && end > start ? trimmed[start..(end + 1)] : null;
+    }
+
+    private static bool IsValidFortuneReport(CheckInFortuneReport report)
+    {
+        return report.Version == FortuneReportVersion
+            && !string.IsNullOrWhiteSpace(report.Poem)
+            && !string.IsNullOrWhiteSpace(report.Summary)
+            && !string.IsNullOrWhiteSpace(report.SummaryDetail)
+            && !string.IsNullOrWhiteSpace(report.Wish)
+            && !string.IsNullOrWhiteSpace(report.Love)
+            && !string.IsNullOrWhiteSpace(report.Study)
+            && !string.IsNullOrWhiteSpace(report.Career)
+            && !string.IsNullOrWhiteSpace(report.Health)
+            && !string.IsNullOrWhiteSpace(report.LostItem)
+            && !string.IsNullOrWhiteSpace(report.LuckyColor)
+            && !string.IsNullOrWhiteSpace(report.LuckyDirection)
+            && !string.IsNullOrWhiteSpace(report.LuckyTime)
+            && !string.IsNullOrWhiteSpace(report.LuckyItem)
+            && !string.IsNullOrWhiteSpace(report.LuckyAction)
+            && !string.IsNullOrWhiteSpace(report.AvoidAction)
+            && !string.IsNullOrWhiteSpace(report.Ritual);
+    }
+
+    private static bool HasValidFortuneTipBalance(List<CheckInFortuneTip> tips)
+    {
+        var positiveCount = tips.Count(t => t.IsPositive);
+        var negativeCount = tips.Count - positiveCount;
+        return positiveCount is 2 or 3 && negativeCount is 1 or 2;
+    }
+
+    private static List<CheckInFortuneTip> NormalizeGeneratedFortuneTips(
+        List<CheckInFortuneTip>? generatedTips,
+        List<CheckInFortuneTip> seedTips
+    )
+    {
+        if (generatedTips is null || generatedTips.Count == 0)
+            return [];
+
+        var result = generatedTips
+            .Where(t => !string.IsNullOrWhiteSpace(t.Title) && !string.IsNullOrWhiteSpace(t.Content))
+            .Where(t => !ReusesSeedFortuneTips([t], seedTips))
+            .GroupBy(t => NormalizeFortuneText($"{t.Title}{t.Content}"))
+            .Select(g => g.First())
+            .Take(4)
+            .Select(t => new CheckInFortuneTip
+            {
+                IsPositive = t.IsPositive,
+                Title = TrimFortuneText(t.Title, FortuneTipTitleMaxLength),
+                Content = TrimFortuneText(t.Content, FortuneTipContentMaxLength),
+            })
+            .ToList();
+
+        return result;
+    }
+
+    private static bool HasDuplicateFortuneTips(List<CheckInFortuneTip> tips)
+    {
+        return tips.Select(t => NormalizeFortuneText(t.Title)).Distinct().Count() != tips.Count
+            || tips.Select(t => NormalizeFortuneText(t.Content)).Distinct().Count() != tips.Count;
+    }
+
+    private static bool ReusesSeedFortuneTips(
+        List<CheckInFortuneTip> generatedTips,
+        List<CheckInFortuneTip> seedTips
+    )
+    {
+        var seedTexts = seedTips
+            .SelectMany(t => new[] { t.Title, t.Content })
+            .Select(NormalizeFortuneText)
+            .Where(t => t.Length > 0)
+            .ToHashSet(StringComparer.Ordinal);
+
+        return generatedTips
+            .SelectMany(t => new[] { t.Title, t.Content })
+            .Select(NormalizeFortuneText)
+            .Any(seedTexts.Contains);
+    }
+
+    private static string NormalizeFortuneText(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return string.Empty;
+
+        return new string(value.Where(c => !char.IsWhiteSpace(c) && !char.IsPunctuation(c)).ToArray())
+            .ToLowerInvariant();
+    }
+
+    private static string TrimFortuneText(string value, int maxLength)
+    {
+        var trimmed = value.Trim();
+        return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength];
+    }
+
+    private static string TruncateLogText(string? value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return string.Empty;
+
+        var trimmed = value.Trim();
+        return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength];
+    }
+
+    private class CheckInFortuneGeneration
+    {
+        public List<CheckInFortuneTip> Tips { get; set; } = [];
+
+        [JsonPropertyName("fortune_report")]
+        public CheckInFortuneReport Report { get; set; } = null!;
+    }
+
+    private async Task<List<SnUserCalendarEvent>> GetPublicEventsForDate(
+        Guid accountId,
+        LocalDate date,
+        DateTimeZone userTimeZone
+    )
+    {
+        var start = date.AtStartOfDayInZone(userTimeZone).ToInstant();
+        var end = date.PlusDays(1).AtStartOfDayInZone(userTimeZone).ToInstant();
+        var events = await db
+            .UserCalendarEvents.AsNoTracking()
+            .Where(e =>
+                e.AccountId == accountId
+                && e.DeletedAt == null
+                && e.Visibility == EventVisibility.Public
+                && e.EndTime >= start
+                && e.StartTime < end
+            )
+            .OrderBy(e => e.StartTime)
+            .Take(5)
+            .ToListAsync();
+
+        return ExpandRecurringEvents(events, start, end)
+            .Where(e => e.Visibility == EventVisibility.Public)
+            .OrderBy(e => e.StartTime)
+            .Take(5)
+            .ToList();
+    }
+
+    private async Task<List<NotableDay>> GetNotableDaysForDate(string? regionCode, LocalDate date)
+    {
+        var days = await notableDaysService.GetNotableDays(
+            date.Year,
+            string.IsNullOrWhiteSpace(regionCode) ? "CN" : regionCode
+        );
+
+        return days.Where(d => d.Date.InUtc().Date == date)
+            .OrderBy(d => d.CountryCode is null ? 0 : 1)
+            .ThenBy(d => d.GlobalName ?? d.LocalName ?? d.LocalizableKey)
+            .Take(5)
+            .ToList();
+    }
+
+    private static CheckInFortuneReport CreateFallbackFortuneReport(
+        SnAccount account,
+        bool isBirthday,
+        CheckInResultLevel level,
+        List<CheckInFortuneTip> tips
+    )
+    {
+        var positiveTip = tips.FirstOrDefault(t => t.IsPositive) ?? tips.FirstOrDefault();
+        var negativeTip = tips.FirstOrDefault(t => !t.IsPositive);
+        var nick = string.IsNullOrWhiteSpace(account.Nick) ? account.Name : account.Nick;
+        var tone = level switch
+        {
+            CheckInResultLevel.Worst => "云色稍沉，宜慢行守心",
+            CheckInResultLevel.Worse => "风声偏紧，宜稳住节奏",
+            CheckInResultLevel.Better => "铃音渐明，前路有微光",
+            CheckInResultLevel.Best => "晴光入签，所行多得助",
+            CheckInResultLevel.Special => "星灯为你而明，今日自有祝福",
+            _ => "签影平和，宜顺势而行",
+        };
+
+        return new CheckInFortuneReport
+        {
+            Version = FortuneReportVersion,
+            Poem = isBirthday ? "星灯落掌心，花影绕今日。" : "风过签筒静，铃响见微光。",
+            Summary =
+                $"{nick}，今日{tone}。{positiveTip?.Content ?? "把心放稳，小事也会慢慢顺起来。"}",
+            SummaryDetail =
+                $"{nick}，今日建议你先把节奏放稳，再选择最值得推进的一件事。{positiveTip?.Content ?? "顺手完成的小事会带来一点确定感。"} 若遇到卡顿，不必急着证明自己，先整理线索、减少分心；把注意力放在能立即收尾的小行动上，会比反复犹豫更有帮助。",
+            Wish = positiveTip?.Title ?? "愿望宜从一个小动作开始。",
+            Love = "温柔表达比反复猜测更有力量。",
+            Study = "适合整理旧知识，细节里会有新线索。",
+            Career = "先稳住手边事务，再推进新的判断。",
+            Health = "留意休息和饮水，不必把自己逼得太紧。",
+            LostItem = negativeTip is null
+                ? "先看常用包袋和桌角附近。"
+                : "失物多在顺手放下之处，慢慢回想路径。",
+            LuckyColor = isBirthday ? "星白色" : "浅青色",
+            LuckyDirection = "东南",
+            LuckyTime = "午后",
+            LuckyItem = "随身钥匙",
+            LuckyAction = "把一件拖延的小事收尾。",
+            AvoidAction = "避免在情绪上头时立刻做决定。",
+            Ritual = "出门前整理桌面一角，给今天留出清爽的开端。",
+        };
+    }
+
+    private static CheckInFortuneReport CompleteFortuneReport(
+        SnAccount account,
+        SnCheckInResult result
+    )
+    {
+        var fallback = CreateFallbackFortuneReport(
+            account,
+            result.Level == CheckInResultLevel.Special,
+            result.Level,
+            result.Tips
+        );
+        var report = result.FortuneReport;
+        if (report is null)
+            return fallback;
+
+        report.Version = FortuneReportVersion;
+        report.Poem = PickFortuneText(report.Poem, fallback.Poem);
+        report.Summary = PickFortuneText(report.Summary, fallback.Summary);
+        report.SummaryDetail = PickFortuneText(report.SummaryDetail, fallback.SummaryDetail);
+        report.Wish = PickFortuneText(report.Wish, fallback.Wish);
+        report.Love = PickFortuneText(report.Love, fallback.Love);
+        report.Study = PickFortuneText(report.Study, fallback.Study);
+        report.Career = PickFortuneText(report.Career, fallback.Career);
+        report.Health = PickFortuneText(report.Health, fallback.Health);
+        report.LostItem = PickFortuneText(report.LostItem, fallback.LostItem);
+        report.LuckyColor = PickFortuneText(report.LuckyColor, fallback.LuckyColor);
+        report.LuckyDirection = PickFortuneText(report.LuckyDirection, fallback.LuckyDirection);
+        report.LuckyTime = PickFortuneText(report.LuckyTime, fallback.LuckyTime);
+        report.LuckyItem = PickFortuneText(report.LuckyItem, fallback.LuckyItem);
+        report.LuckyAction = PickFortuneText(report.LuckyAction, fallback.LuckyAction);
+        report.AvoidAction = PickFortuneText(report.AvoidAction, fallback.AvoidAction);
+        report.Ritual = PickFortuneText(report.Ritual, fallback.Ritual);
+        return report;
+    }
+
+    private static string PickFortuneText(string? value, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(value) ? fallback : value;
+    }
+
+    public async Task<List<Guid>> GetPresenceConnectedUsersAsync(params string[] providers)
+    {
+        var providerSet = providers
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => p.Trim().ToLowerInvariant())
+            .ToHashSet();
+
+        if (providerSet.Count == 0)
+            return [];
+
+        var accountIds = await GetAllAccountIdsAsync();
+
+        var connected = new List<Guid>();
+        foreach (var accountId in accountIds)
+        {
+            var hasPresenceConnection = false;
+            foreach (var provider in providerSet)
+            {
+                var connections = await accountConnections.ListConnectionsAsync(
+                    accountId,
+                    provider
+                );
+                logger.LogDebug(
+                    "Found {ConnectionCount} {Provider} connections for account {AccountId}",
+                    connections.Count,
+                    provider,
+                    accountId
+                );
+                if (
+                    connections.Any(c =>
+                        !string.IsNullOrWhiteSpace(c.ProvidedIdentifier)
+                        && (
+                            string.Equals(provider, "steam", StringComparison.OrdinalIgnoreCase)
+                            || !string.IsNullOrWhiteSpace(c.RefreshToken)
+                            || !string.IsNullOrWhiteSpace(c.AccessToken)
+                        )
+                    )
+                )
+                {
+                    hasPresenceConnection = true;
+                    break;
+                }
+            }
+
+            if (hasPresenceConnection)
+            {
+                connected.Add(accountId);
+            }
+        }
+
+        return connected;
+    }
+
+    #region User Calendar Events
+
+    private const string CalendarEventCacheKeyPrefix = "account:calendar:events:";
+    private static readonly TimeSpan CalendarEventCacheDuration = TimeSpan.FromHours(24);
+
+    private string GetCalendarEventCacheKey(Guid accountId, int year, int month)
+    {
+        return $"{CalendarEventCacheKeyPrefix}{accountId}:{year}:{month}";
+    }
+
+    public void PurgeCalendarEventCache(Guid accountId, int? year = null, int? month = null)
+    {
+        if (year.HasValue && month.HasValue)
+        {
+            var cacheKey = GetCalendarEventCacheKey(accountId, year.Value, month.Value);
+            cache.RemoveAsync(cacheKey);
+        }
+        else
+        {
+            // Purge all months for this account (pattern-based removal would require cache support)
+            // For now, we'll rely on the specific key pattern when known
+            var currentYear = SystemClock.Instance.GetCurrentInstant().InUtc().Year;
+            var currentMonth = SystemClock.Instance.GetCurrentInstant().InUtc().Month;
+            for (var m = 1; m <= 12; m++)
+            {
+                cache.RemoveAsync(GetCalendarEventCacheKey(accountId, currentYear, m));
+                cache.RemoveAsync(GetCalendarEventCacheKey(accountId, currentYear - 1, m));
+                cache.RemoveAsync(GetCalendarEventCacheKey(accountId, currentYear + 1, m));
+            }
+        }
+    }
+
+    public async Task<SnUserCalendarEvent> CreateCalendarEventAsync(
+        Guid accountId,
+        CreateCalendarEventRequest request
+    )
+    {
+        if (string.IsNullOrWhiteSpace(request.Title))
+            throw new ArgumentException("Title is required");
+
+        if (request.EndTime <= request.StartTime)
+            throw new ArgumentException("End time must be after start time");
+
+        var endTime = request.EndTime;
+        if (request.IsAllDay && request.EndTime == request.StartTime)
+        {
+            endTime = request.StartTime.Plus(Duration.FromHours(24));
+        }
+
+        var calendarEvent = new SnUserCalendarEvent
+        {
+            Title = request.Title.Trim(),
+            Description = NormalizeNullableString(request.Description),
+            Location = NormalizeNullableString(request.Location),
+            StartTime = request.StartTime,
+            EndTime = endTime,
+            IsAllDay = request.IsAllDay,
+            Visibility = request.Visibility,
+            Recurrence = request.Recurrence,
+            Tags = NormalizeCalendarTags(request.Tags),
+            Meta = request.Meta,
+            AccountId = accountId,
+        };
+
+        db.UserCalendarEvents.Add(calendarEvent);
+        await db.SaveChangesAsync();
+        PurgeCalendarEventMonths(accountId, calendarEvent.StartTime, calendarEvent.EndTime);
+        await HydrateCalendarEventAccountsAsync([calendarEvent]);
+        return calendarEvent;
+    }
+
+    public async Task<SnUserCalendarEvent> UpdateCalendarEventAsync(
+        Guid accountId,
+        Guid eventId,
+        UpdateCalendarEventRequest request
+    )
+    {
+        var calendarEvent = await db
+            .UserCalendarEvents.Where(e => e.Id == eventId && e.DeletedAt == null)
+            .FirstOrDefaultAsync();
+
+        if (calendarEvent == null)
+            throw new KeyNotFoundException("Calendar event not found");
+
+        if (calendarEvent.AccountId != accountId)
+            throw new UnauthorizedAccessException("Calendar event does not belong to user");
+
+        var oldStartTime = calendarEvent.StartTime;
+        var oldEndTime = calendarEvent.EndTime;
+
+        if (request.Title != null)
+            calendarEvent.Title = request.Title.Trim();
+
+        if (request.Description != null)
+            calendarEvent.Description = NormalizeNullableString(request.Description);
+
+        if (request.Location != null)
+            calendarEvent.Location = NormalizeNullableString(request.Location);
+
+        if (request.StartTime.HasValue)
+            calendarEvent.StartTime = request.StartTime.Value;
+
+        if (request.EndTime.HasValue)
+            calendarEvent.EndTime = request.EndTime.Value;
+
+        if (request.IsAllDay.HasValue)
+            calendarEvent.IsAllDay = request.IsAllDay.Value;
+
+        if (request.Visibility.HasValue)
+            calendarEvent.Visibility = request.Visibility.Value;
+
+        if (request.Recurrence != null)
+            calendarEvent.Recurrence = request.Recurrence;
+
+        if (request.Tags != null)
+            calendarEvent.Tags = NormalizeCalendarTags(request.Tags);
+
+        if (request.Meta != null)
+            calendarEvent.Meta = request.Meta;
+
+        if (calendarEvent.EndTime <= calendarEvent.StartTime)
+            throw new ArgumentException("End time must be after start time");
+
+        if (calendarEvent.IsAllDay && calendarEvent.EndTime == calendarEvent.StartTime)
+        {
+            calendarEvent.EndTime = calendarEvent.StartTime.Plus(Duration.FromHours(24));
+        }
+
+        calendarEvent.UpdatedAt = SystemClock.Instance.GetCurrentInstant();
+        await db.SaveChangesAsync();
+
+        PurgeCalendarEventMonths(accountId, oldStartTime, oldEndTime);
+        PurgeCalendarEventMonths(accountId, calendarEvent.StartTime, calendarEvent.EndTime);
+        await HydrateCalendarEventAccountsAsync([calendarEvent]);
+        return calendarEvent;
+    }
+
+    public async Task<bool> DeleteCalendarEventAsync(Guid accountId, Guid eventId)
+    {
+        var calendarEvent = await db
+            .UserCalendarEvents.Where(e => e.Id == eventId && e.DeletedAt == null)
+            .FirstOrDefaultAsync();
+
+        if (calendarEvent == null)
+            return false;
+
+        if (calendarEvent.AccountId != accountId)
+            throw new UnauthorizedAccessException("Calendar event does not belong to user");
+
+        calendarEvent.DeletedAt = SystemClock.Instance.GetCurrentInstant();
+        await db.SaveChangesAsync();
+
+        PurgeCalendarEventMonths(accountId, calendarEvent.StartTime, calendarEvent.EndTime);
+        return true;
+    }
+
+    public async Task<SnUserCalendarEvent?> GetCalendarEventAsync(
+        Guid eventId,
+        Guid? viewerId = null
+    )
+    {
+        var calendarEvent = await db
+            .UserCalendarEvents.Where(e => e.Id == eventId && e.DeletedAt == null)
+            .FirstOrDefaultAsync();
+
+        if (calendarEvent == null)
+            return null;
+
+        if (viewerId.HasValue && viewerId.Value != calendarEvent.AccountId)
+        {
+            var isVisible = await IsEventVisibleToUserAsync(calendarEvent, viewerId.Value);
+            if (!isVisible)
+                return null;
+        }
+
+        await HydrateCalendarEventAccountsAsync([calendarEvent]);
+        return calendarEvent;
+    }
+
+    public async Task<List<string>> GetCalendarEventTagsAsync(Guid accountId)
+    {
+        var tagLists = await db.UserCalendarEvents
+            .AsNoTracking()
+            .Where(e => e.AccountId == accountId && e.DeletedAt == null)
+            .Select(e => e.Tags)
+            .ToListAsync();
+
+        return NormalizeCalendarTags(tagLists.SelectMany(tags => tags ?? []));
+    }
+
+    public async Task<(List<SnUserCalendarEvent>, int)> GetUserCalendarEventsAsync(
+        Guid accountId,
+        Guid? viewerId = null,
+        Instant? startTime = null,
+        Instant? endTime = null,
+        int offset = 0,
+        int take = 50,
+        string? query = null,
+        IEnumerable<string>? tags = null
+    )
+    {
+        var normalizedTags = NormalizeCalendarTags(tags);
+        var isOwner = viewerId == accountId;
+
+        var eventQuery = db.UserCalendarEvents
+            .AsNoTracking()
+            .Where(e => e.AccountId == accountId && e.DeletedAt == null);
+
+        if (!isOwner && viewerId.HasValue)
+        {
+            eventQuery = eventQuery.Where(e =>
+                e.Visibility == EventVisibility.Public || e.Visibility == EventVisibility.Friends
+            );
+        }
+        else if (!isOwner)
+        {
+            eventQuery = eventQuery.Where(e => e.Visibility == EventVisibility.Public);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var normalizedQuery = query.Trim();
+            eventQuery = eventQuery.Where(e =>
+                e.Title.Contains(normalizedQuery)
+                || (e.Description != null && e.Description.Contains(normalizedQuery))
+                || (e.Location != null && e.Location.Contains(normalizedQuery))
+                || e.Tags.Contains(normalizedQuery.ToLowerInvariant())
+            );
+        }
+
+        foreach (var tag in normalizedTags)
+        {
+            eventQuery = eventQuery.Where(e => e.Tags.Contains(tag));
+        }
+
+        if (startTime.HasValue)
+            eventQuery = eventQuery.Where(e => e.Recurrence != null || e.EndTime >= startTime.Value);
+
+        if (endTime.HasValue)
+            eventQuery = eventQuery.Where(e => e.Recurrence != null || e.StartTime <= endTime.Value);
+
+        var calendarEvents = await eventQuery
+            .OrderBy(e => e.StartTime)
+            .ToListAsync();
+
+        if (!isOwner && viewerId.HasValue)
+        {
+            // Friends family check: RelationshipStatus.Friends is strict and would
+            // miss CloseFriend, so test membership of the friend list instead.
+            var isFriend = (await relationships.ListAccountFriends(accountId)).Contains(viewerId.Value);
+
+            calendarEvents = calendarEvents
+                .Where(e =>
+                    e.Visibility == EventVisibility.Public
+                    || (e.Visibility == EventVisibility.Friends && isFriend)
+                )
+                .ToList();
+        }
+
+        var filteredEvents = ExpandCalendarEventsForRange(calendarEvents, startTime, endTime)
+            .OrderBy(e => e.StartTime)
+            .ThenBy(e => e.EndTime)
+            .ToList();
+
+        var totalCount = filteredEvents.Count;
+        var pagedEvents = filteredEvents.Skip(offset).Take(take).ToList();
+        await HydrateCalendarEventAccountsAsync(pagedEvents);
+        return (pagedEvents, totalCount);
+    }
+
+    public async Task<(List<SnUserCalendarEvent>, int)> GetAccessibleCalendarEventsAsync(
+        Guid viewerId,
+        Guid? accountId = null,
+        Instant? startTime = null,
+        Instant? endTime = null,
+        string? query = null,
+        IEnumerable<string>? tags = null,
+        int offset = 0,
+        int take = 50
+    )
+    {
+        var normalizedTags = NormalizeCalendarTags(tags);
+        var eventQuery = await BuildAccessibleCalendarEventsQueryAsync(
+            viewerId,
+            accountId,
+            startTime,
+            endTime,
+            query,
+            normalizedTags
+        );
+
+        var calendarEvents = await eventQuery
+            .OrderBy(e => e.StartTime)
+            .ToListAsync();
+
+        var filteredEvents = ExpandCalendarEventsForRange(calendarEvents, startTime, endTime)
+            .OrderBy(e => e.StartTime)
+            .ThenBy(e => e.EndTime)
+            .ToList();
+
+        var totalCount = filteredEvents.Count;
+        var pagedEvents = filteredEvents.Skip(offset).Take(take).ToList();
+        await HydrateCalendarEventAccountsAsync(pagedEvents);
+        return (pagedEvents, totalCount);
+    }
+
+    public async Task<(List<CalendarSearchResultItem>, int)> SearchCalendarAsync(
+        Guid viewerId,
+        string regionCode,
+        string? query = null,
+        Guid? accountId = null,
+        Instant? startTime = null,
+        Instant? endTime = null,
+        IEnumerable<string>? eventTags = null,
+        NotableDayTag? notableDayTag = null,
+        int offset = 0,
+        int take = 50
+    )
+    {
+        var (calendarEvents, _) = await GetAccessibleCalendarEventsAsync(
+            viewerId,
+            accountId,
+            startTime,
+            endTime,
+            query,
+            eventTags,
+            0,
+            int.MaxValue
+        );
+        var notableDays = await notableDaysService.SearchNotableDaysAsync(
+            regionCode,
+            startTime,
+            endTime,
+            query,
+            notableDayTag,
+            0,
+            int.MaxValue
+        );
+
+        var results = calendarEvents
+            .Select(evt => new CalendarSearchResultItem
+            {
+                Type = CalendarEventType.UserEvent,
+                StartTime = evt.StartTime,
+                EndTime = evt.EndTime,
+                UserEvent = evt,
+            })
+            .Concat(notableDays.Results.Select(day => new CalendarSearchResultItem
+            {
+                Type = CalendarEventType.NotableDay,
+                StartTime = day.Date,
+                EndTime = day.Date,
+                NotableDay = day,
+            }))
+            .OrderBy(item => item.StartTime)
+            .ThenBy(item => item.EndTime)
+            .ToList();
+
+        var totalCount = results.Count;
+        return (results.Skip(offset).Take(take).ToList(), totalCount);
+    }
+
+    private static string? NormalizeNullableString(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private static List<string> NormalizeCalendarTags(IEnumerable<string>? tags)
+    {
+        return (tags ?? [])
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Select(tag => tag.Trim().ToLowerInvariant())
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(tag => tag, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    private void PurgeCalendarEventMonths(Guid accountId, Instant startTime, Instant endTime)
+    {
+        var startMonth = startTime.InUtc().Date;
+        var endMonth = endTime.InUtc().Date;
+        PurgeCalendarEventCache(accountId, startMonth.Year, startMonth.Month);
+        if (startMonth.Month != endMonth.Month || startMonth.Year != endMonth.Year)
+        {
+            PurgeCalendarEventCache(accountId, endMonth.Year, endMonth.Month);
+        }
+    }
+
+    private async Task<IQueryable<SnUserCalendarEvent>> BuildAccessibleCalendarEventsQueryAsync(
+        Guid viewerId,
+        Guid? accountId,
+        Instant? startTime,
+        Instant? endTime,
+        string? query,
+        IReadOnlyCollection<string> tags
+    )
+    {
+        var friendIds = (await GetFriendAccountIdsAsync(viewerId)).ToHashSet();
+        var subscribedIds = (await GetCalendarEventSubscriptionsAsync(viewerId)).ToHashSet();
+
+        if (accountId.HasValue
+            && accountId.Value != viewerId
+            && !friendIds.Contains(accountId.Value)
+            && !subscribedIds.Contains(accountId.Value))
+        {
+            return db.UserCalendarEvents.Where(_ => false);
+        }
+
+        var eventQuery = db.UserCalendarEvents
+            .AsNoTracking()
+            .Where(e => e.DeletedAt == null)
+            .Where(e =>
+                e.AccountId == viewerId
+                || (friendIds.Contains(e.AccountId)
+                    && (e.Visibility == EventVisibility.Public || e.Visibility == EventVisibility.Friends))
+                || (subscribedIds.Contains(e.AccountId) && e.Visibility == EventVisibility.Public)
+            );
+
+        if (accountId.HasValue)
+            eventQuery = eventQuery.Where(e => e.AccountId == accountId.Value);
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var normalizedQuery = query.Trim();
+            eventQuery = eventQuery.Where(e =>
+                e.Title.Contains(normalizedQuery)
+                || (e.Description != null && e.Description.Contains(normalizedQuery))
+                || (e.Location != null && e.Location.Contains(normalizedQuery))
+                || e.Tags.Contains(normalizedQuery.ToLowerInvariant())
+            );
+        }
+
+        foreach (var tag in tags)
+        {
+            eventQuery = eventQuery.Where(e => e.Tags.Contains(tag));
+        }
+
+        if (startTime.HasValue)
+            eventQuery = eventQuery.Where(e => e.Recurrence != null || e.EndTime >= startTime.Value);
+
+        if (endTime.HasValue)
+            eventQuery = eventQuery.Where(e => e.Recurrence != null || e.StartTime <= endTime.Value);
+
+        return eventQuery;
+    }
+
+    private List<SnUserCalendarEvent> ExpandCalendarEventsForRange(
+        List<SnUserCalendarEvent> calendarEvents,
+        Instant? startTime,
+        Instant? endTime
+    )
+    {
+        if (!startTime.HasValue && !endTime.HasValue)
+            return calendarEvents;
+
+        var (rangeStart, rangeEnd) = GetEventExpansionRange(startTime, endTime);
+        return ExpandRecurringEvents(calendarEvents, rangeStart, rangeEnd);
+    }
+
+    private static (Instant Start, Instant End) GetEventExpansionRange(
+        Instant? startTime,
+        Instant? endTime
+    )
+    {
+        if (startTime.HasValue && endTime.HasValue)
+            return (startTime.Value, endTime.Value);
+
+        // ponytail: cap inferred recurring expansion to one year when caller supplies only one bound.
+        if (startTime.HasValue)
+            return (startTime.Value, startTime.Value.Plus(Duration.FromDays(366)));
+
+        if (endTime.HasValue)
+            return (endTime.Value.Minus(Duration.FromDays(366)), endTime.Value);
+
+        var now = SystemClock.Instance.GetCurrentInstant();
+        return (now, now.Plus(Duration.FromDays(366)));
+    }
+
+    private async Task<Dictionary<Guid, SnAccount>> GetAccountsByIdsAsync(IEnumerable<Guid> accountIds)
+    {
+        var ids = accountIds.Distinct().ToList();
+        if (ids.Count == 0)
+            return [];
+
+        var accountsTask = accountGrpc.GetAccountBatchAsync(new DyGetAccountBatchRequest
+        {
+            Id = { ids.Select(id => id.ToString()) }
+        }).ResponseAsync;
+        var accounts = await accountsTask;
+
+        return accounts.Accounts
+            .Select(SnAccount.FromProtoValue)
+            .ToDictionary(account => account.Id, account => account);
+    }
+
+    private async Task HydrateCalendarEventAccountsAsync(ICollection<SnUserCalendarEvent> calendarEvents)
+    {
+        if (calendarEvents.Count == 0)
+            return;
+
+        var accounts = await GetAccountsByIdsAsync(calendarEvents.Select(evt => evt.AccountId));
+        foreach (var calendarEvent in calendarEvents)
+        {
+            if (accounts.TryGetValue(calendarEvent.AccountId, out var account))
+                calendarEvent.Account = account;
+        }
+    }
+
+    private async Task HydrateCalendarEventAccountsAsync(ICollection<UserCalendarEventDto> calendarEvents)
+    {
+        if (calendarEvents.Count == 0)
+            return;
+
+        var accounts = await GetAccountsByIdsAsync(calendarEvents.Select(evt => evt.AccountId));
+        foreach (var calendarEvent in calendarEvents)
+        {
+            if (accounts.TryGetValue(calendarEvent.AccountId, out var account))
+                calendarEvent.Account = account;
+        }
+    }
+
+    private async Task<bool> IsEventVisibleToUserAsync(
+        SnUserCalendarEvent calendarEvent,
+        Guid viewerId
+    )
+    {
+        if (calendarEvent.AccountId == viewerId)
+            return true;
+
+        if (calendarEvent.Visibility == EventVisibility.Public)
+            return true;
+
+        if (calendarEvent.Visibility == EventVisibility.Friends)
+        {
+            // Friends family check: RelationshipStatus.Friends is strict and would
+            // miss CloseFriend, so test membership of the friend list instead.
+            var isFriend = (await relationships.ListAccountFriends(calendarEvent.AccountId)).Contains(viewerId);
+            return isFriend;
+        }
+
+        return false;
+    }
+
+    #region Calendar Event Subscriptions
+
+    public async Task<SnCalendarEventSubscription> SubscribeToCalendarEventsAsync(
+        Guid subscriberId,
+        Guid targetAccountId
+    )
+    {
+        if (subscriberId == targetAccountId)
+            throw new ArgumentException("Cannot subscribe to your own events");
+
+        var existing = await db.CalendarEventSubscriptions
+            .Where(s => s.SubscriberId == subscriberId && s.TargetAccountId == targetAccountId && s.DeletedAt == null)
+            .FirstOrDefaultAsync();
+
+        if (existing is not null)
+            return existing;
+
+        var subscription = new SnCalendarEventSubscription
+        {
+            SubscriberId = subscriberId,
+            TargetAccountId = targetAccountId,
+        };
+
+        db.CalendarEventSubscriptions.Add(subscription);
+        await db.SaveChangesAsync();
+
+        return subscription;
+    }
+
+    public async Task<bool> UnsubscribeFromCalendarEventsAsync(
+        Guid subscriberId,
+        Guid targetAccountId
+    )
+    {
+        var subscription = await db.CalendarEventSubscriptions
+            .Where(s => s.SubscriberId == subscriberId && s.TargetAccountId == targetAccountId && s.DeletedAt == null)
+            .FirstOrDefaultAsync();
+
+        if (subscription is null)
+            return false;
+
+        db.CalendarEventSubscriptions.Remove(subscription);
+        await db.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<List<Guid>> GetCalendarEventSubscriptionsAsync(Guid subscriberId)
+    {
+        return await db.CalendarEventSubscriptions
+            .Where(s => s.SubscriberId == subscriberId && s.DeletedAt == null)
+            .Select(s => s.TargetAccountId)
+            .ToListAsync();
+    }
+
+    public async Task<List<Guid>> GetCalendarEventSubscribersAsync(Guid targetAccountId)
+    {
+        return await db.CalendarEventSubscriptions
+            .Where(s => s.TargetAccountId == targetAccountId && s.DeletedAt == null)
+            .Select(s => s.SubscriberId)
+            .ToListAsync();
+    }
+
+    public async Task<Dictionary<Guid, bool>> GetCalendarEventSubscriptionStatusAsync(
+        Guid subscriberId,
+        List<Guid> targetAccountIds
+    )
+    {
+        var subscribedIds = await db.CalendarEventSubscriptions
+            .Where(s =>
+                s.SubscriberId == subscriberId
+                && targetAccountIds.Contains(s.TargetAccountId)
+                && s.DeletedAt == null
+            )
+            .Select(s => s.TargetAccountId)
+            .ToListAsync();
+
+        return targetAccountIds.ToDictionary(id => id, id => subscribedIds.Contains(id));
+    }
+
+    public async Task<List<Guid>> GetFriendAccountIdsAsync(Guid accountId)
+    {
+        // Friends family (Friends OR CloseFriend, non-expired) now lives in Stargate.
+        return await relationships.ListAccountFriends(accountId);
+    }
+
+    public void PurgeCalendarEventSubscriptionCache(Guid subscriberId)
+    {
+        var currentYear = SystemClock.Instance.GetCurrentInstant().InUtc().Year;
+        var currentMonth = SystemClock.Instance.GetCurrentInstant().InUtc().Month;
+        for (var m = 1; m <= 12; m++)
+        {
+            cache.RemoveAsync(GetCalendarEventCacheKey(subscriberId, currentYear, m));
+            cache.RemoveAsync(GetCalendarEventCacheKey(subscriberId, currentYear - 1, m));
+            cache.RemoveAsync(GetCalendarEventCacheKey(subscriberId, currentYear + 1, m));
+        }
+    }
+
+    #endregion
+
+    private List<SnUserCalendarEvent> ExpandRecurringEvents(
+        List<SnUserCalendarEvent> events,
+        Instant rangeStart,
+        Instant rangeEnd
+    )
+    {
+        var expandedEvents = new List<SnUserCalendarEvent>();
+
+        foreach (var evt in events)
+        {
+            if (evt.Recurrence == null || evt.Recurrence.Frequency == RecurrenceFrequency.None)
+            {
+                // Non-recurring event - check if in range
+                if (evt.EndTime >= rangeStart && evt.StartTime <= rangeEnd)
+                {
+                    expandedEvents.Add(evt);
+                }
+                continue;
+            }
+
+            // Expand recurring events
+            var occurrences = GetRecurringEventOccurrences(evt, rangeStart, rangeEnd);
+            expandedEvents.AddRange(occurrences);
+        }
+
+        return expandedEvents;
+    }
+
+    private List<SnUserCalendarEvent> GetRecurringEventOccurrences(
+        SnUserCalendarEvent evt,
+        Instant rangeStart,
+        Instant rangeEnd
+    )
+    {
+        var occurrences = new List<SnUserCalendarEvent>();
+        var recurrence = evt.Recurrence!;
+
+        var maxOccurrences = recurrence.Occurrences ?? 365; // Default max 1 year of daily events
+        var endDate = recurrence.EndDate ?? rangeEnd;
+        var actualEnd = Instant.Min(endDate, rangeEnd);
+
+        var currentStart = evt.StartTime;
+        var currentEnd = evt.EndTime;
+        var occurrenceCount = 0;
+
+        while (currentStart < actualEnd && occurrenceCount < maxOccurrences)
+        {
+            // Check if this occurrence falls within the range
+            if (currentEnd >= rangeStart && currentStart <= rangeEnd)
+            {
+                var occurrence = new SnUserCalendarEvent
+                {
+                    Id = evt.Id,
+                    Title = evt.Title,
+                    Description = evt.Description,
+                    Location = evt.Location,
+                    StartTime = currentStart,
+                    EndTime = currentEnd,
+                    IsAllDay = evt.IsAllDay,
+                    Visibility = evt.Visibility,
+                    Recurrence = null, // Mark as instance, not recurring
+                    Tags = [.. evt.Tags],
+                    Meta = evt.Meta,
+                    Icon = evt.Icon,
+                    Background = evt.Background,
+                    AccountId = evt.AccountId,
+                    Account = evt.Account,
+                    CreatedAt = evt.CreatedAt,
+                    UpdatedAt = evt.UpdatedAt,
+                };
+                occurrences.Add(occurrence);
+            }
+
+            occurrenceCount++;
+
+            // Calculate next occurrence
+            (currentStart, currentEnd) = CalculateNextOccurrence(
+                currentStart,
+                currentEnd,
+                recurrence
+            );
+
+            if (currentStart == default)
+                break;
+        }
+
+        return occurrences;
+    }
+
+    private (Instant start, Instant end) CalculateNextOccurrence(
+        Instant currentStart,
+        Instant currentEnd,
+        RecurrencePattern recurrence
+    )
+    {
+        var duration = currentEnd - currentStart;
+        Instant nextStart;
+
+        switch (recurrence.Frequency)
+        {
+            case RecurrenceFrequency.Daily:
+                nextStart = currentStart.Plus(Duration.FromDays(recurrence.Interval));
+                break;
+
+            case RecurrenceFrequency.Weekly:
+                if (recurrence.DaysOfWeek?.Any() == true)
+                {
+                    // Find next day of week
+                    var currentDay = currentStart.InUtc().DayOfWeek;
+                    var daysOfWeek = recurrence.DaysOfWeek.OrderBy(d => d).ToList();
+
+                    // Find next day in the list
+                    var nextDay = daysOfWeek.FirstOrDefault(d => d > currentDay);
+                    if (nextDay == default)
+                    {
+                        // Wrap to next week
+                        nextDay = daysOfWeek.First();
+                        var daysUntilNext = (7 - (int)currentDay) + (int)nextDay;
+                        nextStart = currentStart.Plus(Duration.FromDays(daysUntilNext));
+                    }
+                    else
+                    {
+                        var daysUntilNext = (int)nextDay - (int)currentDay;
+                        nextStart = currentStart.Plus(Duration.FromDays(daysUntilNext));
+                    }
+                }
+                else
+                {
+                    nextStart = currentStart.Plus(Duration.FromDays(7 * recurrence.Interval));
+                }
+                break;
+
+            case RecurrenceFrequency.Monthly:
+                var currentDate = currentStart.InUtc().Date;
+                var nextMonth = currentDate.PlusMonths(recurrence.Interval);
+                var dayOfMonth = recurrence.DayOfMonth ?? currentDate.Day;
+                var maxDay = DateTime.DaysInMonth(nextMonth.Year, nextMonth.Month);
+                dayOfMonth = Math.Min(dayOfMonth, maxDay);
+                var nextLocalDate = new LocalDate(nextMonth.Year, nextMonth.Month, dayOfMonth);
+                nextStart = nextLocalDate.AtStartOfDayInZone(DateTimeZone.Utc).ToInstant();
+                break;
+
+            case RecurrenceFrequency.Yearly:
+                var currentYearDate = currentStart.InUtc().Date;
+                var nextYear = currentYearDate.PlusYears(recurrence.Interval);
+                var targetMonth = recurrence.MonthOfYear ?? currentYearDate.Month;
+                var targetDay = recurrence.DayOfMonth ?? currentYearDate.Day;
+                var maxDayOfMonth = DateTime.DaysInMonth(nextYear.Year, targetMonth);
+                targetDay = Math.Min(targetDay, maxDayOfMonth);
+                var nextYearLocalDate = new LocalDate(nextYear.Year, targetMonth, targetDay);
+                nextStart = nextYearLocalDate.AtStartOfDayInZone(DateTimeZone.Utc).ToInstant();
+                break;
+
+            default:
+                return (default, default);
+        }
+
+        var nextEnd = nextStart.Plus(duration);
+        return (nextStart, nextEnd);
+    }
+
+    public async Task<List<DailyEventResponse>> GetEventCalendar(
+        SnAccount user,
+        int month,
+        int year = 0,
+        bool replaceInvisible = false,
+        Guid? viewerId = null,
+        string? regionCode = null
+    )
+    {
+        if (year == 0)
+            year = SystemClock.Instance.GetCurrentInstant().InUtc().Date.Year;
+
+        // Create start and end dates for the specified month
+        var startOfMonth = new LocalDate(year, month, 1)
+            .AtStartOfDayInZone(DateTimeZone.Utc)
+            .ToInstant();
+        var endOfMonth = startOfMonth.Plus(Duration.FromDays(DateTime.DaysInMonth(year, month)));
+
+        // Determine the effective viewer
+        var effectiveViewerId = viewerId ?? user.Id;
+        var isOwner = effectiveViewerId == user.Id;
+
+        // Fetch statuses
+        var statuses = await db
+            .AccountStatuses.AsNoTracking()
+            .TagWith("eventcal:statuses")
+            .Where(x =>
+                x.AccountId == user.Id && x.CreatedAt >= startOfMonth && x.CreatedAt < endOfMonth
+            )
+            .Select(x => new SnAccountStatus
+            {
+                Id = x.Id,
+                Attitude = x.Attitude,
+                Type =
+                    replaceInvisible && x.Type == StatusType.Invisible
+                        ? StatusType.Default
+                        : x.Type,
+                Label = x.Label,
+                Symbol = x.Symbol,
+                ClearedAt = x.ClearedAt,
+                AccountId = x.AccountId,
+                CreatedAt = x.CreatedAt,
+            })
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync();
+
+        // Fetch check-ins
+        var checkIn = await db
+            .AccountCheckInResults.AsNoTracking()
+            .TagWith("eventcal:checkin")
+            .Where(x =>
+                x.AccountId == user.Id && x.CreatedAt >= startOfMonth && x.CreatedAt < endOfMonth
+            )
+            .ToListAsync();
+        foreach (var item in checkIn)
+            PrepareCheckInResultForResponse(user, item);
+
+        // Fetch user calendar events with visibility filtering
+        var userEventsQuery = db
+            .UserCalendarEvents.AsNoTracking()
+            .TagWith("eventcal:userevents")
+            .Where(x =>
+                x.AccountId == user.Id
+                && x.DeletedAt == null
+                && x.StartTime < endOfMonth
+                && (x.Recurrence != null || x.EndTime >= startOfMonth)
+            );
+
+        // Apply visibility filter
+        if (!isOwner)
+        {
+            userEventsQuery = userEventsQuery.Where(x =>
+                x.Visibility == EventVisibility.Public || x.Visibility == EventVisibility.Friends
+            );
+        }
+
+        var userEvents = await userEventsQuery.ToListAsync();
+
+        // For Friends visibility, check friendship status
+        if (!isOwner)
+        {
+            // Friends family check: RelationshipStatus.Friends is strict and would
+            // miss CloseFriend, so test membership of the friend list instead.
+            var isFriend = (await relationships.ListAccountFriends(user.Id)).Contains(effectiveViewerId);
+
+            userEvents = userEvents
+                .Where(e =>
+                    e.Visibility == EventVisibility.Public
+                    || (e.Visibility == EventVisibility.Friends && isFriend)
+                )
+                .ToList();
+        }
+
+        // If owner, also fetch events from friends and subscribed accounts
+        var allUserEvents = new List<SnUserCalendarEvent>(userEvents);
+        if (isOwner)
+        {
+            // Get friends' events (Friends + Public visibility)
+            var friendIds = await GetFriendAccountIdsAsync(user.Id);
+            if (friendIds.Count > 0)
+            {
+                var friendEvents = await db.UserCalendarEvents.AsNoTracking()
+                    .TagWith("eventcal:friendevents")
+                    .Where(e =>
+                        friendIds.Contains(e.AccountId)
+                        && e.DeletedAt == null
+                        && e.StartTime < endOfMonth
+                        && (e.Recurrence != null || e.EndTime >= startOfMonth)
+                        && (e.Visibility == EventVisibility.Friends || e.Visibility == EventVisibility.Public)
+                    )
+                    .ToListAsync();
+                allUserEvents.AddRange(friendEvents);
+            }
+
+            // Get subscribed accounts' events (Public visibility only)
+            var subscribedAccountIds = await GetCalendarEventSubscriptionsAsync(user.Id);
+            if (subscribedAccountIds.Count > 0)
+            {
+                var subscribedEvents = await db.UserCalendarEvents.AsNoTracking()
+                    .TagWith("eventcal:subscribedevents")
+                    .Where(e =>
+                        subscribedAccountIds.Contains(e.AccountId)
+                        && e.DeletedAt == null
+                        && e.StartTime < endOfMonth
+                        && (e.Recurrence != null || e.EndTime >= startOfMonth)
+                        && e.Visibility == EventVisibility.Public
+                    )
+                    .ToListAsync();
+                allUserEvents.AddRange(subscribedEvents);
+            }
+        }
+
+        // Deduplicate by event ID
+        allUserEvents = allUserEvents
+            .GroupBy(e => e.Id)
+            .Select(g => g.First())
+            .ToList();
+
+        // Expand recurring events
+        var expandedEvents = ExpandRecurringEvents(allUserEvents, startOfMonth, endOfMonth);
+
+        // Map to DTOs
+        var userEventDtos = expandedEvents
+            .Select(e => new UserCalendarEventDto
+            {
+                Id = e.Id,
+                Title = e.Title,
+                Description = e.Description,
+                Location = e.Location,
+                StartTime = e.StartTime,
+                EndTime = e.EndTime,
+                IsAllDay = e.IsAllDay,
+                Visibility = e.Visibility,
+                Recurrence = e.Recurrence,
+                Tags = [.. e.Tags],
+                Meta = e.Meta,
+                Icon = e.Icon,
+                Background = e.Background,
+                AccountId = e.AccountId,
+                CreatedAt = e.CreatedAt,
+                UpdatedAt = e.UpdatedAt,
+            })
+            .ToList();
+        await HydrateCalendarEventAccountsAsync(userEventDtos);
+
+        // Fetch notable days
+        var notableDays = new List<NotableDay>();
+        if (!string.IsNullOrWhiteSpace(regionCode))
+        {
+            // This will be populated by the caller using NotableDaysService
+            // We return empty here and the controller will merge
+        }
+
+        // Group data by date
+        var dates = Enumerable
+            .Range(1, DateTime.DaysInMonth(year, month))
+            .Select(day =>
+                new LocalDate(year, month, day).AtStartOfDayInZone(DateTimeZone.Utc).ToInstant()
+            )
+            .ToList();
+
+        var statusesByDate = statuses
+            .GroupBy(s => s.CreatedAt.InUtc().Date)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var checkInByDate = checkIn
+            .GroupBy(c => c.CreatedAt.InUtc().Date)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(c => c.CreatedAt).First());
+
+        var eventsByDate = userEventDtos
+            .GroupBy(e => e.StartTime.InUtc().Date)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        return dates
+            .Select(date =>
+            {
+                var utcDate = date.InUtc().Date;
+                return new DailyEventResponse
+                {
+                    Date = date,
+                    CheckInResult = checkInByDate.GetValueOrDefault(utcDate),
+                    Statuses = statusesByDate.GetValueOrDefault(
+                        utcDate,
+                        new List<SnAccountStatus>()
+                    ),
+                    UserEvents = eventsByDate.GetValueOrDefault(
+                        utcDate,
+                        new List<UserCalendarEventDto>()
+                    ),
+                    NotableDays = new List<DysonNetwork.Shared.Models.NotableDay>(), // Populated by caller
+                };
+            })
+            .ToList();
+    }
+
+    public async Task<MergedDailyEventResponse> GetMergedEventCalendar(
+        SnAccount user,
+        int month,
+        int year = 0,
+        bool replaceInvisible = false,
+        Guid? viewerId = null,
+        string? regionCode = null,
+        NotableDaysService? notableDaysService = null,
+        int? layer = null
+    )
+    {
+        if (year == 0)
+            year = SystemClock.Instance.GetCurrentInstant().InUtc().Date.Year;
+
+        // Get the base calendar
+        var calendar = await GetEventCalendar(
+            user,
+            month,
+            year,
+            replaceInvisible,
+            viewerId,
+            regionCode
+        );
+
+        // Fetch notable days if region code and service provided
+        var notableDays = new List<Shared.Models.NotableDay>();
+        if (!string.IsNullOrWhiteSpace(regionCode) && notableDaysService != null)
+        {
+            var fetchedDays = await notableDaysService.GetNotableDays(year, regionCode, maxPriority: layer);
+            // Filter to current month
+            notableDays = fetchedDays
+                .Where(d => d.Date.InUtc().Month == month && d.Date.InUtc().Year == year)
+                .ToList();
+        }
+
+        // Group notable days by date
+        var notableDaysByDate = notableDays
+            .GroupBy(d => d.Date.InUtc().Date)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        // Create merged response
+        var mergedResponse = new MergedDailyEventResponse
+        {
+            Date =
+                calendar.FirstOrDefault()?.Date
+                ?? new LocalDate(year, month, 1).AtStartOfDayInZone(DateTimeZone.Utc).ToInstant(),
+            CheckInResult = calendar.FirstOrDefault()?.CheckInResult,
+            Statuses = calendar.SelectMany(c => c.Statuses).ToList(),
+            UserEvents = calendar.SelectMany(c => c.UserEvents).ToList(),
+            NotableDays = notableDays,
+            MergedEvents = new List<MergedCalendarEvent>(),
+        };
+
+        // Merge all events into a flat list
+        var allMergedEvents = new List<MergedCalendarEvent>();
+
+        foreach (var day in calendar)
+        {
+            var utcDate = day.Date.InUtc().Date;
+
+            // Add check-in as merged event
+            if (day.CheckInResult != null)
+            {
+                allMergedEvents.Add(
+                    new MergedCalendarEvent
+                    {
+                        Id = day.CheckInResult.Id,
+                        Type = CalendarEventType.CheckIn,
+                        Title = $"Check-in: {day.CheckInResult.Level}",
+                        Description = $"Daily check-in result: {day.CheckInResult.Level}",
+                        StartTime = day.CheckInResult.CreatedAt,
+                        EndTime = day.CheckInResult.CreatedAt,
+                        IsAllDay = true,
+                        Meta = new Dictionary<string, object>
+                        {
+                            ["level"] = day.CheckInResult.Level.ToString(),
+                            ["rewardPoints"] = day.CheckInResult.RewardPoints ?? 0,
+                            ["rewardExperience"] = day.CheckInResult.RewardExperience ?? 0,
+                            ["tips"] = day.CheckInResult.Tips,
+                            ["fortuneReport"] = day.CheckInResult.FortuneReport!,
+                        },
+                    }
+                );
+            }
+
+            // Add statuses as merged events
+            foreach (var status in day.Statuses)
+            {
+                allMergedEvents.Add(
+                    new MergedCalendarEvent
+                    {
+                        Id = status.Id,
+                        Type = CalendarEventType.Status,
+                        Title = status.Label ?? "Status Update",
+                        Description = $"Status: {status.Attitude} - {status.Type}",
+                        StartTime = status.CreatedAt,
+                        EndTime = status.ClearedAt ?? status.CreatedAt.Plus(Duration.FromHours(24)),
+                        IsAllDay = false,
+                        Meta = new Dictionary<string, object>
+                        {
+                            ["attitude"] = status.Attitude.ToString(),
+                            ["type"] = status.Type.ToString(),
+                            ["symbol"] = status.Symbol ?? "",
+                        },
+                    }
+                );
+            }
+
+            // Add user events as merged events
+            foreach (var evt in day.UserEvents)
+            {
+                allMergedEvents.Add(
+                    new MergedCalendarEvent
+                    {
+                        Id = evt.Id,
+                        Type = CalendarEventType.UserEvent,
+                        Title = evt.Title,
+                        Description = evt.Description ?? "",
+                        Location = evt.Location,
+                        StartTime = evt.StartTime,
+                        EndTime = evt.EndTime,
+                        IsAllDay = evt.IsAllDay,
+                        Meta = evt.Meta ?? new Dictionary<string, object>(),
+                    }
+                );
+            }
+
+            // Add notable days
+            if (notableDaysByDate.TryGetValue(utcDate, out var days))
+            {
+                foreach (var notableDay in days)
+                {
+                    allMergedEvents.Add(
+                        new MergedCalendarEvent
+                        {
+                            Type = CalendarEventType.NotableDay,
+                            Title = notableDay.GlobalName ?? notableDay.LocalName ?? "Holiday",
+                            Description = notableDay.LocalName ?? "",
+                            StartTime = notableDay.Date,
+                            EndTime = notableDay.Date.Plus(Duration.FromHours(24)),
+                            IsAllDay = true,
+                            Meta = new Dictionary<string, object>
+                            {
+                                ["localName"] = notableDay.LocalName ?? "",
+                                ["countryCode"] = notableDay.CountryCode ?? "",
+                                ["holidayTypes"] = notableDay
+                                    .Holidays.Select(h => h.ToString())
+                                    .ToList(),
+                            },
+                        }
+                    );
+                }
+            }
+        }
+
+        mergedResponse.MergedEvents = allMergedEvents.OrderBy(e => e.StartTime).ToList();
+
+        return mergedResponse;
+    }
+
+    /// <summary>
+    /// Gets events for countdown display, including user events and optionally notable days.
+    /// Supports pagination and filtering by event type.
+    /// </summary>
+    public async Task<(List<EventCountdownItem> Events, int TotalCount)> GetCountdownEventsAsync(
+        SnAccount user,
+        Guid? viewerId = null,
+        string? regionCode = null,
+        NotableDaysService? notableDaysService = null,
+        bool includeNotableDays = true,
+        NotableDayTag? tag = null,
+        int take = 5,
+        int offset = 0,
+        int? layer = null
+    )
+    {
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var isOwner = viewerId == user.Id;
+
+        // Get user events (no time filter - include past and future)
+        var userEventsQuery = db
+            .UserCalendarEvents.AsNoTracking()
+            .Where(e => e.AccountId == user.Id && e.DeletedAt == null);
+
+        if (!isOwner && viewerId.HasValue)
+        {
+            userEventsQuery = userEventsQuery.Where(e =>
+                e.Visibility == EventVisibility.Public || e.Visibility == EventVisibility.Friends
+            );
+        }
+        else if (!isOwner)
+        {
+            userEventsQuery = userEventsQuery.Where(e => e.Visibility == EventVisibility.Public);
+        }
+
+        var userEvents = await userEventsQuery.ToListAsync();
+
+        // Check friendship for Friends visibility
+        bool isFriend = false;
+        if (!isOwner && viewerId.HasValue)
+        {
+            // Friends family check: RelationshipStatus.Friends is strict and would
+            // miss CloseFriend, so test membership of the friend list instead.
+            isFriend = (await relationships.ListAccountFriends(user.Id)).Contains(viewerId.Value);
+
+            if (!isFriend)
+            {
+                userEvents = userEvents.Where(e => e.Visibility == EventVisibility.Public).ToList();
+            }
+        }
+
+        // If owner, also fetch events from friends and subscribed accounts
+        var allUserEvents = new List<SnUserCalendarEvent>(userEvents);
+        if (isOwner)
+        {
+            // Get friends' events (Friends + Public visibility)
+            var friendIds = await GetFriendAccountIdsAsync(user.Id);
+            if (friendIds.Count > 0)
+            {
+                var friendEvents = await db.UserCalendarEvents.AsNoTracking()
+                    .Where(e =>
+                        friendIds.Contains(e.AccountId)
+                        && e.DeletedAt == null
+                        && (e.Visibility == EventVisibility.Friends || e.Visibility == EventVisibility.Public)
+                    )
+                    .ToListAsync();
+                allUserEvents.AddRange(friendEvents);
+            }
+
+            // Get subscribed accounts' events (Public visibility only)
+            var subscribedAccountIds = await GetCalendarEventSubscriptionsAsync(user.Id);
+            if (subscribedAccountIds.Count > 0)
+            {
+                var subscribedEvents = await db.UserCalendarEvents.AsNoTracking()
+                    .Where(e =>
+                        subscribedAccountIds.Contains(e.AccountId)
+                        && e.DeletedAt == null
+                        && e.Visibility == EventVisibility.Public
+                    )
+                    .ToListAsync();
+                allUserEvents.AddRange(subscribedEvents);
+            }
+        }
+
+        // Deduplicate by event ID
+        allUserEvents = allUserEvents
+            .GroupBy(e => e.Id)
+            .Select(g => g.First())
+            .ToList();
+
+        // Expand recurring events (include past occurrences)
+        var expandedUserEvents = ExpandRecurringEventsForCountdown(allUserEvents, now, includePast: true);
+
+        // Get notable days if requested and region code provided
+        var notableDayItems = new List<EventCountdownItem>();
+        if (includeNotableDays && !string.IsNullOrWhiteSpace(regionCode) && notableDaysService != null)
+        {
+            var currentYear = now.InUtc().Year;
+            // Get holidays for current year and adjacent years
+            var holidays = await notableDaysService.GetNotableDays(currentYear - 1, regionCode, tag, layer);
+            holidays.AddRange(await notableDaysService.GetNotableDays(currentYear, regionCode, tag, layer));
+            holidays.AddRange(await notableDaysService.GetNotableDays(currentYear + 1, regionCode, tag, layer));
+            holidays.AddRange(await notableDaysService.GetNotableDays(currentYear + 2, regionCode, tag, layer));
+
+            notableDayItems = holidays
+                .Select(h => CreateCountdownItemFromNotableDay(h, now))
+                .ToList();
+        }
+
+        // Combine and sort all events: ongoing first, then future (closest first), then past (most recent first)
+        var allEvents = expandedUserEvents
+            .Select(e => CreateCountdownItemFromUserEvent(e, now))
+            .Concat(notableDayItems)
+            .OrderByDescending(e => e.IsOngoing)
+            .ThenBy(e => e.StartTime < now ? 1 : 0)
+            .ThenBy(e => e.StartTime >= now
+                ? e.StartTime.ToUnixTimeTicks()
+                : long.MaxValue - e.StartTime.ToUnixTimeTicks())
+            .ToList();
+
+        var totalCount = allEvents.Count;
+        var pagedEvents = allEvents
+            .Skip(offset)
+            .Take(take)
+            .ToList();
+
+        return (pagedEvents, totalCount);
+    }
+
+    private List<SnUserCalendarEvent> ExpandRecurringEventsForCountdown(
+        List<SnUserCalendarEvent> events,
+        Instant fromTime,
+        bool includePast = false
+    )
+    {
+        var expandedEvents = new List<SnUserCalendarEvent>();
+
+        foreach (var evt in events)
+        {
+            if (evt.Recurrence == null || evt.Recurrence.Frequency == RecurrenceFrequency.None)
+            {
+                // Non-recurring event - include if in future or if including past
+                if (includePast || evt.EndTime > fromTime)
+                {
+                    expandedEvents.Add(evt);
+                }
+                continue;
+            }
+
+            // Expand recurring events: at most 3 occurrences (prev, current, next)
+            var occurrences = GetRecurringEventOccurrencesForCountdown(evt, fromTime, 3, includePast);
+            expandedEvents.AddRange(occurrences);
+        }
+
+        return expandedEvents;
+    }
+
+    private List<SnUserCalendarEvent> GetRecurringEventOccurrencesForCountdown(
+        SnUserCalendarEvent evt,
+        Instant fromTime,
+        int maxOccurrences,
+        bool includePast = false
+    )
+    {
+        var recurrence = evt.Recurrence!;
+        var endDate = recurrence.EndDate;
+        var occurrenceLimit = Math.Min(recurrence.Occurrences ?? int.MaxValue, 10000);
+
+        var currentStart = evt.StartTime;
+        var currentEnd = evt.EndTime;
+        var selectedOccurrences = new List<SnUserCalendarEvent>();
+        SnUserCalendarEvent? latestPastOccurrence = null;
+        var occurrenceCount = 0;
+
+        while (occurrenceCount < occurrenceLimit)
+        {
+            if (endDate.HasValue && currentStart > endDate.Value)
+                break;
+
+            var occurrence = CreateOccurrence(evt, currentStart, currentEnd);
+            if (currentEnd <= fromTime)
+            {
+                latestPastOccurrence = occurrence;
+            }
+            else
+            {
+                if (includePast && latestPastOccurrence is not null && selectedOccurrences.Count == 0)
+                    selectedOccurrences.Add(latestPastOccurrence);
+
+                selectedOccurrences.Add(occurrence);
+                if (selectedOccurrences.Count >= maxOccurrences)
+                    break;
+            }
+
+            occurrenceCount++;
+            (currentStart, currentEnd) = CalculateNextOccurrence(currentStart, currentEnd, recurrence);
+            if (currentStart == default)
+                break;
+        }
+
+        if (selectedOccurrences.Count > 0 || !includePast)
+            return selectedOccurrences.Take(maxOccurrences).ToList();
+
+        return latestPastOccurrence is null ? [] : [latestPastOccurrence];
+    }
+
+    private static SnUserCalendarEvent CreateOccurrence(
+        SnUserCalendarEvent evt,
+        Instant startTime,
+        Instant endTime
+    )
+    {
+        return new SnUserCalendarEvent
+        {
+            Id = evt.Id,
+            Title = evt.Title,
+            Description = evt.Description,
+            Location = evt.Location,
+            StartTime = startTime,
+            EndTime = endTime,
+            IsAllDay = evt.IsAllDay,
+            Visibility = evt.Visibility,
+            Recurrence = null,
+            Meta = evt.Meta,
+            Icon = evt.Icon,
+            Background = evt.Background,
+            AccountId = evt.AccountId,
+            CreatedAt = evt.CreatedAt,
+            UpdatedAt = evt.UpdatedAt,
+        };
+    }
+
+    private EventCountdownItem CreateCountdownItemFromUserEvent(
+        SnUserCalendarEvent evt,
+        Instant now
+    )
+    {
+        var timeUntil = evt.StartTime - now;
+        var daysRemaining = (int)timeUntil.TotalDays;
+        var hoursRemaining = (int)timeUntil.TotalHours % 24;
+        var isOngoing = evt.StartTime <= now && evt.EndTime > now;
+
+        return new EventCountdownItem
+        {
+            EventId = evt.Id,
+            EventType = CalendarEventType.UserEvent,
+            Title = evt.Title,
+            Description = evt.Description,
+            Location = evt.Location,
+            StartTime = evt.StartTime,
+            EndTime = evt.EndTime,
+            IsAllDay = evt.IsAllDay,
+            DaysRemaining = Math.Max(0, daysRemaining),
+            HoursRemaining = Math.Max(0, hoursRemaining),
+            IsOngoing = isOngoing,
+            Meta = evt.Meta,
+            AccountId = evt.AccountId,
+            Icon = evt.Icon,
+            Background = evt.Background,
+        };
+    }
+
+    private EventCountdownItem CreateCountdownItemFromNotableDay(
+        DysonNetwork.Shared.Models.NotableDay day,
+        Instant now
+    )
+    {
+        var timeUntil = day.Date - now;
+        var daysRemaining = (int)timeUntil.TotalDays;
+        var hoursRemaining = (int)timeUntil.TotalHours % 24;
+        var isOngoing = day.Date.InUtc().Date == now.InUtc().Date;
+
+        return new EventCountdownItem
+        {
+            EventId = null,
+            EventType = CalendarEventType.NotableDay,
+            Title = day.GlobalName ?? day.LocalName ?? "Holiday",
+            Description = day.LocalName,
+            Location = null,
+            StartTime = day.Date,
+            EndTime = day.Date.Plus(Duration.FromHours(24)),
+            IsAllDay = true,
+            DaysRemaining = Math.Max(0, daysRemaining),
+            HoursRemaining = Math.Max(0, hoursRemaining),
+            IsOngoing = isOngoing,
+            Meta = new Dictionary<string, object>
+            {
+                ["localName"] = day.LocalName ?? "",
+                ["countryCode"] = day.CountryCode ?? "",
+                ["holidayTypes"] = day.Holidays.Select(h => h.ToString()).ToList(),
+            },
+            AccountId = null,
+        };
+    }
+
+    #endregion
+
+    private async Task<List<Guid>> GetAllAccountIdsAsync()
+    {
+        var ids = new List<Guid>();
+        string? pageToken = null;
+        do
+        {
+            var page = await accountGrpc.ListAccountsAsync(new DyListAccountsRequest
+            {
+                PageSize = 200,
+                PageToken = pageToken ?? string.Empty,
+                Filter = string.Empty,
+                OrderBy = string.Empty
+            });
+            ids.AddRange(page.Accounts.Where(a => Guid.TryParse(a.Id, out _)).Select(a => Guid.Parse(a.Id)));
+            pageToken = string.IsNullOrEmpty(page.NextCursor) ? null : page.NextCursor;
+        } while (pageToken is not null);
+        return ids;
+    }
+
+}

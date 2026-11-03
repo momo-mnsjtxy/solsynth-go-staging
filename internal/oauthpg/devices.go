@@ -25,7 +25,7 @@ func deviceScopes(raw string, a apps.App) ([]string, error) {
 		return nil, oauth.ErrClient
 	}
 	for _, s := range scopes {
-		if !oauth.Contains(c.AllowedScopes, s) {
+		if !oauth.ScopeAllowed(c.AllowedScopes, s) {
 			return nil, oauth.ErrScope
 		}
 	}
@@ -201,7 +201,7 @@ func (r *Repository) DeviceDecide(ctx context.Context, actor, code string, appro
 				return oauth.ErrGrant
 			}
 			var fresh bool
-			e := b.tx.QueryRowContext(ctx, `SELECT COALESCE(preview_account_id=$2 AND preview_parent_id=$3 AND previewed_at>$4-interval '5 minutes',false)FROM owned_oauth_devices WHERE user_hash=$1`, hash, actor, b.proof.Session.ID, b.now).Scan(&fresh)
+			e := b.tx.QueryRowContext(ctx, `SELECT COALESCE(preview_account_id=$2 AND preview_parent_id=$3 AND previewed_at>$4::timestamptz-interval '5 minutes',false)FROM owned_oauth_devices WHERE user_hash=$1`, hash, actor, b.proof.Session.ID, b.now).Scan(&fresh)
 			if e != nil {
 				return e
 			}
@@ -213,7 +213,7 @@ func (r *Repository) DeviceDecide(ctx context.Context, actor, code string, appro
 		if decision != nil || !b.now.Before(exp) || epoch != b.epoch || owner.String != b.owner || ownerVersion != b.ownerVersion {
 			return oauth.ErrGrant
 		}
-		if e = b.tx.QueryRowContext(ctx, `SELECT COALESCE(preview_account_id=$2 AND preview_parent_id=$3 AND previewed_at>$4-interval '5 minutes',false) FROM owned_oauth_devices WHERE user_hash=$1`, hash, actor, b.proof.Session.ID, b.now).Scan(&reviewed); e != nil {
+		if e = b.tx.QueryRowContext(ctx, `SELECT COALESCE(preview_account_id=$2 AND preview_parent_id=$3 AND previewed_at>$4::timestamptz-interval '5 minutes',false) FROM owned_oauth_devices WHERE user_hash=$1`, hash, actor, b.proof.Session.ID, b.now).Scan(&reviewed); e != nil {
 			return e
 		}
 		if !reviewed {
